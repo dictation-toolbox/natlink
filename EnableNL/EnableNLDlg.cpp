@@ -288,8 +288,10 @@ InstallData * CEnableNLDlg::loadVersions()
 						csIniName );
 					if( rc < 2 ) 
 					{
-						csIniName = "C:/Documents and Settings/All Users/Application Data/ScanSoft/NaturallySpeaking";
-						csIniName += "/nssystem.ini";
+                        // In version 7 the file is stored in a different place
+						pDirName = "C:/Documents and Settings/All Users/Application Data/ScanSoft/NaturallySpeaking";
+						csIniName = pDirName;
+                        csIniName += "\\nssystem.ini";
 						rc = GetPrivateProfileString(
 						"Global Clients",
 						".Global",
