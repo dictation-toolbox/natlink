@@ -286,11 +286,23 @@ InstallData * CEnableNLDlg::loadVersions()
 						"", 		// default value
 						szBuffer, sizeof(szBuffer),
 						csIniName );
-					if( rc < 2 ) continue;
-
+					if( rc < 2 ) 
+					{
+						csIniName = "C:/Documents and Settings/All Users/Application Data/ScanSoft/NaturallySpeaking";
+						csIniName += "/nssystem.ini";
+						rc = GetPrivateProfileString(
+						"Global Clients",
+						".Global",
+						"", 		// default value
+						szBuffer, sizeof(szBuffer),
+						csIniName );
+					}
+					if( rc < 2 ) 	continue;
+					CString pname = pSectionName;
+				
 					// if we get here then we have an appropiate candidate
 					pTopFound = new InstallData( pTopFound );
-					pTopFound->m_prettyName = "NaturallySpeaking 5.0 (in ";
+					pTopFound->m_prettyName = pname + " (in ";
 					pTopFound->m_prettyName += pDirName;
 					pTopFound->m_prettyName += ")";
 					pTopFound->m_natspeakDir = pDirName;
@@ -356,7 +368,7 @@ BOOL CEnableNLDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	// pythonVersion is "1.5", "2.0", etc.
+	// pythonVersion is "1.5" or "2.0"
 	CString pythonVersion = getPythonVersion();
 	if( *pythonVersion )
 	{
@@ -464,7 +476,7 @@ void CEnableNLDlg::OnOK()
 // In the following registry key:
 //
 //	  HKEY_LOCAL_MACHINE\Software\Python\PythonCore\XXX\PythonPath\NatLink
-//			XXX = Python version "1.5", "2.0", etc.
+//			XXX = Python version "1.5" or "2.0"
 //
 // we want to set the following default value:
 //
@@ -903,7 +915,7 @@ void CEnableNLDlg::enableVersions()
 }
 
 //---------------------------------------------------------------------------
-// Returns "1.5", "2.0", etc.
+// Returns "1.5" or "2.0".
 //
 // Currently I get the Python version by launching the Python interpreter,
 // with a simple script that prints the version, and then parsing the output.
@@ -967,7 +979,7 @@ CString CEnableNLDlg::getPythonVersionFallback()
 
 	HRESULT rc;
 
-	const char * const VERSIONLIST[] = { "2.1", "2.0", "1.5", "" };
+	const char * const VERSIONLIST[] = { "2.2", "2.0", "1.5", "" };
 
 	for( int i = 0; *VERSIONLIST[i]; i++ )
 	{
