@@ -6,6 +6,9 @@
  natlink.txt
     Documentation for NatLink which connects Python to NatSpeak
 
+ April 27, 2004
+ 	- added getLastPlayString
+
  January 21, 2002
 	- added setMessageCallback, postMessageCallback
 
@@ -139,6 +142,11 @@ playString( keys, flags )
         0x20000        # uppercase the entire string
         0x40000        # lowercase the entire string
         0x80000        # uppercase the first character in the string
+        
+getLastPlayString()
+    This function will recall the string last played by the playString() function.
+    It can be used to write post processing macros which will act on the last
+    thing that Natlink did.
 
 displayText( text, isError, logText )
     Natlink will create a window in which the user can display messages. 
