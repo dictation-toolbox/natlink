@@ -125,8 +125,13 @@
                 />
                 <File
                     RelPath = "NatLinkEnv.vb"
-                    SubType = "Code"
+                    SubType = "Component"
                     BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "NatLinkEnv.resx"
+                    DependentUpon = "NatLinkEnv.vb"
+                    BuildAction = "EmbeddedResource"
                 />
                 <File
                     RelPath = "NatLinkInstaller.vb"

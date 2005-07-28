@@ -4,7 +4,7 @@
 #    - "Built-in" voice commands
 #    - Autoloading of changed command files
 #
-# This file is copyright (c) 2002-2003 by Rick Mohr. It may be redistributed 
+# This file is copyright (c) 2002-2005 by Rick Mohr. It may be redistributed
 # in any way as long as this copyright notice remains.
 
 import sys
@@ -27,10 +27,6 @@ usePerl = 0
 
 NatLinkFolder = os.path.split(
     sys.modules['natlinkmain'].__dict__['__file__'])[0]
-#fallback 
-pydFolder = NatLinkFolder + '\\..\\Vocola\\Exec\\2.0'
-sys.path.append(pydFolder)
-#normal
 pydFolder = NatLinkFolder + '\\..\\Vocola\\Exec\\' + sys.version[0:3]
 sys.path.append(pydFolder)
 import simpscrp
@@ -80,7 +76,7 @@ class ThisGrammar(GrammarBase):
 
 ### Loading Vocola Commands
 
-    # "Load All Commands" -- translate all Vocola files 
+    # "Load All Commands" -- translate all Vocola files
     def gotResults_loadAll(self, words, fullResults):
         self.loadAllFiles('-f')
 
@@ -168,6 +164,7 @@ class ThisGrammar(GrammarBase):
         if os.name == 'nt':  opener = 'cmd /c'
         else:                opener = 'start'
         call = opener + ' "' + file + '"'
+        # Win98SE return 'nt', but still requires 'start'
         if simpscrp.Exec(call, 0) != 0:
             opener = 'start'
             call = opener + ' "' + file + '"'

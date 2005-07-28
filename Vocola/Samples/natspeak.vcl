@@ -1,11 +1,14 @@
 # Voice commands for NATSPEAK
 
+
+
 Save File = {Ctrl+s};
 Print (That|File) = {Ctrl+p}{Tab_4}{Ctrl+c}{Tab}{Ctrl+v}{Enter};
 
 Find That = {Ctrl+f} ControlPick(Find Next) ControlPick(Cancel);
 Find Again  = {F3};
 Center in Window = {Down_30}{Up_30};
+
 
 Reply Here = {Home}{Shift+End}{Del}{Enter_3}{Left_2};
 

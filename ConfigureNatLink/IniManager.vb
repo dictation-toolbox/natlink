@@ -1,18 +1,24 @@
 Imports System.Text
 Imports System.Collections.Specialized
 Imports System.Runtime.InteropServices
+
 Public Class IniManager
-    <DllImport("kernel32.dll")> _
-    Private Shared Function GetPrivateProfileSection(ByVal lpAppName As String, ByVal buff As IntPtr, ByVal nSize As Int32, ByVal iniFile As String) As Int32
-    End Function
-	<DllImport("kernel32.dll", EntryPoint:="GetPrivateProfileSectionNamesA")> _
+
+#Region "DLL imports"
+
+	<DllImport("kernel32.dll", SetLastError:=True)> _
+ Private Shared Function GetPrivateProfileSection(ByVal lpAppName As String, ByVal buff As IntPtr, ByVal nSize As Int32, ByVal iniFile As String) As Int32
+	End Function
+
+	<DllImport("kernel32.dll", EntryPoint:="GetPrivateProfileSectionNamesA", SetLastError:=True)> _
  Private Shared Function GetPrivateProfileSectionNames( _
  ByVal lpszReturnBuffer As IntPtr, ByVal nSize As System.Int32, ByVal lpFileName As String) As System.Int32
 	End Function
 
-	<DllImport("kernel32.dll")> _
-	Private Shared Function WritePrivateProfileString(ByVal sectionName As String, ByVal keyName As String, ByVal value As String, ByVal iniFile As String) As Int32
+	<DllImport("kernel32.dll", SetLastError:=True)> _
+ Private Shared Function WritePrivateProfileString(ByVal sectionName As String, ByVal keyName As String, ByVal value As String, ByVal iniFile As String) As Int32
 	End Function
+#End Region
 
 	Public Const MaxBuff = (32 * 1024) - 1	'32,767 
 	Private _iniFile As String
@@ -21,6 +27,22 @@ Public Class IniManager
 		_iniFile = iniFile
 		If Not IO.File.Exists(iniFile) Then
 			Throw New ApplicationException("File '" + iniFile + "' does not exist")
+		End If
+
+		If (IO.File.GetAttributes(iniFile) And IO.FileAttributes.ReadOnly) = IO.FileAttributes.ReadOnly Then
+
+			Dim attr As IO.FileAttributes
+			attr = IO.File.GetAttributes(iniFile)
+			attr = attr And Not IO.FileAttributes.ReadOnly
+
+			IO.File.SetAttributes(iniFile, attr)
+			'Dim sr As IO.StreamReader = IO.File.OpenText(iniFile)
+			'Dim iniFileString = sr.ReadToEnd
+			'sr.Close()
+			'IO.File.Delete(iniFile)
+			'Dim sw As IO.StreamWriter = IO.File.CreateText(iniFile)
+			'sw.Write(iniFileString)
+			'sw.Close()
 		End If
 	End Sub
 
@@ -61,7 +83,10 @@ Public Class IniManager
 	End Sub
 
 	Public Sub Add(ByVal sectionName As String, ByVal keyName As String, ByVal value As String)
-		WritePrivateProfileString(sectionName, keyName, value, _iniFile)
+		Dim res As Integer = WritePrivateProfileString(sectionName, keyName, value, _iniFile)
+		If res = 0 Then
+			Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error())
+		End If
 	End Sub
 
 	Default Public ReadOnly Property Item(ByVal key As String) As IniSection
@@ -95,10 +120,17 @@ Public Class IniManager
 				Return _kv
 			End Get
 		End Property
-		Default Public ReadOnly Property Item(ByVal key As String) As String
+		Default Public Property Item(ByVal key As String) As String
 			Get
 				Return Sections(key)
 			End Get
+			Set(ByVal Value As String)
+				Dim res As Integer = WritePrivateProfileString(_section, key, Value, _iniFile)
+				If res = 0 Then
+					Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error())
+				End If
+				Sections(key) = Value
+			End Set
 		End Property
 
 		Private Sub ReadSection()
@@ -131,13 +163,23 @@ Public Class IniManager
 		End Sub
 
 		Sub Delete()
-			WritePrivateProfileString(_section, Nothing, Nothing, _iniFile)
+			Dim res As Integer = WritePrivateProfileString(_section, Nothing, Nothing, _iniFile)
+			If res = 0 Then
+				Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error())
+			End If
 		End Sub
 		Sub DeleteKey(ByVal key As String)
-			WritePrivateProfileString(_section, key, Nothing, _iniFile)
+			Dim res As Integer = WritePrivateProfileString(_section, key, Nothing, _iniFile)
+			If res = 0 Then
+				Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error())
+			End If
 		End Sub
 		Sub Add(ByVal key As String, ByVal value As String)
-			WritePrivateProfileString(_section, key, value, _iniFile)
+			Dim res As Integer = WritePrivateProfileString(_section, key, value, _iniFile)
+			If res = 0 Then
+				Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error())
+			End If
+
 			_kv(key) = value
 		End Sub
 

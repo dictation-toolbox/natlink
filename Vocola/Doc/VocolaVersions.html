@@ -3,10 +3,10 @@
 <html>
 <head>
 <title>
-Vocola Information Pages - Command&nbsp;Sequences</title>
+Vocola Information Pages - Vocola&nbsp;Versions</title>
 
 <meta name="robots" content="noindex, follow">
-<meta name="Description" content="Vocola Information Pages, Command&nbsp;Sequences">
+<meta name="Description" content="Vocola Information Pages, Vocola&nbsp;Versions">
 <meta name="keywords" content="Vocola,NaturallySpeaking,NatSpeak,NatLink,Rick Mohr">
 
 <!-- cascading style (below) allow menu items to behave more like buttons
@@ -90,13 +90,13 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
         </td>
     </tr>
 
-    <tr><td bgcolor="#000033">
-      <font color="#FFFFCC" face="Helvetica,Arial,sans-serif" size="2">
-        <a href="CommandSequences.html" class=selmenu>&nbsp;Command&nbsp;Sequences</a>
+    <tr><td bgcolor="#CCCCFF">
+      <font color="#000000" face="Helvetica,Arial,sans-serif" size="2">
+        <a href="CommandSequences.html" class=topmenu>&nbsp;Command&nbsp;Sequences</a>
       </font>
       </td>
-      <td valign=top bgcolor="#000033">
-        <img src="JoelsRightArrowDark.gif" border=0 width=17 height=17 hspace=0 vspace=0 align=top alt="->"></td>
+      <td valign=top bgcolor="#CCCCFF">
+        </td>
     </tr>
 
     <tr><td bgcolor="#CCCCFF">
@@ -108,13 +108,13 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
         </td>
     </tr>
 
-    <tr><td bgcolor="#CCCCFF">
-      <font color="#000000" face="Helvetica,Arial,sans-serif" size="2">
-        <a href="VocolaVersions.html" class=topmenu>&nbsp;Vocola&nbsp;Versions</a>
+    <tr><td bgcolor="#000033">
+      <font color="#FFFFCC" face="Helvetica,Arial,sans-serif" size="2">
+        <a href="VocolaVersions.html" class=selmenu>&nbsp;Vocola&nbsp;Versions</a>
       </font>
       </td>
-      <td valign=top bgcolor="#CCCCFF">
-        </td>
+      <td valign=top bgcolor="#000033">
+        <img src="JoelsRightArrowDark.gif" border=0 width=17 height=17 hspace=0 vspace=0 align=top alt="->"></td>
     </tr>
 
     <tr><td bgcolor="#CCCCFF">
@@ -182,83 +182,57 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
         <tr>
           <td height=100%>
             <!-- the body goes here -->
-            <h2>Command&nbsp;Sequences</h2>
+            <h2>Vocola&nbsp;Versions</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <meta name="Author" content="r mohr">
-  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
-  <title>Comments</title>
-</head>
-<body>
-<p>You can configure Vocola to allow speaking several commands in a row without 
-  pausing. For example, assume your commands allow you to say:</p>
-<blockquote>
-  <table>
-    <tbody>
-      <tr> 
-        <td>&quot;3 Words Right&quot;</td>
-        <td><tt>&nbsp;</tt></td>
-        <td>to move the cursor 3 words to the right,</td>
-      </tr>
-      <tr> 
-        <td>&quot;2 Right&quot;</td>
-        <td><br></td>
-        <td>to move the cursor 2 characters to the right, and</td>
-      </tr>
-      <tr valign="Top"> 
-        <td>&quot;Kill Char&quot;</td>
-        <td><br></td>
-        <td>to delete 1 character.</td>
-      </tr>
-    </tbody>
-  </table>
-</blockquote>
-<p>If you wanted to speak these three commands in succession you would normally 
-  have to pause between commands, saying</p>
-<blockquote>
-  <p>&quot;3 Words Right&quot; (pause) &quot;2 Right&quot; (pause) &quot;Kill 
-    Char&quot;.</p></blockquote>
-  With Vocola you don't need to pause, so you can say
-<blockquote>
-  <p>&quot;3 Words Right 2 Right Kill Char&quot;.</p>
-</blockquote>
-<p>Once you get used to speaking command sequences, text editing by voice becomes 
-  faster and less frustrating.</p>
-<p><strong>Warning</strong>: A bug introduced in Dragon NaturallySpeaking 7.0 
-  and worsened in 8.0 can cause unacceptable performance if command sequences 
-  are enabled. With 7.0 switching to or from an application becomes slow if a 
-  large number of commands are defined for the application. With 8.0 users have 
-  reported that command recognition is very slow even when only a few commands 
-  are defined.</p>
-<p>Because of these NaturallySpeaking bugs (which ScanSoft has essentially refused 
-  to fix), Vocola command sequences are disabled by default and not recommended 
-  with version 8.0. Personally I find them so productive that I've stayed with 
-  NaturallySpeaking 6.0.</p>
-<h3><a name="Enable"></a>How to Enable and Disable Command Sequences</h3>
-<p>To enable command sequences (in Vocola 2.5 or later), open the file:</p>
-<blockquote>
-  <p> <tt>NatLink\Vocola\Exec\vocola.ini</tt></p>
-</blockquote>
-<p>and modify it to contain the line:</p>
-<blockquote>
-  <p><tt>Use Command Sequences=1</tt></p>
-</blockquote>
-<p>Then say &quot;Load All Commands&quot;. </p>
-<p>To disable command sequences, proceed as above but with the line:</p>
-<blockquote>
-  <p><tt>Use Command Sequences=0</tt></p>
-</blockquote>
-<h3>Caveats</h3>
-<p>Note that only commands defined in the same file can be spoken in sequence. 
-  For me this causes occasional mistakes but is not a major limitation. And using 
-  <a href="IncludeStatements.html">include files</a> can help. For example, if 
-  you find you want to sequence some of your global commands with commands local 
-  to Microsoft Word, you could put the global commands in a separate .vch file 
-  and include that file in both word.vcl and _vocola.vcl.</p>
-<p>You might think command sequences would lead to mistakes when an unexpected 
-  combination of commands is recognized, but in practice I have not found this 
-  to be the case. It's a good idea to avoid single-word commands, but that's a 
-  good idea anyway.</p>
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Download And Install</title></head><body>
+<p>This page lists the released versions of Vocola and the changes they included, 
+  with the most recent version first. To download Vocola, click on the link next 
+  to the version you want.</p>
+  
+<p><b>Version 2.5</b> -- <b>January 10, 2005</b> (<a href="Vocola-2-5.zip">Vocola-2-5.zip</a>)</p>
+<ul>
+  <li>Commands can incorporate arbitrary dictation. See <a href="CapturingDictation.html">Capturing 
+    Dictation</a>.</li>
+  <li>Allow disabling/enabling the <a href="CommandSequences.html">command sequences</a> 
+    feature (and disable it by default), to avoid performance problems caused 
+    by bugs in NaturallySpeaking 7.0 and 8.0</li>
+</ul>
+<p><b>Version 2.4</b> -- <b>September 28, 2003</b> (<a href="Vocola-2-4.zip">Vocola-2-4.zip</a>)</p>
+<ul>
+  <li>Fixed problem with some installations where vcl2py.exe failed to run, and 
+    perpetually raised a blank message window.</li>
+  <li>Fixed problem where &quot;Edit Voice Commands&quot; (with some editors) 
+    did not allow editing commands by voice.</li>
+</ul>
+<p><b>Version 2.0</b> -- <b>June 7, 2003</b></p>
+<ul>
+  <li> Speak continuous command sequences
+  <li>Automatic loading of changed files, with error messages to NatLink window
+  <li> User-defined functions
+  <li> <tt>include</tt> statement
+  <li> <tt>Eval</tt> built-in function
+  <li> <tt>Repeat</tt> built-in function
+  <li> Context statements can contain '|'
+  <li> Function arguments can be built from several actions
+  <li> Numeric arguments now work correctly in all built-in functions
+  <li> Improved generated Python code (using VocolaUtils.py)
+  <li> Case insensitive window title comparisons
+  <li> Obscure name for generated python file (&quot;outlook_vcl.py&quot;) to 
+    avoid clobbering existing NatLink files
+</ul>
+<p><b>Version 1.1</b> -- <b>May 11, 2002</b> (<a href="Vocola-1-1.zip">Vocola-1-1.zip</a>) 
+</p>
+<ul>
+  <li>First public release.</li>
+  <li>Installing Perl is no longer required.</li>
+  <li>Commands containing backslash sequences like &nbsp;\; &nbsp;or &nbsp;\" &nbsp;or &nbsp;\' &nbsp; are now parsed
+correctly.</li>
+  <li>Application-specific commands are now recognized for applications whose name contains an underscore character.</li>
+
+</ul>
+
 </body></html>
           </td>
         </tr>

@@ -1,10 +1,11 @@
 # VocolaUtils.py - Classes used by Vocola's generated Python code
 #
-# This file is copyright (c) 2002-2003 by Rick Mohr. It may be redistributed 
+# This file is copyright (c) 2002-2005 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 
 import natlink
 from types import *
+import string
 
 # The Value class represents a sequence of strings and/or function
 # calls. Vocola's generated Python code uses this class to build up an
@@ -127,5 +128,27 @@ class Evaluator:
         #print 'Evaluating expression:  ' + string
         return eval(string, self.variables)
 
+# Massage recognition results to make a single entry for each <dgndictation> result.
 
-
+def combineDictationWords(fullResults):
+    i = 0
+    inDictation = 0
+    while i < len(fullResults):
+        if fullResults[i][1] == "dgndictation":
+            # This word came from a "recognize anything" rule.
+            # Convert to written form if necessary, e.g. "@\at-sign" --> "@"
+            word = fullResults[i][0]
+            backslashPosition = string.find(word, "\\")
+            if backslashPosition > 0:
+                word = word[:backslashPosition]
+            if inDictation:
+                fullResults[i-1] = [fullResults[i-1][0] + " " + word, "dgndictation"]
+                del fullResults[i]
+            else:
+                fullResults[i] = [word, "dgndictation"]
+                i = i + 1
+            inDictation = 1
+        else:
+            i = i + 1
+            inDictation = 0
+    return fullResults

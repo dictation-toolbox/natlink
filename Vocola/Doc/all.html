@@ -20,11 +20,16 @@
     </ul>
   <li>Features 
     <ul>
-      <li>Speak a continuous sequence of commands </li>
-      <li>Specify different actions for variable words </li>
-      <li>Use concise number ranges, optional words, and inline word lists </li>
-      <li>Re-use work with &quot;include&quot; files and user-defined functions 
-      </li>
+      <li>Create commands which <a href="CapturingDictation.html">capture any 
+        dictated words</a></li>
+      <li>Use concise <a href="UsingAlternatives.html#NumberRanges">number ranges</a>, 
+        <a href="OptionalWords.html">optional words</a>, and <a href="UsingAlternatives.html">inline 
+        word lists</a> </li>
+      <li>Specify different actions for <a href="SubstitutingActions.html">variable 
+        words</a> </li>
+      <li>Speak a <a href="CommandSequences.html">continuous sequence of commands</a></li>
+      <li>Re-use work with <a href="IncludeStatements.html">include files</a> 
+        and <a href="DefiningFunctions.html">user-defined functions</a> </li>
     </ul>
   <li>Familiar syntax 
     <ul>
@@ -77,7 +82,9 @@ a computer by voice are simple keystroke commands like this.&nbsp; </p>
 <h3>Acknowledgments </h3>
 <p> Joel Gould for his time and care in designing, building, and "productizing" 
   NatLink, which enabled and inspired Vocola. The authors and voice community 
-  members listed in <a href="VoiceResources.html">Voice Resources</a>.</p>
+  members listed in <a href="VoiceResources.html">Voice Resources</a>. Scott Weinstein 
+  for building and maintaining his <a href="http://speech.squidnet.com/default.aspx/NL.HomePage">NatLink 
+  + Vocola installer</a>.</p>
 <h3>This Web Site</h3>
 <p>This web site was created using a Python program developed and shared
 by Joel Gould, in another admirable display of community-mindedness. His
@@ -88,7 +95,7 @@ description and sources are <a href="http://www.synapseadaptive.com/joel/AboutTh
 
 </body></html>
 <hr>
-<h2>Using Vocola</h2>
+<h2>Using&nbsp;Vocola</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
@@ -206,7 +213,7 @@ description and sources are <a href="http://www.synapseadaptive.com/joel/AboutTh
 </html>
 
 <hr>
-<h2>Language Tutorial</h2>
+<h2>Language&nbsp;Tutorial</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
@@ -227,6 +234,8 @@ The following sections describe the Vocola language, with examples:
     commands.</li>
   <li><b>Substituting Actions: </b>Specify different actions for each alternative 
     word.</li>
+  <li><strong>Capturing Dictation</strong>: Create commands incorporating arbitrary 
+    dictation.</li>
   <li><b>Optional Words:</b> Option to omit words when speaking a command.</li>
   <li><b>Function Calls:</b> Create commands which call built-in functions.</li>
   <li><strong>Built-in Functions:</strong> Descriptions of available functions.</li>
@@ -242,7 +251,7 @@ The following sections describe the Vocola language, with examples:
 </html>
 
 <hr>
-<h2>Keystroke Commands</h2>
+<h2>Keystroke&nbsp;Commands</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
                                 
   
@@ -275,7 +284,7 @@ The following sections describe the Vocola language, with examples:
         &nbsp;Sent: </font></i>{Ctrl+c}</tt></td>
     </tr></tbody></table>
 <p>The Vocola syntax for specifying modifier key sequences such as <tt>{Ctrl+c}</tt> 
-  is borrowed from the <a href="http://home.attbi.com/%7Evocola/voicecmd.pdf">Dragon 
+  is borrowed from the <a href="voicecmd.pdf">Dragon 
   Macro Language</a>, which describes the syntax. &nbsp; </p>
 <table cols="1" width="100%" bgcolor="#ccffff"><tbody><tr><td>Each Vocola command contains a series of <i>terms</i> (indicating
    what  is said) and a series of <i>actions</i> (indicating what is done),
@@ -296,7 +305,7 @@ The following sections describe the Vocola language, with examples:
 panel</td></tr><tr valign="Top"><td><br></td><td><tt>{Shift+Tab}&nbsp;</tt></td><td>Move back one field in the panel, to the "Category" list</td></tr><tr><td><br></td><td><tt>{Down 8}</tt></td><td>Move down 8 lines, to the "Formatting" category</td></tr><tr><td><br></td><td><tt>{Tab}</tt></td><td>Move forward one field in the panel, to "Message formatting"</td></tr><tr><td><br></td><td><tt>u</tt></td><td>Choose the top radio button ("Use the HTML editor to compose messages")</td></tr><tr><td><br></td><td><tt>{Enter}</tt></td><td>Hit the "OK" button</td></tr></tbody></table>
 </body></html>
 <hr>
-<h2>Quotes and Whitespace</h2>
+<h2>Quotes&nbsp;And&nbsp;Whitespace</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
                                 
   
@@ -356,7 +365,7 @@ commands are equivalent, specifying one action (the keystroke sequence <tt>{Ctrl
   might prefer to use them more consistently.&nbsp; </p>
 </body></html>
 <hr>
-<h2>Using Alternatives</h2>
+<h2>Using&nbsp;Alternatives</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
@@ -424,10 +433,10 @@ the literal text "$1", use the escape sequence "<tt>\$1</tt>".<br>
   </tbody>
 </table>
   </p>
-<p>Often you will want to specify a range of numbers as alternatives in a
-command.&nbsp; This can be specified concisely in Vocola, as in the following 
-example: <br>
-&nbsp; 
+<h3><a name="NumberRanges"></a>Number Ranges</h3>
+<p>Often you will want to specify a range of numbers as alternatives in a command.&nbsp; 
+  This can be specified concisely in Vocola, as in the following example: <br>
+  &nbsp; 
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
  <tbody>
     <tr>
@@ -473,7 +482,7 @@ many times) is substituted second, to create the necessary keystroke syntax.
 </html>
 
 <hr>
-<h2>Defining Variables</h2>
+<h2>Defining&nbsp;Variables</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
         
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -558,7 +567,7 @@ the previous section, allowing you to move the cursor in one of four directions.
  
 </body></html>
 <hr>
-<h2>Substituting Actions</h2>
+<h2>Substituting&nbsp;Actions</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
         
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -666,7 +675,48 @@ contain references.</td>
  
 </body></html>
 <hr>
-<h2>Optional Words</h2>
+<h2>Capturing&nbsp;Dictation</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+        
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        
+  <meta name="Author" content="r mohr">
+        
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Defining Variable Terms</title></head><body>
+<p>Sometimes you want a command which recognizes any words you might say rather 
+  than recognizing a particular set of alternatives. For example, searching for 
+  text is a common operation in Microsoft Word. It would be nice to be able to 
+  speak a single command to search for the text you want rather than needing to 
+  speak a command to open the &quot;Find&quot; dialog box, pausing, and then speaking 
+  the text you want to search for.</p>
+<p>You can use the special variable <tt>&lt;_anything&gt;</tt> in a command to 
+  match any spoken words:<br>&nbsp;
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+     <tr>
+      <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Find Text &lt;_anything&gt; 
+        = {Ctrl+f} $1 {Enter};<br>
+        <font color="#993366">&nbsp;<i>Say:</i></font> Find Text will do<i><font color="#993366"> 
+        &nbsp;Sent:</font></i> {Ctrl+f}will do{Enter}&nbsp;</tt></td>
+  </tr>
+     
+  </tbody> 
+</table>
+    
+<p>With this command you could search for the text &quot;will do&quot; by saying 
+  &quot;Find Text will do&quot;, which opens the &quot;Find&quot; dialog box, 
+  enters the text &quot;will do&quot;, and launches the search.</p>
+<p>Note that<tt> &lt;_anything&gt; </tt>matches anything you say, including saying 
+  nothing. So in the above example saying &quot;Find Text&quot; would bring up 
+  the &quot;Find&quot; dialog box to search for nothing. Since this may be unexpected 
+  it's a good idea to use at least two keywords in these commands (i.e.<tt> Find 
+  Text &lt;_anything&gt; </tt>instead of<tt> Find &lt;_anything&gt;</tt>) to reduce 
+  unwanted recognitions.</p>
+<p><tt>&lt;_anything&gt; </tt>may appear anywhere a regular variable term appears, 
+  and may even appear more than once in a command.</p>
+</body></html>
+<hr>
+<h2>Optional&nbsp;Words</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
@@ -731,7 +781,7 @@ the range "<tt>1..10</tt>" is the first variable term and is referenced using
 </html>
 
 <hr>
-<h2>Function Calls</h2>
+<h2>Function&nbsp;Calls</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <title>Function Calls</title></head><body>
@@ -809,7 +859,7 @@ Dragon Macro Language.
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <title>Built-in Functions</title></head><body>
-<p>Vocola supports all scripting commands defined for the <a href="http://home.attbi.com/~vocola/voicecmd.pdf">Dragon 
+<p>Vocola supports all scripting commands defined for the <a href="voicecmd.pdf">Dragon 
   Macro Language</a>, as well as adding some built-in functions. Here are the 
   most useful functions in the combined set:</p>
 <table border="1" cellpadding="3" cellspacing="0"  bordercolor="#FFEECC">
@@ -907,7 +957,7 @@ Dragon Macro Language.
       WinHelp</td>
   </tr>
 </table>
-<p>The <a href="http://home.attbi.com/~vocola/voicecmd.pdf">Dragon Macro Language 
+<p>The <a href="voicecmd.pdf">Dragon Macro Language 
   documentation</a> describes most of these functions. For those not so described, 
   and for Vocola's built-in functions, see the descriptions below.</p>
 <hr>
@@ -1145,7 +1195,7 @@ Dragon Macro Language.
 <p>&nbsp;</p>
 </body></html>
 <hr>
-<h2>Defining Functions</h2>
+<h2>Defining&nbsp;Functions</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <meta name="Author" content="r mohr">
@@ -1281,7 +1331,7 @@ Window &lt;n&gt; (Left='-' | Right='+') = moveWindowBy($2$1, 0);</pre></td>
   to form the final function call <tt>moveWindowBy(0, -10)</tt>.</p>
 </body></html>
 <hr>
-<h2>Contextual Commands</h2>
+<h2>Contextual&nbsp;Commands</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
         
   
@@ -1387,7 +1437,7 @@ displayed.</p>
 </table>
 </body></html>
 <hr>
-<h2>Include Statements</h2>
+<h2>Include&nbsp;Statements</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
    <title>Built-in Functions</title></head><body>
@@ -1500,7 +1550,7 @@ Here is an example:<br>
 <br>
 </body></html>
 <hr>
-<h2>Example File</h2>
+<h2>Example&nbsp;File</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
     
   
@@ -1556,7 +1606,7 @@ $1;</tt></p><p><tt>&nbsp;&nbsp; # Choose HTML editor or plain text editor</tt><b
 &nbsp; </p>
 </body></html>
 <hr>
-<h2>Command Sequences</h2>
+<h2>Command&nbsp;Sequences</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <meta name="Author" content="r mohr">
@@ -1564,8 +1614,8 @@ $1;</tt></p><p><tt>&nbsp;&nbsp; # Choose HTML editor or plain text editor</tt><b
   <title>Comments</title>
 </head>
 <body>
-<p>Vocola allows you to speak several commands in a row without pausing. For example, 
-  assume your commands allow you to say:</p>
+<p>You can configure Vocola to allow speaking several commands in a row without 
+  pausing. For example, assume your commands allow you to say:</p>
 <blockquote>
   <table>
     <tbody>
@@ -1598,21 +1648,128 @@ $1;</tt></p><p><tt>&nbsp;&nbsp; # Choose HTML editor or plain text editor</tt><b
 </blockquote>
 <p>Once you get used to speaking command sequences, text editing by voice becomes 
   faster and less frustrating.</p>
-<p>Note however that only commands defined in the same file can be spoken in sequence. 
+<p><strong>Warning</strong>: A bug introduced in Dragon NaturallySpeaking 7.0 
+  and worsened in 8.0 can cause unacceptable performance if command sequences 
+  are enabled. With 7.0 switching to or from an application becomes slow if a 
+  large number of commands are defined for the application. With 8.0 users have 
+  reported that command recognition is very slow even when only a few commands 
+  are defined.</p>
+<p>Because of these NaturallySpeaking bugs (which ScanSoft has essentially refused 
+  to fix), Vocola command sequences are disabled by default and not recommended 
+  with version 8.0. Personally I find them so productive that I've stayed with 
+  NaturallySpeaking 6.0.</p>
+<h3><a name="Enable"></a>How to Enable and Disable Command Sequences</h3>
+<p>To enable command sequences (in Vocola 2.5 or later), open the file:</p>
+<blockquote>
+  <p> <tt>NatLink\Vocola\Exec\vocola.ini</tt></p>
+</blockquote>
+<p>and modify it to contain the line:</p>
+<blockquote>
+  <p><tt>Use Command Sequences=1</tt></p>
+</blockquote>
+<p>Then say &quot;Load All Commands&quot;. </p>
+<p>To disable command sequences, proceed as above but with the line:</p>
+<blockquote>
+  <p><tt>Use Command Sequences=0</tt></p>
+</blockquote>
+<h3>Caveats</h3>
+<p>Note that only commands defined in the same file can be spoken in sequence. 
   For me this causes occasional mistakes but is not a major limitation. And using 
-  <a href="IncludeFiles.html">include files</a> can help. For example, if you 
-  find you want to sequence some of your global commands with commands local to 
-  Microsoft Word, you could put the global commands in a separate .vch file and 
-  include that file in both word.vcl and _vocola.vcl.</p>
+  <a href="IncludeStatements.html">include files</a> can help. For example, if 
+  you find you want to sequence some of your global commands with commands local 
+  to Microsoft Word, you could put the global commands in a separate .vch file 
+  and include that file in both word.vcl and _vocola.vcl.</p>
 <p>You might think command sequences would lead to mistakes when an unexpected 
   combination of commands is recognized, but in practice I have not found this 
   to be the case. It's a good idea to avoid single-word commands, but that's a 
   good idea anyway.</p>
-<p>Currently there is no way to turn off recognition of command sequences. If 
-  you need such a mechanism, let me know.</p>
 </body></html>
 <hr>
-<h2>Download Vocola</h2>
+<h2>Install&nbsp;Vocola</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+  
+  <meta name="Author" content="r mohr">
+
+  
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Install Vocola</title>
+</head><body>
+<p>Use the following instructions for your first installation of Vocola. <br>
+  Or, see below to <a href="#Upgrade">upgrade from an earlier version of Vocola</a>.</p>
+<h3><a name="Upgrade11"></a>Installing Vocola for the first time</h3>
+<ol>
+  <li>Install <a href="http://scansoft.com/naturallyspeaking/">Dragon NaturallySpeaking</a>, 
+    version 3.5 or later, any edition.</li>
+  <br>
+  &nbsp; 
+  <li> Install <a href="http://www.python.org/download/">Python</a>. Version 2.3 
+    is recommended, with 2.0 and 2.2 also supported. Earlier versions are not 
+    supported.<br>
+    &nbsp; </li>
+  <li>Install NatLink and Vocola. </li>
+  <ul>
+    <li>If you have Python 2.3, use <a href="http://speech.squidnet.com/default.aspx/SpeechRecognition.NatLink">Scott 
+      Weinstein's installer</a>.</li>
+    <li> Otherwise, download <a href="http://dranalli.com/dragon/NatLink007-py22.zip%20">NatLink 
+      for Python 2.2</a> or <a href="http://www.synapseadaptive.com/joel/NatLink007.zip">NatLink 
+      for Python 2.0</a>, and follow <a href="http://www.synapseadaptive.com/joel/NatLinkInstallation.html"> 
+      Joel Gould's instructions</a> (don't bother with the self-tests, which often 
+      fail). Then <a href="#installVocola">install Vocola</a>.<br>
+      &nbsp; </li>
+  </ul>
+  <li> Associate the <tt>.vcl</tt> file extension (used for Vocola command files) 
+    with your favorite text editor. (This allows you to open your Vocola files 
+    using built-in voice commands.) An easy way to set up this association is 
+    to right-click on any <tt>.vcl</tt> file (such as <tt>Vocola\Samples\notepad.vcl</tt>), 
+    select "Open", and pick your favorite text editor (for example, Notepad). 
+    <br>
+    <br>Emacs users should install <a href="http://www.gnu.org/software/emacs/windows/faq3.html#assoc"> 
+    gnuserv</a> and associate the <tt>.vcl</tt> file extension with gnuclientw.exe. 
+    (Make sure the directory containing <tt>gnuclientw.exe</tt> is included in 
+    your PATH environment variable.) <br>&nbsp;
+    </li>
+  <li>Test Vocola.&nbsp;</li>
+  <ul>
+    <li>Copy the sample command file for Notepad (<tt>Vocola\Samples\notepad.vcl</tt>) 
+      to the <tt>Vocola\Commands</tt> folder.&nbsp;</li>
+    <li>Say "Start Notepad" to launch Notepad.</li>
+    <li>Say "Test Simple Command". The phrase "It works!" should appear.</li>
+    <li>Say "Edit Voice Commands". <tt>Vocola\Commands\notepad.vcl</tt> should 
+      be opened using the editor you picked in step 4.</li>
+    <li>Change the "Test Simple Command" command to type "It really works!"</li>
+    <li> Save the file, say "Switch to Notepad", and say "Test Simple Command".&nbsp;"It 
+      really works!" should appear.</li>
+  </ul>
+</ol>
+<h3><a name="Upgrade" id="Upgrade"></a>Upgrading from an Earlier Version of Vocola</h3>
+<ol>
+  <li>Rename your existing Vocola folder (it's in your NatLink folder)</li>
+  <li><a href="#installVocola"> Install Vocola</a> as described below.</li>
+  <li>Copy all files from your old Vocola/Commands folder to your new Vocola/Commands 
+    folder</li>
+  <li>Restart NatSpeak</li>
+</ol>
+<h3><a name="InstallVocola" id="InstallVocola"></a>Installing Vocola Directly&nbsp; 
+</h3>
+<ol>
+  <li><a href="VocolaVersions.html">Download</a> the Vocola zip file.<br>
+    &nbsp; </li>
+  <li> Extract the Vocola zip file into the NatLink directory. For example, if 
+    you installed NatLink in <tt>C:\NatLink</tt>, you should choose <tt>C:\NatLink</tt> 
+    as the folder to extract to. After unpacking you should see folder <tt>C:\NatLink\Vocola</tt>, 
+    with subfolders <tt>Commands</tt>, <tt>Doc</tt>, <tt>Exec</tt>, <tt>Samples</tt>, 
+    and <tt>Simpscrp</tt>.<br>
+    &nbsp; </li>
+  <li> From the <tt>Vocola\Exec</tt> folder, copy the files <tt>_vocola_main.py</tt> 
+    and <tt>VocolaUtils.py</tt> to the <tt>NatLink\MacroSystem</tt> folder. This 
+    activates Vocola's <a href="UsingVocola.html">built-in voice commands</a>.</li>
+</ol>
+</body></html>
+<hr>
+<h2>Vocola&nbsp;Versions</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <meta name="Author" content="r mohr">
@@ -1621,6 +1778,14 @@ $1;</tt></p><p><tt>&nbsp;&nbsp; # Choose HTML editor or plain text editor</tt><b
   with the most recent version first. To download Vocola, click on the link next 
   to the version you want.</p>
   
+<p><b>Version 2.5</b> -- <b>January 10, 2005</b> (<a href="Vocola-2-5.zip">Vocola-2-5.zip</a>)</p>
+<ul>
+  <li>Commands can incorporate arbitrary dictation. See <a href="CapturingDictation.html">Capturing 
+    Dictation</a>.</li>
+  <li>Allow disabling/enabling the <a href="CommandSequences.html">command sequences</a> 
+    feature (and disable it by default), to avoid performance problems caused 
+    by bugs in NaturallySpeaking 7.0 and 8.0</li>
+</ul>
 <p><b>Version 2.4</b> -- <b>September 28, 2003</b> (<a href="Vocola-2-4.zip">Vocola-2-4.zip</a>)</p>
 <ul>
   <li>Fixed problem with some installations where vcl2py.exe failed to run, and 
@@ -1655,89 +1820,6 @@ correctly.</li>
 
 </ul>
 
-</body></html>
-<hr>
-<h2>Install Vocola</h2>
-<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
-  
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-
-  
-  <meta name="Author" content="r mohr">
-
-  
-  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
-  <title>Install Vocola</title>
-</head><body>
-New users should use the following instructions to install Vocola. (Vocola 1.1 
-users should use <a href="#Upgrade11">these instructions</a>.) 
-<ol>
-  <li>Install <a href="http://scansoft.com/naturallyspeaking/">Dragon NaturallySpeaking</a>, 
-    version 3.5 or later, any edition.</li>
-  <br>
-  &nbsp; 
-  <li> Install <a href="http://www.python.org/download/">Python</a>. Version 2.2 
-    is recommended, and version 2.0 is supported, but version 1.5 is <strong>not</strong> 
-    supported.<br>
-    &nbsp; </li>
-  <li> Install NatLink. For Python 2.2 use <a href="http://dranalli.com/dragon/NatLink007-py22.zip%20">this 
-    version</a>. Follow <a href="http://www.synapseadaptive.com/joel/NatLinkInstallation.html"> 
-    Joel Gould's instructions</a>. NatLink version 007 or greater is recommended, 
-    though Vocola has worked since version 004.<br>
-    &nbsp; </li>
-  <li><a href="DownloadVocola.html">Download</a> the Vocola zip file. </li>
-  <br>
-  &nbsp; 
-  <li> Extract the Vocola zip file into the NatLink directory. For example, if 
-    you installed NatLink in <tt>C:\NatLink</tt>, you should choose <tt>C:\NatLink</tt> 
-    as the folder to extract to. After unpacking you should see folder <tt>C:\NatLink\Vocola</tt>, 
-    with subfolders <tt>Commands</tt>, <tt>Doc</tt>, <tt>Exec</tt>, <tt>Samples</tt>, 
-    and <tt>Simpscrp</tt>.<br>
-    &nbsp; </li>
-  <li> From the <tt>Vocola\Exec</tt> folder, copy the files <tt>_vocola_main.py</tt> 
-    and <tt>VocolaUtils.py</tt> to the <tt>NatLink\MacroSystem</tt> folder. This 
-    activates Vocola's <a href="UsingVocola.html">built-in voice commands</a>.</li>
-  <br>
-  &nbsp; 
-  <li> Associate the <tt>.vcl</tt> file extension (used for Vocola command files) 
-    with your favorite text editor. This allows you to open your Vocola files 
-    using built-in voice commands. An easy way to set up this association is to 
-    right-click on any <tt>.vcl</tt> file (such as <tt>Vocola\Samples\notepad.vcl</tt>), 
-    select "Open", and pick your favorite text editor (for example, Notepad). 
-  </li>
-  <p> Emacs users should install <a href="http://www.gnu.org/software/emacs/windows/faq3.html#assoc"> 
-    gnuserv</a> and associate the <tt>.vcl</tt> file extension with gnuclientw.exe. 
-    (Make sure the directory containing <tt>gnuclientw.exe</tt> is included in 
-    your PATH environment variable.)</p>
-  <li>Test Vocola.&nbsp;</li>
-  <ul>
-    <li>Copy the sample command file for Notepad (<tt>Vocola\Samples\notepad.vcl</tt>) 
-      to the <tt>Vocola\Commands</tt> folder.&nbsp;</li>
-    <li>Say "Start Notepad" to launch Notepad.</li>
-    <li>Say "Test Simple Command". The phrase "It works!" should appear.</li>
-    <li>Say "Edit Voice Commands". <tt>Vocola\Commands\notepad.vcl</tt> should 
-      be opened using the editor you picked in step 7.</li>
-    <li>Change the "Test Simple Command" command to type "It really works!"</li>
-    <li> Save the file, say "Switch to Notepad", and say "Test Simple Command".&nbsp;"It 
-      really works!" should appear.</li>
-  </ul>
-</ol>
-<h3><a name="Upgrade11"></a>Upgrading from Vocola 1.1</h3>
-<p>Vocola-generated Python files are named differently in Vocola 2.0 than they 
-  were in Vocola 1.1. (For example, outlook.vcl used to generate outlook.py but 
-  now generates outlook_vcl.py.) This means Vocola is unlikely to clobber hand-written 
-  NatLink files. Vocola 1.1 users should upgrade as follows:</p>
-<ol>
-  <li>Rename your existing NatLink/Vocola folder</li>
-  <li> Install Vocola 2.0 as described above</li>
-  <li> Copy .vcl files from your 1.1 Vocola/Commands folder to your 2.0 Vocola/Commands 
-    folder</li>
-  <li> Delete all Vocola-created .py files in the NatLink/MacroSystem folder (they 
-    will all have the same timestamp)</li>
-  <li> Delete all .pyc files in the NatLink/MacroSystem folder</li>
-  <li> Restart NatSpeak<br>
-  </li>
-</ol>
 </body></html>
 <hr>
 <h2>Converting DVC Files</h2>
@@ -1890,30 +1972,35 @@ read it and try to solve your problem before contacting me.
 
 <h3>Known Bugs</h3>
 
-The following problems are known to exist in Vocola 2.0: 
+The following problems are known to exist with Vocola 2.5: 
 <ul>
-  <li>(none so far)</li>
+  <li>A bug introduced in Dragon NaturallySpeaking 7.0 and worsened in 8.0 can 
+    cause unacceptable performance if <a href="CommandSequences.html">command 
+    sequences</a> are enabled. ScanSoft has thus far refused to address the problem, 
+    so if you're experiencing a slowdown your options are to <a href="CommandSequences.html#enable">disable 
+    command sequences</a> or use an earlier NatSpeak version such as 6.0.</li>
 </ul>
 <h3>Email</h3>
-Send bug reports, praise, and other feedback by clicking on the button below. 
-Please indicate what version of Windows, NatSpeak, and Vocola you are running.<br>
+Send bug reports and other feedback by clicking on the button below. Please indicate 
+what version of Windows, NatSpeak, and Vocola you are running. Positive feedback 
+welcome. (Many thanks to the user who sent an Amazon gift certificate!)<br>
 
 <script language="JavaScript1.2">
   function composeto(firstPart, secondPart)
   {  window.location = 'mailto:' + firstPart + '@' + secondPart;  }
 </script>
 
-<form></form><p><table><tbody><tr valign="Bottom">
-  <td><input type="button" onclick="composeto('Vocola', 'attbi.com')" value="Send Email"></td>
+<form><p><table><tbody><tr valign="Bottom">
+  <td><input type="button" onclick="composeto('Vocola', 'comcast.net')" value="Send Email"></td>
   <!-- td>&nbsp;<img src="emailtr.gif"></td -->
-</tr></tbody></table>
+</tr></tbody></table></form>
 
 </p><p>I'm hoping to keep this address away from junk e-mailers, so if for some
 reason you are posting information about Vocola please use the web page
-address (http://home.attbi.com/~vocola) rather than this e-mail address.
+address (http://home.comcast.net/~vocola) rather than this e-mail address.
 </p></body></html>
 <hr>
-<h2>Wish List</h2>
+<h2>Wish&nbsp;List</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
   <title>Wish List</title>
 
@@ -1926,7 +2013,6 @@ are particularly important to you.
   <li> Allow variables in alternative sets (e.g. <tt>&lt;direction&gt; | foo | 
     bar</tt>)</li>
   <li>Repeatable terms (e.g. <tt>Press &lt;modifier_key&gt;+ &lt;key&gt; = ...</tt>)</li>
-  <li> Commands which include arbitrary dictation (e.g. "Line Number 135")</li>
   <li>User-specific command files<br>
   </li>
 </ul>
@@ -1940,75 +2026,75 @@ are particularly important to you.
 <h2>My RSI Story</h2>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
   <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"><title>My RSI Story</title></head><body>
-In March 1998 I worked an entire weekend to meet a major deadline with important
-revenue consequences for my employer. By Sunday night my wrists and hands
-were tingling and sensitive, and the next day I had significant wrist pain.
-In previous years I had had minor symptoms, but they had always gone away.<br>
-<br>
-I knew to treat my injury seriously since I have friends with debilitating
-RSI problems. But, I was starting at square zero in terms of knowledge and
-treatment, and still in the middle of a high-pressure work situation. As
-I began to realize my injury was serious I started searching for solutions.
-Everyone I talked to had different ideas, and every idea seemed to involve
-30-90 minutes a day of work on my part. I could handle the regimen of one
-or two of these, but in the absence of real progress it was hard to have
-confidence. In the subsequent months I tried doctors, occupational therapy,
-anti-inflammatories, massage, a new chair, acupuncture, rolfing, special
-keyboards, physical therapy, drinking lots of water, chiropractic, vitamins,
-myotherapy, and glucosamine sulfate. Nothing seemed to make a reliable difference.<br>
-<br>
-Meanwhile my company was supportive and willing to provide what I asked.
-But while it was easy to ask for new equipment and small schedule accommodations,
-I couldn't bring myself to ask for major time commitments from other people
-or major project slippage. I adjusted all my habits to require as little
-typing is possible, but continued to type when necessary (occasionally a
-considerable amount).<br>
-<br>
-Unfortunately it took a year of this before I began using voice recognition and 
-started truly resting my hands. I can't know for sure, but I believe that had 
-I started using voice recognition right away I would have recovered. I may yet 
-recover, but at this writing (May 2003) I still cannot do any significant typing 
-or play much violin. My diagnosis is tendinitis, and my prescription is "With 
-constant vigilance you can get a little better every year." During several periods 
-I've made significant recovery, but despite vigilance in most every activity I 
-have always slipped up. Once it was snow shoveling, once un-careful fiddling, 
-and once not-wimpy-enough weightlifting in a strengthening program. Of all the 
-things I have tried, the only ones that have reliably helped are avoiding irritating 
-activities, myotherapy, putty exercises, massage, and voice recognition.<br>
-<br>
-Since resting my hands seemed so important I tried for hands-free computer
-use as much as possible. The Dragon Macro Language made this possible but
-was excruciatingly cumbersome, so I was very excited when Joel Gould released
-NatLink. Shortly thereafter (at NEFFA) Patricia Hawkins and I were comparing
-notes about NatLink. Her comment "yeah, but you still have to change two
-places" got me thinking about Vocola. <br>
-<br>
-Designing, implementing, and using Vocola has been a rewarding bright spot
-among otherwise unsuccessful attempts at recovery. And thankfully, with Dragon
-NaturallySpeaking, NatLink, and Vocola I've continued to be effective at
-my job.<br>
-<br>
-The main lesson I take away is to stand up for my own needs when they conflict
-with the needs and desires of others. That Monday deadline seemed very important
-at the time, but everybody would have survived just fine if I had delivered
-a week later. The customer was adamant about the deadline, but as it happens
-they ultimately canceled the project! And even after my initial injury, if
-I had been brave enough during the first year to ask for difficult adjustments
-at work I might have been able to recover.<br>
-<br>
-<a href="http://home.attbi.com/%7Erick.mohr/">Rick Mohr</a>, Watertown, Massachusetts, 
-USA, May 2003<br>
-<br>
+<p>In March 1998 I worked an entire weekend to meet a major deadline with important 
+  revenue consequences for my employer. By Sunday night my wrists and hands were 
+  tingling and sensitive, and the next day I had significant wrist pain. In previous 
+  years I had had minor symptoms, but they had always gone away.<br>
+  <br>
+  I knew to treat my injury seriously since I have friends with debilitating RSI 
+  problems. But, I was starting at square zero in terms of knowledge and treatment, 
+  and still in the middle of a high-pressure work situation. As I began to realize 
+  my injury was serious I started searching for solutions. Everyone I talked to 
+  had different ideas, and every idea seemed to involve 30-90 minutes a day of 
+  work on my part. I could handle the regimen of one or two of these, but in the 
+  absence of real progress it was hard to have confidence. In the subsequent months 
+  I tried doctors, occupational therapy, anti-inflammatories, massage, a new chair, 
+  acupuncture, rolfing, special keyboards, physical therapy, drinking lots of 
+  water, chiropractic, vitamins, myotherapy, and glucosamine sulfate. Nothing 
+  seemed to make a reliable difference.<br>
+  <br>
+  Meanwhile my company was supportive and willing to provide what I asked. But 
+  while it was easy to ask for new equipment and small schedule accommodations, 
+  I couldn't bring myself to ask for major time commitments from other people 
+  or major project slippage. I adjusted all my habits to require as little typing 
+  is possible, but continued to type when necessary (occasionally a considerable 
+  amount).<br>
+  <br>
+  Unfortunately it took a year of this before I began using voice recognition 
+  and started truly resting my hands. I can't know for sure, but I believe that 
+  had I started using voice recognition right away I would have recovered. During 
+  several periods I've made significant recovery, but despite vigilance in most 
+  every activity I have always slipped up. Once it was snow shoveling, once un-careful 
+  fiddling, and once not-wimpy-enough weightlifting in a strengthening program. 
+  Of all the things I have tried, the only ones that have reliably helped are 
+  avoiding irritating activities and voice recognition. Of some help have been 
+  stretching, posture improvement, myotherapy, and massage. </p>
+<p> Since resting my hands seemed so important I tried for hands-free computer 
+  use as much as possible. The Dragon Macro Language made this possible but was 
+  excruciatingly cumbersome, so I was very excited when Joel Gould released NatLink. 
+  Shortly thereafter (at NEFFA) Patricia Hawkins and I were comparing notes about 
+  NatLink. Her comment "yeah, but you still have to change two places" got me 
+  thinking about Vocola. <br>
+  <br>
+  Designing, implementing, and using Vocola has been a rewarding bright spot among 
+  otherwise unsuccessful attempts at recovery. And thankfully, with Dragon NaturallySpeaking, 
+  NatLink, and Vocola I've continued to be effective at my job.<br>
+  <br>
+  The main lesson I take away is to stand up for my own needs when they conflict 
+  with the needs and desires of others. That Monday deadline seemed very important 
+  at the time, but everybody would have survived just fine if I had delivered 
+  a week later. The customer was adamant about the deadline, but as it happens 
+  they ultimately canceled the project! And even after my initial injury, if I 
+  had been brave enough during the first year to ask for difficult adjustments 
+  at work I might have been able to recover quickly.</p>
+<p>One doctor I saw said "With constant vigilance you can get a little better 
+  every year" and at this writing (December 2004) things are looking up somewhat, 
+  I'm starting to type a little and play some careful fiddle.<br>
+  <br>
+  <a href="http://home.comcast.net/%7Erick.mohr/">Rick Mohr</a>, Watertown, Massachusetts, 
+  USA, December 2004<br>
+  <br>
+</p>
 </body></html>
 <hr>
-<h2>Voice Resources</h2>
+<h2>Voice&nbsp;Resources</h2>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
   <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"><title>My RSI Story</title></head><body>
 <h3>Web Sites</h3>
 <ul>
   <li><a href="http://www.scansoft.com/naturallyspeaking/">ScanSoft Dragon NaturallySpeaking</a> 
     - The official purchase and support site for NatSpeak.</li>
-  <li><a href="http://www.synapseadaptive.com/joel/index.html">NaturallySpeaking 
+  <li><a href="http://www.synapseadaptive.com/joel/index_old.html">NaturallySpeaking 
     Unofficial Information Pages</a> - Joel Gould was the lead architect of NatSpeak 
     and the developer of NatLink. This is his site, including pages on NatLink 
     and useful information about NatSpeak. No longer being updated, but still 
@@ -2021,6 +2107,8 @@ USA, May 2003<br>
     Patch's Macros</a> - A large set of macros for NatSpeak Pro 5 (free) or 6 
     ($24). Full of good voice command ideas, many of which are reflected in the 
     sample Vocola commands.</li>
+  <li><a href="http://speech.squidnet.com">Speech.squidnet.com</a> - Scott Weinstein's 
+    Speech Recognition WIKI, including a NatLink + Vocola installer.</li>
   <li><a href="http://www.speechutilities.com/">SpeechUtilities.com</a> - David 
     Austin's site, with help for getting the most out of the NatSpeak macro languages. 
     If you decide to stick with these, get here the superior command browser &quot;SayWhat&quot;.</li>
@@ -2029,7 +2117,7 @@ USA, May 2003<br>
   <li><a href="http://www.out-loud.com/do_you_need_speech_recognition_.html">Computing 
     Out Loud</a> - Susan Fulton's general-purpose voice recognition site with 
     information and links.</li>
-  <li><a href="http://www.microsoft.com/enable/products/keyboard/keyboardsearch.asp">Windows 
+  <li><a href="http://www.microsoft.com/enable/products/keyboard.aspx">Windows 
     Keyboard Shortcuts</a> - Microsoft site with thorough description of keyboard 
     shortcuts by Windows version or product.</li>
   <li><a href="http://www.tifaq.com/">Typing Injury FAQ</a> - Resources for injured 
@@ -2039,10 +2127,14 @@ USA, May 2003<br>
 <ul>
   <li><a href="http://groups.yahoo.com/group/VoiceGroup/">VoiceGroup</a> - General 
     discussion of voice recognition issues, mostly NatSpeak related. Lots of traffic.</li>
-  <li><a href="http://www.codevox.com/alsofaq.phtml">VoiceCoder</a> - Good quality 
-    list for programmers using voice recognition.</li>
+  <li><a href="http://groups.yahoo.com/group/VoiceCoder">VoiceCoder</a> - Good 
+    quality list for programmers using voice recognition.</li>
+  <li><a href="http://harvee.org/mailman/listinfo/natpython">NatPython</a> - NatLink 
+    discussion, low-volume with some Vocola traffic.</li>
   <li><a href="http://groups.yahoo.com/group/natpro-wp8/">NatPro Macro Writers</a> 
     - Discussion of NatSpeak macros, particularly advanced scripting commands.</li>
+  <li><a href="http://support.lhsl.com/databases/dragon/webdisc.nsf">ScanSoft 
+    Public Forum</a> - Public NatSpeak discussion list at ScanSoft.</li>
 </ul>
 </body></html>
 <hr>

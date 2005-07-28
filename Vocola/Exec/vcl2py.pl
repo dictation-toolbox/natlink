@@ -5,9 +5,11 @@
 # Where:
 #   -f -- force processing even if file(s) not out of date
 #
-# This file is copyright (c) 2002-2003 by Rick Mohr. It may be redistributed 
+# This file is copyright (c) 2002-2005 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 #
+# 01/03/2005 Commands can incorporate arbitrary dictation 
+#            Enable/disable command sequences via ini file
 # 04/12/2003 Case insensitive window title comparisons
 #            Output e.g. "emacs_vcl.py" (don't clobber existing NatLink files)
 # 11/24/2002 Option to process a single file, or only changed files
@@ -51,7 +53,7 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.4";
+    $VocolaVersion = "2.5";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
@@ -85,6 +87,12 @@ sub main
 
     my $log_file = "$In_folder\\vcl2py_log.txt";
     open LOG, ">$log_file" or die "$@ $log_file\n";
+
+    $Use_command_sequences = 0;
+    read_ini_file($In_folder);
+    print LOG ($Use_command_sequences ? "" : "Not "),
+              "using command sequences\n" if ($Debug >= 1);
+
     convert_files($in_file, $out_folder);
     close LOG;
 
@@ -92,6 +100,22 @@ sub main
         system("del \"$log_file\"");
     }
     exit($Error_encountered);
+}
+
+sub read_ini_file
+{
+    my ($in_folder) = @_;
+    my $ini_file = "$in_folder\\..\\exec\\vocola.ini";
+    print LOG "ini file is '$ini_file'\n" if ($Debug >= 1);
+    open INI, "<$ini_file" or return;
+    while (<INI>) {
+        next unless /^(.*?)=(.*)$/;
+        my $keyword = $1;
+        my $value = $2;
+        if ($keyword eq "Use Command Sequences") {
+            $Use_command_sequences = ($value eq "1");
+        }
+    }  
 }
 
 sub convert_files
@@ -131,6 +155,7 @@ sub convert_file
     $Module_name = lc($out_file);
     # The global $Input_name is used below for error logging
     $Input_name = "$in_file.vcl";
+    $Should_emit_dictation_support = 0;
     $out_file = "$out_folder/$out_file" . "_vcl.py";
 
     $in_stats  = stat("$In_folder/$Input_name");
@@ -238,7 +263,7 @@ sub convert_file
 #       TEXT    - yes or no
 # 
 # term:
-#    TYPE   - word/variable/range/menu
+#    TYPE   - word/variable/range/menu/dictation
 #    NUMBER - sequence number of this term
 #    word:
 #       TEXT     - text defining the word(s)
@@ -551,7 +576,7 @@ sub parse_command    # command = terms ['=' action*]
 sub parse_terms    # terms = (term | '[' simple_term ']')+
 {
     my (@terms, $term);
-    my $all_optional = 1;
+    my $error = 1;
     while (1) {
         my $optional = /\G\s*\[/gc;
         if ($optional) {
@@ -563,12 +588,12 @@ sub parse_terms    # terms = (term | '[' simple_term ']')+
         }
         if ($term) {
             $term->{OPTIONAL} = $optional;
-            $all_optional = 0 if not $optional;
+            $error = 0 if (not $optional and $term->{TYPE} ne "dictation");
             push (@terms, $term);
         } elsif (not @terms) {
             return 0;
-        } elsif ($all_optional) {
-            die "Command terms may not all be optional\n";
+        } elsif ($error) {
+            die "At least one term must not be optional or <_anything>\n";
         } else {
             return combine_terms(@terms);
         }
@@ -620,12 +645,25 @@ sub parse_simple_term    # simple_term = words | variable
                          #    variable = '<' variableName '>'
 {
     if (/\G\s*<(.*?)>/gc) {
-        if ($Debug>=2) {print LOG "Found variable:  <$1>\n"}
-        add_forward_reference($1) unless $Definitions{$1};
-        return create_variable_node($1);
+        if ($1 eq "_anything") {
+            if ($Debug>=2) {print LOG "Found <_anything>\n"}
+            return create_dictation_node();
+        } else {
+            if ($Debug>=2) {print LOG "Found variable:  <$1>\n"}
+            add_forward_reference($1) unless $Definitions{$1};
+            return create_variable_node($1);
+        }
     } else {
         return &parse_word;
     }
+}
+
+sub create_dictation_node
+{
+    $Should_emit_dictation_support = 1;
+    my $term = {};
+    $term->{TYPE} = "dictation";
+    return $term
 }
 
 sub create_variable_node
@@ -924,7 +962,9 @@ sub verify_referenced_menu
         if (@terms > 1) {die "Alternative is too complex\n"}
         my $type = $terms[0]->{TYPE};
         if    ($type eq "menu"){verify_referenced_menu($terms[0],$has_actions)}
-        elsif ($type eq "variable") {die "Alternative cannot be a variable\n"}
+        elsif ($type eq "variable" or $type eq "definition") {
+            die "Alternative cannot be a variable\n";
+        }
         elsif ($type eq "range") {
             # allow a single range with no actions
             return if (not $has_actions and @commands == 1);
@@ -1026,9 +1066,10 @@ sub print_term
     my ($out, $term) = @_;
     #print $out "$term->{NUMBER}:";
     if ($term->{OPTIONAL}) {print $out "["}
-    if    ($term->{TYPE} eq "word")     {print $out "$term->{TEXT}"}
-    elsif ($term->{TYPE} eq "variable") {print $out "<$term->{TEXT}>"}
-    elsif ($term->{TYPE} eq "menu")     {print_menu ($out, $term)}
+    if    ($term->{TYPE} eq "word")      {print $out "$term->{TEXT}"}
+    elsif ($term->{TYPE} eq "variable")  {print $out "<$term->{TEXT}>"}
+    elsif ($term->{TYPE} eq "dictation") {print $out "<_anything>"}
+    elsif ($term->{TYPE} eq "menu")      {print_menu ($out, $term)}
     elsif ($term->{TYPE} eq "range") {
         print $out "$term->{FROM}..$term->{TO}";
     }
@@ -1091,6 +1132,7 @@ sub emit_output
     my ($out_file, @statements) = @_;
     open OUT, ">$out_file" or die "$@ $out_file\n";
     &emit_file_header;
+    &emit_dictation_grammar if $Should_emit_dictation_support;
     for my $statement (@statements) {
         my $type = $statement->{TYPE};
         if    ($type eq "definition") {emit_definition_grammar ($statement)}
@@ -1148,7 +1190,11 @@ sub emit_sequence_rules
         }
         my $rule_name = "sequence$suffix";
         $context->{RULENAMES} = [$rule_name];
-        emit(2, "<$rule_name> exported = <any$suffix>+;\n");
+        if ($Use_command_sequences) {
+            emit(2, "<$rule_name> exported = <any$suffix>+;\n");
+        } else {
+            emit(2, "<$rule_name> exported = <any$suffix>;\n");
+        }
     }
 }
 
@@ -1222,6 +1268,11 @@ sub emit_context_activations
 #            emit(3, "        self.deactivate(rule,window)\n");
 #        }
 
+sub emit_dictation_grammar
+{
+    emit(2, "<dgndictation> imported;\n");
+}
+
 sub emit_definition_grammar
 {
     my $definition = shift;
@@ -1264,8 +1315,9 @@ sub emit_command_terms
             my $word = $term->{TEXT};
             if ($word =~ /\'/) {emit(0, '"' . "$word" . '" ')}
             else               {emit(0, "'$word' ")}
-        } elsif ($term->{TYPE} eq "variable") {emit(0, "<$term->{TEXT}> ")}
-        elsif   ($term->{TYPE} eq "range")    {emit_range_grammar($term)}
+        } elsif ($term->{TYPE} eq "dictation") {emit(0, "<dgndictation> ")}
+        elsif   ($term->{TYPE} eq "variable")  {emit_variable_term($term)}
+        elsif   ($term->{TYPE} eq "range")     {emit_range_grammar($term)}
         elsif   ($term->{TYPE} eq "menu") {
             emit(0, "(");
             emit_menu_grammar(@{ $term->{COMMANDS}} );
@@ -1273,6 +1325,13 @@ sub emit_command_terms
         }
         if ($term->{OPTIONAL}) {emit(0, "] ")}
     }
+}
+
+sub emit_variable_term
+{
+    my $term = shift;
+    my $text = $term->{TEXT};
+    emit(0, "<$text> ");
 }
 
 sub emit_menu_grammar
@@ -1342,7 +1401,7 @@ sub emit_top_command_actions
 sub has_variable_term
 {
     for my $term (@_) {
-        return 1 if $term->{TYPE} eq "variable";
+        return 1 if $term->{TYPE} eq "variable" or $term->{TYPE} eq "dictation";
     }
     return 0;
 }
@@ -1391,7 +1450,8 @@ sub get_variable_terms
     my @variable_terms;
     for my $term (@{ $command->{TERMS} }) {
         my $type = $term->{TYPE};
-        if ($type eq "menu" or $type eq "range" or $type eq "variable") {
+        if ($type eq "menu" or $type eq "range" or $type eq "variable" or
+            $type eq "dictation") {
             push (@variable_terms, $term);
         }
     }
@@ -1404,10 +1464,16 @@ sub emit_reference
     my $reference_number = $action->{TEXT} - 1;
     my $variable = $Variable_terms[$reference_number];
     my $term_number = $variable->{NUMBER};
+    if ($variable->{TYPE} eq "dictation") {
+        emit($indent, "fullResults = combineDictationWords(fullResults)\n");
+        emit($indent, "i = $term_number + self.firstWord\n");
+        emit($indent, "if (len(fullResults) <= i) or (fullResults[i][1] != 'dgndictation'):\n");
+        emit($indent + 1, "fullResults.insert(i, ['','dummy'])\n");
+    }
     emit($indent, "word = fullResults[$term_number + self.firstWord][0]\n");
     if ($variable->{TYPE} eq "menu") {
         emit_menu_actions($collector, $variable, $indent);
-    } elsif ($variable->{TYPE} eq "range") {
+    } elsif ($variable->{TYPE} eq "range" or $variable->{TYPE} eq "dictation") {
         emit($indent, "$collector(word)\n");
     } elsif ($variable->{TYPE} eq "variable") {
         my $function = "self.get_$variable->{TEXT}";
@@ -1564,13 +1630,15 @@ sub emit_call_repeat
 sub find_terms_for_main_rule
 {
     # Create a "variability profile" summarizing whether each term is
-    # concrete (c), variable (v), or optional (o).  For example, the profile of
-    # "[One] Word <direction>" would be "ocv". (Menus are assumed concrete.)
+    # concrete (c), variable (v), or optional (o). For example, the
+    # profile of "[One] Word <direction>" would be "ocv". (Menus are
+    # assumed concrete, and dictation variables are treated like
+    # optional words.)
 
     $_ = "";
     for my $term (@{ shift->{TERMS} }) {
-        $_ .= ($term->{TYPE} eq "variable") ? "v" :
-              ($term->{OPTIONAL})           ? "o" : "c";
+        $_ .= ($term->{TYPE} eq "variable")                       ? "v" :
+              ($term->{OPTIONAL} or $term->{TYPE} eq "dictation") ? "o" : "c";
     }
 
     # Identify terms to use for main rule.
@@ -1607,9 +1675,9 @@ sub term_is_concrete
 {
     my $term = shift;
     my $type = $term->{TYPE};
-    if    ($type eq "menu")     {return 1}
-    elsif ($type eq "variable") {return 0}
-    else                        {return not $term->{OPTIONAL}}
+    if    ($type eq "menu")                             {return 1}
+    elsif ($type eq "variable" or $type eq "dictation") {return 0}
+    else {return not $term->{OPTIONAL}}
 }
 
 sub inline_a_term
@@ -1618,7 +1686,10 @@ sub inline_a_term
 
     # Find the array index of the first non-optional term
     my $index = 0;
-    $index++ while $index < @{$terms} and $terms->[$index]->{OPTIONAL};
+    $index++
+        while ($index < @{$terms}) and
+            ($terms->[$index]->{OPTIONAL} or
+             $terms->[$index]->{TYPE} eq "dictation");
 
     my $type = $terms->[$index]->{TYPE};
     my $number = $terms->[$index]->{NUMBER};

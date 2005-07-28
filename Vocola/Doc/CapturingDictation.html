@@ -3,10 +3,10 @@
 <html>
 <head>
 <title>
-Vocola Information Pages - Include&nbsp;Statements</title>
+Vocola Information Pages - Capturing&nbsp;Dictation</title>
 
 <meta name="robots" content="noindex, follow">
-<meta name="Description" content="Vocola Information Pages, Include&nbsp;Statements">
+<meta name="Description" content="Vocola Information Pages, Capturing&nbsp;Dictation">
 <meta name="keywords" content="Vocola,NaturallySpeaking,NatSpeak,NatLink,Rick Mohr">
 
 <!-- cascading style (below) allow menu items to behave more like buttons
@@ -44,7 +44,7 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
     <td align=right>
       <nobr>
         <font color="#FFFFCC" size="2">
-          (this page updated June 02, 2003)</font>
+          (this page updated January 02, 2005)</font>
       </nobr>
     </td>
   </tr>
@@ -136,12 +136,12 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
     </tr>
 
     <tr><td bgcolor="#000066">
-      <font color="#CCCCFF" face="Helvetica,Arial,sans-serif" size="2">
-        <a href="CapturingDictation.html" class=openmenu>&nbsp;&nbsp;&nbsp;&nbsp;Capturing&nbsp;Dictation</a>
+      <font color="#FFFFCC" face="Helvetica,Arial,sans-serif" size="2">
+        <a href="CapturingDictation.html" class=selmenu>&nbsp;&nbsp;&nbsp;&nbsp;Capturing&nbsp;Dictation</a>
       </font>
       </td>
       <td valign=top bgcolor="#000066">
-        </td>
+        <img src="JoelsRightArrowLight.gif" border=0 width=17 height=17 hspace=0 vspace=0 align=top alt="->"></td>
     </tr>
 
     <tr><td bgcolor="#000066">
@@ -190,12 +190,12 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
     </tr>
 
     <tr><td bgcolor="#000066">
-      <font color="#FFFFCC" face="Helvetica,Arial,sans-serif" size="2">
-        <a href="IncludeStatements.html" class=selmenu>&nbsp;&nbsp;&nbsp;&nbsp;Include&nbsp;Statements</a>
+      <font color="#CCCCFF" face="Helvetica,Arial,sans-serif" size="2">
+        <a href="IncludeStatements.html" class=openmenu>&nbsp;&nbsp;&nbsp;&nbsp;Include&nbsp;Statements</a>
       </font>
       </td>
       <td valign=top bgcolor="#000066">
-        <img src="JoelsRightArrowLight.gif" border=0 width=17 height=17 hspace=0 vspace=0 align=top alt="->"></td>
+        </td>
     </tr>
 
     <tr><td bgcolor="#000066">
@@ -308,84 +308,45 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
         <tr>
           <td height=100%>
             <!-- the body goes here -->
-            <h2>Include&nbsp;Statements</h2>
+            <h2>Capturing&nbsp;Dictation</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <title>Built-in Functions</title></head><body>
-Sometimes you will want to use a set of Vocola definitions in more than one application. 
-The Vocola &quot;include&quot; statement allows you to put such shared definitions 
-in a single file, and include that file in each of several application-specific 
-command files. 
-<p>For example, many applications need to navigate the file system to find specific 
-  files or folders. But speaking pathnames can be difficult, as can navigating 
-  through folder hierarchies by voice. What you'd really like to do is define 
-  a single list of shortcuts to interesting folders, and have that list available 
-  in any program which needs to navigate the file system. </p>
-<p>I've created a file called &quot;folders.vch&quot; (&quot;vch&quot; stands 
-  for &quot;Vocola header&quot;) to contain my personal list of interesting folders, 
-  defined as a Vocola variable:</p>
-<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
+        
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        
+  <meta name="Author" content="r mohr">
+        
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Defining Variable Terms</title></head><body>
+<p>Sometimes you want a command which recognizes any words you might say rather 
+  than recognizing a particular set of alternatives. For example, searching for 
+  text is a common operation in Microsoft Word. It would be nice to be able to 
+  speak a single command to search for the text you want rather than needing to 
+  speak a command to open the &quot;Find&quot; dialog box, pausing, and then speaking 
+  the text you want to search for.</p>
+<p>You can use the special variable <tt>&lt;_anything&gt;</tt> in a command to 
+  match any spoken words:<br>&nbsp;
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
   <tbody>
-    <tr> 
-      <td><tt><i><font color="#993366">From file folders.vch:</font></i></tt> 
-        <pre>&lt;folder&gt; := <br> ( Home       = C:\Rick<br> | Temp       = C:\Temp<br> | Downloads  = C:\Programs\Downloads<br> | Start Menu =&quot;C:\Documents and Settings\Rick Mohr\Start Menu&quot;<br> | Vocola     = C:\Programs\NatLink\Vocola<br> | NatLink    = C:\Programs\NatLink\MacroSystem<br> );</pre></td>
-    </tr>
-  </tbody>
+     <tr>
+      <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Find Text &lt;_anything&gt; 
+        = {Ctrl+f} $1 {Enter};<br>
+        <font color="#993366">&nbsp;<i>Say:</i></font> Find Text will do<i><font color="#993366"> 
+        &nbsp;Sent:</font></i> {Ctrl+f}will do{Enter}&nbsp;</tt></td>
+  </tr>
+     
+  </tbody> 
 </table>
-<p>With the Vocola &quot;include&quot; statement this list can be used in several 
-  Vocola command files. Here's part of my command file for Windows Explorer:</p>
-<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
-  <tbody>
-    <tr> 
-      <td><p><tt><i><font color="#993366">From file explorer.vcl:</font></i></tt></p>
-        <tt>include folders.vch;<br>
-        Folder &lt;folder&gt; = {Alt+d} $1 {Enter}{Tab_2};</tt></td>
-    </tr>
-  </tbody>
-</table>
-<p>So for example, saying &quot;Folder NatLink&quot; to Windows Explorer switches 
-  to the folder &quot;C:\Programs\NatLink\MacroSystem&quot;.</p>
-<p>The folder list is also useful in a Command Prompt (DOS box), where saying 
-  for example &quot;Folder Temp&quot; performs the command &quot;cd C:\Temp&quot;:</p>
-<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
-  <tbody>
-    <tr> 
-      <td><p><i><font color="#993366"><tt>From file ntvdm.vcl:</tt></font></i></p>
-        <tt> include folders.vch;<br>
-        Folder &lt;folder&gt; = &quot;cd $1{Enter}&quot;;</tt></td>
-    </tr>
-  </tbody>
-</table>
-<p>Last and perhaps most useful is the following global command to move quickly 
-  to a specific folder in a &quot;File Open&quot; dialog box:</p>
-<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
-  <tbody>
-    <tr> 
-      <td><p><i><font color="#993366"><tt>From file _vocola.vcl:</tt></font></i></p>
-        <tt> include folders.vch;<br>
-        <br>
-        Open | New | Save | File | Attachment | Browse | Directory:<br>
-        &nbsp;&nbsp;Folder &lt;folder&gt; = $1\{Enter};<br>
-</tt></td>
-    </tr>
-  </tbody>
-</table>
-<p>This global contextual command is active when the window title of any application 
-  contains one of the words shown. For example, when saving an attachment in Microsoft 
-  Outlook the window title is &quot;Save Attachment&quot;, so saying &quot;Folder 
-  Temp&quot; switches the dialog's current folder to &quot;C:\Temp&quot;.</p>
-<h3>Include using a variable filename</h3>
-<p>The &quot;include&quot; statement's filename can be varied using references 
-  to environment variables. For example, you might have a different set of interesting 
-  folders at home than at work, and so want to include a different file depending 
-  on which machine you are currently using. Since the environment variable &quot;COMPUTERNAME&quot; 
-  contains the name of your machine, you could say:</p>
-<blockquote> 
-  <p><tt>include folders_$COMPUTERNAME.vch;</tt></p>
-</blockquote>
-<p>If your work machine were called &quot;Venus&quot; and your home machine were 
-  called &quot;family&quot;, you would define your list of interesting folders 
-  in two separate files, &quot;folders_Venus.vch&quot; and &quot;folders_family.vch&quot;.</p>
+    
+<p>With this command you could search for the text &quot;will do&quot; by saying 
+  &quot;Find Text will do&quot;, which opens the &quot;Find&quot; dialog box, 
+  enters the text &quot;will do&quot;, and launches the search.</p>
+<p>Note that<tt> &lt;_anything&gt; </tt>matches anything you say, including saying 
+  nothing. So in the above example saying &quot;Find Text&quot; would bring up 
+  the &quot;Find&quot; dialog box to search for nothing. Since this may be unexpected 
+  it's a good idea to use at least two keywords in these commands (i.e.<tt> Find 
+  Text &lt;_anything&gt; </tt>instead of<tt> Find &lt;_anything&gt;</tt>) to reduce 
+  unwanted recognitions.</p>
+<p><tt>&lt;_anything&gt; </tt>may appear anywhere a regular variable term appears, 
+  and may even appear more than once in a command.</p>
 </body></html>
           </td>
         </tr>

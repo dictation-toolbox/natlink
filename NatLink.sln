@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natlink", "NatlinkSource\natlink.vcproj", "{FD3160B9-F117-4187-B968-C121B084488E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natlink", "natlinkCore\natlinkCore.vcproj", "{FD3160B9-F117-4187-B968-C121B084488E}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -21,8 +21,8 @@ Global
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.ActiveCfg = Release|Win32
-		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.Build.0 = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.ActiveCfg = Debug|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.Build.0 = Debug|Win32
 		{FD3160B9-F117-4187-B968-C121B084488E}.Release.ActiveCfg = Release|Win32
 		{FD3160B9-F117-4187-B968-C121B084488E}.Release.Build.0 = Release|Win32
 		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug.ActiveCfg = Debug|.NET

@@ -21,12 +21,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_004B43D3549C4159AB70AC8717AC2B3E"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_08B1CAD4B7D541CCA9B1EB4260E8D1FE"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -63,6 +57,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_16A8D26655FE42F19AF4B4E0F413428F"
+        "OwnerKey" = "8:_EBB1165E8FB94B94BCF3CB82A33161EF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_16FED34283DD4E60887F31068150CB8F"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -76,6 +76,12 @@
         "Entry"
         {
         "MsmKey" = "8:_18A97615D3754F4C8A76F36C717B1882"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_1C4C098BAC174619891C18A8729B227E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -141,6 +147,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_38B82A4BA13347F08BDD384C3A9E501E"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_3B84D4CE1A3E4460A714891337C64E65"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -154,6 +166,12 @@
         "Entry"
         {
         "MsmKey" = "8:_3E7382939C50444487A2B73ED00003ED"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_3F19A258176048B69D05558F64D65E35"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -238,6 +256,12 @@
         "Entry"
         {
         "MsmKey" = "8:_68E5F4BCEAAA4164951A1B4EE5AC4C78"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_695A1AFA860C41F89225F7236B803418"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -363,12 +387,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_A17F561C1D53434A86C45A037F6F5D06"
-        "OwnerKey" = "8:_EBB1165E8FB94B94BCF3CB82A33161EF"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_A34FFE44E2CB42EB99FB3A0D3ED82225"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -448,6 +466,12 @@
         "Entry"
         {
         "MsmKey" = "8:_C8E86F4720964EA09241872B6F89B4F5"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_CC296EE1659543348026701EF02FB6BF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -585,9 +609,9 @@
         "CabType" = "3:1"
         "Compression" = "3:2"
         "SignOutput" = "11:FALSE"
-        "CertificateFile" = "8:"
-        "PrivateKeyFile" = "8:"
-        "TimeStampServer" = "8:"
+        "CertificateFile" = "8:C:\\DevTools\\Certificates\\AR-cert.spc"
+        "PrivateKeyFile" = "8:C:\\DevTools\\Certificates\\AR-key.pvk"
+        "TimeStampServer" = "8:http://timestamp.comodoca.com/authenticode"
         "InstallerBootstrapper" = "3:2"
         }
         "Release"
@@ -595,15 +619,15 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\NLVCSetup1.05.msi"
+        "OutputFilename" = "8:Release\\NLVCSetup1.1.0.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
         "Compression" = "3:3"
-        "SignOutput" = "11:FALSE"
-        "CertificateFile" = "8:"
-        "PrivateKeyFile" = "8:"
-        "TimeStampServer" = "8:"
+        "SignOutput" = "11:TRUE"
+        "CertificateFile" = "8:C:\\DevTools\\Certificates\\AR-cert.spc"
+        "PrivateKeyFile" = "8:C:\\DevTools\\Certificates\\AR-key.pvk"
+        "TimeStampServer" = "8:http://timestamp.comodoca.com/authenticode"
         "InstallerBootstrapper" = "3:1"
         }
     }
@@ -698,26 +722,6 @@
             "TargetName" = "8:ContextualCommands.html"
             "Tag" = "8:"
             "Folder" = "8:_4B72B6935EBF414B8FBA2A753EFE12DA"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{A582A373-4685-4296-BEFE-614B80A702C3}:_004B43D3549C4159AB70AC8717AC2B3E"
-            {
-            "SourcePath" = "8:..\\Vocola\\Commands\\n.vcl"
-            "TargetName" = "8:n.vcl"
-            "Tag" = "8:"
-            "Folder" = "8:_FCFBB9C016BD4CB281020F9AF96CCA9E"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -898,6 +902,26 @@
             "TargetName" = "8:AlternativesAndReferences.html"
             "Tag" = "8:"
             "Folder" = "8:_4B72B6935EBF414B8FBA2A753EFE12DA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{A582A373-4685-4296-BEFE-614B80A702C3}:_1C4C098BAC174619891C18A8729B227E"
+            {
+            "SourcePath" = "8:..\\Vocola\\Exec\\2.2\\simpscrp.pyd"
+            "TargetName" = "8:simpscrp.pyd"
+            "Tag" = "8:"
+            "Folder" = "8:_FC42A4E7073C431ABC7D51771D4E74C5"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1112,6 +1136,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{A582A373-4685-4296-BEFE-614B80A702C3}:_38B82A4BA13347F08BDD384C3A9E501E"
+            {
+            "SourcePath" = "8:..\\Vocola\\Doc\\voicecmd.pdf"
+            "TargetName" = "8:voicecmd.pdf"
+            "Tag" = "8:"
+            "Folder" = "8:_4B72B6935EBF414B8FBA2A753EFE12DA"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{A582A373-4685-4296-BEFE-614B80A702C3}:_3B84D4CE1A3E4460A714891337C64E65"
             {
             "SourcePath" = "8:..\\Vocola\\Samples\\msdev.vcl"
@@ -1158,6 +1202,26 @@
             "TargetName" = "8:netscape.vcl"
             "Tag" = "8:"
             "Folder" = "8:_107206DFB7BA4B76B0E887867E42EA60"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{A582A373-4685-4296-BEFE-614B80A702C3}:_3F19A258176048B69D05558F64D65E35"
+            {
+            "SourcePath" = "8:..\\Vocola\\Commands\\vcledit.vcl"
+            "TargetName" = "8:vcledit.vcl"
+            "Tag" = "8:"
+            "Folder" = "8:_FCFBB9C016BD4CB281020F9AF96CCA9E"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1438,6 +1502,26 @@
             "TargetName" = "8:_vocola.vcl"
             "Tag" = "8:"
             "Folder" = "8:_107206DFB7BA4B76B0E887867E42EA60"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{A582A373-4685-4296-BEFE-614B80A702C3}:_695A1AFA860C41F89225F7236B803418"
+            {
+            "SourcePath" = "8:..\\Vocola\\Doc\\VocolaVersions.html"
+            "TargetName" = "8:VocolaVersions.html"
+            "Tag" = "8:"
+            "Folder" = "8:_4B72B6935EBF414B8FBA2A753EFE12DA"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -2092,6 +2176,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{A582A373-4685-4296-BEFE-614B80A702C3}:_CC296EE1659543348026701EF02FB6BF"
+            {
+            "SourcePath" = "8:..\\Vocola\\Exec\\vocola.ini"
+            "TargetName" = "8:vocola.ini"
+            "Tag" = "8:"
+            "Folder" = "8:_7E051D6209C9468F9FEBB06C592A974A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{A582A373-4685-4296-BEFE-614B80A702C3}:_D3786FD0C4004F53802A6C08E2E49EDF"
             {
             "SourcePath" = "8:..\\Vocola\\Doc\\JoelsRightArrowDark.gif"
@@ -2573,6 +2677,17 @@
                                         {
                                         }
                                     }
+                                    "{F27BD5C5-A65D-4608-96D4-7C5DA1F76302}:_FC42A4E7073C431ABC7D51771D4E74C5"
+                                    {
+                                    "Name" = "8:2.2"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "Condition" = "8:"
+                                    "Transitive" = "11:FALSE"
+                                    "Property" = "8:_0FAB751F1260446DB88AFB079F95F94A"
+                                        "Folders"
+                                        {
+                                        }
+                                    }
                                 }
                             }
                             "{F27BD5C5-A65D-4608-96D4-7C5DA1F76302}:_FCFBB9C016BD4CB281020F9AF96CCA9E"
@@ -2681,18 +2796,18 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:NatLink and Vocola"
-        "ProductCode" = "8:{D5FAA528-AA2C-4991-94E5-4F88466EFA16}"
-        "PackageCode" = "8:{87BF8D8E-3253-4450-9BE8-ECFB5DB0D59A}"
+        "ProductName" = "8:NatLink and Vocola 1.1.0"
+        "ProductCode" = "8:{FDA95B4F-A9A2-46E0-A5D4-C57500D247E9}"
+        "PackageCode" = "8:{5BF4FF14-77CC-42EB-8DC3-7AB7F6E1E835}"
         "UpgradeCode" = "8:{6DD702D7-CB87-4D2A-A027-62A7B116425E}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
-        "ProductVersion" = "8:1.0.5"
+        "ProductVersion" = "8:1.1.0"
         "Manufacturer" = "8:Applied Recognition Inc."
         "ARPHELPTELEPHONE" = "8:"
-        "ARPHELPLINK" = "8:"
-        "Title" = "8:NatLink and Vocola"
+        "ARPHELPLINK" = "8:http://speech.squidnet.com/default.aspx/NL.HomePage"
+        "Title" = "8:NatLink and Vocola 1.1.0"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Applied Recognition Inc."
         "Keywords" = "8:"
@@ -2841,7 +2956,7 @@
             }
             "{478F747B-8505-45D1-9AAE-8C3B645C26E3}:_A69AAD48EA6B4C2491502CB4D7814E8A"
             {
-            "Name" = "8:EnableDisable NatLink"
+            "Name" = "8:Configure NatLink & Vocola"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
@@ -3242,7 +3357,7 @@
         }
         "MergeModule"
         {
-            "{35A69C6E-5BA4-440D-803D-762B59A45393}:_A17F561C1D53434A86C45A037F6F5D06"
+            "{35A69C6E-5BA4-440D-803D-762B59A45393}:_16A8D26655FE42F19AF4B4E0F413428F"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
@@ -3317,7 +3432,7 @@
             }
             "{8062640A-2EEE-46E9-AB67-688E9A886E9F}:_BB6EA32E48904645B56B97E574CB9210"
             {
-            "SourcePath" = "8:..\\natlinksource\\release\\natlink.dll"
+            "SourcePath" = "8:..\\NatlinkCore\\Release\\natlinkCore.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_EDA659FB0F4F41E38982EA08AB43BFF2"
@@ -3362,7 +3477,7 @@
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:2"
+            "ProjectOutputGroupRegister" = "3:1"
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:Built"
             "OutputProjectGuid" = "8:{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}"

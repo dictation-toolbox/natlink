@@ -4,11 +4,12 @@ Imports System.Text.RegularExpressions
 Imports Microsoft.Win32
 
 Public Class NatLinkEnv
+	Inherits System.ComponentModel.Component
 
 #Region "Constants"
 	Private Const NSSystemIni As String = "nssystem.ini"
 	Private Const NSAppsIni As String = "nsapps.ini"
-    Public Const NATLINK_CLSID As String = "{dd990001-bb89-11d2-b031-0060088dc929}"
+	Public Const NATLINK_CLSID As String = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
 	Private Const NSExt73Path As String = "ScanSoft\NaturallySpeaking"
 	Private Const NSExt8Path As String = "ScanSoft\NaturallySpeaking8"
@@ -58,7 +59,44 @@ Public Class NatLinkEnv
 	Private _dnsIniFilePath As String = ""
 
 
+	Public Sub New()
+		Trace.WriteLine("NatLinkEnv.New()")
+		Trace.Indent()
+		Trace.Unindent()
+	End Sub
 
+
+
+	Public ReadOnly Property VocolaVersion() As String
+		Get
+			Return "2.5"
+		End Get
+	End Property
+
+	Public ReadOnly Property NatLinkVersion() As String
+		Get
+			Dim v As FileVersionInfo = FileVersionInfo.GetVersionInfo(NatLinkDllPath)
+			Return String.Format("{0}.{1}.{2}", v.ProductMajorPart, v.ProductMinorPart, v.ProductBuildPart)
+		End Get
+	End Property
+
+	Public Property VocolaCommandSeqEnabled() As Boolean
+		Get
+			Dim vocini As String = IO.Path.Combine(NatLinkInstallPath, "Vocola\Exec\vocola.ini")
+			Dim im As New IniManager(vocini)
+			Return CBool(im("NatLink Generation Options")("Use Command Sequences"))
+		End Get
+		Set(ByVal Value As Boolean)
+			Dim vocini As String = IO.Path.Combine(NatLinkInstallPath, "Vocola\Exec\vocola.ini")
+			Dim im As New IniManager(vocini)
+			im("NatLink Generation Options").DeleteKey("Use Command Sequences")
+			Dim newval As String = IIf(Value, "1", "0")
+			im("NatLink Generation Options")("Use Command Sequences") = newval
+		End Set
+	End Property
+
+
+#Region "DNS Install Info"
 	ReadOnly Property NSInstalledIniFile() As String
 		Get
 			Dim winPath As New StringBuilder(300)
@@ -75,14 +113,6 @@ Public Class NatLinkEnv
 			Return IO.Path.Combine(winPath.ToString, "Speech\Dragon\nsinstalled.ini")
 		End Get
 	End Property
-
-
-	Public Sub New()
-		Trace.WriteLine("NatLinkEnv.New()")
-		Trace.Indent()
-		Trace.Unindent()
-	End Sub
-
 
 	Public Sub FindNS8InstallVersion()
 		Trace.WriteLine("FindNS8InstallVersion")
@@ -233,6 +263,12 @@ Public Class NatLinkEnv
 
 	End Sub
 
+#End Region
+
+#Region "DnsIniFile Management"
+
+
+
 	Public Sub EnableNL()
 		Dim im As New IniManager(IO.Path.Combine(DnsIniFilePath, NSSystemIni))
 		im.Add("Global Clients", ".NatLink", "Python Macro System")
@@ -260,29 +296,64 @@ Public Class NatLinkEnv
 
 		End Get
 	End Property
+#End Region
+
+#Region "Natlink Install info"
+
+
+	Public ReadOnly Property NatLinkInstallPath() As String
+		Get
+			Dim pth As String
+			pth = IO.Path.GetDirectoryName(NatLinkDllPath)
+			pth = pth.Substring(0, pth.LastIndexOf(IO.Path.DirectorySeparatorChar))
+			Return pth
+		End Get
+	End Property
+
+
+
+	Private _NatLinkDllPath As String
+	Public ReadOnly Property NatLinkDllPath() As String
+		Get
+			If _NatLinkDllPath = Nothing Then
+				Trace.WriteLine("Installer -- NatLinkDllPath")
+				Trace.Indent()
+				Dim clsID As RegistryKey
+				Try
+					clsID = Registry.ClassesRoot.OpenSubKey("CLSID\" + NatLinkEnv.NATLINK_CLSID)
+					If clsID Is Nothing Then
+						Throw New ApplicationException("Fatal error, unable to locate registry key for NatLink")
+					End If
+					_NatLinkDllPath = clsID.OpenSubKey("InprocServer32").GetValue("")
+					Trace.WriteLine(_NatLinkDllPath)
+				Finally
+					If Not clsID Is Nothing Then clsID.Close()
+					Trace.Unindent()
+				End Try
+			End If
+			Return _NatLinkDllPath
+		End Get
+	End Property
+#End Region
 
 #Region "Python"
 	Public Sub SetPythonPath()
 		Trace.WriteLine("Installer -- SetPythonPath")
 		Trace.Indent()
-		Dim clsID As RegistryKey
+
 		Dim pp As RegistryKey
 		Dim nlK As RegistryKey
 		Try
 
-			clsID = Registry.ClassesRoot.OpenSubKey("CLSID\" + NatLinkEnv.NATLINK_CLSID)
-			If clsID Is Nothing Then
-				Throw New ApplicationException("Fatal error, unable to locate registry key for NatLink")
-			End If
-
-			Dim instPath As String = clsID.OpenSubKey("InprocServer32").GetValue("")
-			instPath = IO.Path.GetDirectoryName(instPath)
+			Dim instPath As String = NatLinkInstallPath
 			Trace.WriteLine("Install path =" + instPath)
 
-			Dim ind As Integer = instPath.LastIndexOf("\"c)
-			Dim nlPPath As String = instPath + ";"
-			nlPPath += IO.Path.Combine(instPath.Substring(0, ind), "MiscScripts")
+			Dim nlPPath As String = _
+			IO.Path.Combine(NatLinkInstallPath, "macrosystem") + _
+			 ";" + _
+			 IO.Path.Combine(NatLinkInstallPath, "MiscScripts")
 			Trace.WriteLine("nl path = " + nlPPath)
+
 
 			pp = Registry.LocalMachine.OpenSubKey("Software\Python\PythonCore\2.3\PythonPath", True)
 			If pp Is Nothing Then
@@ -291,7 +362,6 @@ Public Class NatLinkEnv
 			nlK = pp.CreateSubKey("NatLink")
 			nlK.SetValue("", nlPPath)
 		Finally
-			If Not clsID Is Nothing Then clsID.Close()
 			If Not nlK Is Nothing Then nlK.Close()
 			If Not pp Is Nothing Then pp.Close()
 			Trace.Unindent()
@@ -314,6 +384,5 @@ Public Class NatLinkEnv
 		End Try
 	End Sub
 #End Region
-
 
 End Class
