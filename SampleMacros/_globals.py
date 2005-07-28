@@ -3,7 +3,7 @@
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
-# _glogals.py
+# _globals.py
 #   Sample macro file which is active all the time (not application specific).
 #
 # April 25, 1999

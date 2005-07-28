@@ -20,7 +20,7 @@ Public Class IniManager
 	End Function
 #End Region
 
-	Public Const MaxBuff = (32 * 1024) - 1	'32,767 
+	Public Const MaxBuff As Integer = (32 * 1024) - 1	 '32,767 
 	Private _iniFile As String
 
 	Public Sub New(ByVal iniFile As String)
@@ -58,7 +58,7 @@ Public Class IniManager
 
 	Private Sub GetSectionNames()
 		Dim profiles As New Collections.Specialized.StringCollection
-		Dim ptr As IntPtr = Marshal.StringToHGlobalAnsi(New String(vbNullChar, MaxBuff))
+		Dim ptr As IntPtr = Marshal.StringToHGlobalAnsi(New String(vbNullChar.ToCharArray()(0), MaxBuff))
 		Dim len As Int32 = GetPrivateProfileSectionNames(ptr, MaxBuff, _iniFile)
 		Dim buff As String = Marshal.PtrToStringAnsi(ptr, len)
 		Marshal.FreeHGlobal(ptr)
@@ -91,7 +91,7 @@ Public Class IniManager
 
 	Default Public ReadOnly Property Item(ByVal key As String) As IniSection
 		Get
-			Return Sections(key)
+			Return CType(Sections(key), IniSection)
 		End Get
 	End Property
 
@@ -134,7 +134,7 @@ Public Class IniManager
 		End Property
 
 		Private Sub ReadSection()
-			Dim ptr As IntPtr = Marshal.StringToHGlobalAnsi(New String(vbNullChar, MaxBuff))
+			Dim ptr As IntPtr = Marshal.StringToHGlobalAnsi(New String(Chr(0), MaxBuff))
 			Dim len As Int32 = GetPrivateProfileSection(_section, ptr, MaxBuff, _iniFile)
 
 			If len = MaxBuff - 2 OrElse len = 0 Then

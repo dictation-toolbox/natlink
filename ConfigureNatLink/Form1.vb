@@ -1,33 +1,37 @@
+Imports CP.Windows.Forms
+Imports Microsoft.Win32
+Imports NLInstaller
+
 Public Class EnableNL
-    Inherits System.Windows.Forms.Form
+	Inherits System.Windows.Forms.Form
 
 #Region " Windows Form Designer generated code "
 
-    Public Sub New()
-        MyBase.New()
+	Public Sub New()
+		MyBase.New()
 
-        'This call is required by the Windows Form Designer.
-        InitializeComponent()
+		'This call is required by the Windows Form Designer.
+		InitializeComponent()
 
-        'Add any initialization after the InitializeComponent() call
+		'Add any initialization after the InitializeComponent() call
 
-    End Sub
+	End Sub
 
-    'Form overrides dispose to clean up the component list.
-    Protected Overloads Overrides Sub Dispose(ByVal disposing As Boolean)
-        If disposing Then
-            If Not (components Is Nothing) Then
-                components.Dispose()
-            End If
-        End If
-        MyBase.Dispose(disposing)
-    End Sub
+	'Form overrides dispose to clean up the component list.
+	Protected Overloads Overrides Sub Dispose(ByVal disposing As Boolean)
+		If disposing Then
+			If Not (components Is Nothing) Then
+				components.Dispose()
+			End If
+		End If
+		MyBase.Dispose(disposing)
+	End Sub
 
-    'Required by the Windows Form Designer
-    Private components As System.ComponentModel.IContainer
+	'Required by the Windows Form Designer
+	Private components As System.ComponentModel.IContainer
 
-    'NOTE: The following procedure is required by the Windows Form Designer
-    'It can be modified using the Windows Form Designer.  
+	'NOTE: The following procedure is required by the Windows Form Designer
+	'It can be modified using the Windows Form Designer.  
 	'Do not modify it using the code editor.
 	Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
 	Friend WithEvents txtVocVer As System.Windows.Forms.TextBox
@@ -49,9 +53,28 @@ Public Class EnableNL
 	Friend WithEvents cmdVocCmdSeqEnabled As System.Windows.Forms.Button
 	Friend WithEvents Label7 As System.Windows.Forms.Label
 	Friend WithEvents txtNatLinkPath As System.Windows.Forms.TextBox
+	Friend WithEvents Label8 As System.Windows.Forms.Label
+	Friend WithEvents Label9 As System.Windows.Forms.Label
+	Friend WithEvents btnNLReset As System.Windows.Forms.Button
+	Friend WithEvents btnNLBrowse As System.Windows.Forms.Button
+	Friend WithEvents btnVocReset As System.Windows.Forms.Button
+	Friend WithEvents btnVocBrowse As System.Windows.Forms.Button
+	Friend WithEvents txtVocUD As System.Windows.Forms.TextBox
+	Friend WithEvents txtNLUD As System.Windows.Forms.TextBox
+	Friend WithEvents fbd As CP.Windows.Forms.ShellFolderBrowser
+	Friend WithEvents Label10 As System.Windows.Forms.Label
+	Friend WithEvents txtDebugOut As System.Windows.Forms.TextBox
+	Friend WithEvents cmdDebug As System.Windows.Forms.Button
+	Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
+	Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
+	Friend WithEvents cmdRegister As System.Windows.Forms.Button
+	Friend WithEvents txtRegOutput As System.Windows.Forms.TextBox
 	<System.Diagnostics.DebuggerStepThrough()> Private Sub InitializeComponent()
+		Me.components = New System.ComponentModel.Container
 		Dim resources As System.Resources.ResourceManager = New System.Resources.ResourceManager(GetType(EnableNL))
 		Me.GroupBox1 = New System.Windows.Forms.GroupBox
+		Me.txtNatLinkPath = New System.Windows.Forms.TextBox
+		Me.Label7 = New System.Windows.Forms.Label
 		Me.txtVocVer = New System.Windows.Forms.TextBox
 		Me.txtNLVer = New System.Windows.Forms.TextBox
 		Me.txtIniPath = New System.Windows.Forms.TextBox
@@ -63,16 +86,31 @@ Public Class EnableNL
 		Me.Label1 = New System.Windows.Forms.Label
 		Me.lblDNSVersion = New System.Windows.Forms.Label
 		Me.GroupBox2 = New System.Windows.Forms.GroupBox
+		Me.cmdDebug = New System.Windows.Forms.Button
+		Me.txtDebugOut = New System.Windows.Forms.TextBox
+		Me.Label10 = New System.Windows.Forms.Label
+		Me.btnNLReset = New System.Windows.Forms.Button
+		Me.btnNLBrowse = New System.Windows.Forms.Button
+		Me.Label9 = New System.Windows.Forms.Label
+		Me.btnVocReset = New System.Windows.Forms.Button
+		Me.btnVocBrowse = New System.Windows.Forms.Button
+		Me.Label8 = New System.Windows.Forms.Label
+		Me.txtVocUD = New System.Windows.Forms.TextBox
+		Me.txtNLUD = New System.Windows.Forms.TextBox
 		Me.TxtVocCmdSeqEna = New System.Windows.Forms.TextBox
 		Me.Label6 = New System.Windows.Forms.Label
 		Me.cmdVocCmdSeqEnabled = New System.Windows.Forms.Button
 		Me.txtIsEnabled = New System.Windows.Forms.TextBox
 		Me.Label3 = New System.Windows.Forms.Label
 		Me.cmdEnable = New System.Windows.Forms.Button
-		Me.txtNatLinkPath = New System.Windows.Forms.TextBox
-		Me.Label7 = New System.Windows.Forms.Label
+		Me.fbd = New CP.Windows.Forms.ShellFolderBrowser
+		Me.GroupBox3 = New System.Windows.Forms.GroupBox
+		Me.cmdRegister = New System.Windows.Forms.Button
+		Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
+		Me.txtRegOutput = New System.Windows.Forms.TextBox
 		Me.GroupBox1.SuspendLayout()
 		Me.GroupBox2.SuspendLayout()
+		Me.GroupBox3.SuspendLayout()
 		Me.SuspendLayout()
 		'
 		'GroupBox1
@@ -95,6 +133,23 @@ Public Class EnableNL
 		Me.GroupBox1.TabIndex = 17
 		Me.GroupBox1.TabStop = False
 		Me.GroupBox1.Text = "Info"
+		'
+		'txtNatLinkPath
+		'
+		Me.txtNatLinkPath.Location = New System.Drawing.Point(128, 96)
+		Me.txtNatLinkPath.Name = "txtNatLinkPath"
+		Me.txtNatLinkPath.ReadOnly = True
+		Me.txtNatLinkPath.Size = New System.Drawing.Size(440, 20)
+		Me.txtNatLinkPath.TabIndex = 24
+		Me.txtNatLinkPath.Text = ""
+		'
+		'Label7
+		'
+		Me.Label7.Location = New System.Drawing.Point(16, 96)
+		Me.Label7.Name = "Label7"
+		Me.Label7.Size = New System.Drawing.Size(104, 23)
+		Me.Label7.TabIndex = 25
+		Me.Label7.Text = "NatLink install path"
 		'
 		'txtVocVer
 		'
@@ -183,6 +238,17 @@ Public Class EnableNL
 		'
 		'GroupBox2
 		'
+		Me.GroupBox2.Controls.Add(Me.cmdDebug)
+		Me.GroupBox2.Controls.Add(Me.txtDebugOut)
+		Me.GroupBox2.Controls.Add(Me.Label10)
+		Me.GroupBox2.Controls.Add(Me.btnNLReset)
+		Me.GroupBox2.Controls.Add(Me.btnNLBrowse)
+		Me.GroupBox2.Controls.Add(Me.Label9)
+		Me.GroupBox2.Controls.Add(Me.btnVocReset)
+		Me.GroupBox2.Controls.Add(Me.btnVocBrowse)
+		Me.GroupBox2.Controls.Add(Me.Label8)
+		Me.GroupBox2.Controls.Add(Me.txtVocUD)
+		Me.GroupBox2.Controls.Add(Me.txtNLUD)
 		Me.GroupBox2.Controls.Add(Me.TxtVocCmdSeqEna)
 		Me.GroupBox2.Controls.Add(Me.Label6)
 		Me.GroupBox2.Controls.Add(Me.cmdVocCmdSeqEnabled)
@@ -191,14 +257,104 @@ Public Class EnableNL
 		Me.GroupBox2.Controls.Add(Me.cmdEnable)
 		Me.GroupBox2.Location = New System.Drawing.Point(8, 176)
 		Me.GroupBox2.Name = "GroupBox2"
-		Me.GroupBox2.Size = New System.Drawing.Size(584, 144)
+		Me.GroupBox2.Size = New System.Drawing.Size(584, 256)
 		Me.GroupBox2.TabIndex = 0
 		Me.GroupBox2.TabStop = False
 		Me.GroupBox2.Text = "Configuration"
 		'
+		'cmdDebug
+		'
+		Me.cmdDebug.Location = New System.Drawing.Point(352, 40)
+		Me.cmdDebug.Name = "cmdDebug"
+		Me.cmdDebug.Size = New System.Drawing.Size(88, 23)
+		Me.cmdDebug.TabIndex = 36
+		'
+		'txtDebugOut
+		'
+		Me.txtDebugOut.Location = New System.Drawing.Point(296, 40)
+		Me.txtDebugOut.Name = "txtDebugOut"
+		Me.txtDebugOut.ReadOnly = True
+		Me.txtDebugOut.Size = New System.Drawing.Size(40, 20)
+		Me.txtDebugOut.TabIndex = 35
+		Me.txtDebugOut.Text = ""
+		'
+		'Label10
+		'
+		Me.Label10.Location = New System.Drawing.Point(296, 24)
+		Me.Label10.Name = "Label10"
+		Me.Label10.Size = New System.Drawing.Size(216, 16)
+		Me.Label10.TabIndex = 34
+		Me.Label10.Text = "Send NatLink debug output to Dragon.log"
+		'
+		'btnNLReset
+		'
+		Me.btnNLReset.Location = New System.Drawing.Point(480, 144)
+		Me.btnNLReset.Name = "btnNLReset"
+		Me.btnNLReset.Size = New System.Drawing.Size(75, 16)
+		Me.btnNLReset.TabIndex = 33
+		Me.btnNLReset.Text = "reset"
+		'
+		'btnNLBrowse
+		'
+		Me.btnNLBrowse.Location = New System.Drawing.Point(432, 144)
+		Me.btnNLBrowse.Name = "btnNLBrowse"
+		Me.btnNLBrowse.Size = New System.Drawing.Size(32, 16)
+		Me.btnNLBrowse.TabIndex = 32
+		Me.btnNLBrowse.Text = "..."
+		Me.btnNLBrowse.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+		'
+		'Label9
+		'
+		Me.Label9.Location = New System.Drawing.Point(8, 192)
+		Me.Label9.Name = "Label9"
+		Me.Label9.Size = New System.Drawing.Size(208, 23)
+		Me.Label9.TabIndex = 31
+		Me.Label9.Text = "Vocola user directory"
+		'
+		'btnVocReset
+		'
+		Me.btnVocReset.Location = New System.Drawing.Point(480, 216)
+		Me.btnVocReset.Name = "btnVocReset"
+		Me.btnVocReset.Size = New System.Drawing.Size(75, 16)
+		Me.btnVocReset.TabIndex = 30
+		Me.btnVocReset.Text = "reset"
+		'
+		'btnVocBrowse
+		'
+		Me.btnVocBrowse.Location = New System.Drawing.Point(432, 216)
+		Me.btnVocBrowse.Name = "btnVocBrowse"
+		Me.btnVocBrowse.Size = New System.Drawing.Size(32, 16)
+		Me.btnVocBrowse.TabIndex = 28
+		Me.btnVocBrowse.Text = "..."
+		Me.btnVocBrowse.TextAlign = System.Drawing.ContentAlignment.BottomCenter
+		'
+		'Label8
+		'
+		Me.Label8.Location = New System.Drawing.Point(8, 120)
+		Me.Label8.Name = "Label8"
+		Me.Label8.Size = New System.Drawing.Size(208, 23)
+		Me.Label8.TabIndex = 25
+		Me.Label8.Text = "NatLink user directory"
+		'
+		'txtVocUD
+		'
+		Me.txtVocUD.Location = New System.Drawing.Point(8, 216)
+		Me.txtVocUD.Name = "txtVocUD"
+		Me.txtVocUD.Size = New System.Drawing.Size(416, 20)
+		Me.txtVocUD.TabIndex = 24
+		Me.txtVocUD.Text = "txtVocUD"
+		'
+		'txtNLUD
+		'
+		Me.txtNLUD.Location = New System.Drawing.Point(8, 144)
+		Me.txtNLUD.Name = "txtNLUD"
+		Me.txtNLUD.Size = New System.Drawing.Size(416, 20)
+		Me.txtNLUD.TabIndex = 23
+		Me.txtNLUD.Text = "txtNLUD"
+		'
 		'TxtVocCmdSeqEna
 		'
-		Me.TxtVocCmdSeqEna.Location = New System.Drawing.Point(128, 64)
+		Me.TxtVocCmdSeqEna.Location = New System.Drawing.Point(128, 80)
 		Me.TxtVocCmdSeqEna.Name = "TxtVocCmdSeqEna"
 		Me.TxtVocCmdSeqEna.ReadOnly = True
 		Me.TxtVocCmdSeqEna.Size = New System.Drawing.Size(40, 20)
@@ -215,14 +371,14 @@ Public Class EnableNL
 		'
 		'cmdVocCmdSeqEnabled
 		'
-		Me.cmdVocCmdSeqEnabled.Location = New System.Drawing.Point(480, 64)
+		Me.cmdVocCmdSeqEnabled.Location = New System.Drawing.Point(184, 80)
 		Me.cmdVocCmdSeqEnabled.Name = "cmdVocCmdSeqEnabled"
 		Me.cmdVocCmdSeqEnabled.Size = New System.Drawing.Size(88, 23)
 		Me.cmdVocCmdSeqEnabled.TabIndex = 1
 		'
 		'txtIsEnabled
 		'
-		Me.txtIsEnabled.Location = New System.Drawing.Point(128, 32)
+		Me.txtIsEnabled.Location = New System.Drawing.Point(128, 40)
 		Me.txtIsEnabled.Name = "txtIsEnabled"
 		Me.txtIsEnabled.ReadOnly = True
 		Me.txtIsEnabled.Size = New System.Drawing.Size(40, 20)
@@ -231,7 +387,7 @@ Public Class EnableNL
 		'
 		'Label3
 		'
-		Me.Label3.Location = New System.Drawing.Point(16, 32)
+		Me.Label3.Location = New System.Drawing.Point(16, 24)
 		Me.Label3.Name = "Label3"
 		Me.Label3.Size = New System.Drawing.Size(96, 23)
 		Me.Label3.TabIndex = 19
@@ -239,32 +395,52 @@ Public Class EnableNL
 		'
 		'cmdEnable
 		'
-		Me.cmdEnable.Location = New System.Drawing.Point(480, 32)
+		Me.cmdEnable.Location = New System.Drawing.Point(184, 40)
 		Me.cmdEnable.Name = "cmdEnable"
 		Me.cmdEnable.Size = New System.Drawing.Size(88, 23)
 		Me.cmdEnable.TabIndex = 0
 		'
-		'txtNatLinkPath
+		'fbd
 		'
-		Me.txtNatLinkPath.Location = New System.Drawing.Point(128, 96)
-		Me.txtNatLinkPath.Name = "txtNatLinkPath"
-		Me.txtNatLinkPath.ReadOnly = True
-		Me.txtNatLinkPath.Size = New System.Drawing.Size(440, 20)
-		Me.txtNatLinkPath.TabIndex = 24
-		Me.txtNatLinkPath.Text = ""
+		Me.fbd.BrowseFlags = CType(((((CP.Windows.Forms.BrowseFlags.ReturnOnlyFSDirs Or CP.Windows.Forms.BrowseFlags.DontGoBelowDomain) _
+					Or CP.Windows.Forms.BrowseFlags.ShowStatusText) _
+					Or CP.Windows.Forms.BrowseFlags.Validate) _
+					Or CP.Windows.Forms.BrowseFlags.NewDialogStyle), CP.Windows.Forms.BrowseFlags)
+		Me.fbd.Title = Nothing
 		'
-		'Label7
+		'GroupBox3
 		'
-		Me.Label7.Location = New System.Drawing.Point(16, 96)
-		Me.Label7.Name = "Label7"
-		Me.Label7.Size = New System.Drawing.Size(104, 23)
-		Me.Label7.TabIndex = 25
-		Me.Label7.Text = "NatLink install path"
+		Me.GroupBox3.Controls.Add(Me.txtRegOutput)
+		Me.GroupBox3.Controls.Add(Me.cmdRegister)
+		Me.GroupBox3.Location = New System.Drawing.Point(16, 456)
+		Me.GroupBox3.Name = "GroupBox3"
+		Me.GroupBox3.Size = New System.Drawing.Size(560, 100)
+		Me.GroupBox3.TabIndex = 18
+		Me.GroupBox3.TabStop = False
+		Me.GroupBox3.Text = "Repair"
+		'
+		'cmdRegister
+		'
+		Me.cmdRegister.Location = New System.Drawing.Point(16, 24)
+		Me.cmdRegister.Name = "cmdRegister"
+		Me.cmdRegister.Size = New System.Drawing.Size(136, 23)
+		Me.cmdRegister.TabIndex = 0
+		Me.cmdRegister.Text = "Register NatLink DLL"
+		Me.ToolTip1.SetToolTip(Me.cmdRegister, "If you receive ""Unable to load compatiblity module""")
+		'
+		'txtRegOutput
+		'
+		Me.txtRegOutput.Location = New System.Drawing.Point(16, 56)
+		Me.txtRegOutput.Name = "txtRegOutput"
+		Me.txtRegOutput.Size = New System.Drawing.Size(496, 20)
+		Me.txtRegOutput.TabIndex = 1
+		Me.txtRegOutput.Text = ""
 		'
 		'EnableNL
 		'
 		Me.AutoScaleBaseSize = New System.Drawing.Size(5, 13)
-		Me.ClientSize = New System.Drawing.Size(594, 328)
+		Me.ClientSize = New System.Drawing.Size(602, 568)
+		Me.Controls.Add(Me.GroupBox3)
 		Me.Controls.Add(Me.GroupBox2)
 		Me.Controls.Add(Me.GroupBox1)
 		Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
@@ -273,9 +449,10 @@ Public Class EnableNL
 		Me.MaximizeBox = False
 		Me.MinimizeBox = False
 		Me.Name = "EnableNL"
-		Me.Text = "Configure NatLink & Vocola"
+		Me.Text = "Configure NatLink & Vocola (beta)"
 		Me.GroupBox1.ResumeLayout(False)
 		Me.GroupBox2.ResumeLayout(False)
+		Me.GroupBox3.ResumeLayout(False)
 		Me.ResumeLayout(False)
 
 	End Sub
@@ -284,19 +461,25 @@ Public Class EnableNL
 
 
 	Friend WithEvents nle As NatLinkEnv
-    Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+	Private Sub Form1_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
 
 		Try
-			nle = New NatLinkEnv
+			nle = New NatLinkEnv(True)
 			txtIniPath.Text = nle.DnsIniFilePath
 			txtVersion.Text = nle._dnsName
-			txtPath.Text = nle._dnsPath
+			txtPath.Text = nle.DNSPath
 			txtNLVer.Text = nle.NatLinkVersion
 			txtVocVer.Text = nle.VocolaVersion
 			txtNatLinkPath.Text = nle.NatLinkInstallPath
 
+			nle.SetDefaultUserDirectory()
+
+			txtNLUD.Text = nle.NatLinkUserDirectory
+			txtVocUD.Text = nle.VocolaUserDirectory
+
+
 			Me.Text += "        " + _
-   Application.ProductVersion.Substring(0, Application.ProductVersion.LastIndexOf("."c))
+			Application.ProductVersion.Substring(0, Application.ProductVersion.LastIndexOf("."c))
 
 			SetLabels()
 
@@ -322,6 +505,20 @@ Public Class EnableNL
 			cmdVocCmdSeqEnabled.Text = "Enable"
 			TxtVocCmdSeqEna.Text = "No"
 		End If
+
+
+        If Not nle.SupportsCommandSeq Then
+            cmdVocCmdSeqEnabled.Enabled = False
+        End If
+
+        If NatLinkDebug Then
+            cmdDebug.Text = "Disable"
+            txtDebugOut.Text = "Yes"
+        Else
+            cmdDebug.Text = "Enable"
+            txtDebugOut.Text = "No"
+        End If
+
 
 	End Sub
 
@@ -355,5 +552,76 @@ Public Class EnableNL
 		SetLabels()
 		Cursor.Current = Cursors.Arrow
 
+	End Sub
+
+	public readonly property  NatLinkDebug as integer 
+
+		Get
+			Dim rk As Microsoft.Win32.RegistryKey
+			Try
+				rk = Registry.CurrentUser.OpenSubKey("Software\NatLink")
+				Return rk.GetValue("NatLinkDebug", 0)
+			Finally
+				If Not rk Is Nothing Then rk.Close()
+			End Try
+		End Get
+	End Property
+	
+
+	Private Sub cmdDebug_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdDebug.Click
+		Cursor.Current = Cursors.WaitCursor
+
+		Dim rk As Microsoft.Win32.RegistryKey
+		rk = Registry.CurrentUser.OpenSubKey("Software\NatLink", True)
+
+		If rk.GetValue("NatLinkDebug", 0) = 0 Then
+			rk.SetValue("NatLinkDebug", 1)
+		Else
+			rk.SetValue("NatLinkDebug", 0)
+		End If
+		rk.Close()
+		SetLabels()
+		Cursor.Current = Cursors.Arrow
+	End Sub
+
+
+	Private Sub btnNLBrowse_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnNLBrowse.Click
+		If fbd.ShowDialog(Me) AndAlso fbd.FolderPath <> "" Then
+			txtNLUD.Text = fbd.FolderPath
+			nle.NatLinkUserDirectory = fbd.FolderPath
+		End If
+	End Sub
+
+	Private Sub btnVocBrowse_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnVocBrowse.Click
+		If fbd.ShowDialog(Me) AndAlso fbd.FolderPath <> "" Then
+			txtVocUD.Text = fbd.FolderPath
+			nle.VocolaUserDirectory = fbd.FolderPath
+		End If
+	End Sub
+
+	Private Sub btnNLReset_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnNLReset.Click
+		txtNLUD.Text = nle.DefaultUserDirectory
+		nle.NatLinkUserDirectory = nle.DefaultUserDirectory
+		IO.Directory.CreateDirectory(nle.DefaultUserDirectory)
+	End Sub
+
+	Private Sub btnVocReset_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnVocReset.Click
+		txtVocUD.Text = nle.DefaultVocolaUserDirectory
+		nle.VocolaUserDirectory = nle.DefaultVocolaUserDirectory
+		IO.Directory.CreateDirectory(nle.DefaultVocolaUserDirectory)
+	End Sub
+
+	Private Sub cmdReg_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdRegister.Click
+		Dim dr As New DllRegServer(nle.NatLinkDllPath)
+		Try
+			dr.Register()
+			txtRegOutput.Text = "OK"
+		Catch ex As Exception
+			If ex.InnerException Is Nothing Then
+				txtRegOutput.Text = ex.Message
+			Else
+				txtRegOutput.Text = ex.InnerException.Message
+			End If
+		End Try
 	End Sub
 End Class

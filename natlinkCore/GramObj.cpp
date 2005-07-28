@@ -342,8 +342,10 @@ BOOL CGramObj::activate( char * ruleName, HWND hWnd )
 
 	if( hWnd != NULL && !IsWindow( hWnd ) )
 	{
-		reportError( errBadWindow,
-			"The handle %d does not refer to an existing window", hWnd );
+		char szErrorMsg[ 512 ];
+		sprintf( szErrorMsg,"The handle %d does not refer to an existing window", hWnd );
+		m_pDragCode->DebuglogMessage(szErrorMsg);
+		reportError( errBadWindow,"The handle %d does not refer to an existing window", hWnd);
 		return FALSE;
 	}
 

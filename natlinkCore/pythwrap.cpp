@@ -17,12 +17,23 @@
 #include "dictobj.h"
 #include "Excepts.h"
 
-#ifdef INHOUSE
-#include "inhouse.h"
-#endif
+
+#using <mscorlib.dll>
+using namespace System;
+#include "_vcclrit.h"
+
+
+
+//class ManagedWrapper {
+//public:
+//static BOOL minitialize();
+//static BOOL mterminate();
+//};
 
 // this is the global CDragonCode class
 CDragonCode cDragon;
+
+//ManagedWrapper mw;
 
 //---------------------------------------------------------------------------
 // This utility subroutine takes a PyObject which reprents the arguments
@@ -232,6 +243,9 @@ natlink_isNatSpeakRunning( PyObject *self, PyObject *args )
 extern "C" static PyObject *
 natlink_natConnect( PyObject *self, PyObject *args )
 {
+
+//	BOOL r = ManagedWrapper::minitialize();
+
 	int bUseThreads = FALSE;
 	if( !PyArg_ParseTuple( args, "|i:natConnect", &bUseThreads ) )
 	{
@@ -1728,9 +1742,6 @@ static struct PyMethodDef resobj_methods[] = {
 	{ "getWave", resobj_getWave, METH_VARARGS },
 	{ "getWordInfo", resobj_getWordInfo, METH_VARARGS },
 	{ "getSelectInfo", resobj_getSelectInfo, METH_VARARGS },
-#ifdef INHOUSE
-	INH_RESOBJ_METHODS
-#endif
 	{ NULL, NULL }
 };
 
@@ -2203,9 +2214,6 @@ static struct PyMethodDef natlink_methods[] = {
 	{ "setTrayIcon", natlink_setTrayIcon, METH_VARARGS },
 	{ "GramObj", gramobj_new, METH_VARARGS },
 	{ "DictObj", dictobj_new, METH_VARARGS },
-#ifdef INHOUSE
-	INH_NATLINK_METHODS
-#endif
 	{ NULL, NULL }
 };
 
@@ -2220,6 +2228,13 @@ void initnatlink()
 	PyObject *pMod;
 
 	CoInitialize( NULL );
+
+	try {
+		__crt_dll_initialize();
+	} catch(System::Exception* e) {
+		Py_FatalError( "Can't initialize natlink module" );
+		return;
+	}
 
 	pMod = Py_InitModule( "natlink", natlink_methods );
 	initExceptions( pMod );

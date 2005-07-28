@@ -11,18 +11,22 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "initguid.h"
 #include "DragCode.h"
+
 #include "appsupp.h"
+#include <_vcclrit.h>
+
 
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(__uuidof(NatLink), CDgnAppSupport)
+	OBJECT_ENTRY( __uuidof(NatLink), CDgnAppSupport)
 END_OBJECT_MAP()
 
+OBJECT_ENTRY_AUTO( __uuidof(NatLink), CDgnAppSupport)
 /////////////////////////////////////////////////////////////////////////////
 // DLL Entry Point
+//http://support.microsoft.com/Default.aspx?id=814472
 
 extern "C"
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
@@ -46,7 +50,15 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 
 STDAPI DllCanUnloadNow(void)
 {
-	return (_Module.GetLockCount()==0) ? S_OK : S_FALSE;
+	if ( _Module.GetLockCount() == 0 )
+	{
+		__crt_dll_terminate();
+        return S_OK;
+	}
+    else
+    {
+        return S_FALSE;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -54,7 +66,14 @@ STDAPI DllCanUnloadNow(void)
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
-	return _Module.GetClassObject(rclsid, riid, ppv);
+	if ( !( __crt_dll_initialize() ) )
+	{
+		return E_FAIL;
+	}
+    else
+    {
+        return _Module.GetClassObject(rclsid, riid, ppv);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -62,9 +81,13 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 
 STDAPI DllRegisterServer(void)
 {
-	// registers object (see appsupp.reg)
-
-	return _Module.RegisterServer(FALSE);
+	if ( !( __crt_dll_initialize() ) )
+	{
+		return E_FAIL;
+	}
+	// Call your registration code here
+    HRESULT hr = _Module.RegisterServer(FALSE);
+    return hr;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -72,6 +95,10 @@ STDAPI DllRegisterServer(void)
 
 STDAPI DllUnregisterServer(void)
 {
-	_Module.UnregisterServer();
-	return S_OK;
+	 HRESULT hr = S_OK;
+	__crt_dll_terminate();
+
+    // Call your unregistration code here
+    hr = _Module.UnregisterServer(FALSE);
+    return hr;
 }

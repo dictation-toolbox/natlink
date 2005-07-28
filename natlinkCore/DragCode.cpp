@@ -124,6 +124,8 @@
 #include "appsupp.h"
 #include "SecdThrd.h"
 #include "Excepts.h"
+#include "CMMessageWindow.h"
+#include "DotNetMisc.h"
 
 // defined in PythWrap.cpp
 CResObj * resobj_new();
@@ -304,7 +306,7 @@ public:
 
 STDMETHODIMP CDgnSRNotifySink::SinkFlagsGet( DWORD * pdwFlags )
 {
-	m_pParent->logMessage("+ CDgnSRNotifySink::SinkFlagsGet\n");
+	m_pParent->DebuglogMessage("+ CDgnSRNotifySink::SinkFlagsGet\n");
 	if( pdwFlags )
 	{
 		*pdwFlags =
@@ -315,7 +317,7 @@ STDMETHODIMP CDgnSRNotifySink::SinkFlagsGet( DWORD * pdwFlags )
 				// send MimicDone message
 			DGNSRSINKFLAG_SENDMIMICDONE;
 	}
-	m_pParent->logMessage("- CDgnSRNotifySink::SinkFlagsGet\n");
+	m_pParent->DebuglogMessage("- CDgnSRNotifySink::SinkFlagsGet\n");
 	return S_OK;
 }
 
@@ -323,13 +325,13 @@ STDMETHODIMP CDgnSRNotifySink::SinkFlagsGet( DWORD * pdwFlags )
 
 STDMETHODIMP CDgnSRNotifySink::AttribChanged2( DWORD dwCode )
 {
-	m_pParent->logMessage("+ CDgnSRNotifySink::AttribChanged2\n");
+	m_pParent->DebuglogMessage("+ CDgnSRNotifySink::AttribChanged2\n");
 	assert( m_pParent );
 	if( m_pParent )
 	{
 		m_pParent->postMessage( WM_ATTRIBCHANGED, dwCode, 0 );
 	}
-	m_pParent->logMessage("- CDgnSRNotifySink::AttribChanged2\n");
+	m_pParent->DebuglogMessage("- CDgnSRNotifySink::AttribChanged2\n");
 	return S_OK;
 }
 
@@ -337,7 +339,7 @@ STDMETHODIMP CDgnSRNotifySink::AttribChanged2( DWORD dwCode )
 
 STDMETHODIMP CDgnSRNotifySink::Paused( QWORD qCookie )
 {
-	m_pParent->logMessage("+ CDgnSRNotifySink::Paused\n");
+	m_pParent->DebuglogMessage("+ CDgnSRNotifySink::Paused\n");
 	m_pParent->logCookie("enter Paused",qCookie);
 	assert( m_pParent );
 	if( !m_pParent )
@@ -351,7 +353,7 @@ STDMETHODIMP CDgnSRNotifySink::Paused( QWORD qCookie )
 	*pCookie = qCookie;
 
 	m_pParent->postMessage( WM_PAUSED, (WPARAM)pCookie, 0 );
-	m_pParent->logMessage("- CDgnSRNotifySink::Paused\n");
+	m_pParent->DebuglogMessage("- CDgnSRNotifySink::Paused\n");
 	return S_OK;
 }
 
@@ -360,7 +362,7 @@ STDMETHODIMP CDgnSRNotifySink::Paused( QWORD qCookie )
 STDMETHODIMP CDgnSRNotifySink::MimicDone(
 	DWORD dwClientCode, LPUNKNOWN pIUnknown )
 {
-	m_pParent->logMessage("+ CDgnSRNotifySink::MimicDone\n");
+	m_pParent->DebuglogMessage("+ CDgnSRNotifySink::MimicDone\n");
 	assert( m_pParent );
 	if( m_pParent )
 	{
@@ -371,7 +373,7 @@ STDMETHODIMP CDgnSRNotifySink::MimicDone(
 		m_pParent->postMessage( WM_MIMICDONE, dwClientCode, (LPARAM)pIUnknown );
 	}
 
-	m_pParent->logMessage("- CDgnSRNotifySink::MimicDone\n");
+	m_pParent->DebuglogMessage("- CDgnSRNotifySink::MimicDone\n");
 	return S_OK;
 }
 
@@ -407,13 +409,13 @@ public:
 
 STDMETHODIMP CDgnSSvcActionNotifySink::PlaybackDone( DWORD dwClientCode )
 {
-	m_pParent->logMessage("+ CDgnSSvcActionNotifySink::PlaybackDone\n");
+	m_pParent->DebuglogMessage("+ CDgnSSvcActionNotifySink::PlaybackDone\n");
 	assert( m_pParent );
 	if( m_pParent )
 	{
 		m_pParent->postMessage( WM_PLAYBACK, dwClientCode, 0 );
 	}
-	m_pParent->logMessage("- CDgnSSvcActionNotifySink::PlaybackDone\n");
+	m_pParent->DebuglogMessage("- CDgnSSvcActionNotifySink::PlaybackDone\n");
 	return S_OK;
 }
 
@@ -422,7 +424,7 @@ STDMETHODIMP CDgnSSvcActionNotifySink::PlaybackDone( DWORD dwClientCode )
 STDMETHODIMP CDgnSSvcActionNotifySink::PlaybackAborted(
 	DWORD dwClientCode, HRESULT eCode )
 {
-	m_pParent->logMessage("+ CDgnSSvcActionNotifySink::PlaybackAborted\n");
+	m_pParent->DebuglogMessage("+ CDgnSSvcActionNotifySink::PlaybackAborted\n");
 	assert( m_pParent );
 	if( m_pParent )
 	{
@@ -430,7 +432,7 @@ STDMETHODIMP CDgnSSvcActionNotifySink::PlaybackAborted(
 		// any meaningful error codes so we just pass some non-zero value
 		m_pParent->postMessage( WM_PLAYBACK, dwClientCode, 1 );
 	}
-	m_pParent->logMessage("- CDgnSSvcActionNotifySink::PlaybackAborted\n");
+	m_pParent->DebuglogMessage("- CDgnSSvcActionNotifySink::PlaybackAborted\n");
 	return S_OK;
 }
 
@@ -438,13 +440,13 @@ STDMETHODIMP CDgnSSvcActionNotifySink::PlaybackAborted(
 
 STDMETHODIMP CDgnSSvcActionNotifySink::ExecutionDone( DWORD dwClientCode )
 {
-	m_pParent->logMessage("+ CDgnSSvcActionNotifySink::ExecutionDone\n");
+	m_pParent->DebuglogMessage("+ CDgnSSvcActionNotifySink::ExecutionDone\n");
 	assert( m_pParent );
 	if( m_pParent )
 	{
 		m_pParent->postMessage( WM_EXECUTION, dwClientCode, 0 );
 	}
-	m_pParent->logMessage("- CDgnSSvcActionNotifySink::ExecutionDone\n");
+	m_pParent->DebuglogMessage("- CDgnSSvcActionNotifySink::ExecutionDone\n");
 	return S_OK;
 }
 
@@ -464,12 +466,12 @@ STDMETHODIMP CDgnSSvcActionNotifySink::ExecutionDone( DWORD dwClientCode )
 STDMETHODIMP CDgnSSvcActionNotifySink::ExecutionStatus(
 	DWORD dwClientCode, DWORD dwStatus )
 {
-	m_pParent->logMessage("+ CDgnSSvcActionNotifySink::ExecutionStatus\n");
+	m_pParent->DebuglogMessage("+ CDgnSSvcActionNotifySink::ExecutionStatus\n");
 	if( dwStatus != 0 && m_pParent )
 	{
 		m_pParent->resetPauseRecog();
 	}
-	m_pParent->logMessage("- CDgnSSvcActionNotifySink::ExecutionStatus\n");
+	m_pParent->DebuglogMessage("- CDgnSSvcActionNotifySink::ExecutionStatus\n");
 	return S_OK;
 }
 
@@ -478,7 +480,7 @@ STDMETHODIMP CDgnSSvcActionNotifySink::ExecutionStatus(
 STDMETHODIMP CDgnSSvcActionNotifySink::ExecutionAborted(
 	DWORD dwClientCode, HRESULT eCode, DWORD iLineNumber )
 {
-	m_pParent->logMessage("+ CDgnSSvcActionNotifySink::ExecutionAborted\n");
+	m_pParent->DebuglogMessage("+ CDgnSSvcActionNotifySink::ExecutionAborted\n");
 	assert( m_pParent );
 	if( m_pParent )
 	{
@@ -488,7 +490,7 @@ STDMETHODIMP CDgnSSvcActionNotifySink::ExecutionAborted(
 
 		m_pParent->postMessage( WM_EXECUTION, dwClientCode, (LPARAM)pData );
 	}
-	m_pParent->logMessage("- CDgnSSvcActionNotifySink::ExecutionAborted\n");
+	m_pParent->DebuglogMessage("- CDgnSSvcActionNotifySink::ExecutionAborted\n");
 	return S_OK;
 }
 
@@ -576,81 +578,110 @@ LRESULT CALLBACK hiddenWndProc(
 	 case WM_COMMAND:
 		// menu command, posted from second thread
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
-		pDragCode->logMessage("+ hiddenWndProc WM_COMMAND\n");
+		pDragCode->DebuglogMessage("+ hiddenWndProc WM_COMMAND\n");
 		if( pDragCode )
 		{
 			CLockPython cLockPython( pDragCode->getThreadState() );
 			pDragCode->onMenuCommand( wParam );
 		}
-		pDragCode->logMessage("- hiddenWndProc WM_COMMAND\n");
+		pDragCode->DebuglogMessage("- hiddenWndProc WM_COMMAND\n");
 		return 0;
 		
 	 case WM_ATTRIBCHANGED:
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
-		pDragCode->logMessage("+ hiddenWndProc WM_ATTRIBCHANGED\n");
+		pDragCode->DebuglogMessage("+ hiddenWndProc WM_ATTRIBCHANGED\n");
 		if( pDragCode )
 		{
 			CLockPython cLockPython( pDragCode->getThreadState() );
 			pDragCode->onAttribChanged( wParam );
 		}
-		pDragCode->logMessage("- hiddenWndProc WM_ATTRIBCHANGED\n");
+		pDragCode->DebuglogMessage("- hiddenWndProc WM_ATTRIBCHANGED\n");
 		return 0;
 
 	 case WM_PAUSED:
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
-		pDragCode->logMessage("+ hiddenWndProc WM_PAUSED\n");
+		pDragCode->DebuglogMessage("+ hiddenWndProc WM_PAUSED\n");
 		if( pDragCode )
 		{
 			CLockPython cLockPython( pDragCode->getThreadState() );
 			pDragCode->onPaused( wParam );
 		}
-		pDragCode->logMessage("- hiddenWndProc WM_PAUSED\n");
+		pDragCode->DebuglogMessage("- hiddenWndProc WM_PAUSED\n");
 		return 0;
 
 	 case WM_SENDRESULTS:
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
-		pDragCode->logMessage("+ hiddenWndProc WM_SENDRESULTS\n");
+		pDragCode->DebuglogMessage("+ hiddenWndProc WM_SENDRESULTS\n");
 		if( pDragCode )
 		{
 			CLockPython cLockPython( pDragCode->getThreadState() );
 			pDragCode->onSendResults( wParam, lParam );
 		}
-		pDragCode->logMessage("- hiddenWndProc WM_SENDRESULTS\n");
+		pDragCode->DebuglogMessage("- hiddenWndProc WM_SENDRESULTS\n");
 		return 0;
 
 	 case WM_PLAYBACK:
 	 case WM_EXECUTION:
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
-		pDragCode->logMessage("+ hiddenWndProc WM_PLAYBACK/WM_EXECUTION\n");
+		pDragCode->DebuglogMessage("+ hiddenWndProc WM_PLAYBACK/WM_EXECUTION\n");
 		// these are handled in their respective message loops
-		pDragCode->logMessage("- hiddenWndProc WM_PLAYBACK/WM_EXECUTION\n");
+		pDragCode->DebuglogMessage("- hiddenWndProc WM_PLAYBACK/WM_EXECUTION\n");
 		return 0;
 
 	 case WM_TIMER:
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
-		pDragCode->logMessage("+ hiddenWndProc WM_TIMER\n");
+		pDragCode->DebuglogMessage("+ hiddenWndProc WM_TIMER\n");
 		if( pDragCode )
 		{
 			CLockPython cLockPython( pDragCode->getThreadState() );
 			pDragCode->onTimer();
 		}
-		pDragCode->logMessage("- hiddenWndProc WM_TIMER\n");
+		pDragCode->DebuglogMessage("- hiddenWndProc WM_TIMER\n");
 		return 0;
 
 	 case WM_TRAYICON:		
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
-		pDragCode->logMessage("+ hiddenWndProc WM_TRAYICON\n");
+		pDragCode->DebuglogMessage("+ hiddenWndProc WM_TRAYICON\n");
 		if( pDragCode )
 		{
 			CLockPython cLockPython( pDragCode->getThreadState() );
 			pDragCode->onTrayIcon( wParam, lParam );
 		}
-		pDragCode->logMessage("- hiddenWndProc WM_TRAYICON\n");
+		pDragCode->DebuglogMessage("- hiddenWndProc WM_TRAYICON\n");
 		return 0;
 	}
 	
 	return DefWindowProc( hwnd, uMsg, wParam, lParam );
 }
+
+
+CDragonCode::CDragonCode() 
+{
+		m_hMsgWnd = NULL;
+		m_dwKey = 0;
+		m_pBeginCallback = NULL;
+		m_pChangeCallback = NULL;
+		m_pFirstGramObj = NULL;
+		m_pFirstResObj = NULL;
+		m_pFirstDictObj = NULL;
+		m_pSecdThrd = NULL;
+		m_bDuringInit = FALSE;
+		m_bDuringPaused = FALSE;
+		m_nCallbackDepth = 0;
+		m_dwPendingCallback = 0;
+		m_nPauseRecog = 0;
+		m_deferredCookie = 0;
+		m_pThreadState = NULL;
+		m_pTimerCallback = NULL;
+		m_nTimer = 0;
+		m_bSetTraining = FALSE;
+		m_pszLogFile = NULL;
+		m_bHasTrayIcon = FALSE;
+		m_pTrayIconCallback = NULL;
+		m_pMessageStack = NULL;
+		_DebugLogging =  FALSE;
+}
+
 
 //---------------------------------------------------------------------------
 // Returns TRUE if Dragon NaturallySpeaking is running
@@ -749,15 +780,15 @@ void CDragonCode::onPaused( WPARAM wParam )
 	{
 		// whoops, we want to pause recognition for a while (probably
 		// because we are processing the results of a previous recognition)
-		logMessage("+ CDragonCode::onPaused detefered\n");
+		DebuglogMessage("+ CDragonCode::onPaused detefered\n");
 		m_deferredCookie = *pCookie;
-		logMessage("- CDragonCode::onPaused detefered\n");
+		DebuglogMessage("- CDragonCode::onPaused detefered\n");
 	}
 	else
 	{
-		logMessage("+ CDragonCode::onPaused doPausedProcessing\n");
+		DebuglogMessage("+ CDragonCode::onPaused doPausedProcessing\n");
 		doPausedProcessing( *pCookie );
-		logMessage("- CDragonCode::onPaused doPausedProcessing\n");
+		DebuglogMessage("- CDragonCode::onPaused doPausedProcessing\n");
 	}
 	
 	delete pCookie;
@@ -788,11 +819,11 @@ void CDragonCode::doPausedProcessing( QWORD dwCookie )
 
 		if( m_pBeginCallback )
 		{
-			logMessage("+ CDragonCode::doPausedProcessing beginCallback\n");
+			DebuglogMessage("+ CDragonCode::doPausedProcessing beginCallback\n");
 			makeCallback(
 				m_pBeginCallback,
 				Py_BuildValue( "(O)", pInfo ) );
-			logMessage("- CDragonCode::doPausedProcessing beginCallback\n");
+			DebuglogMessage("- CDragonCode::doPausedProcessing beginCallback\n");
 		}
 
 		// now we call the grammar callbacks
@@ -804,11 +835,11 @@ void CDragonCode::doPausedProcessing( QWORD dwCookie )
 		{
 			if( pGramObj->m_pBeginCallback )
 			{
-				logMessage("+ CDragonCode::doPausedProcessing grammarCallback\n");
+				DebuglogMessage("+ CDragonCode::doPausedProcessing grammarCallback\n");
 				makeCallback(
 					pGramObj->m_pBeginCallback,
 					Py_BuildValue( "(O)", pInfo ) );
-				logMessage("- CDragonCode::doPausedProcessing grammarCallback\n");
+				DebuglogMessage("- CDragonCode::doPausedProcessing grammarCallback\n");
 			}
 		}
 
@@ -1075,13 +1106,22 @@ LPARAM CDragonCode::messageLoop( UINT message, WPARAM wParam )
 BOOL CDragonCode::displayText(
 	const char * pszText, BOOL bError, BOOL bLogError )
 {
-	if( m_pSecdThrd )
-	{
-		m_pSecdThrd->displayText( pszText, bError );
+	//if( m_pSecdThrd )
+	//{
+	//		m_pSecdThrd->displayText( pszText, bError );
+	//}
+
+	
+	CMMessageWindow mw;
+	if (bError){
+		mw.ShowError(pszText);
+	}else {
+		mw.ShowMessage(pszText);
 	}
+
 	if( bLogError )
 	{
-		logMessage( pszText );
+		DebuglogMessage( pszText );
 	}
 	return TRUE;
 }
@@ -1342,6 +1382,13 @@ DWORD CDragonCode::testFileName( const char * pszFileName )
 
 //---------------------------------------------------------------------------
 
+void CDragonCode::DebuglogMessage( const char * pszText )
+{
+	if (_DebugLogging)
+	{
+		logMessage(pszText);
+	}
+}
 void CDragonCode::logMessage( const char * pszText )
 {
 	if( !m_pszLogFile )
@@ -1637,21 +1684,12 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 		natDisconnect();
 	}
 	assert( m_pISRCentral == NULL );
+	
 
-#ifdef MUSTRUN
-	// set the preprocessor variable MUSTRUN inorder to add this test
-	//
-	// it is not really necessary to start NatSpeak first since the
-	// connection to NatSpeak will launch it if necessary but then you do
-	// not get to select a user.
-	if( !isNatSpeakRunning() )
-	{
-		reportError(
-			"Dragon NaturallySpeaking is not running (calling %s).",
-			"natlink.natConnect" );
-		return FALSE;
-	}
-#endif
+
+	DotNetMisc dnm;
+	int r = dnm.GetDebugLogOptions();
+	_DebugLogging = (BOOL)r;
 
 	// here we start the second thread for displaying messages; we only need
 	// this when we are called as a compatibility module
@@ -1673,7 +1711,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 
 	rc = m_pIServiceProvider->QueryService(
 		__uuidof(DgnDictate), __uuidof(ISRCentral), (void**)&m_pISRCentral );
-	RETURNIFERROR( rc, "IServiceProvider::QueryService(DgnDictate)" );
+RETURNIFERROR( rc, "IServiceProvider::QueryService(DgnDictate)" );
 
 	// This interface contains the microphone logic
 	
@@ -1778,6 +1816,8 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	}
 
 	// now we create a local Python thread state which we can use in callbacks
+
+
 	if( !m_pThreadState && bUseThreads )
 	{
 		PyThreadState * threadStateSave = PyThreadState_Swap( NULL );
@@ -1960,7 +2000,7 @@ PyObject * CDragonCode::getCurrentModule()
 
 	// get the handle of the current forground window
 
-	logMessage("+ CDragonCode::getCurrentModule\n");
+	DebuglogMessage("+ CDragonCode::getCurrentModule\n");
 	HWND hWnd = GetForegroundWindow();
 	if( hWnd == NULL )
 	{
@@ -1972,7 +2012,7 @@ PyObject * CDragonCode::getCurrentModule()
 
 	int length = GetWindowTextLength( hWnd ) + 1;
 	CPointerChar pTitle = new char[ length ];
-	logMessage("  CDragonCode::getCurrentModule 1\n");
+	DebuglogMessage("  CDragonCode::getCurrentModule 1\n");
 	GetWindowText( hWnd, pTitle, length );
 
 	// get the module name of the current foreground window; note that this
@@ -1984,13 +2024,13 @@ PyObject * CDragonCode::getCurrentModule()
 	CPointerChar pModule = new char[ dwLength ];
 	DWORD dwNeeded;
 
-	logMessage("  CDragonCode::getCurrentModule 2\n");
+	DebuglogMessage("  CDragonCode::getCurrentModule 2\n");
 	rc = m_pIDgnExtModSupStrings->GetWindowModuleFileName(
         hWnd, pModule, dwLength, &dwNeeded );
-	logMessage("  CDragonCode::getCurrentModule 3\n");
+	DebuglogMessage("  CDragonCode::getCurrentModule 3\n");
 	if( rc == E_BUFFERTOOSMALL )
 	{
-	logMessage("  CDragonCode::getCurrentModule 3a\n");
+	DebuglogMessage("  CDragonCode::getCurrentModule 3a\n");
 		dwLength = dwNeeded + 1;
 		pModule = new char[ dwLength ];
 		rc = m_pIDgnExtModSupStrings->GetWindowModuleFileName(
@@ -2003,7 +2043,7 @@ PyObject * CDragonCode::getCurrentModule()
 		// target module is busy or otherwise unable to be accessed through
 		// the NatSpeak hooking mechanism.  This condition may be temporary
 		// so retrying is always an option.
-		logMessage("  CDragonCode::getCurrentModule 3b\n");
+		DebuglogMessage("  CDragonCode::getCurrentModule 3b\n");
 		return Py_BuildValue( "(ssi)", "", "", 0 );
 	}
 	if( rc == HOOKERR_CANNOTINJECT )
@@ -2012,22 +2052,22 @@ PyObject * CDragonCode::getCurrentModule()
 		// be retried.  However, we do not remember that the error can not
 		// be retried and blindly try to repeat the operation over and over
 		// again :-).  For now, ignore this error and return unknown app.
-		logMessage("  CDragonCode::getCurrentModule 3c\n");
+		DebuglogMessage("  CDragonCode::getCurrentModule 3c\n");
 		return Py_BuildValue( "(ssi)", "", "", 0 );
 	}
 	if( rc == SRERR_INVALIDPARAM )
 	{
 		// I seem to see this error when switch users; probably because the
 		// window is no longer valis and we did not catch this earlier.
-		logMessage("  CDragonCode::getCurrentModule 3d\n");
+		DebuglogMessage("  CDragonCode::getCurrentModule 3d\n");
 		return Py_BuildValue( "(ssi)", "", "", 0 );
 	}		
-	logMessage("  CDragonCode::getCurrentModule 4\n");
+	DebuglogMessage("  CDragonCode::getCurrentModule 4\n");
 	RETURNIFERROR( rc, "IDgnExtModSupStrings::GetWindowModuleFileName" );
 
 	// build the result tuple and return
 	
-	logMessage("  CDragonCode::getCurrentModule 5\n");
+	DebuglogMessage("  CDragonCode::getCurrentModule 5\n");
 	return Py_BuildValue( "(ssi)", pModule, pTitle, hWnd );
 }
 
@@ -3312,5 +3352,5 @@ void CDragonCode::logCookie( const char * pText, QWORD qCookie )
 	char buffer[200];
 	sprintf(buffer, "... %s %.4x %.4x\n",
 			pText, pCookie[0], pCookie[1] );
-	logMessage(buffer);
+	DebuglogMessage(buffer);
 }

@@ -94,31 +94,34 @@ genkeys_f_usekeypad = 0x400000
 
 # These are the flags which are returned from getWordInfo
 
-dgnwordflag_useradded = 0x00000001
-dgnwordflag_nodelete = 0x00000008
-dgnwordflag_passive_cap_next = 0x00000010
-dgnwordflag_active_cap_next = 0x00000020
-dgnwordflag_uppercase_next = 0x00000040
-dgnwordflag_lowercase_next = 0x00000080
-dgnwordflag_no_space_next = 0x00000100
-dgnwordflag_two_spaces_next = 0x00000200
-dgnwordflag_cond_no_space = 0x00000400
-dgnwordflag_cap_all = 0x00000800
-dgnwordflag_uppercase_all = 0x00001000
-dgnwordflag_lowercase_all = 0x00002000
-dgnwordflag_no_space_all = 0x00004000
-dgnwordflag_reset_no_space = 0x00008000
-dgnwordflag_is_period = 0x00020000
-dgnwordflag_no_formatting = 0x00040000
-dgnwordflag_no_space_change = 0x00080000
-dgnwordflag_no_cap_change = 0x00100000
-dgnwordflag_no_space_before = 0x00200000
-dgnwordflag_reset_uc_lc_caps = 0x00400000
-dgnwordflag_new_line = 0x00800000
-dgnwordflag_new_paragraph = 0x01000000
-dgnwordflag_title_mode = 0x02000000
-dgnwordflag_space_bar = 0x08000000
-dgnwordflag_topicadded = 0x40000000
+dgnwordflag_useradded		= 0x00000001
+dgnwordflag_nodelete		= 0x00000008
+dgnwordflag_passive_cap_next= 0x00000010
+dgnwordflag_active_cap_next	= 0x00000020
+dgnwordflag_uppercase_next	= 0x00000040
+dgnwordflag_lowercase_next	= 0x00000080
+dgnwordflag_no_space_next	= 0x00000100
+dgnwordflag_two_spaces_next	= 0x00000200
+dgnwordflag_cond_no_space	= 0x00000400
+dgnwordflag_cap_all			= 0x00000800
+dgnwordflag_uppercase_all	= 0x00001000
+dgnwordflag_lowercase_all	= 0x00002000
+dgnwordflag_no_space_all	= 0x00004000
+dgnwordflag_reset_no_space	= 0x00008000
+dgnwordflag_is_period		= 0x00020000
+dgnwordflag_no_formatting	= 0x00040000
+dgnwordflag_no_space_change	= 0x00080000
+dgnwordflag_no_cap_change	= 0x00100000
+dgnwordflag_no_space_before	= 0x00200000
+dgnwordflag_reset_uc_lc_caps= 0x00400000
+dgnwordflag_new_line		= 0x00800000
+dgnwordflag_new_paragraph	= 0x01000000
+dgnwordflag_title_mode		= 0x02000000
+dgnwordflag_space_bar		= 0x08000000
+dgnwordflag_topicadded		= 0x40000000
+dgnwordflag_DNS8newwrdProp  = 0x20000000
+                                
+ 
 
 #---------------------------------------------------------------------------
 # matchWindow

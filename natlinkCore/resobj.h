@@ -11,9 +11,6 @@
 class CDragonCode;
 struct CGramObj;
 
-#ifdef INHOUSE
-#include "inhouse.h"
-#endif
 
 //---------------------------------------------------------------------------
 // This is a struct not a class to make sure we are compatibile with Python
@@ -61,7 +58,4 @@ struct CResObj
 	PyObject * getWordInfo( int nChoice );
 	PyObject * getSelectInfo( CGramObj * pGrammar, int nChoice );
 	
-#ifdef INHOUSE
-	INH_RESOBJ_CLASS
-#endif
 };

@@ -2,14 +2,14 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="natlink"
+	Name="natlinkCore"
 	ProjectGUID="{FD3160B9-F117-4187-B968-C121B084488E}"
 	RootNamespace="natlink"
 	SccProjectName=""
 	SccAuxPath=""
 	SccLocalPath=""
 	SccProvider=""
-	Keyword="AtlProj">
+	Keyword="ManagedCProj">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -17,21 +17,22 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)macrosystem\core"
+			IntermediateDirectory="$(ProjectDir)$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			UseOfATL="1"
+			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			WholeProgramOptimization="TRUE">
+			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="C:\Python22\Include;c:\Python\include;&quot;c:\Program Files\Python\include&quot;;&quot;C:\Program Files\Python22\include&quot;;C:\Python23\include;&quot;C:\Program Files\Python23\include&quot;"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20"
+				AdditionalIncludeDirectories="C:\Python23\include;"
+				AdditionalUsingDirectories="..\MessageWindow\bin\"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -44,10 +45,17 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="FALSE"
+				AdditionalOptions="/NOENTRY"
+				AdditionalDependencies="msvcrt.lib"
+				OutputFile="$(OutDir)/natlink.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="c:\Python\libs;C:\Python22\libs;&quot;c:\Program Files\Python\libs&quot;;&quot;C:\Program Files\Python22\libs&quot;;c:\python23\libs;&quot;C:\Program Files\Python23\libs&quot;"
+				AdditionalLibraryDirectories="c:\python23\libs;..\macrosystem\core"
+				IgnoreAllDefaultLibraries="FALSE"
+				IgnoreDefaultLibraryNames="LIBCMT"
 				ModuleDefinitionFile="natlink.def"
+				ForceSymbolReferences="__DllMainCRTStartup@12"
 				SubSystem="2"
 				TargetMachine="1"/>
 			<Tool
@@ -59,7 +67,11 @@
 				TypeLibraryName=".\..\MacroSystem/natlink20.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				Description="Copy files"
+				CommandLine="copy ..\MessageWindow\bin\MessageWindow.dll ..\macrosystem\core
+copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -81,20 +93,22 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)macrosystem\core"
+			IntermediateDirectory="$(ProjectDir)$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			ReferencesPath="">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\Python22\Include;c:\Python\include;&quot;c:\Program Files\Python\include&quot;;&quot;C:\Program Files\Python22\include&quot;;C:\Python23\include;&quot;C:\Program Files\Python23\include&quot;"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20"
-				RuntimeLibrary="1"
+				AdditionalIncludeDirectories="C:\Python23\include;"
+				AdditionalUsingDirectories="..\MessageWindow\bin\"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdafx.h"
-				PrecompiledHeaderFile=".\Debug/natlink20.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
@@ -106,13 +120,20 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="FALSE"
+				AdditionalOptions="/NOENTRY"
 				ShowProgress="2"
-				LinkIncremental="2"
+				OutputFile="$(OutDir)/natlink.dll"
+				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="c:\Python\libs;C:\Python22\libs;&quot;c:\Program Files\Python\libs&quot;;&quot;C:\Program Files\Python22\libs&quot;;c:\python23\libs;&quot;C:\Program Files\Python23\libs&quot;"
+				AdditionalLibraryDirectories="c:\python23\libs;..\macrosystem\core"
+				IgnoreDefaultLibraryNames="LIBCMT"
 				ModuleDefinitionFile="natlink.def"
+				ForceSymbolReferences="__DllMainCRTStartup@12"
 				GenerateDebugInformation="TRUE"
+				AssemblyDebug="1"
 				SubSystem="2"
+				ResourceOnlyDLL="FALSE"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -123,7 +144,11 @@
 				TypeLibraryName=".\..\MacroSystem/natlink20.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				Description="Copy files"
+				CommandLine="copy ..\MessageWindow\bin\MessageWindow.dll ..\macrosystem\core
+copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -131,6 +156,78 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="TestMSI|Win32"
+			OutputDirectory="$(SolutionDir)macrosystem\core"
+			IntermediateDirectory="$(ProjectDir)$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			WholeProgramOptimization="TRUE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="1"
+				GlobalOptimizations="TRUE"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="C:\Python23\include;"
+				AdditionalUsingDirectories="..\MessageWindow\bin\"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL"
+				StringPooling="TRUE"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
+				UsePrecompiledHeader="3"
+				PrecompiledHeaderThrough="stdafx.h"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				RegisterOutput="FALSE"
+				OutputFile="$(OutDir)/natlink.dll"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="c:\python23\libs;..\macrosystem\core"
+				IgnoreDefaultLibraryNames="LIBCMT"
+				ModuleDefinitionFile="natlink.def"
+				SubSystem="2"
+				TargetMachine="1"/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\MacroSystem/natlink20.tlb"
+				HeaderFileName=""/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Copy files"
+				CommandLine="copy ..\MessageWindow\bin\MessageWindow.dll ..\macrosystem\core
+copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
+"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -158,7 +255,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -166,7 +263,40 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\CMMessageWindow.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+						CompileAsManaged="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="2"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -177,7 +307,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -185,7 +315,40 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\DotNetMisc.cpp">
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+						CompileAsManaged="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="2"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -196,7 +359,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -204,7 +367,15 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -215,7 +386,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -223,7 +394,15 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -234,7 +413,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -242,7 +421,15 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -253,7 +440,9 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="2"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -261,7 +450,18 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+						CompileAsManaged="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -278,7 +478,9 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="2"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -286,7 +488,18 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+						CompileAsManaged="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -297,7 +510,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -305,7 +518,15 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -316,7 +537,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -324,7 +545,15 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -335,7 +564,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -344,7 +573,16 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;PYTHON20;$(NoInherit)"
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="TestMSI|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
@@ -356,10 +594,19 @@
 				RelativePath="appsupp.h">
 			</File>
 			<File
+				RelativePath=".\CMMessageWindow.h">
+			</File>
+			<File
 				RelativePath="comsupp.h">
 			</File>
 			<File
 				RelativePath="dictobj.h">
+			</File>
+			<File
+				RelativePath=".\DotNetBasics.h">
+			</File>
+			<File
+				RelativePath=".\DotNetMisc.h">
 			</File>
 			<File
 				RelativePath="DragCode.h">
@@ -419,25 +666,19 @@
 			<File
 				RelativePath=".\idi_up2.ico">
 			</File>
-		</Filter>
-		<Filter
-			Name="macrosystem"
-			Filter="">
 			<File
-				RelativePath="..\macrosystem\gramparser.py"
-				DeploymentContent="TRUE">
-			</File>
-			<File
-				RelativePath="..\macrosystem\natlinkmain.py"
-				DeploymentContent="TRUE">
-			</File>
-			<File
-				RelativePath="..\macrosystem\natlinkutils.py"
-				DeploymentContent="TRUE">
+				RelativePath=".\Info.ico">
 			</File>
 		</Filter>
 		<File
 			RelativePath="appsupp.reg">
+		</File>
+		<File
+			RelativePath=".\natspeak.exe.config"
+			DeploymentContent="TRUE">
+		</File>
+		<File
+			RelativePath=".\python.exe.config">
 		</File>
 	</Files>
 	<Globals>

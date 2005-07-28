@@ -152,7 +152,7 @@ STDMETHODIMP CVDct0NotifySink::SinkFlagsGet( DWORD * pdwFlags )
 	// if IDgnGetSinkFlags exists, SinkFlagsGet returns a list of the
 	// notifications we want.  This interface is optional.
 	
-	m_pParent->m_pDragCode->logMessage("+ CVDct0NotifySink::SinkFlagsGet\n");
+	m_pParent->m_pDragCode->DebuglogMessage("+ CVDct0NotifySink::SinkFlagsGet\n");
 	if( pdwFlags )
 	{
 		*pdwFlags =
@@ -162,7 +162,7 @@ STDMETHODIMP CVDct0NotifySink::SinkFlagsGet( DWORD * pdwFlags )
 			DGNDICTSINKFLAG_SENDJITPAUSE;
 	}
 	
-	m_pParent->m_pDragCode->logMessage("- CVDct0NotifySink::SinkFlagsGet\n");
+	m_pParent->m_pDragCode->DebuglogMessage("- CVDct0NotifySink::SinkFlagsGet\n");
 	return S_OK;
 }
 
@@ -174,13 +174,13 @@ STDMETHODIMP CVDct0NotifySink::TextSelChanged()
 	// change within the internal buffer without a corresponding change in
 	// the text.
 	
-	m_pParent->m_pDragCode->logMessage("+ CVDct0NotifySink::TextSelChanged\n");
+	m_pParent->m_pDragCode->DebuglogMessage("+ CVDct0NotifySink::TextSelChanged\n");
 	if( m_pParent )
 	{
 		m_pParent->TextSelChanged();
 	}
 	
-	m_pParent->m_pDragCode->logMessage("- CVDct0NotifySink::TextSelChanged\n");
+	m_pParent->m_pDragCode->DebuglogMessage("- CVDct0NotifySink::TextSelChanged\n");
 	return S_OK;
 }
 
@@ -192,13 +192,13 @@ STDMETHODIMP CVDct0NotifySink::TextChanged( DWORD dwReason )
 	// within the internal buffer.  The parameter (a reason code) is not
 	// currently used in Dragon NaturallySpeaking and can be ignored.
 	
-	m_pParent->m_pDragCode->logMessage("+ CVDct0NotifySink::TextChanged\n");
+	m_pParent->m_pDragCode->DebuglogMessage("+ CVDct0NotifySink::TextChanged\n");
 	if( m_pParent )
 	{
 		m_pParent->TextChanged( dwReason );
 	}
 	
-	m_pParent->m_pDragCode->logMessage("- CVDct0NotifySink::TextChanged\n");
+	m_pParent->m_pDragCode->DebuglogMessage("- CVDct0NotifySink::TextChanged\n");
 	return S_OK;
 }
 
@@ -210,13 +210,13 @@ STDMETHODIMP CVDct0NotifySink::JITPause()
 	// the voice dictation object has activated its grammars.  This allows
 	// us to make sure we are in sync with the internal buffer.
 	
-	m_pParent->m_pDragCode->logMessage("+ CVDct0NotifySink::JITPause\n");
+	m_pParent->m_pDragCode->DebuglogMessage("+ CVDct0NotifySink::JITPause\n");
 	if( m_pParent )
 	{
 		m_pParent->JITPause();
 	}
 	
-	m_pParent->m_pDragCode->logMessage("- CVDct0NotifySink::JITPause\n");
+	m_pParent->m_pDragCode->DebuglogMessage("- CVDct0NotifySink::JITPause\n");
 	return S_OK;
 }
 
@@ -798,7 +798,7 @@ BOOL CDictObj::JITPause()
 	}
 
 	// compute the callback information
-	m_pDragCode->logMessage("+ CDictObj::JITPause\n");
+	m_pDragCode->DebuglogMessage("+ CDictObj::JITPause\n");
 	PyObject * pInfo = m_pDragCode->getCurrentModule();
 	if( pInfo == NULL )
 	{
@@ -806,11 +806,11 @@ BOOL CDictObj::JITPause()
 	}
 
 	// make the callback
-	m_pDragCode->logMessage("  CDictObj::JITPause making callback\n");
+	m_pDragCode->DebuglogMessage("  CDictObj::JITPause making callback\n");
 	m_pDragCode->makeCallback( m_pBeginCallback, Py_BuildValue( "(O)", pInfo ) );
 
 	// clean up
 	Py_XDECREF( pInfo );
-	m_pDragCode->logMessage("- CDictObj::JITPause\n");
+	m_pDragCode->DebuglogMessage("- CDictObj::JITPause\n");
 	return TRUE;
 }

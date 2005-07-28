@@ -1,0 +1,166 @@
+<VisualStudioProject>
+    <CSHARP
+        ProjectType = "Local"
+        ProductVersion = "7.10.3077"
+        SchemaVersion = "2.0"
+        ProjectGuid = "{BED6A4E2-AE35-4725-B240-5B120649205C}"
+    >
+        <Build>
+            <Settings
+                ApplicationIcon = ""
+                AssemblyKeyContainerName = ""
+                AssemblyName = "SampleMacros"
+                AssemblyOriginatorKeyFile = ""
+                DefaultClientScript = "JScript"
+                DefaultHTMLPageLayout = "Grid"
+                DefaultTargetSchema = "IE50"
+                DelaySign = "false"
+                OutputType = "Library"
+                PreBuildEvent = ""
+                PostBuildEvent = ""
+                RootNamespace = "SampleMacros"
+                RunPostBuildEvent = "OnBuildSuccess"
+                StartupObject = ""
+            >
+                <Config
+                    Name = "Debug"
+                    AllowUnsafeBlocks = "false"
+                    BaseAddress = "285212672"
+                    CheckForOverflowUnderflow = "false"
+                    ConfigurationOverrideFile = ""
+                    DefineConstants = ""
+                    DocumentationFile = ""
+                    DebugSymbols = "true"
+                    FileAlignment = "4096"
+                    IncrementalBuild = "false"
+                    NoStdLib = "false"
+                    NoWarn = ""
+                    Optimize = "false"
+                    OutputPath = "bin\Debug\"
+                    RegisterForComInterop = "false"
+                    RemoveIntegerChecks = "false"
+                    TreatWarningsAsErrors = "false"
+                    WarningLevel = "1"
+                />
+                <Config
+                    Name = "Release"
+                    AllowUnsafeBlocks = "false"
+                    BaseAddress = "285212672"
+                    CheckForOverflowUnderflow = "false"
+                    ConfigurationOverrideFile = ""
+                    DefineConstants = ""
+                    DocumentationFile = ""
+                    DebugSymbols = "false"
+                    FileAlignment = "4096"
+                    IncrementalBuild = "false"
+                    NoStdLib = "false"
+                    NoWarn = ""
+                    Optimize = "false"
+                    OutputPath = "bin\Release\"
+                    RegisterForComInterop = "false"
+                    RemoveIntegerChecks = "false"
+                    TreatWarningsAsErrors = "false"
+                    WarningLevel = "1"
+                />
+                <Config
+                    Name = "TestMSI"
+                    AllowUnsafeBlocks = "false"
+                    BaseAddress = "285212672"
+                    CheckForOverflowUnderflow = "false"
+                    ConfigurationOverrideFile = ""
+                    DefineConstants = ""
+                    DocumentationFile = ""
+                    DebugSymbols = "false"
+                    FileAlignment = "4096"
+                    IncrementalBuild = "false"
+                    NoStdLib = "false"
+                    NoWarn = ""
+                    Optimize = "false"
+                    OutputPath = "bin\Release\"
+                    RegisterForComInterop = "false"
+                    RemoveIntegerChecks = "false"
+                    TreatWarningsAsErrors = "false"
+                    WarningLevel = "1"
+                />
+            </Settings>
+            <References/>
+        </Build>
+        <Files>
+            <Include>
+                <File
+                    RelPath = "_globals.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "_mouse.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "_sample1.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "_sample2.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "_sample3.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "_sample4.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "_sample5.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "_sample8.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "_sample9.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "excel_sample7.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "Index.htm"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "natspeak_sample6.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "trainuser.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "transcribe.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "wiki.css"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "windict.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "winspch.py"
+                    BuildAction = "Content"
+                />
+                <File
+                    RelPath = "wordpad.py"
+                    BuildAction = "Content"
+                />
+            </Include>
+        </Files>
+    </CSHARP>
+</VisualStudioProject>
+

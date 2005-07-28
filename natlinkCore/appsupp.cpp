@@ -79,12 +79,19 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 
 	if( m_pNatLinkMain == NULL )
 	{
+		if (PyErr_Occurred(	)){
+			void PyErr_Print(	);
+		}
+		char *pth=Py_GetPath(	);
 		OutputDebugString(
 			"NatLink: an exception occurred loading 'natlinkmain' module" );
 		m_pDragCode->displayText(
 			"An exception occurred loading 'natlinkmain' module\r\n", TRUE );
-		m_pDragCode->displayText(
-			"No more error information is available\r\n", TRUE );
+		m_pDragCode->displayText("Check python path\r\n",TRUE);
+		m_pDragCode->displayText(pth,TRUE);
+		m_pDragCode->displayText("\r\n\r\n",TRUE);
+		m_pDragCode->displayText("No more error information is available\r\n", TRUE );
+		m_pDragCode->displayText("A common souce of this error is not installing the ActiveState Python or the Win32 extentions for standard Python\r\n", TRUE );
 		return S_OK;
 	}
 

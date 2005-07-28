@@ -19,41 +19,17 @@ class CMessageStack;
 
 typedef const char * PCCHAR;
 
-#ifdef INHOUSE
-#include "inhouse.h"
-#endif
 
 //---------------------------------------------------------------------------
 
 class CDragonCode
 {
- public:
-	
-	CDragonCode() {
-		m_hMsgWnd = NULL;
-		m_dwKey = 0;
-		m_pBeginCallback = NULL;
-		m_pChangeCallback = NULL;
-		m_pFirstGramObj = NULL;
-		m_pFirstResObj = NULL;
-		m_pFirstDictObj = NULL;
-		m_pSecdThrd = NULL;
-		m_bDuringInit = FALSE;
-		m_bDuringPaused = FALSE;
-		m_nCallbackDepth = 0;
-		m_dwPendingCallback = 0;
-		m_nPauseRecog = 0;
-		m_deferredCookie = 0;
-		m_pThreadState = NULL;
-		m_pTimerCallback = NULL;
-		m_nTimer = 0;
-		m_bSetTraining = FALSE;
-		m_pszLogFile = NULL;
-		m_bHasTrayIcon = FALSE;
-		m_pTrayIconCallback = NULL;
-		m_pMessageStack = NULL;
-	}
-	
+private:
+	BOOL _DebugLogging;
+public:
+
+	CDragonCode::CDragonCode();
+
 	~CDragonCode() {
 		natDisconnect();
 	}
@@ -275,6 +251,8 @@ class CDragonCode
 	// writes one line to the dragon.log file
  public:
 	void logMessage( const char * pszText );
+	void DebuglogMessage( const char * pszText );
+
 	void logCookie( const char * pszText, QWORD qCookie );
  protected:
 
@@ -287,7 +265,4 @@ class CDragonCode
 	void TriggerMessage( UINT message, WPARAM wParam, LPARAM lParam );
 	BOOL IsMessageTriggered( UINT message, WPARAM wParam, LPARAM & lParam );
 
-#ifdef INHOUSE
-	INH_DRAGCODE_CLASS
-#endif
 };

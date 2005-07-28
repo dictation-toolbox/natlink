@@ -12,7 +12,9 @@ import os               # access to file information
 import os.path          # to parse filenames
 import time             # print time in messages
 from stat import *      # file statistics
-
+import RegistryDict
+import win32con
+import re
 import natlink
 from natlinkutils import *
 
@@ -27,8 +29,22 @@ usePerl = 0
 
 NatLinkFolder = os.path.split(
     sys.modules['natlinkmain'].__dict__['__file__'])[0]
-pydFolder = NatLinkFolder + '\\..\\Vocola\\Exec\\' + sys.version[0:3]
+
+pydFolder = os.path.abspath(NatLinkFolder + '\\..\\..\\Vocola\\Exec\\' + sys.version[0:3])
 sys.path.append(pydFolder)
+NatLinkFolder = os.path.abspath(NatLinkFolder + '\\..')
+
+userCommandFolder=""
+r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\NatLink")
+if r: 
+    userCommandFolder = r["VocolaUserDirectory"]
+    if not os.path.isdir(userCommandFolder):
+        userCommandFolder=""
+
+if userCommandFolder:
+    test= re.compile("_vcl\.pyc?$")
+    [os.remove(os.path.join(NatLinkFolder,f)) for f in os.listdir(NatLinkFolder) if test.search(f)]
+
 import simpscrp
 
 class ThisGrammar(GrammarBase):
@@ -50,6 +66,9 @@ class ThisGrammar(GrammarBase):
         self.setNames()
         # Don't set callback just yet or it will be clobbered
         self.needToSetCallback = 1
+                    
+                    
+                
 
     def gotBegin(self,moduleInfo):
         self.currentModule = moduleInfo
@@ -58,6 +77,7 @@ class ThisGrammar(GrammarBase):
             natlink.setBeginCallback(vocolaBeginCallback)
             self.needToSetCallback = 0
 
+                                      
     # Set member variables -- important folders and computer name
     def setNames(self):
         self.VocolaFolder = NatLinkFolder + r'\..\Vocola'
@@ -90,15 +110,22 @@ class ThisGrammar(GrammarBase):
 
     # Load all command files
     def loadAllFiles(self, options):
+        if userCommandFolder: self.runVocolaTranslator(userCommandFolder, options) 
         self.runVocolaTranslator(self.commandFolder, options)
 
     # Load command files for specific application
     def loadSpecificFiles(self, module):
-        prefix = self.commandFolder + '\\' + module
-        success1 = self.loadFile(prefix + '.vcl')
-        success2 = self.loadFile(prefix + '@' + self.machine + '.vcl')
-        if not success1 and not success2:
-            print "Found no Vocola command files for '" + module + "'"
+        success1=success2=successU=0
+        if userCommandFolder:
+            file = userCommandFolder + '\\' + module + '.vcl'
+            if os.path.isfile(file):
+               successU = self.loadFile(file)
+        else:
+            prefix = self.commandFolder + '\\' + module
+            success1 = self.loadFile(prefix + '.vcl')
+            success2 = self.loadFile(prefix + '@' + self.machine + '.vcl')
+        if not (success1 or success2 or successU):
+            print >> sys.stderr, "Found no Vocola command files for '" + module + "'"
 
     # Load a specific command file, returning false if not present
     def loadFile(self, file):
@@ -118,10 +145,17 @@ class ThisGrammar(GrammarBase):
         call += ' "' + inputFileOrFolder + '" "' + NatLinkFolder + '"'
         simpscrp.Exec(call, 1)
         logName = self.commandFolder + r'\vcl2py_log.txt'
+        
+        if not os.path.isfile(logName):
+            logName = userCommandFolder + r'\vcl2py_log.txt'
+        if not os.path.isfile(logName):
+            return
+        
         try:
             log = open(logName, 'r')
-            print log.read()
+            print  >> sys.stderr, log.read()
             log.close()
+            os.remove(logName)
         except IOError:  # no log file means no Vocola errors
             return
 
@@ -154,13 +188,30 @@ class ThisGrammar(GrammarBase):
         self.openCommandFile(file, comment)
 
     # Open a Vocola command file (using the application associated with ".vcl")
+    
+    def FindExistingCommandFile(self, file):
+        if userCommandFolder:
+            f= userCommandFolder+ '\\' + file
+            if os.path.isfile(f): return f
+        
+        f = self.commandFolder+ '\\' + file
+        if os.path.isfile(f): return f
+        
+        return ""
+    
     def openCommandFile(self, file, comment):
-        file = self.commandFolder + '\\' + file
-        try: os.stat(file)
-        except OSError:  # file not found -- create one
+        if self.FindExistingCommandFile(file):
+            file = self.FindExistingCommandFile(file)
+        else:
+            if userCommandFolder:
+                file = userCommandFolder+ '\\' + file
+            else:
+                file = self.commandFolder + '\\' + file
+        
             new = open(file, 'w')
             new.write('# ' + comment + '\n\n')
             new.close()
+        
         if os.name == 'nt':  opener = 'cmd /c'
         else:                opener = 'start'
         call = opener + ' "' + file + '"'

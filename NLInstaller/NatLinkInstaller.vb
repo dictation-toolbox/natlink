@@ -55,26 +55,50 @@ Imports System.Configuration.Install
 		Trace.Listeners.Remove(logListener)
 	End Sub
 
-	Public Overrides Sub Install(ByVal stateSaver As System.Collections.IDictionary)
-		MyBase.Install(stateSaver)
+	Public Overrides Sub Commit(ByVal savedState As System.Collections.IDictionary)
+		MyBase.Commit(savedState)
 
 		InitLogListener()
-
-
-		Trace.WriteLine("Installer -- install")
-
+		Trace.Write("Installer -- Commit ")
 		Trace.WriteLine(System.Reflection.Assembly.GetExecutingAssembly.FullName)
-		Trace.WriteLine(Environment.OSVersion.ToString)
 
 		Trace.Indent()
 		Try
-			Trace.WriteLine(Now.ToLongDateString + " " + Now.ToShortTimeString)
 			Dim nle As New NatLinkEnv
 			Trace.Flush()
+			nle.UnRegisterNatLinkDLL()
+			nle.RemoveOldNatLinkFiles()
+			nle.InstallNatLinkConfigFile()
 			nle.EnableNL()
 			Trace.Flush()
 			nle.SetPythonPath()
 			Trace.Flush()
+			Trace.WriteLine("Natlink Commited")
+			CloseLogListener()
+		Catch ex As Exception
+			LogException(ex)
+			Trace.WriteLine("Natlink installation failed.")
+			Throw New ApplicationException("NatLink failed to install." + vbNewLine + "Please check 'My Documents\NatLinkInstallLog.txt' for reasons." + vbNewLine, ex)
+		Finally
+			Trace.Unindent()
+			Trace.Flush()
+		End Try
+	End Sub
+
+
+
+	Public Overrides Sub Install(ByVal stateSaver As System.Collections.IDictionary)
+		MyBase.Install(stateSaver)
+		InitLogListener()
+		Trace.Write("Installer -- install ")
+		Trace.WriteLine(System.Reflection.Assembly.GetExecutingAssembly.FullName)
+		Trace.Write(Environment.OSVersion.ToString)
+
+		Trace.Indent()
+		Try
+			Trace.WriteLine(" " + Now.ToLongDateString + " " + Now.ToShortTimeString)
+			Dim nle As New NatLinkEnv
+			nle.SetDefaultUserDirectory()
 			Trace.WriteLine("Natlink Installed")
 			CloseLogListener()
 		Catch ex As Exception
@@ -92,17 +116,18 @@ Imports System.Configuration.Install
 		Trace.WriteLine(ex.Message)
 		Trace.WriteLine("")
 		Trace.WriteLine(ex.StackTrace)
+		If Not ex.InnerException Is Nothing Then Trace.WriteLine(ex.InnerException.ToString)
 		Trace.Unindent()
 		Trace.Flush()
 	End Sub
 	Public Overrides Sub Rollback(ByVal stateSaver As System.Collections.IDictionary)
 		MyBase.Rollback(stateSaver)
 
-		'		InitLogListener()
-		Trace.WriteLine("Installer -- rollback")
+		Trace.Write("Installer -- rollback ")
+		Trace.WriteLine(System.Reflection.Assembly.GetExecutingAssembly.FullName)
 		Trace.Indent()
 		Try
-			Dim nle As New NatLinkEnv
+			Dim nle As New NatLinkEnv(False)
 			nle.DisableNL()
 			nle.ClearPythonPath()
 			Trace.WriteLine("Natlink install successfully rolled back")
@@ -122,19 +147,52 @@ Imports System.Configuration.Install
 
 		InitLogListener()
 		Trace.WriteLine("Installer -- Uninstall")
+		Trace.WriteLine(System.Reflection.Assembly.GetExecutingAssembly.FullName)
 		Trace.Indent()
 		Trace.WriteLine(Now.ToLongDateString + " " + Now.ToShortTimeString)
+		Dim nle As New NatLinkEnv(False)
 
 		Try
-			Dim nle As New NatLinkEnv
-			nle.DisableNL()
-			nle.ClearPythonPath()
-			Trace.WriteLine("Natlink Uninstalled")
-		Catch ex As ApplicationException
-			LogException(ex)
-			Trace.WriteLine("Natlink failed to uninstall.")
-			Throw
+
+			Try
+				nle.DisableNL()
+			Catch ex As Exception
+				LogException(ex)
+				Trace.WriteLine("Natlink failed to DisableNL.")
+			End Try
+
+			Try
+				nle.ClearPythonPath()
+			Catch ex As Exception
+				LogException(ex)
+				Trace.WriteLine("Natlink failed to Clear Python Path.")
+			End Try
+
+			Try
+				nle.RemoveCompiledFiles()
+			Catch ex As Exception
+				LogException(ex)
+				Trace.WriteLine("Natlink failed to Remove Compiled Files.")
+			End Try
+
+			Try
+				nle.RemoveNatLinkConfigFile()
+			Catch ex As Exception
+				LogException(ex)
+				Trace.WriteLine("Natlink failed to Remove NatLink config file.")
+			End Try
+
+
+			Try
+				nle.UnRegisterNatLinkDLL()
+			Catch ex As Exception
+				LogException(ex)
+				Trace.WriteLine("Natlink failed to UnRegisterNatLinkDLL.")
+			End Try
+
+
 		Finally
+			Trace.WriteLine("Natlink Uninstalled")
 			Trace.Unindent()
 			CloseLogListener()
 		End Try

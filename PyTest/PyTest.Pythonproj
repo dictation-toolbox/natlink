@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioProject>
+    <pythonproj Version="1.2.1"
+         SccProjectName=""
+         SccLocalPath=""
+         SccAuxPath=""
+         SccProvider="">
+        <configurations>
+            <configuration name="Debug"
+                 LaunchArgs=""
+                 BuildCmdLine="C:\dev\DotNetProjects\NatLink1.2\PyTest\python1.py"
+                 BuildOutputs=""
+                 DebuggerName=""
+                 ScriptArgs=""
+                 RunInShell="F"
+                 UseCGIEnvironment="F"
+                 DontImplyImportSite="F"
+                 UnbufferedBinary="T"
+                 Verbose="T"
+                 DebugRemotely="F"
+                 ListenerPort="9000"
+                 LaunchCmdLine="C:\dev\DotNetProjects\NatLink1.2\PyTest\python1.py" />
+            <configuration name="Release"
+                 LaunchArgs=""
+                 BuildCmdLine="C:\dev\DotNetProjects\NatLink1.2\PyTest\testnatlink.py"
+                 BuildOutputs=""
+                 DebuggerName=""
+                 ScriptArgs=""
+                 RunInShell="F"
+                 UseCGIEnvironment="F"
+                 DontImplyImportSite="F"
+                 UnbufferedBinary="F"
+                 Verbose="F"
+                 DebugRemotely="F"
+                 ListenerPort="9000"
+                 LaunchCmdLine="C:\dev\DotNetProjects\NatLink1.2\PyTest\testnatlink.py" />
+            <configuration name="TestMSI"
+                 LaunchArgs=""
+                 BuildCmdLine=""
+                 BuildOutputs=""
+                 DebuggerName=""
+                 ScriptArgs=""
+                 RunInShell="F"
+                 UseCGIEnvironment="F"
+                 DontImplyImportSite="F"
+                 UnbufferedBinary="F"
+                 Verbose="F"
+                 DebugRemotely="F"
+                 ListenerPort="9000"
+                 LaunchCmdLine="" />
+        </configurations>
+        <files>
+            <file name="testnatlink.py"
+                 ProjRelPath="T" />
+            <file name="python1.py"
+                 ProjRelPath="T" />
+            <file name="_testWinDll.py"
+                 ProjRelPath="T" />
+        </files>
+    </pythonproj>
+</VisualStudioProject>

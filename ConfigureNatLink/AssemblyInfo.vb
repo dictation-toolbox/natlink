@@ -9,6 +9,4 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyCopyright("")> 
 <Assembly: AssemblyTrademark("")> 
 <Assembly: CLSCompliant(True)> 
-
-
-<Assembly: AssemblyVersion("1.1.0.0")> 
+<Assembly: AssemblyVersion("1.3.7.0")> 

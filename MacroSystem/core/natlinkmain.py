@@ -46,12 +46,17 @@ import os.path          # to parse filenames
 import imp              # module reloading
 import re               # regular expression parsing    
 import traceback        # for printing exceptions
+import RegistryDict
+import win32con
 from stat import *      # file statistics
 from natlink import *   
 
 #
 # This redirects stdout and stderr to a dialog box.
 #
+
+debugLoad=0
+cmdLineStartup=0
 
 class NewStdout:
     softspace=1
@@ -63,8 +68,10 @@ class NewStderr:
     def write(self,text):
         displayText(text, 1)
 
-sys.stdout = NewStdout()
-sys.stderr = NewStderr()
+if not cmdLineStartup:
+    sys.stdout = NewStdout()
+    sys.stderr = NewStderr()
+    
 
 #
 # This is the directory where the Python modules all reside.
@@ -118,7 +125,7 @@ def loadFile(modName,searchPath,origName=None):
                 # file has not changed
                 fndFile.close()
                 return origName
-        #print "Reloading", modName
+        if debugLoad: print "Reloading", modName
 
         # if we know we are reloading a module, we call the unload function
         # in that module first to release all objects
@@ -128,7 +135,7 @@ def loadFile(modName,searchPath,origName=None):
             # not a Python source file
             fndFile.close()
             return None
-        #print "Loading", modName
+        if debugLoad: print "Loading", modName
 
     try:
         imp.load_module(modName,fndFile,fndName,fndDesc)
@@ -296,19 +303,39 @@ def changeCallback(type,args):
 try:
     # compute the directory where this module came from
 
+    #print "\n".join(["%s=%s" % (k,v) for k, v in sys.modules ])
+    #print "\n".join(sys.modules.keys())
+    if cmdLineStartup:
+        modname='natlink'
+    else:
+        modname='natlinkmain'
+        
     baseDirectory = os.path.split(
-        sys.modules['natlinkmain'].__dict__['__file__'])[0]
+       sys.modules[modname].__dict__['__file__'])[0]
+    
+    
 
+    if debugLoad: print "NatLink dll dir " + baseDirectory
+    baseDirectory=os.path.abspath(baseDirectory + "\\..\\")
+    if debugLoad: print "NatLink base dir" + baseDirectory
+    
     # get the current user information from the natlink module
-
     userName, userDirectory = getCurrentUser()
+    
+    # the default userDirectory from = getCurrentUser() is deep within the filesystem
+    # and unlikely to be useful to anyone
+    # so we change it
+    r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\NatLink")
+    if r:
+        if debugLoad: print "DNS user dir= " +userDirectory
+        if debugLoad: print "Registry user dir= " +r["UserDirectory"]
+        if  os.path.isdir(r["UserDirectory"]): userDirectory = r["UserDirectory"]
+        if debugLoad: print "current user dir= "+userDirectory
 
     # load all global files in user directory and current directory
-
     findAndLoadFiles()
 
     # initialize our callbacks
-
     setBeginCallback(beginCallback)
     setChangeCallback(changeCallback)
 
