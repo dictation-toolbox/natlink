@@ -147,7 +147,7 @@ def buttonClick(btnName='left',count=1):
     singleLookup = { 
         'left':  [(wm_lbuttondown,x,y),(wm_lbuttonup,x,y)],
         'right': [(wm_rbuttondown,x,y),(wm_rbuttonup,x,y)],
-        'middle':[(wm_mbuttondown,x,y),(wm_mbuttonup,x,y)] }
+        'moddle':[(wm_mbuttondown,x,y),(wm_mbuttonup,x,y)] }
     doubleLookup = {
         'left':  [(wm_lbuttondblclk,x,y),(wm_lbuttonup,x,y)],
         'right': [(wm_rbuttondblclk,x,y),(wm_rbuttonup,x,y)],

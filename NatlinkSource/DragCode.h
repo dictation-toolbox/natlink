@@ -87,8 +87,6 @@ class CDragonCode
 	BOOL deleteWord( char * wordName );
 	BOOL setWordInfo( char * wordName, DWORD wordInfo );
 	BOOL setTrayIcon( char * iconName, char * toolTip, PyObject * pCallback );
-    BOOL setMessageCallback( PyObject * pCallback );
-    BOOL postMessageCallback( PyObject * pParam );
 		
 	PyObject * getCurrentModule();
 	PyObject * getCurrentUser();
@@ -141,7 +139,6 @@ class CDragonCode
 	void onSendResults( WPARAM wParam, LPARAM lParam );
 	void onTimer();
 	void onTrayIcon( WPARAM wParam, LPARAM lParam );
-    void onMessageCallback( WPARAM wParam, LPARAM lParam );
 
 	// these functions are called when we get a window message
 	void onSendResultsCallback( PyObject *pFunc, PyObject *pArgs );
@@ -193,10 +190,6 @@ class CDragonCode
 	// this is a pointer to the function set with setChangeCallback; it is
 	// NULL to avoid any callback
 	PyObject *m_pChangeCallback;
-
-	// this is a pointer to the function set with setMessageCallback; it is
-	// NULL to avoid any callback
-	PyObject *m_pMessageCallback;
 
 	// we keep a hidden window in this thread to which we can send windows
 	// messages 

@@ -247,9 +247,6 @@ class CLockPython
 // For the tray icon
 #define WM_TRAYICON (WM_USER+352)
 
-// For the message callback
-#define WM_MSGCALL (WM_USER+353)
-
 // These are the bits for m_dwPendingCallback
 #define PENDING_SPEAKER	0x0001
 #define PENDING_MICSTATE 0x0002
@@ -649,17 +646,6 @@ LRESULT CALLBACK hiddenWndProc(
 			pDragCode->onTrayIcon( wParam, lParam );
 		}
 		pDragCode->logMessage("- hiddenWndProc WM_TRAYICON\n");
-		return 0;
-
-	 case WM_MSGCALL:		
-		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
-		pDragCode->logMessage("+ hiddenWndProc WM_MSGCALL\n");
-		if( pDragCode )
-		{
-			CLockPython cLockPython( pDragCode->getThreadState() );
-			pDragCode->onMessageCallback( wParam, lParam );
-		}
-		pDragCode->logMessage("- hiddenWndProc WM_MSGCALL\n");
 		return 0;
 	}
 	
@@ -1222,7 +1208,6 @@ void CDragonCode::onMenuCommand( WPARAM wParam )
 		setChangeCallback( Py_None );
 		setBeginCallback( Py_None );
 		setTimerCallback( Py_None );
-        setMessageCallback( Py_None );
 		setTrayIcon( "", "", Py_None );
 
 		// We call this because the reinitialization will not free up the
@@ -1245,29 +1230,6 @@ void CDragonCode::onTrayIcon( WPARAM wParam, LPARAM lParam )
 	{
 		makeCallback( m_pTrayIconCallback, Py_BuildValue( "(i)", lParam ) );
 	}
-}
-
-//---------------------------------------------------------------------------
-
-void CDragonCode::onMessageCallback( WPARAM wParam, LPARAM lParam )
-{
-	PyObject *pArg = (PyObject *)lParam;
-	if( m_nCallbackDepth == 0 )
-	{
-		makeCallback( m_pMessageCallback, pArg );
-	}
-	Py_XDECREF(pArg);
-}
-
-//---------------------------------------------------------------------------
-
-BOOL CDragonCode::postMessageCallback( PyObject * pParam )
-{
-	PyObject * pArg = Py_BuildValue( "(O)", pParam );
-	Py_XINCREF(pArg);
-
-    PostMessage( m_hMsgWnd, WM_MSGCALL, 0, (LPARAM)pArg);
-    return TRUE;
 }
 
 //---------------------------------------------------------------------------
@@ -1932,25 +1894,6 @@ BOOL CDragonCode::setChangeCallback( PyObject *pCallback )
 		Py_XINCREF( pCallback );
 		Py_XDECREF( m_pChangeCallback );
 		m_pChangeCallback = pCallback;
-	}
-	
-	return TRUE;
-}
-
-//---------------------------------------------------------------------------
-
-BOOL CDragonCode::setMessageCallback( PyObject *pCallback )
-{
-	if( pCallback == Py_None )
-	{
-		Py_XDECREF( m_pMessageCallback );
-		m_pMessageCallback = NULL;
-	}
-	else
-	{
-		Py_XINCREF( pCallback );
-		Py_XDECREF( m_pMessageCallback );
-		m_pMessageCallback = pCallback;
 	}
 	
 	return TRUE;

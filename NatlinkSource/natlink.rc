@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\0"
 END
@@ -46,15 +46,14 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,3,0
+ PRODUCTVERSION 1,0,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -67,17 +66,15 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "natlink Module\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "NATLINK\0"
-            VALUE "LegalCopyright", "Copyright 1997\0"
-            VALUE "OriginalFilename", "NATLINK.DLL\0"
-            VALUE "ProductName", "natlink Module\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "OLESelfRegister", "\0"
+            VALUE "FileDescription", "natlink Module"
+            VALUE "FileVersion", "1, 0, 3, 0"
+            VALUE "InternalName", "NATLINK"
+            VALUE "LegalCopyright", "Copyright 1997"
+            VALUE "OriginalFilename", "NATLINK.DLL"
+            VALUE "ProductName", "natlink Module"
+            VALUE "ProductVersion", "1, 0, 3, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -86,34 +83,34 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-IDR_APPSUPP             REGISTRY DISCARDABLE    "appsupp.reg"
+IDR_APPSUPP             REGISTRY                "appsupp.reg"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_STDOUT DIALOG DISCARDABLE  0, 0, 265, 134
-STYLE DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_STDOUT DIALOG  0, 0, 265, 134
+STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Messages from Python Macros"
 MENU IDR_MENU
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         "",IDC_RICHEDIT,"RICHEDIT",ES_MULTILINE | ES_READONLY | 
-                    WS_BORDER | WS_VSCROLL | WS_TABSTOP,7,7,251,120
+    CONTROL         "",IDC_RICHEDIT,"RICHEDIT",TCS_RAGGEDRIGHT | 
+                    TCS_MULTISELECT | WS_BORDER | WS_VSCROLL | WS_TABSTOP,7,
+                    7,251,120
 END
 
-IDD_WAITFOR DIALOG DISCARDABLE  10, 10, 186, 49
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
-    WS_SYSMENU
+IDD_WAITFOR DIALOG  10, 10, 186, 49
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_VISIBLE | 
+    WS_CAPTION | WS_SYSMENU
 CAPTION "Natlink / Python Subsystem"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -129,7 +126,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_STDOUT, DIALOG
     BEGIN
@@ -157,22 +154,22 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_RIGHT				ICON	DISCARDABLE		"idi_right.ico"
-IDI_RIGHT2				ICON	DISCARDABLE		"idi_right2.ico"
-IDI_DOWN				ICON	DISCARDABLE		"idi_down.ico"	
-IDI_DOWN2				ICON	DISCARDABLE		"idi_down2.ico"
-IDI_LEFT				ICON	DISCARDABLE		"idi_left.ico"	
-IDI_LEFT2				ICON	DISCARDABLE		"idi_left2.ico"
-IDI_UP					ICON	DISCARDABLE		"idi_up.ico"			
-IDI_UP2 				ICON	DISCARDABLE		"idi_up2.ico" 	
-IDI_NODIR				ICON	DISCARDABLE		"idi_nodir.ico"
+IDI_RIGHT               ICON                    "idi_right.ico"
+IDI_RIGHT2              ICON                    "idi_right2.ico"
+IDI_DOWN                ICON                    "idi_down.ico"
+IDI_DOWN2               ICON                    "idi_down2.ico"
+IDI_LEFT                ICON                    "idi_left.ico"
+IDI_LEFT2               ICON                    "idi_left2.ico"
+IDI_UP                  ICON                    "idi_up.ico"
+IDI_UP2                 ICON                    "idi_up2.ico"
+IDI_NODIR               ICON                    "idi_nodir.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_MENU MENU DISCARDABLE 
+IDR_MENU MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -186,7 +183,7 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "natlink"
 END

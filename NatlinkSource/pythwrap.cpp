@@ -1150,58 +1150,6 @@ natlink_setTrayIcon( PyObject *self, PyObject *args )
 	return Py_None;
 }
 
-//---------------------------------------------------------------------------
-// natlink.setMessageCallback(function) from Python
-//
-// See natlink.txt for documentation.
-
-extern "C" static PyObject *
-natlink_setMessageCallback( PyObject *self, PyObject *args )
-{
-	PyObject *pFunc;
-	if( !PyArg_ParseTuple( args, "O:setMessageCallback", &pFunc ) )
-	{
-		return NULL;
-	}
-
-	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
-	{
-		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
-	}
-
-	if( !cDragon.setMessageCallback( pFunc ) )
-	{
-		return NULL;
-	}
-	
-	Py_INCREF( Py_None );
-	return Py_None;
-}
-
-//---------------------------------------------------------------------------
-// natlink.postMessageCallback(param) from Python
-//
-// See natlink.txt for documentation.
-
-extern "C" static PyObject *
-natlink_postMessageCallback( PyObject *self, PyObject *args )
-{
-	PyObject *pParam;
-	if( !PyArg_ParseTuple( args, "O:postMessageCallback", &pParam ) )
-	{
-		return NULL;
-	}
-
-	if( !cDragon.postMessageCallback( pParam ) )
-	{
-		return NULL;
-	}
-	
-	Py_INCREF( Py_None );
-	return Py_None;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 
 //---------------------------------------------------------------------------
@@ -2253,8 +2201,6 @@ static struct PyMethodDef natlink_methods[] = {
 	{ "setWordInfo", natlink_setWordInfo, METH_VARARGS },
 	{ "getWordProns", natlink_getWordProns, METH_VARARGS },
 	{ "setTrayIcon", natlink_setTrayIcon, METH_VARARGS },
-    { "setMessageCallback", natlink_setMessageCallback, METH_VARARGS },
-    { "postMessageCallback", natlink_postMessageCallback, METH_VARARGS },
 	{ "GramObj", gramobj_new, METH_VARARGS },
 	{ "DictObj", dictobj_new, METH_VARARGS },
 #ifdef INHOUSE

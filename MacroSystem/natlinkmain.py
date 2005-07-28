@@ -94,14 +94,6 @@ loadedFiles = {}
 lastModule = ''
 
 #
-# Should we recurse directories when looking for macros
-#
-recurseDirectories = 1
-
-# A store of all directories where loaded files are
-globalSearchPath = {}
-
-#
 # This function will load another Python module, usually one which the user
 # supplies.  This function will trap all execptions and report them so an
 # error in this function will not prevent another module from being
@@ -171,44 +163,6 @@ def safelyCall(modName,funcName):
         return None
 
 #
-#   BS: Added this method to enable recursive processing of grammar files 25/08/2003
-#   This method simply takes the baseDir as a param and processes the whole tree
-#   beneath it.  Ultimately this method is a new way of calling findAndLoadFiles()
-#
-def findAndLoadFilesRecursively(curModule=None, userDir='', baseDir=''):
-
-    #traceback.print_stack()
-
-    #Add this dir to the path so that we can import any modules from it
-    sys.path.append(baseDir)    
-
-    #Check out args to make sure they're set
-    if (userDir== ''):
-        userDir=userDirectory
-    if (baseDir== ''):
-        baseDir=baseDirectory
-
-    #print ("userDir= " + userDir + "\n")
-    #print ("baseDir= " + baseDir + "\n")
-
-    #Get a list of files in the base directory        
-    fileList = os.listdir(baseDir)
-
-    #Recurse down dirs in this one and then drop out to process grammar files in this dir
-    for file in fileList:
-        lenBase = len(file)
-        lastLetter = string.find(file, '$', (lenBase -1))        
-        if (os.path.isdir(baseDir+ '\\' +file)!=0):
-            #Any dir ending in the $ char, ignore (This dir is turned off by the user)
-            if (lastLetter == -1):
-                #file is now the new base directory
-                findAndLoadFilesRecursively(curModule, userDir, (baseDir+ '\\' +file))
-
-    #process grammar files in this dir
-    findAndLoadFiles(curModule, userDir, baseDir)      
-
-
-#
 # This routine loads two types of files.  If curModule is empty then we will
 # load the global files which are all the files which begin with an
 # underscore in the current directory.  If curModule is not empty then we
@@ -224,7 +178,7 @@ def findAndLoadFilesRecursively(curModule=None, userDir='', baseDir=''):
 #   wordpad_extra.py
 #
 
-def findAndLoadFiles(curModule=None, userDir='', baseDir=''):
+def findAndLoadFiles(curModule=None):
     global loadedFiles
 
     if curModule:
@@ -241,18 +195,14 @@ def findAndLoadFiles(curModule=None, userDir='', baseDir=''):
           """, re.VERBOSE|re.IGNORECASE)
 
     filesToLoad = {}
-    if userDir != '':
-        for x in os.listdir(userDir):
+    if userDirectory != '':
+        for x in os.listdir(userDirectory):
             res = pat.match(x)
-            if res:
-                filesToLoad[ res.group(1) ] = None
-                globalSearchPath[userDir]=None
+            if res: filesToLoad[ res.group(1) ] = None
 
-    for x in os.listdir(baseDir):
+    for x in os.listdir(baseDirectory):
         res = pat.match(x)
-        if res:
-            globalSearchPath[baseDir]=None
-            filesToLoad[ res.group(1) ] = None
+        if res: filesToLoad[ res.group(1) ] = None
 
     # Try to (re)load any files we find
     for x in filesToLoad.keys():
@@ -260,7 +210,7 @@ def findAndLoadFiles(curModule=None, userDir='', baseDir=''):
             origName = loadedFiles[x]
         else:
             origName = None
-        loadedFiles[x] = loadFile(x, [userDir,baseDir], origName)
+        loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], origName)
 
     # Unload any files which have been deleted
     for name,path in loadedFiles.items():
@@ -291,12 +241,8 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
     # this extracts the module base name like "wordpad"
     curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
     if curModule and not (onlyIfChanged and curModule==lastModule):
-        if (recurseDirectories == 1):
-            findAndLoadFilesRecursively(curModule, userDirectory, baseDirectory)
-        else:
-            findAndLoadFiles(curModule, userDirectory, baseDirectory)
+        findAndLoadFiles(curModule)
         lastModule = curModule
-
 
 #
 # When a new utterance begins we check all the loaded modules for changes.
@@ -316,8 +262,7 @@ def beginCallback(moduleInfo):
     global loadedFiles
     if getCallbackDepth() < 2:
         for x in loadedFiles.keys():
-            loadedFiles[x] = loadFile(x, globalSearchPath.keys(), loadedFiles[x])
-            #print "\"" + loadedFiles[x] + "\"\n" 
+            loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], loadedFiles[x])
         loadModSpecific(moduleInfo,1)
         
 #
@@ -333,20 +278,14 @@ def changeCallback(type,args):
     if type == 'mic' and args == 'on' and getCallbackDepth() < 2:
         moduleInfo = getCurrentModule()
         beginCallback(moduleInfo)
-        if (recurseDirectories == 1):
-            findAndLoadFilesRecursively(None, userDirectory, baseDirectory)
-        else:
-            findAndLoadFiles(None, userDirectory, baseDirectory)
+        findAndLoadFiles()
         loadModSpecific(moduleInfo)
     if type == 'user' and userName != args[0]:
         userName, userDirectory = args
         moduleInfo = getCurrentModule()
         #print "User changed to", userName
         unloadEverything()
-        if (recurseDirectories == 1):
-            findAndLoadFilesRecursively(None, userDirectory, baseDirectory)
-        else:
-            findAndLoadFiles(None, userDirectory, baseDirectory)
+        findAndLoadFiles()
         loadModSpecific(moduleInfo)
 
 ############################################################################
@@ -366,10 +305,7 @@ try:
 
     # load all global files in user directory and current directory
 
-    if (recurseDirectories == 1):
-        findAndLoadFilesRecursively(None, userDirectory, baseDirectory)
-    else:
-        findAndLoadFiles(None, userDirectory, baseDirectory)
+    findAndLoadFiles()
 
     # initialize our callbacks
 

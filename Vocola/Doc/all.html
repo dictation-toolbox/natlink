@@ -1,0 +1,2048 @@
+<h2>Introduction</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="Rick Mohr">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I)
+  [Netscape]"><title>Introduction to Vocola</title></head><body>
+<p>Vocola is a <font color="#cc0000">vo</font>ice <font color="#cc0000"> co</font>mmand 
+  <font color="#cc0000">la</font>nguage -- a language for defining commands to 
+  control a computer by voice -- developed for use with <a href="http://www.lhsl.com/naturallyspeaking/">Dragon 
+  NaturallySpeaking</a> and implemented using <a href="http://www.synapseadaptive.com/joel/PythonMacroSystem.html">NatLink</a>. 
+  While these systems do the heavy lifting, Vocola (pronounced "vo-CO-luh") concentrates 
+  on features and ease of use. In particular, Vocola offers the following:</p>
+<ul>
+  <li>Easy to use 
+    <ul>
+      <li>Simple, concise command syntax -- most commands are one-liners </li>
+      <li>Easy to view and modify commands </li>
+      <li>Changed commands are loaded automatically </li>
+      <li>Free, and works with any version of NatSpeak </li>
+    </ul>
+  <li>Features 
+    <ul>
+      <li>Speak a continuous sequence of commands </li>
+      <li>Specify different actions for variable words </li>
+      <li>Use concise number ranges, optional words, and inline word lists </li>
+      <li>Re-use work with &quot;include&quot; files and user-defined functions 
+      </li>
+    </ul>
+  <li>Familiar syntax 
+    <ul>
+      <li>Keystroke syntax and built-in functions from Dragon Macro Language </li>
+      <li>Grammar syntax similar to NatLink </li>
+    </ul>
+</ul>
+<h3>Examples</h3>
+<p> Here are four voice commands defined in Vocola: </p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc"><tbody><tr><td><tt>
+ &nbsp;Copy That = {Ctrl+c};<br><br>
+ &nbsp;Copy to NatSpeak = {Ctrl+a}{Ctrl+c} AppBringUp(NatSpeak);&nbsp;<br><br>
+ &nbsp;1..40 (Left | Right | Up | Down) = {$2_$1};<br><br>
+ &nbsp;Sort by (Date=e | Sender=r | Subject=s) = {Alt+v}o $1;
+ </tt></td></tr></tbody></table><br>
+ The first is a simple keystroke command -- saying "Copy That" 
+sends the keystroke Control-C, which copies the current selection to 
+the clipboard. The great majority of commands needed for controlling 
+a computer by voice are simple keystroke commands like this.&nbsp; </p>
+<p>The second command, invoked by saying "Copy to NatSpeak", copies a window 
+ of text (Control-A selects all text and Control-C copies it) and brings 
+ up the NaturallySpeaking editor (using the built-in function <tt>AppBringUp</tt>
+ ).</p>
+<p>The third command allows controlling the cursor, by saying for example "3 Left" 
+  to move left three characters, or "6 Down" to move down six lines. Spoken words 
+  match variable terms on the left and are substituted into the keystroke sequence 
+  on the right. For example, when saying "3 Left" the spoken "3" matches the numeric 
+  range "<tt>1..40</tt>" and the spoken "Left" matches the alternative set "<tt>(Left 
+  | Right | Up | Down)</tt> ". The keystroke sequence "<tt>{Left 3}</tt>" is constructed 
+  and sent, and the cursor moves left three characters.</p>
+<p>The fourth command allows sorting messages in the Netscape Mailer, by saying 
+  "Sort by Date", "Sort by Sender", or "Sort by Subject". The matched word "Date", 
+  "Sender", or "Subject", causes the appropriate keystroke "e", "r", or "s" to 
+  be inserted into the keystroke sequence.</p>
+<p>These and other features are discussed in greater detail in the <a href="LanguageTutorial.html"> 
+  Vocola Tutorial</a>.</p>
+<h3> Why a New Voice Command Language?</h3>
+<p>Existing voice command languages are grafted onto existing programming languages. 
+  This means you can program any behavior you want, but you're stuck with the 
+  syntactic overhead of the base language. In contrast, Vocola is designed specifically 
+  as a voice command language, not as a general-purpose programming language. 
+  This means you can write quickly and concisely the great majority of voice commands 
+  you need, and use another language in the few cases where you need more power. 
+  When I switched to Vocola I was able to convert all but two of my 200+ Dragon 
+  macros, and at this writing use something over 900 Vocola commands.</p>
+<p>Alternatives to Vocola include NatSpeak Pro's VisualBasic-based language (introduced 
+  in version 6), the older Dragon Macro Language (used through version 5 and still 
+  functional), and NatLink. Each of these languages has advantages, but (in my 
+  humble and not unbiased opinion) none offers Vocola's features and ease of use.</p>
+<h3>Acknowledgments </h3>
+<p> Joel Gould for his time and care in designing, building, and "productizing" 
+  NatLink, which enabled and inspired Vocola. The authors and voice community 
+  members listed in <a href="VoiceResources.html">Voice Resources</a>.</p>
+<h3>This Web Site</h3>
+<p>This web site was created using a Python program developed and shared
+by Joel Gould, in another admirable display of community-mindedness. His
+description and sources are <a href="http://www.synapseadaptive.com/joel/AboutThisWebSite.html">here</a>.</p>
+<p>A single-page version of the site is available <a href="all.html">here</a>.<br>
+
+</p>
+
+</body></html>
+<hr>
+<h2>Using Vocola</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+            
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+            
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Using Vocola</title>
+   
+</head>
+  <body>
+<p>The easiest way to create and manage Vocola commands is by voice, using Vocola's 
+  built-in commands. Beginning and intermediate users should only need to learn 
+  the two commands described in the first subsection. The remaining subsections 
+  discuss commands for advanced features.</p>
+<p>In the command descriptions below, words in square brackets are optional. For 
+  example, &quot;Edit [Voice] Commands&quot; means you can say either &quot;Edit 
+  Voice Commands&quot; or &quot;Edit Commands&quot;. </p>
+<h3>How to Create and Load Voice Commands</h3>
+  
+<p>With Vocola you can define commands for a specific application program, or 
+  define global commands which are active for all applications. You can use the 
+  following built-in commands to open the right command files:</p>
+<table border="1" cellpadding="3" cellspacing="0"  bordercolor="#FFEECC">
+  <tr  bgcolor="#FFEECC"> 
+    <td><font color="#660000">When you say</font></td>
+    <td><font color="#660000">Vocola will</font></td>
+  </tr>
+  <tbody>
+    <tr bgcolor="#ffffcc"> 
+      <td>&quot;Edit [Voice] Commands&quot;</td>
+      <td>Open the Vocola file defining commands for the currently running application 
+        (using your favorite editor).</td>
+    </tr>
+    <tr bgcolor="#ffffcc"> 
+      <td>&quot;Edit Global [Voice] Commands&quot;</td>
+      <td>Open the Vocola file defining commands for all applications (using your 
+        favorite editor).</td>
+    </tr>
+  </tbody>
+</table>
+<p>After creating or modifying commands and saving the file, your commands will 
+  be loaded automatically and usable immediately. Any errors will be displayed 
+  in a pop-up window titled &quot;Messages from Python Macros&quot;.</p>
+<h3>Machine-Specific Commands</h3>
+<p>If you need to control more than one computer by voice (for example at work 
+  and at home) you can define commands which will only be enabled on a particular 
+  computer:</p>
+<table border="1" cellpadding="3" cellspacing="0"  bordercolor="#FFEECC">
+  <tr  bgcolor="#FFEECC"> 
+    <td><font color="#660000">When you say</font></td>
+    <td><font color="#660000">Vocola will</font></td>
+  </tr>
+  <tbody>
+    <tr bgcolor="#ffffcc"> 
+      <td>"Edit Machine [Voice] Commands" </td>
+      <td>Open the Vocola file defining commands for the currently running application 
+        on the current computer.</td>
+    </tr>
+    <tr bgcolor="#ffffcc"> 
+      <td>"Edit Global Machine [Voice] Commands"<strong> </strong></td>
+      <td>Open the Vocola file defining commands for all applications on the current 
+        computer.</td>
+    </tr>
+  </tbody>
+</table>
+<p>Machine-specific command files are also reloaded automatically.</p>
+<h3>Direct Loading</h3>
+<p>Sometimes it's useful to reload your command files explicitly. For example, 
+  if you modify an <a href="IncludeStatements.html">include file</a>, Vocola doesn't 
+  know enough to reload all command files which use that include file. You can 
+  do it yourself using the following commands:</p>
+<table border="1" cellpadding="3" cellspacing="0"  bordercolor="#FFEECC">
+  <tr  bgcolor="#FFEECC"> 
+    <td><font color="#660000">When you say</font></td>
+    <td><font color="#660000">Vocola will</font></td>
+  </tr>
+  <tbody>
+    <tr bgcolor="#ffffcc"> 
+      <td>"Load All [Voice] Commands" </td>
+      <td>Reload all commands you have defined.</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>"Load [Voice] Commands"<strong> </strong></td>
+      <td>Reload commands for the currently running application.</td>
+    </tr>
+    <tr bgcolor="#ffffcc"> 
+      <td>"Load Global [Voice] Commands"<strong> </strong></td>
+      <td>Reload global commands.</td>
+    </tr>
+  </tbody>
+</table>
+<h3>File Organization and Naming</h3>
+  If you don't want to use the built-in commands, or if you want to understand
+ the underlying organization they depend on, here are the relevant conventions: 
+  
+<ul>
+  <li> Put all Vocola source files in the folder NatLink/Vocola/Commands.</li>
+  <li> Put global commands in the file _vocola.vcl.</li>
+  <li> Put application-specific commands in the .vcl file matching the executable 
+    name -- for example, commands specific to Netscape.exe go in netscape.vcl.</li>
+  <li> You can create additional files for a category of commands by extending 
+    the filename.&nbsp; For example, an additional global command file could be 
+    called _vocola_text.vcl; or, an additional Netscape command file could be 
+    called netscape_addresses.vcl.</li>
+  <li> If you want commands to be active only on a certain computer, put them 
+    in a file containing @ followed by the computer name.&nbsp; For example, commands 
+    in the file natspeak@venus.vcl would be valid only on the computer named "venus" 
+    with natspeak.exe running.</li>
+  <li>Vocola files are translated into Python files and loaded by NatLink. For 
+    example, the Vocola command file NatLink/Vocola/Commands/Netscape.vcl would 
+    be translated to the Python file NatLink/MacroSystem/Netscape_vcl.py.</li>
+</ul>
+</body>
+</html>
+
+<hr>
+<h2>Language Tutorial</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Vocola Tutorial</title>
+</head>
+  <body>
+The following sections describe the Vocola language, with examples: 
+<ul>
+  <li><b>Keystroke Commands:</b> When I say this, send these keystrokes.</li>
+  <li><strong>Quotes and Whitespace:</strong> Understand Vocola syntax.</li>
+  <li><b>Using Alternatives: </b>Create commands with alternative words or number 
+    ranges.</li>
+  <li><b>Defining Variables: </b>Name a set of alternative words for use in several 
+    commands.</li>
+  <li><b>Substituting Actions: </b>Specify different actions for each alternative 
+    word.</li>
+  <li><b>Optional Words:</b> Option to omit words when speaking a command.</li>
+  <li><b>Function Calls:</b> Create commands which call built-in functions.</li>
+  <li><strong>Built-in Functions:</strong> Descriptions of available functions.</li>
+  <li><strong>Defining Functions:</strong> Name an action sequence for use in 
+    several commands.</li>
+  <li><b>Contextual Commands:</b> Create commands active only for particular windows.</li>
+  <li><strong>Include Statements:</strong> Share commands and definitions across 
+    several Vocola files.</li>
+  <li><b>Comments: </b>Put comments in your Vocola command files.</li>
+  <li><b>Example File: </b>A longer example of a Vocola command file.</li>
+</ul>
+</body>
+</html>
+
+<hr>
+<h2>Keystroke Commands</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+                                
+  
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+
+                                
+  
+  
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Keystroke Commands</title></head><body>
+<p>Most of the everyday commands you will need are simple -- "When I say this, 
+  send these keystrokes." For example, the following command types the word "Greetings" 
+  when you say "Hello World":&nbsp; </p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+<tbody><tr><td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Hello World
+   = Greetings;&nbsp;</tt><br>
+        <tt><font color="#993366">&nbsp;<i>Say:</i></font> Hello World <i><font color="#993366"> 
+        &nbsp;Sent:</font></i> Greetings&nbsp;</tt></td>
+    </tr></tbody>
+</table>
+<p>In most cases the keystrokes you want to send will use modifier key sequences 
+  to control a particular application. For example, most Windows applications 
+  perform a "Copy" operation when you hold down the "Control" key and type the 
+  letter "c". The next command uses the phrase "Copy That" to invoke such a "Copy" 
+  operation:</p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc"><tbody><tr><td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Copy That
+   = {Ctrl+c};&nbsp;</tt><br>
+        <tt><font color="#993366">&nbsp;<i>Say:</i></font> Copy That <i><font color="#993366"> 
+        &nbsp;Sent: </font></i>{Ctrl+c}</tt></td>
+    </tr></tbody></table>
+<p>The Vocola syntax for specifying modifier key sequences such as <tt>{Ctrl+c}</tt> 
+  is borrowed from the <a href="http://home.attbi.com/%7Evocola/voicecmd.pdf">Dragon 
+  Macro Language</a>, which describes the syntax. &nbsp; </p>
+<table cols="1" width="100%" bgcolor="#ccffff"><tbody><tr><td>Each Vocola command contains a series of <i>terms</i> (indicating
+   what  is said) and a series of <i>actions</i> (indicating what is done),
+  separated  by "<tt>=</tt>" and terminated by "<tt>;</tt>". In this section
+  the terms  are words and the actions are keystrokes; later sections introduce
+  other possibilities.</td></tr></tbody></table>
+<p>Because Windows applications allow keyboard control of almost everything, you 
+  can usually write a keystroke command to do what you want. The next example 
+  tells the Netscape 4 mail program to use its HTML editor (rather than the plain 
+  text editor) for composing messages:</p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc"><tbody><tr><td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> HTML Editor
+   = "{Alt+e}e{Shift+Tab}{Down 8}{Tab}{Up}{Enter}";&nbsp;</tt><br>
+        <tt><font color="#993366">&nbsp;<i>Say:</i></font> HTML Editor <i><font color="#993366"> 
+        &nbsp;Sent: </font></i>{Alt+e}e{Shift+Tab}{Down 8}{Tab}{Up}{Enter}</tt></td>
+    </tr></tbody></table>
+<p>Here's how it works: </p>
+<table width="100%"><tbody><tr><td><tt>&nbsp;</tt></td><td><tt>{Alt+e}</tt></td><td>Open the "Edit" menu</td></tr><tr><td><br></td><td><tt>e</tt></td><td>Choose the "Preferences..." menu item, raising the Preferences
+panel</td></tr><tr valign="Top"><td><br></td><td><tt>{Shift+Tab}&nbsp;</tt></td><td>Move back one field in the panel, to the "Category" list</td></tr><tr><td><br></td><td><tt>{Down 8}</tt></td><td>Move down 8 lines, to the "Formatting" category</td></tr><tr><td><br></td><td><tt>{Tab}</tt></td><td>Move forward one field in the panel, to "Message formatting"</td></tr><tr><td><br></td><td><tt>u</tt></td><td>Choose the top radio button ("Use the HTML editor to compose messages")</td></tr><tr><td><br></td><td><tt>{Enter}</tt></td><td>Hit the "OK" button</td></tr></tbody></table>
+</body></html>
+<hr>
+<h2>Quotes and Whitespace</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+                                
+  
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+
+                                
+  
+  
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Quotation Marks and White Space</title></head><body>
+Quotation marks are optional around keystroke sequences. For example, the following 
+commands are equivalent, specifying one action (the keystroke sequence <tt>{Ctrl+a}{Ctrl+c}</tt>):<br>
+<blockquote><tt>Copy All = {Ctrl+a}{Ctrl+c};<br>
+      Copy All = "{Ctrl+a}{Ctrl+c}";<br>
+  Copy All = '{Ctrl+a}{Ctrl+c}';</tt></blockquote>
+  
+<p>Whitespace (any sequence of blank, tab, and newline characters) is used to 
+  separate actions. The following commands are also equivalent, specifying two 
+  actions (the keystroke sequence <tt>{Ctrl+a}</tt> followed by the keystroke 
+  sequence <tt>{Ctrl+c}</tt>):</p>
+  <blockquote><tt>   Copy All = {Ctrl+a} {Ctrl+c};<br>
+      Copy All = {Ctrl+a}<br>
+  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{Ctrl+c};</tt></blockquote>
+    <p>In general it does no harm to separate keystroke sequences into multiple 
+ actions, so you can add whitespace wherever it is useful in formatting your 
+ commands. However, watch out for keystroke sequences containing space characters, 
+ such as the "HTML Editor" command above. That command specifies one action:</p>
+    <blockquote>
+  <p><tt>HTML Editor = "{Alt+e}e{Shift+Tab}{Down 8}{Tab}{Up}{Enter}";</tt></p>
+</blockquote>
+      <p>Because this command contains a space character, omitting the quotation 
+ marks would unintentionally specify two actions, "<tt>{Alt+e}e{Shift+Tab}{Down</tt>"
+ followed by "<tt>8}{Tab}{Up}{Enter}</tt>". This command would not behave 
+ as intended.</p>
+      
+<p>An alternative to quotation marks in this example is using the syntax "<tt>{Down_8}</tt>" 
+  instead of "<tt>{Down 8}</tt>":</p>
+      <blockquote>
+  <p><tt>HTML Editor = {Alt+e}e{Shift+Tab}{Down_8}{Tab}{Up}{Enter};</tt></p>
+</blockquote>
+<p>This is a Vocola extension to the Dragon Macro Language keystroke syntax -- 
+  within braces, underscore may be used instead of space to separate the keystroke 
+  name from the repetition count.</p>
+<h3><a name="SpecialChars"></a>Some characters must be quoted</h3>
+<p>In addition to whitespace characters, the following characters must appear 
+  within quotes when used in a keystroke sequence:</p>
+<blockquote> 
+  <p><tt>( ) [ ] = | , &quot; '</tt></p>
+</blockquote>
+<p>All other characters may appear without quotes. For example, pathnames do not 
+  need to be quoted, as in this command to open a temporary file:</p>
+<blockquote> 
+  <p><tt> Open Temp = {Ctrl+o}C:\Temp\temp.txt{Enter};</tt></p>
+</blockquote>
+<p>The examples in this tutorial use quotation marks only where necessary; you 
+  might prefer to use them more consistently.&nbsp; </p>
+</body></html>
+<hr>
+<h2>Using Alternatives</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    
+  <meta name="Author" content="r mohr">
+    
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Alternatives And References</title>
+</head>
+  <body>
+ Sometimes you will want to create a group of similar commands. Instead of
+creating a separate command for each, you can often write a single command
+which works for the whole group. 
+<p>For example, you might want to be able to say either "Switch View" or "Next
+View" to switch between views in an application: <br>
+&nbsp; 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+ <tbody>
+    <tr>
+ <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> (Switch | Next) View = {Ctrl+Tab};&nbsp;<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Switch View <i><font color="#993366">
+&nbsp;Sent:</font></i> {Ctrl+Tab}<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Next View &nbsp;
+&nbsp;<i><font color="#993366">Sent:</font></i> {Ctrl+Tab}</tt></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>Here the alternative term <tt>(Switch | Next)</tt> allows you to say either. 
+</p>
+<p>In many cases you want the actions invoked by a command to depend on which
+alternative was spoken. For example, you might want to move the cursor in
+one of four directions by saying "Move Left", "Move Down", etc.: <br>
+&nbsp; 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+ <tbody>
+    <tr>
+ <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Move (Left | Right
+| Up | Down) = {$1};&nbsp;<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Move Left <i><font color="#993366">
+&nbsp;Sent:</font></i> {Left}&nbsp;<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Move Down <i><font color="#993366">
+&nbsp;Sent:</font></i> {Down}&nbsp;</tt></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>Here the reference "<tt>$1</tt>" specifies that the first variable term should 
+  be substituted. So, when you say "Move Left" the value of the first variable 
+  term is "Left" and the keystroke"<tt>{Left}</tt>" is sent. <br>
+&nbsp; 
+<table cols="1" width="100%" bgcolor="#ccffff">
+ <tbody>
+    <tr>
+ <td>References may appear anywhere in a sequence of actions (i.e. on the
+right hand side of an "="), even inside quoted strings. If you want to insert
+the literal text "$1", use the escape sequence "<tt>\$1</tt>".<br>
+      </td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>Often you will want to specify a range of numbers as alternatives in a
+command.&nbsp; This can be specified concisely in Vocola, as in the following 
+example: <br>
+&nbsp; 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+ <tbody>
+    <tr>
+      <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Move Down 1..10 
+        = {Down_$1};&nbsp;<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Move Down 1 <i><font color="#993366">
+&nbsp;Sent: </font></i>{Down 1}<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Move Down 6 <i><font color="#993366">
+&nbsp;Sent: </font></i>{Down 6}</tt></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>Here the syntax "<tt>1..10</tt>" is shorthand for "<tt>(1|2|3|4|5|6|7|8|9|10)</tt>
+". On the right hand side we substitute the spoken number (e.g. "<tt>6</tt>
+") to construct the syntax for a repeated keystroke ("<tt>{Down 6}</tt>") 
+and we have a command which moves the cursor down a specified number of lines. 
+</p>
+<p>In real life it's very useful to control the arrow keys by saying simply 
+"1 Down", "3 Left", "6 Up", etc. Here's how to write it in Vocola: <br>
+&nbsp; 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+ <tbody>
+    <tr>
+      <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> 1..40 (Left | 
+        Right | Up | Down) = {$2_$1};&nbsp;<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> 3 Left&nbsp; <i><font color="#993366">
+&nbsp;Sent:</font></i> {Left 3}<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> 12 Down&nbsp; <i><font color="#993366">
+Sent: </font></i>{Down 12}</tt></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>This command has two variable terms. On the right-hand side the second 
+term (which direction to move) is substituted first and the first term (how
+many times) is substituted second, to create the necessary keystroke syntax.
+<br>
+&nbsp; </p>
+</body>
+</html>
+
+<hr>
+<h2>Defining Variables</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+        
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        
+  <meta name="Author" content="r mohr">
+        
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Defining Variable Terms</title></head><body>
+  If you want to re-use an alternative set in several different commands, 
+you can assign it to a variable. For example, we can create a variable called 
+<tt>&lt;direction&gt;</tt> to hold the alternatives "<tt>Left | Right | Up 
+| Down</tt>", and use it in a command: <br>
+ &nbsp;  
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+     <tr>
+  <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> &lt;direction&gt;
+ := Left | Right | Up | Down;&nbsp;<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Move &lt;direction&gt;
+ = {$1};&nbsp;<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Move Left <i><font color="#993366">
+ &nbsp;Sent:</font></i> {Left}&nbsp;<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Move Down &nbsp;<i><font color="#993366">
+Sent:</font></i> {Down}&nbsp;</tt></td>
+  </tr>
+     
+  </tbody> 
+</table>
+    
+<p>This command is equivalent to the second command in
+the previous section, allowing you to move the cursor in one of four directions. 
+ </p>
+ 
+<p>The following command defines the variable <tt>&lt;number&gt;</tt>, and
+ is equivalent to the third command in the previous section: <br>
+ &nbsp;  
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+     <tr>
+  <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> &lt;number&gt; 
+:= 1..40;&nbsp;<br>
+       <font color="#993366">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>
+  Move Down &lt;number&gt; = {Down_$1};&nbsp;<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Move Down 1 <i><font color="#993366">
+ &nbsp; Sent: </font></i>{Down 1}<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Move Down 12 <i><font color="#993366">
+ &nbsp;Sent: </font></i>{Down 12}</tt></td>
+  </tr>
+     
+  </tbody> 
+</table>
+   </p>
+ 
+<p>This moves the cursor down a given number of lines.</p>
+<p>Finally, we can write our general-purpose arrow-key command (move a given number of steps in any direction) using both
+ the <tt>&lt;direction&gt;</tt> and <tt>&lt;number&gt;</tt> variables: <br>
+ &nbsp;  
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+     <tr>
+  <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> &lt;number&gt; 
+&lt;direction&gt; = {$2_$1};&nbsp;<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> 3 Left&nbsp; <i><font color="#993366">
+ &nbsp;Sent:</font></i> {Left 3}<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> 10 Down&nbsp; <i><font color="#993366">
+ Sent: </font></i>{Down 12}</tt></td>
+  </tr>
+     
+  </tbody> 
+</table>
+  &nbsp;  
+<table cols="1" width="100%" bgcolor="#ccffff">
+  <tbody>
+     <tr>
+  <td>Note that a variable reference may appear earlier in a Vocola command
+ file then the definition of that variable.</td>
+  </tr>
+     
+  </tbody> 
+</table>
+   </p>
+
+ 
+</body></html>
+<hr>
+<h2>Substituting Actions</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+        
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        
+  <meta name="Author" content="r mohr">
+        
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Substitutions</title></head>
+
+<body>
+  So far the spoken words in our alternative sets have been substituted directly 
+into our keystroke sequences. Actually it is more commonly useful to substitute 
+a <i>different</i> set of keystrokes than the spoken words.  
+<p>For example, suppose we want "Move Back" to move the cursor left and "Move 
+Forward" to move the cursor right. We can specify that this way: <br>
+ &nbsp;  
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+     <tr>
+  <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Move (Back=Left
+ | Forward=Right) = {$1};&nbsp;<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Move Back&nbsp;
+      <i><font color="#993366">&nbsp; &nbsp; Sent: </font></i>{Left}<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Move Forward <i><font color="#993366">
+&nbsp; Sent: </font></i>{Right}</tt></td>
+  </tr>
+     
+  </tbody> 
+</table>
+   </p>
+ 
+<p>The alternative set "<tt>(Back=Left | Forward=Right)</tt>" means you can 
+say either "Back" or "Forward", but the value substituted on the right hand 
+side will be "<tt>Left</tt>" or "<tt>Right</tt>". </p>
+ 
+<p>Here's another example. The Netscape Mailer has several options for sorting 
+messages. This command allows you to change the sort by 
+saying "Sort by Date", "Sort by Sender", or "Sort by Subject": <br>
+ &nbsp;  
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+     <tr>
+  <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Sort by (Date=e
+ | Sender=r | Subject=s) = {Alt+v}o $1;&nbsp;<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Sort by Date <i><font color="#993366">
+&nbsp; &nbsp; Sent:</font></i> {Alt+v}oe&nbsp;<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Sort by Sender
+&nbsp;<i><font color="#993366"> Sent:</font></i> {Alt+v}or&nbsp;</tt></td>
+  </tr>
+     
+  </tbody> 
+</table>
+   </p>
+ 
+<p>This alternative set allows you to say "Date", "Sender", or "Subject",
+ and substitutes "<tt>e</tt>", "<tt>r</tt>", or "<tt>s</tt>" into the keystroke
+ sequence. </p>
+ 
+<p>Another common use of alternative sets with substitution is when you want 
+to pick from a long list of specific items such as files, folders, or email 
+addresses. For example, we can define the variable <tt>&lt;EmailAddress&gt;</tt>
+  to contain a list of email addresses and shorthands to invoke them: <br>
+ &nbsp;  
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+     <tr>
+  <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> &lt;EmailAddress&gt;
+ := ( Bill = bsmith@mediaone.net&nbsp;<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ | Dragon = info@dragonsys.com&nbsp;<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ | Voice Coder = VoiceCoder@yahoogroups.com&nbsp;<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ );&nbsp;<br>
+       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Address &lt;EmailAddress&gt;
+ = $1 {Enter};<br>
+       <i><font color="#993366">&nbsp;Say:</font></i> Address Bill &nbsp;&nbsp;&nbsp;&nbsp;
+       <i><font color="#993366">&nbsp; &nbsp;Sent: </font></i>bsmith@mediaone.net{Enter}<br>
+       <font color="#993366">&nbsp;<i>Say:</i></font> Address Voice Coder
+       <i><font color="#993366">&nbsp;Sent:&nbsp;</font></i>VoiceCoder@yahoogroups.com{Enter}</tt></td>
+  </tr>
+     
+  </tbody> 
+</table>
+   </p>
+ 
+<p>The command "<tt>Address &lt;EmailAddress&gt;</tt>" allows you to say,
+ for example, "Address Bill" or "Address Voice Coder" to insert the desired
+ email address. The list can be modified over time to add new addresses.
+<br>
+ &nbsp;  
+<table cols="1" width="100%" bgcolor="#ccffff">
+  <tbody>
+     <tr>
+  <td>An alternative and its substitution (e.g. <tt>Dragon = info@dragonsys.com</tt>
+ )&nbsp; is actually a mini-command -- "when I say this, send these keystrokes".
+ As with a command, the left-hand side may be an alternative set and the
+right-hand side may contain a sequence of actions. However, the left-hand
+side may not contain variables or ranges, and the right-hand side may not
+contain references.</td>
+  </tr>
+     
+  </tbody> 
+</table>
+   </p>
+ 
+</body></html>
+<hr>
+<h2>Optional Words</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    
+  <meta name="Author" content="r mohr">
+    
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Optional Words</title>
+</head>
+  <body>
+ Sometimes you want to create a command with optional words. For example,
+you might want to be able to say either "Hit Start Menu" or just "Hit Start"
+to bring up the Windows Start Menu: <br>
+&nbsp; 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+ <tbody>
+    <tr>
+      <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Hit Start [Menu] 
+        = SendSystemKeys( {Ctrl+Esc} );&nbsp;<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Hit Start Menu <i><font color="#993366">
+&nbsp;Sent: </font></i>{Ctrl+Esc}<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Hit Start&nbsp;&nbsp;&nbsp; 
+&nbsp; &nbsp;<i><font color="#993366">Sent: </font></i>{Ctrl+Esc}</tt></td>
+ </tr>
+  </tbody>
+</table>
+  
+<p>Enclosing the optional word "Menu" in square brackets does the trick. </p>
+<p>Note that optional words are not considered variable terms. Consider this
+example: <br>
+&nbsp; 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+ <tbody>
+    <tr>
+      <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> [Move] Down 1..10 
+        = {Down_$1};&nbsp;<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Move Down 1 <i><font color="#993366">
+&nbsp;Sent: </font></i>{Down 1}<br>
+      <font color="#993366">&nbsp;<i>Say:</i></font> Down 6&nbsp;&nbsp;&nbsp; 
+&nbsp; &nbsp;<i><font color="#993366">Sent: </font></i>{Down 6}</tt></td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+<p>Because the optional word "<tt>[Move]</tt>" is not considered variable, 
+the range "<tt>1..10</tt>" is the first variable term and is referenced using
+"<tt>$1</tt>". <br>
+&nbsp; 
+<table cols="1" width="100%" bgcolor="#ccffff">
+ <tbody>
+    <tr>
+ <td>Note that a command must have at least one non-optional term.</td>
+ </tr>
+ 
+  </tbody>
+</table>
+  </p>
+</body>
+</html>
+
+<hr>
+<h2>Function Calls</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>Function Calls</title></head><body>
+Not everything can be accomplished with keystroke sequences -- Vocola commands 
+can also include calls to <a href="BuiltinFunctions.html">built-in functions</a> 
+and <a href="DefiningFunctions.html">user-defined functions</a>. 
+<p>Here are two simple examples:</p>
+ <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+<tbody><tr>
+<td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Die Die = GoToSleep();&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Hit Down = ButtonClick(1,1);&nbsp;</tt></td>
+</tr>
+</tbody></table>
+
+<p>The first example puts NaturallySpeaking in sleep mode when you say
+"Die Die". The second example clicks the mouse when you say "Hit Down".
+</p><p>The function <tt>HeardWord</tt> is useful for writing a command which
+invokes another command. Any command recognized by NaturallySpeaking may
+be invoked this way, whether it was defined in Vocola, NatLink, or the
+Dragon Macro Language.
+</p>
+<p>For example, maybe you'd like to say "Kill Word" to delete a word rather than 
+  using the built-in NaturallySpeaking command "Delete Next Word", but you don't 
+  want to take the time to figure out the exact keystroke sequence. This command 
+  does the trick:</p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+<tbody><tr>
+<td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Kill Word = HeardWord(Delete,Next,Word);&nbsp;</tt></td>
+</tr>
+</tbody></table>
+
+<p>A command's actions can be a mix of keystroke sequences and function calls. 
+  For example, this command performs a "paste" at the current mouse location (saving 
+  you a mouse click):</p> 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+<tbody><tr>
+<td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Paste Here = ButtonClick(1,1) {Ctrl+v};&nbsp;</tt></td>
+</tr>
+</tbody></table>
+
+<p>Function arguments aren't always constant -- you can use a reference to a variable 
+  term as an argument to a function call. For example, this command allows you 
+  to copy a window's contents to either NaturallySpeaking or Emacs, by saying 
+  "Copy to NatSpeak" or "Copy to Emacs":</p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+<tbody><tr>
+<td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Copy to (NatSpeak|Emacs)
+= {Ctrl+a}{Ctrl+c} AppBringUp($1);&nbsp;</tt></td>
+</tr>
+</tbody></table>
+
+<p>Here the result of the first variable term "<tt>(NatSpeak|Emacs)</tt>" is passed 
+  to the function <tt>AppBringUp</tt> to bring up the desired application. </p>
+<p>Finally, a function argument can be built by concatenating more than one action. 
+  For example, the &quot;Back&quot; and &quot;Forward&quot; buttons in a Web browser 
+  use by convention the keystrokes Alt+Left and Alt+Right. In Lotus Notes these 
+  keystrokes only work when passed via the SendSystemKeys function:</p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><p><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Go (Back=Left 
+          | Forward=Right) = SendSystemKeys( {Alt+$1} );&nbsp;<br>
+          </tt><tt><font color="#993366">&nbsp;<i>Say:</i></font> Go Back<i><font color="#993366"> 
+          &nbsp;Sent: </font></i>SendSystemKeys( {Alt+Left} )<i><font color="#993366">&nbsp;</font></i></tt></p>
+        </td>
+    </tr>
+  </tbody>
+</table>
+<p>When you say &quot;Go Back&quot;, the function argument &quot;{Alt+Left}&quot; 
+  is constructed by combining the characters &quot;{Alt+&quot;, the reference 
+  $1, and the character &quot;}&quot;</p>
+</body></html>
+<hr>
+<h2>Built-in Functions</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>Built-in Functions</title></head><body>
+<p>Vocola supports all scripting commands defined for the <a href="http://home.attbi.com/~vocola/voicecmd.pdf">Dragon 
+  Macro Language</a>, as well as adding some built-in functions. Here are the 
+  most useful functions in the combined set:</p>
+<table border="1" cellpadding="3" cellspacing="0"  bordercolor="#FFEECC">
+  <tbody>
+    <tr  bgcolor="#FFEECC"> 
+      <td><font color="#660000">Command</font></td>
+      <td><font color="#660000">Description</font></td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>AppBringUp</td>
+      <td>Start or switch to an application</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>ButtonClick</td>
+      <td>Click the specified mouse button</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>DragToPoint</td>
+      <td>Drag the mouse to the current point</td>
+    </tr>
+    <tr bgcolor="#ffffcc"> 
+      <td><a href="#Eval">Eval</a></td>
+      <td>Evaluate a Python expression</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>HeardWord</td>
+      <td>Execute a command as if words were spoken</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>MenuPick</td>
+      <td>Select a menu or menu item</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>RememberPoint</td>
+      <td>Record the current mouse pointer position</td>
+    </tr>
+    <tr bgcolor="#ffffcc"> 
+      <td><a href="#Repeat">Repeat</a></td>
+      <td>Execute actions a specified number of times</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>SendSystemKeys</td>
+      <td>Send system keystrokes to Windows</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>SetMousePosition</td>
+      <td>Place the mouse pointer at a specified position</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>ShellExecute</td>
+      <td>Execute an application, with command line arguments</td>
+    </tr>
+    <tr bgcolor="#ffffcc">
+      <td>Wait</td>
+      <td>Pause for a specified time interval</td>
+    </tr>
+  </tbody>
+</table>
+<p>Here is the complete list:</p>
+<table border="1" cellpadding="8" cellspacing="0" bordercolor="#FFEECC">
+  <tr bgcolor="#ffffcc" valign="top">
+    <td>ActiveControlPick<br>
+      ActiveMenuPick<br>
+      AppBringUp<br>
+      AppSwapWith<br>
+      Beep<br>
+      ButtonClick<br>
+      ClearDesktop<br>
+      ControlPick<br>
+      DdeExecute</td>
+    <td>DdePoke<br>
+      DllCall<br>
+      DragToPoint<br>
+      <a href="#Eval">Eval</a><br>
+      GoToSleep<br>
+      HeardWord<br>
+      MenuCancel<br>
+      MenuPick<br>
+      MouseGrid</td>
+    <td>MsgBoxConfirm<br>
+      PlaySound<br>
+      RememberPoint<br>
+      <a href="#Repeat">Repeat</a><br>
+      RunScriptFile<br>
+      SendKeys<br>
+      SendSystemKeys<br>
+      SetMicrophone<br>
+      SetMousePosition</td>
+    <td><a href="#SetNaturalText">SetNaturalText</a><br>
+      ShellExecute<br>
+      <a href="#ShiftKey">ShiftKey</a><br>
+      TTSPlayString<br>
+      Wait<br>
+      WakeUp<br>
+      WinHelp</td>
+  </tr>
+</table>
+<p>The <a href="http://home.attbi.com/~vocola/voicecmd.pdf">Dragon Macro Language 
+  documentation</a> describes most of these functions. For those not so described, 
+  and for Vocola's built-in functions, see the descriptions below.</p>
+<hr>
+<h3><a name="Eval"></a>Eval</h3>
+<table border="0" cellspacing="0" cellpadding="12">
+  <tr> 
+    <td valign="top"><strong>Syntax</strong></td>
+    <td><tt>Eval(<em>expression</em>)</tt></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Description</strong></td>
+    <td>Evaluates an expression in the <a href="http://www.python.org/doc/">Python</a> 
+      language. Vocola is not a general-purpose programming language, so expressions 
+      such as arithmetic and conditionals are achieved using Python. The specified 
+      expression (which may be constructed from a sequence of Vocola actions) 
+      is evaluated using the Python interpreter, and the resulting value is used 
+      as a Vocola action or function argument.</td>
+  </tr>
+  <tr>
+    <td valign="top"><strong>Argument</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt><em>expression</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td>Vocola actions, which when evaluated and concatenated yield an expression 
+            in the Python language.</td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Example</strong></td>
+    <td><p>It's useful to position the mouse by voice using screen units larger 
+        than pixels. This command places the mouse pointer at a specified screen 
+        position using a coordinate system of 15 pixels per unit. Saying for example 
+        &quot;30 10 Go&quot; moves the mouse pointer to screen pixel position 
+        (150, 450):</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> &lt;n&gt; 
+              := 0..99;<br>
+              <i><font color="#993366">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></i>&lt;n&gt; 
+              &lt;n&gt; Go = SetMousePosition( 0, Eval(15*$2), Eval(15*$1) );<i><font color="#993366">&nbsp;</font></i></tt><br>
+              <tt><font color="#993366">&nbsp;<i>Say:</i></font> 30 10 Go<i><font color="#993366"> 
+              &nbsp;Sent: </font></i>SetMousePosition( 0, 150, 450 )</tt></td>
+          </tr>
+        </tbody>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<hr>
+<h3><a name="Repeat"></a>Repeat</h3>
+<table border="0" cellspacing="0" cellpadding="12">
+  <tr> 
+    <td valign="top"><strong>Syntax</strong></td>
+    <td><tt>Repeat(<em>count, actions</em>)</tt></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Description</strong></td>
+    <td>Executes an action sequence a specified number of times.</td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Arguments</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt><em>count</em></tt></td>
+          <td>&nbsp;</td>
+          <td>Number of times to repeat the specified actions.</td>
+        </tr>
+        <tr>
+          <td valign="top">&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr> 
+          <td valign="top"><tt><em>actions</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td>Vocola actions to be performed the specified number of times.</td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Examples</strong></td>
+    <td><p>In an &quot;Open File&quot; dialog box, this command moves up a given 
+        number of levels in the folder hierarchy. Saying for example &quot;Go 
+        Up 3&quot; constructs the pathname &quot;<tt>..\..\..\</tt>&quot; to move 
+        up three levels:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr>
+            <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Go Up 1..9 
+              = Repeat($1, ..\) {Enter};&nbsp;</tt><br>
+              <tt><font color="#993366">&nbsp;<i>Say:</i></font> Go Up 3<i><font color="#993366"> 
+              &nbsp;Sent: </font></i>..\..\..\{Enter}</tt></td>
+          </tr>
+        </tbody>
+      </table>
+      
+    <p>In the Mozilla mailer it's useful to delete several messages in a row by 
+        saying for example &quot;Kill 3&quot; to send 3 &quot;delete&quot; keystrokes. 
+        But unless these keystrokes are separated by &quot;Wait&quot; commands 
+        only 1 message is deleted. This command sends a specified number of &quot;delete&quot; 
+        keystrokes, separated by &quot;Wait&quot; commands:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Kill 1..10 
+              = Repeat($1, {Del} Wait(100));&nbsp;</tt><br>
+              <tt><font color="#993366">&nbsp;<i>Say:</i></font> Kill 3<i><font color="#993366"> 
+              &nbsp;Sent: </font></i> {Del} Wait(100) {Del} Wait(100) {Del} Wait(100)&nbsp;</tt></td>
+          </tr>
+        </tbody>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<hr>
+<h3><a name="SetNaturalText" id="SetNaturalText"></a>SetNaturalText</h3>
+<table border="0" cellspacing="0" cellpadding="12">
+  <tr> 
+    <td valign="top"><strong>Syntax</strong></td>
+    <td><tt>SetNaturalText(<em>enable</em>)</tt></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Description</strong></td>
+    <td>Controls whether dictation is enabled in applications which do not support 
+      &quot;Select-and-Say&quot;. (No visual feedback such as a system tray icon 
+      is provided.) This is an undocumented built-in function of the Dragon macro 
+      language.</td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Argument</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt><em>enable</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td>A value of 1 enables dictation, while a value of 0 disables dictation.</td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+<hr>
+<h3><a name="ShiftKey" id="ShiftKey"></a>ShiftKey</h3>
+<table border="0" cellspacing="0" cellpadding="12">
+  <tr> 
+    <td valign="top"><strong>Syntax</strong></td>
+    <td><tt>ShiftKey([<em>option</em>[, <em>action</em>]])</tt></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Description</strong></td>
+    <td><p>Either adds the specified key to the first character of the next non 
+        control keystroke or clears the specified key from the keystroke if the 
+        keystroke would normally be applied. That is, ShiftKey doesn't actually 
+        press any keys. Instead, it alters the keystroke that follows. You can 
+        sequentially execute more than one ShiftKey command to specify multiple 
+        keys. </p>
+      <p>This is an undocumented built-in function of the Dragon macro language. 
+        In Vocola it must be followed by a call to another built-in function such 
+        as ButtonClick or SendKeys.</p>
+      </td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Arguments</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt><em>option</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Specifies which key to add to the first character of the next 
+              non-control key, as follows:</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+              <tr> 
+                <td valign="top">0&nbsp;&nbsp;&nbsp;Clears all (ignores the action argument)</td>
+              </tr>
+              <tr> 
+                <td valign="top">1&nbsp;&nbsp;&nbsp;Left Shift (default)</td>
+              </tr>
+              <tr> 
+                <td valign="top">2&nbsp;&nbsp;&nbsp;Left Control</td>
+              </tr>
+              <tr> 
+                <td valign="top">3&nbsp;&nbsp;&nbsp;Left Alt</td>
+              </tr>
+              <tr> 
+                <td valign="top">4&nbsp;&nbsp;&nbsp;Right Shift</td>
+              </tr>
+              <tr> 
+                <td valign="top">5&nbsp;&nbsp;&nbsp;Right Control</td>
+              </tr>
+              <tr> 
+                <td valign="top">6&nbsp;&nbsp;&nbsp;Right Alt</td>
+              </tr>
+            </table>
+            
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><em>action</em></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Specifies the key state, as follows:</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+              <tr> 
+                <td valign="top">0&nbsp;&nbsp;&nbsp;Clear</td>
+              </tr>
+              <tr> 
+                <td valign="top">1&nbsp;&nbsp;&nbsp;Set (default)</td>
+              </tr>
+            </table>
+            
+          </td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Example</strong></td>
+    <td><p>This example shows how to use modifier keys with mouse clicks, such 
+        as saying &quot;Control Click&quot; to click the mouse while holding the 
+        Ctrl key:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> (Shift=1 
+              | Control=2 | Alt=3) Click = ShiftKey($1) ButtonClick();<i><font color="#993366">&nbsp;</font></i></tt><br>
+              <tt><font color="#993366">&nbsp;<i>Say:</i></font> Control Click<i><font color="#993366"> 
+              &nbsp;Sent: </font></i>ShiftKey(2) ButtonClick();<i><font color="#993366">&nbsp;</font></i></tt></td>
+          </tr>
+        </tbody>
+      </table></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</body></html>
+<hr>
+<h2>Defining Functions</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="r mohr">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Function Calls</title></head><body>
+<p>Vocola supports user-defined functions as well as built-in functions. If you 
+  find yourself copying an action sequence for use in several commands, defining 
+  a function can make the commands more concise and understandable. (This is also 
+  possible using the built-in function HeardWord, but creating your own function 
+  makes for clearer code and faster execution.)</p>
+<p>For example, in the Netscape/Mozilla mailer it's useful to define commands 
+  to move around in the &quot;summary&quot; window (which shows a one-line summary 
+  of each e-mail message). Here we define the function <tt>goToSummary</tt> to 
+  make sure the summary window has the focus:</p>
+<table border="0" cellspacing="0" cellpadding="10" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><pre>
+goToSummary() := 
+    SetMousePosition(4, 7)        # Window's bottom left edge
+    SetMousePosition(2, 15, -45)  # Bottom left of folder list
+    ButtonClick()                 # Folder list now has focus
+    {Tab_3};                      # Summary pane now has focus</pre>
+	  </td>
+    </tr>
+  </tbody>
+</table>
+<p>The left side of the definition specifies the function's name (<tt>goToSummary</tt>) 
+  and arguments (none in this case). The right side of the definition is a standard 
+  Vocola action sequence. Here we position the mouse over the bottom left corner 
+  of the mailer window, move up and to the right slightly to be over the folder 
+  list panel, click the mouse so the folder list has focus, and finally press 
+  the tab key three times so the summary window has focus.</p>
+<p>Now we can define 3 commands using this function. Saying &quot;Final Message&quot; 
+  moves to the last message in the summary. Saying &quot;First Unread&quot; moves 
+  to the first unread message. And saying for example &quot;Summary 3 Up&quot; 
+  moves to the summary window and up three messages:</p>
+<table border="0" cellspacing="0" cellpadding="10" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><pre>
+Final Message = goToSummary() {End};
+First Unread  = goToSummary() {End}n;
+Summary 1..20 (Up|Down) = goToSummary() {$2_$1};</pre></td>
+    </tr>
+  </tbody>
+</table>
+<p>Each of these commands uses our function <tt>goToSummary</tt>, making them 
+  shorter and clearer than if each had to include that function's actions explicitly.</p>
+<h3>Defining Functions with Arguments</h3>
+<p>You can also specify arguments when defining a function. For example, here's 
+  a function which switches to the nth application on the Windows taskbar:</p>
+<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><pre>switchToTaskBar(number) := SendSystemKeys( {Ctrl+Esc} )
+                           {Tab_2}{Right_$number}{Left} " ";
+</pre></td>
+    </tr>
+  </tbody>
+</table>
+<p>This function, <tt>switchToTaskBar</tt>, is defined to take the single argument 
+  <tt>number</tt> (indicating which taskbar slot to switch to). <tt>{Ctrl+Esc}</tt> 
+  opens the start menu (just to get focus on the taskbar), and <tt>{Tab_2}</tt> 
+  moves to the first application. Then <tt>$number</tt> (referring to the function 
+  argument) is used to move right the specified number of slots. Finally, sending 
+  a &quot;space&quot; keystroke makes the selected application active. (Note that 
+  this function works in Windows XP -- a slightly different version is needed 
+  for Windows 2000.)</p>
+<p>Now we can use this function in several commands. Let's say that Microsoft 
+  Word is the third application from the left on the taskbar. Saying &quot;Switch 
+  to 3&quot; makes Word the active application. Saying &quot;Close 3&quot; closes 
+  Word. And saying &quot;Copy to 3&quot; copies everything from the current application 
+  and switches to Word:</p>
+<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><pre>&lt;n&gt; := 1..20;
+Switch to &lt;n&gt; = switchToTaskBar($1);
+Close     &lt;n&gt; = switchToTaskBar($1) {Alt+F4};
+Copy to   &lt;n&gt; = {Ctrl+a}{Ctrl+c} switchToTaskBar($1);
+</pre></td>
+    </tr>
+  </tbody>
+</table>
+<p>Each of these commands uses the variable <tt>&lt;n&gt;</tt> to specify a number 
+  between 1 and 20, which is then passed to the <tt>switchToTaskBar</tt> function 
+  to specify the target application. </p>
+<h3>Multiple Arguments and Nested Function Calls</h3>
+<p>Here's another example, defining two functions which each take 2 arguments. 
+  First is the function <tt>moveBy</tt>, which moves the mouse a distance (x,y) 
+  from the current position. Note that it uses the built-in Vocola function <tt>Eval</tt> 
+  to multiply each coordinate by 15, providing more convenient units than pixels. 
+  (I have rulers taped to my screen in these units, thanks to Kim Patch's idea. 
+  With this approach you can place the mouse anywhere on a large screen by speaking 
+  only 2-digit numbers, which are recognized much more reliably than 3-digit numbers. 
+  See the file <tt>_vocola.vcl</tt> in the shipping Vocola samples for more examples.)</p>
+<p><tt>moveBy</tt> is used twice by the next function, <tt>moveWindowBy</tt>, 
+  which moves the current window a specified distance (x,y) in these same 15-pixel 
+  units.</p>
+<table border="0" cellspacing="0" cellpadding="10" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><pre>moveBy(x,y) := SetMousePosition(2, Eval(15*$x), Eval(15*$y));
+
+moveWindowBy(x,y) :=
+    SetMousePosition(4,1)  # Top window edge, center
+    moveBy(0,1)            # Down into title bar
+    RememberPoint()        # Store initial drag point
+    moveBy($x,$y)          # Move by given amount
+    DragToPoint();         # Do the drag
+</pre></td>
+    </tr>
+  </tbody>
+</table>
+<p>Note again that a function's arguments may be referenced in its action sequence 
+  using &quot;<tt>$</tt>&quot;. That's <tt>$x</tt> and <tt>$y</tt> in these functions.</p>
+<p>Now here are two commands using <tt>moveWindowBy</tt>, allowing you to say 
+  for example &quot;Window 10 Up&quot;or &quot;Window 20 Right&quot; to move the 
+  current window:</p>
+<table border="0" cellspacing="0" cellpadding="10" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><pre>&lt;n&gt; := 0..99;
+Window &lt;n&gt; (  Up='-' |  Down='+') = moveWindowBy(0, $2$1);
+Window &lt;n&gt; (Left='-' | Right='+') = moveWindowBy($2$1, 0);</pre></td>
+    </tr>
+  </tbody>
+</table>
+<p>Note here how a function argument can be built from two variables. When you 
+  say &quot;Window 10 Up&quot;, the first variable term <tt>&lt;n&gt;</tt> has 
+  the value &quot;<tt>10</tt>&quot; and the second variable term has the value 
+  &quot;<tt>-</tt>&quot;. These are concatenated by the double reference <tt>$2$1</tt> 
+  to form the final function call <tt>moveWindowBy(0, -10)</tt>.</p>
+</body></html>
+<hr>
+<h2>Contextual Commands</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+        
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+        
+  
+  <meta name="Author" content="r mohr">
+
+        
+  
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Vocola Tutorial: Enable by Context</title>
+</head>
+
+<body>
+<p>We've discussed how to create "global" commands (which are always enabled)
+as well as application-specific commands (which are enabled only when a particular
+application is active). In addition, you can create <i>contextual commands</i>,
+which are enabled only when a particular window has the focus.</p>
+<p>By specifying all or part of the window title in a <i>context statement
+</i>you can create commands specific to that window. For example, here are
+three groups of commands for Microsoft Outlook (from the application-specific
+command file "<tt>outlook.vcl</tt>"):&nbsp;  </p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+<tbody><tr><td><tt>&nbsp;Microsoft Outlook:<br>
+ &nbsp;&nbsp; New Message = {Ctrl+n};<br>
+ &nbsp;&nbsp; Reply to Message = {Ctrl+r};<br>
+ &nbsp;&nbsp; Reply to All = {Ctrl+Shift+r};<br>
+ &nbsp;&nbsp; Forward Message = {Ctrl+f};<br><br>
+ &nbsp;Message (Plain Text):<br>
+ &nbsp;&nbsp; Send That = {Alt+s};<br>
+ &nbsp;&nbsp; Reply Here = "{Home}{Shift+End}{Del}{Enter 3}{Left 2}";<br><br>
+ &nbsp;Calendar:<br>
+ &nbsp;&nbsp; View Month = {Alt+m};<br>
+ &nbsp;&nbsp; View Work Week = {Alt+r};</tt><br></td></tr></tbody>
+</table>
+<p>The context statement "<tt>Microsoft Outlook:</tt>" specifies that subsequent
+commands should be active only when "Microsoft Outlook" is part of the title
+of the active window. When reading mail using Outlook the main window title
+is "Inbox - Microsoft Outlook", so the first group of commands above (to
+create, reply to, or forward a message) will be enabled. </p>
+<p>Similarly, when editing a mail message the window title is "Message (Plain
+Text)", so the second group of commands above will be enabled. Finally, the
+third group of commands above will be enabled when the Outlook calendar is
+displayed.</p>
+<p>Here is another example. The text editor application Emacs can be customized 
+  so that the window title includes the name of the currently-edited file. For 
+  example, when editing <tt>iexplore.vcl</tt> (the file of Vocola commands for 
+  Internet Explorer) the Emacs window title is "<tt>Emacs - iexplore.vcl - 01.05.02</tt>". 
+  This allows defining a set of contextual commands for editing Vocola files. 
+  The application-specific command file "<tt>emacs.vcl</tt>" would include:</p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc"><tbody><tr>
+      <td><pre> ### Editing Vocola files
+ .vcl:
+   Insert             &lt;key&gt; = {$1       Wait(0) }; 
+   Insert       &lt;mod&gt; &lt;key&gt; = {$1+$2    Wait(0) }; 
+   Insert &lt;mod&gt; &lt;mod&gt; &lt;key&gt; = {$1+$2+$3 Wait(0) }; 
+ 
+ ### Editing Perl files
+ .pl:
+   New Statement = {Ctrl+e}{Ctrl+j};
+   New Statement Above = {Ctrl+a}{Ctrl+b}{Ctrl+j}; 
+   Insert Hash Reference = -&gt;{}{Ctrl+b};</pre>
+        </td>
+    </tr></tbody></table>
+<p>So for example when the Emacs window title contains "<tt>.vcl</tt>", saying 
+  "Insert Shift Tab" inserts the text &quot;<tt>{Shift+Tab}</tt>&quot; into the 
+  file. These commands allow speaking keystroke sequences when writing Vocola 
+  code. (The variable definitions for <tt>&lt;mod&gt;</tt> and <tt>&lt;key&gt;</tt> 
+  are omitted here, but available with the Vocola distribution.)</p>
+<p>Similarly, the second group of commands above is active only when editing Perl 
+  files.</p>
+<h3>Global Contextual Commands and Multiple Context Choices</h3>
+<p>Contextual commands don't need to be application-specific. You can also create 
+  global contextual commands, as in this example from the global command file 
+  "<tt>_vocola.vcl</tt>":</p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc"><tbody><tr><td><tt>&nbsp;Open:<br>
+&nbsp;&nbsp; Go Up = ..{Enter};<br>
+        &nbsp;&nbsp; Folder List = {Shift+Tab_2}{Down}{PgUp};&nbsp;</tt></td>
+    </tr></tbody></table>
+<p>This defines two commands for use in a "File Open" dialog box, regardless of 
+  the current application. Whenever the window title includes the word "<tt>Open</tt>", 
+  you can say "Go Up" to move to the parent folder or &quot;Folder List&quot; 
+  to open the folder hierarchy drop down at the top of the dialog. </p>
+<p>As it happens, &quot;File Chooser&quot; dialog boxes appear with a wide range 
+  of titles, such as &quot;Open File&quot;, &quot;Save As&quot;, &quot;Browse 
+  for Folder&quot;, etc. Ideally we want the same set of context-specific commands 
+  to be available for all such dialogs. Vocola supports this by allowing the &quot;<tt>|</tt>&quot; 
+  character in context statements. Here is the full set of context titles and 
+  commands I use:</p>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+  <tbody>
+    <tr>
+      <td><tt>&nbsp;Open | New | Save | File | Attachment | Browse | Directory:&nbsp;<br>
+&nbsp;&nbsp; Folder &lt;folder&gt; = {Ctrl+c}$1\{Enter};<br>
+&nbsp;&nbsp; Go Up = ..{Enter};<br>
+&nbsp;&nbsp; Go Up &lt;n&gt; = Repeat($1, ..\) {Enter};<br>
+&nbsp;&nbsp; Folder List = {Shift+Tab_2}{Down}{PgUp};<br>
+&nbsp;&nbsp; Choose &lt;n&gt; = {Down_$1}{Enter}{Esc};</tt></td>
+    </tr>
+  </tbody>
+</table>
+</body></html>
+<hr>
+<h2>Include Statements</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>Built-in Functions</title></head><body>
+Sometimes you will want to use a set of Vocola definitions in more than one application. 
+The Vocola &quot;include&quot; statement allows you to put such shared definitions 
+in a single file, and include that file in each of several application-specific 
+command files. 
+<p>For example, many applications need to navigate the file system to find specific 
+  files or folders. But speaking pathnames can be difficult, as can navigating 
+  through folder hierarchies by voice. What you'd really like to do is define 
+  a single list of shortcuts to interesting folders, and have that list available 
+  in any program which needs to navigate the file system. </p>
+<p>I've created a file called &quot;folders.vch&quot; (&quot;vch&quot; stands 
+  for &quot;Vocola header&quot;) to contain my personal list of interesting folders, 
+  defined as a Vocola variable:</p>
+<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><tt><i><font color="#993366">From file folders.vch:</font></i></tt> 
+        <pre>&lt;folder&gt; := <br> ( Home       = C:\Rick<br> | Temp       = C:\Temp<br> | Downloads  = C:\Programs\Downloads<br> | Start Menu =&quot;C:\Documents and Settings\Rick Mohr\Start Menu&quot;<br> | Vocola     = C:\Programs\NatLink\Vocola<br> | NatLink    = C:\Programs\NatLink\MacroSystem<br> );</pre></td>
+    </tr>
+  </tbody>
+</table>
+<p>With the Vocola &quot;include&quot; statement this list can be used in several 
+  Vocola command files. Here's part of my command file for Windows Explorer:</p>
+<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><p><tt><i><font color="#993366">From file explorer.vcl:</font></i></tt></p>
+        <tt>include folders.vch;<br>
+        Folder &lt;folder&gt; = {Alt+d} $1 {Enter}{Tab_2};</tt></td>
+    </tr>
+  </tbody>
+</table>
+<p>So for example, saying &quot;Folder NatLink&quot; to Windows Explorer switches 
+  to the folder &quot;C:\Programs\NatLink\MacroSystem&quot;.</p>
+<p>The folder list is also useful in a Command Prompt (DOS box), where saying 
+  for example &quot;Folder Temp&quot; performs the command &quot;cd C:\Temp&quot;:</p>
+<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><p><i><font color="#993366"><tt>From file ntvdm.vcl:</tt></font></i></p>
+        <tt> include folders.vch;<br>
+        Folder &lt;folder&gt; = &quot;cd $1{Enter}&quot;;</tt></td>
+    </tr>
+  </tbody>
+</table>
+<p>Last and perhaps most useful is the following global command to move quickly 
+  to a specific folder in a &quot;File Open&quot; dialog box:</p>
+<table border="0" cellpadding="10" cellspacing="0" bgcolor="#ffffcc">
+  <tbody>
+    <tr> 
+      <td><p><i><font color="#993366"><tt>From file _vocola.vcl:</tt></font></i></p>
+        <tt> include folders.vch;<br>
+        <br>
+        Open | New | Save | File | Attachment | Browse | Directory:<br>
+        &nbsp;&nbsp;Folder &lt;folder&gt; = $1\{Enter};<br>
+</tt></td>
+    </tr>
+  </tbody>
+</table>
+<p>This global contextual command is active when the window title of any application 
+  contains one of the words shown. For example, when saving an attachment in Microsoft 
+  Outlook the window title is &quot;Save Attachment&quot;, so saying &quot;Folder 
+  Temp&quot; switches the dialog's current folder to &quot;C:\Temp&quot;.</p>
+<h3>Include using a variable filename</h3>
+<p>The &quot;include&quot; statement's filename can be varied using references 
+  to environment variables. For example, you might have a different set of interesting 
+  folders at home than at work, and so want to include a different file depending 
+  on which machine you are currently using. Since the environment variable &quot;COMPUTERNAME&quot; 
+  contains the name of your machine, you could say:</p>
+<blockquote> 
+  <p><tt>include folders_$COMPUTERNAME.vch;</tt></p>
+</blockquote>
+<p>If your work machine were called &quot;Venus&quot; and your home machine were 
+  called &quot;family&quot;, you would define your list of interesting folders 
+  in two separate files, &quot;folders_Venus.vch&quot; and &quot;folders_family.vch&quot;.</p>
+</body></html>
+<hr>
+<h2>Comments</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="r mohr">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Comments</title>
+</head>
+<body><P>Using comments in your Vocola command files can help you or somebody else
+understand the sometimes-cryptic keystroke sequences.</P>
+
+Comments in Vocola are specified by the "<tt>#</tt>" character. Anything
+on a line following a "<tt>#</tt>" character is ignored by the command parser.
+Here is an example:<br>
+<br>
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+<tbody><tr><td><p><tt>&nbsp;# Extract a file pathname from a Netscape 4 mail message</tt><br>
+          <tt>&nbsp;Get File Name =&nbsp;</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp; {Ctrl+l} Wait(500)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # Open a "forward" window&nbsp;</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp; {Enter_2}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # Move to message body</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp; {Ctrl+f}:\{Enter}{Esc}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # Search for ":\"</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp; {Left_3}{Shift+End}{Ctrl+c}&nbsp; # Copy entire 
+          pathname</tt><br>
+          <tt> &nbsp;&nbsp;&nbsp; {Alt+F4};&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # Close the window</tt><br>
+        </p></td></tr></tbody>
+</table>
+<br>
+<br>
+</body></html>
+<hr>
+<h2>Example File</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+    
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+    
+  
+  <meta name="Author" content="r mohr">
+
+    
+  
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Example File</title>
+</head>
+
+<body>
+ Here's a longer example of a Vocola command file, taken from my "netscape.vcl"
+file for controlling the various Netscape applications. 
+
+<p>It contains commands for reading email, composing email messages, and editing
+HTML files, activated contextually by the window title. It contains simple
+one-line keystroke commands, some longer keystroke commands, several "alternative
+set" commands with substitutions, a variable definition, and a few function
+calls mixed in. <br>
+&nbsp; 
+<table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc"><tbody><tr><td><tt>&nbsp;# Voice commands for Netscape 4&nbsp;</tt><p><tt>&nbsp;### Reading email</tt><br><tt>&nbsp;Netscape Folder:</tt><br><tt>&nbsp;&nbsp; New Message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = {Ctrl+m};</tt><br><tt>&nbsp;&nbsp; Reply to Message = {Ctrl+r};</tt><br><tt>&nbsp;&nbsp; Reply to All&nbsp;&nbsp;&nbsp;&nbsp; = {Ctrl+Shift+r};</tt><br><tt>&nbsp;&nbsp; Forward Message&nbsp; = {Ctrl+l};</tt></p>
+        <p><tt>&nbsp;&nbsp; Print Message = {Ctrl+p}{Tab_6}1{Enter};</tt><br>
+          <tt>&nbsp;&nbsp; Search Messages = {Ctrl+Shift+F};</tt></p><p><tt>&nbsp;&nbsp; Sort by (Date=e | Sender=r | Subject=s) = {Alt+v}o 
+$1;</tt></p><p><tt>&nbsp;&nbsp; # Choose HTML editor or plain text editor</tt><br><tt>&nbsp;&nbsp; Use (HTML={Up} | Plain Text={Down}) =&nbsp;</tt><br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "{Alt+e}e{Shift+Tab}{Down 8}{Tab}$1{Enter}";</tt></p>
+        <p><tt>&nbsp;&nbsp; # Extract a file pathname from a mail message</tt><br>
+          <tt>&nbsp;&nbsp; Get File Name =&nbsp;</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {Ctrl+l} Wait(500)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # Open a "forward" window</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {Enter_2}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # Move to message body</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {Ctrl+f}:\{Enter}{Esc}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # Search for ":\"</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {Left_3}{Shift+End}{Ctrl+c}&nbsp; 
+          # Copy entire pathname</tt><br>
+          <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {Alt+F4};&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # Close the window</tt></p>
+        <p><tt>&nbsp;### Composing email messages</tt><br><tt>&nbsp;Composition:</tt><br><tt>&nbsp;&nbsp; &lt;EmailAddress&gt; := ( David = dsmith@netscape.com</tt><br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+| Emily = egreene@aol.com</tt><br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+| Mike&nbsp; = mike@orangerooster.com</tt><br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+| Sue&nbsp;&nbsp; = suenew@brown.net</tt><br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+);</tt><br><tt>&nbsp;&nbsp; Address &lt;EmailAddress&gt; = $1 {Enter};</tt><br><tt>&nbsp;&nbsp; Cc &lt;EmailAddress&gt; = "{Shift+Tab} {Down 2}{Enter}$1{Enter}";&nbsp;</tt></p><p><tt>&nbsp;&nbsp; Send That = {Ctrl+Enter};</tt></p><p><tt>&nbsp;&nbsp; I Meant Reply All =</tt><br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {Ctrl+Home}{Ctrl+Shift+End}{Ctrl+c}&nbsp; 
+# Copy message</tt><br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {Alt+F4}n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ # Close window</tt><br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {Ctrl+Shift+r};&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ # Reply to All</tt></p><p><tt>&nbsp;### Editing HTML documents</tt><br><tt>&nbsp;Netscape Composer:</tt><br><tt>&nbsp;&nbsp; Save (File|That) = {Ctrl+s};</tt><br><tt>&nbsp;&nbsp; Save and Close&nbsp;&nbsp; = {Ctrl+s}{Alt+F4};</tt><br><tt>&nbsp;&nbsp; Show Preview&nbsp;&nbsp;&nbsp;&nbsp; = {Ctrl+s} AppBringUp(iexplore) 
+{F5};</tt></p><p><tt>&nbsp;&nbsp; Fixed&nbsp;&nbsp;&nbsp; Width [Font] = {Alt+o}{Right}{Down}{Enter};&nbsp;&nbsp;</tt><br><tt>&nbsp;&nbsp; Variable Width [Font] = {Alt+o}{Right}{Enter};&nbsp;&nbsp;</tt></p><p><tt>&nbsp;&nbsp; Style Normal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+= {Alt+o}p{Enter};</tt><br><tt>&nbsp;&nbsp; [Style] Heading 1..6 = {Alt+o}h $1;</tt></p><p><tt>&nbsp;&nbsp; Promote That = {Ctrl+-};</tt><br><tt>&nbsp;&nbsp; Demote That&nbsp; = SendSystemKeys("{Ctrl+=}");</tt></p></td></tr></tbody></table><br>
+&nbsp; <br>
+&nbsp; </p>
+</body></html>
+<hr>
+<h2>Command Sequences</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="r mohr">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Comments</title>
+</head>
+<body>
+<p>Vocola allows you to speak several commands in a row without pausing. For example, 
+  assume your commands allow you to say:</p>
+<blockquote>
+  <table>
+    <tbody>
+      <tr> 
+        <td>&quot;3 Words Right&quot;</td>
+        <td><tt>&nbsp;</tt></td>
+        <td>to move the cursor 3 words to the right,</td>
+      </tr>
+      <tr> 
+        <td>&quot;2 Right&quot;</td>
+        <td><br></td>
+        <td>to move the cursor 2 characters to the right, and</td>
+      </tr>
+      <tr valign="Top"> 
+        <td>&quot;Kill Char&quot;</td>
+        <td><br></td>
+        <td>to delete 1 character.</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<p>If you wanted to speak these three commands in succession you would normally 
+  have to pause between commands, saying</p>
+<blockquote>
+  <p>&quot;3 Words Right&quot; (pause) &quot;2 Right&quot; (pause) &quot;Kill 
+    Char&quot;.</p></blockquote>
+  With Vocola you don't need to pause, so you can say
+<blockquote>
+  <p>&quot;3 Words Right 2 Right Kill Char&quot;.</p>
+</blockquote>
+<p>Once you get used to speaking command sequences, text editing by voice becomes 
+  faster and less frustrating.</p>
+<p>Note however that only commands defined in the same file can be spoken in sequence. 
+  For me this causes occasional mistakes but is not a major limitation. And using 
+  <a href="IncludeFiles.html">include files</a> can help. For example, if you 
+  find you want to sequence some of your global commands with commands local to 
+  Microsoft Word, you could put the global commands in a separate .vch file and 
+  include that file in both word.vcl and _vocola.vcl.</p>
+<p>You might think command sequences would lead to mistakes when an unexpected 
+  combination of commands is recognized, but in practice I have not found this 
+  to be the case. It's a good idea to avoid single-word commands, but that's a 
+  good idea anyway.</p>
+<p>Currently there is no way to turn off recognition of command sequences. If 
+  you need such a mechanism, let me know.</p>
+</body></html>
+<hr>
+<h2>Download Vocola</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="r mohr">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Download And Install</title></head><body>
+<p>This page lists the released versions of Vocola and the changes they included, 
+  with the most recent version first. To download Vocola, click on the link next 
+  to the version you want.</p>
+  
+<p><b>Version 2.4</b> -- <b>September 28, 2003</b> (<a href="Vocola-2-4.zip">Vocola-2-4.zip</a>)</p>
+<ul>
+  <li>Fixed problem with some installations where vcl2py.exe failed to run, and 
+    perpetually raised a blank message window.</li>
+  <li>Fixed problem where &quot;Edit Voice Commands&quot; (with some editors) 
+    did not allow editing commands by voice.</li>
+</ul>
+<p><b>Version 2.0</b> -- <b>June 7, 2003</b></p>
+<ul>
+  <li> Speak continuous command sequences
+  <li>Automatic loading of changed files, with error messages to NatLink window
+  <li> User-defined functions
+  <li> <tt>include</tt> statement
+  <li> <tt>Eval</tt> built-in function
+  <li> <tt>Repeat</tt> built-in function
+  <li> Context statements can contain '|'
+  <li> Function arguments can be built from several actions
+  <li> Numeric arguments now work correctly in all built-in functions
+  <li> Improved generated Python code (using VocolaUtils.py)
+  <li> Case insensitive window title comparisons
+  <li> Obscure name for generated python file (&quot;outlook_vcl.py&quot;) to 
+    avoid clobbering existing NatLink files
+</ul>
+<p><b>Version 1.1</b> -- <b>May 11, 2002</b> (<a href="Vocola-1-1.zip">Vocola-1-1.zip</a>) 
+</p>
+<ul>
+  <li>First public release.</li>
+  <li>Installing Perl is no longer required.</li>
+  <li>Commands containing backslash sequences like &nbsp;\; &nbsp;or &nbsp;\" &nbsp;or &nbsp;\' &nbsp; are now parsed
+correctly.</li>
+  <li>Application-specific commands are now recognized for applications whose name contains an underscore character.</li>
+
+</ul>
+
+</body></html>
+<hr>
+<h2>Install Vocola</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+  
+  <meta name="Author" content="r mohr">
+
+  
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
+  <title>Install Vocola</title>
+</head><body>
+New users should use the following instructions to install Vocola. (Vocola 1.1 
+users should use <a href="#Upgrade11">these instructions</a>.) 
+<ol>
+  <li>Install <a href="http://scansoft.com/naturallyspeaking/">Dragon NaturallySpeaking</a>, 
+    version 3.5 or later, any edition.</li>
+  <br>
+  &nbsp; 
+  <li> Install <a href="http://www.python.org/download/">Python</a>. Version 2.2 
+    is recommended, and version 2.0 is supported, but version 1.5 is <strong>not</strong> 
+    supported.<br>
+    &nbsp; </li>
+  <li> Install NatLink. For Python 2.2 use <a href="http://dranalli.com/dragon/NatLink007-py22.zip%20">this 
+    version</a>. Follow <a href="http://www.synapseadaptive.com/joel/NatLinkInstallation.html"> 
+    Joel Gould's instructions</a>. NatLink version 007 or greater is recommended, 
+    though Vocola has worked since version 004.<br>
+    &nbsp; </li>
+  <li><a href="DownloadVocola.html">Download</a> the Vocola zip file. </li>
+  <br>
+  &nbsp; 
+  <li> Extract the Vocola zip file into the NatLink directory. For example, if 
+    you installed NatLink in <tt>C:\NatLink</tt>, you should choose <tt>C:\NatLink</tt> 
+    as the folder to extract to. After unpacking you should see folder <tt>C:\NatLink\Vocola</tt>, 
+    with subfolders <tt>Commands</tt>, <tt>Doc</tt>, <tt>Exec</tt>, <tt>Samples</tt>, 
+    and <tt>Simpscrp</tt>.<br>
+    &nbsp; </li>
+  <li> From the <tt>Vocola\Exec</tt> folder, copy the files <tt>_vocola_main.py</tt> 
+    and <tt>VocolaUtils.py</tt> to the <tt>NatLink\MacroSystem</tt> folder. This 
+    activates Vocola's <a href="UsingVocola.html">built-in voice commands</a>.</li>
+  <br>
+  &nbsp; 
+  <li> Associate the <tt>.vcl</tt> file extension (used for Vocola command files) 
+    with your favorite text editor. This allows you to open your Vocola files 
+    using built-in voice commands. An easy way to set up this association is to 
+    right-click on any <tt>.vcl</tt> file (such as <tt>Vocola\Samples\notepad.vcl</tt>), 
+    select "Open", and pick your favorite text editor (for example, Notepad). 
+  </li>
+  <p> Emacs users should install <a href="http://www.gnu.org/software/emacs/windows/faq3.html#assoc"> 
+    gnuserv</a> and associate the <tt>.vcl</tt> file extension with gnuclientw.exe. 
+    (Make sure the directory containing <tt>gnuclientw.exe</tt> is included in 
+    your PATH environment variable.)</p>
+  <li>Test Vocola.&nbsp;</li>
+  <ul>
+    <li>Copy the sample command file for Notepad (<tt>Vocola\Samples\notepad.vcl</tt>) 
+      to the <tt>Vocola\Commands</tt> folder.&nbsp;</li>
+    <li>Say "Start Notepad" to launch Notepad.</li>
+    <li>Say "Test Simple Command". The phrase "It works!" should appear.</li>
+    <li>Say "Edit Voice Commands". <tt>Vocola\Commands\notepad.vcl</tt> should 
+      be opened using the editor you picked in step 7.</li>
+    <li>Change the "Test Simple Command" command to type "It really works!"</li>
+    <li> Save the file, say "Switch to Notepad", and say "Test Simple Command".&nbsp;"It 
+      really works!" should appear.</li>
+  </ul>
+</ol>
+<h3><a name="Upgrade11"></a>Upgrading from Vocola 1.1</h3>
+<p>Vocola-generated Python files are named differently in Vocola 2.0 than they 
+  were in Vocola 1.1. (For example, outlook.vcl used to generate outlook.py but 
+  now generates outlook_vcl.py.) This means Vocola is unlikely to clobber hand-written 
+  NatLink files. Vocola 1.1 users should upgrade as follows:</p>
+<ol>
+  <li>Rename your existing NatLink/Vocola folder</li>
+  <li> Install Vocola 2.0 as described above</li>
+  <li> Copy .vcl files from your 1.1 Vocola/Commands folder to your 2.0 Vocola/Commands 
+    folder</li>
+  <li> Delete all Vocola-created .py files in the NatLink/MacroSystem folder (they 
+    will all have the same timestamp)</li>
+  <li> Delete all .pyc files in the NatLink/MacroSystem folder</li>
+  <li> Restart NatSpeak<br>
+  </li>
+</ol>
+</body></html>
+<hr>
+<h2>Converting DVC Files</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+                    
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+                    
+  
+  <meta name="Author" content="r mohr">
+
+                    
+  
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Converting DVC Files</title></head><body>
+If you have created voice commands using the Dragon macro language you may want 
+to jumpstart your repertoire of Vocola commands using the utility <tt>dvc2vcl.exe</tt>, 
+found in the folder <tt>Vocola\Exec</tt>. <i><b> Note: this utility is&nbsp; provided 
+"as is". You are welcome to make improvements.</b></i><br>
+<br>
+
+This utility converts many commands correctly, handling keystroke sequences,
+function calls, word arguments, lists, and lists with substitution. Most
+of my 200+ macros converted fine, with some manual cleanup required for the
+rest. If the utility cannot handle a particular command construct it is replaced
+with "[]" and the resulting command is commented out.<br>
+<br>
+
+The utility takes two arguments -- an input folder containing Dragon voice
+command files (*.dvc), and an output folder to contain Vocola files (*.vcl).
+For example, the script might be invoked as follows (assuming Vocola is installed
+in C:\NatLink\Vocola and NatSpeak is installed in C:\NatSpeak):<br>
+<br>
+<tt>cd C:\NatLink\Vocola<br>
+Exec\dvc2vcl C:\NatSpeak\Users\Rick\current Commands<br>
+</tt><br>
+
+Each <tt>.dvc</tt> file in the input folder <tt>C:\NatSpeak\Users\Rick\current</tt>
+ is converted to one or more <tt>.vcl</tt> files, which are written to the
+output folder <tt>C:\NatLink\Vocola\Commands</tt>. Global commands are written
+to the file <tt>_vocola.vcl</tt>, and application-specific commands for an
+application named <tt>foo.exe</tt> are written to <tt>foo.vcl</tt>. <br>
+<br>
+
+If you have added commands to the default Dragon command file <tt>global.dvc</tt>, you may want to make a copy of the file and delete the Dragon-supplied
+commands so that you only convert your own commands. There's no particular
+value in converting the Dragon-supplied commands to Vocola.<br>
+<br>
+</body></html>
+<hr>
+<h2>Troubleshooting</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+    
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+    
+  
+  <meta name="Author" content="r mohr">
+
+    
+  
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Troubleshooting</title></head><body>
+Writing Vocola commands is straightforward with a little practice. This page summarizes 
+some potential problems, and how to solve them. 
+<h3> My command doesn't work</h3>
+
+ You've written a Vocola command but nothing happens when you speak the command. 
+Here are some possible causes: 
+<ol>
+  <li> You didn't save the .vcl file.</li>
+  <br>&nbsp; 
+  <li> Your command had a syntax error.</li>
+  <ul>
+    <li> Vocola reports errors in the NatLink output window, a small window titled 
+      &quot;Messages from Python Macros&quot;.</li>
+    <li>Read the error message, correct the problem, save the file, close the 
+      NatLink window, and try your command again.</li>
+  </ul>
+  <ul>
+    &nbsp; 
+  </ul>
+  <li> You're speaking the command in a different context than you defined it 
+    for.</li>
+  <ul>
+    <li> Make sure you put the command in the .vcl file for the application you're 
+      running.</li>
+    <li> If your command appears within a <a href="ContextualCommands.html"> context 
+      statement</a>, make sure the context string matches the title of the current 
+      window.</li>
+    <br>
+    &nbsp; 
+  </ul>
+  <li> You changed an include file (.vch) and didn't run the Vocola translator 
+    by saying "Load Voice Commands".
+  <br>&nbsp; 
+  </li>
+  <li> NatLink didn't load the translated Python file. 
+    <ul>
+      <li> Look in the NatLink\MacroSystem directory. There should be both a .py 
+        file and a .pyc with the same name as your .vcl file.</li>
+      <li> If the .pyc file is <i>older</i> than the .py file, and you really 
+        have talked at the correct application, then NatLink has not noticed the 
+        .py file. There are two possible reasons:</li>
+      <ul>
+        <li> You have created a new global command file (one beginning with underscore, 
+          &quot;_&quot;). NatLink does not notice these.</li>
+        <li> NatLink or NatSpeak is in a bad state.</li>
+      </ul>
+      <li> In either case, you need to exit and restart NatSpeak.</li>
+    </ul>
+  </li>
+</ol>
+<h3> My command doesn't work right</h3>
+
+ Your command gets executed, but doesn't work correctly. Here are some possible 
+causes: 
+
+<ol>
+<li> Another command is being executed instead.</li><ul>
+    <li> You may have defined a command with the same words using another voice 
+      command language. It's a good idea to delete these.</li>
+    <li> You may have defined a global command and an application-specific command 
+      with the same words. Usually the application-specific command will be recognized, 
+      but occasionally the global command is recognized instead. Usually if you 
+      repeat the command the application-specific version will be recognized.<br>
+    </li></ul>
+  <br>
+  <li> You need to use quotation marks in your Vocola command. Quotation mark 
+    delimiters are usually optional in Vocola, but are required in some cases:</li>
+  <ul>
+    <li> when whitespace is significant, e.g. "<tt>{Left 2}</tt>"</li>
+    <li>when keystrokes to enter contain <a href="QuotesAndWhitespace.html#SpecialChars">special 
+      characters</a></li>
+  </ul>
+</ol>
+</body></html>
+<hr>
+<h2>Support</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="Author" content="r mohr">
+  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Support</title></head><body>
+I will do my best to fix Vocola problems, but as usual with free
+software supported in spare time I make no guarantees. Before e-mailing,
+please consult the <a href="LanguageTutorial.html">Language Tutorial</a>, the
+section on <a href="Troubleshooting.html">Troubleshooting</a>, and the list
+of known bugs below. I wrote this documentation with you in mind, so please
+read it and try to solve your problem before contacting me.
+
+<h3>Known Bugs</h3>
+
+The following problems are known to exist in Vocola 2.0: 
+<ul>
+  <li>(none so far)</li>
+</ul>
+<h3>Email</h3>
+Send bug reports, praise, and other feedback by clicking on the button below. 
+Please indicate what version of Windows, NatSpeak, and Vocola you are running.<br>
+
+<script language="JavaScript1.2">
+  function composeto(firstPart, secondPart)
+  {  window.location = 'mailto:' + firstPart + '@' + secondPart;  }
+</script>
+
+<form></form><p><table><tbody><tr valign="Bottom">
+  <td><input type="button" onclick="composeto('Vocola', 'attbi.com')" value="Send Email"></td>
+  <!-- td>&nbsp;<img src="emailtr.gif"></td -->
+</tr></tbody></table>
+
+</p><p>I'm hoping to keep this address away from junk e-mailers, so if for some
+reason you are posting information about Vocola please use the web page
+address (http://home.attbi.com/~vocola) rather than this e-mail address.
+</p></body></html>
+<hr>
+<h2>Wish List</h2>
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
+  <title>Wish List</title>
+
+  </head>
+
+<body>Here is a list of potential Vocola enhancements. Let me know if any of these
+are particularly important to you. 
+<ul>
+  <li> Allow default values in alternative sets</li>
+  <li> Allow variables in alternative sets (e.g. <tt>&lt;direction&gt; | foo | 
+    bar</tt>)</li>
+  <li>Repeatable terms (e.g. <tt>Press &lt;modifier_key&gt;+ &lt;key&gt; = ...</tt>)</li>
+  <li> Commands which include arbitrary dictation (e.g. "Line Number 135")</li>
+  <li>User-specific command files<br>
+  </li>
+</ul>
+
+
+
+
+  
+</body></html>
+<hr>
+<h2>My RSI Story</h2>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"><title>My RSI Story</title></head><body>
+In March 1998 I worked an entire weekend to meet a major deadline with important
+revenue consequences for my employer. By Sunday night my wrists and hands
+were tingling and sensitive, and the next day I had significant wrist pain.
+In previous years I had had minor symptoms, but they had always gone away.<br>
+<br>
+I knew to treat my injury seriously since I have friends with debilitating
+RSI problems. But, I was starting at square zero in terms of knowledge and
+treatment, and still in the middle of a high-pressure work situation. As
+I began to realize my injury was serious I started searching for solutions.
+Everyone I talked to had different ideas, and every idea seemed to involve
+30-90 minutes a day of work on my part. I could handle the regimen of one
+or two of these, but in the absence of real progress it was hard to have
+confidence. In the subsequent months I tried doctors, occupational therapy,
+anti-inflammatories, massage, a new chair, acupuncture, rolfing, special
+keyboards, physical therapy, drinking lots of water, chiropractic, vitamins,
+myotherapy, and glucosamine sulfate. Nothing seemed to make a reliable difference.<br>
+<br>
+Meanwhile my company was supportive and willing to provide what I asked.
+But while it was easy to ask for new equipment and small schedule accommodations,
+I couldn't bring myself to ask for major time commitments from other people
+or major project slippage. I adjusted all my habits to require as little
+typing is possible, but continued to type when necessary (occasionally a
+considerable amount).<br>
+<br>
+Unfortunately it took a year of this before I began using voice recognition and 
+started truly resting my hands. I can't know for sure, but I believe that had 
+I started using voice recognition right away I would have recovered. I may yet 
+recover, but at this writing (May 2003) I still cannot do any significant typing 
+or play much violin. My diagnosis is tendinitis, and my prescription is "With 
+constant vigilance you can get a little better every year." During several periods 
+I've made significant recovery, but despite vigilance in most every activity I 
+have always slipped up. Once it was snow shoveling, once un-careful fiddling, 
+and once not-wimpy-enough weightlifting in a strengthening program. Of all the 
+things I have tried, the only ones that have reliably helped are avoiding irritating 
+activities, myotherapy, putty exercises, massage, and voice recognition.<br>
+<br>
+Since resting my hands seemed so important I tried for hands-free computer
+use as much as possible. The Dragon Macro Language made this possible but
+was excruciatingly cumbersome, so I was very excited when Joel Gould released
+NatLink. Shortly thereafter (at NEFFA) Patricia Hawkins and I were comparing
+notes about NatLink. Her comment "yeah, but you still have to change two
+places" got me thinking about Vocola. <br>
+<br>
+Designing, implementing, and using Vocola has been a rewarding bright spot
+among otherwise unsuccessful attempts at recovery. And thankfully, with Dragon
+NaturallySpeaking, NatLink, and Vocola I've continued to be effective at
+my job.<br>
+<br>
+The main lesson I take away is to stand up for my own needs when they conflict
+with the needs and desires of others. That Monday deadline seemed very important
+at the time, but everybody would have survived just fine if I had delivered
+a week later. The customer was adamant about the deadline, but as it happens
+they ultimately canceled the project! And even after my initial injury, if
+I had been brave enough during the first year to ask for difficult adjustments
+at work I might have been able to recover.<br>
+<br>
+<a href="http://home.attbi.com/%7Erick.mohr/">Rick Mohr</a>, Watertown, Massachusetts, 
+USA, May 2003<br>
+<br>
+</body></html>
+<hr>
+<h2>Voice Resources</h2>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"><title>My RSI Story</title></head><body>
+<h3>Web Sites</h3>
+<ul>
+  <li><a href="http://www.scansoft.com/naturallyspeaking/">ScanSoft Dragon NaturallySpeaking</a> 
+    - The official purchase and support site for NatSpeak.</li>
+  <li><a href="http://www.synapseadaptive.com/joel/index.html">NaturallySpeaking 
+    Unofficial Information Pages</a> - Joel Gould was the lead architect of NatSpeak 
+    and the developer of NatLink. This is his site, including pages on NatLink 
+    and useful information about NatSpeak. No longer being updated, but still 
+    useful.</li>
+  <li><a href="http://www.voicerecognition.org/developers/jepstein/natLinkStuff/">NatLink-related 
+    utilities developed by NatLink users</a> - A collection of useful NatLink 
+    voice commands coordinated by Jonathan Epstein. Vocola coexists happily with 
+    these.</li>
+  <li><a href="http://www.scriven.com/RSI/RSIdata/KimsMacros/Kims_Macros.html">Kim 
+    Patch's Macros</a> - A large set of macros for NatSpeak Pro 5 (free) or 6 
+    ($24). Full of good voice command ideas, many of which are reflected in the 
+    sample Vocola commands.</li>
+  <li><a href="http://www.speechutilities.com/">SpeechUtilities.com</a> - David 
+    Austin's site, with help for getting the most out of the NatSpeak macro languages. 
+    If you decide to stick with these, get here the superior command browser &quot;SayWhat&quot;.</li>
+  <li><a href="http://brightok.net/%7Eedrose/page10.html">Ruth Rose's NatSpeak 
+    Site</a> - Useful suggestions for getting the most out of NatSpeak</li>
+  <li><a href="http://www.out-loud.com/do_you_need_speech_recognition_.html">Computing 
+    Out Loud</a> - Susan Fulton's general-purpose voice recognition site with 
+    information and links.</li>
+  <li><a href="http://www.microsoft.com/enable/products/keyboard/keyboardsearch.asp">Windows 
+    Keyboard Shortcuts</a> - Microsoft site with thorough description of keyboard 
+    shortcuts by Windows version or product.</li>
+  <li><a href="http://www.tifaq.com/">Typing Injury FAQ</a> - Resources for injured 
+    typists.</li>
+</ul>
+<h3>Mailing Lists</h3>
+<ul>
+  <li><a href="http://groups.yahoo.com/group/VoiceGroup/">VoiceGroup</a> - General 
+    discussion of voice recognition issues, mostly NatSpeak related. Lots of traffic.</li>
+  <li><a href="http://www.codevox.com/alsofaq.phtml">VoiceCoder</a> - Good quality 
+    list for programmers using voice recognition.</li>
+  <li><a href="http://groups.yahoo.com/group/natpro-wp8/">NatPro Macro Writers</a> 
+    - Discussion of NatSpeak macros, particularly advanced scripting commands.</li>
+</ul>
+</body></html>
+<hr>

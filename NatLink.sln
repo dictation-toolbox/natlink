@@ -1,0 +1,44 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natlink", "NatlinkSource\natlink.vcproj", "{FD3160B9-F117-4187-B968-C121B084488E}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ConfigureNatLink", "ConfigureNatLink\ConfigureNatLink.vbproj", "{40FCDE32-1FE2-4A3F-B144-A099272EF446}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simpscrp", "Vocola\Simpscrp\simpscrp.vcproj", "{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "NLVCSetup", "NLVCSetup\NLVCSetup.vdproj", "{BB12943F-9342-4836-BF6D-B660F827273E}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.ActiveCfg = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.Build.0 = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release.ActiveCfg = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release.Build.0 = Release|Win32
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug.ActiveCfg = Debug|.NET
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug.Build.0 = Debug|.NET
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release.ActiveCfg = Release|.NET
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release.Build.0 = Release|.NET
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug.ActiveCfg = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug.Build.0 = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release.ActiveCfg = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release.Build.0 = Release|Win32
+		{BB12943F-9342-4836-BF6D-B660F827273E}.Debug.ActiveCfg = Debug
+		{BB12943F-9342-4836-BF6D-B660F827273E}.Release.ActiveCfg = Release
+		{BB12943F-9342-4836-BF6D-B660F827273E}.Release.Build.0 = Release
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
