@@ -514,7 +514,7 @@ Public Class NatLinkEnv
     End Sub
 #End Region
 
-    Friend Sub RemoveCompiledFiles()
+    Public Sub RemoveCompiledFiles()
         Trace.WriteLine("UnInstaller -- RemoveCompiledFiles")
         Trace.Indent()
         Try
@@ -537,7 +537,7 @@ Public Class NatLinkEnv
         Next
     End Sub
 
-    Friend Sub RemoveOldNatLinkFiles()
+    Public Sub RemoveOldNatLinkFiles()
         Trace.WriteLine("Installer -- RemoveOldNatLinkFiles")
         Trace.Indent()
         Try
@@ -582,7 +582,7 @@ Public Class NatLinkEnv
         End Try
     End Sub
 
-    Friend Sub RemoveNatLinkConfigFile()
+    Public Sub RemoveNatLinkConfigFile()
         Try
             Trace.WriteLine("UnInstaller -- RemoveNatLinkConfigFile()")
             Trace.Indent()
@@ -599,7 +599,7 @@ Public Class NatLinkEnv
         End Try
     End Sub
 
-    Friend Sub UnRegisterNatLinkDLL()
+    Public Sub UnRegisterNatLinkDLL()
         Try
             Trace.WriteLine("UnInstaller -- UnRegisterNatLinkDLL()")
             Trace.Indent()

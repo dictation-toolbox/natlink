@@ -12,31 +12,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simpscrp", "Simpscrp\simpsc
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "NLVCSetup", "NLVCSetup\NLVCSetup.vdproj", "{BB12943F-9342-4836-BF6D-B660F827273E}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "calldll", "calldll\calldll.vcproj", "{47E50E32-09C2-4EF8-905C-B89C683DACBC}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vocola", "Vocola\Vocola.csproj", "{8CC5B7FB-7500-4CA4-80A7-09DFBC48E60D}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "macrosystem", "macrosystem\macrosystem.csproj", "{7677D186-04ED-49C6-87A2-E58F167244A6}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiscScripts", "MiscScripts\MiscScripts.csproj", "{3BDA606F-8CA1-4103-9DBF-FC156B6DC0C6}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleMacros", "SampleMacros\SampleMacros.csproj", "{BED6A4E2-AE35-4725-B240-5B120649205C}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vclEdit", "vclEdit\vclEdit.csproj", "{E1766640-3321-4AAA-918B-AEA667A41E58}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -52,71 +28,34 @@ Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
 		Release = Release
-		TestMSI = TestMSI
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
 		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.ActiveCfg = Debug|Win32
 		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.Build.0 = Debug|Win32
-		{FD3160B9-F117-4187-B968-C121B084488E}.Release.ActiveCfg = Debug|Win32
-		{FD3160B9-F117-4187-B968-C121B084488E}.Release.Build.0 = Debug|Win32
-		{FD3160B9-F117-4187-B968-C121B084488E}.TestMSI.ActiveCfg = Release|Win32
-		{FD3160B9-F117-4187-B968-C121B084488E}.TestMSI.Build.0 = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release.ActiveCfg = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release.Build.0 = Release|Win32
 		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug.ActiveCfg = Debug|.NET
 		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug.Build.0 = Debug|.NET
 		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release.ActiveCfg = Release|.NET
 		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release.Build.0 = Release|.NET
-		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.TestMSI.ActiveCfg = Release|.NET
-		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.TestMSI.Build.0 = Release|.NET
 		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug.ActiveCfg = Release|Win32
 		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release.ActiveCfg = Release|Win32
 		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release.Build.0 = Release|Win32
-		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.TestMSI.ActiveCfg = Release|Win32
-		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.TestMSI.Build.0 = Release|Win32
-		{BB12943F-9342-4836-BF6D-B660F827273E}.Debug.ActiveCfg = Debug
-		{BB12943F-9342-4836-BF6D-B660F827273E}.Release.ActiveCfg = Release
-		{BB12943F-9342-4836-BF6D-B660F827273E}.Release.Build.0 = Release
-		{BB12943F-9342-4836-BF6D-B660F827273E}.TestMSI.ActiveCfg = TestMSI
-		{BB12943F-9342-4836-BF6D-B660F827273E}.TestMSI.Build.0 = TestMSI
 		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Debug.ActiveCfg = Release|Win32
 		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release.ActiveCfg = Release|Win32
 		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release.Build.0 = Release|Win32
-		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.TestMSI.ActiveCfg = Release|Win32
-		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.TestMSI.Build.0 = Release|Win32
-		{8CC5B7FB-7500-4CA4-80A7-09DFBC48E60D}.Debug.ActiveCfg = Debug|.NET
-		{8CC5B7FB-7500-4CA4-80A7-09DFBC48E60D}.Release.ActiveCfg = Release|.NET
-		{8CC5B7FB-7500-4CA4-80A7-09DFBC48E60D}.TestMSI.ActiveCfg = Release|.NET
-		{8CC5B7FB-7500-4CA4-80A7-09DFBC48E60D}.TestMSI.Build.0 = Release|.NET
-		{7677D186-04ED-49C6-87A2-E58F167244A6}.Debug.ActiveCfg = Debug|.NET
-		{7677D186-04ED-49C6-87A2-E58F167244A6}.Release.ActiveCfg = Release|.NET
-		{7677D186-04ED-49C6-87A2-E58F167244A6}.TestMSI.ActiveCfg = Release|.NET
-		{7677D186-04ED-49C6-87A2-E58F167244A6}.TestMSI.Build.0 = Release|.NET
-		{3BDA606F-8CA1-4103-9DBF-FC156B6DC0C6}.Debug.ActiveCfg = Debug|.NET
-		{3BDA606F-8CA1-4103-9DBF-FC156B6DC0C6}.Release.ActiveCfg = Release|.NET
-		{3BDA606F-8CA1-4103-9DBF-FC156B6DC0C6}.TestMSI.ActiveCfg = Release|.NET
-		{3BDA606F-8CA1-4103-9DBF-FC156B6DC0C6}.TestMSI.Build.0 = Release|.NET
-		{BED6A4E2-AE35-4725-B240-5B120649205C}.Debug.ActiveCfg = Debug|.NET
-		{BED6A4E2-AE35-4725-B240-5B120649205C}.Release.ActiveCfg = Release|.NET
-		{BED6A4E2-AE35-4725-B240-5B120649205C}.TestMSI.ActiveCfg = Release|.NET
-		{BED6A4E2-AE35-4725-B240-5B120649205C}.TestMSI.Build.0 = Release|.NET
-		{E1766640-3321-4AAA-918B-AEA667A41E58}.Debug.ActiveCfg = Debug|.NET
-		{E1766640-3321-4AAA-918B-AEA667A41E58}.Release.ActiveCfg = Release|.NET
-		{E1766640-3321-4AAA-918B-AEA667A41E58}.TestMSI.ActiveCfg = Release|.NET
-		{E1766640-3321-4AAA-918B-AEA667A41E58}.TestMSI.Build.0 = Release|.NET
 		{8514361C-9475-45ED-86DD-39320E656296}.Debug.ActiveCfg = Debug|.NET
 		{8514361C-9475-45ED-86DD-39320E656296}.Debug.Build.0 = Debug|.NET
 		{8514361C-9475-45ED-86DD-39320E656296}.Release.ActiveCfg = Release|.NET
 		{8514361C-9475-45ED-86DD-39320E656296}.Release.Build.0 = Release|.NET
-		{8514361C-9475-45ED-86DD-39320E656296}.TestMSI.ActiveCfg = Release|.NET
-		{8514361C-9475-45ED-86DD-39320E656296}.TestMSI.Build.0 = Release|.NET
 		{506647B3-A203-467E-8DE9-657334016896}.Debug.ActiveCfg = Debug|.NET
 		{506647B3-A203-467E-8DE9-657334016896}.Debug.Build.0 = Debug|.NET
 		{506647B3-A203-467E-8DE9-657334016896}.Release.ActiveCfg = Release|.NET
 		{506647B3-A203-467E-8DE9-657334016896}.Release.Build.0 = Release|.NET
-		{506647B3-A203-467E-8DE9-657334016896}.TestMSI.ActiveCfg = Release|.NET
-		{506647B3-A203-467E-8DE9-657334016896}.TestMSI.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(SolutionItems) = postSolution
 		COPYRIGHT.txt = COPYRIGHT.txt
+		default.build = default.build
 		Index.htm = Index.htm
 		NatLink.key = NatLink.key
 	EndGlobalSection

@@ -68,7 +68,6 @@ Imports System.Configuration.Install
 			Trace.Flush()
 			nle.UnRegisterNatLinkDLL()
 			nle.RemoveOldNatLinkFiles()
-			nle.InstallNatLinkConfigFile()
 			nle.EnableNL()
 			Trace.Flush()
 			nle.SetPythonPath()

@@ -17,10 +17,11 @@
 #include "dictobj.h"
 #include "Excepts.h"
 
-
+#ifdef UseCLR
 #using <mscorlib.dll>
 using namespace System;
 #include "_vcclrit.h"
+#endif
 
 
 
@@ -2229,12 +2230,15 @@ void initnatlink()
 
 	CoInitialize( NULL );
 
+#ifdef UseCLR
 	try {
 		__crt_dll_initialize();
 	} catch(System::Exception* e) {
 		Py_FatalError( "Can't initialize natlink module" );
 		return;
 	}
+#endif
+
 
 	pMod = Py_InitModule( "natlink", natlink_methods );
 	initExceptions( pMod );

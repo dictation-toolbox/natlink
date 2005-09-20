@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
+
+<?define Version  = "1.4.0"?>
+<?define ProductCode  = "68720CF1-2923-11DA-B2E4-00301BB38066" ?>
+
+<Product
+    UpgradeCode="6DD702D7-CB87-4D2A-A027-62A7B116425E"
+    Name="NatLink and Vocola $(var.Version)"
+    Id="$(var.ProductCode)"
+    Version="$(var.Version)"
+    Manufacturer="Applied Recognition Inc."
+    Language="1033">
+        <Package Id="????????-????-????-????-????????????"
+            Comments="Python scripting for Dragon NaturallySpeaking. Created by Joel Gould, Rick Mohr, Scott Weinstein, and ..."
+            Manufacturer="Applied Recognition Inc."
+            InstallerVersion="200"
+            Platforms="Intel"
+            Languages="1033"
+            Compressed="yes"
+            SummaryCodepage='1252' />
+
+        <Media Id="1" Cabinet="Product.cab" EmbedCab="yes" CompressionLevel="high" />
+
+        <Upgrade Id="6DD702D7-CB87-4D2A-A027-62A7B116425E">
+        	<UpgradeVersion Minimum="$(var.Version)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED" />
+			<UpgradeVersion Minimum="0.0.0" IncludeMinimum="yes" Maximum="$(var.Version)" IncludeMaximum="no"
+				Property="OLDERVERSIONBEINGUPGRADED" OnlyDetect="no" />
+		</Upgrade>
+
+        <Condition Message="A later version of [ProductName] is already installed.">NOT NEWERVERSIONDETECTED</Condition>
+        <InstallExecuteSequence>
+            <LaunchConditions After='AppSearch' />
+            <RemoveExistingProducts After="InstallValidate" />
+        </InstallExecuteSequence>
+        
+        <!-- Install checks -->
+        <Property Id='FRAMEWORK11'>
+            <RegistrySearch Id='Framework11Registry' Type='raw' Root='HKLM' Key='SOFTWARE\Microsoft\.NETFramework\policy\v1.1'
+                Name='4322' />
+        </Property>
+        <Condition Message="The Microsoft .Net Framework is required for [ProductName]. Please see the download page for more detail.">
+            FRAMEWORK11 = "3706-4322"
+        </Condition>
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="INSTALLDIR" Name="NatLink" />
+            </Directory>
+            
+			<Directory Id="PersonalFolder" Name="PF" >
+				<Directory Id="DPNatLink" Name="NATLINK" LongName="NatLink">
+					<Directory Id="DPVocola" Name="VOCOLA" LongName="Vocola" />
+				</Directory>
+			</Directory>
+
+			<Directory Id="ProgramMenuFolder" Name="PMenu" >
+				<Directory Id="DPMNatlink" Name="PMN" LongName="NatLink &amp; Vocola" />
+			</Directory>
+        </Directory>
+
+
+
+        <Feature Id="DefaultFeature" Level="1" ConfigurableDirectory="INSTALLDIR" Title="NatLink" Description="Core NatLink files" >
+            <ComponentRef Id="CMisc" />
+            <ComponentRef Id="CNLInstaller" />
+            <ComponentRef Id="CNatLinkDll" />
+            <ComponentRef Id="CDebug" />
+<!--            <ComponentRef Id="CPFRemove" /> 
+            <ComponentRef Id="CFBdll" />
+
+-->
+
+            <Feature Id="NatLinkDocsFeature" Level="1" Title="NatLink samples and docs" Description="NatLink documentation">
+                <ComponentRef Id="CMiscScripts" />
+                <ComponentRef Id="CSamples" />
+            </Feature>
+            <Feature Id="VocolaFeature" Level="1" Title="Vocola" Description="Voice Command Language" >
+                <ComponentRef Id="CVExec" />
+                <ComponentRef Id="CV20" />
+                <ComponentRef Id="CV22" />
+                <ComponentRef Id="CV23" />
+                <ComponentRef Id="CVCommands" />
+                <ComponentRef Id="CVocola" />
+                <Feature Id="VCLEditFeature" Level="1" Title="VCLEditor" Description="Editor for Voice Command files">
+                    <ComponentRef Id="CVCLEdit" />
+                </Feature>
+                <Feature Id="VocolaDocsFeature" Level="1" Title="Vocola Docs" Description="Documentation and samples for Vocola">
+					<ComponentRef Id="CVDoc" />
+					<ComponentRef Id="CVSamples" />
+                </Feature>
+            </Feature>
+        </Feature>
+
+
+
+            <!-- UI Stuff -->
+        <UIRef Id="WixUI" />
+		<Icon Id="NatLink.ico" src="binary\NatLink.ico" /> 
+
+        <Property Id='ARPPRODUCTICON'>NatLink.ico</Property>
+        <Property Id='ARPSIZE'>1000</Property>
+        <Property Id="ARPHELPLINK"><![CDATA[http://speechwiki.org/NL.HomePage]]></Property>
+        <Property Id="ARPCOMMENTS"><![CDATA[Python scripting for Dragon NaturallySpeaking. Created by Joel Gould, Rick Mohr, Scott Weinstein, and ...]]></Property>
+        <Property Id="ARPCONTACT"><![CDATA[Applied Recognition Inc.]]></Property>
+        <Property Id="ARPURLINFOABOUT"><![CDATA[http://speechwiki.org]]></Property>
+
+
+        <Property Id="BROWSER">
+            <RegistrySearch Id='DefaultBrowser' Type='raw' Root='HKCR' Key='http\shell\open\command' />
+        </Property>
+
+
+
+
+    </Product>
+
+</Wix>

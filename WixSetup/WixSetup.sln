@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{A49CE20D-CE64-4A08-9F24-92A6443D6699}") = "WixSetup", "WixSetup.wixproj", "{BDDA4E5F-B089-480C-8A01-57554599F4DA}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{BDDA4E5F-B089-480C-8A01-57554599F4DA}.Debug.ActiveCfg = Debug
+		{BDDA4E5F-B089-480C-8A01-57554599F4DA}.Debug.Build.0 = Debug
+		{BDDA4E5F-B089-480C-8A01-57554599F4DA}.Release.ActiveCfg = Release
+		{BDDA4E5F-B089-480C-8A01-57554599F4DA}.Release.Build.0 = Release
+	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
+		..\default.build = ..\default.build
+		binary\NLInstaller.dll.config = binary\NLInstaller.dll.config
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

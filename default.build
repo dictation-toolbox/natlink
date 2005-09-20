@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project xmlns="http://nant.sf.net/schemas/nant.xsd" default="release">
+
+	<target name="release" depends="NatLinkNoCLR,msi"/>
+	<target name="msi">
+		<nant buildfile="WixSetup\msi.build"/>
+	</target>
+
+	<target name="NatLinkNoCLR" >
+		<solution  configuration="Release" solutionfile="NatLink.sln" />
+	</target>
+
+	
+
+	<target name="clean" description="Delete all previously compiled binaries.">
+		<delete>
+			<fileset>
+				<include name="**/bin/**" />
+				<include name="**/obj/**" />
+				<include name="**/release/**" />
+				<include name="**/debug/**" />
+				<include name="**/temp/**" />
+				<include name="MacroSystem/core/*.dll"/>
+				<include name="MacroSystem/core/*.pdb"/>
+				<include name="MacroSystem/core/*.exp"/>
+				<include name="MacroSystem/core/*.ilk"/>
+				<include name="MacroSystem/core/*.lib"/>
+			</fileset>
+		</delete>
+	</target>
+	
+
+</project>
+ 

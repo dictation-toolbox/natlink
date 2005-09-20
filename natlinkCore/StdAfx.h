@@ -3,12 +3,16 @@
 #define WIN32_LEAN_AND_MEAN //Exclude rarely-used stuff from 
                                         // Windows headers
 
+#ifdef UseCLR
+
 //#define USE_MANWRAP_DLL
 #undef USE_MANWRAP_DLL
 #ifdef USE_MANWRAP_DLL
 #include <atlstr.h>
 #define CAtlString CString
 #endif
+#endif
+
 
 #include <windows.h>
 #include <shellapi.h>
@@ -39,5 +43,3 @@ extern CComModule _Module;
 #include "speech.h"
 #include "dspeech.h"
 #include "comsupp.h"
-
-

@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<VisualStudioProject>
+    <WindowsInstallerXML
+        ProductVersion="2.0.3309.0"
+        ProjectGuid="{BDDA4E5F-B089-480C-8A01-57554599F4DA}"
+        SchemaVersion="1.0"
+    >
+        <BuildSettings
+            OutputName="Project"
+            OutputType="MSI"
+        />
+        <Configurations>
+            <Configuration
+                Name="Debug"
+                RelativeOutputDirectory="bin\Debug"
+            />
+            <Configuration
+                Name="Release"
+                RelativeOutputDirectory="bin\Release"
+            />
+        </Configurations>
+        <WixlibReferences>
+            <WixlibReference
+                RelativePath="..\..\..\DevTools\Wix\ui\wixui_featuretree.wixlib"
+            />
+        </WixlibReferences>
+        <Files>
+            <File
+                RelativePath="Components.wxs"
+            />
+            <File
+                RelativePath="guids.txt"
+            />
+            <File
+                RelativePath="MCA.wxs"
+            />
+            <File
+                RelativePath="msi.build"
+            />
+            <File
+                RelativePath="Product.wxs"
+            />
+        </Files>
+    </WindowsInstallerXML>
+</VisualStudioProject>

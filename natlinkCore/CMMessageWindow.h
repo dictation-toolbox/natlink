@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef UseCLR
+
 #ifdef CLR
 #using <mscorlib.dll>
 #using <System.dll>
@@ -26,3 +28,5 @@ public:
 	void ShowError(const char *);
 	void ShowMessage(const char *);
 };
+
+#endif

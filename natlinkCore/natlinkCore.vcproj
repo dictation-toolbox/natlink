@@ -17,13 +17,13 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)macrosystem\core"
+			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ProjectDir)$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			UseOfATL="0"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			WholeProgramOptimization="FALSE">
+			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="1"
@@ -31,7 +31,7 @@
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="C:\Python23\include;"
-				AdditionalUsingDirectories="..\MessageWindow\bin\"
+				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -46,16 +46,13 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="FALSE"
-				AdditionalOptions="/NOENTRY"
-				AdditionalDependencies="msvcrt.lib"
 				OutputFile="$(OutDir)/natlink.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="c:\python23\libs;..\macrosystem\core"
 				IgnoreAllDefaultLibraries="FALSE"
-				IgnoreDefaultLibraryNames="LIBCMT"
+				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="natlink.def"
-				ForceSymbolReferences="__DllMainCRTStartup@12"
 				SubSystem="2"
 				TargetMachine="1"/>
 			<Tool
@@ -67,11 +64,7 @@
 				TypeLibraryName=".\..\MacroSystem/natlink20.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Copy files"
-				CommandLine="copy ..\MessageWindow\bin\MessageWindow.dll ..\macrosystem\core
-copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
-"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -99,39 +92,35 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 			UseOfMFC="0"
 			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			WholeProgramOptimization="TRUE"
 			ReferencesPath="">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\Python23\include;"
-				AdditionalUsingDirectories="..\MessageWindow\bin\"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL"
+				AdditionalUsingDirectories=""
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdafx.h"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				RegisterOutput="FALSE"
-				AdditionalOptions="/NOENTRY"
+				RegisterOutput="TRUE"
 				ShowProgress="2"
 				OutputFile="$(OutDir)/natlink.dll"
 				LinkIncremental="0"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="c:\python23\libs;..\macrosystem\core"
-				IgnoreDefaultLibraryNames="LIBCMT"
+				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="natlink.def"
-				ForceSymbolReferences="__DllMainCRTStartup@12"
 				GenerateDebugInformation="TRUE"
-				AssemblyDebug="1"
+				AssemblyDebug="0"
 				SubSystem="2"
 				ResourceOnlyDLL="FALSE"
 				TargetMachine="1"/>
@@ -144,11 +133,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 				TypeLibraryName=".\..\MacroSystem/natlink20.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Copy files"
-				CommandLine="copy ..\MessageWindow\bin\MessageWindow.dll ..\macrosystem\core
-copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
-"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -156,78 +141,6 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
-		</Configuration>
-		<Configuration
-			Name="TestMSI|Win32"
-			OutputDirectory="$(SolutionDir)macrosystem\core"
-			IntermediateDirectory="$(ProjectDir)$(ConfigurationName)"
-			ConfigurationType="2"
-			UseOfMFC="0"
-			UseOfATL="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			WholeProgramOptimization="TRUE">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="1"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="1"
-				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="C:\Python23\include;"
-				AdditionalUsingDirectories="..\MessageWindow\bin\"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderThrough="stdafx.h"
-				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
-				CompileAs="0"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				RegisterOutput="FALSE"
-				OutputFile="$(OutDir)/natlink.dll"
-				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="c:\python23\libs;..\macrosystem\core"
-				IgnoreDefaultLibraryNames="LIBCMT"
-				ModuleDefinitionFile="natlink.def"
-				SubSystem="2"
-				TargetMachine="1"/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="TRUE"
-				SuppressStartupBanner="TRUE"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\MacroSystem/natlink20.tlb"
-				HeaderFileName=""/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="Copy files"
-				CommandLine="copy ..\MessageWindow\bin\MessageWindow.dll ..\macrosystem\core
-copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
-"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -255,7 +168,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -263,15 +177,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -281,7 +188,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
-						CompileAsManaged="2"/>
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -289,14 +196,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
 						DebugInformationFormat="3"
-						CompileAsManaged="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAsManaged="2"/>
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -307,7 +207,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -315,15 +216,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -333,7 +227,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
-						CompileAsManaged="2"/>
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -341,14 +235,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
 						DebugInformationFormat="3"
-						CompileAsManaged="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAsManaged="2"/>
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -359,7 +246,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -367,15 +255,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -386,7 +267,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -394,15 +276,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -413,7 +288,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -421,15 +297,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -442,7 +311,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
 						UsePrecompiledHeader="0"
-						CompileAsManaged="2"/>
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -453,15 +322,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
 						UsePrecompiledHeader="0"
 						DebugInformationFormat="3"
-						CompileAsManaged="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -480,7 +341,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
 						UsePrecompiledHeader="0"
-						CompileAsManaged="2"/>
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -491,15 +352,7 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
 						UsePrecompiledHeader="0"
 						DebugInformationFormat="3"
-						CompileAsManaged="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -510,7 +363,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -518,15 +372,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -537,7 +384,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -545,15 +393,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"/>
+						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 			<File
@@ -565,7 +406,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Optimization="1"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -574,16 +416,8 @@ copy ..\MessageWindow\bin\xpcommoncontrols.dll ..\macrosystem\core
 						Optimization="0"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
-						UsePrecompiledHeader="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="TestMSI|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="NDEBUG;_ATL_STATIC_REGISTRY;WIN32;_WINDOWS;_USRDLL;$(NoInherit)"
-						UsePrecompiledHeader="1"/>
+						UsePrecompiledHeader="1"
+						CompileAsManaged="0"/>
 				</FileConfiguration>
 			</File>
 		</Filter>

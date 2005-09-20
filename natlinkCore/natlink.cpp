@@ -14,7 +14,9 @@
 #include "DragCode.h"
 
 #include "appsupp.h"
+#ifdef UseCLR
 #include <_vcclrit.h>
+#endif
 
 
 CComModule _Module;
@@ -35,7 +37,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 	{
 		_Module.Init(ObjectMap, hInstance);
 		DisableThreadLibraryCalls(hInstance);
-		
+
 		// this is needed for when you run this module from within Python
 		// and you use the second thread with its dialog box
 		LoadLibrary("riched32");
@@ -52,7 +54,9 @@ STDAPI DllCanUnloadNow(void)
 {
 	if ( _Module.GetLockCount() == 0 )
 	{
+#ifdef UseCLR
 		__crt_dll_terminate();
+#endif
         return S_OK;
 	}
     else
@@ -66,6 +70,7 @@ STDAPI DllCanUnloadNow(void)
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 {
+#ifdef UseCLR
 	if ( !( __crt_dll_initialize() ) )
 	{
 		return E_FAIL;
@@ -74,6 +79,10 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
     {
         return _Module.GetClassObject(rclsid, riid, ppv);
     }
+#else
+        return _Module.GetClassObject(rclsid, riid, ppv);
+#endif
+
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -81,10 +90,13 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 
 STDAPI DllRegisterServer(void)
 {
+#ifdef UseCLR
 	if ( !( __crt_dll_initialize() ) )
 	{
 		return E_FAIL;
 	}
+#endif
+
 	// Call your registration code here
     HRESULT hr = _Module.RegisterServer(FALSE);
     return hr;
@@ -96,9 +108,11 @@ STDAPI DllRegisterServer(void)
 STDAPI DllUnregisterServer(void)
 {
 	 HRESULT hr = S_OK;
+#ifdef UseCLR
 	__crt_dll_terminate();
+#endif
 
     // Call your unregistration code here
-    hr = _Module.UnregisterServer(FALSE);
+    hr = _Module.UnregisterServer();
     return hr;
 }

@@ -1,3 +1,4 @@
+#ifdef UseCLR
 #ifdef CLR
 #include <vcclr.h>
 
@@ -13,9 +14,8 @@ using namespace System;
 
 
 
-
-
-
 #else
 #define GCHANDLE(T) intptr_t
+#endif
+
 #endif

@@ -1,3 +1,5 @@
+#ifdef UseCLR
+
 #include "DotNetBasics.h"
 
 #ifdef CLR
@@ -14,3 +16,4 @@ public:
 	~DotNetMisc(void);
 	int GetDebugLogOptions();
 };
+#endif

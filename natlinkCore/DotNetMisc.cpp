@@ -1,3 +1,5 @@
+#ifdef UseCLR
+
 #define CLR
 #include "DotNetMisc.h"
 
@@ -20,3 +22,4 @@ int DotNetMisc::GetDebugLogOptions()
 	
 
 }
+#endif

@@ -1106,18 +1106,21 @@ LPARAM CDragonCode::messageLoop( UINT message, WPARAM wParam )
 BOOL CDragonCode::displayText(
 	const char * pszText, BOOL bError, BOOL bLogError )
 {
-	//if( m_pSecdThrd )
-	//{
-	//		m_pSecdThrd->displayText( pszText, bError );
-	//}
 
-	
+#ifdef UseCLR	
 	CMMessageWindow mw;
+
 	if (bError){
 		mw.ShowError(pszText);
 	}else {
 		mw.ShowMessage(pszText);
 	}
+#else
+	if( m_pSecdThrd )
+	{
+			m_pSecdThrd->displayText( pszText, bError );
+	}
+#endif
 
 	if( bLogError )
 	{
@@ -1686,11 +1689,13 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	assert( m_pISRCentral == NULL );
 	
 
-
+#ifdef UseCLR
 	DotNetMisc dnm;
 	int r = dnm.GetDebugLogOptions();
 	_DebugLogging = (BOOL)r;
-
+#else
+	_DebugLogging = false;
+#endif
 	// here we start the second thread for displaying messages; we only need
 	// this when we are called as a compatibility module
 

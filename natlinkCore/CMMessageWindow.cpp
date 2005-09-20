@@ -1,4 +1,6 @@
 //#include "stdafx.h"
+#ifdef UseCLR
+
 #pragma managed
 #define CLR
 #using <mscorlib.dll>
@@ -45,3 +47,4 @@ void CMMessageWindow::ShowMessage(const char *msg)
 	h->ShowMessage(m);
 }
 
+#endif

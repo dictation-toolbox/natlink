@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
+	<Fragment>
+		<Binary Id="InstallUtil" src='binary\InstallUtilLib.dll' />
+		        <DirectoryRef Id="INSTALLDIR">
+					<Component Id="CNLInstaller" Guid="A4768778-91C3-5517-51C2-AC609F73BD44">
+						<File Id="InstallerFile" Name="NLINST1.DLL" LongName="NLInstaller.dll" src="..\NLInstaller\bin\NLInstaller.dll" Vital="yes"   DiskId="1" KeyPath="yes"  />
+						<File Id="ConfigFile" Name="NL.cfg" LongName="NLInstaller.dll.config" src="binary\NLInstaller.dll.config" Vital="yes" DiskId="1" />
+					</Component>
+				</DirectoryRef> 
+
+
+		<CustomAction Id='Install' BinaryKey='InstallUtil' DllEntry='ManagedInstall' Execute='deferred' />
+		<CustomAction Id='InstallSetProp' Property='Install' 
+		Value=' /installtype=notransaction /action=install  /LogFile= "[#InstallerFile]" "[#ConfigFile]"'  />
+
+		<CustomAction Id='Commit' BinaryKey='InstallUtil' DllEntry='ManagedInstall' Execute='commit' />
+		<CustomAction Id='CommitSetProp' Property='Commit' 
+		Value=' /installtype=notransaction /action=commit /LogFile= "[#InstallerFile]" "[#ConfigFile]"' />
+
+				
+		<CustomAction Id='Uninstall' BinaryKey='InstallUtil' DllEntry='ManagedInstall' Execute='deferred' />
+		<CustomAction Id='UninstallSetProp' Property='Uninstall' 
+		Value=' /installtype=notransaction /action=uninstall /LogFile= "[#InstallerFile]" "[#ConfigFile]"' />
+
+		
+<!--		/LogFile= /BinDir="[INSTALLDIR]\" /Package="[ProductName]" "[#InstallerFile]" "[#ConfigFile]" -->
+		
+		
+		<CustomAction Id='Rollback' BinaryKey='InstallUtil' DllEntry='ManagedInstall' Execute='rollback' />
+		<CustomAction Id='RollbackSetProp' Property='Rollback' 
+		Value=' /installtype=notransaction /action=rollback /LogFile= "[#InstallerFile]" "[#ConfigFile]"' />
+		
+
+<InstallExecuteSequence>
+		<Custom Action="InstallSetProp" After="StartServices"><![CDATA[$CNLInstaller>2]]></Custom> 
+		<Custom Action="Install" After="InstallSetProp"><![CDATA[$CNLInstaller>2]]></Custom>
+		
+		<Custom Action="UninstallSetProp" After="MsiUnpublishAssemblies"><![CDATA[$CNLInstaller=2]]></Custom>
+		<Custom Action="Uninstall" After="UninstallSetProp"><![CDATA[$CNLInstaller=2]]></Custom>
+		
+		<Custom Action="CommitSetProp" After="Rollback"><![CDATA[$CNLInstaller>2]]></Custom>
+		<Custom Action="Commit" After="CommitSetProp"><![CDATA[$CNLInstaller>2]]></Custom>
+		
+		<Custom Action="RollbackSetProp" After="Install"><![CDATA[$CNLInstaller>2]]></Custom>
+		<Custom Action="Rollback" After="RollbackSetProp"><![CDATA[$CNLInstaller>2]]></Custom>
+</InstallExecuteSequence>
+
+
+	</Fragment>
+</Wix>
