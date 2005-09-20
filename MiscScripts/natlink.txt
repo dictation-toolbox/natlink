@@ -1,4 +1,4 @@
-Also see http://speech.squidnet.com/default.aspx/NL/NatLinkDocumentation.html
+Also see http://speechwiki.org/NL/NatLinkDocumentation.html
 
  Python Macro Language for Dragon NaturallySpeaking
     (c) Copyright 1999 by Joel Gould
