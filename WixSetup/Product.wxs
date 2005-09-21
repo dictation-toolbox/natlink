@@ -6,7 +6,7 @@
 
 <Product
     UpgradeCode="6DD702D7-CB87-4D2A-A027-62A7B116425E"
-    Name="NatLink and Vocola $(var.Version)"
+    Name="NatPython and Vocola $(var.Version)"
     Id="$(var.ProductCode)"
     Version="$(var.Version)"
     Manufacturer="Applied Recognition Inc."
@@ -55,13 +55,13 @@
 			</Directory>
 
 			<Directory Id="ProgramMenuFolder" Name="PMenu" >
-				<Directory Id="DPMNatlink" Name="PMN" LongName="NatLink &amp; Vocola" />
+				<Directory Id="DPMNatlink" Name="PMN" LongName="NatPython &amp; Vocola" />
 			</Directory>
         </Directory>
 
 
 
-        <Feature Id="DefaultFeature" Level="1" ConfigurableDirectory="INSTALLDIR" Title="NatLink" Description="Core NatLink files" >
+        <Feature Id="DefaultFeature" Level="1" ConfigurableDirectory="INSTALLDIR" Title="NatPython" Description="Core NatPython files" >
             <ComponentRef Id="CMisc" />
             <ComponentRef Id="CNLInstaller" />
             <ComponentRef Id="CNatLinkDll" />
@@ -71,7 +71,7 @@
 
 -->
 
-            <Feature Id="NatLinkDocsFeature" Level="1" Title="NatLink samples and docs" Description="NatLink documentation">
+            <Feature Id="NatLinkDocsFeature" Level="1" Title="NatPython samples and docs" Description="NatPython documentation">
                 <ComponentRef Id="CMiscScripts" />
                 <ComponentRef Id="CSamples" />
             </Feature>

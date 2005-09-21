@@ -54,6 +54,7 @@ Global
 		{506647B3-A203-467E-8DE9-657334016896}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(SolutionItems) = postSolution
+		AssemblyInfoCommon.vb = AssemblyInfoCommon.vb
 		COPYRIGHT.txt = COPYRIGHT.txt
 		default.build = default.build
 		Index.htm = Index.htm

@@ -148,6 +148,12 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "AssemblyInfoCommon.vb"
+                    Link = "..\AssemblyInfoCommon.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "EnableNL.ico"
                     BuildAction = "EmbeddedResource"
                 />

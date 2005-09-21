@@ -1,256 +1,267 @@
 <?xml version="1.0" ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
-    <Fragment>
-        <DirectoryRef Id="INSTALLDIR">
+<Fragment>
+<DirectoryRef Id="INSTALLDIR">
 
-			<Component Id="CMisc" Guid="164ACE8D-AD3E-D448-7489-24DE3AD9CE4B"  >
-				<File Id="_44F03AA442784780A607A56B8B642259" Name="INDEX.HTM" LongName="Index.htm" src="..\Index.htm" Vital="yes"  DiskId="1" />
-				<File Id="_61BD61AA25F14822A0204A839ED0C83B" Name="COPYRI1.TXT" LongName="COPYRIGHT.txt" src="..\COPYRIGHT.txt" Vital="yes"  DiskId="1" />
-				<File Id="FConfigureNatLink.exe" Name="CNLink.exe" LongName="ConfigureNatLink.exe" src="..\ConfigureNatLink\bin\ConfigureNatLink.exe" KeyPath="yes" Vital="yes"  DiskId="1">
-					<Shortcut  Directory="DPMNatlink" Id="SCCNL" LongName="Configure Natpython" Name="Config.exe" Advertise="yes"  />
-				</File> 
+	<Component Id="CMisc" Guid="164ACE8D-AD3E-D448-7489-24DE3AD9CE4B"  DiskId="1" >
+		
+		<File Id="FIndex.htm" Name="INDEX.HTM" LongName="Index.htm" src="..\Index.htm" Vital="yes" >
+			<!-- <Shortcut Directory="DPMNatlink" Id="SCDocs" LongName="Documentation Index" Name="Index.htm"  /> -->
+		</File> 
+		
+		<IniFile Id='SCDocs' Action='addLine' Name='docs.url' LongName="Documentation Index.url" Directory='DPMNatlink'
+					 Section='InternetShortcut' Key='URL' Value='file://[INSTALLDIR]/Index.htm'  />
 				
-				<File Id="FFBdll" Name="FOLDER1.DLL" LongName="FolderBrowser.dll" src="..\ConfigureNatLink\bin\FolderBrowser.dll" Vital="yes"   DiskId="1"   />
-			</Component>
+		
+		<File Id="_61BD61AA25F14822A0204A839ED0C83B" Name="COPYRI1.TXT" LongName="COPYRIGHT.txt" src="..\COPYRIGHT.txt" Vital="yes"   />
+		<File Id="FConfigureNatLink.exe" Name="CNLink.exe" LongName="ConfigureNatLink.exe" src="..\ConfigureNatLink\bin\ConfigureNatLink.exe" KeyPath="yes" Vital="yes"  >
+			<Shortcut  Directory="DPMNatlink" Id="SCCNL" LongName="Configure Natpython" Name="Config.exe" Advertise="yes" Icon="NatLink.ico" IconIndex="0"  />
+		</File> 
+		
+		<File Id="FFBdll" Name="FOLDER1.DLL" LongName="FolderBrowser.dll" src="..\ConfigureNatLink\bin\FolderBrowser.dll" Vital="yes"      />
+	
+		
+		<Shortcut Id="SFolder" Directory="DPMNatlink" Name="pf.dir" LongName="NatLink Program Files" Target="[INSTALLDIR]" Show="normal" WorkingDirectory="INSTALLDIR" />
 
-			<Component Id="CDebug" Guid="{47BFBDCA-3C52-4190-B98D-A9FBF0E475D0}">
-				<Registry Id="_0284A11C2EBA4CB8B9838D89A04467C4" Root="HKCU" Key="Software\NatLink" Name="NatLinkDebug" Type="integer"  Value="0" KeyPath="yes" />
-			</Component>
+	</Component>
 
-            <Directory Id="DVCL" Name="VCLEDIT" LongName="vclEdit">
-                <Component Id="CVCLEdit" Guid="779FFE31-C77F-06ED-35CF-FB3FFF8C297A" >
-                    <File Id="FVCLEDIT.EXE" Name="VCLEDIT.EXE" LongName="vclEdit.exe" src="..\VCLEDIT\vclEdit.exe" Vital="yes"  DiskId="1" KeyPath="yes" />
-                    <File Id="_A2022376F4845A35CA3CD27F9CBA36A4" Name="NOTEPAD2.REG" LongName="Notepad2.reg" src="..\VCLEDIT\Notepad2.reg" Vital="yes"  DiskId="1" />
-                    <File Id="_BBE2CBAB647E9AA55B884EC896B2F4ED" Name="LICENSE.TXT" LongName="License.txt" src="..\VCLEDIT\License.txt" Vital="yes"  DiskId="1" />
-                    
-                    <ProgId  Id="Vocola.vcl" Description="NatPython Voice commands"  Icon="[NatLink.ico]"   >
-						<Extension Id="vcl"  ContentType="application/text"  >
-							<Verb  Id="edit" Command="Edit" Argument='"%1"'   Target="[!FVCLEDIT.EXE]" />
-						</Extension>
-					</ProgId> 	
-					<ProgId  Id="Vocola.vch" Description="NatPython Voice commands header"  Icon="[NatLink.ico]"   >
-						<Extension Id="vch"  ContentType="application/text"  >
-							<Verb  Id="edit" Command="Edit" Argument='"%1"'   Target="[!FVCLEDIT.EXE]" />
-						</Extension>
-                    </ProgId> 
-                    
+	<Component Id="CDebug" Guid="{47BFBDCA-3C52-4190-B98D-A9FBF0E475D0}" DiskId="1">
+		<Registry Id="_0284A11C2EBA4CB8B9838D89A04467C4" Root="HKCU" Key="Software\NatLink" Name="NatLinkDebug" Type="integer"  Value="0" KeyPath="yes" />
+	</Component>
+
+    <Directory Id="DVCL" Name="VCLEDIT" LongName="vclEdit" >
+        <Component Id="CVCLEdit" Guid="779FFE31-C77F-06ED-35CF-FB3FFF8C297A" DiskId="1">
+            <File Id="FVCLEDIT.EXE" Name="VCLEDIT.EXE" LongName="vclEdit.exe" src="..\VCLEDIT\vclEdit.exe" Vital="yes"   KeyPath="yes" />
+            <File Id="_A2022376F4845A35CA3CD27F9CBA36A4" Name="NOTEPAD2.REG" LongName="Notepad2.reg" src="..\VCLEDIT\Notepad2.reg" Vital="yes"   />
+            <File Id="_BBE2CBAB647E9AA55B884EC896B2F4ED" Name="LICENSE.TXT" LongName="License.txt" src="..\VCLEDIT\License.txt" Vital="yes"   />
+            
+            <ProgId  Id="Vocola.vcl" Description="NatPython Voice commands"  Icon="[NatLink.ico]"   >
+				<Extension Id="vcl"  ContentType="application/text"  >
+					<Verb  Id="edit" Command="Edit" Argument='"%1"'   Target="[!FVCLEDIT.EXE]" />
+				</Extension>
+				<Extension Id="vch"  ContentType="application/text"  >
+					<Verb  Id="edit2" Command="Edit" Argument='"%1"'   Target="[!FVCLEDIT.EXE]" />
+				</Extension>
+            
+			</ProgId> 	
+			<!--
+			<ProgId  Id="Vocola.vch" Description="NatPython Voice commands header"  Icon="[NatLink.ico]"   >
+				</ProgId> 
+            -->
+        </Component>
+    </Directory>
+    <Directory Id="DMiscScrips" Name="MISCSC1" LongName="MiscScripts">
+        <Component Id="CMiscScripts" Guid="E375FB61-5A6D-D726-6FE5-D417A48A62E2" KeyPath="yes" DiskId="1">
+            <File Id="_06931772249278414D4564610E52ADA9" Name="_REPEA1.PY" LongName="_repeatthat.py" src="..\MiscScripts\_repeatthat.py" Vital="yes"   />
+            <File Id="_192CDF4160B0AF039F86ABD74E9EB1C2" Name="_VOICE1.PY" LongName="_voiceLogger.py" src="..\MiscScripts\_voiceLogger.py" Vital="yes"   />
+            <File Id="_23E57FE42D639FEFBBEA2D1DAA6B9804" Name="INDEX.HTM" LongName="Index.htm" src="..\MiscScripts\Index.htm"
+                Vital="yes"   />
+            <File Id="_5DAEC9C12FDBE4CA1132F84ED06F5A02" Name="NATLINK.TXT" LongName="natlink.txt" src="..\MiscScripts\natlink.txt" Vital="yes"   />
+            <File Id="_6760D2C7BDE9D3746A7B820E49181738" Name="WAVTOOLS.PY" LongName="wavtools.py" src="..\MiscScripts\wavtools.py" Vital="yes"   />
+            <File Id="_855581CE181C1E26482F8006755A8FA1" Name="TESTNA1.PY" LongName="testnatlink.py" src="..\MiscScripts\testnatlink.py" Vital="yes"   />
+            <File Id="_9CE3054BF13E8419689327BA279E2A36" Name="_CHANG1.PY" LongName="_changeNatLinkSystemPriority.py" src="..\MiscScripts\_changeNatLinkSystemPriority.py" Vital="yes"   />
+        </Component>
+        <Directory Id="DSamples" Name="SAMPLE1" LongName="SampleMacros"  >
+            <Component Id="CSamples" Guid="04C12B72-2804-B28B-59D1-C073CDD037F7" KeyPath="yes" DiskId="1">
+                <File Id="_0EC008FC24C0C5DF22CF56A02BA8DE58" Name="_MOUSE.PY" LongName="_mouse.py" src="..\SampleMacros\_mouse.py" Vital="yes"   />
+                <File Id="_0EEDDC7E7C2FB406BDB6A98B320A146C" Name="_SAMPLE9.PY" LongName="_sample9.py" src="..\SampleMacros\_sample9.py" Vital="yes"   />
+                <File Id="_106ACADA38133817B8C48855643DBD32" Name="WINDICT.PY" LongName="windict.py" src="..\SampleMacros\windict.py" Vital="yes"   />
+                <File Id="_11144A818A1412BC8089AE669A009EC6" Name="_SAMPLE4.PY" LongName="_sample4.py" src="..\SampleMacros\_sample4.py" Vital="yes"   />
+                <File Id="_13AB97C9D42F7EC8F498694FD3BF7BCD" Name="_SAMPLE5.PY" LongName="_sample5.py" src="..\SampleMacros\_sample5.py" Vital="yes"   />
+                <File Id="_56CBC5AAF635DD6B9AFFC36A12984F2A" Name="WINSPCH.PY" LongName="winspch.py" src="..\SampleMacros\winspch.py" Vital="yes"   />
+                <File Id="_57041D294BF55F200324E62B5A122247" Name="_SAMPLE2.PY" LongName="_sample2.py" src="..\SampleMacros\_sample2.py" Vital="yes"   />
+                <File Id="_72C4FF49EE21BBFF55FD24FB608C679F" Name="EXCEL_1.PY" LongName="excel_sample7.py" src="..\SampleMacros\excel_sample7.py" Vital="yes"   />
+                <File Id="_7CEE0BAE3F966C2108D997DE7FF6E93F" Name="TRANSC1.PY" LongName="transcribe.py" src="..\SampleMacros\transcribe.py" Vital="yes"   />
+                <File Id="_882E920832EE1BEE319B133E24383DC9" Name="WIKI.CSS" LongName="wiki.css" src="..\SampleMacros\wiki.css" Vital="yes"   />
+                <File Id="_A6214DC515ECC89ABA85FCB5BA44C3FA" Name="TRAINU1.PY" LongName="trainuser.py" src="..\SampleMacros\trainuser.py" Vital="yes"   />
+                <File Id="_A6A2BA8F969D84CC5678491D73A59EE8" Name="NATSPE1.PY" LongName="natspeak_sample6.py" src="..\SampleMacros\natspeak_sample6.py" Vital="yes"   />
+                <File Id="_A78E93F95CFA1BAEF1C4330C68A6335E" Name="_SAMPLE3.PY" LongName="_sample3.py" src="..\SampleMacros\_sample3.py" Vital="yes"   />
+                <File Id="_C65F085DC633A17B97D13F2865B39E36" Name="WORDPAD.PY" LongName="wordpad.py" src="..\SampleMacros\wordpad.py" Vital="yes"   />
+                <File Id="_CE9E1288C4FC5C6EB9B5B3F975735CAA" Name="_SAMPLE1.PY" LongName="_sample1.py" src="..\SampleMacros\_sample1.py" Vital="yes"   />
+                <File Id="_D7649A48A2069CFAECC9514AA6E162C2" Name="INDEX.HTM" LongName="Index.htm" src="..\SampleMacros\Index.htm" Vital="yes"   />
+                <File Id="_E310C1D838F2E3B93A480F5F2638B0B6" Name="_SAMPLE8.PY" LongName="_sample8.py" src="..\SampleMacros\_sample8.py" Vital="yes"   />
+                <File Id="_FE2465774A97A187716DC505B66AB84D" Name="_GLOBALS.PY" LongName="_globals.py" src="..\SampleMacros\_globals.py" Vital="yes"   />
+            </Component>
+        </Directory>
+    </Directory>
+    <Directory Id="DMacros" Name="MACROS1" LongName="macrosystem">
+        <Component Id="CVocola" Guid="7EB170EA-2D52-81FC-17F1-72D44401E4AC" KeyPath="yes" DiskId="1">
+            <File Id="F_vocola_main.py" Name="_VOCOL1.PY" LongName="_vocola_main.py" src="..\MacroSystem\_vocola_main.py" Vital="yes"   />
+        </Component>
+	    <Directory Id="DCore" Name="CORE" LongName="core">
+
+            <Component Id="CNatLinkDll" Guid="5A490DCE-3E8E-7D37-AE18-E8FC663F4382" DiskId="1">
+                <File Id="FNatLink" Name="FNATLINK.DLL" LongName="natlink.dll" src="..\natlinkCore\Release\natlink.dll" Vital="yes"
+                    Assembly="no"  KeyPath="yes"  />
+                
+                <File Id="_EB9EA4B5A5A5AB2C662E3DE44D408515" Name="CALLDLL.PYD" LongName="calldll.pyd" src="..\calldll\release\calldll.pyd" Vital="yes"   />
+                <File Id="_3603B3A1AEADDB621E23E2935B632FD6" Name="WINDLL.PY" LongName="windll.py" src="..\calldll\windll.py" Vital="yes"   />
+                <File Id="_4CD80A10279A57EF787D7CC5EC5A5F5C" Name="WINDLL1.TXT" LongName="windll.py LICENSE.txt" src="..\calldll\windll.py LICENSE.txt" Vital="yes"   />
+                <File Id="_3D3B84575A0D052C7DADBA1F96472935" Name="GRAMPA1.PY" LongName="gramparser.py" src="..\MacroSystem\core\gramparser.py" Vital="yes"   />
+                <File Id="_9872DAE55A54DCA3330098B141FFC3D3" Name="VOCOLA1.PY" LongName="VocolaUtils.py" src="..\MacroSystem\core\VocolaUtils.py" Vital="yes"   />
+                <File Id="_9D7F1897A2DBE4A9BEED4A514DB00962" Name="NATLIN1.PY" LongName="natlinkutils.py" src="..\MacroSystem\core\natlinkutils.py" Vital="yes"   />
+                <File Id="_A12885951CD6CCC76A3532D4F1FBFAD3" Name="NATLIN2.PY" LongName="natlinkmain.py" src="..\MacroSystem\core\natlinkmain.py" Vital="yes"   />
+                <File Id="_BE86B6E6682D07339578A606DCD44864" Name="REGIST1.PY" LongName="RegistryDict.py" src="..\MacroSystem\core\RegistryDict.py" Vital="yes"   />
+					
+					<RemoveFolder Id="RDPNatLink" Directory="DPNatLink" On="uninstall" />
+					<RemoveFolder Id="RDPVocola"  Directory="DPVocola" On="uninstall" />
+					<RemoveFolder Id="RDPMNatlink"  Directory="DPMNatlink" On="uninstall" />
+                
+                
+            </Component>
+        </Directory>
+    </Directory>
+
+
+    <Directory Id="DVocola" Name="VOCOLA" LongName="Vocola">
+        <Directory Id="DExec" Name="EXEC" LongName="Exec">
+            <Component Id="CVExec" Guid="F2BB83DD-8810-4615-66FA-FFADCEE8150A" KeyPath="yes" DiskId="1">
+                <File Id="_08BC6677C9C5585EB37E19DF0C0748FC" Name="DVC2VCL.EXE" LongName="dvc2vcl.exe" src="..\VOCOLA\EXEC\dvc2vcl.exe" Vital="yes"   />
+                <File Id="_34F727C1A57B067816B5732DB6CF571F" Name="VCL2PY.PL" LongName="vcl2py.pl" src="..\VOCOLA\EXEC\vcl2py.pl" Vital="yes"   />
+                <File Id="_CEA2AAB6BC871AB7C038C11790FDEF93" Name="VOCOLA.INI" LongName="vocola.ini" src="..\VOCOLA\EXEC\vocola.ini" Vital="yes"   />
+                <File Id="_F4E0E81C4B82913E81D8CA8C71AF7E30" Name="VCL2PY.EXE" LongName="vcl2py.exe" src="..\VOCOLA\EXEC\vcl2py.exe" Vital="yes"   />
+                <File Id="_FEDB2501D518751F7F35E5862E5C8721" Name="DVC2VCL.PL" LongName="dvc2vcl.pl" src="..\VOCOLA\EXEC\dvc2vcl.pl" Vital="yes"   />
+            </Component>
+            <Directory Id="D2.0" Name="2.0">
+                <Component Id="CV20" Guid="6B5E877C-BCD2-36C2-DCF3-CBC7DC0CEB3F" KeyPath="yes" DiskId="1">
+                    <File Id="_C8E6A0592EA292438309FCF0D6895484" Name="SIMPSCRP.PYD" LongName="simpscrp.pyd" src="..\VOCOLA\EXEC\2.0\simpscrp.pyd" Vital="yes"   />
                 </Component>
             </Directory>
-            <Directory Id="DMiscScrips" Name="MISCSC1" LongName="MiscScripts">
-                <Component Id="CMiscScripts" Guid="E375FB61-5A6D-D726-6FE5-D417A48A62E2" KeyPath="yes" >
-                    <File Id="_06931772249278414D4564610E52ADA9" Name="_REPEA1.PY" LongName="_repeatthat.py" src="..\MiscScripts\_repeatthat.py" Vital="yes"  DiskId="1" />
-                    <File Id="_192CDF4160B0AF039F86ABD74E9EB1C2" Name="_VOICE1.PY" LongName="_voiceLogger.py" src="..\MiscScripts\_voiceLogger.py" Vital="yes"  DiskId="1" />
-                    <File Id="_23E57FE42D639FEFBBEA2D1DAA6B9804" Name="INDEX.HTM" LongName="Index.htm" src="..\MiscScripts\Index.htm"
-                        Vital="yes"  DiskId="1" />
-                    <File Id="_5DAEC9C12FDBE4CA1132F84ED06F5A02" Name="NATLINK.TXT" LongName="natlink.txt" src="..\MiscScripts\natlink.txt" Vital="yes"  DiskId="1" />
-                    <File Id="_6760D2C7BDE9D3746A7B820E49181738" Name="WAVTOOLS.PY" LongName="wavtools.py" src="..\MiscScripts\wavtools.py" Vital="yes"  DiskId="1" />
-                    <File Id="_855581CE181C1E26482F8006755A8FA1" Name="TESTNA1.PY" LongName="testnatlink.py" src="..\MiscScripts\testnatlink.py" Vital="yes"  DiskId="1" />
-                    <File Id="_9CE3054BF13E8419689327BA279E2A36" Name="_CHANG1.PY" LongName="_changeNatLinkSystemPriority.py" src="..\MiscScripts\_changeNatLinkSystemPriority.py" Vital="yes"  DiskId="1" />
+            <Directory Id="D2.2" Name="2.2">
+                <Component Id="CV22" Guid="372A30E0-7CE1-B723-551D-BC0542F7862A" KeyPath="yes" DiskId="1">
+                    <File Id="_2C4CFF1A6B78A9ECC94566E6C6B44F8F" Name="SIMPSCRP.PYD" LongName="simpscrp.pyd" src="..\VOCOLA\EXEC\2.2\simpscrp.pyd" Vital="yes"   />
                 </Component>
-                <Directory Id="DSamples" Name="SAMPLE1" LongName="SampleMacros"  >
-                    <Component Id="CSamples" Guid="04C12B72-2804-B28B-59D1-C073CDD037F7" KeyPath="yes">
-                        <File Id="_0EC008FC24C0C5DF22CF56A02BA8DE58" Name="_MOUSE.PY" LongName="_mouse.py" src="..\SampleMacros\_mouse.py" Vital="yes"  DiskId="1" />
-                        <File Id="_0EEDDC7E7C2FB406BDB6A98B320A146C" Name="_SAMPLE9.PY" LongName="_sample9.py" src="..\SampleMacros\_sample9.py" Vital="yes"  DiskId="1" />
-                        <File Id="_106ACADA38133817B8C48855643DBD32" Name="WINDICT.PY" LongName="windict.py" src="..\SampleMacros\windict.py" Vital="yes"  DiskId="1" />
-                        <File Id="_11144A818A1412BC8089AE669A009EC6" Name="_SAMPLE4.PY" LongName="_sample4.py" src="..\SampleMacros\_sample4.py" Vital="yes"  DiskId="1" />
-                        <File Id="_13AB97C9D42F7EC8F498694FD3BF7BCD" Name="_SAMPLE5.PY" LongName="_sample5.py" src="..\SampleMacros\_sample5.py" Vital="yes"  DiskId="1" />
-                        <File Id="_56CBC5AAF635DD6B9AFFC36A12984F2A" Name="WINSPCH.PY" LongName="winspch.py" src="..\SampleMacros\winspch.py" Vital="yes"  DiskId="1" />
-                        <File Id="_57041D294BF55F200324E62B5A122247" Name="_SAMPLE2.PY" LongName="_sample2.py" src="..\SampleMacros\_sample2.py" Vital="yes"  DiskId="1" />
-                        <File Id="_72C4FF49EE21BBFF55FD24FB608C679F" Name="EXCEL_1.PY" LongName="excel_sample7.py" src="..\SampleMacros\excel_sample7.py" Vital="yes"  DiskId="1" />
-                        <File Id="_7CEE0BAE3F966C2108D997DE7FF6E93F" Name="TRANSC1.PY" LongName="transcribe.py" src="..\SampleMacros\transcribe.py" Vital="yes"  DiskId="1" />
-                        <File Id="_882E920832EE1BEE319B133E24383DC9" Name="WIKI.CSS" LongName="wiki.css" src="..\SampleMacros\wiki.css" Vital="yes"  DiskId="1" />
-                        <File Id="_A6214DC515ECC89ABA85FCB5BA44C3FA" Name="TRAINU1.PY" LongName="trainuser.py" src="..\SampleMacros\trainuser.py" Vital="yes"  DiskId="1" />
-                        <File Id="_A6A2BA8F969D84CC5678491D73A59EE8" Name="NATSPE1.PY" LongName="natspeak_sample6.py" src="..\SampleMacros\natspeak_sample6.py" Vital="yes"  DiskId="1" />
-                        <File Id="_A78E93F95CFA1BAEF1C4330C68A6335E" Name="_SAMPLE3.PY" LongName="_sample3.py" src="..\SampleMacros\_sample3.py" Vital="yes"  DiskId="1" />
-                        <File Id="_C65F085DC633A17B97D13F2865B39E36" Name="WORDPAD.PY" LongName="wordpad.py" src="..\SampleMacros\wordpad.py" Vital="yes"  DiskId="1" />
-                        <File Id="_CE9E1288C4FC5C6EB9B5B3F975735CAA" Name="_SAMPLE1.PY" LongName="_sample1.py" src="..\SampleMacros\_sample1.py" Vital="yes"  DiskId="1" />
-                        <File Id="_D7649A48A2069CFAECC9514AA6E162C2" Name="INDEX.HTM" LongName="Index.htm" src="..\SampleMacros\Index.htm" Vital="yes"  DiskId="1" />
-                        <File Id="_E310C1D838F2E3B93A480F5F2638B0B6" Name="_SAMPLE8.PY" LongName="_sample8.py" src="..\SampleMacros\_sample8.py" Vital="yes"  DiskId="1" />
-                        <File Id="_FE2465774A97A187716DC505B66AB84D" Name="_GLOBALS.PY" LongName="_globals.py" src="..\SampleMacros\_globals.py" Vital="yes"  DiskId="1" />
-                    </Component>
-                </Directory>
             </Directory>
-            <Directory Id="DMacros" Name="MACROS1" LongName="macrosystem">
-                <Component Id="CVocola" Guid="7EB170EA-2D52-81FC-17F1-72D44401E4AC" KeyPath="yes" >
-                    <File Id="_A1DB8C80A4BAE68B3E0E4DF45AC353D6" Name="_VOCOL1.PY" LongName="_vocola_main.py" src="..\MacroSystem\_vocola_main.py" Vital="yes"  DiskId="1" />
+            <Directory Id="D2.3" Name="2.3">
+                <Component Id="CV23" Guid="EC30F4BC-9501-74A9-1AA3-A2E81F2586E1" KeyPath="yes" DiskId="1">
+                    <File Id="_5110FD80CC5CBE92569F099AA1D6602D" Name="SIMPSCRP.PYD" LongName="simpscrp.pyd" src="..\Simpscrp\Release\simpscrp.dll" Vital="yes"   />
                 </Component>
-	            <Directory Id="DCore" Name="CORE" LongName="core">
+            </Directory>
+        </Directory>
+        <Directory Id="DCommands" Name="COMMANDS" LongName="Commands">
+            <Component Id="CVCommands" Guid="A4823EA2-9A51-E178-EA7C-0697CF47E339" KeyPath="yes" DiskId="1">
+                <File Id="_92CB6328BDED47D23BBD489B31339E29" Name="VCLEDIT.VCL" LongName="vcledit.vcl" src="..\VOCOLA\COMMANDS\vcledit.vcl" Vital="yes"   />
+            </Component>
+        </Directory>
+        <Directory Id="DVSamples" Name="SAMPLES" LongName="Samples">
+            <Component Id="CVSamples" Guid="C547AAA2-6F53-6D70-9284-8423952F5E8A" KeyPath="yes" DiskId="1">
+                <File Id="_00B8AFF5DC6DEE05D61C937208F47A5B" Name="FOLDERS.VCH" LongName="folders.vch" src="..\VOCOLA\SAMPLES\folders.vch" Vital="yes"   />
+                <File Id="_1DCA1E1B90241A6D7BA622EDFA046B31" Name="OUTLOOK.VCL" LongName="outlook.vcl" src="..\VOCOLA\SAMPLES\outlook.vcl" Vital="yes"   />
+                <File Id="_222BA9C4A96546715432A36E9EDAEBA1" Name="NETSCAPE.VCL" LongName="netscape.vcl" src="..\VOCOLA\SAMPLES\netscape.vcl" Vital="yes"   />
+                <File Id="_3FE994DF703638650974072E7547597C" Name="MOZILLA.VCL" LongName="mozilla.vcl" src="..\VOCOLA\SAMPLES\mozilla.vcl" Vital="yes"   />
+                <File Id="_4600055D4778A807A3C9FEEBE0603C01" Name="IEXPLORE.VCL" LongName="iexplore.vcl" src="..\VOCOLA\SAMPLES\iexplore.vcl" Vital="yes"   />
+                <File Id="_589B155775188AFD994FFFEA9DD7B32E" Name="EXPLORER.VCL" LongName="explorer.vcl" src="..\VOCOLA\SAMPLES\explorer.vcl" Vital="yes"   />
+                <File Id="_5D3FD0F524321ABD99BEB91CBA9A8E98" Name="EMACS.VCL" LongName="emacs.vcl" src="..\VOCOLA\SAMPLES\emacs.vcl" Vital="yes"   />
+                <File Id="_63451BCD156761A76818357493761A03" Name="VNCVIE1.VCL" LongName="vncviewer.vcl" src="..\VOCOLA\SAMPLES\vncviewer.vcl" Vital="yes"   />
+                <File Id="_6404BEF0079512A804D5DC7073B025B3" Name="WINWORD.VCL" LongName="winword.vcl" src="..\VOCOLA\SAMPLES\winword.vcl" Vital="yes"   />
+                <File Id="_6712D05C1BDCCE5F06B6B93EEE7C85F9" Name="URLS.VCH" LongName="URLs.vch" src="..\VOCOLA\SAMPLES\URLs.vch" Vital="yes"   />
+                <File Id="_7B26C01D0ADB550B4F0F8C86AAC0AD07" Name="FILES.VCH" LongName="files.vch" src="..\VOCOLA\SAMPLES\files.vch" Vital="yes"   />
+                <File Id="_8929F46E824970D858E7A3273711A3C8" Name="DREAMW1.VCL" LongName="dreamweaver.vcl" src="..\VOCOLA\SAMPLES\dreamweaver.vcl" Vital="yes"   />
+                <File Id="_89F5D5E632259054E7DF4BE5D0FEC65E" Name="REMOTE1.VCH" LongName="remoteControl.vch" src="..\VOCOLA\SAMPLES\remoteControl.vch" Vital="yes"   />
+                <File Id="_8EEE02BEF47E5AB610B48BD2AED89E58" Name="NTVDM.VCL" LongName="ntvdm.vcl" src="..\VOCOLA\SAMPLES\ntvdm.vcl" Vital="yes"   />
+                <File Id="_96CEAE7D44EC5F42AED4BB48D1A90092" Name="_VOCOLA.VCL" LongName="_vocola.vcl" src="..\VOCOLA\SAMPLES\_vocola.vcl" Vital="yes"   />
+                <File Id="_B1E73FB3392536D7AB687C6B1F2EE42E" Name="UTILIT1.VCH" LongName="utilities.vch" src="..\VOCOLA\SAMPLES\utilities.vch" Vital="yes"   />
+                <File Id="_C207F9E10D98938AC65AD2D2F79E6CF4" Name="MSDEV.VCL" LongName="msdev.vcl" src="..\VOCOLA\SAMPLES\msdev.vcl" Vital="yes"   />
+                <File Id="_C4CD1F0CC723476F32E33F2289A93C7D" Name="MSTSC.VCL" LongName="mstsc.vcl" src="..\VOCOLA\SAMPLES\mstsc.vcl" Vital="yes"   />
+                <File Id="_CCB42FFB38AA41A4DCB8C491657E34C5" Name="VISIO32.VCL" LongName="visio32.vcl" src="..\VOCOLA\SAMPLES\visio32.vcl" Vital="yes"   />
+                <File Id="_D97C6D864E99AD52FD5F5269FDE82291" Name="NLNOTES.VCL" LongName="nlnotes.vcl" src="..\VOCOLA\SAMPLES\nlnotes.vcl" Vital="yes"   />
+                <File Id="_F44B12FFEF7C1906C0C154B53AC07C45" Name="NOTEPAD.VCL" LongName="notepad.vcl" src="..\VOCOLA\SAMPLES\notepad.vcl" Vital="yes"   />
+                <File Id="_F773FA5AB725F9D035E21095BB0A0CA1" Name="NATSPEAK.VCL" LongName="natspeak.vcl" src="..\VOCOLA\SAMPLES\natspeak.vcl" Vital="yes"   />
+                <File Id="_F94D078C4AA6815F80BF7731D42DAAB6" Name="KEYS.VCH" LongName="keys.vch" src="..\VOCOLA\SAMPLES\keys.vch" Vital="yes"   />
+            </Component>
+        </Directory>
+        <Directory Id="DDoc" Name="DOC" LongName="Doc">
+            <Component Id="CVDoc" Guid="5C2D9D5A-0FD2-3C5E-B0DF-B37D362203CC" KeyPath="yes" DiskId="1">
+                <File Id="_070011167049736E8A26FB80B24ABC28" Name="INDEX2.HTM" LongName="index.html" src="..\VOCOLA\DOC\index.html" Vital="yes"   />
+                <File Id="_09D103E946D6C03444D63A990910D8B5" Name="JOELSR1.GIF" LongName="JoelsRightArrowLight.gif" src="..\VOCOLA\DOC\JoelsRightArrowLight.gif" Vital="yes"   />
+                <File Id="_0F97EE11B4FABB68DB209B8934AF1345" Name="MYRSIS1.HTM" LongName="MyRSIStory.html" src="..\VOCOLA\DOC\MyRSIStory.html" Vital="yes"   />
+                <File Id="_230B42E2F2321A9AFB832C0573EC8634" Name="KEYSTR1.HTM" LongName="KeystrokeCommands.html" src="..\VOCOLA\DOC\KeystrokeCommands.html" Vital="yes"   />
+                <File Id="_239E182E9E2E6C63A0AC1C01E93998E0" Name="COMMAN1.HTM" LongName="CommandSequences.html" src="..\VOCOLA\DOC\CommandSequences.html" Vital="yes"   />
+                <File Id="_2D2076EA8F7DB4098103B60CEAF54062" Name="BUILTI1.HTM" LongName="BuiltinFunctions.html" src="..\VOCOLA\DOC\BuiltinFunctions.html" Vital="yes"   />
+                <File Id="_2E292B3D67E9127174930FC31FBACB91" Name="SUBSTI1.HTM" LongName="SubstitutingActions.html" src="..\VOCOLA\DOC\SubstitutingActions.html" Vital="yes"   />
+                <File Id="_3D11A635E2C12A71D75EE5F23296FE16" Name="OPTION1.HTM" LongName="OptionalWords.html" src="..\VOCOLA\DOC\OptionalWords.html" Vital="yes"   />
+                <File Id="_4875AE903D8BB1E9BE40185C7C28B3A3" Name="TROUBL1.HTM" LongName="Troubleshooting.html" src="..\VOCOLA\DOC\Troubleshooting.html" Vital="yes"   />
+                <File Id="_60A85FEF544C7FDF9101343B3814E35B" Name="WISHLI1.HTM" LongName="WishList.html" src="..\VOCOLA\DOC\WishList.html" Vital="yes"   />
+                <File Id="_7018CB1ADE6E190BECDD28B88F7FC927" Name="LANGUA1.HTM" LongName="LanguageTutorial.html" src="..\VOCOLA\DOC\LanguageTutorial.html" Vital="yes"   />
+                <File Id="_72478470106E7F70CC1C5D0CECAC9F04" Name="USINGA1.HTM" LongName="UsingAlternatives.html" src="..\VOCOLA\DOC\UsingAlternatives.html" Vital="yes"   />
+                <File Id="_7C681738E074CD083FF5C889596AB27E" Name="VOICECMD.PDF" LongName="voicecmd.pdf" src="..\VOCOLA\DOC\voicecmd.pdf" Vital="yes"   />
+                <File Id="_849F99C3D52269145179C8B0FE18F787" Name="CONTEX1.HTM" LongName="ContextualCommands.html" src="..\VOCOLA\DOC\ContextualCommands.html" Vital="yes"   />
+                <File Id="_870CFAD162DF90264FFA43FFD9996D15" Name="SUPPOR1.HTM" LongName="Support.html" src="..\VOCOLA\DOC\Support.html" Vital="yes"   />
+                <File Id="_8D30D3651676842D5BF41552D7042AD4" Name="CONVER1.HTM" LongName="ConvertingDVCFiles.html" src="..\VOCOLA\DOC\ConvertingDVCFiles.html" Vital="yes"   />
+                <File Id="_A15EC1F014A41967CA2CA49DB000474E" Name="FUNCTI1.HTM" LongName="FunctionCalls.html" src="..\VOCOLA\DOC\FunctionCalls.html" Vital="yes"   />
+                <File Id="_B5E51F01669D69F2326DACB54FD7AED1" Name="CAPTUR1.HTM" LongName="CapturingDictation.html" src="..\VOCOLA\DOC\CapturingDictation.html" Vital="yes"   />
+                <File Id="_BD6D6126F0FFDF91C758AB37C860EA7E" Name="COMMEN1.HTM" LongName="Comments.html" src="..\VOCOLA\DOC\Comments.html" Vital="yes"   />
+                <File Id="_BD7E4511D975264B1D8D55B3A02B16A2" Name="JOELSR2.GIF" LongName="JoelsRightArrowDark.gif" src="..\VOCOLA\DOC\JoelsRightArrowDark.gif" Vital="yes"   />
+                <File Id="_C4D975B7DF025681DEE063C567B311A3" Name="DEFINI1.HTM" LongName="DefiningFunctions.html" src="..\VOCOLA\DOC\DefiningFunctions.html" Vital="yes"   />
+                <File Id="_C8EA3438D16B61F4F14657BF363F61F0" Name="ALTERN1.HTM" LongName="AlternativesAndReferences.html" src="..\VOCOLA\DOC\AlternativesAndReferences.html" Vital="yes"   />
+                <File Id="_C9121AFD7D9F626F5CC15965C0B103D0" Name="USINGV1.HTM" LongName="UsingVocola.html" src="..\VOCOLA\DOC\UsingVocola.html" Vital="yes"   />
+                <File Id="_CCADFD44A8ABBB741AEBDCB1327ADCE5" Name="QUOTES1.HTM" LongName="QuotesAndWhitespace.html" src="..\VOCOLA\DOC\QuotesAndWhitespace.html" Vital="yes"   />
+                <File Id="_D03ACF7B1D4385942F514D2CE0DBDE77" Name="INSTAL1.HTM" LongName="InstallVocola.html" src="..\VOCOLA\DOC\InstallVocola.html" Vital="yes"   />
+                <File Id="_D3016D2BC9FEB5ABD004063D86CC0E04" Name="DOWNLO1.HTM" LongName="DownloadVocola.html" src="..\VOCOLA\DOC\DownloadVocola.html" Vital="yes"   />
+                <File Id="_D4D7D8BAEC5801DFE6D8A65B7DECDE44" Name="EXAMPL1.HTM" LongName="ExampleFile.html" src="..\VOCOLA\DOC\ExampleFile.html" Vital="yes"   />
+                <File Id="_D5A4A595C4E137626A01D4DF81FC42B2" Name="INCLUD1.HTM" LongName="IncludeStatements.html" src="..\VOCOLA\DOC\IncludeStatements.html" Vital="yes"   />
+                <File Id="_DA9BF3404531B2A508C2FAA4F87588B7" Name="VOCOLA1.HTM" LongName="VocolaVersions.html" src="..\VOCOLA\DOC\VocolaVersions.html" Vital="yes"   />
+                <File Id="_E23D38AA7FF5EA08F0CB303EC246C3CE" Name="DEFINI2.HTM" LongName="DefiningVariables.html" src="..\VOCOLA\DOC\DefiningVariables.html" Vital="yes"   />
+                <File Id="_ED0D26C627DBA6484450C1DFFD5CF98B" Name="ALL1.HTM" LongName="all.html" src="..\VOCOLA\DOC\all.html" 	Vital="yes"   />
+                <File Id="_F174374AF24A47B7CEC62A5A131BE1C9" Name="VOICER1.HTM" LongName="VoiceResources.html" src="..\VOCOLA\DOC\VoiceResources.html" Vital="yes"   />
+            </Component>
+        </Directory>
+    </Directory> <!-- end Vocola -->
 
-                    <Component Id="CNatLinkDll" Guid="5A490DCE-3E8E-7D37-AE18-E8FC663F4382">
-                        <File Id="FNatLink" Name="FNATLINK.DLL" LongName="natlink.dll" src="..\MacroSystem\core\natlink.dll" Vital="yes"
-                            Assembly="no" DiskId="1" KeyPath="yes"  />
-                        
-                        <File Id="_EB9EA4B5A5A5AB2C662E3DE44D408515" Name="CALLDLL.PYD" LongName="calldll.pyd" src="..\calldll\release\calldll.pyd" Vital="yes"  DiskId="1" />
-                        <File Id="_3603B3A1AEADDB621E23E2935B632FD6" Name="WINDLL.PY" LongName="windll.py" src="..\calldll\windll.py" Vital="yes"  DiskId="1" />
-                        <File Id="_4CD80A10279A57EF787D7CC5EC5A5F5C" Name="WINDLL1.TXT" LongName="windll.py LICENSE.txt" src="..\calldll\windll.py LICENSE.txt" Vital="yes"  DiskId="1" />
-                        <File Id="_3D3B84575A0D052C7DADBA1F96472935" Name="GRAMPA1.PY" LongName="gramparser.py" src="..\MacroSystem\core\gramparser.py" Vital="yes"  DiskId="1" />
-                        <File Id="_9872DAE55A54DCA3330098B141FFC3D3" Name="VOCOLA1.PY" LongName="VocolaUtils.py" src="..\MacroSystem\core\VocolaUtils.py" Vital="yes"  DiskId="1" />
-                        <File Id="_9D7F1897A2DBE4A9BEED4A514DB00962" Name="NATLIN1.PY" LongName="natlinkutils.py" src="..\MacroSystem\core\natlinkutils.py" Vital="yes"  DiskId="1" />
-                        <File Id="_A12885951CD6CCC76A3532D4F1FBFAD3" Name="NATLIN2.PY" LongName="natlinkmain.py" src="..\MacroSystem\core\natlinkmain.py" Vital="yes"  DiskId="1" />
-                        <File Id="_BE86B6E6682D07339578A606DCD44864" Name="REGIST1.PY" LongName="RegistryDict.py" src="..\MacroSystem\core\RegistryDict.py" Vital="yes"  DiskId="1" />
-							
-							<RemoveFolder Id="RDPNatLink" Directory="DPNatLink" On="uninstall" />
-							<RemoveFolder Id="RDPVocola"  Directory="DPVocola" On="uninstall" />
-							<RemoveFolder Id="RDPMNatlink"  Directory="DPMNatlink" On="uninstall" />
-                        
-                        
-                    </Component>
-                </Directory>
-            </Directory>
     
     
-            <Directory Id="DVocola" Name="VOCOLA" LongName="Vocola">
-                <Directory Id="DExec" Name="EXEC" LongName="Exec">
-                    <Component Id="CVExec" Guid="F2BB83DD-8810-4615-66FA-FFADCEE8150A" KeyPath="yes">
-                        <File Id="_08BC6677C9C5585EB37E19DF0C0748FC" Name="DVC2VCL.EXE" LongName="dvc2vcl.exe" src="..\VOCOLA\EXEC\dvc2vcl.exe" Vital="yes"  DiskId="1" />
-                        <File Id="_34F727C1A57B067816B5732DB6CF571F" Name="VCL2PY.PL" LongName="vcl2py.pl" src="..\VOCOLA\EXEC\vcl2py.pl" Vital="yes"  DiskId="1" />
-                        <File Id="_CEA2AAB6BC871AB7C038C11790FDEF93" Name="VOCOLA.INI" LongName="vocola.ini" src="..\VOCOLA\EXEC\vocola.ini" Vital="yes"  DiskId="1" />
-                        <File Id="_F4E0E81C4B82913E81D8CA8C71AF7E30" Name="VCL2PY.EXE" LongName="vcl2py.exe" src="..\VOCOLA\EXEC\vcl2py.exe" Vital="yes"  DiskId="1" />
-                        <File Id="_FEDB2501D518751F7F35E5862E5C8721" Name="DVC2VCL.PL" LongName="dvc2vcl.pl" src="..\VOCOLA\EXEC\dvc2vcl.pl" Vital="yes"  DiskId="1" />
-                    </Component>
-                    <Directory Id="D2.0" Name="2.0">
-                        <Component Id="CV20" Guid="6B5E877C-BCD2-36C2-DCF3-CBC7DC0CEB3F" KeyPath="yes">
-                            <File Id="_C8E6A0592EA292438309FCF0D6895484" Name="SIMPSCRP.PYD" LongName="simpscrp.pyd" src="..\VOCOLA\EXEC\2.0\simpscrp.pyd" Vital="yes"  DiskId="1" />
-                        </Component>
-                    </Directory>
-                    <Directory Id="D2.2" Name="2.2">
-                        <Component Id="CV22" Guid="372A30E0-7CE1-B723-551D-BC0542F7862A" KeyPath="yes">
-                            <File Id="_2C4CFF1A6B78A9ECC94566E6C6B44F8F" Name="SIMPSCRP.PYD" LongName="simpscrp.pyd" src="..\VOCOLA\EXEC\2.2\simpscrp.pyd" Vital="yes"  DiskId="1" />
-                        </Component>
-                    </Directory>
-                    <Directory Id="D2.3" Name="2.3">
-                        <Component Id="CV23" Guid="EC30F4BC-9501-74A9-1AA3-A2E81F2586E1" KeyPath="yes">
-                            <File Id="_5110FD80CC5CBE92569F099AA1D6602D" Name="SIMPSCRP.PYD" LongName="simpscrp.pyd" src="..\Simpscrp\Release\simpscrp.dll" Vital="yes"  DiskId="1" />
-                        </Component>
-                    </Directory>
-                </Directory>
-                <Directory Id="DCommands" Name="COMMANDS" LongName="Commands">
-                    <Component Id="CVCommands" Guid="A4823EA2-9A51-E178-EA7C-0697CF47E339" KeyPath="yes">
-                        <File Id="_92CB6328BDED47D23BBD489B31339E29" Name="VCLEDIT.VCL" LongName="vcledit.vcl" src="..\VOCOLA\COMMANDS\vcledit.vcl" Vital="yes"  DiskId="1" />
-                    </Component>
-                </Directory>
-                <Directory Id="DVSamples" Name="SAMPLES" LongName="Samples">
-                    <Component Id="CVSamples" Guid="C547AAA2-6F53-6D70-9284-8423952F5E8A" KeyPath="yes">
-                        <File Id="_00B8AFF5DC6DEE05D61C937208F47A5B" Name="FOLDERS.VCH" LongName="folders.vch" src="..\VOCOLA\SAMPLES\folders.vch" Vital="yes"  DiskId="1" />
-                        <File Id="_1DCA1E1B90241A6D7BA622EDFA046B31" Name="OUTLOOK.VCL" LongName="outlook.vcl" src="..\VOCOLA\SAMPLES\outlook.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_222BA9C4A96546715432A36E9EDAEBA1" Name="NETSCAPE.VCL" LongName="netscape.vcl" src="..\VOCOLA\SAMPLES\netscape.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_3FE994DF703638650974072E7547597C" Name="MOZILLA.VCL" LongName="mozilla.vcl" src="..\VOCOLA\SAMPLES\mozilla.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_4600055D4778A807A3C9FEEBE0603C01" Name="IEXPLORE.VCL" LongName="iexplore.vcl" src="..\VOCOLA\SAMPLES\iexplore.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_589B155775188AFD994FFFEA9DD7B32E" Name="EXPLORER.VCL" LongName="explorer.vcl" src="..\VOCOLA\SAMPLES\explorer.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_5D3FD0F524321ABD99BEB91CBA9A8E98" Name="EMACS.VCL" LongName="emacs.vcl" src="..\VOCOLA\SAMPLES\emacs.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_63451BCD156761A76818357493761A03" Name="VNCVIE1.VCL" LongName="vncviewer.vcl" src="..\VOCOLA\SAMPLES\vncviewer.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_6404BEF0079512A804D5DC7073B025B3" Name="WINWORD.VCL" LongName="winword.vcl" src="..\VOCOLA\SAMPLES\winword.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_6712D05C1BDCCE5F06B6B93EEE7C85F9" Name="URLS.VCH" LongName="URLs.vch" src="..\VOCOLA\SAMPLES\URLs.vch" Vital="yes"  DiskId="1" />
-                        <File Id="_7B26C01D0ADB550B4F0F8C86AAC0AD07" Name="FILES.VCH" LongName="files.vch" src="..\VOCOLA\SAMPLES\files.vch" Vital="yes"  DiskId="1" />
-                        <File Id="_8929F46E824970D858E7A3273711A3C8" Name="DREAMW1.VCL" LongName="dreamweaver.vcl" src="..\VOCOLA\SAMPLES\dreamweaver.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_89F5D5E632259054E7DF4BE5D0FEC65E" Name="REMOTE1.VCH" LongName="remoteControl.vch" src="..\VOCOLA\SAMPLES\remoteControl.vch" Vital="yes"  DiskId="1" />
-                        <File Id="_8EEE02BEF47E5AB610B48BD2AED89E58" Name="NTVDM.VCL" LongName="ntvdm.vcl" src="..\VOCOLA\SAMPLES\ntvdm.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_96CEAE7D44EC5F42AED4BB48D1A90092" Name="_VOCOLA.VCL" LongName="_vocola.vcl" src="..\VOCOLA\SAMPLES\_vocola.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_B1E73FB3392536D7AB687C6B1F2EE42E" Name="UTILIT1.VCH" LongName="utilities.vch" src="..\VOCOLA\SAMPLES\utilities.vch" Vital="yes"  DiskId="1" />
-                        <File Id="_C207F9E10D98938AC65AD2D2F79E6CF4" Name="MSDEV.VCL" LongName="msdev.vcl" src="..\VOCOLA\SAMPLES\msdev.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_C4CD1F0CC723476F32E33F2289A93C7D" Name="MSTSC.VCL" LongName="mstsc.vcl" src="..\VOCOLA\SAMPLES\mstsc.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_CCB42FFB38AA41A4DCB8C491657E34C5" Name="VISIO32.VCL" LongName="visio32.vcl" src="..\VOCOLA\SAMPLES\visio32.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_D97C6D864E99AD52FD5F5269FDE82291" Name="NLNOTES.VCL" LongName="nlnotes.vcl" src="..\VOCOLA\SAMPLES\nlnotes.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_F44B12FFEF7C1906C0C154B53AC07C45" Name="NOTEPAD.VCL" LongName="notepad.vcl" src="..\VOCOLA\SAMPLES\notepad.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_F773FA5AB725F9D035E21095BB0A0CA1" Name="NATSPEAK.VCL" LongName="natspeak.vcl" src="..\VOCOLA\SAMPLES\natspeak.vcl" Vital="yes"  DiskId="1" />
-                        <File Id="_F94D078C4AA6815F80BF7731D42DAAB6" Name="KEYS.VCH" LongName="keys.vch" src="..\VOCOLA\SAMPLES\keys.vch" Vital="yes"  DiskId="1" />
-                    </Component>
-                </Directory>
-                <Directory Id="DDoc" Name="DOC" LongName="Doc">
-                    <Component Id="CVDoc" Guid="5C2D9D5A-0FD2-3C5E-B0DF-B37D362203CC" KeyPath="yes">
-                        <File Id="_070011167049736E8A26FB80B24ABC28" Name="INDEX2.HTM" LongName="index.html" src="..\VOCOLA\DOC\index.html" Vital="yes"  DiskId="1" />
-                        <File Id="_09D103E946D6C03444D63A990910D8B5" Name="JOELSR1.GIF" LongName="JoelsRightArrowLight.gif" src="..\VOCOLA\DOC\JoelsRightArrowLight.gif" Vital="yes"  DiskId="1" />
-                        <File Id="_0F97EE11B4FABB68DB209B8934AF1345" Name="MYRSIS1.HTM" LongName="MyRSIStory.html" src="..\VOCOLA\DOC\MyRSIStory.html" Vital="yes"  DiskId="1" />
-                        <File Id="_230B42E2F2321A9AFB832C0573EC8634" Name="KEYSTR1.HTM" LongName="KeystrokeCommands.html" src="..\VOCOLA\DOC\KeystrokeCommands.html" Vital="yes"  DiskId="1" />
-                        <File Id="_239E182E9E2E6C63A0AC1C01E93998E0" Name="COMMAN1.HTM" LongName="CommandSequences.html" src="..\VOCOLA\DOC\CommandSequences.html" Vital="yes"  DiskId="1" />
-                        <File Id="_2D2076EA8F7DB4098103B60CEAF54062" Name="BUILTI1.HTM" LongName="BuiltinFunctions.html" src="..\VOCOLA\DOC\BuiltinFunctions.html" Vital="yes"  DiskId="1" />
-                        <File Id="_2E292B3D67E9127174930FC31FBACB91" Name="SUBSTI1.HTM" LongName="SubstitutingActions.html" src="..\VOCOLA\DOC\SubstitutingActions.html" Vital="yes"  DiskId="1" />
-                        <File Id="_3D11A635E2C12A71D75EE5F23296FE16" Name="OPTION1.HTM" LongName="OptionalWords.html" src="..\VOCOLA\DOC\OptionalWords.html" Vital="yes"  DiskId="1" />
-                        <File Id="_4875AE903D8BB1E9BE40185C7C28B3A3" Name="TROUBL1.HTM" LongName="Troubleshooting.html" src="..\VOCOLA\DOC\Troubleshooting.html" Vital="yes"  DiskId="1" />
-                        <File Id="_60A85FEF544C7FDF9101343B3814E35B" Name="WISHLI1.HTM" LongName="WishList.html" src="..\VOCOLA\DOC\WishList.html" Vital="yes"  DiskId="1" />
-                        <File Id="_7018CB1ADE6E190BECDD28B88F7FC927" Name="LANGUA1.HTM" LongName="LanguageTutorial.html" src="..\VOCOLA\DOC\LanguageTutorial.html" Vital="yes"  DiskId="1" />
-                        <File Id="_72478470106E7F70CC1C5D0CECAC9F04" Name="USINGA1.HTM" LongName="UsingAlternatives.html" src="..\VOCOLA\DOC\UsingAlternatives.html" Vital="yes"  DiskId="1" />
-                        <File Id="_7C681738E074CD083FF5C889596AB27E" Name="VOICECMD.PDF" LongName="voicecmd.pdf" src="..\VOCOLA\DOC\voicecmd.pdf" Vital="yes"  DiskId="1" />
-                        <File Id="_849F99C3D52269145179C8B0FE18F787" Name="CONTEX1.HTM" LongName="ContextualCommands.html" src="..\VOCOLA\DOC\ContextualCommands.html" Vital="yes"  DiskId="1" />
-                        <File Id="_870CFAD162DF90264FFA43FFD9996D15" Name="SUPPOR1.HTM" LongName="Support.html" src="..\VOCOLA\DOC\Support.html" Vital="yes"  DiskId="1" />
-                        <File Id="_8D30D3651676842D5BF41552D7042AD4" Name="CONVER1.HTM" LongName="ConvertingDVCFiles.html" src="..\VOCOLA\DOC\ConvertingDVCFiles.html" Vital="yes"  DiskId="1" />
-                        <File Id="_A15EC1F014A41967CA2CA49DB000474E" Name="FUNCTI1.HTM" LongName="FunctionCalls.html" src="..\VOCOLA\DOC\FunctionCalls.html" Vital="yes"  DiskId="1" />
-                        <File Id="_B5E51F01669D69F2326DACB54FD7AED1" Name="CAPTUR1.HTM" LongName="CapturingDictation.html" src="..\VOCOLA\DOC\CapturingDictation.html" Vital="yes"  DiskId="1" />
-                        <File Id="_BD6D6126F0FFDF91C758AB37C860EA7E" Name="COMMEN1.HTM" LongName="Comments.html" src="..\VOCOLA\DOC\Comments.html" Vital="yes"  DiskId="1" />
-                        <File Id="_BD7E4511D975264B1D8D55B3A02B16A2" Name="JOELSR2.GIF" LongName="JoelsRightArrowDark.gif" src="..\VOCOLA\DOC\JoelsRightArrowDark.gif" Vital="yes"  DiskId="1" />
-                        <File Id="_C4D975B7DF025681DEE063C567B311A3" Name="DEFINI1.HTM" LongName="DefiningFunctions.html" src="..\VOCOLA\DOC\DefiningFunctions.html" Vital="yes"  DiskId="1" />
-                        <File Id="_C8EA3438D16B61F4F14657BF363F61F0" Name="ALTERN1.HTM" LongName="AlternativesAndReferences.html" src="..\VOCOLA\DOC\AlternativesAndReferences.html" Vital="yes"  DiskId="1" />
-                        <File Id="_C9121AFD7D9F626F5CC15965C0B103D0" Name="USINGV1.HTM" LongName="UsingVocola.html" src="..\VOCOLA\DOC\UsingVocola.html" Vital="yes"  DiskId="1" />
-                        <File Id="_CCADFD44A8ABBB741AEBDCB1327ADCE5" Name="QUOTES1.HTM" LongName="QuotesAndWhitespace.html" src="..\VOCOLA\DOC\QuotesAndWhitespace.html" Vital="yes"  DiskId="1" />
-                        <File Id="_D03ACF7B1D4385942F514D2CE0DBDE77" Name="INSTAL1.HTM" LongName="InstallVocola.html" src="..\VOCOLA\DOC\InstallVocola.html" Vital="yes"  DiskId="1" />
-                        <File Id="_D3016D2BC9FEB5ABD004063D86CC0E04" Name="DOWNLO1.HTM" LongName="DownloadVocola.html" src="..\VOCOLA\DOC\DownloadVocola.html" Vital="yes"  DiskId="1" />
-                        <File Id="_D4D7D8BAEC5801DFE6D8A65B7DECDE44" Name="EXAMPL1.HTM" LongName="ExampleFile.html" src="..\VOCOLA\DOC\ExampleFile.html" Vital="yes"  DiskId="1" />
-                        <File Id="_D5A4A595C4E137626A01D4DF81FC42B2" Name="INCLUD1.HTM" LongName="IncludeStatements.html" src="..\VOCOLA\DOC\IncludeStatements.html" Vital="yes"  DiskId="1" />
-                        <File Id="_DA9BF3404531B2A508C2FAA4F87588B7" Name="VOCOLA1.HTM" LongName="VocolaVersions.html" src="..\VOCOLA\DOC\VocolaVersions.html" Vital="yes"  DiskId="1" />
-                        <File Id="_E23D38AA7FF5EA08F0CB303EC246C3CE" Name="DEFINI2.HTM" LongName="DefiningVariables.html" src="..\VOCOLA\DOC\DefiningVariables.html" Vital="yes"  DiskId="1" />
-                        <File Id="_ED0D26C627DBA6484450C1DFFD5CF98B" Name="ALL1.HTM" LongName="all.html" src="..\VOCOLA\DOC\all.html" 	Vital="yes"  DiskId="1" />
-                        <File Id="_F174374AF24A47B7CEC62A5A131BE1C9" Name="VOICER1.HTM" LongName="VoiceResources.html" src="..\VOCOLA\DOC\VoiceResources.html" Vital="yes"  DiskId="1" />
-                    </Component>
-                </Directory>
-            </Directory> <!-- end Vocola -->
-
-            
-            
-        </DirectoryRef>
-    </Fragment>
+</DirectoryRef>
+</Fragment>
 </Wix>
 
+<!--
+<DirectoryRef Id="PersonalFolder" >
+        	<Component Id="CPFRemove" Guid="30D03A42-1C65-417B-BCA2-F3ACFA75511D"  KeyPath="yes" >
+		
+	</Component>
+
+</DirectoryRef>
+-->
+
     <!--
-        <DirectoryRef Id="PersonalFolder" >
-        			<Component Id="CPFRemove" Guid="30D03A42-1C65-417B-BCA2-F3ACFA75511D"  KeyPath="yes" >
-				
-			</Component>
+        <Shortcut Id="_C7AB172738F24D0FA46C9783523E3268" Directory="_CC7952BDC2194E818AB4858959DAF28B"
+            Name="DOCUME1" LongName="Documentation" Target="DefaultFeature" Icon="_26e91eb.exe" IconIndex="0"
+            Show="normal" WorkingDirectory="TARGETDIR" />
+<Shortcut Id="_A69AAD48EA6B4C2491502CB4D7814E8A" Directory="_CC7952BDC2194E818AB4858959DAF28B"
+            Name="CONFIG1" LongName="Configure NatLink &amp; Vocola" Target="DefaultFeature" Icon="_5af141bb.exe"
+            IconIndex="0" Show="normal" WorkingDirectory="TARGETDIR" />
 
-        </DirectoryRef>
-        -->
-    
-            <!--
-                <Shortcut Id="_C7AB172738F24D0FA46C9783523E3268" Directory="_CC7952BDC2194E818AB4858959DAF28B"
-                    Name="DOCUME1" LongName="Documentation" Target="DefaultFeature" Icon="_26e91eb.exe" IconIndex="0"
-                    Show="normal" WorkingDirectory="TARGETDIR" />
-                    <Shortcut Id="_A69AAD48EA6B4C2491502CB4D7814E8A" Directory="_CC7952BDC2194E818AB4858959DAF28B"
-                    Name="CONFIG1" LongName="Configure NatLink &amp; Vocola" Target="DefaultFeature" Icon="_5af141bb.exe"
-                    IconIndex="0" Show="normal" WorkingDirectory="TARGETDIR" />
+            -->
+                <!-- 
+                                        <File Id="_C92584BE531A47BE926656ACF52ECEF5" Name="MSVCR71D.DLL" LongName="msvcr71d.dll" src="..\MacroSystem\core\msvcr71d.dll" Vital="yes"   />
 
-                    -->
-                        <!-- 
-                                                <File Id="_C92584BE531A47BE926656ACF52ECEF5" Name="MSVCR71D.DLL" LongName="msvcr71d.dll" src="..\MacroSystem\core\msvcr71d.dll" Vital="yes"  DiskId="1" />
-
-	                        <File Id="_09A2D7BA1C449E9D50C1AC3116080C9C" Name="NATSPE1.CON" LongName="natspeak.exe.config" src="..\MacroSystem\core\natspeak.exe.config" Vital="yes"  DiskId="1" /> 
-		                    <File Id="_5DD0E5D7BCCBEA87297823BD1D9BA39E" Name="XPCOMM1.DLL" LongName="XPCommonControls.DLL" src="..\MacroSystem\core\XPCommonControls.DLL" Vital="yes"  DiskId="1" />
-                        -->
-                <!--	<Component Id="C__40B8D5A92C4F90C4D6DF972C68E44260" Guid="72B614C9-306C-334D-773C-5351B0710646">
-                        <File Id="_40B8D5A92C4F90C4D6DF972C68E44260" Name="MESSAG1.DLL" LongName="MessageWindow.DLL" src="..\MacroSystem\core\MessageWindow.DLL" Vital="yes"
-                             Assembly=".net" DiskId="1" />
-                    </Component>
-                    -->
-                <!--
-            <Component Id="C__746C69616E6711D38E0D00C04F6837D0" Guid="
-                >
-                <RemoveFolder Id="_2F7DCA62478541879E2EBF73FD049461" Directory="_D53579BA81EE4A6F931CBE72595BC5CD"
-                    On="uninstall" />
-                <RemoveFolder Id="_616F1A7182EB40C9939BC68E9665E874" Directory="_F7804789736F4A9DAF9F8014E181E840"
-                    On="uninstall" />
-                <RemoveFolder Id="_E35D3347723B43D7B13F7C68553582A4" Directory="_CC7952BDC2194E818AB4858959DAF28B"
-                    On="uninstall" />
+	                <File Id="_09A2D7BA1C449E9D50C1AC3116080C9C" Name="NATSPE1.CON" LongName="natspeak.exe.config" src="..\MacroSystem\core\natspeak.exe.config" Vital="yes"   /> 
+		            <File Id="_5DD0E5D7BCCBEA87297823BD1D9BA39E" Name="XPCOMM1.DLL" LongName="XPCommonControls.DLL" src="..\MacroSystem\core\XPCommonControls.DLL" Vital="yes"   />
+                -->
+        <!--	<Component Id="C__40B8D5A92C4F90C4D6DF972C68E44260" Guid="72B614C9-306C-334D-773C-5351B0710646">
+                <File Id="_40B8D5A92C4F90C4D6DF972C68E44260" Name="MESSAG1.DLL" LongName="MessageWindow.DLL" src="..\MacroSystem\core\MessageWindow.DLL" Vital="yes"
+                        Assembly=".net"  />
             </Component>
             -->
-            <!--
+        <!--
+    <Component Id="C__746C69616E6711D38E0D00C04F6837D0" Guid="
+        >
+        <RemoveFolder Id="_2F7DCA62478541879E2EBF73FD049461" Directory="_D53579BA81EE4A6F931CBE72595BC5CD"
+            On="uninstall" />
+        <RemoveFolder Id="_616F1A7182EB40C9939BC68E9665E874" Directory="_F7804789736F4A9DAF9F8014E181E840"
+            On="uninstall" />
+        <RemoveFolder Id="_E35D3347723B43D7B13F7C68553582A4" Directory="_CC7952BDC2194E818AB4858959DAF28B"
+            On="uninstall" />
+    </Component>
+    -->
+    <!--
 
-            <Component Id="C__A75ABE22AB0F49E387B84892C41E02CE" Guid="021B59EA-F6CE-56CF-145B-CFF6A6BE11F4"
-                >
-                <CreateFolder />
-                <Shortcut Id="_6BD0D06609BF4861A138CC055EBC5A71" Directory="_CC7952BDC2194E818AB4858959DAF28B"
-                    Name="NATLIN2" LongName="NatLink Program Files" Target="[TARGETDIR]" Icon="_16496df1.exe"
-                    IconIndex="0" Show="normal" WorkingDirectory="TARGETDIR" />
-            </Component>
-                    -->
-                    <!-- <File Id="_14A6EEBE3E9544B6A43F7825508A054A" Name="INFO.ICO" src="..\VCLEDIT\INFO.ICO"
-                        Vital="yes"  DiskId="1" />
-                    <File Id="_78B0AE043ACC4B26885771B954C732A1" Name="EXPLORER.ICO" src="..\VCLEDIT\EXPLORER.ICO"
-                        Vital="yes"  DiskId="1" /> -->
+    <Component Id="C__A75ABE22AB0F49E387B84892C41E02CE" Guid="021B59EA-F6CE-56CF-145B-CFF6A6BE11F4"
+        >
+        <CreateFolder />
+    </Component>
+            -->
+            <!-- <File Id="_14A6EEBE3E9544B6A43F7825508A054A" Name="INFO.ICO" src="..\VCLEDIT\INFO.ICO"
+                Vital="yes"   />
+            <File Id="_78B0AE043ACC4B26885771B954C732A1" Name="EXPLORER.ICO" src="..\VCLEDIT\EXPLORER.ICO"
+                Vital="yes"   /> -->

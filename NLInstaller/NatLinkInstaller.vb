@@ -59,8 +59,9 @@ Imports System.Configuration.Install
 		MyBase.Commit(savedState)
 
 		InitLogListener()
-		Trace.Write("Installer -- Commit ")
-		Trace.WriteLine(System.Reflection.Assembly.GetExecutingAssembly.FullName)
+        Trace.Write("Installer -- Commit ")
+        Dim dt As DateTime = AssemblyBuildDate(Me.GetType.Assembly)
+        Trace.WriteLine(Me.GetType.Assembly.FullName + dt.ToShortDateString + " " + dt.ToShortTimeString)
 
 		Trace.Indent()
 		Try
@@ -196,5 +197,35 @@ Imports System.Configuration.Install
 			CloseLogListener()
 		End Try
 	End Sub
+
+    Private Function AssemblyBuildDate(ByVal objAssembly As System.Reflection.Assembly, _
+           Optional ByVal blnForceFileDate As Boolean = False) As DateTime
+        Dim objVersion As System.Version = objAssembly.GetName.Version
+        Dim dtBuild As DateTime
+
+        If blnForceFileDate Then
+            dtBuild = AssemblyFileTime(objAssembly)
+        Else
+            dtBuild = CType("01/01/2000", DateTime). _
+             AddDays(objVersion.Build). _
+             AddSeconds(objVersion.Revision * 2)
+            If TimeZone.IsDaylightSavingTime(DateTime.Now, TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year)) Then
+                dtBuild = dtBuild.AddHours(1)
+            End If
+            If dtBuild > DateTime.Now Or objVersion.Build < 730 Or objVersion.Revision = 0 Then
+                dtBuild = AssemblyFileTime(objAssembly)
+            End If
+        End If
+
+        Return dtBuild
+    End Function
+    Private Function AssemblyFileTime(ByVal objAssembly As System.Reflection.Assembly) As DateTime
+        Try
+            Return System.IO.File.GetLastWriteTime(objAssembly.Location)
+        Catch ex As Exception
+            Return DateTime.MaxValue
+        End Try
+    End Function
+
 
 End Class

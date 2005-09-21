@@ -123,6 +123,12 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "AssemblyInfoCommon.vb"
+                    Link = "..\AssemblyInfoCommon.vb"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "DLLRegister.vb"
                     SubType = "Code"
                     BuildAction = "Compile"
