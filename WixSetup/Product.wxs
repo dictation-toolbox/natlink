@@ -109,6 +109,8 @@
         <Property Id="BROWSER">
             <RegistrySearch Id='DefaultBrowser' Type='raw' Root='HKCR' Key='http\shell\open\command' />
         </Property>
+        <Property Id="ALLUSERS">2</Property>
+        <Property Id="REBOOT">ReallySuppress</Property>
 
 
 

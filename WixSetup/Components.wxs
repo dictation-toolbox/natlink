@@ -44,10 +44,6 @@
 				</Extension>
             
 			</ProgId> 	
-			<!--
-			<ProgId  Id="Vocola.vch" Description="NatPython Voice commands header"  Icon="[NatLink.ico]"   >
-				</ProgId> 
-            -->
         </Component>
     </Directory>
     <Directory Id="DMiscScrips" Name="MISCSC1" LongName="MiscScripts">
@@ -91,9 +87,12 @@
 	    <Directory Id="DCore" Name="CORE" LongName="core">
 
             <Component Id="CNatLinkDll" Guid="5A490DCE-3E8E-7D37-AE18-E8FC663F4382" DiskId="1">
-                <File Id="FNatLink" Name="FNATLINK.DLL" LongName="natlink.dll" src="..\natlinkCore\Release\natlink.dll" Vital="yes"
-                    Assembly="no"  KeyPath="yes"  />
-                
+                <File Id="FNatLink" Name="FNATLINK.DLL" LongName="natlink.dll" src="..\natlinkCore\Release\natlink.dll" Vital="yes" Assembly="no"  KeyPath="yes">
+					<Class Id="DD990001-BB89-11D2-B031-0060088DC929"  Advertise="no" 
+						Description="Python Subsystem for Dragon NaturallySpeaking"
+						  Context="InprocServer32"
+						   ThreadingModel="apartment" /> 
+				</File>                 
                 <File Id="_EB9EA4B5A5A5AB2C662E3DE44D408515" Name="CALLDLL.PYD" LongName="calldll.pyd" src="..\calldll\release\calldll.pyd" Vital="yes"   />
                 <File Id="_3603B3A1AEADDB621E23E2935B632FD6" Name="WINDLL.PY" LongName="windll.py" src="..\calldll\windll.py" Vital="yes"   />
                 <File Id="_4CD80A10279A57EF787D7CC5EC5A5F5C" Name="WINDLL1.TXT" LongName="windll.py LICENSE.txt" src="..\calldll\windll.py LICENSE.txt" Vital="yes"   />
@@ -213,55 +212,3 @@
 </DirectoryRef>
 </Fragment>
 </Wix>
-
-<!--
-<DirectoryRef Id="PersonalFolder" >
-        	<Component Id="CPFRemove" Guid="30D03A42-1C65-417B-BCA2-F3ACFA75511D"  KeyPath="yes" >
-		
-	</Component>
-
-</DirectoryRef>
--->
-
-    <!--
-        <Shortcut Id="_C7AB172738F24D0FA46C9783523E3268" Directory="_CC7952BDC2194E818AB4858959DAF28B"
-            Name="DOCUME1" LongName="Documentation" Target="DefaultFeature" Icon="_26e91eb.exe" IconIndex="0"
-            Show="normal" WorkingDirectory="TARGETDIR" />
-<Shortcut Id="_A69AAD48EA6B4C2491502CB4D7814E8A" Directory="_CC7952BDC2194E818AB4858959DAF28B"
-            Name="CONFIG1" LongName="Configure NatLink &amp; Vocola" Target="DefaultFeature" Icon="_5af141bb.exe"
-            IconIndex="0" Show="normal" WorkingDirectory="TARGETDIR" />
-
-            -->
-                <!-- 
-                                        <File Id="_C92584BE531A47BE926656ACF52ECEF5" Name="MSVCR71D.DLL" LongName="msvcr71d.dll" src="..\MacroSystem\core\msvcr71d.dll" Vital="yes"   />
-
-	                <File Id="_09A2D7BA1C449E9D50C1AC3116080C9C" Name="NATSPE1.CON" LongName="natspeak.exe.config" src="..\MacroSystem\core\natspeak.exe.config" Vital="yes"   /> 
-		            <File Id="_5DD0E5D7BCCBEA87297823BD1D9BA39E" Name="XPCOMM1.DLL" LongName="XPCommonControls.DLL" src="..\MacroSystem\core\XPCommonControls.DLL" Vital="yes"   />
-                -->
-        <!--	<Component Id="C__40B8D5A92C4F90C4D6DF972C68E44260" Guid="72B614C9-306C-334D-773C-5351B0710646">
-                <File Id="_40B8D5A92C4F90C4D6DF972C68E44260" Name="MESSAG1.DLL" LongName="MessageWindow.DLL" src="..\MacroSystem\core\MessageWindow.DLL" Vital="yes"
-                        Assembly=".net"  />
-            </Component>
-            -->
-        <!--
-    <Component Id="C__746C69616E6711D38E0D00C04F6837D0" Guid="
-        >
-        <RemoveFolder Id="_2F7DCA62478541879E2EBF73FD049461" Directory="_D53579BA81EE4A6F931CBE72595BC5CD"
-            On="uninstall" />
-        <RemoveFolder Id="_616F1A7182EB40C9939BC68E9665E874" Directory="_F7804789736F4A9DAF9F8014E181E840"
-            On="uninstall" />
-        <RemoveFolder Id="_E35D3347723B43D7B13F7C68553582A4" Directory="_CC7952BDC2194E818AB4858959DAF28B"
-            On="uninstall" />
-    </Component>
-    -->
-    <!--
-
-    <Component Id="C__A75ABE22AB0F49E387B84892C41E02CE" Guid="021B59EA-F6CE-56CF-145B-CFF6A6BE11F4"
-        >
-        <CreateFolder />
-    </Component>
-            -->
-            <!-- <File Id="_14A6EEBE3E9544B6A43F7825508A054A" Name="INFO.ICO" src="..\VCLEDIT\INFO.ICO"
-                Vital="yes"   />
-            <File Id="_78B0AE043ACC4B26885771B954C732A1" Name="EXPLORER.ICO" src="..\VCLEDIT\EXPLORER.ICO"
-                Vital="yes"   /> -->

@@ -67,7 +67,7 @@ Imports System.Configuration.Install
 		Try
 			Dim nle As New NatLinkEnv
 			Trace.Flush()
-			nle.UnRegisterNatLinkDLL()
+            'nle.UnRegisterNatLinkDLL()
 			nle.RemoveOldNatLinkFiles()
 			nle.EnableNL()
 			Trace.Flush()
