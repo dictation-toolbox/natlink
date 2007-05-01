@@ -43,6 +43,7 @@
 
 import os
 import os.path
+import copy
 import string
 import struct
 from natlink import *
@@ -416,7 +417,7 @@ class GrammarBase(GramClassBase):
         self.activeRules.remove(ruleName)
 
     def activateSet(self, ruleNames, window=0, exclusive=None):
-        for x in self.activeRules:
+        for x in copy.copy(self.activeRules):
             if not x in ruleNames:
                 self.gramObj.deactivate(x)
                 self.activeRules.remove(x)

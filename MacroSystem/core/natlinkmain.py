@@ -1,4 +1,8 @@
+<<<<<<< natlinkmain.py
 __version__ = "$Revision$, $Date$, $Author$"
+=======
+__version__ = "$Revision$, $Date$, $Author$"
+>>>>>>> 1.4
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
@@ -319,9 +323,12 @@ prevModInfo = None
 def beginCallback(moduleInfo, checkAll=None):
     global loadedFiles, prevModInfo
     if debugCallback:
-        print 'beginCallback'
+        cbd = getCallbackDepth()
+        print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
+              (cbd, checkAll, checkForGrammarChanges)
     if getCallbackDepth() < 5:
         t0 = time.time()
+        
         if checkAll or checkForGrammarChanges:
             if debugCallback:
                 print 'check for changed files (all files)...'
