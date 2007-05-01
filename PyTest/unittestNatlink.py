@@ -429,24 +429,25 @@ class UnittestNatlink(unittest.TestCase):
         testForException(TypeError,"natlink.playString()")
         testForException(TypeError,"natlink.playString(1)")
         testForException(TypeError,"natlink.playString('','')")
-        
+        self.wait()
         natlink.playString('This is a test')
-        try:
-            testWindowContents('This is a test','playString')
-        except KeyboardInterrupt:
-            # This failure sometimes happens on Windows 2000
-            print
-            print '*******'
-            print 'One of the NatLink tests has failed.'
-            print
-            print 'This particular failure has been seen on Windows 2000 when'
-            print 'there is a problem switching to Dragon NaturallySpeaking.'
-            print
-            print 'To fix this:'
-            print '(1) Switch to the Dragon NaturallySpeaking window'
-            print '(2) Switch back to Python'
-            print '(3) Try this selftest again - testnatlink.run()'
-            raise ExitQuietly
+##        try:
+        self.wait()
+        testWindowContents('This is a test','playString')
+##        except KeyboardInterrupt:
+##            # This failure sometimes happens on Windows 2000
+##            print
+##            print '*******'
+##            print 'One of the NatLink tests has failed.'
+##            print
+##            print 'This particular failure has been seen on Windows 2000 when'
+##            print 'there is a problem switching to Dragon NaturallySpeaking.'
+##            print
+##            print 'To fix this:'
+##            print '(1) Switch to the Dragon NaturallySpeaking window'
+##            print '(2) Switch back to Python'
+##            print '(3) Try this selftest again - testnatlink.run()'
+##            raise ExitQuietly
 
         natlink.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
         testWindowContents('This is a testThis i','playString')
@@ -1416,7 +1417,7 @@ class UnittestNatlink(unittest.TestCase):
         testRecognition = self.doTestRecognition
         testForException =self.doTestForException
         # load the calculator again
-        time.sleep(5) # let the calculator recover from last test
+##        time.sleep(5) # let the calculator recover from last test
         natlink.execScript('AppBringUp "calc"')
         calcWindow = natlink.getCurrentModule()[2]
         print natlink.getCurrentModule()
@@ -1424,7 +1425,7 @@ class UnittestNatlink(unittest.TestCase):
         # Activate the grammar and try a test recognition
         testGram.load()
         testGram.activate(window=calcWindow)
-        time.sleep(0.2)
+        self.wait()
         testRecognition(['this','is','a','test','.\\period'])
         testGram.checkExperiment(1,'self',['this','is','a','test','.\\period'])
 
@@ -1505,7 +1506,7 @@ class UnittestNatlink(unittest.TestCase):
         # clean up
         testGram.unload()
         otherGram.unload()
-##        the test must close calc!
+##        the test must close calc! now closed in tearDown...
 ##        natlink.playString('{Alt+F4}')
         
     #---------------------------------------------------------------------------
@@ -1713,7 +1714,6 @@ class UnittestNatlink(unittest.TestCase):
 
         testGram = TestGrammar()
         testGram.initialize()
-        ## this test failed once (QH), I think because gotBegin was missed
         natlink.recognitionMimic(['test','test','run','1'])
         testGram.checkExperiment(['run','1'])
         
@@ -1892,13 +1892,14 @@ def dumpResult(testResult, logFile):
         mes = "all succesful"
         logFile.write(mes)
         return
+    logFile.write('\n--------------- errors -----------------\n')
     for case, tb in testResult.errors:
         logFile.write('\n---------- %s --------\n'% case)
         logFile.write(tb)
         
     logFile.write('\n--------------- failures -----------------\n')
     for case, tb in testResult.failures:
-        logFile.write('\n---------- %s --------\n')
+        logFile.write('\n---------- %s --------\n'% case)
         logFile.write(tb)
 
     
