@@ -1,8 +1,4 @@
-<<<<<<< natlinkmain.py
 __version__ = "$Revision$, $Date$, $Author$"
-=======
-__version__ = "$Revision$, $Date$, $Author$"
->>>>>>> 1.2
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
@@ -71,14 +67,6 @@ debugCallback = 0
 # This redirects stdout and stderr to a dialog box.
 #
 
-<<<<<<< natlinkmain.py
-=======
-debugLoad=1
-cmdLineStartup=0
-debugTiming=0
-debugCallback = 1
->>>>>>> 1.2
-
 class NewStdout:
     softspace=1
     def write(self,text):
@@ -93,7 +81,7 @@ if not cmdLineStartup:
     sys.stdout = NewStdout()
     sys.stderr = NewStderr()
 
-# checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
+# QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
 # otherwise no grammar change checking is performed, only at microphone toggle
 checkForGrammarChanges = 0
 
@@ -104,7 +92,7 @@ def setCheckForGrammarChanges(value):
 
 # start silent, set this to 0:
 natlinkmainPrintsAtEnd = 1
-
+## << QH added
 
     
 
@@ -121,7 +109,6 @@ baseDirectory = ''
 userName = ''
 userDirectory = ''
 
-<<<<<<< natlinkmain.py
 ##QH: additions for unimacro:
 DNSdirectory = ''
 DNSversion = ''
@@ -139,40 +126,8 @@ language = ''
 # service to trainuser.py:
 BaseModel = ''
 BaseTopic = ''
-
 #<<QH
 
-=======
-##QH: additions for unimacro:
-DNSdirectory = ''
-DNSversion = ''
-WindowsVersion = ''
-DNSmode = 0  # can be changed in grammarX by the setMode command to
-             # 1 dictate, 2 command, 3 numbers, 4 spell
-             # commands currently from _general7,
-             # is reset temporarily in DisplayMessage function.
-             # it is only safe when changing modes is performed through
-             # this setMode function
-
-# at start and at changeCallback (new user) get the current language:
-language = ''
-
-# service to trainuser.py:
-BaseModel = ''
-BaseTopic = ''
-
-# checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
-# otherwise no grammar change checking is performed, only at microphone toggle
-checkForGrammarChanges = 0
-
-def setCheckForGrammarChanges(value):
-    """switching on or off (1 or 0), for continuous checking or only a mic toggle"""
-    global checkForGrammarChanges
-    checkForGrammarChanges = value
-
-#<<QH
-
->>>>>>> 1.2
 #
 # We maintain a dictionary of all the modules which we have loaded.  The key
 # is the Python module name.  The value is the complete path to the loaded
@@ -639,18 +594,9 @@ try:
 except:
     sys.stderr.write( 'Error initializing natlinkmain\n' )
     traceback.print_exc()
-<<<<<<< natlinkmain.py
 
 if debugLoad:
     print "userDirectory: %s\nbaseDirectory: %s"% (userDirectory, baseDirectory)
     print "natlinkmain imported-----------------------------------"
 elif natlinkmainPrintsAtEnd:
     print 'natlinkmain started (imported)'
-=======
-
-if debugLoad:
-    print "userDirectory: %s\nbaseDirectory: %s"% (userDirectory, baseDirectory)
-    print "natlinkmain imported-----------------------------------"
-else:
-    print 'natlinkmain started (imported)'
->>>>>>> 1.2
