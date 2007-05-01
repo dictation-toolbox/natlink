@@ -342,10 +342,11 @@ class UnittestNatlink(unittest.TestCase):
     def doTestWindowContents(self, expected,testName=None):
         contents = self.getWindowContents()
         if contents != expected:
+            mes = 'Contents of window did not match expected text\nexpected: |%s|\ngot: |%s|'% \
+                  (expected, contents)
             if testName:
-                raise TestError('Contents of window did not match expected text, testing %s'%testName)
-            else:
-                raise TestError('Contents of window did not match expected text')
+                mes = mes + '\ntestname %s'% testName
+            self.fail(mes)
                 
     #---------------------------------------------------------------------------
     # Utility function which calls a routine and tests the return value
