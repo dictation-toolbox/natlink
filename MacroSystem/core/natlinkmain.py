@@ -1,8 +1,3 @@
-<<<<<<< natlinkmain.py
-__version__ = "$Revision$, $Date$, $Author$"
-=======
-__version__ = "$Revision$, $Date$, $Author$"
->>>>>>> 1.4
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
@@ -16,7 +11,7 @@ __version__ = "$Revision$, $Date$, $Author$"
 # extra information reported (language version, natspeak version, windows version etc)
 # checking not at each utterance (option, see below)
 # always printing a line when natlinkmain started (option)
-# see in documentation below
+# see in documentation below, and unittestNatlink.py in folder PyTest...
 #
 # April 1, 2000
 #   - fixed a bug where we did not unload files when we noticed that they
@@ -27,6 +22,7 @@ __version__ = "$Revision$, $Date$, $Author$"
 # throw an exception!
 
 ############################################################################
+__version__ = "$Revision$, $Date$, $Author$"
 #
 # natlinkmain
 #
