@@ -1,3 +1,4 @@
+__version__ = "$Revision$, $Date$, $Author$"
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
@@ -39,7 +40,7 @@
 # debugging to print information about when a module is loaded.
 #
 
-import sys
+import sys, time
 import string
 import os               # access to file information
 import os.path          # to parse filenames
@@ -47,7 +48,7 @@ import imp              # module reloading
 import re               # regular expression parsing    
 import traceback        # for printing exceptions
 import RegistryDict
-import win32con
+import win32con, win32api # win32api for unimacro
 from stat import *      # file statistics
 from natlink import *   
 
@@ -55,8 +56,10 @@ from natlink import *
 # This redirects stdout and stderr to a dialog box.
 #
 
-debugLoad=0
+debugLoad=1
 cmdLineStartup=0
+debugTiming=0
+debugCallback = 1
 
 class NewStdout:
     softspace=1
@@ -85,6 +88,35 @@ baseDirectory = ''
 
 userName = ''
 userDirectory = ''
+
+##QH: additions for unimacro:
+DNSdirectory = ''
+DNSversion = ''
+WindowsVersion = ''
+DNSmode = 0  # can be changed in grammarX by the setMode command to
+             # 1 dictate, 2 command, 3 numbers, 4 spell
+             # commands currently from _general7,
+             # is reset temporarily in DisplayMessage function.
+             # it is only safe when changing modes is performed through
+             # this setMode function
+
+# at start and at changeCallback (new user) get the current language:
+language = ''
+
+# service to trainuser.py:
+BaseModel = ''
+BaseTopic = ''
+
+# checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
+# otherwise no grammar change checking is performed, only at microphone toggle
+checkForGrammarChanges = 0
+
+def setCheckForGrammarChanges(value):
+    """switching on or off (1 or 0), for continuous checking or only a mic toggle"""
+    global checkForGrammarChanges
+    checkForGrammarChanges = value
+
+#<<QH
 
 #
 # We maintain a dictionary of all the modules which we have loaded.  The key
@@ -122,7 +154,8 @@ def loadFile(modName,searchPath,origName=None):
             sourceDate = getFileDate(fndName)
             objectDate = getFileDate(fndName+'c')
             if objectDate >= sourceDate:    
-                # file has not changed
+                if debugLoad:
+                    print 'not changed: %s (%s, %s)'% (fndName, sourceDate, objectDate)
                 fndFile.close()
                 return origName
         if debugLoad: print "Reloading", modName
@@ -139,6 +172,7 @@ def loadFile(modName,searchPath,origName=None):
 
     try:
         imp.load_module(modName,fndFile,fndName,fndDesc)
+                                    
         fndFile.close()
         return fndName
     except:
@@ -187,7 +221,7 @@ def safelyCall(modName,funcName):
 
 def findAndLoadFiles(curModule=None):
     global loadedFiles
-
+    
     if curModule:
         pat = re.compile(r"""
             ^(%s        # filename must match module name
@@ -217,6 +251,8 @@ def findAndLoadFiles(curModule=None):
             origName = loadedFiles[x]
         else:
             origName = None
+            if debugCallback:
+                print 'new file to load: %s'% x
         loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], origName)
 
     # Unload any files which have been deleted
@@ -243,8 +279,13 @@ def unloadEverything():
 #
 
 def loadModSpecific(moduleInfo,onlyIfChanged=0):
+    """load program specific grammars
+
+    onlyIfChanged: default 0: check always. 1: check only if new module.
+    So in beginCallback you can call this one with onlyIfChanged=1 in order to
+    minimise the reloadings.
+    """    
     global lastModule
-    
     # this extracts the module base name like "wordpad"
     curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
     if curModule and not (onlyIfChanged and curModule==lastModule):
@@ -264,13 +305,25 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
 # callback since that callback may be coming from code in the module we are
 # trying to reload (consider recognitionMimic).
 #
-
-def beginCallback(moduleInfo):
-    global loadedFiles
-    if getCallbackDepth() < 2:
-        for x in loadedFiles.keys():
-            loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], loadedFiles[x])
-        loadModSpecific(moduleInfo,1)
+prevModInfo = None
+def beginCallback(moduleInfo, checkAll=None):
+    global loadedFiles, prevModInfo
+    if debugCallback:
+        print 'beginCallback'
+    if getCallbackDepth() < 5:
+        t0 = time.time()
+        if checkAll or checkForGrammarChanges:
+            if debugCallback:
+                print 'check for changed files (all files)...'
+            for x in loadedFiles.keys():
+                loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], loadedFiles[x])
+            loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
+        else:
+            if debugCallback:
+                print 'check for changed files (only specific)'
+            loadModSpecific(moduleInfo, 1)  # only if changed module
+        if debugTiming:
+            print 'checked all grammar files: %.6f'% (time.time()-t0,)
         
 #
 # This callback is called when the user changes or when the microphone
@@ -282,18 +335,194 @@ def beginCallback(moduleInfo):
 
 def changeCallback(type,args):
     global userName, userDirectory
-    if type == 'mic' and args == 'on' and getCallbackDepth() < 2:
+    if debugCallback:
+        print 'changeCallback (unimacro testversion), type: %s, args: %s'% (type, args)
+    if type == 'mic' and args == 'on':
+        if debugCallback:
+            print 'findAndLoadFiles...'
         moduleInfo = getCurrentModule()
-        beginCallback(moduleInfo)
         findAndLoadFiles()
+        beginCallback(moduleInfo, checkAll=1)
         loadModSpecific(moduleInfo)
     if type == 'user' and userName != args[0]:
         userName, userDirectory = args
         moduleInfo = getCurrentModule()
-        #print "User changed to", userName
+        if debugCallback:
+            print "changeCallback, User changed to", userName
         unloadEverything()
+        changeUserDirectory()
+        extractLanguage()
+        extractBaseModel()
+        extractBaseTopic()
+        if debugLoad:
+            print 'BaseModel: %s'% BaseModel
+            print 'BaseTopic: %s'% BaseTopic
+        beginCallback(moduleInfo, checkAll=1)
         findAndLoadFiles()
         loadModSpecific(moduleInfo)
+    #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself
+    # the grammar should include a function like:
+    #def changeCallback():
+    #    if thisGrammar:
+    #        thisGrammar.cancelMode()
+    # and the grammar should have a cancelMode function that finishes exclusive mode.
+    # see _oops, _repeat, _control for examples
+    if not ((type == 'mic') and (args=='on')):
+        changeCallbackLoadedModules(type,args)
+##    else:
+##        # possibility to do things when changeCallBack with mic on: (experiment)
+##        changeCallbackLoadedModulesMicOn(type, args)
+
+
+def changeCallbackLoadedModules(type,args):
+    """BJ added, in order to intercept in a grammar (oops, repeat, control) in eg mic changed
+
+    in those cases the cancelMode can be called, so exclusiveMode is finished
+    """    
+    global loadedFiles
+    sysmodules = sys.modules
+    for x in loadedFiles.keys():
+        if loadedFiles[x]:
+            try: func = getattr(sysmodules[x], 'changeCallback')
+            except AttributeError: pass
+            else:
+##                print 'call changeCallback for: %s'% x
+                apply(func, [type,args])
+
+def changeCallbackLoadedModulesMicOn(type,args):
+    """QH, special behaviour implemented in eg control, if the mic goes on!
+
+    """    
+    global loadedFiles
+    sysmodules = sys.modules
+    for x in loadedFiles.keys():
+        if loadedFiles[x]:
+            try: func = getattr(sysmodules[x], 'changeCallbackMicOn')
+            except AttributeError: pass
+            else:
+##                print 'call changeCallback for: %s'% x
+                apply(func, [type,args])
+
+
+#QH>>when changing user (changeCallback)
+def changeUserDirectory():
+    """call also from changeCallback! QH
+    
+    the default userDirectory from = getCurrentUser() is deep within the filesystem
+    and unlikely to be useful to anyone
+    so we change it
+    """
+    global userDirectory, DNSdirectory, DNSuserDirectory
+    DNSuserDirectory = userDirectory
+    r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\NatLink")
+    if r:
+        if debugLoad: print "DNS user dir= " +userDirectory
+        if debugLoad: print "Registry user dir= " +r["UserDirectory"]
+        if os.path.isdir(r["UserDirectory"]): userDirectory = r["UserDirectory"]
+        if debugLoad: print "current user dir= "+userDirectory
+    else:
+        if debugLoad: print 'no registry keys found'
+    #QH additions for unimacro (can be invalid)
+    DNSdirectory = os.path.normpath(os.path.join(userDirectory, '../../../Program'))
+    if os.path.isdir(DNSdirectory):
+        if debugLoad: print 'DNSdirectory: ' + DNSdirectory
+    else:
+        DNSdirectory = ""
+        if debugLoad: print 'no DNSdirectory found, hope to find version number from registry;'
+
+
+#QH>> for unimacro:
+# get language version:
+languages = {"Nederlands": "nld",
+             "Français": "fra",
+             "Deutsch": "deu",
+             "UK English": "enx",
+             "US English": "enx",
+             "Australian English": "enx",
+             "Indian English": "enx",
+             "SEAsian English": "enx",
+             "Italiano": "ita"}
+
+def extractLanguage():
+    global language
+    dir = DNSuserDirectory
+    if debugLoad: print 'extract language from DNSuserDirectory: %s'% dir
+    lang = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\acoustic.ini" )
+    lang =  lang.split("|")[0].strip()
+    if debugLoad: print "language string from acoustic file: %s"% lang
+    if lang in languages:
+        language = languages[lang]
+    else:
+        print "unknown language:", lang
+        language = "xxx"
+
+def extractBaseModel():
+    global BaseModel
+    dir = DNSuserDirectory
+    if debugLoad: print 'extract BaseModel from DNSuserDirectory: %s'% dir
+    keyToModel = win32api.GetProfileVal( "Options", "Last Used Acoustics", "voice" , dir+"\\options.ini" )
+    BaseModel = win32api.GetProfileVal( "Base Acoustic", keyToModel , "" , dir+"\\acoustic.ini" )
+    
+def extractBaseTopic():
+    global BaseTopic
+    dir = DNSuserDirectory
+    if debugLoad: print 'extract BaseTopic from DNSuserDirectory: %s'% dir
+    keyToModel = win32api.GetProfileVal( "Options", "Last Used Topic", "" , dir+"\\options.ini" )
+    if keyToModel:
+        BaseTopic = win32api.GetProfileVal( "Base Topic", keyToModel , "" , dir+"\\topics.ini" )
+    else:
+        BaseTopic = "not found in ini files"
+##    basetopics = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\topics.ini" )
+    
+
+def extractDNSversion():
+    """extract version from inifile nssystem.ini
+
+    if not found 5 is assumed.
+    return as integer!
+    """    
+    global DNSversion
+    if os.path.isdir(DNSdirectory):
+        version = win32api.GetProfileVal( "Product Attributes", "Version" , "" ,
+                                      DNSdirectory+"\\nssystem.ini" )
+        if version:
+            DNSversion = int(version[0])
+        else:
+            DNSversion = 5
+    else:
+        r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
+        if "NaturallySpeaking8" in r:
+            DNSversion = 8
+        elif "NaturallySpeaking 7.1" in r:
+            DNSversion = 7
+        else:
+            if debugLoad: print 'no info from registry, assume version 8'
+            DNSversion = 8
+
+
+
+Wversions = {'1/4/10': '98',
+             '2/3/51': 'NT351',
+             '2/4/0':  'NT4',
+             '2/5/0':  '2000',
+             '2/5/1':  'XP',
+             }
+
+def extractWindowsVersion():
+    """get the rigth windows version
+
+    and put in global variable
+    """
+    global WindowsVersion
+    tup = win32api.GetVersionEx()
+    version = "%s/%s/%s"% (tup[3], tup[0], tup[1])
+    try:
+        WindowsVersion = Wversions[version]
+    except KeyError:
+        print '(yet) unknown Windows version: %s'% version
+        WindowsVersion = version
+       
+#<<QH
 
 ############################################################################
 #
@@ -321,16 +550,29 @@ try:
     
     # get the current user information from the natlink module
     userName, userDirectory = getCurrentUser()
-    
-    # the default userDirectory from = getCurrentUser() is deep within the filesystem
-    # and unlikely to be useful to anyone
-    # so we change it
-    r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\NatLink")
-    if r:
-        if debugLoad: print "DNS user dir= " +userDirectory
-        if debugLoad: print "Registry user dir= " +r["UserDirectory"]
-        if  os.path.isdir(r["UserDirectory"]): userDirectory = r["UserDirectory"]
-        if debugLoad: print "current user dir= "+userDirectory
+    changeUserDirectory()
+
+    # QH extra info for unimacro:::::
+    extractLanguage()
+    extractBaseModel()
+    extractBaseTopic()
+    extractDNSversion()
+    extractWindowsVersion()
+    print 'Starting natlinkmain with language: %s (BaseModel: %s, DNSversion: %s, WindowsVersion: %s)'% \
+          (language, BaseModel, DNSversion, WindowsVersion)
+    if debugLoad:
+        print 'natlinkmain CVS version: %s'% __version__.replace("$", "").strip()
+        print 'complete path: %s'% __file__
+    else:
+        v = __version__.split(',')[0]
+        v = v.strip("$Revision: ")
+        print 'natlinkmain CVS version: %s'% v
+    # for unimacro, in order to reach unimacro files to be imported:
+    if not userDirectory in sys.path:
+        print 'add userDirectory: %s to sys.path!'% userDirectory
+        sys.path.append(userDirectory)
+    print 'BaseModel: %s'% BaseModel
+    print 'BaseTopic: %s'% BaseTopic
 
     # load all global files in user directory and current directory
     findAndLoadFiles()
@@ -342,3 +584,9 @@ try:
 except:
     sys.stderr.write( 'Error initializing natlinkmain\n' )
     traceback.print_exc()
+
+if debugLoad:
+    print "userDirectory: %s\nbaseDirectory: %s"% (userDirectory, baseDirectory)
+    print "natlinkmain imported-----------------------------------"
+else:
+    print 'natlinkmain started (imported)'
