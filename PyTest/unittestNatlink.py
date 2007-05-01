@@ -10,12 +10,26 @@
 #
 #    Do *not* save your speech files after a test
 #
-# April 26, 2007 - QH
+# May 1, 2007 - QH
 # try to unify with unimacro version of natlinkmain/natlinkutils.
 # putting under unittest
-# fail to get testNatlinkMain working. testDictObj fails at different spots.
+# tests (a bit adapted at some places) now run if natConnect is done without threading
 #
-# testWordProns and testWordFuncs are adapted to (I think) version 9
+#   - if threading is put on some tests fail (testDictObj,
+#     failing to receive the proper callback functions)
+#   - test problems/artefacts: when touching something while testing (about 10 minutes it lasts, because after
+#     each test the user profile is re-opened), DragonPad cannot be got in front sometimes.
+#   - after testing an instance of natspeak may be running even after you close natspeak.
+#     close by hand(ctrl+alt+delete etc).
+#   - a (fresh) us test user is best, especially for the WordProns and WordFuncs tests
+#     (to ensure this, you can make a clean user profile and export it as 'test user us'.
+#     (import it before you start doing all the tests, though most tests will continue running even
+#      if you are less strict)
+#   - if problems arise, change the test function name you want to isolate to tttest.... and
+#     change at the bottom (about 10 lines from the bottom) the makeSuite line 'test' to 'tttest'.
+#     The testing will take only the function(s) you marked this way.
+#
+# testWordProns and testWordFuncs are adapted to (I think) version 9, see the docstrings there...
 #
 # April 16, 2005 - sw
 # got many, not all test working w/ v 8
@@ -51,8 +65,6 @@ nTries = 10
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # with spurious error (if set to 1), missing gotBegin and all that...
 logFileName = r"C:\program files\natlink\PyTest\testresult.txt"
-# for changeCallback test (not active)
-##callbackList = []
 
 #---------------------------------------------------------------------------
 # These tests should be run after we call natConnect
@@ -113,13 +125,12 @@ class UnittestNatlink(unittest.TestCase):
         natlink.natDisconnect()
         
     def log(self, t, doPlaystring=None):
-        print t
         # displayTest seems not to work:
         natlink.displayText(t, 0)
         if doPlaystring:
             natlink.playString(t+'\n')
-        if logFile:
-            logFile.write(t+'\n')
+        # do the global log function:
+        log(t)
 
 ##    def switchToNatSpeak(self):
 ##        natlink.execScript('HeardWord "Start","DragonPad"')
@@ -714,6 +725,30 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
         
     def testWordFuncs(self):
+        """tests the different vocabulary word functions.
+
+        These tests are a bit vulnerable and seem to have changed in more recent
+        versions of NatSpeak..
+
+        1. The word Szymanski is changed to Szymanskii, as the former one is now
+        in the vocabulary are in the backup vocabulary.
+
+        2. Properties of nonexisting words return 0 or None, they should return only None.
+        If the flag == 2 (second parameter of getWordInfo) (what does
+        "consider active non-dictation words" mean anyway? QH) a zero is sometimes returned.
+    
+        3. In order to prevent this testing error a special value (list) NoneOr0 is introduced,
+        the test passes if one of the two values is returned.
+
+        4. With version 8 a you property was introduced,
+        this one is added to the previous ones where appropriate.
+
+        5. A test that adds an existing word now succeeds, but should really fail.
+        In version 8 this was not yet (apparently) the case. So version 8 now fails this test.
+        see below
+
+        QH, april 2007 (natspeak 9.1 SP1)
+        """
         self.log("testWordFuncs", 1)
         # getWordInfo #
         testForException = self.doTestForException
@@ -792,8 +827,10 @@ class UnittestNatlink(unittest.TestCase):
         testForException(natlink.InvalidWord,"natlink.addWord('a\\b\\c\\d\\f')")
 
         testFuncReturn(0,"natlink.getWordInfo('hello')")
-##        testFuncReturn(0,"natlink.addWord('hello',dgnwordflag_nodelete)")
-## version 9??? QH:
+    ## version 8:
+    ##        testFuncReturn(0,"natlink.addWord('hello',dgnwordflag_nodelete)")
+    ##        testFuncReturn(0,"natlink.getWordInfo('hello')")
+    ## version 9 QH (this test now fails in version 8)
         testFuncReturn(1,"natlink.addWord('hello',dgnwordflag_nodelete)")
         testFuncReturn(dgnwordflag_nodelete,"natlink.getWordInfo('hello')")
         
@@ -929,6 +966,22 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
 
     def testWordProns(self):
+        """Tests word pronunciations
+
+        This test is very vulnerable for different versions of NatSpeak etc.
+
+        1. To avoid clashes with testWordFuncs after each test the user profile is reloaded
+
+        2. In version 9 apparently a new word is introduced with pronunciations,
+        originally it was not.  To prevent this details the pronunciations
+        that start with "frots" are ignored into testing (the word being "FrotzBlatz")
+
+        3. The last three tests are skipped, overlap partly with WordFuncs tests
+
+        may 2007, QH, natspeak 9.1 SP1 (Dutch package)
+
+        """        
+        
         self.log("testWordProns", 1)
 
         testForException = self.doTestForException
@@ -1491,11 +1544,16 @@ class UnittestNatlink(unittest.TestCase):
 
         # try to open an explicit file
         baseDirectory = os.path.split(sys.modules['natlinkutils'].__dict__['__file__'])[0]
-##        iconFile = baseDirectory+'/../NatlinkSource/idi_nodir.ico'
+        iconFile = baseDirectory+'/../NatlinkSource/idi_nodir.ico'
 ## special test icon, assume baseDirectory is on same level as PyTest:
 ##          QH, cannot get baseDirectory correct...
-        iconFile = baseDirectory+'/../../PyTest/unittest_icon.ico'
-##        natlink.setTrayIcon(iconFile)
+        import natlinkmain
+        baseDirectory = natlinkmain.baseDirectory
+        iconFile = baseDirectory+'/../PyTest/unittest_icon.ico'
+        if not os.path.isfile(iconFile):
+            raise TestError("cannot find test iconfile: %s"% iconFile)
+        natlink.setTrayIcon(iconFile)
+        self.wait(2)
         natlink.setTrayIcon()
 
     #---------------------------------------------------------------------------
@@ -1715,6 +1773,12 @@ def createMacroFile(filePath,fileName,word):
     log('time of change of %s: %s'% (f, fileDate))
     
 def log(t):
+    """log to print and file if present
+
+    note print depends on the state of natlink: where is goes or disappears...
+    I have no complete insight is this, but checking the logfile afterwards
+    always works (QH)
+    """
     print t
     if logFile:
         logFile.write(t + '\n')
@@ -1752,7 +1816,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     suite = unittest.makeSuite(UnittestNatlink, 'test')
-    natconnectOption = 1
+##    natconnectOption = 0 # no threading has most chances to pass...
     log('\nstarting tests with threading: %s\n'% natconnectOption)
     result = unittest.TextTestRunner().run(suite)
     dumpResult(result, logFile=logFile)
