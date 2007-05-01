@@ -1,0 +1,20 @@
+instead of testnatlink now testing can be done with unittest:
+
+- unittestNatlink.py
+- unittestPrePost.py
+
+Note
+
+1. the icon file that is needed for one of the tests.
+
+2. For version 9 all tests seemed to pass, also with the unimacro compatible version.
+   For version 8 some differences make several tests fail, especially with testWordProns and testWordFuncs.
+
+3. in the unimacro version of natlinkmain grammar files are not checked at each speech utterance, only when the microphone toggles.  This behaviour can be altered by the variable checkForGrammarChanges. In unimacro this option is set when you call (through the grammar _control) to change a grammar.
+
+4. Testing with natconnectThreading set to 1 will fail some times.  So in other words this option is dangerous with several callback procedures.
+
+5. Natlinkmain now always prints a message after starting, so the messages from python macros window always starts.  (Option that can be switched off)
+
+Quintijn Hoogenboom,  May 1, 2007
+q.hoogenboom@antenna.nl, http://qh.antenna.nl/unimacro
