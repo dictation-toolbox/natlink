@@ -5,10 +5,9 @@
 #
 # testnatlink.py
 #   This script performs some basic tests of the NatLink system.
-#    Restart NatSpeak before rerunning this script. This is because the test
-#    script will leave some state around which will make it fail if run again
 #
-#    Do *not* save your speech files after a test
+# run from a (preferably clean) US user profile, easiest from IDLE.
+# do not run from pythonwin. See also README.txt in PyTest folder
 #
 # May 1, 2007 - QH
 # try to unify with unimacro version of natlinkmain/natlinkutils.
@@ -94,7 +93,6 @@ class UnittestNatlink(unittest.TestCase):
         # remember user and get DragonPad in front:
         self.user = natlink.getCurrentUser()[0]
         self.setMicState = "off"
-        self.killDragonPad()
         self.lookForDragonPad()
         if self.getWindowContents():
             raise TestError('The DragonPad window is not empty, probably open when starting the tests...')
@@ -102,19 +100,19 @@ class UnittestNatlink(unittest.TestCase):
 
 
     def tearDown(self):
-        # give message:
-        self.setMicState = "off"
-        self.lookForDragonPad()
-        natlink.playString("\n\ntearDown, reopen user: '%s'"% self.user)
-        # kill things
-        self.killCalc()
-        self.clearTestFiles()
-        # reopen user:
-        natlink.openUser(self.user)
-        self.killDragonPad()
-        self.disconnect()
-        # if no error natlink was not disconnected!
-        self.doTestForException( natlink.NatError, "natlink.playString('')" )
+        try:
+            # give message:
+            self.setMicState = "off"
+            # kill things
+            self.killCalc()
+            self.lookForDragonPad()
+            natlink.playString("\n\ntearDown, reopen user: '%s'"% self.user)
+            self.clearTestFiles()
+            # reopen user:
+            natlink.openUser(self.user)
+            self.killDragonPad()
+        finally:
+            self.disconnect()
 
         
     def connect(self):
@@ -218,6 +216,7 @@ class UnittestNatlink(unittest.TestCase):
             i += 1
         else:
             raise TestError("in killDragonPad, could not close the DragonPad window")
+        del self.DragonPadHndle
 
         # if gets into child window press n (not save)
 ##        mod, title, hndle = natlink.getCurrentModule()
@@ -243,6 +242,7 @@ class UnittestNatlink(unittest.TestCase):
             win32gui.SetForegroundWindow(hndle)
         except:
             raise TestError("cannot get calc in foreground, hndle: %s"% hndle)
+        del self.CalcHndle
         i = 0
         while i < 10:
             time.sleep(0.1)
@@ -314,6 +314,16 @@ class UnittestNatlink(unittest.TestCase):
         self.assertEqual(expected, actual2,
                          'Function prons ("frots..." stripped!!) call "%s" returned unexpected result\nexpected: %s, got: %s (stripped: %s)'%
                          (command, expected, actual, actual2))
+
+    def doTestActiveRules(self, gram, expected):
+        """gram must be a grammar instance, sort the rules to be expected and got
+        """
+        expected.sort()
+        got = gram.activeRules
+        got.sort()
+        self.assertEqual(expected, got,
+                         'Active rules not as expected:\nexpected: %s, got: %s'%
+                         (expected, got))
 
 
     #---------------------------------------------------------------------------
@@ -877,53 +887,65 @@ class UnittestNatlink(unittest.TestCase):
         import natlinkmain
         baseDirectory = natlinkmain.baseDirectory
         userDirectory = natlinkmain.userDirectory
-        natlinkmain.setCheckForGrammarChanges(1)  # check at every utterance
         toggleMicrophone = self.toggleMicrophone
-        #QH cannot get this working...
-        self.log("testNatLinkMain", 1)
-
         # Basic test of globals.  Make sure that our macro file is not
         # loaded.  Then load the file and make sure it is loaded.
 
         mes = '\n'.join(['testNatLinkMain testing\n',
-               'clearing previous macro files from',
-               'userDir: %s'% userDirectory,
-               'baseDir: %s'% baseDirectory])
+               'clearing previous macro files from:',
+               '\tuserDir: %s'% userDirectory,
+               '\tbaseDir: %s\n\n'% baseDirectory])
         natlink.playString(mes)
         ## for extra safety:
         self.clearTestFiles()
-
         toggleMicrophone()
+
+        self.log('create jMg1, 1', 1)
         
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
         createMacroFile(baseDirectory,'__jMg1.py','1')
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
 
+        self.log('toggle mic, to get jMg1 in loadedGrammars', 1)
         toggleMicrophone()
-
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],1)
-        # Modify the macro file and make sure the modification takes effect
-        # even if the microphone is not toggled.
-
         self.lookForDragonPad()
-##        switchToNatSpeak()
-        self.log('\nWaiting for 2 seconds to pass...', 1)
-        time.sleep(2)
         natlink.playString('{ctrl+a}{del}')
-        
-        createMacroFile(baseDirectory,'__jMg1.py','2')
-        toggleMicrophone(1)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','2'],1)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
+
+        # now separate two parts. Note this cannot be checked here together,
+        # because changes in natlinkmain take no effect when done from this
+        # program!
+        if natlinkmain.checkForGrammarChanges:
+            # Modify the macro file and make sure the modification takes effect
+            # even if the microphone is not toggled.
+
+            self.log('\nNow change grammar file jMg1 to 2, check for changes at each utterance', 1)
+
+            createMacroFile(baseDirectory,'__jMg1.py','2')
+            self.wait(2)
+            ## with checking at each utterance next two lines should pass
+            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','2'],1)
+            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
+
+        else:
+            self.log('\nNow change grammar file jMg1 to 2, no recognise immediate, only after mic toggle', 1)
+
+            createMacroFile(baseDirectory,'__jMg1.py','2')
+            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','2'],0)
+            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],1)
+            toggleMicrophone(1)
+            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','2'],1)
+            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
 
         # Make sure a user specific file also works
-
+        self.log('now new grammar file: jMg2, 3', 1)
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','3'],0)
         createMacroFile(userDirectory,'__jMg2.py','3')
         toggleMicrophone()
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','3'],1)
 
         # Make sure user specific files have precidence over global files
+        self.log('now new grammar file: jMg2, 4', 1)
 
         createMacroFile(baseDirectory,'__jMg2.py','4')
         toggleMicrophone()
@@ -931,15 +953,18 @@ class UnittestNatlink(unittest.TestCase):
 
         # Make sure that we do the right thing with application specific
         # files.  They get loaded when the application is activated.
+        self.log('now new grammar file: calc_jMg1, 5', 1)
 
         createMacroFile(baseDirectory,'calc__jMg1.py','5')
         toggleMicrophone()
         
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],0)
-        natlink.execScript('AppBringUp "calc"')
+        self.lookForCalc()
+##        natlink.execScript('AppBringUp "calc"')
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],1)
-        natlink.playString('{Alt+F4}')
-
+        self.killCalc()
+    ##        natlink.playString('{Alt+F4}')
+#-----------------------------------------------------------
         # clean up any files created during this test
         safeRemove(baseDirectory,'__jMg1.py')
         safeRemove(baseDirectory,'__jMg2.py')
@@ -1159,6 +1184,8 @@ class UnittestNatlink(unittest.TestCase):
         testGram = TestGrammar()
         testRecognition = self.doTestRecognition
         testForException = self.doTestForException
+        testActiveRules = self.doTestActiveRules
+        
         # load the calculator again
         calcWindow = self.lookForCalc()
         # load the calculator again
@@ -1261,6 +1288,74 @@ class UnittestNatlink(unittest.TestCase):
         testForException(natlink.WrongType,"testGram.gramObj.setContext('before','after')",locals())
         testForException(natlink.WrongType,"testGram.gramObj.setSelectText('text')",locals())
         testForException(natlink.WrongType,"testGram.gramObj.getSelectText()",locals())
+
+        ##
+        ## now do some additional checks on activateSet:
+        ## (old bug in natlinkutils, QH)
+        ##
+        testGram.unload()
+        testGram.load("""
+            <one> exported = rule one <two>;
+            <two> = rule two;
+            <three> exported = rule three;
+            <four> exported = rule four;
+            """)
+        testGram.activateAll()
+        testActiveRules(testGram, ['one', 'three', 'four'])
+
+        testGram.deactivateAll()
+        testActiveRules(testGram, [])
+        prev = None
+        for rule in 'three', 'four', 'one', 'four', 'three':
+            # activate:
+            testGram.activate(rule)
+            if prev:
+                expList = [prev, rule]
+            else:
+                expList = [rule]
+            testActiveRules(testGram, expList)
+            # activate after all active:
+            testGram.activateAll()
+            testForException(GrammarError, "testGram.activate('%s')"% rule, locals())
+            # activate after all unactive:
+            testGram.deactivateAll()
+            testGram.activate(rule)
+            testActiveRules(testGram, [rule])
+            prev = rule
+
+        rule = 'one'
+        testGram.activate(rule)
+        testForException(GrammarError, "testGram.activate('%s')"% rule, locals())
+        testGram.deactivateAll()
+        testActiveRules(testGram, [])
+
+        for SET in (['one', 'three', 'four'], ['three'], ['one', 'three', 'four'], ['one', 'three']):
+            testGram.activateSet(SET)
+            testActiveRules(testGram, SET)
+            ##with original version of natlinkutils.py you get:
+            ##AssertionError: Active rules not as expected:
+            ##expected: ['three'], got: ['one', 'three']
+            ##fix around line 420 (copy.copy) in natlinkutils.py, QH
+    
+            
+        
+
+        # try a few illegal grammars to make sure they are reported properly (we
+        # already tested the grammar parser so this does not have to be
+        # exhaustive)
+        testGram.unload()
+        testForException(SyntaxError,"testGram.load('badrule;')",locals())
+        testForException(GrammarError,"testGram.load('<rule> = hello;')",locals())
+
+        # most calls are not legal before load is called (successfully)
+        testForException(natlink.NatError,"testGram.gramObj.activate('start',0)",locals())
+        testForException(natlink.NatError,"testGram.gramObj.deactivate('start')",locals())
+        testForException(natlink.NatError,"testGram.gramObj.setExclusive(1)",locals())
+        testForException(natlink.NatError,"testGram.gramObj.emptyList('list')",locals())
+        testForException(natlink.NatError,"testGram.gramObj.appendList('list','word')",locals())
+
+
+
 
         # clean up
         testGram.unload()
