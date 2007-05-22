@@ -6,6 +6,10 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+# QH, May 22, 2007:
+#    extended range of possible filenames, (nearly) arbitrary characters may appear after
+#    "_" in global grammar names or after
+#    "mod_" in specific grammar names  (request of Mark Lillibridge)
 # Quintijn Hoogenboom (QH), May 1, 2007
 # changes for compatibility with unimacro:
 # extra information reported (language version, natspeak version, windows version etc)
@@ -58,6 +62,8 @@ import RegistryDict
 import win32con, win32api # win32api for unimacro
 from stat import *      # file statistics
 from natlink import *   
+import glob             # new way to collect the grammar files
+import pprint
 
 debugLoad=0
 cmdLineStartup=0
@@ -231,7 +237,7 @@ def safelyCall(modName,funcName):
 
 def findAndLoadFiles(curModule=None):
     global loadedFiles
-    
+
     if curModule:
         pat = re.compile(r"""
             ^(%s        # filename must match module name
@@ -242,6 +248,23 @@ def findAndLoadFiles(curModule=None):
         pat = re.compile(r"""
             ^(_         # filename must start with an underscore
             \w+)        # remainder of filename
+            [.]py$      # extension .py
+          """, re.VERBOSE|re.IGNORECASE)
+
+
+    
+    if curModule:
+        pat = re.compile(r"""
+            ^(%s        # filename must match module name
+##            (_\w+)?)    # optional underscore followed by text (old)
+            (_.*)?)    # optional underscore followed by anything (or nothing) (QH)
+            [.]py$      # extension .py
+          """%curModule, re.VERBOSE|re.IGNORECASE)
+    else:
+        pat = re.compile(r"""
+            ^(_         # filename must start with an underscore
+##            \w+)        # remainder of filename (old)
+             .+)        # remainder of filename (anything) (QH)
             [.]py$      # extension .py
           """, re.VERBOSE|re.IGNORECASE)
 
@@ -256,6 +279,7 @@ def findAndLoadFiles(curModule=None):
         if res: filesToLoad[ res.group(1) ] = None
 
     # Try to (re)load any files we find
+    if debugLoad: print 'filesToLoad: %s'% filesToLoad.keys()
     for x in filesToLoad.keys():
         if loadedFiles.has_key(x):
             origName = loadedFiles[x]
@@ -433,6 +457,7 @@ def changeUserDirectory():
         if debugLoad: print "Registry user dir= " +r["UserDirectory"]
         if os.path.isdir(r["UserDirectory"]): userDirectory = r["UserDirectory"]
         if debugLoad: print "current user dir= "+userDirectory
+        
     else:
         if debugLoad: print 'no registry keys found'
     #QH additions for unimacro (can be invalid)
