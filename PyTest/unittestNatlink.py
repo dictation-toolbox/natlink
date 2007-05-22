@@ -65,6 +65,12 @@ natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # with spurious error (if set to 1), missing gotBegin and all that...
 logFileName = r"C:\program files\natlink\PyTest\testresult.txt"
 
+## try more special file names, test in testNatlinkMain:
+spacesFilenameGlobal = '_with spaces'
+spacesFilenameCalcInvalid = 'calc with spaces' # must be only "calc" or "calc_ ajajajaja"
+spacesFilenameCalcValid = 'calc_with spaces'   
+specialFilenameCalc = 'calc_JMg+++&_'
+specialFilenameGlobal = '__jMg_$&^_abc'
 #---------------------------------------------------------------------------
 # These tests should be run after we call natConnect
 class UnittestNatlink(unittest.TestCase):
@@ -253,6 +259,7 @@ class UnittestNatlink(unittest.TestCase):
         else:
             raise TestError("in killCalc, could not get back to Calc window")
         natlink.playString("{alt+f4}")
+        time.sleep(0.5)
 
     def clearTestFiles(self):
         """remove .py and .pyc files from the natlinkmain test
@@ -262,7 +269,10 @@ class UnittestNatlink(unittest.TestCase):
         baseDirectory = natlinkmain.baseDirectory
         userDirectory = natlinkmain.userDirectory
         for dir in (baseDirectory, userDirectory):
-            for trunk in ('__jMg1', '__jMg2', 'calc__jMg1'):
+            for trunk in ('__jMg1', '__jMg2', 'calc__jMg1',
+                          specialFilenameGlobal, specialFilenameCalc,
+                          spacesFilenameGlobal, spacesFilenameCalcValid, spacesFilenameCalcInvalid,
+                          "_", "calc_", "calculator"):
                 for ext in ('.py', '.pyc'):
                     safeRemove(dir, trunk + ext)
 
@@ -940,16 +950,31 @@ class UnittestNatlink(unittest.TestCase):
             testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
 
         # Make sure a user specific file also works
-        self.log('now new grammar file: jMg2, 3', 1)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','3'],0)
-        createMacroFile(userDirectory,'__jMg2.py','3')
+        # now with extended file names (glob.glob, request of Mark Lillibridge) (QH):
+        self.log('now new grammar file: %s'% specialFilenameGlobal, 1)
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','7'],0)
+        createMacroFile(userDirectory,specialFilenameGlobal+'.py','7')
         toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','3'],1)
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','7'],1)
+
+        self.log('now new grammar file: %s'% spacesFilenameGlobal, 1)
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','21'],0)
+        createMacroFile(userDirectory,spacesFilenameGlobal+'.py','21')
+        toggleMicrophone()
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','21'],1)
+
+
+        self.log('now new grammar file (should not be recognised)... %s'% "_.py", 1)
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','8'],0)
+        createMacroFile(userDirectory,"_.py",'8')
+        toggleMicrophone()
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','8'],0)
 
         # Make sure user specific files have precidence over global files
         self.log('now new grammar file: jMg2, 4', 1)
 
         createMacroFile(baseDirectory,'__jMg2.py','4')
+        createMacroFile(userDirectory,'__jMg2.py','3')
         toggleMicrophone()
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','3'],1)
 
@@ -958,20 +983,64 @@ class UnittestNatlink(unittest.TestCase):
         self.log('now new grammar file: calc_jMg1, 5', 1)
 
         createMacroFile(baseDirectory,'calc__jMg1.py','5')
+        createMacroFile(userDirectory,'calc__jMg1.py','6')
         toggleMicrophone()
         
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],0)
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','6'],0)
         self.lookForCalc()
 ##        natlink.execScript('AppBringUp "calc"')
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],1)
+        # priority for user macro file:
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','6'],1)
+        # 5 (base dir never recognised):
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],0)
+
+
+
+
+        # more intricate filename:
+        createMacroFile(baseDirectory,specialFilenameCalc+'.py','8')
+        toggleMicrophone()
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','8'],1)
+
+        # filenames with spaces (not valid)
+        createMacroFile(baseDirectory,spacesFilenameCalcInvalid+'.py','22')
+        toggleMicrophone()
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','22'],0)
+        # filenames with spaces (valid)
+        createMacroFile(baseDirectory,spacesFilenameCalcValid+'.py','23')
+        toggleMicrophone()
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','23'],1)
+        
+        #other filenames:
+##        createMacroFile(baseDirectory,'calc.py', '9')  # chances are calc is already there, so skip now...
+        createMacroFile(baseDirectory,'calc_.py', '10')
+        # this name should be invalid:
+        createMacroFile(baseDirectory,'calculator.py', '11')
+        toggleMicrophone()
+##        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','9'],1)
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','10'],1)
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','11'],0)
+
+
+
+        
         self.killCalc()
+        # OOPS, rule 6 remains valid, must be deactivated in gotBegin, user responsibility:
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','6'],1)
+        
     ##        natlink.playString('{Alt+F4}')
 #-----------------------------------------------------------
         # clean up any files created during this test
         safeRemove(baseDirectory,'__jMg1.py')
         safeRemove(baseDirectory,'__jMg2.py')
         safeRemove(userDirectory,'__jMg2.py')
+        safeRemove(userDirectory,specialFilenameGlobal+'.py')
         safeRemove(baseDirectory,'calc__jMg1.py')
+        safeRemove(baseDirectory,'calc_.py')
+        safeRemove(baseDirectory,'calculator.py')
+        safeRemove(userDirectory,'calc__jMg1.py')
+        safeRemove(baseDirectory,specialFilenameCalc+'.py')
         toggleMicrophone()
 
         # now that the files are gone, make sure that we no longer recognize
@@ -981,6 +1050,9 @@ class UnittestNatlink(unittest.TestCase):
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','3'],0)
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','4'],0)
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],0)
+        # some of the specialFilename cases:
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','7'],0)
+        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','8'],0)
 
 ## is done in tearDown:
 ##        # make sure no .pyc files are lying around
