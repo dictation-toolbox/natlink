@@ -34,7 +34,8 @@ SRPHRASE * makePhrase( PCCHAR * ppWords )
 	// multiple of four
 
 	int nLength = 0;
-	for( int nCount = 0; ppWords[nCount]; nCount++ )
+	int nCount = 0;
+	for( nCount = 0; ppWords[nCount]; nCount++ )
 	{
 		int length = strlen( ppWords[nCount] ) + 1;
 		length = ( length + 3 ) & ~3;

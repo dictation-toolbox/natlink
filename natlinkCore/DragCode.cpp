@@ -2242,7 +2242,7 @@ char * packString( PCCHAR * ppWords, DWORD * pdwSize, DWORD * pdwCount )
 	// copy the arguments into a single buffer
 
 	DWORD offset = 0;
-	for( i = 0; ppWords[i]; i++ )
+	for(int i = 0; ppWords[i]; i++ )
 	{
 		strcpy( pszList + offset, ppWords[i] );
 		offset += strlen( ppWords[i] ) + 1;

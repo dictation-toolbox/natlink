@@ -466,7 +466,8 @@ Public Class EnableNL
 		Try
 			nle = New NatLinkEnv(True)
 			txtIniPath.Text = nle.DnsIniFilePath
-			txtVersion.Text = nle._dnsName
+            txtVersion.Text = nle.DnsName
+
 			txtPath.Text = nle.DNSPath
 			txtNLVer.Text = nle.NatLinkVersion
 			txtVocVer.Text = nle.VocolaVersion
@@ -557,7 +558,7 @@ Public Class EnableNL
 	public readonly property  NatLinkDebug as integer 
 
 		Get
-			Dim rk As Microsoft.Win32.RegistryKey
+            Dim rk As Microsoft.Win32.RegistryKey = Nothing
 			Try
 				rk = Registry.CurrentUser.OpenSubKey("Software\NatLink")
 				Return rk.GetValue("NatLinkDebug", 0)

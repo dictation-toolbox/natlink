@@ -56,7 +56,7 @@ Public Class NatLinkEnv
 
 	Private _pythonVersion As String
 	Private _dnsVersion As Double
-	Public _dnsName As String
+	Private Dim _dnsName As String
 	Private _dnsIniFilePath As String = ""
 
 	Private _inInstall As Boolean
@@ -71,8 +71,16 @@ Public Class NatLinkEnv
 
 
 
-	Public ReadOnly Property VocolaVersion() As String
-		Get
+    Public Property DnsName() As String
+        Get
+            Return _dnsName
+        End Get
+        Set(ByVal value As String)
+            _dnsName = value
+        End Set
+    End Property
+    Public ReadOnly Property VocolaVersion() As String
+        Get
 			Return "2.5"
 		End Get
 	End Property
@@ -217,9 +225,9 @@ Public Class NatLinkEnv
                 If Not rkprod Is Nothing Then
                     Dim dispName As String = CStr(rkprod.GetValue("DisplayName", "(Null)"))
                     If dispName = "Dragon NaturallySpeaking 8" Then
-                        _dnsName = CStr(rkprod.GetValue("DisplayName"))
+                        DnsName = CStr(rkprod.GetValue("DisplayName"))
                         _dNSPath = CStr(rkprod.GetValue("InstallLocation"))
-                        Trace.WriteLine("DnsName=" + _dnsName)
+                        Trace.WriteLine("DnsName=" + DnsName)
                         Trace.WriteLine("DnsPath=" + _dNSPath)
                     End If
                     rkprod.Close()
@@ -330,10 +338,10 @@ Public Class NatLinkEnv
 
                             If instPath <> "" Then
                                 _dNSPath = ExpandPath(instPath)
-                                _dnsName = s.SectionName
+                                DnsName = s.SectionName
                                 If _dNSPath = "" OrElse Not IO.Directory.Exists(_dNSPath) Then
                                     _dNSPath = ""
-                                    _dnsName = ""
+                                    DnsName = ""
                                     Throw New ApplicationException("Unable to find directory '" + instPath + "'" + vbNewLine + _
                                     "Please ensure Dragon NaturallySpeaking is installed.")
                                 End If
@@ -345,8 +353,8 @@ Public Class NatLinkEnv
                 End If
             Next
 
-            If _dnsName = "" Then
-                Dim candString As String
+            If DnsName = "" Then
+                Dim candString As String = Nothing
                 If CandidatesSB.Length > 0 Then
                     candString = "Possible candidates were:" + vbNewLine + CandidatesSB.ToString
                 End If
@@ -431,8 +439,8 @@ Public Class NatLinkEnv
             Trace.Indent()
             Try
 
-                Dim clsID As RegistryKey
-                Dim ips32 As RegistryKey
+                Dim clsID As RegistryKey = Nothing
+                Dim ips32 As RegistryKey = Nothing
                 Try
                     clsID = Registry.ClassesRoot.OpenSubKey("CLSID\" + NatLinkEnv.NATLINK_CLSID)
                     If Not clsID Is Nothing Then
@@ -471,8 +479,8 @@ Public Class NatLinkEnv
         Trace.WriteLine("Installer -- SetPythonPath")
         Trace.Indent()
 
-        Dim pp As RegistryKey
-        Dim nlK As RegistryKey
+        Dim pp As RegistryKey = Nothing
+        Dim nlK As RegistryKey = Nothing
         Try
 
             Dim instPath As String = NatLinkInstallPath
@@ -501,7 +509,7 @@ Public Class NatLinkEnv
     Public Sub ClearPythonPath()
         Trace.WriteLine("Installer -- ClearPythonPath")
         Trace.Indent()
-        Dim pp As RegistryKey
+        Dim pp As RegistryKey = Nothing
         Try
             pp = Registry.LocalMachine.OpenSubKey("Software\Python\PythonCore\2.3\PythonPath", True)
             If Not pp Is Nothing Then

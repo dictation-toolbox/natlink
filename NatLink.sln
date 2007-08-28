@@ -1,67 +1,114 @@
-Microsoft Visual Studio Solution File, Format Version 8.00
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natlinkCore", "natlinkCore\natlinkCore.vcproj", "{FD3160B9-F117-4187-B968-C121B084488E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{8514361C-9475-45ED-86DD-39320E656296} = {8514361C-9475-45ED-86DD-39320E656296}
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ConfigureNatLink", "ConfigureNatLink\ConfigureNatLink.vbproj", "{40FCDE32-1FE2-4A3F-B144-A099272EF446}"
-	ProjectSection(ProjectDependencies) = postProject
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simpscrp", "Simpscrp\simpscrp.vcproj", "{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}"
-	ProjectSection(ProjectDependencies) = postProject
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "calldll", "calldll\calldll.vcproj", "{47E50E32-09C2-4EF8-905C-B89C683DACBC}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MessageWindow", "MessageWindow\MessageWindow.vbproj", "{8514361C-9475-45ED-86DD-39320E656296}"
-	ProjectSection(ProjectDependencies) = postProject
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "NLInstaller", "NLInstaller\NLInstaller.vbproj", "{506647B3-A203-467E-8DE9-657334016896}"
-	ProjectSection(ProjectDependencies) = postProject
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Global
-	GlobalSection(SolutionConfiguration) = preSolution
-		Debug = Debug
-		Release = Release
-	EndGlobalSection
-	GlobalSection(ProjectConfiguration) = postSolution
-		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.ActiveCfg = Debug|Win32
-		{FD3160B9-F117-4187-B968-C121B084488E}.Debug.Build.0 = Debug|Win32
-		{FD3160B9-F117-4187-B968-C121B084488E}.Release.ActiveCfg = Release|Win32
-		{FD3160B9-F117-4187-B968-C121B084488E}.Release.Build.0 = Release|Win32
-		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug.ActiveCfg = Debug|.NET
-		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug.Build.0 = Debug|.NET
-		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release.ActiveCfg = Release|.NET
-		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release.Build.0 = Release|.NET
-		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug.ActiveCfg = Release|Win32
-		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release.ActiveCfg = Release|Win32
-		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release.Build.0 = Release|Win32
-		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Debug.ActiveCfg = Release|Win32
-		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release.ActiveCfg = Release|Win32
-		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release.Build.0 = Release|Win32
-		{8514361C-9475-45ED-86DD-39320E656296}.Debug.ActiveCfg = Debug|.NET
-		{8514361C-9475-45ED-86DD-39320E656296}.Debug.Build.0 = Debug|.NET
-		{8514361C-9475-45ED-86DD-39320E656296}.Release.ActiveCfg = Release|.NET
-		{8514361C-9475-45ED-86DD-39320E656296}.Release.Build.0 = Release|.NET
-		{506647B3-A203-467E-8DE9-657334016896}.Debug.ActiveCfg = Debug|.NET
-		{506647B3-A203-467E-8DE9-657334016896}.Debug.Build.0 = Debug|.NET
-		{506647B3-A203-467E-8DE9-657334016896}.Release.ActiveCfg = Release|.NET
-		{506647B3-A203-467E-8DE9-657334016896}.Release.Build.0 = Release|.NET
-	EndGlobalSection
-	GlobalSection(SolutionItems) = postSolution
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4F84F3EE-7F51-4334-92EC-850F6A4CBC1A}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+	ProjectSection(SolutionItems) = preProject
 		AssemblyInfoCommon.vb = AssemblyInfoCommon.vb
 		COPYRIGHT.txt = COPYRIGHT.txt
 		default.build = default.build
 		Index.htm = Index.htm
 		NatLink.key = NatLink.key
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug|Any CPU.Build.0 = Debug|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Debug|Win32.Build.0 = Debug|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release|Any CPU.ActiveCfg = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release|Any CPU.Build.0 = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release|Win32.ActiveCfg = Release|Win32
+		{FD3160B9-F117-4187-B968-C121B084488E}.Release|Win32.Build.0 = Release|Win32
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{40FCDE32-1FE2-4A3F-B144-A099272EF446}.Release|Win32.ActiveCfg = Release|Any CPU
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug|Any CPU.Build.0 = Debug|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug|Mixed Platforms.ActiveCfg = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Debug|Win32.Build.0 = Debug|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release|Any CPU.ActiveCfg = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release|Any CPU.Build.0 = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release|Win32.ActiveCfg = Release|Win32
+		{B591E2B1-3EFA-4D68-93D0-5B9233EF5D72}.Release|Win32.Build.0 = Release|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Debug|Any CPU.Build.0 = Debug|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Debug|Mixed Platforms.ActiveCfg = Release|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Debug|Win32.Build.0 = Debug|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release|Any CPU.ActiveCfg = Release|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release|Any CPU.Build.0 = Release|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release|Win32.ActiveCfg = Release|Win32
+		{47E50E32-09C2-4EF8-905C-B89C683DACBC}.Release|Win32.Build.0 = Release|Win32
+		{506647B3-A203-467E-8DE9-657334016896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{506647B3-A203-467E-8DE9-657334016896}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ExtensibilityAddIns) = postSolution
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
