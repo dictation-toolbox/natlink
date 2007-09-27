@@ -66,7 +66,7 @@ class ThisGrammar(GrammarBase):
         self.setNames()
         # Don't set callback just yet or it will be clobbered
         self.needToSetCallback = 1
-                    
+           
                     
                 
 
@@ -235,7 +235,9 @@ def unload():
 #   - Load any changed Vocola command files
 #   - Invoke the standard NatLink callback
 
-from natlinkmain import beginCallback
+from natlinkmain import beginCallback, setCheckForGrammarChanges
+
+setCheckForGrammarChanges(1)  # ensure always grammar checking...
 
 def vocolaBeginCallback(moduleInfo):
     thisGrammar.loadAllFiles('')
