@@ -58,12 +58,13 @@ import os.path          # to parse filenames
 import imp              # module reloading
 import re               # regular expression parsing    
 import traceback        # for printing exceptions
-import RegistryDict
-import win32con, win32api # win32api for unimacro
+##import RegistryDict
+##import win32con, win32api # win32api for unimacro
 from stat import *      # file statistics
 from natlink import *   
 import glob             # new way to collect the grammar files
 import pprint
+import natlinkstatus    # for extracting status info (QH)
 
 debugLoad=0
 cmdLineStartup=0
@@ -109,15 +110,17 @@ natlinkmainPrintsAtEnd = 1
 baseDirectory = ''
 
 #
-# This is the current user directory.
+# This is the current user directory. (of natspeak, the user files are located there...
 #
 
 userName = ''
-userDirectory = ''
+userDirectory = ''  
 
 ##QH: additions for unimacro:
+NatlinkUserDirectory = ''
+
 DNSdirectory = ''
-DNSversion = ''
+DNSversion = -1
 WindowsVersion = ''
 DNSmode = 0  # can be changed in grammarX by the setMode command to
              # 1 dictate, 2 command, 3 numbers, 4 spell
@@ -269,8 +272,8 @@ def findAndLoadFiles(curModule=None):
           """, re.VERBOSE|re.IGNORECASE)
 
     filesToLoad = {}
-    if userDirectory != '':
-        for x in os.listdir(userDirectory):
+    if NatlinkUserDirectory != '':
+        for x in os.listdir(NatlinkUserDirectory):
             res = pat.match(x)
             if res: filesToLoad[ res.group(1) ] = None
 
@@ -287,7 +290,7 @@ def findAndLoadFiles(curModule=None):
             origName = None
             if debugCallback:
                 print 'new file to load: %s'% x
-        loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], origName)
+        loadedFiles[x] = loadFile(x, [NatlinkUserDirectory,baseDirectory], origName)
 
     # Unload any files which have been deleted
     for name,path in loadedFiles.items():
@@ -353,7 +356,7 @@ def beginCallback(moduleInfo, checkAll=None):
             if debugCallback:
                 print 'check for changed files (all files)...'
             for x in loadedFiles.keys():
-                loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], loadedFiles[x])
+                loadedFiles[x] = loadFile(x, [NatlinkUserDirectory,baseDirectory], loadedFiles[x])
             loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
         else:
             if debugCallback:
@@ -371,7 +374,7 @@ def beginCallback(moduleInfo, checkAll=None):
 #
 
 def changeCallback(type,args):
-    global userName, userDirectory
+    global userName, NatlinkUserDirectory
     if debugCallback:
         print 'changeCallback (unimacro testversion), type: %s, args: %s'% (type, args)
     if type == 'mic' and args == 'on':
@@ -445,28 +448,12 @@ def changeCallbackLoadedModulesMicOn(type,args):
 def changeUserDirectory():
     """call also from changeCallback! QH
     
-    the default userDirectory from = getCurrentUser() is deep within the filesystem
+    the default NatlinkUserDirectory from = getCurrentUser() is deep within the filesystem
     and unlikely to be useful to anyone
     so we change it
     """
-    global userDirectory, DNSdirectory, DNSuserDirectory
-    DNSuserDirectory = userDirectory
-    r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\NatLink")
-    if r:
-        if debugLoad: print "DNS user dir= " +userDirectory
-        if debugLoad: print "Registry user dir= " +r["UserDirectory"]
-        if os.path.isdir(r["UserDirectory"]): userDirectory = r["UserDirectory"]
-        if debugLoad: print "current user dir= "+userDirectory
-        
-    else:
-        if debugLoad: print 'no registry keys found'
-    #QH additions for unimacro (can be invalid)
-    DNSdirectory = os.path.normpath(os.path.join(userDirectory, '../../../Program'))
-    if os.path.isdir(DNSdirectory):
-        if debugLoad: print 'DNSdirectory: ' + DNSdirectory
-    else:
-        DNSdirectory = ""
-        if debugLoad: print 'no DNSdirectory found, hope to find version number from registry;'
+    global NatlinkUserDirectory, DNSdirectory
+    NatlinkUserDirectory = natlinkstatus.getNatlinkUserDir()
 
 
 #QH>> for unimacro:
@@ -480,7 +467,6 @@ languages = {"Nederlands": "nld",
              "Indian English": "enx",
              "SEAsian English": "enx",
              "Italiano": "ita"}
-
 def extractLanguage():
     global language
     dir = DNSuserDirectory
@@ -520,22 +506,11 @@ def extractDNSversion():
     return as integer!
     """    
     global DNSversion
-    if os.path.isdir(DNSdirectory):
-        version = win32api.GetProfileVal( "Product Attributes", "Version" , "" ,
-                                      DNSdirectory+"\\nssystem.ini" )
-        if version:
-            DNSversion = int(version[0])
-        else:
-            DNSversion = 5
-    else:
-        r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
-        if "NaturallySpeaking8" in r:
-            DNSversion = 8
-        elif "NaturallySpeaking 7.1" in r:
-            DNSversion = 7
-        else:
-            if debugLoad: print 'no info from registry, assume version 8'
-            DNSversion = 8
+    if DNSversion < 0:
+        DNSVersion =  natlinkstatus.getDNSVersion()
+        if DNSVersion < 0:
+            print "natlinkmain, invalid DNS version found: %s"% DNSVersion
+    return DNSVersion
 
 
 
@@ -552,14 +527,11 @@ def extractWindowsVersion():
     and put in global variable
     """
     global WindowsVersion
-    tup = win32api.GetVersionEx()
-    version = "%s/%s/%s"% (tup[3], tup[0], tup[1])
-    try:
-        WindowsVersion = Wversions[version]
-    except KeyError:
-        print '(yet) unknown Windows version: %s'% version
-        WindowsVersion = version
-       
+    if not WindowsVersion:
+        WindowsVersion = natlinkstatus.getWindowsVersion()
+        if not WindowsVersion:
+            print "natlinkmain, cannot find Windows Version from natlinkstatus: %s"% WindowsVersion
+    return WindowsVersion
 #<<QH
 
 ############################################################################

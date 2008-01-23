@@ -1,4 +1,4 @@
-#
+
 """ the following functions are provided in this module:
 ( to be used by either natlinkmain.py or natlinkinstallfunctions.py
 
@@ -219,6 +219,7 @@ def getDNSVersion():
         DNSversion = 5
     return DNSversion
 
+
 def getDNSInstallDir():
     """get the folder where natspeak is installed
 
@@ -273,7 +274,7 @@ in  nssystem.ini check for:
 
 [Global Clients]
 .NatLink=Python Macro System
-´´
+is
 in nsapps.ini check for
 [.NatLink]
 App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
@@ -307,7 +308,22 @@ App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
               'value in nssystem.ini: %s (expected: %s)'% (value1, expected1)
     else:
         print 'NatlinkIsEnabled: should not come here...'
-        
+def getNatlinkUserDir():
+    """return the path to the Natlink user directory
+
+    should be set in configurenatlink, otherwise ignore...
+    """
+    key = 'NatlinkUserDir'
+    value = getFromRegdict(userregnl, key)
+    if value:
+        if os.path.isdir(value):
+            return value
+        else:
+            print 'invalid NatlinkUserDir, so ignore. Run configurenatlink to fix if you like: %s'% value
+            return ''
+    else:
+        print 'NatlinkUserDir is not set. Run configurenatlink to fix if you like'
+        return ''
 
 
 if __name__ == "__main__":
@@ -323,5 +339,6 @@ if __name__ == "__main__":
         print 'Natlink is NOT enabled'
     else:
         print 'Strange result in function NatlinkIsEnabled: %s'% nlenabled
-        
+
+    print 'NatlinkUserDir: %s'% getNatlinkUserDir()
     
