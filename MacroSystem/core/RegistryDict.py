@@ -132,8 +132,10 @@ class RegistryDict(object):
     def values(self, access=win32con.KEY_ALL_ACCESS):
         return list(self.itervalues(access))
         
-    def __delitem__(self, item):
+    def __delitem__(self, key):
+        ####    def __delitem__(self, item):
         # Delete a string value or a subkey, depending on the type
+        # correction  QH it was __delitem__(self, item) which produced exception anytime
         try:
             item = self[key]
         except:
@@ -219,5 +221,15 @@ class RegistryDict(object):
         self.close()
 
 if __name__=='__main__':
-    r= RegistryDict(win32con.HKEY_CURRENT_USER,"Software\NatLink")
-    print r["UserDirectory"]
+
+    lm = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software\TestRegistryDict")
+    print 'should be empty: ', lm
+    lm['test'] = "abcd"
+    print 'should contain test/abcd: ', lm
+    lm['test'] = "xxxx"
+    print 'should contain test/xxxx: ', lm
+    del lm['test']
+    print 'should be empty again: ', lm
+    del lm['dummy']
+    print 'should be still empty: ', lm
+    
