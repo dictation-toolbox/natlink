@@ -59,7 +59,7 @@ import imp              # module reloading
 import re               # regular expression parsing    
 import traceback        # for printing exceptions
 ##import RegistryDict
-##import win32con, win32api # win32api for unimacro
+import win32api # win32api for getting ini file values
 from stat import *      # file statistics
 from natlink import *   
 import glob             # new way to collect the grammar files
@@ -108,7 +108,7 @@ natlinkmainPrintsAtEnd = 1
 #
 
 baseDirectory = ''
-
+DNSuserDirectory = ''   # folder of the current user speech profiles...
 #
 # This is the current user directory. (of natspeak, the user files are located there...
 #
@@ -116,8 +116,6 @@ baseDirectory = ''
 userName = ''
 userDirectory = ''  
 
-##QH: additions for unimacro:
-NatlinkUserDirectory = ''
 
 DNSdirectory = ''
 DNSversion = -1
@@ -272,8 +270,8 @@ def findAndLoadFiles(curModule=None):
           """, re.VERBOSE|re.IGNORECASE)
 
     filesToLoad = {}
-    if NatlinkUserDirectory != '':
-        for x in os.listdir(NatlinkUserDirectory):
+    if userDirectory != '':
+        for x in os.listdir(userDirectory):
             res = pat.match(x)
             if res: filesToLoad[ res.group(1) ] = None
 
@@ -290,7 +288,7 @@ def findAndLoadFiles(curModule=None):
             origName = None
             if debugCallback:
                 print 'new file to load: %s'% x
-        loadedFiles[x] = loadFile(x, [NatlinkUserDirectory,baseDirectory], origName)
+        loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], origName)
 
     # Unload any files which have been deleted
     for name,path in loadedFiles.items():
@@ -356,7 +354,7 @@ def beginCallback(moduleInfo, checkAll=None):
             if debugCallback:
                 print 'check for changed files (all files)...'
             for x in loadedFiles.keys():
-                loadedFiles[x] = loadFile(x, [NatlinkUserDirectory,baseDirectory], loadedFiles[x])
+                loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], loadedFiles[x])
             loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
         else:
             if debugCallback:
@@ -374,7 +372,7 @@ def beginCallback(moduleInfo, checkAll=None):
 #
 
 def changeCallback(type,args):
-    global userName, NatlinkUserDirectory
+    global userName, userDirectory
     if debugCallback:
         print 'changeCallback (unimacro testversion), type: %s, args: %s'% (type, args)
     if type == 'mic' and args == 'on':
@@ -448,12 +446,12 @@ def changeCallbackLoadedModulesMicOn(type,args):
 def changeUserDirectory():
     """call also from changeCallback! QH
     
-    the default NatlinkUserDirectory from = getCurrentUser() is deep within the filesystem
+    the default userDirectory from = getCurrentUser() is deep within the filesystem
     and unlikely to be useful to anyone
     so we change it
     """
-    global NatlinkUserDirectory, DNSdirectory
-    NatlinkUserDirectory = natlinkstatus.getNatlinkUserDir()
+    global userDirectory
+    userDirectory = natlinkstatus.getUserDirectory()
 
 
 #QH>> for unimacro:
@@ -559,7 +557,7 @@ try:
     if debugLoad: print "NatLink base dir" + baseDirectory
     
     # get the current user information from the natlink module
-    userName, userDirectory = getCurrentUser()
+    userName, DNSuserDirectory = getCurrentUser()
     changeUserDirectory()
 
     # QH extra info for unimacro:::::

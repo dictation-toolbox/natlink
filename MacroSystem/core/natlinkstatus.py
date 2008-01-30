@@ -57,6 +57,21 @@ DNSPaths = [NSExt9Path, NSExt8Path, NSExt73Path]
 DNSVersions = [9,8,7]
 NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
+## setting of nssystem.ini if natlink is enabled...
+## this first setting is decisive for NatSpeak if it loads natlink or not
+section1 = "Global Clients"
+key1 = ".Natlink"
+value1 = 'Python Macro System'
+
+## setting of nsapps.ini if natlink is enabled...
+## this setting is ignored if above setting is not there...
+section2 = ".Natlink"
+key2 = "App Support GUID"
+value2 = NATLINK_CLSID
+
+
+
+
 # utility functions:
 # report function:
 def fatal_error(message, new_raise=None):
@@ -82,7 +97,7 @@ def getFromRegdict(regdict, key, fatal=None):
     mess = 'could not find key %s in registry dict'% key
     value = None
     try:
-        value = regnl[key]
+        value = regdict[key]
     except KeyError:
         if fatal:
             fatal_error(mess, new_raise = Exception)
@@ -280,50 +295,52 @@ in nsapps.ini check for
 App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
 
     """
-    section1 = "Global Clients"
-    key1 = ".Natlink"
-    expected1 = 'Python Macro System'
     nssystemini = getNSSYSTEMIni()
-    value1 = win32api.GetProfileVal(section1, key1, "", nssystemini)
+    actual1 = win32api.GetProfileVal(section1, key1, "", nssystemini)
 
 
-    section2 = ".Natlink"
-    key2 = "App Support GUID"
-    expected2 = NATLINK_CLSID
     nsappsini = getNSAPPSIni()
-    value2 = win32api.GetProfileVal(section2, key2, "", nsappsini)
-    if value1 == expected1 and value2 == expected2:
+    actual2 = win32api.GetProfileVal(section2, key2, "", nsappsini)
+    if value1 == actual1 and value2 == actual2:
         return 1
-    elif value1 != expected1 and value2 != expected2:
+    elif value1 != actual1 and value2 != actual2:
         return 0
-    elif value1 == expected1:
-        print 'unexpected result: nssystem.ini equal, nsapps unequal\n' \
-              'nssystem.ini: %s\n' \
-              'nsapps.ini: %s'% (value1, value2)
-    elif value1 == expected1:
+    elif value1 == actual1:
         print 'unexpected result: nssystem.ini equal, nsapps DIFFER\n' \
-              'value in nsapps.ini: %s (expected: %s)'% (value2, expected2)
-    elif value2 == expected2:
+              'actual: %s\n' \
+              'expected: %s'% (actual2, value2)
+    elif value2 == actual2:
         print 'unexpected result: nssystem.ini DIFFER, nsapps equal\n' \
-              'value in nssystem.ini: %s (expected: %s)'% (value1, expected1)
+              'actual: %s\n' \
+              'expected: %s'% (actual1, value1)
     else:
         print 'NatlinkIsEnabled: should not come here...'
-def getNatlinkUserDir():
+
+def getUserDirectory():
     """return the path to the Natlink user directory
 
     should be set in configurenatlink, otherwise ignore...
     """
-    key = 'NatlinkUserDir'
+    key = 'UserDirectory'
     value = getFromRegdict(userregnl, key)
     if value:
         if os.path.isdir(value):
             return value
         else:
-            print 'invalid NatlinkUserDir, so ignore. Run configurenatlink to fix if you like: %s'% value
+            print '-'*60
+            print 'Invalid userDirectory (of natlink user grammar files, often unimacro): %s'% value
+            print 'Return NO userDirectory'
+            print 'Run  configurenatlink to fix if you like'
+            print '-'*60
             return ''
     else:
-        print 'NatlinkUserDir is not set. Run configurenatlink to fix if you like'
+        print 'userDirectory (of user grammars in Natlink, mostly unimacro) is NOT SET.'
+        print "Run configurenatlink to fix, or leave it like this"
         return ''
+
+def getVocolaUserDirectory():
+    print 'coming'
+    return ''
 
 
 if __name__ == "__main__":
@@ -340,5 +357,5 @@ if __name__ == "__main__":
     else:
         print 'Strange result in function NatlinkIsEnabled: %s'% nlenabled
 
-    print 'NatlinkUserDir: %s'% getNatlinkUserDir()
+    print '(Natlink) userDir: %s'% getUserDirectory()
     

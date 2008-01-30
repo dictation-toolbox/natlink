@@ -8,22 +8,7 @@ This can be done in three ways:
 -On the command line, using one of the different command line options 
 -Through the configure GUI, which calls into this module
 
-When natlink is installed properly, there should be keys set in 
-the registry HKLM (LOCAL_MACHINE) in section Software\Natlink:
-
-NatlinkInstallPath
-    - Will be set when installing natlink.  Points to the folder where natlink
-      is installed.  Can be changed by reinstalling natlink.
-
-NatlinkCorePath
-    - Will be set when installing natlink.  Points to the folder where
-      natlinkmain.py and natlinkstatus.py are located (among other files)
-      NatlinkCorePath is always in macrosystem\core in relation to
-      NatlinkInstallPath
-
-NatlinkVersion
-    - to be done, should keep track of the last install number.
-
+*** the core directory is relative to this directory ...
 
 Afterwards can be set:
 
@@ -51,10 +36,10 @@ Other functions inside this module, with calls from CLI or command line:
 enableNatlink()  (-e or --enablenatlink)
 disableNatlink() (-E or --disablenatlink)
 
-enableVocola()   (-v or --enablevocola)
-disableVocola()  (-V or --disablevocola)
+enableVocola()   (-v or --enablevocola)  (to be done)
+disableVocola()  (-V or --disablevocola) (to be done)
 
-setNatlinkUserDir (-u path or --setnatlinkuserdir path)
+setUserDirectory (-u path or --setnatlinkuserdir path)
     
 getStatusDict
      get status info in a dict
@@ -63,110 +48,35 @@ More at the bottom, with the CLI description...
 
 """
 
+import installutilfunctions, os, sys, win32api
+thisDir = installutilfunctions.getBaseFolder(globals())
+coreDir = installutilfunctions.getCoreDir(thisDir)
+if thisDir == coreDir:
+    raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
+# appending to path if necessary:
+if not os.path.normpath(coreDir) in sys.path:
+    print 'appending %s to pythonpath...'% coreDir
+    sys.path.append(coreDir)
 
-import RegistryDict, win32con
-import os, os.path, sys, getopt, cmd, types, string
-NatlinkCorePath = None
-NatlinkInstallPath = None
-NatlinkVersion = None # later...
+# from core directory:
+import natlinkstatus
+userregnl = natlinkstatus.userregnl
 
-
+import os, os.path, sys, getopt, cmd, types, string, win32con
 # from previous modules, needed or not...
 NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
-defaultNatLinkDLLFile  = r"NatLink\macrosystem\core\natlink.dll"
-
-
-
-# report function:
-def fatal_error(message, new_raise=None):
-    """prints a fatal error when running this module"""
-    print 'natlinkconfigfunctions fails because of fatal error:'
-    print message
-    print
-    print 'This can (hopefully) be solved by (re)installing natlink'
-    print 
-    if new_raise:
-        raise new_raise
-    else:
-        raise
-      
-# helper function:
-def getFromRegdict(regdict, key, fatal=None):
-    """get a key from the regdict, which was collected earlier.
-
-    if fails, do fatal error is fatal is set,
-    if fatal is not set, only print warning.
-
-    """
-    value = None
-    try:
-        value = regnl[key]
-    except KeyError:
-        mess = 'cannot find key %s in registry dictionary'% key
-        if fatal:
-            fatal_error(mess, new_raise = Exception)
-        else:
-            print mess
-            return ''
-    else:
-        return str(value)
-
-# collect the registry settings of HKLM\Software\Natlink in dict regnl:            
-try:
-    group = "SOFTWARE\Natlink"
-    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)
-except KeyError:
-    regnl = None
-    fatal_error('Cannot find registry settings for Natlink in: HKEY_LOCAL_MACHINE\\%s'% group)
-# collect the registry settings of Current_User in dict userregnl
-try:
-    group = "SOFTWARE\Natlink"
-    userregnl = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, group)
-except KeyError:
-    userregnl = None
-    print 'warning: cannot find registry settings for this user: HKEY_CURRENT_USER\\%s'% group
-         
-                
-# set in regnl...
-NatlinkInstallPath = getFromRegdict(regnl, 'NatlinkInstallPath', fatal=1)
-NatlinkCorePath = getFromRegdict(regnl, 'NatlinkCorePath', fatal=1)
-NatlinkVersion = getFromRegdict(regnl, 'NatlinkVersion')  # may fail for the moment
-
-# appending to path if necessary:
-if not os.path.normpath(NatlinkCorePath) in sys.path:
-    print 'appending %s to pythonpath...'% NatlinkCorePath
-    sys.path.append(NatlinkCorePath)
-
-##    for p in sys.path:
-##        print p
-
-# register natlink.dll:
-try:
-    import win32api
-except:
-    fatal_error("cannot import win32api, please see if win32all of python is properly installed")
-try:
-    os.system('regsvr32 "%s"'% os.path.join(NatlinkCorePath, "natlink.dll"))
-##    win32api.WinExec('regsvr32 /s "%s"'% os.path.join(NatlinkCorePath, "natlink.dll"))
-except:
-    fatal_error("cannot register natlink.dll, please see if natlink.dll is in the core folder")                    
-
-import natlinkstatus
-from natlinkstatus import *
-
-## ok, imported ok, natlink is installed
 
 def getStatusDict():
     """get the relevant variables from natlinkstatus, return in a dict"""
     
     D = {}
-    D['DNSInstallDir'] = getDNSInstallDir()
-    D['DNSIniDir'] = getDNSIniDir()
-    D['DNSVersion'] = getDNSVersion()      # integer!
-    D['WindowsVersion'] = getWindowsVersion()
-    D['NatlinkInstallPath'] = NatlinkInstallPath
-    D['NatlinkCorePath'] = NatlinkCorePath
-    D['NatlinkIsEnabled'] = NatlinkIsEnabled()
+    D['DNSInstallDir'] = natlinkstatus.getDNSInstallDir()
+    D['DNSIniDir'] = natlinkstatus.getDNSIniDir()
+    D['DNSVersion'] = natlinkstatus.getDNSVersion()      # integer!
+    D['WindowsVersion'] = natlinkstatus.getWindowsVersion()
+    D['userDirectory'] = natlinkstatus.getUserDirectory()
+    D['VocolaUserDirectory'] = natlinkstatus.getVocolaUserDirectory()
+    
     return D    
 
 def setDNSInstallDir(new_dir):
@@ -175,7 +85,7 @@ def setDNSInstallDir(new_dir):
     """
     key = 'DNSInstalDir'
     if os.path.isdir(new_dir):
-        regnl[key] = new_dir
+        userregnl[key] = new_dir
     else:
         raise IOError("setDNSInstallDir, not a valid directory: %s"% new_dir)
     
@@ -184,8 +94,8 @@ def clearDNSInstallDir():
 
     """
     key = 'DNSInstalDir'
-    if key in regnl:
-        del regnl[key]
+    if key in userregnl:
+        del userregnl[key]
     else:
         print 'NatSpeak directory was not set in registry, natlink part'
 
@@ -195,7 +105,7 @@ def setDNSIniDir(new_dir):
     """
     key = 'DNSIniDir'
     if os.path.isdir(new_dir):
-        regnl[key] = new_dir
+        userregnl[key] = new_dir
     else:
         raise IOError("setDNSIniDir, not a valid directory: %s"% new_dir)
     
@@ -204,13 +114,13 @@ def clearDNSIniDir():
 
     """
     key = 'DNSIniDir'
-    if key in regnl:
-        del regnl[key]
+    if key in userregnl:
+        del userregnl[key]
     else:
         print 'NatSpeak ini directory was not set in registry, natlink part'
 
-def setNatlinkUserDir(v):
-    key = 'NatlinkUserDir'
+def setUserDirectory(v):
+    key = 'UserDirectory'
     if os.path.isdir(v):
         print 'set natlinkuserdir to %s'% v
         userregnl[key] = v
@@ -218,35 +128,124 @@ def setNatlinkUserDir(v):
         print 'no a valid directory: %s'% v
         
     
-def clearNatlinkUserDir():
-    key = 'NatlinkUserDir'
+def clearUserDirectory():
+    key = 'UserDirectory'
     if key in userregnl:
-        print 'clearing natlinkuserdir...'
+        print 'clearing natlink user directory...'
         del userregnl[key]
     else:
-        print 'natlinkuserdir key was not set...'
+        print 'natlink user directory key was not set...'
         
   
 def enableNatlink():
-  print 'enableNatlink, coming'
+    """register natlink.dll and set settings in nssystem.ini and nsapps.ini
+
+    """
+    registerNatlinkDll(silent=1)
+    nssystemini = natlinkstatus.getNSSYSTEMIni()
+    section1 = natlinkstatus.section1
+    key1 = natlinkstatus.key1
+    value1 = natlinkstatus.value1
+    win32api.WriteProfileVal(section1, key1, value1, nssystemini)
+    nsappsini = natlinkstatus.getNSAPPSIni()
+    section2 = natlinkstatus.section2
+    key2 = natlinkstatus.key2
+    value2 = natlinkstatus.value2
+    win32api.WriteProfileVal(section2, key2, value2, nsappsini)
+    print 'natlink enabled, restart NatSpeak'
+
 def disableNatlink():
-  print 'disableNatlink, coming'
+  
+    nssystemini = natlinkstatus.getNSSYSTEMIni()
+    section1 = natlinkstatus.section1
+    key1 = natlinkstatus.key1
+    # trick with None, see testConfigureFunctions...
+    # this one disables natlink:
+    win32api.WriteProfileVal(section1, key1, None, nssystemini)
+    
+    nsappsini = natlinkstatus.getNSAPPSIni()
+    section2 = natlinkstatus.section2
+    key2 = natlinkstatus.key2
+    win32api.WriteProfileVal(section2, key2, None, nsappsini)
+    # leaving empty section, sorry, did not find the way to delete a section...
+    print 'natlink disabled, natlink.dll NOT unregistered here'
 
 def enableVocola():
   print 'enableVocola, coming'
 def disableVocola():
   print 'disableVocola, coming'
-def enableNatlink():
-  print 'enableNatlink, coming'
+
+
+def getVocolaUserDir():
+    key = 'VocolaUserDirectory'
+    return userregnl[key]
+
 def setVocolaUserDir(v):
-    key = 'VocolaUserDir'
+    key = 'VocolaUserDirectory'
     if os.path.isdir(v):
         print 'set vocola user dir to %s'% v
         userregnl[key] = v
     else:
         print 'not a valid directory: %s'% v
-        
 
+def clearVocolaUserDir():
+    key = 'VocolaUserDirectory'
+    if key in userregnl:
+        del userregnl[key]
+    else:
+        print 'was not set: %s'% key
+
+        
+def registerNatlinkDll(silent=None):
+    """register natlink.dll
+
+    if silent, do through win32api, and not report. This is done whenever natlink is enabled.
+
+    if NOT silent, go through os.system, and produce a message window.
+    """
+    DllPath = os.path.join(coreDir, "natlink.dll")
+    if not os.path.isfile(DllPath):
+        fatal_error("Dll file not found in core folder: %s"% DllPath)
+        
+    if silent:
+        try:
+            import win32api
+        except:
+            fatal_error("cannot import win32api, please see if win32all of python is properly installed")
+        
+        try:
+            win32api.WinExec('regsvr32 /s "%s"'% DllPath)
+        except:
+            fatal_error("cannot register |%s|"% DllPath)                    
+    else:
+        # os.system:
+        os.system('regsvr32 "%s"'% DllPath)
+
+def unregisterNatlinkDll():
+    """unregister explicit, should not be done normally
+    """
+    os.system('regsvr32 /u "%s"'% os.path.join(coreDir, "natlink.dll"))
+##
+##            enableVocola()
+##            disableVocola()
+##            setVocolaUserDir(v)
+##            registerNatlinkDll()
+##            uregisterNatlinkDll()
+def enableDebugOutput():
+    """setting registry key so debug output is in natspeak logfile
+    """
+    key = "NatlinkDebug"
+    userregnl[key] = 1
+    
+
+def disableDebugOutput():
+    """disables the natlink lengthy debug output to natspeak logfile
+    """
+    key = "NatlinkDebug"
+    userregnl[key] = 0
+    
+  
+            
 
 
 def usage():
@@ -278,7 +277,13 @@ def usage():
     -V, --disablevocola: disable vocola, by switching off _vocola_main.py
 
     -w, --setvocoloauserdir: set the user directory for vocola user files
+    -W, --clearvocoloauserdir: clears this setting
 
+    -r, --registernatlink: register natlink.dll
+    -R, --unregisternatlink: unregister natlink.dll (should not be necessary)
+
+    -g, --enabledebugoutput: natlink debug output in natlink log file (not advised)
+    -G, --disabledebugoutput: natlink debug output NOT in natlink log file
     
 
     """
@@ -288,19 +293,19 @@ def _main(Options=None):
 
     options: -i, --info: give status info
 
-             -r, --reginfo: give the info in the registry about natlink
-             -, --natspeakdir: set natspeak install dir
-             -S, --clearnatspeakdir: clear registry item which contains the natspeak install dir
-             etc., see below
+             -I, --reginfo: give the info in the registry about natlink
+             etc., usage above...
 
     """
-    shortOptions = "iIDCeEUdvVc:u:w:"
+    shortOptions = "iIDCeEUdvVc:u:w:WrRgG"
     longOptions = ["info", "reginfo",
                    "setdnsinstalldir=", "cleardnsinstalldir",
                    "setdnsinidir=", "cleardnsinidir"
                    "enablenatlink", "disablenatlink",
                    "enablevocola", "disablevocola",
-                   "setvocoloauserdir="]
+                   "setvocoloauserdir=", "clearvocoladir",
+                   "registernatlink", "unregisternatlink",
+                   "enabledebugoutput", "disabledebugoutput" ]
     if Options:
         if type(Options) == types.StringType:
             Options = Options.split(" ", 1)
@@ -326,12 +331,7 @@ def _main(Options=None):
                 print "%s:\t%s"% (k, D[k])
           
         elif o == "-I":
-            print "LOCAL_MACHINE\\Natlink registry settings:"
-            Keys = regnl.keys()
-            Keys.sort()
-            for k in Keys:
-                print "\t%s:\t%s"% (k, regnl[k])
-
+            # registry settings:
             print "CURRENT_USER\\Natlink registry settings:"
             Keys = userregnl.keys()
             Keys.sort()
@@ -358,10 +358,10 @@ def _main(Options=None):
             disableNatlink()
         elif o == "-u":
             print "Set Natlink User Directory to %s"% v
-            setNatlinkUserDir(v)
+            setUserDirectory(v)
         elif o == "-U":
             print "Clears Natlink User Directory"
-            clearNatlinkUserDir()
+            clearUserDirectory()
         elif o == "-v":
             print "Enable Vocola"
             enableVocola()
@@ -371,6 +371,24 @@ def _main(Options=None):
         elif o == "-w":
             print "Set Vocola User Directory to: %s"% v
             setVocolaUserDir(v)
+        elif o == "-W":
+            print "Clears the Vocola User Directory"
+            clearVocolaUserDir()
+        elif o == "-r":
+            print "(Re) register natlink.dll"
+            registerNatlinkDll()
+        elif o == "-R":
+            print "Unregister natlink.dll"
+            uregisterNatlinkDll()
+        elif o == "-g":
+            print "enable natlink debug output to natspeak logfile "
+            enableDebugOutput()
+        elif o == "-G":
+            print "Disable natlink debug output to natspeak logfile"
+            disableDebugOutput()
+        else:
+            print "forgotten some option: %s"% o
+            
           
 class CLI(cmd.Cmd):
     """provide interactive shell control for the different options.
@@ -380,30 +398,30 @@ class CLI(cmd.Cmd):
         self.prompt = '> '
 
     # info----------------------------------------------------------
-    def do_info(self, arg):
+    def do_i(self, arg):
         _main('-i')
 
-    def help_info(self):
+    def help_i(self):
         print "The command info (i) gives an overview of the settings that are currently set"
         print "inside the natlink system"
 
-    def do_reginfo(self, arg):
+    def do_I(self, arg):
         _main('-I')
 
-    def help_reginfo(self):
+    def help_I(self):
         print "The command reginfo (I) gives all the registry settings" 
         print "that are used by the natlink system."
         print "They are set by either the natlink/vocola/unimacro installer or by"
         print "functions inside this module and this CLI." 
         print "These functions can also be called by the configure gui (wxPython)"
 
-    do_i = do_info
-    do_I = do_reginfo
-    help_i = help_info
-    help_I = help_reginfo
+    do_info = do_i
+    do_reginfo = do_I
+    help_info = help_i
+    help_reginfo = help_I
 
     # DNS install directory------------------------------------------
-    def do_setdnsinstalldir(self, arg):
+    def do_d(self, arg):
         if not arg:
             print 'also enter a valid folder'
             return
@@ -415,26 +433,26 @@ class CLI(cmd.Cmd):
         else:
             print 'not a valid folder: %s'% arg
     
-    def help_setdnsinstalldir(self):
+    def help_d(self):
         print "Set the directory where natspeak is installed, in case"
         print "the normal place(s) cannot find it"
         print "normally not needed, only if natspeak is installed on an unexpected location"
 
-    def do_cleardnsinstalldir(self, arg):
+    def do_D(self, arg):
         _main('-D')
     
-    def help_cleardnsinstalldir(self):
+    def help_D(self):
         print "Clears the registry entry where of the directory where natspeak is installed."
         print "Natlink will again search for NatSpeak install directory in the normal place(s)"
 
-    do_d = do_setdnsinstalldir
-    do_D = do_cleardnsinstalldir
-    help_d = help_setdnsinstalldir
-    help_D = help_cleardnsinstalldir
+    do_setdnsinstalldir = do_d
+    do_cleardnsinstalldir = do_D
+    help_setdnsinstalldir = help_d
+    help_cleardnsinstalldir = help_D
 
 
     # DNS ini directory-----------------------------------------
-    def do_setdnsinidir(self, arg):
+    def do_c(self, arg):
         if not arg:
             print 'also enter a valid folder'
             return
@@ -442,30 +460,30 @@ class CLI(cmd.Cmd):
         if os.path.isdir(arg):
 ##            if arg.find(' ') > 0:
 ##                arg = '"' + arg + '"'
-            _main('-d '+arg)
+            _main('-c '+arg)
         else:
             print 'not a valid folder: %s'% arg
     
-    def help_setdnsinidir(self):
+    def help_c(self):
         print "Set the directory where natspeak ini file locations"
         print " (nssystem.ini and nsapps.ini) are located."
         print "Only needed if they cannot be found in the normal place(s)"
 
-    def do_cleardnsinidir(self, arg):
+    def do_C(self, arg):
         _main('-D')
     
-    def help_cleardnsinidir(self):
+    def help_C(self):
         print "Clears the registry entry that holds the directory of the"
         print "natspeak ini (configuration) files. After it is cleared,"
         print "Natlink will again search for its ini files in the default/normal place(s)"
 
-    do_c = do_setdnsinidir
-    do_C = do_cleardnsinidir
-    help_c = help_setdnsinidir
-    help_C = help_cleardnsinidir
+    do_setdnsinstalldir = do_c
+    do_cleardnsinstalldir = do_C
+    help_setdnsinstalldir = help_c
+    help_cleardnsinstalldir = help_C
 
     # User Directories -------------------------------------------------
-    def do_setnatlinkuserdir(self, arg):
+    def do_u(self, arg):
         if not arg:
             print 'also enter a valid folder'
             return
@@ -477,35 +495,35 @@ class CLI(cmd.Cmd):
         else:
             print 'not a valid folder: %s'% arg
     
-    def help_setnatlinkuserdir(self):
+    def help_u(self):
         print "Sets the user directory of natlink."
         print "This will often be the folder where unimacro is located."
 
-    def do_clearnatlinkuserdir(self, arg):
+    def do_U(self, arg):
         _main('-U')
     
-    def help_clearnatlinkuserdir(self):
+    def help_U(self):
         print "Clears the registry entry that holds the Natlink User Directory"
         print "After it is cleared, natlink will only look for grammars in"
         print "the base directory, where normally Vocola is installed."
 
-    do_u = do_setnatlinkuserdir
-    do_U = do_clearnatlinkuserdir
-    help_u = help_setnatlinkuserdir
-    help_U = help_clearnatlinkuserdir
+    do_setnatlinkuserdir = do_u
+    do_clearnatlinkuserdir = do_U
+    help_setnatlinkuserdir = help_u
+    help_clearnatlinkuserdir = help_U
     
     # enable natlink------------------------------------------------
-    def do_enablenatlink(self, arg):
+    def do_e(self, arg):
         _main('-e')
-    def do_disablenatlink(self, arg):
+    def do_E(self, arg):
         _main('-E')
 
-    def help_enablenatlink(self):
+    def help_e(self):
         print "set the necessary registry settings in nssystem.ini and nsapps.ini"
         print "after you restart natspeak, natlink should start, showing "
         print "the window 'Messages from Python Macros'"
         
-    def help_disablenatlink(self):
+    def help_E(self):
         print "clears the necessary registry settings in nssystem.ini and nsapps.ini"
         print "after you restart natspeak, natlink should NOT START ANY MORE."
         print "the window 'Messages from Python Macros' is NOT SHOWN"
@@ -514,43 +532,92 @@ class CLI(cmd.Cmd):
         
         
         
-    do_e = do_enablenatlink
-    do_E = do_disablenatlink
-    help_e = help_enablenatlink
-    help_E = help_disablenatlink
+    do_enablenatlink = do_e
+    do_disablenatlink = do_E
+    help_enablenatlink = help_e
+    help_disablenatlink = help_E
+  
     
     # Vocola and Vocola User directory------------------------------------------------
-    def do_enablevocola(self, arg):
+    def do_v(self, arg):
         _main('-v')
-    def do_disablevocola(self, arg):
+    def do_V(self, arg):
         _main('-V')
 
-    def help_enablevocola(self):
+    def help_v(self):
         print "enables python files in the base directory of natlink, especially"
         print "_vocola_main.py. Toggle the microphone and Vocola should be in..."
         
-    def help_disablevocola(self):
+    def help_V(self):
         print "renames _vocola_main.py in the base directory of natlink to"
         print " disabled_vocola_main.py."
         print "Also remove all .pyc files and all .py files generated by vocola in this directory."
         print "Toggle the microphone, or possibly restart NatSpeak."
+    def help_w(self):
+        print "Set the directory for vocola user files..."
+        print "Defaults to My documents\\vocola"
+    def help_W(self):
+        print "Clears the directory for vocola user files..."
 
-    def do_setvocolauserdir(self, arg):
-        _main('-w')
-    def help_setvocolauserdir(self):
+    def do_w(self, arg):
+        _main('-w ' + arg)
+    def do_W(self, arg):
+        _main('-W')
+    def help_w(self):
         print "set the directory where the Vocola User Files are/should be located"      
         
-    do_v = do_enablevocola
-    do_V = do_disablevocola
-    do_w = do_setvocolauserdir
-    help_v = help_enablevocola
-    help_V = help_disablevocola
-    help_w = help_setvocolauserdir
+    do_enablevocola = do_v
+    do_disablevocola = do_V
+    do_setvocolauserdir = do_w
+    help_enablevocola = help_v
+    help_disablevocola = help_V
+    help_setvocolauserdir = help_w
+
+    # enable/disable natlink debug output...
+    def do_g(self, arg):
+        _main('-g')
+    def do_G(self, arg):
+        _main('-G')
+
+    def help_g(self):
+        print "enables natlink debug output (in the natspeak log file)"
+        print "this can be a lot of lines, so preferably disable this one!"
+        
+    def help_G(self):
+        print "disables natlink debug output (in the natspeak log file)"
+        print "It is advised to keep this setting disabled"
+
+    do_enabledebugoutput = do_g
+    do_disabledebutoutput = do_G
+    help_enabledebugoutput = help_g
+    help_disabledebugoutput = help_G
+
+
+    # register natlink.dll
+    def do_r(self, arg):
+        _main('-r')
+    def do_R(self, arg):
+        _main('-R')
+
+    def help_r(self):
+        print "registers natlink.dll explicitly."
+        print "this is also done (silent) when you enable natlink, so is mostly NOT NEEDED!"
+        print "It shows a message dialog to inform you what happened."
+        
+    def help_R(self):
+        print "unregisters natlink.dll explicit. Is not necessary to do so..."
+        print "But if you do, a message dialog shows up to inform you what happened."
+
+    do_registernatlink = do_r
+    do_unregisternatlink = do_R
+    help_registernatlink = help_r
+    help_unregisternatlink = help_R
+
 
     def default(self, line):
         print 'no valid entry: %s'% line
         print
-        print usage
+        print usage()
         print
         print 'type help or help command for more information'
 

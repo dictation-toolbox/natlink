@@ -143,6 +143,9 @@ class RegistryDict(object):
         itemtype = type(item)
         if itemtype is str:
             win32api.RegDeleteValue(self.keyhandle, key)
+        elif itemtype is int:
+            # REG_DWORD (apparently)
+            win32api.RegDeleteValue(self.keyhandle, key)
         elif isinstance(item, RegistryDict):
             # Delete everything in the subkey, then the subkey itself
             item.clear()
@@ -223,7 +226,8 @@ class RegistryDict(object):
 if __name__=='__main__':
 
     lm = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software\TestRegistryDict")
-    print 'should be empty: ', lm
+    
+    print 'should start with empty dict: ', lm
     lm['test'] = "abcd"
     print 'should contain test/abcd: ', lm
     lm['test'] = "xxxx"
@@ -232,4 +236,16 @@ if __name__=='__main__':
     print 'should be empty again: ', lm
     del lm['dummy']
     print 'should be still empty: ', lm
+    print '--- now test int values (REG_DWORD)'
+    lm['test'] = 1
+    print 'should contain: test/1', lm
+    lm['test'] = 0
+    print 'should contain: test/1', lm
+    del lm['test']
+    print 'should be empty again: ', lm
+    ls = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software")
+    del ls['TestRegistryDict']
+    
+    
+    
     
