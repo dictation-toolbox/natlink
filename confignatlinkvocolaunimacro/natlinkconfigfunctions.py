@@ -1,3 +1,15 @@
+#
+# Python Macro Language for Dragon NaturallySpeaking
+#   (c) Copyright 1999 by Joel Gould
+#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
+#
+# natlinkconfigfunctions.py
+#   This module performs the configuration functions.
+#   called from natlinkconfig (a wxPython GUI),
+#   or directly, see below
+#
+#   Quintijn Hoogenboom, January 2008
+#
 """
 
 With the functions in this module natlink can be configured.
@@ -6,30 +18,32 @@ This can be done in three ways:
 -Through the command line interface (CLI) which is started automatically
  when this module is run (with Pythonwin, IDLE, or command line of python)
 -On the command line, using one of the different command line options 
--Through the configure GUI, which calls into this module
+-Through the configure GUI (natlinkconfig.py), which calls into this module
+ This last one needs wxPython to be installed.
 
-*** the core directory is relative to this directory ...
+*** the core directory is relative to this directory ... and will be searched for first.
 
 Afterwards can be set:
 
-DNSInstallDir
+DNSInstallDirectory
     - if not found in one of the predefined subfolders of %PROGRAMFILES%,
-      this directory can be set in HKLM\Software\Natlink.
+      this directory can be set in HKCU\Software\Natlink.
       Functions: setDNSInstallDir(path) and clearDNSInstallDir(),
       --- call with CLI or command line option:
       -d path or --setdnsinstalldir path (to set)
       -D or --cleardnsinstalldir to clear and fall back into default
       
-DNSIniDir
+DNSIniDirectory
     - if not found in one of the subfolders of %COMMON_APPDATA%
-      where they are expected, this one can be set in HKLM\Software\Natlink.
+      where they are expected, this one can be set in HKCU\Software\Natlink.
       Functions: setDNSIniDir(path) and clearDNSIniDir()
       --- call with CLI or command line option:
       -i path or --setdnsinidir path (to set)
       -I or --cleardnsinidir  (to clear)
 
-When the module starts, natlink.dll is registered with
+When natlink is enabled natlink.dll is registered with
       win32api.WinExec("regsrvr32 /s pathToNatlinkdll") (silent)
+It can be unregistered through function below.      
 
 Other functions inside this module, with calls from CLI or command line:
 
@@ -58,13 +72,13 @@ if not os.path.normpath(coreDir) in sys.path:
     print 'appending %s to pythonpath...'% coreDir
     sys.path.append(coreDir)
 
-# from core directory:
+# from core directory, use registry entries from CURRENT_USER/Software/Natlink:
 import natlinkstatus
 userregnl = natlinkstatus.userregnl
 
 import os, os.path, sys, getopt, cmd, types, string, win32con
-# from previous modules, needed or not...
-NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
+### from previous modules, needed or not...
+##NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
 def getStatusDict():
     """get the relevant variables from natlinkstatus, return in a dict"""
@@ -78,6 +92,15 @@ def getStatusDict():
     D['VocolaUserDirectory'] = natlinkstatus.getVocolaUserDirectory()
     
     return D    
+
+def printStatusDict():
+    """print the relevant variables from natlinkstatus"""
+    D = getStatusDict()
+    Keys = D.keys()
+    Keys.sort()
+    for k in Keys:
+      print '%s\t%s'% (k, D[k])
+
 
 def setDNSInstallDir(new_dir):
     """set in registry local_machine\natlink
@@ -324,11 +347,7 @@ def _main(Options=None):
         print 'should not have extraneous arguments: %s'% `args`
     for o, v in options:
         if o == "-i":
-            D = getStatusDict()
-            Keys = D.keys()
-            Keys.sort()
-            for k in Keys:
-                print "%s:\t%s"% (k, D[k])
+            printStatusDict()
           
         elif o == "-I":
             # registry settings:

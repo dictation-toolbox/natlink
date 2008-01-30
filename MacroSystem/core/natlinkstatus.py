@@ -4,20 +4,18 @@
 
 getDNSInstallDir:
     returns the directory where NatSpeak is installed.
-    if the registry key NatspeakInstallDir exists, this path is taken
-        (if it points to a valid folder)
-    otherwise one of the default paths is taken,
+    if the registry key NatspeakInstallDir exists(CURRENT_USER/Software/Natlink),
+    this path is taken (if it points to a valid folder)
+    Otherwise one of the default paths is taken,
     %PROGRAMFILES%\Nuance\... or %PROGRAMFILES%\ScanSoft\...
+    It must contain at least a Program subdirectory
 
 getDNSIniDir:
     returns the directory where the NatSpeak Inifiles are located,
     notably nssystem.ini and nsapps.ini.
-    If the registry key NatspeakIniDir exists (LOCAL_MACHINE\Natlink), and the folder exists
-    this path is returned
-    otherwise it is looked for in %COMMON_APPDATA%\Nuance\... or %COMMON_APPDATA%\Scansoft\...
-
-getDNSVersion:
-    return as an integer, 9, 8, 7, ...
+    If the registry key NatspeakIniDir exists (CURRENT_USER/Software/Natlink),
+    and the folder exists and the needed inifiles are in this folder this path is returned.
+    Otherwise it is looked for in %COMMON_APPDATA%\Nuance\... or %COMMON_APPDATA%\Scansoft\...
 
 getDNSVersion:
     returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, ... (???)

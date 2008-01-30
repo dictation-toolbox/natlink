@@ -17,6 +17,13 @@
 # always printing a line when natlinkmain started (option)
 # see in documentation below, and unittestNatlink.py in folder PyTest...
 #
+#
+#
+# Jan 2008 (QH)
+#   - adapted to natlinkstatus, which gives info about natlink, both by
+#     this module and by the natlink config functions.
+#
+
 # April 1, 2000
 #   - fixed a bug where we did not unload files when we noticed that they
 #     were deleted
@@ -107,6 +114,8 @@ natlinkmainPrintsAtEnd = 1
 # This is the directory where the Python modules all reside.
 #
 
+# the base directory is one level above the core directory.
+# vocola grammar files are located here.
 baseDirectory = ''
 DNSuserDirectory = ''   # folder of the current user speech profiles...
 #
@@ -114,8 +123,14 @@ DNSuserDirectory = ''   # folder of the current user speech profiles...
 #
 
 userName = ''
+# this is now the natlink user directory, which can be configured
+# this folder may be empty, or points to the folder where user-defined grammars
+# are, for example the unimacro grammars.
 userDirectory = ''  
 
+# if userDirectory is NOT set, searchImportDirs only contains the base directory.
+# set in findAndLoadFiles:
+searchImportDirs = []
 
 DNSdirectory = ''
 DNSversion = -1
@@ -171,8 +186,8 @@ def loadFile(modName,searchPath,origName=None):
             sourceDate = getFileDate(fndName)
             objectDate = getFileDate(fndName+'c')
             if objectDate >= sourceDate:    
-                if debugLoad:
-                    print 'not changed: %s (%s, %s)'% (fndName, sourceDate, objectDate)
+##                if debugLoad:
+##                    print 'not changed: %s (%s, %s)'% (fndName, sourceDate, objectDate)
                 fndFile.close()
                 return origName
         if debugLoad: print "Reloading", modName
@@ -237,30 +252,17 @@ def safelyCall(modName,funcName):
 #
 
 def findAndLoadFiles(curModule=None):
-    global loadedFiles
+    global loadedFiles, searchImportDirs
+
 
     if curModule:
-        pat = re.compile(r"""
-            ^(%s        # filename must match module name
-            (_\w+)?)    # optional underscore followed by text
-            [.]py$      # extension .py
-          """%curModule, re.VERBOSE|re.IGNORECASE)
-    else:
-        pat = re.compile(r"""
-            ^(_         # filename must start with an underscore
-            \w+)        # remainder of filename
-            [.]py$      # extension .py
-          """, re.VERBOSE|re.IGNORECASE)
-
-
-    
-    if curModule:
+        curModuleEscaped = re.escape(curModule)
         pat = re.compile(r"""
             ^(%s        # filename must match module name
 ##            (_\w+)?)    # optional underscore followed by text (old)
             (_.*)?)    # optional underscore followed by anything (or nothing) (QH)
             [.]py$      # extension .py
-          """%curModule, re.VERBOSE|re.IGNORECASE)
+          """%curModuleEscaped, re.VERBOSE|re.IGNORECASE)
     else:
         pat = re.compile(r"""
             ^(_         # filename must start with an underscore
@@ -269,12 +271,14 @@ def findAndLoadFiles(curModule=None):
             [.]py$      # extension .py
           """, re.VERBOSE|re.IGNORECASE)
 
+    searchImportDirs = []
     filesToLoad = {}
     if userDirectory != '':
+        searchImportDirs.append(userDirectory)
         for x in os.listdir(userDirectory):
             res = pat.match(x)
             if res: filesToLoad[ res.group(1) ] = None
-
+    searchImportDirs.append(baseDirectory)
     for x in os.listdir(baseDirectory):
         res = pat.match(x)
         if res: filesToLoad[ res.group(1) ] = None
@@ -288,7 +292,7 @@ def findAndLoadFiles(curModule=None):
             origName = None
             if debugCallback:
                 print 'new file to load: %s'% x
-        loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], origName)
+        loadedFiles[x] = loadFile(x, searchImportDirs, origName)
 
     # Unload any files which have been deleted
     for name,path in loadedFiles.items():
@@ -354,7 +358,7 @@ def beginCallback(moduleInfo, checkAll=None):
             if debugCallback:
                 print 'check for changed files (all files)...'
             for x in loadedFiles.keys():
-                loadedFiles[x] = loadFile(x, [userDirectory,baseDirectory], loadedFiles[x])
+                loadedFiles[x] = loadFile(x, searchImportDirs, loadedFiles[x])
             loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
         else:
             if debugCallback:
@@ -372,7 +376,7 @@ def beginCallback(moduleInfo, checkAll=None):
 #
 
 def changeCallback(type,args):
-    global userName, userDirectory
+    global userName, DNSuserDirectory
     if debugCallback:
         print 'changeCallback (unimacro testversion), type: %s, args: %s'% (type, args)
     if type == 'mic' and args == 'on':
@@ -383,7 +387,7 @@ def changeCallback(type,args):
         beginCallback(moduleInfo, checkAll=1)
         loadModSpecific(moduleInfo)
     if type == 'user' and userName != args[0]:
-        userName, userDirectory = args
+        userName, DNSuserDirectory = args
         moduleInfo = getCurrentModule()
         if debugCallback:
             print "changeCallback, User changed to", userName
@@ -395,8 +399,9 @@ def changeCallback(type,args):
         if debugLoad:
             print 'BaseModel: %s'% BaseModel
             print 'BaseTopic: %s'% BaseTopic
+        # changed next two lines QH:
+        findAndLoadFiles()        
         beginCallback(moduleInfo, checkAll=1)
-        findAndLoadFiles()
         loadModSpecific(moduleInfo)
     #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself
     # the grammar should include a function like:
@@ -505,10 +510,9 @@ def extractDNSversion():
     """    
     global DNSversion
     if DNSversion < 0:
-        DNSVersion =  natlinkstatus.getDNSVersion()
-        if DNSVersion < 0:
-            print "natlinkmain, invalid DNS version found: %s"% DNSVersion
-    return DNSVersion
+        DNSversion =  natlinkstatus.getDNSVersion()
+        if DNSversion < 0:
+            print "natlinkmain, invalid DNS version found: %s"% DNSversion
 
 
 
