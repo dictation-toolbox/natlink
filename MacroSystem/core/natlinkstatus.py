@@ -39,7 +39,7 @@ getNSAPPSIni(): get the path of nsapps.ini
 """
 
 import os, re, win32api, win32con
-import RegistryDict
+import RegistryDict, natlinkcorefunctions
 # for getting generalised env variables:
 
 from win32com.shell import shell, shellcon
@@ -55,21 +55,6 @@ DNSPaths = [NSExt9Path, NSExt8Path, NSExt73Path]
 DNSVersions = [9,8,7]
 NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
-## setting of nssystem.ini if natlink is enabled...
-## this first setting is decisive for NatSpeak if it loads natlink or not
-section1 = "Global Clients"
-key1 = ".Natlink"
-value1 = 'Python Macro System'
-
-## setting of nsapps.ini if natlink is enabled...
-## this setting is ignored if above setting is not there...
-section2 = ".Natlink"
-key2 = "App Support GUID"
-value2 = NATLINK_CLSID
-
-
-
-
 # utility functions:
 # report function:
 def fatal_error(message, new_raise=None):
@@ -83,75 +68,6 @@ def fatal_error(message, new_raise=None):
         raise new_raise
     else:
         raise
-      
-# helper function:
-def getFromRegdict(regdict, key, fatal=None):
-    """get a key from the regdict, which was collected earlier.
-
-    if fails, do fatal error is fatal is set,
-    if fatal is not set, only print warning.
-
-    """
-    mess = 'could not find key %s in registry dict'% key
-    value = None
-    try:
-        value = regdict[key]
-    except KeyError:
-        if fatal:
-            fatal_error(mess, new_raise = Exception)
-        else:
-            return ''
-    else:
-        return str(value)
-
-def getExtendedEnv(var):
-    """get from environ or windows CSLID
-
-    short version, if HOME and ~ should be recognised, use the version from utilsqh..
-    """
-    # for safety:
-    var2 = str(var).strip("%")
-    if var2 in os.environ:
-        result = str(os.environ[var2])
-        if result:
-            return result
-    # if not go on:
-    try:
-        CSIDL_variable =  'CSIDL_%s'% var2
-        shellnumber = getattr(shellcon,CSIDL_variable, -1)
-    except:
-        raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
-    if shellnumber < 0:
-        raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
-    try:
-        result = shell.SHGetFolderPath (0, shellnumber, 0, 0)
-    except:
-        raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
-
-    result = str(result)
-    result = os.path.normpath(result)
-    return result
-
-##############################################################################33333
-
-
-
-
-try:
-    group = "SOFTWARE\Natlink"
-    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)
-except KeyError:
-    fatal_error('cannot find registry: HKEY_LOCAL_MACHINE\\%s'% group)
-    raise
-try:
-    group = "SOFTWARE\Natlink"
-    userregnl = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, group)
-except KeyError:
-    userregnl = None
-    print 'warning: cannot find registry for this user: HKEY_CURRENT_USTER\\%s'% group
-
-
-
 
 # of course for extracting the windows version:
 Wversions = {'1/4/10': '98',
@@ -161,193 +77,268 @@ Wversions = {'1/4/10': '98',
              '2/5/1':  'XP',
              }
 
-def getWindowsVersion():
-    """extract the windows version
+# the possible languages (for getLanguage)
+languages = {"Nederlands": "nld",
+             "Français": "fra",
+             "Deutsch": "deu",
+             "UK English": "enx",
+             "US English": "enx",
+             "Australian English": "enx",
+             "Indian English": "enx",
+             "SEAsian English": "enx",
+             "Italiano": "ita"}
 
-    return 1 of the predefined values above, or just return what the system
-    call returns
+class NatlinkStatus(object):
+    """this class holds the natlink status functions
+
+    so, can be called from natlinkmain.
+
+    in the natlinkconfigfunctions it is subclassed for installation things
+    in the PyTest folder there are/come test functions in TestNatlinkStatus
+
     """
-    tup = win32api.GetVersionEx()
-    version = "%s/%s/%s"% (tup[3], tup[0], tup[1])
-    try:
-        return Wversions[version]
-    except KeyError:
-        print 'natlinkstatus.getWindowsVersion: (yet) unknown Windows version: %s'% version
-        return  version
+    usergroup = "SOFTWARE\Natlink"
+##    lmgroup = "SOFTWARE\Natlink"
+    userregnl = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup)
+##    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)
 
-def getDNSIniDir():
-    """get the path (one above the users profile paths) where the ini files
-    should be located
-    """
-    # first try if set (by configure dialog/natlinkinstallfunctions.py) if regkey is set:
-    key = 'DNSIniDir'
-    P = getFromRegdict(regnl, key)
-    if P and os.path.isdir(P):
-        return P
-    
-    # first try in allusersprofile/'application data'
-    allusersprofile = getExtendedEnv('ALLUSERSPROFILE')
-    trunkPath = os.path.join(os.environ['ALLUSERSPROFILE'], 'Application Data')
-    for dnsdir in DNSPaths:
-        cand = os.path.join(trunkPath, dnsdir)
-        if os.path.isdir(cand):
-            nssystem = os.path.join(cand, NSSystemIni)
-            nsapps = os.path.join(cand, NSAppsIni)
-            if os.path.isfile(nssystem) and os.path.isfile(nsapps):
-                return cand
-    raise IOError("no valid DNS Install Dir found")
-    
-def getDNSVersion():
-    """find the correct DNS version number (integer)
+    ### from previous modules, needed or not...
+    NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
-    for versions 8 and 9 look in NSSystemIni,
-    for 9 in Documents and Settings
-    for 8 in Program Folder
+    ## setting of nssystem.ini if natlink is enabled...
+    ## this first setting is decisive for NatSpeak if it loads natlink or not
+    section1 = "Global Clients"
+    key1 = ".Natlink"
+    value1 = 'Python Macro System'
 
-    for earlier versions try the registry, the result is uncertain.    
+    ## setting of nsapps.ini if natlink is enabled...
+    ## this setting is ignored if above setting is not there...
+    section2 = ".Natlink"
+    key2 = "App Support GUID"
+    value2 = NATLINK_CLSID    
+ 
+    def getWindowsVersion(self):
+        """extract the windows version
 
-    """    
-    dnsPath = getDNSInstallDir()
-    # for 9:
-    iniDir = getDNSIniDir()
-    if not iniDir:
-        return 0
-    nssystemini = getNSSYSTEMIni()
-    nsappsini = getNSAPPSIni()
-    if nssystemini and os.path.isfile(nssystemini):
-        version =win32api.GetProfileVal( "Product Attributes", "Version" , "",
-                                      nssystemini)
-        if version:
-            return int(version[0])
+        return 1 of the predefined values above, or just return what the system
+        call returns
+        """
+        tup = win32api.GetVersionEx()
+        version = "%s/%s/%s"% (tup[3], tup[0], tup[1])
+        try:
+            return Wversions[version]
+        except KeyError:
+            print 'natlinkstatus.getWindowsVersion: (yet) unknown Windows version: %s'% version
+            return  version
+
+    def getDNSIniDir(self):
+        """get the path (one above the users profile paths) where the ini files
+        should be located
+        """
+        # first try if set (by configure dialog/natlinkinstallfunctions.py) if regkey is set:
+        key = 'DNSIniDir'
+        P = self.userregnl.get(key, '')
+        if P and os.path.isdir(P):
+            return P
+        
+        # first try in allusersprofile/'application data'
+        allusersprofile = natlinkcorefunctions.getExtendedEnv('ALLUSERSPROFILE')
+        trunkPath = os.path.join(os.environ['ALLUSERSPROFILE'], 'Application Data')
+        for dnsdir in DNSPaths:
+            cand = os.path.join(trunkPath, dnsdir)
+            if os.path.isdir(cand):
+                nssystem = os.path.join(cand, NSSystemIni)
+                nsapps = os.path.join(cand, NSAppsIni)
+                if os.path.isfile(nssystem) and os.path.isfile(nsapps):
+                    return cand
+        raise IOError("no valid DNS Install Dir found")
+        
+    def getDNSVersion(self):
+        """find the correct DNS version number (integer)
+
+        for versions 8 and 9 look in NSSystemIni,
+        for 9 in Documents and Settings
+        for 8 in Program Folder
+
+        for earlier versions try the registry, the result is uncertain.    
+
+        """    
+        dnsPath = self.getDNSInstallDir()
+        # for 9:
+        iniDir = self.getDNSIniDir()
+        if not iniDir:
+            return 0
+        nssystemini = self.getNSSYSTEMIni()
+        nsappsini = self.getNSAPPSIni()
+        if nssystemini and os.path.isfile(nssystemini):
+            version =win32api.GetProfileVal( "Product Attributes", "Version" , "",
+                                          nssystemini)
+            if version:
+                return int(version[0])
+            else:
+                raise ValueError("getDNSversion: cannot find version while inifile 9 exists")
+
+        # try falling back on registry:
+        r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
+        if "NaturallySpeaking8" in r:
+            DNSversion = 8
+        elif "NaturallySpeaking 7.1" in r or "NaturallySpeaking 7.3":
+            DNSversion = 7
         else:
-            raise ValueError("getDNSversion: cannot find version while inifile 9 exists")
-
-    # try falling back on registry:
-    r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
-    if "NaturallySpeaking8" in r:
-        DNSversion = 8
-    elif "NaturallySpeaking 7.1" in r or "NaturallySpeaking 7.3":
-        DNSversion = 7
-    else:
-        DNSversion = 5
-    return DNSversion
+            DNSversion = 5
+        return DNSversion
 
 
-def getDNSInstallDir():
-    """get the folder where natspeak is installed
+    def getDNSInstallDir(self):
+        """get the folder where natspeak is installed
 
-    try from the list DNSPaths, look for 9, 8, 7.
-    """
-    key = 'DNSInstallDir'
-    P = getFromRegdict(regnl, key)
-    if P and os.path.isdir(P):
-        return P
-            
-    pf = getExtendedEnv('PROGRAMFILES')
-    if not os.path.isdir(pf):
-        raise IOError("no valid folder for program files: %s"% pf)
-    for dnsdir in DNSPaths:
-        cand = os.path.join(pf, dnsdir)
-        if os.path.isdir(cand):
-            programfolder = os.path.join(cand, 'Program')
-            if os.path.isdir(programfolder):
-                return cand
-    raise IOError("no valid DNS Install Dir found")
-
-
-def getPythonVersion():
-    """get the version of python from the registry
-    """
-    try:
-        r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE,"SOFTWARE\Python\PythonCore")
-    except ValueError:
-        return ''
-    return r.keys()[0]
-
-def getNSSYSTEMIni():
-    inidir = getDNSIniDir()
-    if inidir:
-        nssystemini = os.path.join(inidir, NSSystemIni)
-        if os.path.isfile(nssystemini):
-            return nssystemini
-    raise IOError("Cannot find proper NSSystemIni file")
-            
-def getNSAPPSIni():
-    inidir = getDNSIniDir()
-    nsappsini = os.path.join(inidir, NSAppsIni)
-    if os.path.isfile(nsappsini):
-            return nsappsini
-    raise IOError("Cannot find proper NSAppsIni file")
+        try from the list DNSPaths, look for 9, 8, 7.
+        """
+        key = 'DNSInstallDir'
+        P = self.userregnl.get(key, '')
+        if P and os.path.isdir(P):
+            return P
+                
+        pf = natlinkcorefunctions.getExtendedEnv('PROGRAMFILES')
+        if not os.path.isdir(pf):
+            raise IOError("no valid folder for program files: %s"% pf)
+        for dnsdir in DNSPaths:
+            cand = os.path.join(pf, dnsdir)
+            if os.path.isdir(cand):
+                programfolder = os.path.join(cand, 'Program')
+                if os.path.isdir(programfolder):
+                    return cand
+        raise IOError("no valid DNS Install Dir found")
 
 
-def NatlinkIsEnabled():
-    """check if the ini file settings are correct
-
-in  nssystem.ini check for:
-
-[Global Clients]
-.NatLink=Python Macro System
-is
-in nsapps.ini check for
-[.NatLink]
-App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
-
-    """
-    nssystemini = getNSSYSTEMIni()
-    actual1 = win32api.GetProfileVal(section1, key1, "", nssystemini)
-
-
-    nsappsini = getNSAPPSIni()
-    actual2 = win32api.GetProfileVal(section2, key2, "", nsappsini)
-    if value1 == actual1 and value2 == actual2:
-        return 1
-    elif value1 != actual1 and value2 != actual2:
-        return 0
-    elif value1 == actual1:
-        print 'unexpected result: nssystem.ini equal, nsapps DIFFER\n' \
-              'actual: %s\n' \
-              'expected: %s'% (actual2, value2)
-    elif value2 == actual2:
-        print 'unexpected result: nssystem.ini DIFFER, nsapps equal\n' \
-              'actual: %s\n' \
-              'expected: %s'% (actual1, value1)
-    else:
-        print 'NatlinkIsEnabled: should not come here...'
-
-def getUserDirectory():
-    """return the path to the Natlink user directory
-
-    should be set in configurenatlink, otherwise ignore...
-    """
-    key = 'UserDirectory'
-    value = getFromRegdict(userregnl, key)
-    if value:
-        if os.path.isdir(value):
-            return value
-        else:
-            print '-'*60
-            print 'Invalid userDirectory (of natlink user grammar files, often unimacro): %s'% value
-            print 'Return NO userDirectory'
-            print 'Run  configurenatlink to fix if you like'
-            print '-'*60
+    def getPythonVersion(self):
+        """get the version of python from the registry
+        """
+        try:
+            r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE,"SOFTWARE\Python\PythonCore")
+        except ValueError:
             return ''
-    else:
-        print 'userDirectory (of user grammars in Natlink, mostly unimacro) is NOT SET.'
-        print "Run configurenatlink to fix, or leave it like this"
+        return r.keys()[0]
+
+    def getNSSYSTEMIni(self):
+        inidir = self.getDNSIniDir()
+        if inidir:
+            nssystemini = os.path.join(inidir, NSSystemIni)
+            if os.path.isfile(nssystemini):
+                return nssystemini
+        raise IOError("Cannot find proper NSSystemIni file")
+                
+    def getNSAPPSIni(self):
+        inidir = self.getDNSIniDir()
+        if inidir:
+            nsappsini = os.path.join(inidir, NSAppsIni)
+            if os.path.isfile(nsappsini):
+                return nsappsini
+        raise IOError("Cannot find proper NSAppsIni file")
+
+
+    def NatlinkIsEnabled(self):
+        """check if the ini file settings are correct
+
+    in  nssystem.ini check for:
+
+    [Global Clients]
+    .NatLink=Python Macro System
+    is
+    in nsapps.ini check for
+    [.NatLink]
+    App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
+
+        """
+        nssystemini = self.getNSSYSTEMIni()
+        actual1 = win32api.GetProfileVal(self.section1, self.key1, "", nssystemini)
+
+
+        nsappsini = self.getNSAPPSIni()
+        actual2 = win32api.GetProfileVal(self.section2, self.key2, "", nsappsini)
+        if self.value1 == actual1 and self.value2 == actual2:
+            return 1
+        elif self.value1 != actual1 and self.value2 != actual2:
+            return 0
+        elif self.value1 == actual1:
+            print 'unexpected result: nssystem.ini equal, nsapps DIFFER\n' \
+                  'actual: %s\n' \
+                  'expected: %s'% (actual2, value2)
+        elif self.value2 == actual2:
+            print 'unexpected result: nssystem.ini DIFFER, nsapps equal\n' \
+                  'actual: %s\n' \
+                  'expected: %s'% (actual1, value1)
+        else:
+            print 'NatlinkIsEnabled: should not come here...'
+
+    def getUserDirectory(self):
+        """return the path to the Natlink user directory
+
+        should be set in configurenatlink, otherwise ignore...
+        """
+        key = 'UserDirectory'
+        value = self.userregnl.get(key, '')
+        if value:
+            if os.path.isdir(value):
+                return value
+            else:
+                print '-'*60
+                print 'Invalid userDirectory (of natlink user grammar files, often unimacro): %s'% value
+                print 'Return NO userDirectory'
+                print 'Run  configurenatlink to fix if you like'
+                print '-'*60
+                return ''
+        else:
+            print 'userDirectory (of user grammars in Natlink, mostly unimacro) is NOT SET.'
+            print "Run configurenatlink to fix, or leave it like this"
+            return ''
+
+    def getVocolaUserDirectory(self):
+        print 'coming'
         return ''
 
-def getVocolaUserDirectory():
-    print 'coming'
-    return ''
+    def getBaseModelBaseTopic(self, DNSuserDirectory):
+        """to be done"""
+        return "tobedone", "tobedone"
+        if debugLoad: print 'extract BaseModel from DNSuserDirectory: %s'% dir
+        keyToModel = win32api.GetProfileVal( "Options", "Last Used Acoustics", "voice" , dir+"\\options.ini" )
+        BaseModel = win32api.GetProfileVal( "Base Acoustic", keyToModel , "" , dir+"\\acoustic.ini" )
+        if debugLoad: print 'extract BaseTopic from DNSuserDirectory: %s'% dir
+        keyToModel = win32api.GetProfileVal( "Options", "Last Used Topic", "" , dir+"\\options.ini" )
+        if keyToModel:
+            BaseTopic = win32api.GetProfileVal( "Base Topic", keyToModel , "" , dir+"\\topics.ini" )
+        else:
+            BaseTopic = "not found in ini files"
+    ##    basetopics = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\topics.ini" )
+    def getLanguage(self, DNSuserDirectory):
+        """this can only be run if natspeak is running
 
+        The directory of the user speech profiles must be passed.
+        So this function should be called at changeCallback when a new user
+        is opened.
+        """
+        dir = DNSuserDirectory
+        acousticini = os.path.join(DNSuserDirectory, 'acoustic.ini')
+        if not os.path.isfile(acousticini):
+            print 'Warning,  language of the user cannot be found, acoustic.ini not a file'
+            return 'yyy'
+        lang = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , acousticini)
+        lang =  lang.split("|")[0].strip()
+        if lang in languages:
+            return languages[lang]
+        else:
+            print "Found unknown language in acoustic.ini:", lang
+            return "xxx"
+   
 
 if __name__ == "__main__":
-    print 'DNS Install Dir: %s'% getDNSInstallDir()
-    print 'DNS Ini Dir: %s'% getDNSIniDir()
-    print 'Windows version: %s'% getWindowsVersion()
-    print 'DNS version: (integer) %s'% getDNSVersion()
-    print 'Python version: %s'% getPythonVersion()
-    nlenabled = NatlinkIsEnabled()
+    status = NatlinkStatus()
+    print 'DNS Install Dir: %s'% status.getDNSInstallDir()
+    print 'DNS Ini Dir: %s'% status.getDNSIniDir()
+    print 'Windows version: %s'% status.getWindowsVersion()
+    print 'DNS version: (integer) %s'% status.getDNSVersion()
+    print 'Python version: %s'% status.getPythonVersion()
+    nlenabled = status.NatlinkIsEnabled()
     if nlenabled:
         print 'Natlink is enabled...'
     elif nlenabled == 0:
@@ -355,5 +346,5 @@ if __name__ == "__main__":
     else:
         print 'Strange result in function NatlinkIsEnabled: %s'% nlenabled
 
-    print '(Natlink) userDir: %s'% getUserDirectory()
+    print '(Natlink) userDir: %s'% status.getUserDirectory()
     

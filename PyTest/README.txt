@@ -11,7 +11,7 @@ Note
    For version 8 some differences make several tests fail, especially with testWordProns and testWordFuncs.
    Also testDictGram seems to fail, testPlaystring gives a strange (unresolved by me) error in version 8, maybe due to Dutch windows system.
 
-3. in the unimacro version of natlinkmain grammar files are not checked at each speech utterance, only when the microphone toggles.  This behaviour can be altered by the variable checkForGrammarChanges. In unimacro this option is set when you call (through the grammar _control) to change a grammar.
+3. The grammar files are not checked at each speech utterance, only when the microphone toggles.  This behaviour can be altered by the variable checkForGrammarChanges. In unimacro this option is set when you call (through the grammar _control) to change a grammar.
 
 4. Testing with natconnectThreading set to 1 will fail some times.  So in other words this option is dangerous with several callback procedures.
 
@@ -19,5 +19,5 @@ Note
 
 6. Run most easily with IDLE, not with pythonwin. More instructions, also for one test at a time, in the top of the source file. 
 
-Quintijn Hoogenboom,  May 1, 2007
+Quintijn Hoogenboom,  May 1, 2007/February 2008
 q.hoogenboom@antenna.nl, http://qh.antenna.nl/unimacro

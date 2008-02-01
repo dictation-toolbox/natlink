@@ -3,21 +3,30 @@
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
-# installutilfunctions.py
-#
-# Quintijn Hoogenboom, January 2008:
-# this module should both be (and identical) in
-# -- the core folder of natlink (where natlinkmain is started from natspeak when natlink
-#                                is enabled
-# -- the configurenatlinkvocolaunimacro folder, from
-#    which configuration of natlink/vocola/unimacro is performed
-#
-# getBaseFolder: returns the folder from the calling module
-# getCoreDir: returns the core folder of natlink, relative to the configure directory
-# fatalError: raises error again, if new_raise is set, otherwise continues executing
-# getExtendedEnv(env): gets from os.environ, or from window system calls the
-#                      environment.
-#  
+"""natlinkcorefunctions.py
+
+ Quintijn Hoogenboom, January 2008:
+
+These functions are used by natlinkstatus.py,
+and can also used by all the modules,
+as the core folder will be in the python path
+when natlink is running.
+
+The first function is also, hopefully identical, in
+natlinkconfigfunctions, in the configurenatlinkvocolaunimacro folder
+
+getBaseFolder: returns the folder from the calling module
+getCoreDir: returns the core folder of natlink, relative to the configure directory
+fatalError: raises error again, if new_raise is set, otherwise continues executing
+getExtendedEnv(env): gets from os.environ, or from window system calls (CSIDL_...) the
+                     environment. Take PERSONAL for HOME and ~
+getAllFolderEnvironmentVariables: get a dict of all possible HOME and CSIDL variables,
+           that result in a valid folder path
+substituteEnvVariableAtStart: substitute back into a file/folder path an environment variable
+
+
+
+""" 
 import os, sys
 
 def getBaseFolder(globalsDict=None):
@@ -38,33 +47,6 @@ def getBaseFolder(globalsDict=None):
         baseFolder = os.getcwd()
         print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder
-
-def getCoreDir(thisDir):
-    """get the natlink core folder, relative from the current folder
-
-    This folder should be relative to this with ../macrosystem/core and should contain
-    natlinkmain.py and natlink.dll and natlinkstatus.py
-
-    If not found like this, prints a line and returns thisDir
-    SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
-    """
-    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'macrosystem', 'core') )
-    if not os.path.isdir(coreFolder):
-        print 'not a directory: %s'% coreFolder
-        return thisDir
-    dllPath = os.path.join(coreFolder, 'natlink.dll')
-    mainPath = os.path.join(coreFolder, 'natlinkmain.py')
-    statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-    if not os.path.isfile(dllPath):
-        print 'natlink.dll not found in core directory: %s'% coreFolder
-        return thisDir
-    if not os.path.isfile(mainPath):
-        print 'natlinkmain.py not found in core directory: %s'% coreFolder
-        return thisDir
-    if not os.path.isfile(statusPath):
-        print 'natlinkstatus.py not found in core directory: %s'% coreFolder
-        return thisDir
-    return coreFolder
 
 # report function:
 def fatal_error(message, new_raise=None):
@@ -99,7 +81,12 @@ def getFromRegdict(regdict, key, fatal=None):
             return ''
     else:
         return value
-    
+
+# keep track of found env variables, fill, if you wish, with
+# getAllFolderEnvironmentVariables.
+# substitute back with substituteEnvVariableAtStart.
+recentEnv = {}
+
 def getExtendedEnv(var):
     """get from environ or windows CSLID
 
@@ -108,14 +95,19 @@ def getExtendedEnv(var):
 
     """
     global recentEnv
+    
     var = var.strip()
     var = var.strip("%")
     
-    if var in recentEnv:
-        return recentEnv[var]
-    
     if var == "~":
         var = 'HOME'
+
+    if var in recentEnv:
+        return recentEnv[var]
+
+    if var in os.environ:
+        recentEnv[var] = os.environ[var]
+        return recentEnv[var]
 
     # try to get from CSIDL system call:
     if var == 'HOME':
@@ -143,12 +135,12 @@ def getExtendedEnv(var):
 def getAllFolderEnvironmentVariables():
     """get all the environ AND all CSLID variables that result into a folder
 
+    also put them in recentEnv    
+
     """
+    global recentEnv
     D = {}
-    for k in os.environ:
-        v = os.environ[k]
-        if os.path.isdir(v):
-            D[k] = v
+
     for k in dir(shellcon):
         if k.startswith("CSIDL_"):
             kStripped = k[6:]
@@ -160,6 +152,15 @@ def getAllFolderEnvironmentVariables():
                 D[kStripped] = v
             elif v == '.':
                 D[kStripped] = os.getcwd()
+    # os.environ overrules CSIDL:
+    for k in os.environ:
+        v = os.environ[k]
+        if os.path.isdir(v):
+            v = os.path.normpath(v)
+            if k in D and D[k] != v:
+                print 'warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v)
+            D[k] = v
+            recentEnv[k] = v
     return D
 
 def substituteEnvVariableAtStart(filepath): 

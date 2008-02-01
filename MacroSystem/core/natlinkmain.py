@@ -6,6 +6,12 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+#
+# Jan 2008 (QH)
+#   - adapted to natlinkstatus, which gives info about natlink, both by
+#     this module and by the natlink config functions.
+#     status is now a class instance of natlinkstatus.NatlinkStatus
+#
 # QH, May 22, 2007:
 #    extended range of possible filenames, (nearly) arbitrary characters may appear after
 #    "_" in global grammar names or after
@@ -18,12 +24,6 @@
 # see in documentation below, and unittestNatlink.py in folder PyTest...
 #
 #
-#
-# Jan 2008 (QH)
-#   - adapted to natlinkstatus, which gives info about natlink, both by
-#     this module and by the natlink config functions.
-#
-
 # April 1, 2000
 #   - fixed a bug where we did not unload files when we noticed that they
 #     were deleted
@@ -65,13 +65,15 @@ import os.path          # to parse filenames
 import imp              # module reloading
 import re               # regular expression parsing    
 import traceback        # for printing exceptions
-##import RegistryDict
-import win32api # win32api for getting ini file values
+##import RegistryDict   # all in natlinkstatus now
+##import win32api # win32api for getting ini file values
 from stat import *      # file statistics
 from natlink import *   
 import glob             # new way to collect the grammar files
 import pprint
 import natlinkstatus    # for extracting status info (QH)
+# status now a class:
+status = natlinkstatus.NatlinkStatus()
 
 debugLoad=0
 cmdLineStartup=0
@@ -376,7 +378,7 @@ def beginCallback(moduleInfo, checkAll=None):
 #
 
 def changeCallback(type,args):
-    global userName, DNSuserDirectory
+    global userName, DNSuserDirectory, language, BaseModel, BaseTopic, DNSmode
     if debugCallback:
         print 'changeCallback (unimacro testversion), type: %s, args: %s'% (type, args)
     if type == 'mic' and args == 'on':
@@ -392,13 +394,11 @@ def changeCallback(type,args):
         if debugCallback:
             print "changeCallback, User changed to", userName
         unloadEverything()
-        changeUserDirectory()
-        extractLanguage()
-        extractBaseModel()
-        extractBaseTopic()
-        if debugLoad:
-            print 'BaseModel: %s'% BaseModel
-            print 'BaseTopic: %s'% BaseTopic
+## this is not longer needed here, as we fixed the userDirectory
+##        changeUserDirectory()
+        language = status.getLanguage(DNSuserDirectory)
+        print 'language: %s'% language
+        BaseModel, BaseTopic = status.getBaseModelBaseTopic(DNSuserDirectory)
         # changed next two lines QH:
         findAndLoadFiles()        
         beginCallback(moduleInfo, checkAll=1)
@@ -447,94 +447,24 @@ def changeCallbackLoadedModulesMicOn(type,args):
                 apply(func, [type,args])
 
 
-#QH>>when changing user (changeCallback)
-def changeUserDirectory():
-    """call also from changeCallback! QH
-    
-    the default userDirectory from = getCurrentUser() is deep within the filesystem
-    and unlikely to be useful to anyone
-    so we change it
-    """
-    global userDirectory
-    userDirectory = natlinkstatus.getUserDirectory()
+###QH>>when changing user (changeCallback) obsoleteQH
+##def changeUserDirectory():
+##    """call also from changeCallback! QH
+##    
+##    the default userDirectory from = getCurrentUser() is deep within the filesystem
+##    and unlikely to be useful to anyone
+##    so we change it
+##    """
+##    global userDirectory
+##    userDirectory = status.getUserDirectory()
 
+#### callable from other modules, also for backwards compatibility:::
+##def getUserDirectory():
+##    return status.getUserDirectory()
+##
+##def getLanguage():
+##    return status.getLanguage(DNSuserDirectory)
 
-#QH>> for unimacro:
-# get language version:
-languages = {"Nederlands": "nld",
-             "Français": "fra",
-             "Deutsch": "deu",
-             "UK English": "enx",
-             "US English": "enx",
-             "Australian English": "enx",
-             "Indian English": "enx",
-             "SEAsian English": "enx",
-             "Italiano": "ita"}
-def extractLanguage():
-    global language
-    dir = DNSuserDirectory
-    if debugLoad: print 'extract language from DNSuserDirectory: %s'% dir
-    lang = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\acoustic.ini" )
-    lang =  lang.split("|")[0].strip()
-    if debugLoad: print "language string from acoustic file: %s"% lang
-    if lang in languages:
-        language = languages[lang]
-    else:
-        print "unknown language:", lang
-        language = "xxx"
-
-def extractBaseModel():
-    global BaseModel
-    dir = DNSuserDirectory
-    if debugLoad: print 'extract BaseModel from DNSuserDirectory: %s'% dir
-    keyToModel = win32api.GetProfileVal( "Options", "Last Used Acoustics", "voice" , dir+"\\options.ini" )
-    BaseModel = win32api.GetProfileVal( "Base Acoustic", keyToModel , "" , dir+"\\acoustic.ini" )
-    
-def extractBaseTopic():
-    global BaseTopic
-    dir = DNSuserDirectory
-    if debugLoad: print 'extract BaseTopic from DNSuserDirectory: %s'% dir
-    keyToModel = win32api.GetProfileVal( "Options", "Last Used Topic", "" , dir+"\\options.ini" )
-    if keyToModel:
-        BaseTopic = win32api.GetProfileVal( "Base Topic", keyToModel , "" , dir+"\\topics.ini" )
-    else:
-        BaseTopic = "not found in ini files"
-##    basetopics = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\topics.ini" )
-    
-
-def extractDNSversion():
-    """extract version from inifile nssystem.ini
-
-    if not found 5 is assumed.
-    return as integer!
-    """    
-    global DNSversion
-    if DNSversion < 0:
-        DNSversion =  natlinkstatus.getDNSVersion()
-        if DNSversion < 0:
-            print "natlinkmain, invalid DNS version found: %s"% DNSversion
-
-
-
-Wversions = {'1/4/10': '98',
-             '2/3/51': 'NT351',
-             '2/4/0':  'NT4',
-             '2/5/0':  '2000',
-             '2/5/1':  'XP',
-             }
-
-def extractWindowsVersion():
-    """get the rigth windows version
-
-    and put in global variable
-    """
-    global WindowsVersion
-    if not WindowsVersion:
-        WindowsVersion = natlinkstatus.getWindowsVersion()
-        if not WindowsVersion:
-            print "natlinkmain, cannot find Windows Version from natlinkstatus: %s"% WindowsVersion
-    return WindowsVersion
-#<<QH
 
 ############################################################################
 #
@@ -561,17 +491,21 @@ try:
     if debugLoad: print "NatLink base dir" + baseDirectory
     
     # get the current user information from the natlink module
-    userName, DNSuserDirectory = getCurrentUser()
-    changeUserDirectory()
+    userDirectory = status.getUserDirectory()
+    # for unimacro, in order to reach unimacro files to be imported:
+    if not userDirectory in sys.path:
+        print 'add userDirectory: %s to sys.path!'% userDirectory
+        sys.path.append(userDirectory)
+    # get invariant variables:
+    DNSversion = status.getDNSVersion()
+    WindowsVersion = status.getWindowsVersion()
 
-    # QH extra info for unimacro:::::
-    extractLanguage()
-    extractBaseModel()
-    extractBaseTopic()
-    extractDNSversion()
-    extractWindowsVersion()
-    print 'Starting natlinkmain with language: %s (BaseModel: %s, DNSversion: %s, WindowsVersion: %s)'% \
-          (language, BaseModel, DNSversion, WindowsVersion)
+    # init things identical to when user changes:
+    changeCallback('user', getCurrentUser())
+
+##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
+    print 'Starting natlinkmain with language: %s (DNSversion: %s, WindowsVersion: %s)'% \
+          (language, DNSversion, WindowsVersion)
     if debugLoad:
         print 'natlinkmain CVS version: %s'% __version__.replace("$", "").strip()
         print 'complete path: %s'% __file__
@@ -579,12 +513,6 @@ try:
         v = __version__.split(',')[0]
         v = v.strip("$Revision: ")
         print 'natlinkmain CVS version: %s'% v
-    # for unimacro, in order to reach unimacro files to be imported:
-    if not userDirectory in sys.path:
-        print 'add userDirectory: %s to sys.path!'% userDirectory
-        sys.path.append(userDirectory)
-    print 'BaseModel: %s'% BaseModel
-    print 'BaseTopic: %s'% BaseTopic
 
     # load all global files in user directory and current directory
     findAndLoadFiles()
