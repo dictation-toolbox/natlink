@@ -1,4 +1,3 @@
-
 """ the following functions are provided in this module:
 ( to be used by either natlinkmain.py or natlinkinstallfunctions.py
 
@@ -310,6 +309,8 @@ class NatlinkStatus(object):
         else:
             BaseTopic = "not found in ini files"
     ##    basetopics = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\topics.ini" )
+
+
     def getLanguage(self, DNSuserDirectory):
         """this can only be run if natspeak is running
 

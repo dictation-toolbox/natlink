@@ -397,7 +397,6 @@ def changeCallback(type,args):
 ## this is not longer needed here, as we fixed the userDirectory
 ##        changeUserDirectory()
         language = status.getLanguage(DNSuserDirectory)
-        print 'language: %s'% language
         BaseModel, BaseTopic = status.getBaseModelBaseTopic(DNSuserDirectory)
         # changed next two lines QH:
         findAndLoadFiles()        

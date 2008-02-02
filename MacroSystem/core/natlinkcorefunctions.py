@@ -28,6 +28,7 @@ substituteEnvVariableAtStart: substitute back into a file/folder path an environ
 
 """ 
 import os, sys
+from win32com.shell import shell, shellcon
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -132,10 +133,10 @@ def getExtendedEnv(var):
     recentEnv[var] = result
     return result
 
-def getAllFolderEnvironmentVariables():
+def getAllFolderEnvironmentVariables(fillRecentEnv=None):
     """get all the environ AND all CSLID variables that result into a folder
 
-    also put them in recentEnv    
+    also put them in recentEnv, if you specify fillRecentEnv to 1 (True)
 
     """
     global recentEnv
@@ -160,10 +161,11 @@ def getAllFolderEnvironmentVariables():
             if k in D and D[k] != v:
                 print 'warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v)
             D[k] = v
-            recentEnv[k] = v
+    if fillRecentEnv:
+        recentEnv = copy.copy(D)
     return D
 
-def substituteEnvVariableAtStart(filepath): 
+def substituteEnvVariableAtStart(filepath, envDict=None): 
     """try to substitute back one of the (preused) environment variables back
 
     into the start of a filename
@@ -171,16 +173,27 @@ def substituteEnvVariableAtStart(filepath):
     if ~ (HOME) is D:\My documents,
     the path "D:\My documents\folder\file.txt" should return "~\folder\file.txt"
 
+    pass in a dict of possible environment variables, which can be taken from
+    getAllFolderEnvironmentVariables().
+
+    Alternatively you can call getAllFolderEnvironmentVariables once, and use the recentEnv
+    of this module!
+
+    If you do not pass such a dict, recentEnv is taken, but this dict holds only what has been
+    asked for in the session, so no complete list!
+
     
 
     """
-    Keys = recentEnv.keys()
+    if envDict == None:
+        envDict = recentEnv
+    Keys = envDict.keys()
     # sort, longest result first, shortest keyname second:
-    decorated = [(-len(recentEnv[k]), len(k), k) for k in Keys]
+    decorated = [(-len(envDict[k]), len(k), k) for k in Keys]
     decorated.sort()
     Keys = [k for (dummy1,dummy2, k) in decorated]
     for k in Keys:
-        val = recentEnv[k]
+        val = envDict[k]
         if filepath.lower().startswith(val.lower()):
             if k in ("HOME", "PERSONAL"):
                 k = "~"
