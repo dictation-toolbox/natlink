@@ -27,8 +27,11 @@ substituteEnvVariableAtStart: substitute back into a file/folder path an environ
 
 
 """ 
-import os, sys
+import os, sys, re, copy
 from win32com.shell import shell, shellcon
+
+# for extended environment variables:
+reEnv = re.compile('%([A-Z_]+)%')
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -62,53 +65,43 @@ def fatal_error(message, new_raise=None):
     else:
         raise
 
-# helper function:
-def getFromRegdict(regdict, key, fatal=None):
-    """get a key from the regdict, which was collected earlier.
-
-    if fails, do fatal error is fatal is set,
-    if fatal is not set, only print warning.
-
-    """
-    value = None
-    try:
-        value = regnl[key]
-    except KeyError:
-        mess = 'cannot find key %s in registry dictionary'% key
-        if fatal:
-            fatal_error(mess, new_raise = Exception)
-        else:
-            print mess
-            return ''
-    else:
-        return value
-
 # keep track of found env variables, fill, if you wish, with
 # getAllFolderEnvironmentVariables.
 # substitute back with substituteEnvVariableAtStart.
+# and substite forward with expandEnvVariableAtStart
+# in all cases a private envDict can be user, or the global dict recentEnv
+#
+# to collect all env variables, call getAllFolderEnvironmentVariables, see below
 recentEnv = {}
 
-def getExtendedEnv(var):
+def getExtendedEnv(var, envDict=None):
     """get from environ or windows CSLID
 
     HOME is environ['HOME'] or CSLID_PERSONAL
     ~ is HOME
 
+    As envDict for recent results either a private (passed in) dict is taken, or
+    the global recentEnv.
+
+    This is merely for "caching results"
+
     """
-    global recentEnv
-    
-    var = var.strip()
-    var = var.strip("%")
+    if envDict == None:
+        myEnvDict = recentEnv
+    else:
+        myEnvDict = envDict
+##    var = var.strip()
+    var = var.strip("% ")
     
     if var == "~":
         var = 'HOME'
 
-    if var in recentEnv:
-        return recentEnv[var]
+    if var in myEnvDict:
+        return myEnvDict[var]
 
     if var in os.environ:
-        recentEnv[var] = os.environ[var]
-        return recentEnv[var]
+        myEnvDict[var] = os.environ[var]
+        return myEnvDict[var]
 
     # try to get from CSIDL system call:
     if var == 'HOME':
@@ -130,13 +123,18 @@ def getExtendedEnv(var):
 
     result = str(result)
     result = os.path.normpath(result)
-    recentEnv[var] = result
+    myEnvDict[var] = result
     return result
 
-def getAllFolderEnvironmentVariables(fillRecentEnv=None):
-    """get all the environ AND all CSLID variables that result into a folder
+def clearRecentEnv():
+    """for testing, clears above global dictionary
+    """
+    recentEnv.clear()
 
-    also put them in recentEnv, if you specify fillRecentEnv to 1 (True)
+def getAllFolderEnvironmentVariables(fillRecentEnv=None):
+    """return, as a dict, all the environ AND all CSLID variables that result into a folder
+
+    Optionally put them in recentEnv, if you specify fillRecentEnv to 1 (True)
 
     """
     global recentEnv
@@ -173,16 +171,14 @@ def substituteEnvVariableAtStart(filepath, envDict=None):
     if ~ (HOME) is D:\My documents,
     the path "D:\My documents\folder\file.txt" should return "~\folder\file.txt"
 
-    pass in a dict of possible environment variables, which can be taken from
-    getAllFolderEnvironmentVariables().
+    pass in a dict of possible environment variables, which can be taken from recent calls, or
+    from  envDict = getAllFolderEnvironmentVariables().
 
     Alternatively you can call getAllFolderEnvironmentVariables once, and use the recentEnv
-    of this module!
+    of this module! getAllFolderEnvironmentVariables(fillRecentEnv)
 
-    If you do not pass such a dict, recentEnv is taken, but this dict holds only what has been
+    If you do not pass such a dict, recentEnv is taken, but this recentEnv holds only what has been
     asked for in the session, so no complete list!
-
-    
 
     """
     if envDict == None:
@@ -199,7 +195,36 @@ def substituteEnvVariableAtStart(filepath, envDict=None):
                 k = "~"
             else:
                 k = "%" + k + "%"
-            return k + filepath[len(val):]
+            filepart = filepath[len(val):]
+            filepart = filepart.strip('/\\ ')
+            return os.path.join(k, filepart)
+    # no hit, return original:
+    return filepath
+       
+def expandEnvVariableAtStart(filepath, envDict=None): 
+    """try to substitute environment variable into a path name
+
+    """
+    filepath = filepath.strip()
+
+    if filepath.startswith('~'):
+        folderpart = getExtendedEnv('~', envDict)
+        filepart = filepath[1:]
+        filepart = filepart.strip('/\\ ')
+        return os.path.normpath(os.path.join(folderpart, filepart))
+    elif reEnv.match(filepath):
+        envVar = reEnv.match(filepath).group(1)
+        # get the envVar...
+        try:
+            folderpart = getExtendedEnv(envVar, envDict)
+        except ValueError:
+            print 'invalid (extended) environment variable: %s'% envVar
+        else:
+            # OK, found:
+            filepart = filepath[len(envVar)+2:]
+            filepart = filepart.strip('/\\ ')
+            return os.path.normpath(os.path.join(folderpart, filepart))
+    # no match
     return filepath
        
 

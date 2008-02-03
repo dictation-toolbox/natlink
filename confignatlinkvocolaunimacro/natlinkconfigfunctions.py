@@ -28,35 +28,27 @@ Afterwards can be set:
 DNSInstallDirectory
     - if not found in one of the predefined subfolders of %PROGRAMFILES%,
       this directory can be set in HKCU\Software\Natlink.
-      Functions: setDNSInstallDir(path) and clearDNSInstallDir(),
-      --- call with CLI or command line option:
-      -d path or --setdnsinstalldir path (to set)
-      -D or --cleardnsinstalldir to clear and fall back into default
+      Functions: setDNSInstallDir(path) (d path) and clearDNSInstallDir() (D)
       
 DNSIniDirectory
     - if not found in one of the subfolders of %COMMON_APPDATA%
       where they are expected, this one can be set in HKCU\Software\Natlink.
-      Functions: setDNSIniDir(path) and clearDNSIniDir()
-      --- call with CLI or command line option:
-      -i path or --setdnsinidir path (to set)
-      -I or --cleardnsinidir  (to clear)
+      Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
 When natlink is enabled natlink.dll is registered with
       win32api.WinExec("regsrvr32 /s pathToNatlinkdll") (silent)
-It can be unregistered through function below.      
+
+It can be unregistered through function unregisterNatlinkDll() see below.      
 
 Other functions inside this module, with calls from CLI or command line:
 
-enableNatlink()  (-e or --enablenatlink)
-disableNatlink() (-E or --disablenatlink)
+enableNatlink()  (e)/disableNatlink() (E)
 
-enableVocola()   (-v or --enablevocola)  (to be done)
-disableVocola()  (-V or --disablevocola) (to be done)
+enableVocola()   (v) disableVocola()  (V) (to be done)
 
-setUserDirectory (-u path or --setnatlinkuserdir path)
+setUserDirectory(path) (u path) or clearUserDirectory() (U)
     
-getStatusDict
-     get status info in a dict
+etc.
 
 More at the bottom, with the CLI description...     
 
@@ -225,35 +217,36 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """register natlink.dll and set settings in nssystem.ini and nsapps.ini
 
         """
-        registerNatlinkDll(silent=1)
-        nssystemini = natlinkstatus.getNSSYSTEMIni()
-        section1 = natlinkstatus.section1
-        key1 = natlinkstatus.key1
-        value1 = natlinkstatus.value1
+        self.registerNatlinkDll(silent=1)
+        nssystemini = self.getNSSYSTEMIni()
+        section1 = self.section1
+        key1 = self.key1
+        value1 = self.value1
         win32api.WriteProfileVal(section1, key1, value1, nssystemini)
-        nsappsini = natlinkstatus.getNSAPPSIni()
-        section2 = natlinkstatus.section2
-        key2 = natlinkstatus.key2
-        value2 = natlinkstatus.value2
+        nsappsini = self.getNSAPPSIni()
+        section2 = self.section2
+        key2 = self.key2
+        value2 = self.value2
         win32api.WriteProfileVal(section2, key2, value2, nsappsini)
         print 'natlink enabled, restart NatSpeak'
 
     def disableNatlink(self):
       
-        nssystemini = natlinkstatus.getNSSYSTEMIni()
-        section1 = natlinkstatus.section1
-        key1 = natlinkstatus.key1
+        nssystemini = self.getNSSYSTEMIni()
+        section1 = self.section1
+        key1 = self.key1
         # trick with None, see testConfigureFunctions...
         # this one disables natlink:
         win32api.WriteProfileVal(section1, key1, None, nssystemini)
         
-        nsappsini = natlinkstatus.getNSAPPSIni()
-        section2 = natlinkstatus.section2
-        key2 = natlinkstatus.key2
+        nsappsini = self.getNSAPPSIni()
+        section2 = self.section2
+        key2 = self.key2
         win32api.WriteProfileVal(section2, key2, None, nsappsini)
         # leaving empty section, sorry, did not find the way to delete a section...
-        print 'natlink disabled, natlink.dll NOT unregistered here'
-
+        print 'natlink disabled, restart NatSpeak'
+        print 'Note natlink.dll is NOT UNREGISTERED, but this is not necessary either'
+        
     def enableVocola(self):
       print 'enableVocola, coming'
     def disableVocola(self):
@@ -309,14 +302,12 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """unregister explicit, should not be done normally
         """
         os.system('regsvr32 /u "%s"'% os.path.join(coreDir, "natlink.dll"))
-    ##
-    ##            enableVocola()
-    ##            disableVocola()
-    ##            setVocolaUserDir(v)
-    ##            registerNatlinkDll()
-    ##            uregisterNatlinkDll()
+
     def enableDebugOutput(self):
         """setting registry key so debug output is in natspeak logfile
+
+        not included in configure GUI, as Natspeak/Natlink.dll seems not to respond
+        to this option...
         """
         key = "NatlinkDebug"
         self.userregnl[key] = 1
@@ -345,16 +336,6 @@ def _main(Options=None):
     cli = CLI()
     shortOptions = "iIDCeEUdvVWrRgG"
     shortArgOptions = "c:u:w:"  
-    longOptions = ["info", "reginfo",
-                   "cleardnsinstalldir",
-                   "cleardnsinidir"
-                   "enablenatlink", "disablenatlink",
-                   "enablevocola", "disablevocola",
-                   "clearvocoladir",
-                   "registernatlink", "unregisternatlink",
-                   "enabledebugoutput", "disabledebugoutput" ]
-    longArgOptions = ["setdnsinstalldir=",  "setdnsinidir=",
-                      "setvocoloauserdir="]
     if Options:
         if type(Options) == types.StringType:
             Options = Options.split(" ", 1)
@@ -363,8 +344,7 @@ def _main(Options=None):
         Options = sys.argv[1:]
 
     try:
-        options, args = getopt.getopt(Options, shortOptions+shortArgOptions,
-                                      longOptions+longArgOptions)
+        options, args = getopt.getopt(Options, shortOptions+shortArgOptions)
     except getopt.GetoptError:
         print 'invalid option: %s'% `Options`
         cli.usage()
@@ -379,9 +359,9 @@ def _main(Options=None):
             print 'option %s not found in cli functions: %s'% (o, funcName)
             cli.usage()
             continue
-        if o in shortOptions + longOptions:
+        if o in shortOptions:
             func(None) # dummy arg
-        elif o in shortArgOptions + longArgOptions:
+        elif o in shortArgOptions:
             func(v)
         else:
             print 'options should not come here'
@@ -400,41 +380,32 @@ class CLI(cmd.Cmd):
         """gives the usage of the command line options or options when
         the command line interface  (CLI) is used
         """
-        print """
-        usage either as With command line options like '-i' or '--info', or in an interactive
-        session using the CLI ( command line interface).
+        print '-'*60
+        print \
+"""Usage either as command line options like '-i' or in an interactive
+session using the CLI ( command line interface). 
 
-        When using the CLI no - or -- are inserted before the command letters
+i - info, print information about the natlink status
+I - reginfo,  print information about the natlink registry settings
 
-        -i, --info:          print information about the natlink status
-        -I, --reginfo:     print information about the registry settings
+d/D - set/clear dnsinstalldir, the directory where NatSpeak is installed
+c/C - set/clear dnsinidir, the directory where NatSpeak ini files are located
 
-        -d, --setdnsinstalldir: set the directory where NatSpeak is installed
-        -D, --cleardnsinidir: clear above registry setting
+e/E - enable/disable natlink
 
-        -c, --setdnsinidir: set the directory where NatSpeak ini files are located
-        -C, --cleardnsinidir: clear above registry setting
+u/U - set/clear userdirectory, the directory of the user grammar files of natlink (eg unimacro)
 
-        -e, --enablenatlink: enable natlink, by setting the correct ini file settings
-        -E, --disablenatlink: disable natlink, by clearing above ini file settings
+v/V - enable/disable vocola, currently not implemented, vocola is simply enabled
+w/W - set/clear vocoloauserdir, the user directory for vocola user files
 
-        -u, --setnatlinkuserdir: set user directory for natlink
-        -U, --clearnatlinkuserdir: clears this directory, no grammars will be searched there any more
+r/R - (un)registernatlink, the natlink.dll file(should not be necessary to do)
+g/G - enable/disable debugoutput: natlink debug output in natlink log file
 
-        -v, --enablevocola: enable vocola, by switching on _vocola_main.py in base directory
-        -V, --disablevocola: disable vocola, by switching off _vocola_main.py
-
-        -w, --setvocoloauserdir: set the user directory for vocola user files
-        -W, --clearvocoloauserdir: clears this setting
-
-        -r, --registernatlink: register natlink.dll
-        -R, --unregisternatlink: unregister natlink.dll (should not be necessary)
-
-        -g, --enabledebugoutput: natlink debug output in natlink log file (not advised)
-        -G, --disabledebugoutput: natlink debug output NOT in natlink log file
-        
-
+usage - give this list
+q   - quit
+help command: give more explanation on command
         """
+        print '='*60
 
     # info----------------------------------------------------------
     def do_i(self, arg):
@@ -449,16 +420,14 @@ class CLI(cmd.Cmd):
         self.config.printRegistrySettings()
 
     def help_I(self):
-        print "The command reginfo (I) gives all the registry settings" 
-        print "that are used by the natlink system."
-        print "They are set by either the natlink/vocola/unimacro installer or by"
-        print "functions inside this module and this CLI." 
-        print "These functions can also be called by the configure gui (wxPython)"
+        print \
+"""The command reginfo (I) gives all the registry settings
+that are used by the natlink system (HKCU\Software\Natlink)
 
-    do_info = do_i
-    do_reginfo = do_I
-    help_info = help_i
-    help_reginfo = help_I
+They are set by either the natlink/vocola/unimacro installer or by
+functions inside this module and this CLI. All calls of the configure GUI
+go through CLI calls
+"""
 
     # DNS install directory------------------------------------------
     def do_d(self, arg):
@@ -567,23 +536,34 @@ class CLI(cmd.Cmd):
         self.config.disableNatlink()
 
     def help_e(self):
-        print "set the necessary registry settings in nssystem.ini and nsapps.ini"
-        print "after you restart natspeak, natlink should start, showing "
-        print "the window 'Messages from Python Macros'"
+        print '-'*60
+        print \
+"""enable natlink (e) or disable natlink (E)
+
+When you enable natlink the necessary settings in nssystem.ini and nsapps.ini
+are done.
+
+After you restart natspeak, natlink should start, showing
+the window 'Messages from Python Macros'.
+
+When you enable natlink, the file natlink.dll is (re)registered silent. Use
+the options r/R to register/unregister natlink.dll explicit.
+(see help r, but most often not needed)
+
+When you disable natlink, the necessary  settings in nssystem.ini and nsapps.ini
+are cleared. 
+
+After you restart natspeak, natlink should NOT START ANY MORE
+So the window 'Messages from Python Macros' is NOT SHOWN.
+
+Note: when you disable natlink, the natlink.dll file is NOT unregistered.
+It is not called any more by natspeak, as its declaration is removed from
+the Global Clients section of nssystem.ini.
+"""
+        print "="*60
         
-    def help_E(self):
-        print "clears the necessary registry settings in nssystem.ini and nsapps.ini"
-        print "after you restart natspeak, natlink should NOT START ANY MORE."
-        print "the window 'Messages from Python Macros' is NOT SHOWN"
-        print "Note: the natlink.dll file is NOT disabled, but is not called any more"
-        print "as natspeak does not call natlinkmain any more"
         
-        
-        
-    do_enablenatlink = do_e
-    do_disablenatlink = do_E
-    help_enablenatlink = help_e
-    help_disablenatlink = help_E
+    help_E = help_e
   
     
     # Vocola and Vocola User directory------------------------------------------------
@@ -627,24 +607,30 @@ class CLI(cmd.Cmd):
 
     # enable/disable natlink debug output...
     def do_g(self, arg):
-        print "enable natlink debug output to natspeak logfile "
+        print "Enable natlink debug output to natspeak logfile "
         self.config.enableDebugOutput()
     def do_G(self, arg):
         print "Disable natlink debug output to natspeak logfile"
         self.config.disableDebugOutput()
 
     def help_g(self):
-        print "enables natlink debug output (in the natspeak log file)"
-        print "this can be a lot of lines, so preferably disable this one!"
-        
-    def help_G(self):
-        print "disables natlink debug output (in the natspeak log file)"
-        print "It is advised to keep this setting disabled"
+        print '-'*60
+        print \
+"""enables (g)/disables (G) natlink debug output (in the natspeak log file)
+this can be a lot of lines, so preferably disable this one!
 
+Currently it is not clear if this option does anything at all!
+But the simplest thing is to keep it Disabled, so the setting
+NatlinkDebug is kept to 0
+"""
+        print '='*60
+
+        
     do_enabledebugoutput = do_g
     do_disabledebutoutput = do_G
     help_enabledebugoutput = help_g
-    help_disabledebugoutput = help_G
+    help_disabledebugoutput = help_g
+    help_G = help_g
 
 
     # register natlink.dll
@@ -653,21 +639,31 @@ class CLI(cmd.Cmd):
         self.config.registerNatlinkDll()
     def do_R(self, arg):
         print "Unregister natlink.dll"
-        self.config.uregisterNatlinkDll()
+        self.config.unregisterNatlinkDll()
 
     def help_r(self):
-        print "registers natlink.dll explicitly."
-        print "this is also done (silent) when you enable natlink, so is mostly NOT NEEDED!"
-        print "It shows a message dialog to inform you what happened."
+        print '-'*60
+        print \
+"""registers (r)/ unregisters (R) natlink.dll explicitly.
+
+Registring is also done (silent) when you enable natlink, so is mostly NOT NEEDED!
+It shows a message dialog to inform you what happened.
         
-    def help_R(self):
-        print "unregisters natlink.dll explicit. Is not necessary to do so..."
-        print "But if you do, a message dialog shows up to inform you what happened."
+But if you do (-r or -R) a message dialog shows up to inform you what happened.
+If you restart NatSpeak after unregisering natlink.dll, you get a message:
+
+Cannot load compatibility module support (GUID=
+%s
+
+If that happens, simply reregister with the -r option.
+"""% self.config.NATLINK_CLSID
+        print '='*60
 
     do_registernatlink = do_r
     do_unregisternatlink = do_R
     help_registernatlink = help_r
-    help_unregisternatlink = help_R
+    help_unregisternatlink = help_r
+    help_R = help_r
 
 
     def default(self, line):

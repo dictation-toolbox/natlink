@@ -4,7 +4,7 @@
 #    - "Built-in" voice commands
 #    - Autoloading of changed command files
 #
-# This file is copyright (c) 2002-2005 by Rick Mohr. It may be redistributed
+# This file is copyright (c) 2002-2008 by Rick Mohr. It may be redistributed
 # in any way as long as this copyright notice remains.
 
 import sys
@@ -12,12 +12,20 @@ import os               # access to file information
 import os.path          # to parse filenames
 import time             # print time in messages
 from stat import *      # file statistics
-import RegistryDict
-import win32con
 import re
 import natlink
 from natlinkutils import *
 
+
+try:
+    # The following files are only present if Scott's installer is being used:
+    import RegistryDict
+    import win32con
+    installer = True
+except ImportError:
+    installer = False
+
+    
 # The Vocola translator is a perl program. By default we use the precompiled
 # executable vcl2py.exe, which doesn't require installing perl.
 # To instead use perl and vcl2py.pl, set the following variable to 1:
@@ -30,20 +38,12 @@ usePerl = 0
 NatLinkFolder = os.path.split(
     sys.modules['natlinkmain'].__dict__['__file__'])[0]
 
-pydFolder = os.path.abspath(NatLinkFolder + '\\..\\..\\Vocola\\Exec\\' + sys.version[0:3])
+NatLinkFolder = re.sub(r'\core$', "", NatLinkFolder)
+
+pydFolder = os.path.abspath(NatLinkFolder + '\\..\\Vocola\\Exec\\' + sys.version[0:3])
 sys.path.append(pydFolder)
-NatLinkFolder = os.path.abspath(NatLinkFolder + '\\..')
+NatLinkFolder = os.path.abspath(NatLinkFolder)
 
-userCommandFolder=""
-r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\NatLink")
-if r: 
-    userCommandFolder = r["VocolaUserDirectory"]
-    if not os.path.isdir(userCommandFolder):
-        userCommandFolder=""
-
-if userCommandFolder:
-    test= re.compile("_vcl\.pyc?$")
-    [os.remove(os.path.join(NatLinkFolder,f)) for f in os.listdir(NatLinkFolder) if test.search(f)]
 
 import simpscrp
 
@@ -54,6 +54,7 @@ class ThisGrammar(GrammarBase):
         <loadAll>           exported = Load All [Voice] Commands;
         <loadCurrent>       exported = Load [Voice] Commands;
         <loadGlobal>        exported = Load Global [Voice] Commands;
+        <discardOld>        exported = Discard Old [Voice] Commands;
         <edit>              exported = Edit [Voice] Commands;
         <editMachine>       exported = Edit Machine [Voice] Commands;
         <editGlobal>        exported = Edit Global [Voice] Commands;
@@ -61,12 +62,20 @@ class ThisGrammar(GrammarBase):
     """
 
     def initialize(self):
+        self.setNames()
+
+        # remove previous Vocola/Python compilation output as it may be out
+        # of date (e.g., new compiler, source file deleted, partially
+        # written due to crash, new machine name, etc.):
+        self.purgeOutput()
+
+        self.loadAllFiles('')
+
         self.load(self.gramSpec)
         self.activateAll()
-        self.setNames()
         # Don't set callback just yet or it will be clobbered
         self.needToSetCallback = 1
-           
+                    
                     
                 
 
@@ -81,7 +90,15 @@ class ThisGrammar(GrammarBase):
     # Set member variables -- important folders and computer name
     def setNames(self):
         self.VocolaFolder = NatLinkFolder + r'\..\Vocola'
-        self.commandFolder = self.VocolaFolder + r'\Commands'
+        self.commandFolders = [self.VocolaFolder + r'\Commands']
+        if installer:
+            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,
+                                          "Software\NatLink")             
+            if r:                                                         
+                userCommandFolder = r["VocolaUserDirectory"]              
+                if os.path.isdir(userCommandFolder):                      
+                    self.commandFolders = ([userCommandFolder]            
+                                           + self.commandFolders)         
         if os.environ.has_key('COMPUTERNAME'):
             self.machine = string.lower(os.environ['COMPUTERNAME'])
         else: self.machine = 'local'
@@ -89,6 +106,42 @@ class ThisGrammar(GrammarBase):
     # Get app name by stripping folder and extension from currentModule name
     def getCurrentApplicationName(self):
         return string.lower(os.path.splitext(os.path.split(self.currentModule[0]) [1]) [0])
+
+    def getSourceFilename(self, output_filename):
+        m = re.match("^(.*)_vcl(\d*).pyc?$", output_filename)
+        if not m: return None                    # Not a Vocola file
+        if m.group(2) == "": return None         # old-style Vocola file
+        name = m.group(1)
+        i = int(m.group(2))
+        if i > len(self.commandFolders): return None
+        commandFolder = self.commandFolders[i]
+        
+        marker = "e_s_c_a_p_e_d__"
+        m = re.match("^(.*)" + marker + "(.*)$", name)  # rightmost marker!
+        if m:
+            name = m.group(1)
+            tail = m.group(2)
+            tail = re.sub("__a_t__", "@", tail)
+            tail = re.sub("___", "_", tail)
+            name += tail
+
+        name = re.sub("_@", "@", name)
+        return commandFolder + "\\" + name + ".vcl"
+
+    def deleteOrphanFiles(self):
+        print "checking for orphans..."
+        for f in os.listdir(NatLinkFolder):
+            if not re.search("_vcl\d*.pyc?$", f): continue
+
+            s = self.getSourceFilename(f)
+            if s:
+                if vocolaGetModDate(s)>0: continue
+
+            f = os.path.join(NatLinkFolder, f)
+            print "Deleting: " + f
+            os.remove(f)
+
+### Miscellaneous commands
 
     # "Show NatLink Window" -- print to output window so it appears
     def gotResults_NatLinkWindow(self, words, fullResults):
@@ -106,32 +159,51 @@ class ThisGrammar(GrammarBase):
 
     # "Load Global Commands" -- translate global Vocola files
     def gotResults_loadGlobal(self, words, fullResults):
-        self.loadSpecificFiles('_vocola')
+        self.loadSpecificFiles('')
+
+    # "Discard Old [Voice] Commands" -- purge output then translate all files
+    def gotResults_discardOld(self, words, fullResults):
+        self.purgeOutput()
+        self.loadAllFiles('-f')
+
+    # Unload all commands, including those of files no longer existing
+    def purgeOutput(self):
+        pattern = re.compile("_vcl\d*\.pyc?$")
+        [os.remove(os.path.join(NatLinkFolder,f)) for f in os.listdir(NatLinkFolder) if pattern.search(f)]
 
     # Load all command files
     def loadAllFiles(self, options):
-        if userCommandFolder: self.runVocolaTranslator(userCommandFolder, options) 
-        self.runVocolaTranslator(self.commandFolder, options)
+        for i in range(len(self.commandFolders)):
+            suffix = "-suffix _vcl" + str(i) + " "
+            self.runVocolaTranslator(self.commandFolders[i], suffix + options)
 
     # Load command files for specific application
     def loadSpecificFiles(self, module):
-        success1=success2=successU=0
-        if userCommandFolder:
-            file = userCommandFolder + '\\' + module + '.vcl'
-            if os.path.isfile(file):
-               successU = self.loadFile(file)
-        else:
-            prefix = self.commandFolder + '\\' + module
-            success1 = self.loadFile(prefix + '.vcl')
-            success2 = self.loadFile(prefix + '@' + self.machine + '.vcl')
-        if not (success1 or success2 or successU):
-            print >> sys.stderr, "Found no Vocola command files for '" + module + "'"
+        special = re.compile(r'([][()^$.+*?{\\])')
+        pattern = "^" + special.sub(r'\\\1', module)
+        pattern += "(_[^@]*)?(@" + special.sub(r'\\\1', self.machine)
+        pattern += ")?\.vcl$"
+        p = re.compile(pattern)
+
+        targets = []
+        for i in range(len(self.commandFolders)):
+            commandFolder = self.commandFolders[i]
+            targets += [[os.path.join(commandFolder,f), i] for f in os.listdir(commandFolder) if p.search(f)]
+        for target, i in targets:
+            suffix = "-suffix _vcl" + str(i) + " "
+            self.loadFile(target, suffix)
+        if len(targets) == 0:
+            print >> sys.stderr
+            if module == "":
+                print >> sys.stderr, "Found no Vocola global command files (for machine '" + self.machine + "')"
+            else:
+                print >> sys.stderr, "Found no Vocola command files for application '" + module + "' (for machine '" + self.machine + "')"
 
     # Load a specific command file, returning false if not present
-    def loadFile(self, file):
+    def loadFile(self, file, options):
         try:
             os.stat(file)
-            self.runVocolaTranslator(file, '-f')
+            self.runVocolaTranslator(file, options + ' -f')
             return 1
         except OSError:
             return 0   # file not found
@@ -144,20 +216,17 @@ class ThisGrammar(GrammarBase):
         call += options
         call += ' "' + inputFileOrFolder + '" "' + NatLinkFolder + '"'
         simpscrp.Exec(call, 1)
-        logName = self.commandFolder + r'\vcl2py_log.txt'
-        
-        if not os.path.isfile(logName):
-            logName = userCommandFolder + r'\vcl2py_log.txt'
-        if not os.path.isfile(logName):
-            return
-        
-        try:
-            log = open(logName, 'r')
-            print  >> sys.stderr, log.read()
-            log.close()
-            os.remove(logName)
-        except IOError:  # no log file means no Vocola errors
-            return
+
+        for commandFolder in self.commandFolders:
+            logName = commandFolder + r'\vcl2py_log.txt'
+            if os.path.isfile(logName):
+                try:
+                    log = open(logName, 'r')
+                    print  >> sys.stderr, log.read()
+                    log.close()
+                    os.remove(logName)
+                except IOError:  # no log file means no Vocola errors
+                    pass
 
 ### Editing Vocola Command Files
 
@@ -190,56 +259,80 @@ class ThisGrammar(GrammarBase):
     # Open a Vocola command file (using the application associated with ".vcl")
     
     def FindExistingCommandFile(self, file):
-        if userCommandFolder:
-            f= userCommandFolder+ '\\' + file
+        for commandFolder in self.commandFolders:
+            f = commandFolder + '\\' + file
             if os.path.isfile(f): return f
-        
-        f = self.commandFolder+ '\\' + file
-        if os.path.isfile(f): return f
-        
+
         return ""
     
     def openCommandFile(self, file, comment):
-        if self.FindExistingCommandFile(file):
-            file = self.FindExistingCommandFile(file)
-        else:
-            if userCommandFolder:
-                file = userCommandFolder+ '\\' + file
-            else:
-                file = self.commandFolder + '\\' + file
+        path = self.FindExistingCommandFile(file)
+        if not path:
+            path = self.commandFolders[0] + '\\' + file
         
-            new = open(file, 'w')
+            new = open(path, 'w')
             new.write('# ' + comment + '\n\n')
             new.close()
         
-        if os.name == 'nt':  opener = 'cmd /c'
-        else:                opener = 'start'
-        call = opener + ' "' + file + '"'
+        if os.name == 'nt':  call = 'cmd /c' + ' ""' + path + '""'
+        else:                call = 'start' + ' "' + path + '"'
         # Win98SE return 'nt', but still requires 'start'
         if simpscrp.Exec(call, 0) != 0:
             opener = 'start'
-            call = opener + ' "' + file + '"'
+            call = opener + ' "' + path + '"'
             simpscrp.Exec(call, 0)
 
 
 thisGrammar = ThisGrammar()
 thisGrammar.initialize()
 
-def unload():
-    global thisGrammar
-    if thisGrammar: thisGrammar.unload()
-    thisGrammar = None
+
+# Returns the date on a file or 0 if the file does not exist        
+
+def vocolaGetModDate(file):
+    try: return os.stat(file)[ST_MTIME]
+    except OSError: return 0        # file not found
 
 
 # When speech is heard this function will be called before any others.
-#   - Load any changed Vocola command files
+#   - Compile any changed Vocola command files
+##   - Remove any vocola output files without corresponding source files
+#   - Make sure NatLink sees any new output files
 #   - Invoke the standard NatLink callback
 
-from natlinkmain import beginCallback, setCheckForGrammarChanges
+from natlinkmain import beginCallback
+from natlinkmain import findAndLoadFiles
+from natlinkmain import loadModSpecific
 
-setCheckForGrammarChanges(1)  # ensure always grammar checking...
+lastNatLinkModTime = 0
+lastCommandFolderTime = 0
 
 def vocolaBeginCallback(moduleInfo):
+    global lastNatLinkModTime, lastCommandFolderTime
     thisGrammar.loadAllFiles('')
+
+#    source_changed = 0
+#    for folder in thisGrammar.commandFolders:
+#        if vocolaGetModDate(folder) > lastCommandFolderTime:
+#            lastCommandFolderTime = vocolaGetModDate(folder)
+#            source_changed = 1
+#    if source_changed:
+#        thisGrammar.deleteOrphanFiles()
+
+    if getCallbackDepth() < 2:
+        current = vocolaGetModDate(NatLinkFolder)
+        if current > lastNatLinkModTime:
+            lastNatLinkModTime = current
+            # make sure NatLink sees any new .py files:
+            findAndLoadFiles()
+            loadModSpecific(moduleInfo)
+
     beginCallback(moduleInfo)
 
+
+
+def unload():
+    global thisGrammar
+    natlink.setBeginCallback(beginCallback)
+    if thisGrammar: thisGrammar.unload()
+    thisGrammar = None

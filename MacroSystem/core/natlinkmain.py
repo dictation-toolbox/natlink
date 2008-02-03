@@ -1,7 +1,7 @@
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
+#   Portions (c) Copyright 1999 by Dragon Systems, Inc..
 #
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
