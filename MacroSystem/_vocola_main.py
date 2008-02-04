@@ -1,11 +1,25 @@
 # _vocola_main.py - NatLink support for Vocola
 #
+# Python Macro Language for Dragon NaturallySpeaking
+#   (c) Copyright 1999 by Joel Gould
+#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
+#
 # Contains:
 #    - "Built-in" voice commands
 #    - Autoloading of changed command files
 #
 # This file is copyright (c) 2002-2008 by Rick Mohr. It may be redistributed
 # in any way as long as this copyright notice remains.
+#
+#
+#
+# Febr 4, 2008, QH:
+# adapted to natlinkmain, which loads _vocola_main before other modules,
+# and calls back also at begin Callback time before other modules to vocolaBeginCallback.
+# If something changed within vocola, report back to natlinkmain with
+#  1 (change py file)
+#  2 (new py file)
+#
 
 import sys
 import os               # access to file information
@@ -24,6 +38,11 @@ try:
     installer = True
 except ImportError:
     installer = False
+
+# Returns the date on a file or 0 if the file does not exist        
+def vocolaGetModDate(file):
+    try: return os.stat(file)[ST_MTIME]
+    except OSError: return 0        # file not found
 
     
 # The Vocola translator is a perl program. By default we use the precompiled
@@ -74,17 +93,17 @@ class ThisGrammar(GrammarBase):
         self.load(self.gramSpec)
         self.activateAll()
         # Don't set callback just yet or it will be clobbered
-        self.needToSetCallback = 1
-                    
-                    
+##        self.needToSetCallback = 1
+        self.editedCommandFiles = []       
+        self.newCommandFile = 0 # to notice when a new command file is opened    
                 
 
     def gotBegin(self,moduleInfo):
         self.currentModule = moduleInfo
-        if self.needToSetCallback:
-            # Replace NatLink's "begin" callback function with ours (see below)
-            natlink.setBeginCallback(vocolaBeginCallback)
-            self.needToSetCallback = 0
+##        if self.needToSetCallback:
+##            # Replace NatLink's "begin" callback function with ours (see below)
+##            natlink.setBeginCallback(vocolaBeginCallback)
+##            self.needToSetCallback = 0
 
                                       
     # Set member variables -- important folders and computer name
@@ -267,31 +286,36 @@ class ThisGrammar(GrammarBase):
     
     def openCommandFile(self, file, comment):
         path = self.FindExistingCommandFile(file)
+            
         if not path:
             path = self.commandFolders[0] + '\\' + file
-        
             new = open(path, 'w')
             new.write('# ' + comment + '\n\n')
             new.close()
-        
+            self.newCommandFile = 1
+            self.editedCommandFiles.append(path)        
+        else:
+            self.newCommandFile = 0
+            if not path in self.editedCommandFiles:
+                self.editedCommandFiles.append(path)        
+
         if os.name == 'nt':  call = 'cmd /c' + ' ""' + path + '""'
         else:                call = 'start' + ' "' + path + '"'
         # Win98SE return 'nt', but still requires 'start'
+
         if simpscrp.Exec(call, 0) != 0:
             opener = 'start'
             call = opener + ' "' + path + '"'
             simpscrp.Exec(call, 0)
-
-
-thisGrammar = ThisGrammar()
-thisGrammar.initialize()
-
-
-# Returns the date on a file or 0 if the file does not exist        
-
-def vocolaGetModDate(file):
-    try: return os.stat(file)[ST_MTIME]
-    except OSError: return 0        # file not found
+            
+    def getLastVocolaModTime(self):
+        """get the time of the last edited vocola file
+        """
+        if self.editedCommandFiles:
+            times = [vocolaGetModDate(f) for f in self.editedCommandFiles]
+            return max(times)
+        else:
+            return 0
 
 
 # When speech is heard this function will be called before any others.
@@ -300,16 +324,25 @@ def vocolaGetModDate(file):
 #   - Make sure NatLink sees any new output files
 #   - Invoke the standard NatLink callback
 
-from natlinkmain import beginCallback
-from natlinkmain import findAndLoadFiles
-from natlinkmain import loadModSpecific
+##from natlinkmain import beginCallback
+##from natlinkmain import findAndLoadFiles
+##from natlinkmain import loadModSpecific
 
-lastNatLinkModTime = 0
-lastCommandFolderTime = 0
+##lastNatLinkModTime = 0
+##lastCommandFolderTime = 0
+lastVocolaUserModTime = 0
+
+thisGrammar = ThisGrammar()
+thisGrammar.initialize()
+lastVocolaUserModTime = thisGrammar.getLastVocolaModTime()
 
 def vocolaBeginCallback(moduleInfo):
-    global lastNatLinkModTime, lastCommandFolderTime
-    thisGrammar.loadAllFiles('')
+    global lastVocolaUserModTime
+    #
+    # now this callback is called from natlinkmain Before other grammars are called
+    # 
+##    global lastNatLinkModTime, lastCommandFolderTime
+##    thisGrammar.loadAllFiles('')
 
 #    source_changed = 0
 #    for folder in thisGrammar.commandFolders:
@@ -319,20 +352,27 @@ def vocolaBeginCallback(moduleInfo):
 #    if source_changed:
 #        thisGrammar.deleteOrphanFiles()
 
-    if getCallbackDepth() < 2:
-        current = vocolaGetModDate(NatLinkFolder)
-        if current > lastNatLinkModTime:
-            lastNatLinkModTime = current
-            # make sure NatLink sees any new .py files:
-            findAndLoadFiles()
-            loadModSpecific(moduleInfo)
+##    if getCallbackDepth() < 2:
+    grammar = thisGrammar
+    current = grammar.getLastVocolaModTime()
+##    print 'current: %s (number of files edited: %s)'% (current, len(grammar.editedCommandFiles))
+    if current > lastVocolaUserModTime:
+##        print 'newer vocola, newCommandfile: %s'% grammar.newCommandFile
+        thisGrammar.loadAllFiles('')
+        lastVocolaUserModTime = current
+        return 1 + grammar.newCommandFile  # 1 for old files, 2 for new files (findAndLoadFiles needed!)
+##    else:
+##        print 'no change vocola'
+##        # make sure NatLink sees any new .py files:
+##        findAndLoadFiles()
+##        loadModSpecific(moduleInfo)
 
-    beginCallback(moduleInfo)
+##    beginCallback(moduleInfo)
 
 
 
 def unload():
     global thisGrammar
-    natlink.setBeginCallback(beginCallback)
+##    natlink.setBeginCallback(beginCallback)
     if thisGrammar: thisGrammar.unload()
     thisGrammar = None

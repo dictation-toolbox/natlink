@@ -1,7 +1,5 @@
 # Voice commands for WINWORD
 
-
-
 Save File = {Ctrl+s};
 Save As = {Alt+f}A;
 Recent Files = {Alt+f};
@@ -70,7 +68,6 @@ Accept or Reject Changes:
   Find = {Alt+f};
 
 Find and Replace:
- Replace = {Alt+r};
+  Replace = {Alt+r};
   Replace All = {Alt+a};
   Find [Next] = {Alt+f};
-

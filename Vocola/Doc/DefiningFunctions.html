@@ -44,7 +44,7 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
     <td align=right>
       <nobr>
         <font color="#FFFFCC" size="2">
-          (this page updated June 01, 2003)</font>
+          (this page updated January 27, 2008)</font>
       </nobr>
     </td>
   </tr>
@@ -356,7 +356,17 @@ Summary 1..20 (Up|Down) = goToSummary() {$2_$1};</pre></td>
   </tbody>
 </table>
 <p>Each of these commands uses our function <tt>goToSummary</tt>, making them 
-  shorter and clearer than if each had to include that function's actions explicitly.</p>
+  shorter and clearer than if each had to include that function's
+  actions explicitly.</p>
+<table cols="1" width="100%" bgcolor="#ccffff">
+  <tbody>
+     <tr>
+  <td>Note that unlike with variables, the definition of a function must
+      precede any uses of that function.</td> 
+  </tr>
+  </tbody> 
+</table>
+
 <h3>Defining Functions with Arguments</h3>
 <p>You can also specify arguments when defining a function. For example, here's 
   a function which switches to the nth application on the Windows taskbar:</p>
@@ -432,8 +442,8 @@ moveWindowBy(x,y) :=
   <tbody>
     <tr> 
       <td><pre>&lt;n&gt; := 0..99;
-Window &lt;n&gt; (  Up='-' |  Down='+') = moveWindowBy(0, $2$1);
-Window &lt;n&gt; (Left='-' | Right='+') = moveWindowBy($2$1, 0);</pre></td>
+Window &lt;n&gt; (  Up='-' |  Down='') = moveWindowBy(0, $2$1);
+Window &lt;n&gt; (Left='-' | Right='') = moveWindowBy($2$1, 0);</pre></td>
     </tr>
   </tbody>
 </table>
@@ -443,6 +453,7 @@ Window &lt;n&gt; (Left='-' | Right='+') = moveWindowBy($2$1, 0);</pre></td>
   &quot;<tt>-</tt>&quot;. These are concatenated by the double reference <tt>$2$1</tt> 
   to form the final function call <tt>moveWindowBy(0, -10)</tt>.</p>
 </body></html>
+
           </td>
         </tr>
 
@@ -451,7 +462,7 @@ Window &lt;n&gt; (Left='-' | Right='+') = moveWindowBy($2$1, 0);</pre></td>
             <hr>
             <table width=100% border=0 cellpadding=0>
               <tr>
-                <td><i>This page (c) Copyright 2002-2005 by Rick Mohr.
+                <td><i>This page (c) Copyright 2002-2008 by Rick Mohr.
                 <td align=right>
                   <!-- BEGIN WebSTAT Activation Code -->
                   <script type="text/javascript" language="JavaScript" src="http://hits.webstat.com/cgi-bin/wsv2.cgi?51442"></script>

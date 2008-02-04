@@ -1,44 +1,56 @@
 # vcl2py:  Convert Vocola voice command files to NatLink Python "grammar"
 #          classes implementing the voice commands
 #
-# Usage:  perl vcl2py.pl [-f] inputFileOrFolder outputFolder
+# Usage:  perl vcl2py.pl [-suffix <s>] [-f] inputFileOrFolder outputFolder
 # Where:
-#   -f -- force processing even if file(s) not out of date
+#   -suffix <s> -- use suffix <s> to distinguish Vocola generated files
+#                  (default is "_vcl")
+#   -f          -- force processing even if file(s) not out of date
 #
-# This file is copyright (c) 2002-2005 by Rick Mohr. It may be redistributed 
+# This file is copyright (c) 2002-2008 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 #
-# 01/03/2005 Commands can incorporate arbitrary dictation 
-#            Enable/disable command sequences via ini file
-# 04/12/2003 Case insensitive window title comparisons
-#            Output e.g. "emacs_vcl.py" (don't clobber existing NatLink files)
-# 11/24/2002 Option to process a single file, or only changed files
-# 10/12/2002 Use <any>+ instead of exporting individual NatLink commands
-# 10/05/2002 Generalized indenting, emit()
-# 09/29/2002 Built-in function: Repeat() 
-# 09/15/2002 User-defined functions
-# 08/17/2002 Use recursive grammar for command sequences
-# 07/14/2002 Context statements can contain '|'
-#            Support environment variable references in include statements
-# 07/06/2002 Function arguments allow multiple actions
-#            Built-in function: Eval()!
-# 07/05/2002 New code generation using VocolaUtils.py
-# 07/04/2002 Improve generated code: use "elif" in menus
-# 06/02/2002 Command sequences!
-# 05/19/2002 Support "include" statement
-# 05/03/2002 Version 1.1
-# 05/03/2002 Handle application names containing '_'
-# 05/03/2002 Convert '\' to '\\' early to avoid quotewords bug
-# 02/18/2002 Version 0.9
-# 12/08/2001 convert e.g. "{Tab_2}" to "{Tab 2}"
-#            expand in-string references (e.g. "{Up $1}")
-# 03/31/2001 Detect and report unbalanced quotes
-# 03/06/2001 Improve error checking for complex menus
-# 02/24/2001 Change name to Vocola
-# 02/18/2001 Handle terms containing an apostrophe
-# 02/06/2001 Machine-specific command files
-# 02/04/2001 Error on undefined variable or reference out of range
-# 08/22/2000 First usable version
+# 12/06/2007  ml  Arguments to Dragon functions are now checked for proper 
+#                 number and datatype
+# 06/02/2007  ml  Output filenames are now mangled in an invertable fashion
+# 05/17/2007  ml  Eval now works correctly on any action instead of just word
+#                 and reference actions.
+# 05/15/2007  ml  Variable substitution regularized
+#                 Empty context statements now work
+# 04/18/2007  ml  (Function) Names may now start with underscores
+# 04/08/2007  ml  Quotation marks can be escaped by doubling
+# 01/03/2005  rm  Commands can incorporate arbitrary dictation 
+#                 Enable/disable command sequences via ini file
+# 04/12/2003  rm  Case insensitive window title comparisons
+#                 Output e.g. "emacs_vcl.py" (don't clobber existing NatLink 
+#                 files)
+# 11/24/2002  rm  Option to process a single file, or only changed files
+# 10/12/2002  rm  Use <any>+ instead of exporting individual NatLink commands
+# 10/05/2002  rm  Generalized indenting, emit()
+# 09/29/2002  rm  Built-in function: Repeat() 
+# 09/15/2002  rm  User-defined functions
+# 08/17/2002  rm  Use recursive grammar for command sequences
+# 07/14/2002  rm  Context statements can contain '|'
+#                 Support environment variable references in include statements
+# 07/06/2002  rm  Function arguments allow multiple actions
+#                 Built-in function: Eval()!
+# 07/05/2002  rm  New code generation using VocolaUtils.py
+# 07/04/2002  rm  Improve generated code: use "elif" in menus
+# 06/02/2002  rm  Command sequences!
+# 05/19/2002  rm  Support "include" statement
+# 05/03/2002  rm  Version 1.1
+# 05/03/2002  rm  Handle application names containing '_'
+# 05/03/2002  rm  Convert '\' to '\\' early to avoid quotewords bug
+# 02/18/2002  rm  Version 0.9
+# 12/08/2001  rm  convert e.g. "{Tab_2}" to "{Tab 2}"
+#                 expand in-string references (e.g. "{Up $1}")
+# 03/31/2001  rm  Detect and report unbalanced quotes
+# 03/06/2001  rm  Improve error checking for complex menus
+# 02/24/2001  rm  Change name to Vocola
+# 02/18/2001  rm  Handle terms containing an apostrophe
+# 02/06/2001  rm  Machine-specific command files
+# 02/04/2001  rm  Error on undefined variable or reference out of range
+# 08/22/2000  rm  First usable version
 
 # Style notes:
 #   Global variables are capitalized (e.g. $Definitions)
@@ -53,10 +65,17 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.5";
+    $VocolaVersion = "2.6";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
+
+    $suffix = "_vcl";
+    if ($ARGV[0] eq "-suffix") {
+        shift @ARGV;
+        $suffix = $ARGV[0];
+        shift @ARGV;
+    }
 
     $Process_all_files = 0;
     if ($ARGV[0] eq "-f") {
@@ -69,7 +88,7 @@ sub main
         $input = $ARGV[0];
         $out_folder = $ARGV[1];
     } else {
-        die "Usage: perl vcl2py.pl [-f] inputFileOrFolder outputFolder\n";
+        die "Usage: perl vcl2py.pl [-suffix <s>] [-f] inputFileOrFolder outputFolder\n";
     }
 
     my $in_file = "";
@@ -93,7 +112,7 @@ sub main
     print LOG ($Use_command_sequences ? "" : "Not "),
               "using command sequences\n" if ($Debug >= 1);
 
-    convert_files($in_file, $out_folder);
+    convert_files($in_file, $out_folder, $suffix);
     close LOG;
 
     if ($Error_encountered == 0) {
@@ -120,11 +139,11 @@ sub read_ini_file
 
 sub convert_files
 {
-    my ($in_file, $out_folder) = @_;
+    my ($in_file, $out_folder, $suffix) = @_;
     if ($in_file ne "") {
         # Convert one file
         print "Converting $in_file...\n";
-        convert_file($in_file, $out_folder);
+        convert_file($in_file, $out_folder, $suffix);
     } else {
         # Convert each .vcl file in folder 
         opendir FOLDER, "$In_folder"
@@ -135,7 +154,7 @@ sub convert_files
                 my $in_file = lc($1);
                 # skip machine-specific files for different machines
                 next if ($in_file =~ /\@(.+)/ and $1 ne $machine);
-                convert_file($in_file, $out_folder);
+                convert_file($in_file, $out_folder, $suffix);
             }
         }
     }
@@ -145,10 +164,8 @@ sub convert_files
 
 sub convert_file
 {
-    my ($in_file, $out_folder) = @_;
-    my $out_file = $in_file;
-    $out_file =~ s/[\@]/_/;
-    $out_file =~ s/[-]/_/g;
+    my ($in_file, $out_folder, $suffix) = @_;
+    my $out_file = convert_filename($in_file);
 
     # The global $Module_name is used below to implement application-specific 
     # commands in the output Python
@@ -156,7 +173,7 @@ sub convert_file
     # The global $Input_name is used below for error logging
     $Input_name = "$in_file.vcl";
     $Should_emit_dictation_support = 0;
-    $out_file = "$out_folder/$out_file" . "_vcl.py";
+    $out_file = "$out_folder/$out_file" . $suffix . ".py";
 
     $in_stats  = stat("$In_folder/$Input_name");
     $out_stats = stat("$out_file");
@@ -202,6 +219,38 @@ sub convert_file
     emit_output($out_file, @statements);
 }
 
+# 
+# Warning: this code is very subtle and has a matching inverse function in 
+# _vocola_main.py, getSourceFilename.
+#
+# Ensures:
+#   maps [\w@]* to [\w]*, [-\w@]* to [-\w]*
+#   is invertable
+#   result starts with _ iff input did
+#   does not change any text before the first @ or end of string, whichever 
+#     comes first
+# 
+sub convert_filename
+{
+    my ($in_file) = @_;
+    my $name = $in_file;
+
+    # ensure @ acts as a module name terminator for NatLink
+    $name =~ s/(.)@/\1_@/g;
+
+    my $marker = "e_s_c_a_p_e_d__";
+
+    $name =~ /^([^@]*?)(@(.*))?$/;
+    my ($module, $suffix) = ($1, $2);
+    
+    return $name if $suffix eq "" && $name !~ /$marker/;
+
+    $suffix =~ s/_/___/g;
+    $suffix =~ s/@/__a_t__/g;
+    return $module . $marker . $suffix;
+}
+
+
 # ---------------------------------------------------------------------------
 # Parsing routines
 #
@@ -225,15 +274,25 @@ sub convert_file
 #           menu = '(' menuBody ')'
 #       menuBody = command ('|' command)*
 #
-#           word = chars | '"' chars '"' |  "'" chars "'"
-#       variable = '<' name '>'
-#          range = number '..' number
-#      reference = '$' (number | name)
-#
 #      prototype = functionName '(' formals ')'
 #        formals = [name (',' name)*]
 #           call = functionName '(' arguments ')'
-#      arguments = [action (',' action)*]
+#      arguments = [action* (',' action*)*]
+#
+#
+#  [lexing]
+#
+#           word = bare_word | quoted_word
+#    quoted_word = '"' ([^"]|'""')* '"' | "'" ([^']|"''")* "'"
+#      bare_word = [^\s()\[\]=|,\"\';\#]*([^\s()\[\]=|,\"\';\#:]|:(?![\s=]))
+#
+#       variable = '<' variableName '>'
+#          range = number '..' number
+#      reference = '$' (number | name)
+#           name = [a-zA-Z_]\w*
+#   variableName = \w+
+#   functionName = [a-zA-Z_]\w*
+#
 #
 # The parser works as follows:
 #     1) Strip comments
@@ -257,7 +316,8 @@ sub convert_file
 #       FORMALS - list of argument names
 #       ACTIONS - list of "action" structures
 #    context:
-#       STRINGS - list of strings to use in context matching
+#       STRINGS - list of strings to use in context matching;
+#                 the list ("") denotes the noop context restriction (:)
 #       RULENAMES - list of rule names defined for this context
 #    sequence:
 #       TEXT    - yes or no
@@ -282,7 +342,7 @@ sub convert_file
 #    word:
 #       TEXT      - keystrokes to send
 #    reference:
-#       TEXT      - keystrokes to send
+#       TEXT      - reference number (a string) of reference referenced
 #    formalref:
 #       TEXT      - name of formal (i.e. user function argument) referenced
 #    call:
@@ -291,47 +351,54 @@ sub convert_file
 #       ARGUMENTS - list of lists of actions, to be passed in call
 
 # ---------------------------------------------------------------------------
-# Built in Dragon and Vocola functions
-# with number of expected arguments (-1 means a variable number)
+# Built in Vocola functions with (minimum number of arguments, maximum
+# number of arguments):
 
 %Vocola_functions = (
-                     Eval              => 1,
-                     Repeat            => 2,
+                     Eval              => [1,1],
+                     Repeat            => [2,2],
                      );
 
+# Built in Dragon functions with (minimum number of arguments,
+# template of types of all possible arguments); template has one
+# letter per argument with s denoting string and i denoting integer:
+
 %Dragon_functions = (
-                     ActiveControlPick => 1,
-                     ActiveMenuPick    => 1,
-                     AppBringUp        => -1,
-                     AppSwapWith       => 1,
-                     Beep              => 0,
-                     ButtonClick       => -1,
-                     ClearDesktop      => 0,
-                     ControlPick       => 1,
-                     DdeExecute        => -1,
-                     DdePoke           => 4,
-                     DllCall           => -1,
-                     DragToPoint       => -1,
-                     GoToSleep         => 0,
-                     HeardWord         => -1,
-                     MenuCancel        => 1,
-                     MenuPick          => 1,
-                     MouseGrid         => -1,
-                     MsgBoxConfirm     => 3,
-                     PlaySound         => 1,
-                     RememberPoint     => 0,
-                     RunScriptFile     => 1,
-                     SendKeys          => 1,
-                     SendSystemKeys    => -1,
-                     SetMicrophone     => -1,
-                     SetMousePosition  => -1,
-                     SetNaturalText    => 1,
-                     ShellExecute      => -1,
-                     ShiftKey          => -1,
-                     TTSPlayString     => -1,
-                     Wait              => 1,
-                     WakeUp            => 1,
-                     WinHelp           => -1,
+                     ActiveControlPick => [1,"s"],
+                     ActiveMenuPick    => [1,"s"],
+                     AppBringUp        => [1,"ssis"],
+                     AppSwapWith       => [1,"s"],
+                     Beep              => [0,""],
+                     ButtonClick       => [0,"ii"],
+                     ClearDesktop      => [0,""],
+                     ControlPick       => [1,"s"],
+                     DdeExecute        => [3,"sssi"],
+                     DdePoke           => [4,"ssss"],
+                     DllCall           => [3,"sss"],
+                     DragToPoint       => [0,"i"],
+                     GoToSleep         => [0,""],
+                     HeardWord         => [1,"ssssssss"],  # max 8 words
+                     HTMLHelp          => [2,"sss"],
+                     MenuCancel        => [0,""],
+                     MenuPick          => [1,"s"],
+                     MouseGrid         => [0,"ii"],
+                     MsgBoxConfirm     => [3,"sis"],
+                     PlaySound         => [1,"s"],
+                     RememberPoint     => [0,""],
+                     RunScriptFile     => [1,"s"],
+                     SendKeys          => [1,"s"],
+                     SendDragonKeys    => [1,"s"],
+                     SendSystemKeys    => [1,"si"],
+                     SetMicrophone     => [0,"i"],
+                     SetMousePosition  => [2,"iii"],
+                     SetNaturalText    => [1,"i"],
+                     ShellExecute      => [1,"siss"],
+                     ShiftKey          => [0,"ii"],
+                     TTSPlayString     => [0,"ss"],
+                     Wait              => [1,"i"],
+                     WaitForWindow     => [1,"ssi"],
+                     WakeUp            => [0,""],
+                     WinHelp           => [2,"sii"],
                      );
 
 # parse_file returns a parse tree (list of statements), which includes in-line
@@ -346,20 +413,14 @@ sub parse_file    # returns a list of statements
     push(@Include_stack, $in_file);
     $in_file = "$In_folder/$in_file";
     $Line_number = -1;
-    my $text = read_file($in_file);
+    my $text = read_file($in_file);   # strip comments, deal unbalanced quotes
 
     # For python output we'll need to convert '\' to '\\'.  Do it up front so
     # quotewords won't miss '\;', e.g. in 'Kill White Space = {Esc}\;'
     $text =~ s.\\.\\\\.g;
 
     # Find statement segments by slicing at major delimiters (: ; :=)
-    my @segments = quotewords(":=|:\\s|;", "delimiters", ($text));
-
-    # Check for unbalanced quotes (because quotewords gives up )-:
-    if (not @segments and $Line_number = has_unbalanced_quote($text)) {
-        log_error("Unbalanced quote");
-        return;
-    }
+    my @segments = slice_into_segments($text);
 
     $Line_number = 1;
     my @statements = parse_statements(@segments);
@@ -367,20 +428,55 @@ sub parse_file    # returns a list of statements
     return @statements;
 }
 
-sub read_file     # return string, stripped of comments 
+sub slice_into_segments
+{
+    my @segments;
+
+    # 
+    # The following code replaces:
+    # 
+    #    @segments = quotewords(":=|:\\s|;", "delimiters", (shift));
+    #
+    # which was triggering a Perl compiler bug.  It assumes there are no 
+    # unbalanced quotations.
+    #
+    $_ = shift;
+    while (/\G( :=|:\s|;
+	      | ( [^:;\"\']+ | :(?![=\s]) | \"[^\"]*\" | \'[^\']*\' )+
+	      )/xsgc) {
+	push (@segments, $1);
+    }
+    return @segments;
+}
+
+# return string, stripped of comments and with unterminated quotations reported 
+# then (possibly incorrectly) repaired
+sub read_file     
 {
     my $in_file = shift;
     my @strings;
     open IN, "<$in_file" or log_error("Unable to open '$in_file'");
+    $Line_number = 1;
     while (<IN>) {
-        if (/\#/) {
-            # Line may contain a comment
-            my @chunks = quotewords("\#", "delimiters", $_);
-            push (@strings, $chunks[0]) if $chunks[0] ne "\#";
-            push (@strings, "\n"      ) if @chunks > 1;
-        } else {
-            push (@strings, $_);
-        }
+	/^(([^\'\"\#\n]+|\"[^\"]*\"|\'[^\']*\')*)(.?)(.*)$/ 
+	    or die "Impossible!";
+	my ($correct, $separator, $rest) = ($1, $3, $4);
+	# separator is one of '', "\#", "'", or '"'
+	push (@strings, $correct);
+	if ($separator =~ /[\'\"]/) {
+	    /^(([^\'\"\#\n]+
+	       |\"([^\"]|\"\")*\"(?!\")
+	       |\'([^\']|\'\')*\'(?!\')
+	       )*) (.?) (.*)$/x
+		or die "Impossible!";
+	    log_error("Unterminated quotation: $5$6");
+	    my $repair = $separator . $rest . $separator;
+	    # attempt to minimize cascading errors:
+	    $repair =~ s/\s*([;:|])\s*([\'\"])$/\2 \1/;
+	    push (@strings, $repair);
+	}
+	push (@strings, "\n");
+	$Line_number++;
     }
     close IN;
     join ('', @strings);
@@ -478,10 +574,14 @@ sub parse_definition
 sub parse_variable_definition    # definition = variable ':=' menu_body ';'
 {
     if (/^\s*<(.*)>\s*$/) {
+	my $name = $1;
+        &shift_clause;
+	&check_variable_name($name);
+	$name ne "_anything"
+	    or die "Built-in list <_anything> is not redefinable\n";
         my $statement = {};
         $statement->{TYPE} = "definition";
-        $statement->{NAME} = $1;
-        &shift_clause;
+        $statement->{NAME} = $name;
         my $menu = &parse_menu_body;
         &ensure_empty;
         if ($menu->{TYPE} eq "menu") {verify_referenced_menu($menu)};
@@ -491,10 +591,17 @@ sub parse_variable_definition    # definition = variable ':=' menu_body ';'
     }
 }
 
+sub check_variable_name
+{
+    my $name = shift;
+    $name =~ /^\w+$/
+	or die "Illegal variable name: <$name>\n";
+}
+
 sub parse_function_definition   # function = prototype ':=' action* ';'
                                 # prototype = functionName '(' formals ')'
 {
-    if (/\G\s*([a-zA-Z]\w*?)\s*\((.*)\)/gc) {
+    if (/\G\s*([a-zA-Z_]\w*?)\s*\(\s*(.*?)\s*\)/gc) {
         my $functionName = $1;
         my $formalsString = $2;
         if ($Debug>=2) {print LOG "Found function:  $functionName()\n"}
@@ -520,8 +627,8 @@ sub parse_formals    # formals = [name (',' name)*]
     my @formals = split /\s*,\s*/, $formalsString;
     my @safe_formals = ();
     for my $formal (@formals) {
-        $formal =~ /^[a-zA-Z]\w*$/
-            or die "Illegal formal: '$formal'";
+        $formal =~ /^[a-zA-Z_]\w*$/
+            or die "Illegal formal name: '$formal'\n";
         if ($Debug>=2) {print LOG "Found formal:  $formal\n"}
         push (@safe_formals, "_$formal");
     }
@@ -641,17 +748,19 @@ sub parse_term    #  term = simple_term | range | menu
     return $term;
 }
 
-sub parse_simple_term    # simple_term = words | variable
-                         #    variable = '<' variableName '>'
+sub parse_simple_term    # simple_term = word | variable
+                         #    variable = '<' name '>'
 {
     if (/\G\s*<(.*?)>/gc) {
-        if ($1 eq "_anything") {
+	my $name = $1;
+	&check_variable_name($name);
+        if ($name eq "_anything") {
             if ($Debug>=2) {print LOG "Found <_anything>\n"}
             return create_dictation_node();
         } else {
-            if ($Debug>=2) {print LOG "Found variable:  <$1>\n"}
-            add_forward_reference($1) unless $Definitions{$1};
-            return create_variable_node($1);
+            if ($Debug>=2) {print LOG "Found variable:  <$name>\n"}
+            add_forward_reference($name) unless $Definitions{$name};
+            return create_variable_node($name);
         }
     } else {
         return &parse_word;
@@ -689,7 +798,7 @@ sub parse_menu_body    # menuBody = command ('|' command)*
     return $menu;
 }
 
-sub parse_actions    # action = words | call | reference
+sub parse_actions    # action = word | call | reference
 {
     my @actions;
     while (my $action = (&parse_reference or &parse_call or &parse_word)) {
@@ -699,21 +808,16 @@ sub parse_actions    # action = words | call | reference
             # convert e.g. "{Tab_2}" to "{Tab 2}"
             $action->{TEXT} =~ s/\{(.*?)_(.*?)\}/\{$1 $2\}/g;
 
-            # expand in-string references (e.g. "{Up $1}")
-            while ($action->{TEXT} =~ /\G(.*?)\$(\d+|[a-zA-Z]\w*)/gc) {
+            # expand in-string references (e.g. "{Up $1}") and unquote 
+            # $'s (e.g., \$ -> $)
+            while ($action->{TEXT} =~ /\G(.*?)(?<!\\)\$(\d+|[a-zA-Z_]\w*)/gc) {
                 my ($word, $ref) = ($1, $2);
-                if ($word =~ /^(.*?)\\$/) {
-                    # we had e.g. "\$1", so it wasn't a reference after all
-                    $word = $1 . "\$" . $ref;
-                    push (@actions, create_word_node($word, 1));
-                } else {
-                    push (@actions, create_word_node($word, 1)) if $word;
-                    if ($ref =~ /\d+/) {
-                        push (@actions, create_reference_node($ref));
-                    } else {
-                        push (@actions, create_formal_reference_node($ref));
-                    }
-                }
+		push (@actions, create_word_node($word, 1)) if $word;
+		if ($ref =~ /\d+/) {
+		    push (@actions, create_reference_node($ref));
+		} else {
+		    push (@actions, create_formal_reference_node($ref));
+		}
             }
             if ($action->{TEXT} =~ /\G(.+)/gc) {
                 push (@actions, create_word_node($1, 1));
@@ -727,7 +831,7 @@ sub parse_reference    # reference = '$' (number | name)
 {
     if      (/\G\s*\$(\d+)/gc) {
         return create_reference_node($1);
-    } elsif (/\G\s*\$([a-zA-Z]\w*)/gc) {
+    } elsif (/\G\s*\$([a-zA-Z_]\w*)/gc) {
         return create_formal_reference_node($1);
     }
 }
@@ -769,25 +873,36 @@ sub parse_call    # call = functionName '(' arguments ')'
         $action->{ARGUMENTS} = &parse_arguments;
         if (not /\G\s*\)/gc) {die "Missing ')'\n"}
         my $nActuals = @{ $action->{ARGUMENTS} };
-        my $nFormals;
-        if (defined($nFormals = $Dragon_functions{$functionName})) {
+	my $lFormals, $uFormals, @callFormals;
+        if (defined($Dragon_functions{$functionName})) {
+	    @callFormals = $Dragon_functions{$functionName};
+	    $lFormals =        $callFormals[0][0];
+	    $uFormals = length($callFormals[0][1]);
             $action->{CALLTYPE} = "dragon";
-        } elsif (defined($nFormals = $Vocola_functions{$functionName})) {
+            $action->{ARGTYPES} = $callFormals[0][1];
+        } elsif (defined($Vocola_functions{$functionName})) {
+	    @callFormals = $Vocola_functions{$functionName};
+	    $lFormals = $callFormals[0][0];
+	    $uFormals = $callFormals[0][1];
             $action->{CALLTYPE} = "vocola";
-        } elsif (defined($nFormals = $Functions{$functionName})) {
+        } elsif (defined($Functions{$functionName})) {
+	    $lFormals = $uFormals = $Functions{$functionName};
             $action->{CALLTYPE} = "user";
         } else {
             die "Call to unknown function '$functionName'\n";
         }
-        
-        if ($nFormals != -1 and $nFormals != $nActuals) {
-            die "In call to '$functionName', expected $nFormals argument(s) but found $nActuals\n";
+
+        if ($lFormals != -1 and $nActuals < $lFormals) {
+            die "Too few arguments passed to '$functionName' (minimum of $lFormals required)\n";
+        } 
+        if ($uFormals != -1 and $nActuals > $uFormals) {
+            die "Too many arguments passed to '$functionName' (maximum of $uFormals allowed)\n";
         } 
         return $action;
     }
 }
 
-sub parse_arguments    # arguments = [action (',' action)*]
+sub parse_arguments    # arguments = [action* (',' action*)*]
 {
     my @arguments;
     my $argument = &parse_actions;
@@ -801,14 +916,18 @@ sub parse_arguments    # arguments = [action (',' action)*]
     return \@arguments;
 }
 
-sub parse_word    # word = chars | '"' chars '"' |  "'" chars "'"
+# word      = bare_word | '"' ([^"]|'""')* '"' | "'" ([^']|"''")* "'"
+# bare_word = [^\s()\[\]=|,\"\';\#]*([^\s()\[\]=|,\"\';\#:]|:(?![\s=]))
+sub parse_word    
 {
-    if (   /\G\s*\"([^\"]*)\"\s*/gc      # "word"
-        or /\G\s*\'([^\']*)\'\s*/gc      # 'word'
-        or /\G\s*([^\s=()\[\]|,]+)/gc)   #  word
+    if (   /\G\s*(\")(([^\"]|\"\")*)\"\s*/gc      # double quoted word
+        or /\G\s*(\')(([^\']|\'\')*)\'\s*/gc      # single quoted word
+        or /\G\s*()([^\s()\[\]=|,\"\';\#]+)/gc)   # bare word
     {
-        if ($Debug>=2) {print LOG "Found word:  '$1'\n"}
-        return create_word_node($1, 0);
+	my ($quote, $word) = ($1, $2);
+	$word =~ s/$quote$quote/$quote/g if $quote;
+        if ($Debug>=2) {print LOG "Found word:  '$word'\n"}
+        return create_word_node($word, 0);
     }
 }
 
@@ -816,7 +935,7 @@ sub create_word_node
 {
     my $text = shift;
     my $substitute = shift;
-    $text =~ s/\\\$/\$/g if $substitute;  # convert \$ to $
+    $text =~ s/\\\\\$/\$/g if $substitute;  # convert \\$ to $ (\'s doubled)
     my $term = {};
     $term->{TYPE} = "word";
     $term->{TEXT} = $text;
@@ -900,42 +1019,20 @@ sub already_included
 sub expand_variables
 {
     my $text = shift;
-    while ($text =~ /\$(\w+)/) {
-        my $variable = $1;
+    $text =~ s/\\\\/\\/g;    # undo doubling of backslashes
+    my $result = "";
+    while ($text =~ /\G(.*?)(?<!\\)\$(\d+|[a-zA-Z_]\w*)/gc) {
+	my ($word, $variable) = ($1, $2);
+	$word =~ s/\\\$/\$/g;
         my $value = $ENV{$variable};
-        log_error("Reference to unknown variable $variable") unless $value;
-        $text =~ s/\$$variable/$value/;
+        log_error("Reference to unknown environment variable $variable") unless $value;
+	$result .= $word . $value;
     }
-    return $text;
-    # need to handle \$. Should be a warning not an error.
-}
-
-# ---------------------------------------------------------------------------
-# Check for unbalanced quotes
-
-sub has_unbalanced_quote
-{
-    $_ = shift;
-    my $line = 1;
-    my $bad_line_guess = -1;
-    while (/\G(.*?)([\'\"])(.*?)\2/gcs) {
-        $line += count_lines($1);
-        $bad_line_guess = $line if ($bad_line_guess == -1 and $3 =~ /=|;/);
-        return $bad_line_guess if $1 =~ /[\'\"]/s;
-        $line += count_lines($3);
-    }
-    if (/\G(.+)/gcs) {
-        return $bad_line_guess if $1 =~ /[\'\"]/s;
-    }
-    return 0;
-}
-
-sub count_lines
-{
-    my $text = shift;
-    my $line_count = 0;
-    $line_count++ while $text =~ /\G.*?\n/gc;
-    return $line_count
+    $text =~ /\G(.*)/gc;
+    $word = $1;
+    $word =~ s/\\\$/\$/g;
+    return $result . $word;
+    # Should be a warning not an error.
 }
 
 # ---------------------------------------------------------------------------
@@ -1152,12 +1249,23 @@ sub emit_output
 sub emit_sequence_and_context_code
 {
     # Build a list of context statements, and commands defined in each
-    my (@contexts, $context);
+    my (@contexts, $context, $noop);
     for my $statement (@_) {
         my $type = $statement->{TYPE};
         if ($type eq "context") {
-            $context = $statement;
-            push (@contexts, $context);
+	    $context = $statement;
+	    my @strings = @{ $context->{STRINGS} };
+	    if ($strings[0] eq "") {
+		# no-op context restriction
+		if ($noop) {
+		    $context = $noop;
+		} else {
+		    $noop = $context;
+		    push (@contexts, $context);
+		}
+	    } else {
+		push (@contexts, $context);
+	    }
         } elsif ($type eq "command") {
             push (@{ $context->{RULENAMES} }, $statement->{NAME});
         }
@@ -1247,12 +1355,19 @@ sub emit_context_activations
     for my $context (@_) {
         next if not $context->{RULENAMES};
         $number++;
+	my @targets = @{ $context->{STRINGS} };
+	@targets = map {make_safe_python_string($_)} @targets;
         my $tests = join " or ", map {"string.find(title,'$_') >= 0"}
-                                     @{ $context->{STRINGS} };
+                                     @targets;
         emit(2, "if $tests:\n");
         emit(3, "for rule in self.ruleSet$number:\n");
         if ($module_is_global) {emit(4, "self.activate(rule)\n");}
-        else                   {emit(4, "self.activate(rule,window)\n");}
+        else {
+	    emit(4, "try:\n");
+	    emit(5, "self.activate(rule,window)\n");
+	    emit(4, "except BadWindow:\n");
+	    emit(5, "pass\n");
+	}
     }
     emit(0, "\n");
 }
@@ -1494,7 +1609,11 @@ sub emit_menu_actions
             $text =~ s/'/\\'/g;
             emit($indent, "$if word == '$text':\n");
             if ($command->{ACTIONS}) {
-                emit_actions($collector, $command->{ACTIONS}, $indent+1);
+		if (@{$command->{ACTIONS}}) {
+		    emit_actions($collector, $command->{ACTIONS}, $indent+1);
+		} else {
+		    emit($indent+1, "pass  # no actions\n");
+		}
             } else {
                 emit($indent+1, "$collector('$text')\n");
             }
@@ -1523,8 +1642,9 @@ sub emit_dragon_call
 {
     my ($collector, $call, $indent) = @_;
     my $functionName = $call->{TEXT};
+    my $argumentTypes = $call->{ARGTYPES};
     my $value = get_nested_value_name("call");
-    emit($indent, "$value = Call('$functionName')\n");
+    emit($indent, "$value = DragonCall('$functionName', '$argumentTypes')\n");
     for my $argument (@{ $call->{ARGUMENTS} }) {
         emit_argument("$value.addArgument", $argument, $indent);
     }
@@ -1544,18 +1664,15 @@ sub emit_user_call
     emit($indent, "$collector(eval($value.getCall()))\n");
 }
 
+  # ensures: calls $collector exactly once with a Value
 sub emit_argument
 {
     # Note that an argument is a list of actions
     my ($collector, $argument, $indent) = @_;
-    if (@{$argument} > 1) {
-        my $value = get_nested_value_name("argument");
-        emit($indent, "$value = Value()\n");
-        emit_actions("$value.augment", $argument, $indent);
-        emit($indent, "$collector($value)\n");
-    } else {
-        emit_actions($collector, $argument, $indent);
-    }
+    my $value = get_nested_value_name("argument");
+    emit($indent, "$value = Value()\n");
+    emit_actions("$value.augment", $argument, $indent);
+    emit($indent, "$collector($value)\n");
 }
 
 sub begin_nested_call{ $NestedCallLevel += 1}
@@ -1566,34 +1683,50 @@ sub get_nested_value_name
     return ($NestedCallLevel == 1) ? $root : "$root$NestedCallLevel";
 }
 
-# Eval() takes a single expression argument, which the parser will have
-# chopped up into text and variable references. For each reference, generate
-# code to compute its value. Then generate code to create a binding in our
-# runtime "Evaluator" object using that value and a variable name based on the
-# reference number (e.g. "v2"). Then splice the variable back into the
-# expression. Finally, generate code to evaluate the expression using the
-# bindings!
+# Eval() is a special form that takes a single argument, which is
+# composed of a series of actions.  A template is constructed at
+# compile time from the actions where each word action supplies a
+# piece of template text and each non-word action denotes a hole in
+# the template (represented by an appropriately named variable) that
+# will be "filled" at runtime by the result of evaluating that
+# non-word action.
+#
+# Hole filling and Python evaluation are done by evaluating the
+# template under appropriate bindings of the variables to the results
+# of the non-word actions.
+#
+# Example: the template for Eval(1 + $2-$3) is "1+v2-v3"; assuming $2
+# has value "3" and $3 has value "5", we evaluate the template under
+# the bindings [v2 -> 3; v3 -> 5], yielding "8".
+#
+#
+# (Values are treated as integers if and only if they have the form of
+# a canonical integer; e.g., 13 but not "013".)
 
 sub emit_call_eval
 {
     my ($collector, $call, $indent) = @_;
     my @arguments = @{ $call->{ARGUMENTS} };
     my $expression = "";
-    emit($indent, "evaluator = Evaluator()\n");
-    for my $argumentBit (@{$arguments[0]}) {
-        my $type = $argumentBit->{TYPE};
-        my $text = $argumentBit->{TEXT};
-        if ($type eq "reference") {
-            $text = "v" . $text;
-            emit($indent, "evaluator.setNextVariableName('$text')\n");
-            emit_reference("evaluator.setVariable", $argumentBit, $indent);
-        } elsif ($type eq "formalref") {
-            emit($indent, "evaluator.setNextVariableName('$text')\n");
-            emit($indent, "evaluator.setVariable($text)\n");
-        }
+    my $evaluator = get_nested_value_name("evaluator");
+    emit($indent, "$evaluator = Evaluator()\n");
+    my $exp_no = 0;
+    for my $action (@{$arguments[0]}) {
+        my $type = $action->{TYPE};
+        my $text = $action->{TEXT};
+        if ($type ne "word") {
+	    $text = "v" . $text;
+	    if ($type eq "call") {
+		$exp_no += 1;
+		$text = "exp$exp_no";
+	    }
+	    emit($indent, "$evaluator.setNextVariableName('$text')\n");
+	    emit_argument("$evaluator.setVariable", [$action], $indent);
+	}
         $expression .= $text;
     }
-    emit($indent, "$collector(evaluator.evaluate('$expression'))\n");
+    my $expression = make_safe_python_string($expression);
+    emit($indent, "$collector($evaluator.evaluate('$expression'))\n");
 }
 
 sub emit_call_repeat
@@ -1753,7 +1886,9 @@ sub flatten_menu
 
 sub make_safe_python_string
 {
+    # we have already doubled backslashes by this time
     $_[0] =~ s/'/\\'/g;
+    $_[0] =~ s/\n/\\n/g;
     return $_[0];
 }
 
@@ -1764,6 +1899,7 @@ sub emit_file_header
 {
     $now = localtime;
     print OUT "\# NatLink macro definitions for NaturallySpeaking\n"; 
+    print OUT "\# coding: latin-1\n";
     print OUT "\# Generated by vcl2py $VocolaVersion, $now\n";
     print OUT <<MARK;
 

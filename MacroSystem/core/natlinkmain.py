@@ -6,11 +6,16 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+# Febr 2008 (QH)
+#   - made special arrangements for _vocola_main, so it calls back before
+#     anything else is done, see doVocolaFirst, vocolaModule and vocolaIsLoaded.
+#     These 3 variables control all. Moreover VocolaUserDirectory must be given,
+#     otherwise vocola will not switch on.
 #
 # Jan 2008 (QH)
 #   - adapted to natlinkstatus, which gives info about natlink, both by
 #     this module and by the natlink config functions.
-#     status is now a class instance of natlinkstatus.NatlinkStatus
+#     Note: status is now a class instance of natlinkstatus.NatlinkStatus
 #
 # QH, May 22, 2007:
 #    extended range of possible filenames, (nearly) arbitrary characters may appear after
@@ -82,6 +87,12 @@ debugCallback = 0
 #
 # This redirects stdout and stderr to a dialog box.
 #
+doVocolaFirst = '_vocola_main'
+vocolaIsLoaded = None  # 1 or None
+vocolaModule = None    # pointer to the module...
+
+reVocolaModuleName = re.compile(r'_vcl[0-9]?$')
+
 
 class NewStdout:
     softspace=1
@@ -166,6 +177,8 @@ loadedFiles = {}
 
 lastModule = ''
 
+
+VocolaUserDirectory = ''
 #
 # This function will load another Python module, usually one which the user
 # supplies.  This function will trap all execptions and report them so an
@@ -254,7 +267,7 @@ def safelyCall(modName,funcName):
 #
 
 def findAndLoadFiles(curModule=None):
-    global loadedFiles, searchImportDirs
+    global loadedFiles, searchImportDirs, vocolaIsLoaded, vocolaModule
 
 
     if curModule:
@@ -277,27 +290,46 @@ def findAndLoadFiles(curModule=None):
     filesToLoad = {}
     if userDirectory != '':
         searchImportDirs.append(userDirectory)
-        for x in os.listdir(userDirectory):
+        userDirFiles = [x for x in os.listdir(userDirectory) if x.endswith('.py')]
+        for x in userDirFiles:
             res = pat.match(x)
             if res: filesToLoad[ res.group(1) ] = None
+
+    # baseDirectory:           
     searchImportDirs.append(baseDirectory)
-    for x in os.listdir(baseDirectory):
+    baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
+
+    # if present, load _vocola_main first, it can generate grammar files
+    # before proceeding:
+    vocolaEnabled = (doVocolaFirst and VocolaUserDirectory and doVocolaFirst+'.py' in baseDirFiles)
+    if debugLoad:
+        print 'vocolaEnabled: %s'% vocolaEnabled
+    if vocolaEnabled and not vocolaIsLoaded:
+        x = doVocolaFirst
+        origName = loadedFiles.get(x, None)
+        loadedFiles[x] = loadFile(x, searchImportDirs, origName)
+        vocolaIsLoaded = 1
+        vocolaModule = sys.modules[doVocolaFirst]
+        # repeat the base directory, as vocola just had the chance to rebuild python grammar files:
+        baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
+
+    for x in baseDirFiles:
         res = pat.match(x)
         if res: filesToLoad[ res.group(1) ] = None
 
     # Try to (re)load any files we find
     if debugLoad: print 'filesToLoad: %s'% filesToLoad.keys()
-    for x in filesToLoad.keys():
-        if loadedFiles.has_key(x):
-            origName = loadedFiles[x]
-        else:
-            origName = None
-            if debugCallback:
-                print 'new file to load: %s'% x
+    for x in filesToLoad:
+        if x == doVocolaFirst: continue
+        if not vocolaEnabled and reVocolaModuleName.search(x):
+            if debugLoad:
+                print 'skipping %s, vocola not enabled'% x
+            continue
+        origName = loadedFiles.get(x, None)
         loadedFiles[x] = loadFile(x, searchImportDirs, origName)
 
     # Unload any files which have been deleted
-    for name,path in loadedFiles.items():
+    for name, path in loadedFiles.iteritems():
         if path and not getFileDate(path):
             safelyCall(name,'unload')
             del loadedFiles[name]
@@ -308,10 +340,13 @@ def findAndLoadFiles(curModule=None):
 #
 
 def unloadEverything():
-    global loadedFiles
-    for x in loadedFiles.keys():
+    global loadedFiles, vocolaIsLoaded
+    for x in loadedFiles:
         if loadedFiles[x]:
             safelyCall(x,'unload')
+            if x == doVocolaFirst:
+                vocolaIsLoaded = None
+                vocolaModule = None
     loadedFiles = {}
 
 #
@@ -346,28 +381,49 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
 # callback since that callback may be coming from code in the module we are
 # trying to reload (consider recognitionMimic).
 #
+def vocolaActive():
+    """active if grammar is loaded and VocolaUserDirectory exists
+    """
+    if doVocolaFirst in loadedFiles and VocolaUserDirectory:
+        return 1
+
 prevModInfo = None
 def beginCallback(moduleInfo, checkAll=None):
     global loadedFiles, prevModInfo
-    if debugCallback:
-        cbd = getCallbackDepth()
-        print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
+    cbd = getCallbackDepth()
+    print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
               (cbd, checkAll, checkForGrammarChanges)
-    if getCallbackDepth() < 5:
-        t0 = time.time()
-        
-        if checkAll or checkForGrammarChanges:
+    if getCallbackDepth() > 2:
+        return
+    t0 = time.time()
+    
+    if vocolaIsLoaded:
+        result = vocolaModule.vocolaBeginCallback(moduleInfo)
+        if result == 2:
             if debugCallback:
-                print 'check for changed files (all files)...'
-            for x in loadedFiles.keys():
-                loadedFiles[x] = loadFile(x, searchImportDirs, loadedFiles[x])
-            loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
+                print 'vocola made new module, load all python files'
+            findAndLoadFiles()
+            loadModSpecific(moduleInfo)
+        elif result == 1:
+            if debugCallback:
+                print 'vocola changed a python module, check'
+            checkAll = 1
         else:
             if debugCallback:
-                print 'check for changed files (only specific)'
-            loadModSpecific(moduleInfo, 1)  # only if changed module
-        if debugTiming:
-            print 'checked all grammar files: %.6f'% (time.time()-t0,)
+                print 'no changes vocola user files'
+                
+    if checkAll or checkForGrammarChanges:
+        if debugCallback:
+            print 'check for changed files (all files)...'
+        for x in loadedFiles.keys():
+            loadedFiles[x] = loadFile(x, searchImportDirs, loadedFiles[x])
+        loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
+    else:
+        if debugCallback:
+            print 'check for changed files (only specific)'
+        loadModSpecific(moduleInfo, 1)  # only if changed module
+    if debugTiming:
+        print 'checked all grammar files: %.6f'% (time.time()-t0,)
         
 #
 # This callback is called when the user changes or when the microphone
@@ -380,7 +436,7 @@ def beginCallback(moduleInfo, checkAll=None):
 def changeCallback(type,args):
     global userName, DNSuserDirectory, language, BaseModel, BaseTopic, DNSmode
     if debugCallback:
-        print 'changeCallback (unimacro testversion), type: %s, args: %s'% (type, args)
+        print 'changeCallback, type: %s, args: %s'% (type, args)
     if type == 'mic' and args == 'on':
         if debugCallback:
             print 'findAndLoadFiles...'
@@ -446,25 +502,6 @@ def changeCallbackLoadedModulesMicOn(type,args):
                 apply(func, [type,args])
 
 
-###QH>>when changing user (changeCallback) obsoleteQH
-##def changeUserDirectory():
-##    """call also from changeCallback! QH
-##    
-##    the default userDirectory from = getCurrentUser() is deep within the filesystem
-##    and unlikely to be useful to anyone
-##    so we change it
-##    """
-##    global userDirectory
-##    userDirectory = status.getUserDirectory()
-
-#### callable from other modules, also for backwards compatibility:::
-##def getUserDirectory():
-##    return status.getUserDirectory()
-##
-##def getLanguage():
-##    return status.getLanguage(DNSuserDirectory)
-
-
 ############################################################################
 #
 # Here is the initialization code.
@@ -486,7 +523,7 @@ try:
     
 
     if debugLoad: print "NatLink dll dir " + baseDirectory
-    baseDirectory=os.path.abspath(baseDirectory + "\\..\\")
+    baseDirectory = os.path.normpath(os.path.abspath(os.path.join(baseDirectory,"..")))
     if debugLoad: print "NatLink base dir" + baseDirectory
     
     # get the current user information from the natlink module
@@ -498,7 +535,8 @@ try:
     # get invariant variables:
     DNSversion = status.getDNSVersion()
     WindowsVersion = status.getWindowsVersion()
-
+    VocolaUserDirectory = status.getVocolaUserDirectory()
+    
     # init things identical to when user changes:
     changeCallback('user', getCurrentUser())
 

@@ -29,12 +29,10 @@ Save Speech Files        = SendSystemKeys( {NumKey*} ) Wait(100) ff;
 Exit NatSpeak            = SendSystemKeys( {NumKey*} ) Wait(100) e;
 Die Die = GoToSleep();
 
-
 #
 # IE
 #
 [search] Google for <_anything> = AppBringUp("IEXPLORE") {Alt+g}$1{Enter} ;
-
 
 # ---------------------------------------------------------------------------
 # Mouse Handling
@@ -96,10 +94,8 @@ Kill <n>              = {Del_$1};
 <n> Words <left_right> = {Ctrl+$2_$1};
 Kill Word              = {Right_2}{Ctrl+Left}{Shift+Ctrl+Right}   {Del};
 Kill <n> Words         = {Right_2}{Ctrl+Left}{Shift+Ctrl+Right_$1}{Del};
-
 Kill Back Word         = {Left}{Ctrl+Right}{Shift+Ctrl+Left}   {Del};
 Kill Back <n> Words    = {Left}{Ctrl+Right}{Shift+Ctrl+Left_$1}{Del};
-<n> words kill		   = {Left}{Ctrl+Right}{Ctrl+Shift+Left_$1}{Del};
 
 ### Lines
 Line <start_end>     = $1;

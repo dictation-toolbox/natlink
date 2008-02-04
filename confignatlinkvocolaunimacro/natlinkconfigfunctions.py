@@ -21,7 +21,8 @@ This can be done in three ways:
 -Through the configure GUI (natlinkconfig.py), which calls into this module
  This last one needs wxPython to be installed.
 
-*** the core directory is relative to this directory ... and will be searched for first.
+*** the core directory is relative to this directory ...
+    ...and will be searched for first.
 
 Afterwards can be set:
 
@@ -159,9 +160,14 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """set in registry local_machine\natlink
 
         """
-        key = 'DNSInstalDir'
+        key = 'DNSInstallDir'
         if os.path.isdir(new_dir):
-            self.userregnl[key] = new_dir
+            programDir = os.path.join(new_dir, 'Program')
+            if os.path.isdir(programDir):
+                print 'set DNS Install Directory to: %s'% new_dir
+                self.userregnl[key] = new_dir
+            else:
+                print "setDNSInstallDir, directory misses a Program subdirectory: %s"% new_dir
         else:
             raise IOError("setDNSInstallDir, not a valid directory: %s"% new_dir)
         
@@ -169,11 +175,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """clear in registry local_machine\natlink\natlinkcore
 
         """
-        key = 'DNSInstalDir'
+        key = 'DNSInstallDir'
         if key in self.userregnl:
             del self.userregnl[key]
         else:
-            print 'NatSpeak directory was not set in registry, natlink part'
+            print 'NatSpeak Install directory was not set in registry, natlink part'
 
     def setDNSIniDir(self, new_dir):
         """set in registry local_machine\natlink
@@ -181,6 +187,16 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         key = 'DNSIniDir'
         if os.path.isdir(new_dir):
+            # check ini files:
+            nssystem = os.path.join(new_dir, self.NSSystemIni)
+            nsapps = os.path.join(new_dir, self.NSAppsIni)
+            if not os.path.isfile(nssystem):
+                print 'folder %s does not have the inifile %s'% (new_dir, self.NSSystemIni)
+                return
+            if not os.path.isfile(nsapps):
+                print 'folder %s does not have the inifile %s'% (new_dir, self.NSAppsIni)
+                return
+    
             self.userregnl[key] = new_dir
         else:
             raise IOError("setDNSIniDir, not a valid directory: %s"% new_dir)
@@ -255,7 +271,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
     def getVocolaUserDir(self):
         key = 'VocolaUserDirectory'
-        return self.userregnl[key]
+        return self.userregnl.get(key, None)
 
     def setVocolaUserDir(self, v):
         key = 'VocolaUserDirectory'
@@ -334,8 +350,8 @@ def _main(Options=None):
 
     """
     cli = CLI()
-    shortOptions = "iIDCeEUdvVWrRgG"
-    shortArgOptions = "c:u:w:"  
+    shortOptions = "iIDCeEUdVrRgG"
+    shortArgOptions = "c:u:v:"  
     if Options:
         if type(Options) == types.StringType:
             Options = Options.split(" ", 1)
@@ -395,8 +411,8 @@ e/E - enable/disable natlink
 
 u/U - set/clear userdirectory, the directory of the user grammar files of natlink (eg unimacro)
 
-v/V - enable/disable vocola, currently not implemented, vocola is simply enabled
-w/W - set/clear vocoloauserdir, the user directory for vocola user files
+v/V - set/clear vocoloauserdir, the user directory for vocola user files. This also
+      enables/disables vocola
 
 r/R - (un)registernatlink, the natlink.dll file(should not be necessary to do)
 g/G - enable/disable debugoutput: natlink debug output in natlink log file
@@ -439,7 +455,7 @@ go through CLI calls
 ##            if arg.find(' ') > 0:
 ##                arg = '"' + arg + '"'
             print "Change NatSpeak directory to: %s"% arg
-            self.config.setDNSIniDir(arg)
+            self.config.setDNSInstallDir(arg)
         else:
             print 'not a valid folder: %s'% arg
     
@@ -450,7 +466,7 @@ go through CLI calls
 
     def do_D(self, arg):
         print "Clear NatSpeak directory in registry"
-        self.config.clearDNSIniDir()
+        self.config.clearDNSInstallDir()
     
     def help_D(self):
         print "Clears the registry entry where of the directory where natspeak is installed."
@@ -483,7 +499,7 @@ go through CLI calls
 
     def do_C(self, arg):
             print "Clear NatSpeak Ini files directory in registry"
-            clearDNSIniDir()
+            self.config.clearDNSIniDir()
     
     def help_C(self):
         print "Clears the registry entry that holds the directory of the"
@@ -568,42 +584,25 @@ the Global Clients section of nssystem.ini.
     
     # Vocola and Vocola User directory------------------------------------------------
     def do_v(self, arg):
-        print "Enable Vocola"
-        self.config.enableVocola()
+        if os.path.isdir(arg):
+            print "Setting vocola user directory to %s\nand (therewith) Enable Vocola"% arg
+            self.config.setVocolaUserDir(arg)
+        else:
+            print 'Please specifiy a valid path for VocolaUserDirectory'
+            
     def do_V(self, arg):
-        print "Disable Vocola"
-        self.config.disableVocola()
+        print "Clearing vocola user directory and (therewith) Disable Vocola"
+        self.config.clearVocolaUserDir()
 
     def help_v(self):
-        print "enables python files in the base directory of natlink, especially"
-        print "_vocola_main.py. Toggle the microphone and Vocola should be in..."
-        
-    def help_V(self):
-        print "renames _vocola_main.py in the base directory of natlink to"
-        print " disabled_vocola_main.py."
-        print "Also remove all .pyc files and all .py files generated by vocola in this directory."
-        print "Toggle the microphone, or possibly restart NatSpeak."
-    def help_w(self):
-        print "Set the directory for vocola user files..."
-        print "Defaults to My documents\\vocola"
-    def help_W(self):
-        print "Clears the directory for vocola user files..."
+        print \
+"""set/clear vocola userdirectory (v path/V) and also enable/disable Vocola
 
-    def do_w(self, arg):
-        print "Set Vocola User Directory to: %s"% arg
-        self.config.setVocolaUserDir(arg)
-    def do_W(self, arg):
-        print "Clears the Vocola User Directory"
-        self.config.clearVocolaUserDir()
-    def help_w(self):
-        print "set the directory where the Vocola User Files are/should be located"      
-        
-    do_enablevocola = do_v
-    do_disablevocola = do_V
-    do_setvocolauserdir = do_w
-    help_enablevocola = help_v
-    help_disablevocola = help_V
-    help_setvocolauserdir = help_w
+Vocola is meant to be user with a VocolaUserDirectory. Therefore natlinkmain will not
+enable Vocola if no VocolaUserDirectory is set.
+
+"""
+    help_V = help_v
 
     # enable/disable natlink debug output...
     def do_g(self, arg):

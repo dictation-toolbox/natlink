@@ -44,7 +44,7 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
     <td align=right>
       <nobr>
         <font color="#FFFFCC" size="2">
-          (this page updated May 31, 2003)</font>
+          (this page updated June 03, 2007)</font>
       </nobr>
     </td>
   </tr>
@@ -224,9 +224,23 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
     </tr>
   </tbody>
 </table>
-<p>After creating or modifying commands and saving the file, your commands will 
-  be loaded automatically and usable immediately. Any errors will be displayed 
-  in a pop-up window titled &quot;Messages from Python Macros&quot;.</p>
+
+<p>After creating or modifying commands and saving the file, your
+   commands will be loaded automatically and usable immediately unless
+   there is an error.  Any errors will be displayed in a pop-up window
+   titled &quot;Messages from Python Macros&quot;.  Although this window
+   cannot currently be resized, its contents can be cleared by closing
+   it or its contents can be selected and copied to a larger window for
+   easier viewing.
+</p>
+
+<p>Vocola normally continues using the commands from the last error-free
+   version of each file until there is a new error-free version
+   available so that an unfortunate error does not disable the very
+   commands you need to fix the error.  These old commands are discarded
+   the next time Vocola starts up.
+</p>
+
 <h3>Machine-Specific Commands</h3>
 <p>If you need to control more than one computer by voice (for example at work 
   and at home) you can define commands which will only be enabled on a particular 
@@ -280,21 +294,38 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
  the underlying organization they depend on, here are the relevant conventions: 
   
 <ul>
-  <li> Put all Vocola source files in the folder NatLink/Vocola/Commands.</li>
-  <li> Put global commands in the file _vocola.vcl.</li>
-  <li> Put application-specific commands in the .vcl file matching the executable 
-    name -- for example, commands specific to Netscape.exe go in netscape.vcl.</li>
-  <li> You can create additional files for a category of commands by extending 
-    the filename.&nbsp; For example, an additional global command file could be 
-    called _vocola_text.vcl; or, an additional Netscape command file could be 
-    called netscape_addresses.vcl.</li>
+  <li> Put all Vocola source files in the folder NatLink/Vocola/Commands
+       or in the alternative folder you chose when running the
+       installer.  The Edit commands give preference to the later folder
+       if it exists.</li>
+  <li> By default, all global commands are placed in _vocola.vcl; the
+       "Edit Global [Voice] Commands" command edits this file.
+  <li> By default, application-specific commands for the application
+       with executable name <i>exec</i> are placed in <i>exec</i>.vcl.
+       For example, commands specific to Netscape.exe go in
+       netscape.vcl; invoking the "Edit [Voice] Commands" command while
+       Netscape is the active application edits this file.</li>
+  <li> You can create additional files of global commands by using
+       different .vcl filenames, each starting with an underscore;
+       for example, an additional global command file of abbreviations 
+       could be called _abbreviations.vcl.</li>
+  <li> Likewise, you can create additional files of application-specific
+       commands by using .vcl files prefixed with <i>exec_</i>; for example,
+       an additional Netscape command file could be called
+       netscape_addresses.vcl.</li>
   <li> If you want commands to be active only on a certain computer, put them 
-    in a file containing @ followed by the computer name.&nbsp; For example, commands 
-    in the file natspeak@venus.vcl would be valid only on the computer named "venus" 
-    with natspeak.exe running.</li>
-  <li>Vocola files are translated into Python files and loaded by NatLink. For 
-    example, the Vocola command file NatLink/Vocola/Commands/Netscape.vcl would 
-    be translated to the Python file NatLink/MacroSystem/Netscape_vcl.py.</li>
+       in a file containing @ followed by the computer name.&nbsp; For
+       example, commands in the file natspeak@venus.vcl would be valid
+       only on the computer named "venus" with natspeak.exe running.</li>
+  <li> Vocola files are translated into Python files and loaded by
+       NatLink.  For example, the Vocola command file 
+       NatLink/Vocola/Commands/netscape.vcl would be translated to the
+       Python file NatLink/macrosystem/netscape_vcl1.py.</li>
+  <li> Warning: Vocola files with base names 
+       (the part before the .vcl and the <i>@machine</i> part if any) 
+       containing characters other than letters, digits, and underscores
+       are silently ignored by current (pre May 2007) versions of
+       NatLink due to a NatLink bug.</li>
 </ul>
 </body>
 </html>
@@ -307,7 +338,7 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
             <hr>
             <table width=100% border=0 cellpadding=0>
               <tr>
-                <td><i>This page (c) Copyright 2002-2005 by Rick Mohr.
+                <td><i>This page (c) Copyright 2002-2008 by Rick Mohr.
                 <td align=right>
                   <!-- BEGIN WebSTAT Activation Code -->
                   <script type="text/javascript" language="JavaScript" src="http://hits.webstat.com/cgi-bin/wsv2.cgi?51442"></script>

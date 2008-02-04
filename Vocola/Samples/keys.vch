@@ -1,80 +1,40 @@
 # Commands for speaking keys
 
-
-
 # This is a separate file so it can be included in both global commands
-
 # and Emacs commands, and thus used in command sequences in both places
 
-
-
 <key> := ( alpha=a | bravo=b | charlie=c | delta=d | echo=e | foxtrot=f
-
          | golf=g | hotel=h | india=i | juliett=j | kilo=k | lima=l
-
          | mike=m | november=n | oscar=o | papa=p | quebec=q | romeo=r
-
          | sierra=s | tango=t | uniform=u | victor=v | whiskey=w
-
          | xray=x | yankee=y | zulu=z
-
          | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-
          | "!" | "@" | "#" | "$" | "%" | "^" | "&" | "*" | "(" | ")" | "`" 
-
          | "~" | "-" | "_" | "=" | "+" | "\" | "|" | "[" | "{" | "]" | "}" 
-
          | ";" | ":" | "'" | '"' | "," | "<" | "." | ">" | "/" | "?"
-
          | Left | Right | Up | Down | space-bar=" " | tab-key=Tab | Enter
-
          | page-up=PgUp | page-down=PgDn | Backspace | delete=Del
-
          | Escape=Esc | Home | End
-
          );
 
-
-
 Press <key> = {$1};
-
 <key> Here = ButtonClick() {$1};
 
-
-
 Space Bar = " ";
-
 Tab Key = {Tab};
 
-
-
 # NatSpeak has built-in commands for e.g. "Press Page Down"
-
 # This allows repeating those (e.g. "Press Page Down 3")
 
-
-
 <special> := ( Left | Right | Up | Down | space-bar=" " | tab-key=Tab | Enter
-
              | page-up=PgUp | page-down=PgDn | Backspace | delete=Del
-
              | escape=Esc
-
              );
-
 <mod> := Shift | control-key=Ctrl | Alt;
-
 <nn> := 1..99;
 
-
-
 [Press]               <special> <nn> = {$1_$2};
-
 [Press]             <mod> <key> <nn> = {$1+$2_$3};
-
 [Press]       <mod> <mod> <key> <nn> = {$1+$2+$3_$4};
-
 [Press] <mod> <mod> <mod> <key> <nn> = {$1+$2+$3+$4_$5};
-
-
 

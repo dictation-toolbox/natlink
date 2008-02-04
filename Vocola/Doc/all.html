@@ -6,15 +6,16 @@
   [Netscape]"><title>Introduction to Vocola</title></head><body>
 <p>Vocola is a <font color="#cc0000">vo</font>ice <font color="#cc0000"> co</font>mmand 
   <font color="#cc0000">la</font>nguage -- a language for defining commands to 
-  control a computer by voice -- developed for use with <a href="http://www.lhsl.com/naturallyspeaking/">Dragon 
+  control a computer by voice -- developed for use with <a href="http://www.nuance.com/naturallyspeaking/">Dragon 
   NaturallySpeaking</a> and implemented using <a href="http://www.synapseadaptive.com/joel/PythonMacroSystem.html">NatLink</a>. 
   While these systems do the heavy lifting, Vocola (pronounced "vo-CO-luh") concentrates 
   on features and ease of use. In particular, Vocola offers the following:</p>
 <ul>
   <li>Easy to use 
     <ul>
-      <li>Simple, concise command syntax -- most commands are one-liners </li>
-      <li>Easy to view and modify commands </li>
+      <li>Simple, concise command syntax -- most commands are <a href="KeystrokeCommands.html">one-liners</a> 
+      </li>
+      <li>Easy to <a href="UsingVocola.html">view and modify commands</a> </li>
       <li>Changed commands are loaded automatically </li>
       <li>Free, and works with any version of NatSpeak </li>
     </ul>
@@ -33,7 +34,8 @@
     </ul>
   <li>Familiar syntax 
     <ul>
-      <li>Keystroke syntax and built-in functions from Dragon Macro Language </li>
+      <li>Keystroke syntax and <a href="BuiltinFunctions.html">built-in functions</a> 
+        from Dragon Macro Language </li>
       <li>Grammar syntax similar to NatLink </li>
     </ul>
 </ul>
@@ -43,8 +45,8 @@
  &nbsp;Copy That = {Ctrl+c};<br><br>
  &nbsp;Copy to NatSpeak = {Ctrl+a}{Ctrl+c} AppBringUp(NatSpeak);&nbsp;<br><br>
  &nbsp;1..40 (Left | Right | Up | Down) = {$2_$1};<br><br>
- &nbsp;Sort by (Date=e | Sender=r | Subject=s) = {Alt+v}o $1;
- </tt></td></tr></tbody></table><br>
+        &nbsp;Sort by (Date=e | Sender=n | Subject=s) = {Alt+v}o $1; </tt></td>
+    </tr></tbody></table><br>
  The first is a simple keystroke command -- saying "Copy That" 
 sends the keystroke Control-C, which copies the current selection to 
 the clipboard. The great majority of commands needed for controlling 
@@ -60,10 +62,10 @@ a computer by voice are simple keystroke commands like this.&nbsp; </p>
   range "<tt>1..40</tt>" and the spoken "Left" matches the alternative set "<tt>(Left 
   | Right | Up | Down)</tt> ". The keystroke sequence "<tt>{Left 3}</tt>" is constructed 
   and sent, and the cursor moves left three characters.</p>
-<p>The fourth command allows sorting messages in the Netscape Mailer, by saying 
-  "Sort by Date", "Sort by Sender", or "Sort by Subject". The matched word "Date", 
-  "Sender", or "Subject", causes the appropriate keystroke "e", "r", or "s" to 
-  be inserted into the keystroke sequence.</p>
+<p>The fourth command allows sorting messages in Mozilla's Thunderbird Mailer, 
+  by saying "Sort by Date", "Sort by Sender", or "Sort by Subject". The matched 
+  word "Date", "Sender", or "Subject", causes the appropriate keystroke "e", "n", 
+  or "s" to be inserted into the keystroke sequence.</p>
 <p>These and other features are discussed in greater detail in the <a href="LanguageTutorial.html"> 
   Vocola Tutorial</a>.</p>
 <h3> Why a New Voice Command Language?</h3>
@@ -74,7 +76,8 @@ a computer by voice are simple keystroke commands like this.&nbsp; </p>
   This means you can write quickly and concisely the great majority of voice commands 
   you need, and use another language in the few cases where you need more power. 
   When I switched to Vocola I was able to convert all but two of my 200+ Dragon 
-  macros, and at this writing use something over 900 Vocola commands.</p>
+  macros (achieving a source line count reduction of roughly 6:1) and at this 
+  writing use well over 1000 Vocola commands.</p>
 <p>Alternatives to Vocola include NatSpeak Pro's VisualBasic-based language (introduced 
   in version 6), the older Dragon Macro Language (used through version 5 and still 
   functional), and NatLink. Each of these languages has advantages, but (in my 
@@ -83,8 +86,9 @@ a computer by voice are simple keystroke commands like this.&nbsp; </p>
 <p> Joel Gould for his time and care in designing, building, and "productizing" 
   NatLink, which enabled and inspired Vocola. The authors and voice community 
   members listed in <a href="VoiceResources.html">Voice Resources</a>. Scott Weinstein 
-  for building and maintaining his <a href="http://speech.squidnet.com/default.aspx/NL.HomePage">NatLink 
-  + Vocola installer</a>.</p>
+  for building and maintaining his <a href="http://speechwiki.org/NL/HomePage.html">NatLink 
+  + Vocola installer</a>. Mark Lillibridge for significant contributions and bug fixes
+  since Vocola 2.5</p>
 <h3>This Web Site</h3>
 <p>This web site was created using a Python program developed and shared
 by Joel Gould, in another admirable display of community-mindedness. His
@@ -94,6 +98,7 @@ description and sources are <a href="http://www.synapseadaptive.com/joel/AboutTh
 </p>
 
 </body></html>
+
 <hr>
 <h2>Using&nbsp;Vocola</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
@@ -137,9 +142,23 @@ description and sources are <a href="http://www.synapseadaptive.com/joel/AboutTh
     </tr>
   </tbody>
 </table>
-<p>After creating or modifying commands and saving the file, your commands will 
-  be loaded automatically and usable immediately. Any errors will be displayed 
-  in a pop-up window titled &quot;Messages from Python Macros&quot;.</p>
+
+<p>After creating or modifying commands and saving the file, your
+   commands will be loaded automatically and usable immediately unless
+   there is an error.  Any errors will be displayed in a pop-up window
+   titled &quot;Messages from Python Macros&quot;.  Although this window
+   cannot currently be resized, its contents can be cleared by closing
+   it or its contents can be selected and copied to a larger window for
+   easier viewing.
+</p>
+
+<p>Vocola normally continues using the commands from the last error-free
+   version of each file until there is a new error-free version
+   available so that an unfortunate error does not disable the very
+   commands you need to fix the error.  These old commands are discarded
+   the next time Vocola starts up.
+</p>
+
 <h3>Machine-Specific Commands</h3>
 <p>If you need to control more than one computer by voice (for example at work 
   and at home) you can define commands which will only be enabled on a particular 
@@ -193,21 +212,38 @@ description and sources are <a href="http://www.synapseadaptive.com/joel/AboutTh
  the underlying organization they depend on, here are the relevant conventions: 
   
 <ul>
-  <li> Put all Vocola source files in the folder NatLink/Vocola/Commands.</li>
-  <li> Put global commands in the file _vocola.vcl.</li>
-  <li> Put application-specific commands in the .vcl file matching the executable 
-    name -- for example, commands specific to Netscape.exe go in netscape.vcl.</li>
-  <li> You can create additional files for a category of commands by extending 
-    the filename.&nbsp; For example, an additional global command file could be 
-    called _vocola_text.vcl; or, an additional Netscape command file could be 
-    called netscape_addresses.vcl.</li>
+  <li> Put all Vocola source files in the folder NatLink/Vocola/Commands
+       or in the alternative folder you chose when running the
+       installer.  The Edit commands give preference to the later folder
+       if it exists.</li>
+  <li> By default, all global commands are placed in _vocola.vcl; the
+       "Edit Global [Voice] Commands" command edits this file.
+  <li> By default, application-specific commands for the application
+       with executable name <i>exec</i> are placed in <i>exec</i>.vcl.
+       For example, commands specific to Netscape.exe go in
+       netscape.vcl; invoking the "Edit [Voice] Commands" command while
+       Netscape is the active application edits this file.</li>
+  <li> You can create additional files of global commands by using
+       different .vcl filenames, each starting with an underscore;
+       for example, an additional global command file of abbreviations 
+       could be called _abbreviations.vcl.</li>
+  <li> Likewise, you can create additional files of application-specific
+       commands by using .vcl files prefixed with <i>exec_</i>; for example,
+       an additional Netscape command file could be called
+       netscape_addresses.vcl.</li>
   <li> If you want commands to be active only on a certain computer, put them 
-    in a file containing @ followed by the computer name.&nbsp; For example, commands 
-    in the file natspeak@venus.vcl would be valid only on the computer named "venus" 
-    with natspeak.exe running.</li>
-  <li>Vocola files are translated into Python files and loaded by NatLink. For 
-    example, the Vocola command file NatLink/Vocola/Commands/Netscape.vcl would 
-    be translated to the Python file NatLink/MacroSystem/Netscape_vcl.py.</li>
+       in a file containing @ followed by the computer name.&nbsp; For
+       example, commands in the file natspeak@venus.vcl would be valid
+       only on the computer named "venus" with natspeak.exe running.</li>
+  <li> Vocola files are translated into Python files and loaded by
+       NatLink.  For example, the Vocola command file 
+       NatLink/Vocola/Commands/netscape.vcl would be translated to the
+       Python file NatLink/macrosystem/netscape_vcl1.py.</li>
+  <li> Warning: Vocola files with base names 
+       (the part before the .vcl and the <i>@machine</i> part if any) 
+       containing characters other than letters, digits, and underscores
+       are silently ignored by current (pre May 2007) versions of
+       NatLink due to a NatLink bug.</li>
 </ul>
 </body>
 </html>
@@ -252,17 +288,11 @@ The following sections describe the Vocola language, with examples:
 
 <hr>
 <h2>Keystroke&nbsp;Commands</h2>
-<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
-                                
-  
-  
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html><head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-
-
-                                
-  
-  
-  <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]"><title>Keystroke Commands</title></head><body>
+<title>Keystroke Commands</title></head>
+<body>
 <p>Most of the everyday commands you will need are simple -- "When I say this, 
   send these keystrokes." For example, the following command types the word "Greetings" 
   when you say "Hello World":&nbsp; </p>
@@ -285,7 +315,7 @@ The following sections describe the Vocola language, with examples:
     </tr></tbody></table>
 <p>The Vocola syntax for specifying modifier key sequences such as <tt>{Ctrl+c}</tt> 
   is borrowed from the <a href="voicecmd.pdf">Dragon 
-  Macro Language</a>, which describes the syntax. &nbsp; </p>
+  Macro Language</a>, which describes the syntax. (See the discussion on pp. 13-14 and the table on pp. 116-117, or just absorb it from the Vocola examples.) </p>
 <table cols="1" width="100%" bgcolor="#ccffff"><tbody><tr><td>Each Vocola command contains a series of <i>terms</i> (indicating
    what  is said) and a series of <i>actions</i> (indicating what is done),
   separated  by "<tt>=</tt>" and terminated by "<tt>;</tt>". In this section
@@ -354,16 +384,19 @@ commands are equivalent, specifying one action (the keystroke sequence <tt>{Ctrl
 <p>In addition to whitespace characters, the following characters must appear 
   within quotes when used in a keystroke sequence:</p>
 <blockquote> 
-  <p><tt>( ) [ ] = | , &quot; '</tt></p>
+  <p><tt>( ) [ ] = | , &quot; ' ; #</tt></p>
 </blockquote>
-<p>All other characters may appear without quotes. For example, pathnames do not 
-  need to be quoted, as in this command to open a temporary file:</p>
+<p>A colon (:) need only appear within quotes if it is the last character of a
+keystroke sequence.  All other characters may appear without quotes. For
+example, most pathnames do not need to be quoted, as in this command to open
+a temporary file:</p>
 <blockquote> 
   <p><tt> Open Temp = {Ctrl+o}C:\Temp\temp.txt{Enter};</tt></p>
 </blockquote>
-<p>The examples in this tutorial use quotation marks only where necessary; you 
-  might prefer to use them more consistently.&nbsp; </p>
-</body></html>
+<p>The examples in this tutorial use quotation marks only where necessary;
+  you might prefer to use them more consistently.&nbsp; </p>
+  </body></html>
+
 <hr>
 <h2>Using&nbsp;Alternatives</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
@@ -477,7 +510,19 @@ Sent: </font></i>{Down 12}</tt></td>
 term (which direction to move) is substituted first and the first term (how
 many times) is substituted second, to create the necessary keystroke syntax.
 <br>
-&nbsp; </p>
+&nbsp;
+<table cols="1" width="100%" bgcolor="#ccffff">
+ <tbody>
+    <tr>
+ <td>Large number ranges (e.g., <tt>1..999</tt>) can sometimes cause
+     recognition problems.  It is preferable in such cases to use
+     several smaller ranges to denote a larger range.  For example, one
+     might define commands "<tt>Go to Line 0..99</tt>" and "<tt>Go to
+     Line 1..99 Hundred [And] 0..99</tt>".</td>
+    </tr>
+  </tbody>
+  </p>
+</table>
 </body>
 </html>
 
@@ -557,7 +602,7 @@ the previous section, allowing you to move the cursor in one of four directions.
   <tbody>
      <tr>
   <td>Note that a variable reference may appear earlier in a Vocola command
- file then the definition of that variable.</td>
+ file than the definition of that variable.</td>
   </tr>
      
   </tbody> 
@@ -566,6 +611,7 @@ the previous section, allowing you to move the cursor in one of four directions.
 
  
 </body></html>
+
 <hr>
 <h2>Substituting&nbsp;Actions</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
@@ -602,28 +648,28 @@ Forward" to move the cursor right. We can specify that this way: <br>
 say either "Back" or "Forward", but the value substituted on the right hand 
 side will be "<tt>Left</tt>" or "<tt>Right</tt>". </p>
  
-<p>Here's another example. The Netscape Mailer has several options for sorting 
-messages. This command allows you to change the sort by 
-saying "Sort by Date", "Sort by Sender", or "Sort by Subject": <br>
+<p>Here's another example. Mozilla's Thunderbird Mailer has several options for 
+  sorting messages. This command allows you to change the sort by saying "Sort 
+  by Date", "Sort by Sender", or "Sort by Subject": <br>
  &nbsp;  
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
   <tbody>
      <tr>
-  <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Sort by (Date=e
- | Sender=r | Subject=s) = {Alt+v}o $1;&nbsp;<br>
+      <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> Sort by (Date=e 
+        | Sender=n | Subject=s) = {Alt+v}o $1;&nbsp;<br>
        <font color="#993366">&nbsp;<i>Say:</i></font> Sort by Date <i><font color="#993366">
 &nbsp; &nbsp; Sent:</font></i> {Alt+v}oe&nbsp;<br>
-       <font color="#993366">&nbsp;<i>Say:</i></font> Sort by Sender
-&nbsp;<i><font color="#993366"> Sent:</font></i> {Alt+v}or&nbsp;</tt></td>
+        <font color="#993366">&nbsp;<i>Say:</i></font> Sort by Sender &nbsp;<i><font color="#993366"> 
+        Sent:</font></i> {Alt+v}on&nbsp;</tt></td>
   </tr>
      
   </tbody> 
 </table>
    </p>
  
-<p>This alternative set allows you to say "Date", "Sender", or "Subject",
- and substitutes "<tt>e</tt>", "<tt>r</tt>", or "<tt>s</tt>" into the keystroke
- sequence. </p>
+<p>This alternative set allows you to say "Date", "Sender", or "Subject", and 
+  substitutes "<tt>e</tt>", "<tt>n</tt>", or "<tt>s</tt>" into the keystroke sequence. 
+</p>
  
 <p>Another common use of alternative sets with substitution is when you want 
 to pick from a long list of specific items such as files, folders, or email 
@@ -633,8 +679,8 @@ addresses. For example, we can define the variable <tt>&lt;EmailAddress&gt;</tt>
 <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
   <tbody>
      <tr>
-  <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> &lt;EmailAddress&gt;
- := ( Bill = bsmith@mediaone.net&nbsp;<br>
+      <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i> &lt;EmailAddress&gt; 
+        := ( Bill = bsmith@comcast.net&nbsp;<br>
        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
  | Dragon = info@dragonsys.com&nbsp;<br>
        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
@@ -705,7 +751,8 @@ contain references.</td>
     
 <p>With this command you could search for the text &quot;will do&quot; by saying 
   &quot;Find Text will do&quot;, which opens the &quot;Find&quot; dialog box, 
-  enters the text &quot;will do&quot;, and launches the search.</p>
+  enters the text &quot;will do&quot;, and launches the search. (Note: if using 
+  this macro for Internet Explorer you need to call <tt>Wait</tt> after the <tt>{Ctrl+f}</tt>)</p>
 <p>Note that<tt> &lt;_anything&gt; </tt>matches anything you say, including saying 
   nothing. So in the above example saying &quot;Find Text&quot; would bring up 
   the &quot;Find&quot; dialog box to search for nothing. Since this may be unexpected 
@@ -715,6 +762,7 @@ contain references.</td>
 <p><tt>&lt;_anything&gt; </tt>may appear anywhere a regular variable term appears, 
   and may even appear more than once in a command.</p>
 </body></html>
+
 <hr>
 <h2>Optional&nbsp;Words</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
@@ -916,6 +964,10 @@ Dragon Macro Language.
       <td>Wait</td>
       <td>Pause for a specified time interval</td>
     </tr>
+    <tr bgcolor="#ffffcc">
+      <td><a href="#WaitForWindow">WaitForWindow</a></td>
+      <td>Wait until a desired window appears in the foreground</td>
+    </tr>
   </tbody>
 </table>
 <p>Here is the complete list:</p>
@@ -929,36 +981,39 @@ Dragon Macro Language.
       ButtonClick<br>
       ClearDesktop<br>
       ControlPick<br>
-      DdeExecute</td>
-    <td>DdePoke<br>
-      DllCall<br>
+      DdeExecute<br>
+      DdePoke</td>
+    <td>DllCall<br>
       DragToPoint<br>
       <a href="#Eval">Eval</a><br>
       GoToSleep<br>
       HeardWord<br>
+      <a href="#HTMLHelp">HTMLHelp</a><br>
       MenuCancel<br>
       MenuPick<br>
-      MouseGrid</td>
-    <td>MsgBoxConfirm<br>
-      PlaySound<br>
+      MouseGrid<br>
+      MsgBoxConfirm</td>
+    <td>PlaySound<br>
       RememberPoint<br>
       <a href="#Repeat">Repeat</a><br>
       RunScriptFile<br>
       SendKeys<br>
       SendSystemKeys<br>
       SetMicrophone<br>
-      SetMousePosition</td>
-    <td><a href="#SetNaturalText">SetNaturalText</a><br>
-      ShellExecute<br>
-      <a href="#ShiftKey">ShiftKey</a><br>
+      SetMousePosition<br>
+      <a href="#SetNaturalText">SetNaturalText</a><br>
+      ShellExecute</td>
+    <td><a href="#ShiftKey">ShiftKey</a><br>
       TTSPlayString<br>
       Wait<br>
+      <a href="#WaitForWindow">WaitForWindow</a><br>
       WakeUp<br>
       WinHelp</td>
   </tr>
 </table>
 <p>The <a href="voicecmd.pdf">Dragon Macro Language 
-  documentation</a> describes most of these functions. For those not so described, 
+  documentation</a> describes most of these functions (see pp. 74-115.)
+For those not so described, 
   and for Vocola's built-in functions, see the descriptions below.</p>
 <hr>
 <h3><a name="Eval"></a>Eval</h3>
@@ -969,26 +1024,45 @@ Dragon Macro Language.
   </tr>
   <tr> 
     <td valign="top"><strong>Description</strong></td>
-    <td>Evaluates an expression in the <a href="http://www.python.org/doc/">Python</a> 
-      language. Vocola is not a general-purpose programming language, so expressions 
-      such as arithmetic and conditionals are achieved using Python. The specified 
-      expression (which may be constructed from a sequence of Vocola actions) 
-      is evaluated using the Python interpreter, and the resulting value is used 
-      as a Vocola action or function argument.</td>
+
+    <td><p>Evaluates an expression in the <a
+        href="http://www.python.org/doc/">Python</a> language that may
+        refer to Vocola references and function arguments as if they
+        were Python variables.  Vocola is not a general-purpose
+        programming language, so arithmetic and complex string
+        processing are achieved using Python.</p>
+
+	<p>The specified expression is evaluated using the Python
+        interpreter, and the resulting value is converted to a string,
+        which is treated as a keystroke action.  Thus,
+        <tt>Eval($x*2)</tt> by itself where <tt>$x</tt> is "3" types
+        <tt>6</tt>.</p>
+
+	<p>Eval attempts to guess the type of the referred-to Vocola
+        values.  They are treated as strings unless they have the
+        standard form of a integer (e.g., 13 or -1 but not 013 or +2),
+        in which case they are treated as integers.  To force Eval to
+        treat <tt>$<em>var</em></tt> as an integer use
+        <tt>int($<em>var</em>)</tt>; to force it to treat
+        <tt>$<em>var</em></tt> as a string use
+        <tt>str($<em>var</em>)</tt>. </p></td>
   </tr>
   <tr>
     <td valign="top"><strong>Argument</strong></td>
     <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
         <tr> 
           <td valign="top"><tt><em>expression</em></tt></td>
-          <td>&nbsp;&nbsp;&nbsp; </td>
-          <td>Vocola actions, which when evaluated and concatenated yield an expression 
-            in the Python language.</td>
+          <td>&nbsp;&nbsp;&nbsp;</td>
+          <td>In its simplest form, a single quoted string holding a
+        Python expression where all Python variables have been replaced by
+        Vocola references (e.g., <tt>$1</tt>) or function arguments
+        (e.g., <tt>$height</tt>).  As usual, the quotes can be omitted
+        if no special characters or whitespace are needed.</td>
         </tr>
       </table></td>
   </tr>
   <tr> 
-    <td valign="top"><strong>Example</strong></td>
+    <td valign="top"><strong>Examples</strong></td>
     <td><p>It's useful to position the mouse by voice using screen units larger 
         than pixels. This command places the mouse pointer at a specified screen 
         position using a coordinate system of 15 pixels per unit. Saying for example 
@@ -1007,9 +1081,203 @@ Dragon Macro Language.
         </tbody>
       </table>
       
+        <p>The following example uses Python's string length operator
+        <tt>len</tt> to place the cursor before a piece of varying-size
+        text:</p>
+
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i>
+	    Len(string) := Eval('len(str($string))'); <br>
+              <i><font color="#993366">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></i>secure copy to &lt;machine&gt; = <br> 
+	     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	      "scp&nbsp;&nbsp;&nbsp;$1:~/import{left " Len(&quot;&nbsp;&nbsp;$1:~/import&quot;)&nbsp;}; </tt><br>
+              <tt><font color="#993366">&nbsp;<i>Say:</i></font> secure copy to jumbo<i><font color="#993366"> 
+              &nbsp;Sent: </font></i>scp _ mdl@jumbo.hpl.hp.com:~/import</tt>
+             </td>
+          </tr>
+        </tbody>
+      </table>
+       <br>
+
+       <p>Here _ indicates the position the cursor is left at.  The
+          function <tt>Len</tt> here is copied from the sample file
+          string.vch, which contains a small library of useful string
+          functions.  <tt>Len</tt> uses <tt>str($string)</tt>, which
+          converts <tt>$string</tt> to a string if it is a number,
+          instead of just <tt>$string</tt>, so that it can work on
+          numbers as well as strings (<tt>len</tt> is not defined on
+          numbers).</p>
+
     </td>
   </tr>
 </table>
+
+<hr>
+<h3><a name="HTMLHelp" id="HTMLHelp"></a>HTMLHelp</h3>
+<table border="0" cellspacing="0" cellpadding="12">
+  <tr> 
+    <td valign="top"><strong>Syntaxes</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+	   <tt>HTMLHelp("<em>helpFile</em>[&gt;<em>window</em>]", 
+	                "HH_DISPLAY_TOPIC", <em>topic</em>)</tt></td>
+        </tr>
+        <tr>
+	   <tt>HTMLHelp("<em>helpFile</em>[::/<em>topic</em>][&gt;<em>window</em>]", 
+	                "HH_DISPLAY_TOC")</tt></td>
+        </tr>
+        <tr>
+	   <tt>HTMLHelp("<em>helpFile</em>[::/<em>topic</em>][&gt;<em>window</em>]", 
+	                "HH_DISPLAY_INDEX", 
+                        "[<em>indexSearchText</em>]")</tt></td>
+        </tr>
+        <tr>
+	   <tt>HTMLHelp("<em>helpFile</em>[&gt;<em>window</em>]", 
+	                "HH_HELP_CONTEXT", <em>ContextId</em>)</tt></td>
+        </tr>
+        <tr>
+	   <tt>HTMLHelp("", "HH_CLOSE_ALL")</tt></td>
+        </tr>
+        </table>
+    </td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Description</strong></td>
+    <td><p>Calls the Microsoft HTML Help API.  This call enables you to
+    display HTML Help and close HTML Help windows.  Available subcalls
+    include:</p>
+       <table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt>HH_DISPLAY_TOPIC</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Opens the specified topic.</p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt>HH_DISPLAY_TOC</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Displays the Table of Contents navigation pane and
+          opens the specified topic, if any.</p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt>HH_DISPLAY_INDEX</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Displays the Index navigation pane and enters the
+          <em>indexSearchText</em> string, if any, in the keyword field.</p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt>HH_HELP_CONTEXT</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Displays the Help topic for the specified <em>contextId</em> in
+          the specified window. The <em>contextId</em> must be the numeric ID in
+          the [MAP] section of the Help project (.hhp) file for the
+          topic to display.</p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt>HH_CLOSE_ALL</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Closes all HTML Help Windows opened by this
+          program. The first argument must be an empty pair of double
+          quotes.</p>
+          </td>
+        </tr>
+      </table>
+        <p> For more information
+    on the HTML Help API, see the Microsoft HTML Help documentation.</p>
+      </td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Arguments</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt><em>helpFile</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>The name of the complied HTML Help file to open, for
+          example, <tt>dragon_enx.chm</tt>. If you do not specify a full path,
+          Dragon NaturallySpeaking looks in the currently active Dragon
+          NaturallySpeaking Help folder. If the file is not found there,
+          the normal HTML Help file search rules apply. </p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+
+        <tr> 
+          <td valign="top"><tt><em>topic</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>The specific HTML topic to display. If the compiled
+          help uses subdirectories, this parameter must include the
+          subdirectory. For example, the dragon NaturallySpeaking version 
+	  of this topic is <tt>scrptref/htmlhelp.htm</tt>. Note that the
+          identifier uses a forward
+          slash (/). </p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+
+        <tr> 
+          <td valign="top"><tt><em>window</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>The name of the window in which to display the HTML
+          Help, for example, main. This parameter is always
+          optional. </p>
+          </td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Examples</strong></td>
+    <td><p>This action opens <tt>dragon_enx.chm</tt> in the default window,
+    displays the Contents tab in the navigation pane, and displays the
+    <tt>htmlhelp.htm</tt> topic (this topic) in the topic pane:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+HTMLHelp("dragon_enx.chm::/scrptref/htmlhelp.htm", "HH_DISPLAY_TOC")</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+    <p>This action opens <tt>MyProg.chm</tt> in a Help window named
+    <tt>"HiddenNav"</tt> and displays the topic with the context ID 133096 (Hex
+    207E8):</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+HTMLHelp("C:\\MyProg\Help\MyProg.chm>HiddenNav", "HH_HELP_CONTEXT", 
+         "133096")</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Notes</strong></td>
+    <td><ul>
+        <li>Dragon NaturallySpeaking does not get error returns from the
+        HTML Help engine. As a result, it cannot display any messages
+        when an HTML Help error occurs. <br> &nbsp; </li>
+        <li>If the HTML Help file name does not use an absolute path,
+        The HTMLHelp call first checks in the Dragon
+        NaturallySpeaking Help directory for the requested help file. If
+        the file is not found, then the normal HTML Help file search rules
+        apply.<br> </li>
+        </ul>
+     </td>
+   </tr>
+</table>
+
+
 <hr>
 <h3><a name="Repeat"></a>Repeat</h3>
 <table border="0" cellspacing="0" cellpadding="12">
@@ -1191,9 +1459,117 @@ Dragon Macro Language.
       </table></td>
   </tr>
 </table>
+
+<hr>
+<h3><a name="WaitForWindow" id="WaitForWindow"></a>WaitForWindow</h3>
+<table border="0" cellspacing="0" cellpadding="12">
+  <tr> 
+    <td valign="top"><strong>Syntax</strong></td>
+    <td><tt>WaitForWindow(<em>caption</em>[, <em>windowClass</em>[,
+                          <em>timeout</em>]])</tt></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Description</strong></td>
+    <td><p>The WaitFor Window call suspends execution of a Vocola command
+           until a desired window appears in the foreground.</p>
+      </td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Arguments</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt><em>caption</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>A text string to match against the window caption. The
+          string may (and often will) include the asterisk (*) character
+          as a wild-card to match against variable parts of the window
+          caption. If parts of the actual window caption are guaranteed
+          to be unpredictable, you MUST use an * wild-card to get a
+          successful match.</p>
+
+              <p>The caption may also be an empty string "", to indicate
+          that the caption does not matter. </p>
+          </td>
+        </tr>
+
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt><em>windowClass</em></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>A text string which, when not empty (""), must exactly
+          match (case-sensitive) the window class name of the window you
+          are looking for. The window class name is usually obtainable
+          only through programmer utilities like "Spy".</p>
+            
+          </td>
+        </tr>
+
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt><em>timeout</em></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>The length of time, in milliseconds, to wait for the
+          window to appear. If no matching window appears by then, a
+          timeout error is displayed, and the Vocola command stops without
+          executing any subsequent actions following WaitForWindow. If
+          not specified, defaults to 10 seconds.</p>
+            
+          </td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Examples</strong></td>
+    <td><p>In the following example actions the * in the caption is an
+    instruction to ignore &quot;Document1&quot;:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+AppBringUp("<i>(correct path here)</i>winword.exe")</tt><br>
+<tt>WaitForWindow("*Microsoft Word")</tt><br>
+<tt>"this text will appear in the Word document, not the splash screen"</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+
+    <p>The following example waits for Word's main window by class name:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+AppBringUp("<i>(correct path here)</i>winword.exe")</tt><br>
+<tt>WaitForWindow("", "OpusApp")</tt><br>
+<tt>"this text will appear in the Word document, not the splash screen"</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+
+    <p>The following example starts Outlook, waits as long as 30 seconds
+    in case the network is slow, and then types Alt+n to create a new
+    E-mail:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+AppBringUp("<i>(correct path here)</i>outlook.exe")</tt><br>
+<tt>WaitForWindow("*Microsoft Outlook", "", 30000)</tt><br>
+<tt>{Alt+n}</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+
+  </tr>
+</table>
+
+
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 </body></html>
+
 <hr>
 <h2>Defining&nbsp;Functions</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
@@ -1243,7 +1619,17 @@ Summary 1..20 (Up|Down) = goToSummary() {$2_$1};</pre></td>
   </tbody>
 </table>
 <p>Each of these commands uses our function <tt>goToSummary</tt>, making them 
-  shorter and clearer than if each had to include that function's actions explicitly.</p>
+  shorter and clearer than if each had to include that function's
+  actions explicitly.</p>
+<table cols="1" width="100%" bgcolor="#ccffff">
+  <tbody>
+     <tr>
+  <td>Note that unlike with variables, the definition of a function must
+      precede any uses of that function.</td> 
+  </tr>
+  </tbody> 
+</table>
+
 <h3>Defining Functions with Arguments</h3>
 <p>You can also specify arguments when defining a function. For example, here's 
   a function which switches to the nth application on the Windows taskbar:</p>
@@ -1319,8 +1705,8 @@ moveWindowBy(x,y) :=
   <tbody>
     <tr> 
       <td><pre>&lt;n&gt; := 0..99;
-Window &lt;n&gt; (  Up='-' |  Down='+') = moveWindowBy(0, $2$1);
-Window &lt;n&gt; (Left='-' | Right='+') = moveWindowBy($2$1, 0);</pre></td>
+Window &lt;n&gt; (  Up='-' |  Down='') = moveWindowBy(0, $2$1);
+Window &lt;n&gt; (Left='-' | Right='') = moveWindowBy($2$1, 0);</pre></td>
     </tr>
   </tbody>
 </table>
@@ -1330,6 +1716,7 @@ Window &lt;n&gt; (Left='-' | Right='+') = moveWindowBy($2$1, 0);</pre></td>
   &quot;<tt>-</tt>&quot;. These are concatenated by the double reference <tt>$2$1</tt> 
   to form the final function call <tt>moveWindowBy(0, -10)</tt>.</p>
 </body></html>
+
 <hr>
 <h2>Contextual&nbsp;Commands</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
@@ -1404,7 +1791,9 @@ displayed.</p>
   code. (The variable definitions for <tt>&lt;mod&gt;</tt> and <tt>&lt;key&gt;</tt> 
   are omitted here, but available with the Vocola distribution.)</p>
 <p>Similarly, the second group of commands above is active only when editing Perl 
-  files.</p>
+  files.  The context command "<tt>:</tt>" can be used to specify that
+  subsequent commands are not restricted to particular window titles.</p>
+
 <h3>Global Contextual Commands and Multiple Context Choices</h3>
 <p>Contextual commands don't need to be application-specific. You can also create 
   global contextual commands, as in this example from the global command file 
@@ -1436,6 +1825,7 @@ displayed.</p>
   </tbody>
 </table>
 </body></html>
+
 <hr>
 <h2>Include&nbsp;Statements</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
@@ -1481,7 +1871,7 @@ command files.
     <tr> 
       <td><p><i><font color="#993366"><tt>From file ntvdm.vcl:</tt></font></i></p>
         <tt> include folders.vch;<br>
-        Folder &lt;folder&gt; = &quot;cd $1{Enter}&quot;;</tt></td>
+        Folder &lt;folder&gt; = 'cd &quot;$1&quot;{Enter}';</tt></td>
     </tr>
   </tbody>
 </table>
@@ -1516,6 +1906,7 @@ command files.
   called &quot;family&quot;, you would define your list of interesting folders 
   in two separate files, &quot;folders_Venus.vch&quot; and &quot;folders_family.vch&quot;.</p>
 </body></html>
+
 <hr>
 <h2>Comments</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
@@ -1649,15 +2040,17 @@ $1;</tt></p><p><tt>&nbsp;&nbsp; # Choose HTML editor or plain text editor</tt><b
 <p>Once you get used to speaking command sequences, text editing by voice becomes 
   faster and less frustrating.</p>
 <p><strong>Warning</strong>: A bug introduced in Dragon NaturallySpeaking 7.0 
-  and worsened in 8.0 can cause unacceptable performance if command sequences 
+  and worsened in 8.0 and 9.0 can cause unacceptable performance if command sequences 
   are enabled. With 7.0 switching to or from an application becomes slow if a 
   large number of commands are defined for the application. With 8.0 users have 
   reported that command recognition is very slow even when only a few commands 
   are defined.</p>
 <p>Because of these NaturallySpeaking bugs (which ScanSoft has essentially refused 
   to fix), Vocola command sequences are disabled by default and not recommended 
-  with version 8.0. Personally I find them so productive that I've stayed with 
-  NaturallySpeaking 6.0.</p>
+  with version 7.0 and later. Personally I find them so productive that I've stayed 
+  with NaturallySpeaking 6.0.</p>
+<p>But see below for a <a href="#ModificationForVersion7">modification</a> which 
+  some people have used successfully with version 7.0 and later.</p>
 <h3><a name="Enable"></a>How to Enable and Disable Command Sequences</h3>
 <p>To enable command sequences (in Vocola 2.5 or later), open the file:</p>
 <blockquote>
@@ -1683,91 +2076,248 @@ $1;</tt></p><p><tt>&nbsp;&nbsp; # Choose HTML editor or plain text editor</tt><b
   combination of commands is recognized, but in practice I have not found this 
   to be the case. It's a good idea to avoid single-word commands, but that's a 
   good idea anyway.</p>
+<h3><a name="ModificationForVersion7" id="ModificationForVersion7"></a>A Modification Allowing Sequencing in 7.0 
+  and Later</h3>
+<p>An enterprising Vocola user worked out a modification which allows some sequencing 
+  of commands. Others have used this modification successfully, so here are his 
+  instructions:</p>
+<p>This is essentially a one line fix. Change the following line in vcl2py.pl; 
+  it will allow Vocola command sequences to work with version 8.0 fine for up 
+  to four commands per sequence.</p>
+<p>Replace</p>
+<pre>   emit(2, &quot;&lt;$rule_name&gt; exported = &lt;any$suffix&gt;+;\n&quot;);  </pre>
+<p> with</p>
+<pre>   emit(2, &quot;&lt;$rule_name&gt; exported = &lt;any$suffix&gt; [&lt;any$suffix&gt; [&lt;any $suffix&gt; [&lt;any$suffix&gt;]]];\n&quot;);</pre>
+<p>Next, to get Vocola to use the modified vcl2py.pl rather than the unmodified 
+  vcl2py.exe, set</p>
+<pre>   usePerl = 1</pre>
+<p> at the top of _vocola_main.py. This means that you need a working Perl in 
+  your system.</p>
+<p>Lastly, do not forget to set &quot;use command sequences&quot; to 1 in
+  vocola.ini. Lastly, There are a couple of complications/bugs in the Scott Weinstein 
+  Vocola installer which need a couple of simple workarounds. So if you are using 
+  his installer:</p>
+<p>1. The vcledit.vcl file he packaged together with it does not like my fix. 
+  It generates &quot;natlink.BadGrammar: The grammar is too complex to be recognized&quot; 
+  errors and causes vcledit Vocola commands to not work. I simply removed the 
+  packaged vcledit.vcl file to avoid this.</p>
+<p>2. With usePerl=1, Weinstein's package does not correctly figure out where 
+  the vocola.ini file is located (when usePerl=0 there is no problem). I had to 
+  copy the vocola.ini file to where it thinks it is located:</p>
+<pre>   ...\My Documents\NatLink\Exec\vocola.ini</pre>
+<p>&nbsp;</p>
 </body></html>
 <hr>
 <h2>Install&nbsp;Vocola</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
-  
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-
-  
   <meta name="Author" content="r mohr">
-
-  
   <meta name="GENERATOR" content="Mozilla/4.7 [en] (WinNT; I) [Netscape]">
   <title>Install Vocola</title>
 </head><body>
-<p>Use the following instructions for your first installation of Vocola. <br>
-  Or, see below to <a href="#Upgrade">upgrade from an earlier version of Vocola</a>.</p>
+
+<p> Use the following instructions for your first installation of
+    Vocola. <br>
+
+    Or, see below to <a href="#Upgrade">upgrade from an earlier version
+    of Vocola</a>.
+</p>
+
 <h3><a name="Upgrade11"></a>Installing Vocola for the first time</h3>
 <ol>
-  <li>Install <a href="http://scansoft.com/naturallyspeaking/">Dragon NaturallySpeaking</a>, 
-    version 3.5 or later, any edition.</li>
+
+  <li>Install <a href="http://www.nuance.com/naturallyspeaking/">
+      Dragon NaturallySpeaking</a>, 
+      version 3.5 or later, any edition, if not already installed.</li>
   <br>
   &nbsp; 
-  <li> Install <a href="http://www.python.org/download/">Python</a>. Version 2.3 
-    is recommended, with 2.0 and 2.2 also supported. Earlier versions are not 
-    supported.<br>
+
+
+  <li>Install <a href="http://www.python.org/download/">Python</a> if
+      not already installed. Version 2.3 is recommended, with 2.0 and
+      2.2 also supported. Earlier and later versions are not currently
+      supported.<br>
     &nbsp; </li>
-  <li>Install NatLink and Vocola. </li>
-  <ul>
-    <li>If you have Python 2.3, use <a href="http://speech.squidnet.com/default.aspx/SpeechRecognition.NatLink">Scott 
-      Weinstein's installer</a>.</li>
-    <li> Otherwise, download <a href="http://dranalli.com/dragon/NatLink007-py22.zip%20">NatLink 
-      for Python 2.2</a> or <a href="http://www.synapseadaptive.com/joel/NatLink007.zip">NatLink 
-      for Python 2.0</a>, and follow <a href="http://www.synapseadaptive.com/joel/NatLinkInstallation.html"> 
-      Joel Gould's instructions</a> (don't bother with the self-tests, which often 
-      fail). Then <a href="#installVocola">install Vocola</a>.<br>
-      &nbsp; </li>
-  </ul>
-  <li> Associate the <tt>.vcl</tt> file extension (used for Vocola command files) 
-    with your favorite text editor. (This allows you to open your Vocola files 
-    using built-in voice commands.) An easy way to set up this association is 
-    to right-click on any <tt>.vcl</tt> file (such as <tt>Vocola\Samples\notepad.vcl</tt>), 
-    select "Open", and pick your favorite text editor (for example, Notepad). 
-    <br>
-    <br>Emacs users should install <a href="http://www.gnu.org/software/emacs/windows/faq3.html#assoc"> 
-    gnuserv</a> and associate the <tt>.vcl</tt> file extension with gnuclientw.exe. 
-    (Make sure the directory containing <tt>gnuclientw.exe</tt> is included in 
-    your PATH environment variable.) <br>&nbsp;
-    </li>
+
+
+  <li>Install NatLink. Choose from one of two methods:</li>
+    <ul>
+
+      <li>(recommended) Use <a
+          href="http://speechwiki.org/NL/HomePage.html"> Scott
+          Weinstein's installer</a> (called NatPython X.X.X there) to
+          install NatLink and Vocola simultaneously.  You must have
+          Python 2.3 to use the installer and a version of the installer
+          containing the latest Vocola <a
+          href="VocolaVersions.html">version</a> may not be available.
+          In the later case, you may want to use the latest version of
+          the installer and then <a href="#Upgrade">upgrade</a> the
+          installed version of Vocola to a more recent version later.
+
+      </li>
+
+    <li> Or, if you're using Dragon NaturallySpeaking 7.0 or earlier,
+         download <a href="NatLink-py23.zip">NatLink for Python 2.3</a>,
+         <a href="http://dranalli.com/dragon/NatLink007-py22.zip">
+         NatLink for Python 2.2</a> or <a
+         href="http://www.synapseadaptive.com/joel/NatLink007.zip">NatLink
+         for Python 2.0</a>, and follow <a
+         href="http://www.synapseadaptive.com/joel/NatLinkInstallation.html">
+         Joel Gould's instructions</a> (don't bother with the
+         self-tests, which often fail). (If using NatSpeak 7.0 with
+         Python 2.2 or 2.0, try <a href="EnableNL.exe">this version of
+         EnableNL.exe</a>.) <br>
+
+        &nbsp; </li>
+    </ul>
+
+
+  <li>Install Vocola if you did not use the installer:</li>
+    <ol type="a">
+
+      <li><a href="VocolaVersions.html">Download</a> the relevant Vocola
+          zip file.<br> &nbsp; </li>
+
+      <li> Locate where NatLink is installed.  You're looking for a
+           directory named <tt>NatLink</tt> containing a subdirectory
+           named <tt>MacroSystem</tt>.  Most likely <tt>C:\NatLink</tt>
+           or <tt>C:\Program Files\NatLink</tt>. <br> &nbsp; </li>
+
+      <li> Exit Dragon NaturallySpeaking if it is running. <br> &nbsp; </li>
+
+      <li> Extract the Vocola zip file into the NatLink directory. For
+           example, if NatLink is installed in <tt>C:\NatLink</tt>, you
+           should choose <tt>C:\NatLink</tt> as the folder to extract
+           to. After unpacking you should see folder
+           <tt>NatLink\Vocola</tt>, with subfolders <tt>Commands</tt>,
+           <tt>Doc</tt>, <tt>Exec</tt>, <tt>Samples</tt>, and possibly
+           <tt>Simpscrp</tt>. <br> &nbsp;
+           </li>
+
+      <li> From the <tt>Vocola\Exec</tt> folder copy the files
+           <tt>_vocola_main.py</tt> and <tt>VocolaUtils.py</tt> to
+	   the <tt>NatLink\MacroSystem</tt> folder.
+
+           Copying these files activates Vocola's <a
+	   href="UsingVocola.html">built-in voice commands</a>.  <br>
+	   &nbsp; </li>
+
+      <li> Start Dragon NaturallySpeaking. <br> &nbsp; </li>	  
+          
+     </ol>
+
+
+  <li> Associate the <tt>.vcl</tt> file extension (used for Vocola
+      command files) with your favorite text editor. This allows you to
+      open your Vocola files using built-in voice commands. An easy way
+      to set up this association is to right-click on any <tt>.vcl</tt>
+      file (such as <tt>Vocola\Samples\notepad.vcl</tt>), select "Open
+      With" or &quot;Open&quot;, and pick your favorite text editor (for
+      example, Notepad). <br>
+
+      <br> Note that Scott's installer associates the <tt>.vcl</tt> file
+      extension with the free editor <a
+      href="http://www.flos-freeware.ch/notepad2.html">Notepad2</a>,
+      which it also installs.<br>
+
+      <br> Emacs users should install <a
+      href="http://www.gnu.org/software/emacs/windows/faq3.html#assoc">
+      gnuserv</a> and associate the <tt>.vcl</tt> file extension with
+      gnuclientw.exe.  (Make sure the directory containing
+      <tt>gnuclientw.exe</tt> is included in your PATH environment
+      variable.) <br> &nbsp; </li>
+
+
   <li>Test Vocola.&nbsp;</li>
-  <ul>
-    <li>Copy the sample command file for Notepad (<tt>Vocola\Samples\notepad.vcl</tt>) 
-      to the <tt>Vocola\Commands</tt> folder.&nbsp;</li>
-    <li>Say "Start Notepad" to launch Notepad.</li>
-    <li>Say "Test Simple Command". The phrase "It works!" should appear.</li>
-    <li>Say "Edit Voice Commands". <tt>Vocola\Commands\notepad.vcl</tt> should 
-      be opened using the editor you picked in step 4.</li>
-    <li>Change the "Test Simple Command" command to type "It really works!"</li>
-    <li> Save the file, say "Switch to Notepad", and say "Test Simple Command".&nbsp;"It 
-      really works!" should appear.</li>
-  </ul>
+    <ol type="a">
+
+      <li>Copy the sample command file for Notepad
+          (<tt>Vocola\Samples\notepad.vcl</tt>) to the
+	  &lt;My Documents&gt;<tt>\NatLink\Vocola</tt> folder if using
+	  the installer under pre-Vista; otherwise, use the
+          <tt>Vocola\Commands</tt> folder.&nbsp;</li>
+
+      <li>Say "Start Notepad" to launch Notepad.</li>
+      <li>Say "Test Simple Command". The phrase "It works!" should appear.</li>
+
+      <li>Say "Edit Voice Commands".  Your copy of <tt>notepad.vcl</tt>
+          should be opened using the editor you picked in step 5.</li>
+
+      <li>Change the "Test Simple Command" command to type "It really
+          works!"</li>
+
+      <li>Save the file, say "Switch to Notepad", and say "Test Simple
+          Command".&nbsp;"It really works!" should appear.</li>
+
+  </ol>
 </ol>
-<h3><a name="Upgrade" id="Upgrade"></a>Upgrading from an Earlier Version of Vocola</h3>
+
+
+<h3><a name="Upgrade" id="Upgrade"></a>Upgrading from an Earlier Version
+    of Vocola</h3>
 <ol>
-  <li>Rename your existing Vocola folder (it's in your NatLink folder)</li>
-  <li><a href="#installVocola"> Install Vocola</a> as described below.</li>
-  <li>Copy all files from your old Vocola/Commands folder to your new Vocola/Commands 
-    folder</li>
-  <li>Restart NatSpeak</li>
+
+      <li> Locate where NatLink is installed.  You're looking for a
+           directory named <tt>NatLink</tt> containing a subdirectory
+           named <tt>MacroSystem</tt>.  Most likely <tt>C:\NatLink</tt>
+           or <tt>C:\Program Files\NatLink</tt>.  These instructions
+           will refer to that directory by
+           &lt;NatLink&gt;.<br> &nbsp; </li>
+
+  <li> Make a backup copy of your command files (located in
+       &lt;NatLink&gt;<tt>\Vocola\Commands</tt> and possibly &lt;My
+       Documents&gt;<tt>\NatLink\Vocola</tt> as well).
+       &nbsp;<br> &nbsp; &nbsp; </li>
+
+  <li> Update your version of <a
+       href="http://speechwiki.org/NL/HomePage.html">NatLink</a> if
+       desired.  This may upgrade or degrade your version of Vocola.  If
+       this results in your desired version of Vocola, stop as you are
+       done.  Note that some earlier versions of the installer may not
+       permit independent upgrades of Vocola because they automatically
+       "repair" any changed files by reverting them when you start
+       Dragon NaturallySpeaking. Also, only versions of Vocola after 2.5.5
+       may be used to update installer installations. <br> &nbsp;
+       </li>
+
+  <li> Rename &lt;NatLink&gt;<tt>\Vocola</tt> to
+      &lt;NatLink&gt;<tt>\Vocola.old</tt>. (Remove 
+      &lt;NatLink&gt;<tt>\Vocola.old</tt>
+      first if it already exists.)  <br> &nbsp; </li>
+
+      <li><a href="VocolaVersions.html">Download</a> the relevant Vocola
+          zip file.<br> &nbsp; </li>
+
+      <li> Exit Dragon NaturallySpeaking if it is running. <br> &nbsp; </li>
+
+      <li> Extract the Vocola zip file into &lt;NatLink&gt;. For
+           example, if NatLink is installed in <tt>C:\NatLink</tt>, you
+           should choose <tt>C:\NatLink</tt> as the folder to extract
+           to. After unpacking you should see folder 
+	   &lt;NatLink&gt;<tt>\Vocola</tt>, with subfolders <tt>Commands</tt>,
+           <tt>Doc</tt>, <tt>Exec</tt>, <tt>Samples</tt>, and possibly
+           <tt>Simpscrp</tt>. <br> &nbsp;
+           </li>
+
+      <li> From the &lt;NatLink&gt;<tt>\Vocola\Exec</tt> folder, copy the file
+           <tt>_vocola_main.py</tt> to the &lt;NatLink&gt;<tt>\MacroSystem</tt>
+           folder. <br> &nbsp;
+
+      <li> From the &lt;NatLink&gt;<tt>\Vocola\Exec</tt> folder, copy the file
+           <tt>VocolaUtils.py</tt> to the
+           &lt;NatLink&gt;<tt>\MacroSystem\Core</tt> folder if it exists or
+           &lt;NatLink&gt;<tt>\MacroSystem</tt> if it doesn't.  Both this copy
+           and that of step 8 should replace existing files. <br> &nbsp;
+
+  <li> Copy all files from &lt;NatLink&gt;<tt>\Vocola.old\Commands</tt> to
+       &lt;NatLink&gt;<tt>\Vocola\Commands</tt>.  <br> &nbsp; </li>
+
+  <li>Restart Dragon NaturallySpeaking</li>
 </ol>
-<h3><a name="InstallVocola" id="InstallVocola"></a>Installing Vocola Directly&nbsp; 
-</h3>
-<ol>
-  <li><a href="VocolaVersions.html">Download</a> the Vocola zip file.<br>
-    &nbsp; </li>
-  <li> Extract the Vocola zip file into the NatLink directory. For example, if 
-    you installed NatLink in <tt>C:\NatLink</tt>, you should choose <tt>C:\NatLink</tt> 
-    as the folder to extract to. After unpacking you should see folder <tt>C:\NatLink\Vocola</tt>, 
-    with subfolders <tt>Commands</tt>, <tt>Doc</tt>, <tt>Exec</tt>, <tt>Samples</tt>, 
-    and <tt>Simpscrp</tt>.<br>
-    &nbsp; </li>
-  <li> From the <tt>Vocola\Exec</tt> folder, copy the files <tt>_vocola_main.py</tt> 
-    and <tt>VocolaUtils.py</tt> to the <tt>NatLink\MacroSystem</tt> folder. This 
-    activates Vocola's <a href="UsingVocola.html">built-in voice commands</a>.</li>
-</ol>
+
+
 </body></html>
+
 <hr>
 <h2>Vocola&nbsp;Versions</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
@@ -1778,6 +2328,25 @@ $1;</tt></p><p><tt>&nbsp;&nbsp; # Choose HTML editor or plain text editor</tt><b
   with the most recent version first. To download Vocola, click on the link next 
   to the version you want.</p>
   
+<p><b>Version 2.6</b> -- <b>January 27, 2008</b> (<a href="Vocola-2-6.zip">Vocola-2-6.zip</a>)</p>
+<ul>
+  <li>Many, many minor bugs have been fixed</li>
+  <li>Context statement ":" now clears any existing context</li>
+  <li>A small library of string functions has been provided
+      (<tt>NatLink\Vocola\Samples\string.vch</tt>)</li>
+  <li>Toggling the microphone should no longer be necessary to ensure
+      that (new) commands are loaded.</li>
+  <li>The Dragon <a
+      href="BuiltinFunctions.html#WaitForWindow">WaitForWindow</a> and
+      <a href="BuiltinFunctions.html#HTMLHelp">HTMLHelp</a> calls are
+      now supported.</li>
+  <li>The behavior of <a href="BuiltinFunctions.html#Eval">Eval</a> has
+      changed slightly; in particular, it no longer assumes that values
+      of the form <tt>+<em>digits</em></tt> are integers.</li>
+  <li>For more details, see these
+      <a href="Release-2-6-notes.txt">release notes</a></li>
+</ul>
+
 <p><b>Version 2.5</b> -- <b>January 10, 2005</b> (<a href="Vocola-2-5.zip">Vocola-2-5.zip</a>)</p>
 <ul>
   <li>Commands can incorporate arbitrary dictation. See <a href="CapturingDictation.html">Capturing 
@@ -1821,6 +2390,7 @@ correctly.</li>
 </ul>
 
 </body></html>
+
 <hr>
 <h2>Converting DVC Files</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
@@ -1914,22 +2484,28 @@ Here are some possible causes:
     &nbsp; 
   </ul>
   <li> You changed an include file (.vch) and didn't run the Vocola translator 
-    by saying "Load Voice Commands".
+    by saying "Load All Voice Commands".
+  <br>&nbsp; 
+  </li>
+  <li> Your command is in a filename which contains a character other
+       than a digit, letter, or underscore before the @ or extension (.vcl); 
+       older versions of NatLink (before May 2007) are known to have a
+       bug which causes them to ignore such files.  Either switch to a
+       later version of NatLink or use a different file name -- this may
+       require renaming the executable if the offending character occurs
+       in its name.
+
   <br>&nbsp; 
   </li>
   <li> NatLink didn't load the translated Python file. 
     <ul>
       <li> Look in the NatLink\MacroSystem directory. There should be both a .py 
-        file and a .pyc with the same name as your .vcl file.</li>
+        file and a .pyc starting with the same name as your .vcl file
+	(the part starting with the @ may be mangled somewhat).</li>
       <li> If the .pyc file is <i>older</i> than the .py file, and you really 
         have talked at the correct application, then NatLink has not noticed the 
-        .py file. There are two possible reasons:</li>
-      <ul>
-        <li> You have created a new global command file (one beginning with underscore, 
-          &quot;_&quot;). NatLink does not notice these.</li>
-        <li> NatLink or NatSpeak is in a bad state.</li>
-      </ul>
-      <li> In either case, you need to exit and restart NatSpeak.</li>
+        .py file.  This means that NatLink or NatSpeak is in a bad state.</li>
+      <li> This can be corrected by exiting and restarting NatSpeak.</li>
     </ul>
   </li>
 </ol>
@@ -1946,7 +2522,12 @@ causes:
       with the same words. Usually the application-specific command will be recognized, 
       but occasionally the global command is recognized instead. Usually if you 
       repeat the command the application-specific version will be recognized.<br>
-    </li></ul>
+    </li>
+    <li> You may have defined a command with the same words in a command
+         file that you have since deleted or renamed; restart NatSpeak
+	 to discard any such old commands.
+    </li>
+    </ul>
   <br>
   <li> You need to use quotation marks in your Vocola command. Quotation mark 
     delimiters are usually optional in Vocola, but are required in some cases:</li>
@@ -1957,6 +2538,7 @@ causes:
   </ul>
 </ol>
 </body></html>
+
 <hr>
 <h2>Support</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
@@ -1972,13 +2554,17 @@ read it and try to solve your problem before contacting me.
 
 <h3>Known Bugs</h3>
 
-The following problems are known to exist with Vocola 2.5: 
+The following problems are known to exist with Vocola 2.6: 
 <ul>
   <li>A bug introduced in Dragon NaturallySpeaking 7.0 and worsened in 8.0 can 
     cause unacceptable performance if <a href="CommandSequences.html">command 
     sequences</a> are enabled. ScanSoft has thus far refused to address the problem, 
-    so if you're experiencing a slowdown your options are to <a href="CommandSequences.html#enable">disable 
-    command sequences</a> or use an earlier NatSpeak version such as 6.0.</li>
+    so if you're experiencing a slowdown your options are to 
+    <a href="CommandSequences.html#enable">disable 
+    command sequences</a>, try an experimental 
+    <a href="CommandSequences.html#ModificationForVersion7">modification</a>,
+    or use an earlier NatSpeak version such as 6.0.<br>
+    &nbsp; </li>
 </ul>
 <h3>Email</h3>
 Send bug reports and other feedback by clicking on the button below. Please indicate 
@@ -1991,7 +2577,7 @@ welcome. (Many thanks to the user who sent an Amazon gift certificate!)<br>
 </script>
 
 <form><p><table><tbody><tr valign="Bottom">
-  <td><input type="button" onclick="composeto('Vocola', 'comcast.net')" value="Send Email"></td>
+  <td><input type="button" onclick="composeto('Vocola', 'Vocola.net')" value="Send Email"></td>
   <!-- td>&nbsp;<img src="emailtr.gif"></td -->
 </tr></tbody></table></form>
 
@@ -1999,29 +2585,46 @@ welcome. (Many thanks to the user who sent an Amazon gift certificate!)<br>
 reason you are posting information about Vocola please use the web page
 address (http://home.comcast.net/~vocola) rather than this e-mail address.
 </p></body></html>
+
 <hr>
 <h2>Wish&nbsp;List</h2>
 <!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en"><html><head>
   <title>Wish List</title>
-
-  </head>
-
-<body>Here is a list of potential Vocola enhancements. Let me know if any of these
+</head>
+<body>
+<p>Here is a list of potential Vocola enhancements. Let me know if any of these
 are particularly important to you. 
+<p>New built-in functions:</p>
 <ul>
-  <li> Allow default values in alternative sets</li>
-  <li> Allow variables in alternative sets (e.g. <tt>&lt;direction&gt; | foo | 
-    bar</tt>)</li>
-  <li>Repeatable terms (e.g. <tt>Press &lt;modifier_key&gt;+ &lt;key&gt; = ...</tt>)</li>
-  <li>User-specific command files<br>
-  </li>
+  <li><tt>ExecutePreviousCommands(howManyCommands, howManyTimes)</tt></li>
+  <li>Functions to save and restore the current mouse position</li>
+  <li>Function like <tt>ShellExecute()</tt>, but which doesn't return
+  until the command has completed </li>
+  <li>better support for switching between applications </li>    
 </ul>
-
-
-
-
-  
+<p>Language improvements:</p>
+<ul>
+  <li>Keystroke sequences using "Windows" modifier key (e.g. <tt>{Win+e}</tt> 
+    to start Windows Explorer)</li>
+  <li>Allow variables in alternative sets (e.g. <tt>&lt;direction&gt; | foo | 
+    bar</tt>)</li>
+  <li>Allow default values in alternative sets</li>
+  <li>Repeatable terms (e.g. 
+          <tt>Press &lt;modifier_key&gt;+ &lt;key&gt; = ...</tt>) </li>
+  <li>better interface to/from Python </li>
+</ul>
+<p>Other:</p>
+<ul>
+  <li>Runtime error messages in terms of Vocola source files, not
+  translated python files.</li>
+  <li>Ability to interoperate with Unimacro</li>
+  <li>Option to store command files in user-specified folder(s).
+  <br> [Note: Scott's installer now allows you to specify one additional 
+        folder.]</li>
+</ul>
+<br>&nbsp;  
 </body></html>
+
 <hr>
 <h2>My RSI Story</h2>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
@@ -2081,18 +2684,19 @@ are particularly important to you.
   every year" and at this writing (December 2004) things are looking up somewhat, 
   I'm starting to type a little and play some careful fiddle.<br>
   <br>
-  <a href="http://home.comcast.net/%7Erick.mohr/">Rick Mohr</a>, Watertown, Massachusetts, 
+  <a href="http://rickmohr.net/">Rick Mohr</a>, Watertown, Massachusetts, 
   USA, December 2004<br>
   <br>
 </p>
 </body></html>
+
 <hr>
 <h2>Voice&nbsp;Resources</h2>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
   <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"><title>My RSI Story</title></head><body>
 <h3>Web Sites</h3>
 <ul>
-  <li><a href="http://www.scansoft.com/naturallyspeaking/">ScanSoft Dragon NaturallySpeaking</a> 
+  <li><a href="http://www.nuance.com/naturallyspeaking/">Nuance Dragon NaturallySpeaking</a> 
     - The official purchase and support site for NatSpeak.</li>
   <li><a href="http://www.synapseadaptive.com/joel/index_old.html">NaturallySpeaking 
     Unofficial Information Pages</a> - Joel Gould was the lead architect of NatSpeak 
@@ -2107,14 +2711,15 @@ are particularly important to you.
     Patch's Macros</a> - A large set of macros for NatSpeak Pro 5 (free) or 6 
     ($24). Full of good voice command ideas, many of which are reflected in the 
     sample Vocola commands.</li>
-  <li><a href="http://speech.squidnet.com">Speech.squidnet.com</a> - Scott Weinstein's 
-    Speech Recognition WIKI, including a NatLink + Vocola installer.</li>
+  <li><a href="http://speechwiki.org/NL/HomePage.html">Speech Recognition Wiki</a> 
+    - Scott Weinstein's Speech Recognition WIKI, including a NatLink + Vocola 
+    installer.</li>
   <li><a href="http://www.speechutilities.com/">SpeechUtilities.com</a> - David 
     Austin's site, with help for getting the most out of the NatSpeak macro languages. 
     If you decide to stick with these, get here the superior command browser &quot;SayWhat&quot;.</li>
   <li><a href="http://brightok.net/%7Eedrose/page10.html">Ruth Rose's NatSpeak 
     Site</a> - Useful suggestions for getting the most out of NatSpeak</li>
-  <li><a href="http://www.out-loud.com/do_you_need_speech_recognition_.html">Computing 
+  <li><a href="http://speechwiki.org/out-loud/">Computing 
     Out Loud</a> - Susan Fulton's general-purpose voice recognition site with 
     information and links.</li>
   <li><a href="http://www.microsoft.com/enable/products/keyboard.aspx">Windows 
@@ -2125,7 +2730,7 @@ are particularly important to you.
 </ul>
 <h3>Mailing Lists</h3>
 <ul>
-  <li><a href="http://groups.yahoo.com/group/VoiceGroup/">VoiceGroup</a> - General 
+  <li><a href="http://www.speechcomputing.com/">SpeechComputing</a> - General 
     discussion of voice recognition issues, mostly NatSpeak related. Lots of traffic.</li>
   <li><a href="http://groups.yahoo.com/group/VoiceCoder">VoiceCoder</a> - Good 
     quality list for programmers using voice recognition.</li>
@@ -2137,4 +2742,5 @@ are particularly important to you.
     Public Forum</a> - Public NatSpeak discussion list at ScanSoft.</li>
 </ul>
 </body></html>
+
 <hr>

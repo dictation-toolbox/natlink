@@ -44,7 +44,7 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
     <td align=right>
       <nobr>
         <font color="#FFFFCC" size="2">
-          (this page updated December 13, 2004)</font>
+          (this page updated January 27, 2008)</font>
       </nobr>
     </td>
   </tr>
@@ -369,6 +369,10 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
       <td>Wait</td>
       <td>Pause for a specified time interval</td>
     </tr>
+    <tr bgcolor="#ffffcc">
+      <td><a href="#WaitForWindow">WaitForWindow</a></td>
+      <td>Wait until a desired window appears in the foreground</td>
+    </tr>
   </tbody>
 </table>
 <p>Here is the complete list:</p>
@@ -382,36 +386,39 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
       ButtonClick<br>
       ClearDesktop<br>
       ControlPick<br>
-      DdeExecute</td>
-    <td>DdePoke<br>
-      DllCall<br>
+      DdeExecute<br>
+      DdePoke</td>
+    <td>DllCall<br>
       DragToPoint<br>
       <a href="#Eval">Eval</a><br>
       GoToSleep<br>
       HeardWord<br>
+      <a href="#HTMLHelp">HTMLHelp</a><br>
       MenuCancel<br>
       MenuPick<br>
-      MouseGrid</td>
-    <td>MsgBoxConfirm<br>
-      PlaySound<br>
+      MouseGrid<br>
+      MsgBoxConfirm</td>
+    <td>PlaySound<br>
       RememberPoint<br>
       <a href="#Repeat">Repeat</a><br>
       RunScriptFile<br>
       SendKeys<br>
       SendSystemKeys<br>
       SetMicrophone<br>
-      SetMousePosition</td>
-    <td><a href="#SetNaturalText">SetNaturalText</a><br>
-      ShellExecute<br>
-      <a href="#ShiftKey">ShiftKey</a><br>
+      SetMousePosition<br>
+      <a href="#SetNaturalText">SetNaturalText</a><br>
+      ShellExecute</td>
+    <td><a href="#ShiftKey">ShiftKey</a><br>
       TTSPlayString<br>
       Wait<br>
+      <a href="#WaitForWindow">WaitForWindow</a><br>
       WakeUp<br>
       WinHelp</td>
   </tr>
 </table>
 <p>The <a href="voicecmd.pdf">Dragon Macro Language 
-  documentation</a> describes most of these functions. For those not so described, 
+  documentation</a> describes most of these functions (see pp. 74-115.)
+For those not so described, 
   and for Vocola's built-in functions, see the descriptions below.</p>
 <hr>
 <h3><a name="Eval"></a>Eval</h3>
@@ -422,26 +429,45 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
   </tr>
   <tr> 
     <td valign="top"><strong>Description</strong></td>
-    <td>Evaluates an expression in the <a href="http://www.python.org/doc/">Python</a> 
-      language. Vocola is not a general-purpose programming language, so expressions 
-      such as arithmetic and conditionals are achieved using Python. The specified 
-      expression (which may be constructed from a sequence of Vocola actions) 
-      is evaluated using the Python interpreter, and the resulting value is used 
-      as a Vocola action or function argument.</td>
+
+    <td><p>Evaluates an expression in the <a
+        href="http://www.python.org/doc/">Python</a> language that may
+        refer to Vocola references and function arguments as if they
+        were Python variables.  Vocola is not a general-purpose
+        programming language, so arithmetic and complex string
+        processing are achieved using Python.</p>
+
+	<p>The specified expression is evaluated using the Python
+        interpreter, and the resulting value is converted to a string,
+        which is treated as a keystroke action.  Thus,
+        <tt>Eval($x*2)</tt> by itself where <tt>$x</tt> is "3" types
+        <tt>6</tt>.</p>
+
+	<p>Eval attempts to guess the type of the referred-to Vocola
+        values.  They are treated as strings unless they have the
+        standard form of a integer (e.g., 13 or -1 but not 013 or +2),
+        in which case they are treated as integers.  To force Eval to
+        treat <tt>$<em>var</em></tt> as an integer use
+        <tt>int($<em>var</em>)</tt>; to force it to treat
+        <tt>$<em>var</em></tt> as a string use
+        <tt>str($<em>var</em>)</tt>. </p></td>
   </tr>
   <tr>
     <td valign="top"><strong>Argument</strong></td>
     <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
         <tr> 
           <td valign="top"><tt><em>expression</em></tt></td>
-          <td>&nbsp;&nbsp;&nbsp; </td>
-          <td>Vocola actions, which when evaluated and concatenated yield an expression 
-            in the Python language.</td>
+          <td>&nbsp;&nbsp;&nbsp;</td>
+          <td>In its simplest form, a single quoted string holding a
+        Python expression where all Python variables have been replaced by
+        Vocola references (e.g., <tt>$1</tt>) or function arguments
+        (e.g., <tt>$height</tt>).  As usual, the quotes can be omitted
+        if no special characters or whitespace are needed.</td>
         </tr>
       </table></td>
   </tr>
   <tr> 
-    <td valign="top"><strong>Example</strong></td>
+    <td valign="top"><strong>Examples</strong></td>
     <td><p>It's useful to position the mouse by voice using screen units larger 
         than pixels. This command places the mouse pointer at a specified screen 
         position using a coordinate system of 15 pixels per unit. Saying for example 
@@ -460,9 +486,203 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
         </tbody>
       </table>
       
+        <p>The following example uses Python's string length operator
+        <tt>len</tt> to place the cursor before a piece of varying-size
+        text:</p>
+
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt><i><font color="#993366">&nbsp;Vocola:</font></i>
+	    Len(string) := Eval('len(str($string))'); <br>
+              <i><font color="#993366">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></i>secure copy to &lt;machine&gt; = <br> 
+	     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	      "scp&nbsp;&nbsp;&nbsp;$1:~/import{left " Len(&quot;&nbsp;&nbsp;$1:~/import&quot;)&nbsp;}; </tt><br>
+              <tt><font color="#993366">&nbsp;<i>Say:</i></font> secure copy to jumbo<i><font color="#993366"> 
+              &nbsp;Sent: </font></i>scp _ mdl@jumbo.hpl.hp.com:~/import</tt>
+             </td>
+          </tr>
+        </tbody>
+      </table>
+       <br>
+
+       <p>Here _ indicates the position the cursor is left at.  The
+          function <tt>Len</tt> here is copied from the sample file
+          string.vch, which contains a small library of useful string
+          functions.  <tt>Len</tt> uses <tt>str($string)</tt>, which
+          converts <tt>$string</tt> to a string if it is a number,
+          instead of just <tt>$string</tt>, so that it can work on
+          numbers as well as strings (<tt>len</tt> is not defined on
+          numbers).</p>
+
     </td>
   </tr>
 </table>
+
+<hr>
+<h3><a name="HTMLHelp" id="HTMLHelp"></a>HTMLHelp</h3>
+<table border="0" cellspacing="0" cellpadding="12">
+  <tr> 
+    <td valign="top"><strong>Syntaxes</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+	   <tt>HTMLHelp("<em>helpFile</em>[&gt;<em>window</em>]", 
+	                "HH_DISPLAY_TOPIC", <em>topic</em>)</tt></td>
+        </tr>
+        <tr>
+	   <tt>HTMLHelp("<em>helpFile</em>[::/<em>topic</em>][&gt;<em>window</em>]", 
+	                "HH_DISPLAY_TOC")</tt></td>
+        </tr>
+        <tr>
+	   <tt>HTMLHelp("<em>helpFile</em>[::/<em>topic</em>][&gt;<em>window</em>]", 
+	                "HH_DISPLAY_INDEX", 
+                        "[<em>indexSearchText</em>]")</tt></td>
+        </tr>
+        <tr>
+	   <tt>HTMLHelp("<em>helpFile</em>[&gt;<em>window</em>]", 
+	                "HH_HELP_CONTEXT", <em>ContextId</em>)</tt></td>
+        </tr>
+        <tr>
+	   <tt>HTMLHelp("", "HH_CLOSE_ALL")</tt></td>
+        </tr>
+        </table>
+    </td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Description</strong></td>
+    <td><p>Calls the Microsoft HTML Help API.  This call enables you to
+    display HTML Help and close HTML Help windows.  Available subcalls
+    include:</p>
+       <table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt>HH_DISPLAY_TOPIC</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Opens the specified topic.</p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt>HH_DISPLAY_TOC</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Displays the Table of Contents navigation pane and
+          opens the specified topic, if any.</p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt>HH_DISPLAY_INDEX</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Displays the Index navigation pane and enters the
+          <em>indexSearchText</em> string, if any, in the keyword field.</p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt>HH_HELP_CONTEXT</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Displays the Help topic for the specified <em>contextId</em> in
+          the specified window. The <em>contextId</em> must be the numeric ID in
+          the [MAP] section of the Help project (.hhp) file for the
+          topic to display.</p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt>HH_CLOSE_ALL</tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>Closes all HTML Help Windows opened by this
+          program. The first argument must be an empty pair of double
+          quotes.</p>
+          </td>
+        </tr>
+      </table>
+        <p> For more information
+    on the HTML Help API, see the Microsoft HTML Help documentation.</p>
+      </td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Arguments</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt><em>helpFile</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>The name of the complied HTML Help file to open, for
+          example, <tt>dragon_enx.chm</tt>. If you do not specify a full path,
+          Dragon NaturallySpeaking looks in the currently active Dragon
+          NaturallySpeaking Help folder. If the file is not found there,
+          the normal HTML Help file search rules apply. </p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+
+        <tr> 
+          <td valign="top"><tt><em>topic</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>The specific HTML topic to display. If the compiled
+          help uses subdirectories, this parameter must include the
+          subdirectory. For example, the dragon NaturallySpeaking version 
+	  of this topic is <tt>scrptref/htmlhelp.htm</tt>. Note that the
+          identifier uses a forward
+          slash (/). </p>
+          </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>
+
+        <tr> 
+          <td valign="top"><tt><em>window</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>The name of the window in which to display the HTML
+          Help, for example, main. This parameter is always
+          optional. </p>
+          </td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Examples</strong></td>
+    <td><p>This action opens <tt>dragon_enx.chm</tt> in the default window,
+    displays the Contents tab in the navigation pane, and displays the
+    <tt>htmlhelp.htm</tt> topic (this topic) in the topic pane:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+HTMLHelp("dragon_enx.chm::/scrptref/htmlhelp.htm", "HH_DISPLAY_TOC")</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+    <p>This action opens <tt>MyProg.chm</tt> in a Help window named
+    <tt>"HiddenNav"</tt> and displays the topic with the context ID 133096 (Hex
+    207E8):</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+HTMLHelp("C:\\MyProg\Help\MyProg.chm>HiddenNav", "HH_HELP_CONTEXT", 
+         "133096")</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Notes</strong></td>
+    <td><ul>
+        <li>Dragon NaturallySpeaking does not get error returns from the
+        HTML Help engine. As a result, it cannot display any messages
+        when an HTML Help error occurs. <br> &nbsp; </li>
+        <li>If the HTML Help file name does not use an absolute path,
+        The HTMLHelp call first checks in the Dragon
+        NaturallySpeaking Help directory for the requested help file. If
+        the file is not found, then the normal HTML Help file search rules
+        apply.<br> </li>
+        </ul>
+     </td>
+   </tr>
+</table>
+
+
 <hr>
 <h3><a name="Repeat"></a>Repeat</h3>
 <table border="0" cellspacing="0" cellpadding="12">
@@ -644,9 +864,117 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
       </table></td>
   </tr>
 </table>
+
+<hr>
+<h3><a name="WaitForWindow" id="WaitForWindow"></a>WaitForWindow</h3>
+<table border="0" cellspacing="0" cellpadding="12">
+  <tr> 
+    <td valign="top"><strong>Syntax</strong></td>
+    <td><tt>WaitForWindow(<em>caption</em>[, <em>windowClass</em>[,
+                          <em>timeout</em>]])</tt></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Description</strong></td>
+    <td><p>The WaitFor Window call suspends execution of a Vocola command
+           until a desired window appears in the foreground.</p>
+      </td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Arguments</strong></td>
+    <td><table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr> 
+          <td valign="top"><tt><em>caption</em></tt></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>A text string to match against the window caption. The
+          string may (and often will) include the asterisk (*) character
+          as a wild-card to match against variable parts of the window
+          caption. If parts of the actual window caption are guaranteed
+          to be unpredictable, you MUST use an * wild-card to get a
+          successful match.</p>
+
+              <p>The caption may also be an empty string "", to indicate
+          that the caption does not matter. </p>
+          </td>
+        </tr>
+
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt><em>windowClass</em></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>A text string which, when not empty (""), must exactly
+          match (case-sensitive) the window class name of the window you
+          are looking for. The window class name is usually obtainable
+          only through programmer utilities like "Spy".</p>
+            
+          </td>
+        </tr>
+
+        <tr><td>&nbsp;</td></tr>
+        <tr> 
+          <td valign="top"><tt><em>timeout</em></td>
+          <td>&nbsp;&nbsp;&nbsp; </td>
+          <td><p>The length of time, in milliseconds, to wait for the
+          window to appear. If no matching window appears by then, a
+          timeout error is displayed, and the Vocola command stops without
+          executing any subsequent actions following WaitForWindow. If
+          not specified, defaults to 10 seconds.</p>
+            
+          </td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr> 
+    <td valign="top"><strong>Examples</strong></td>
+    <td><p>In the following example actions the * in the caption is an
+    instruction to ignore &quot;Document1&quot;:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+AppBringUp("<i>(correct path here)</i>winword.exe")</tt><br>
+<tt>WaitForWindow("*Microsoft Word")</tt><br>
+<tt>"this text will appear in the Word document, not the splash screen"</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+
+    <p>The following example waits for Word's main window by class name:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+AppBringUp("<i>(correct path here)</i>winword.exe")</tt><br>
+<tt>WaitForWindow("", "OpusApp")</tt><br>
+<tt>"this text will appear in the Word document, not the splash screen"</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+
+    <p>The following example starts Outlook, waits as long as 30 seconds
+    in case the network is slow, and then types Alt+n to create a new
+    E-mail:</p>
+      <table border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffcc">
+        <tbody>
+          <tr> 
+            <td><tt>
+AppBringUp("<i>(correct path here)</i>outlook.exe")</tt><br>
+<tt>WaitForWindow("*Microsoft Outlook", "", 30000)</tt><br>
+<tt>{Alt+n}</tt><br>
+</td>
+          </tr>
+        </tbody>
+      </table>
+
+  </tr>
+</table>
+
+
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 </body></html>
+
           </td>
         </tr>
 
@@ -655,7 +983,7 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
             <hr>
             <table width=100% border=0 cellpadding=0>
               <tr>
-                <td><i>This page (c) Copyright 2002-2005 by Rick Mohr.
+                <td><i>This page (c) Copyright 2002-2008 by Rick Mohr.
                 <td align=right>
                   <!-- BEGIN WebSTAT Activation Code -->
                   <script type="text/javascript" language="JavaScript" src="http://hits.webstat.com/cgi-bin/wsv2.cgi?51442"></script>

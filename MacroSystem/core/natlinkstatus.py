@@ -1,5 +1,10 @@
 """ the following functions are provided in this module:
-( to be used by either natlinkmain.py or natlinkinstallfunctions.py
+( to be used by either natlinkmain.py or natlinkconfigfunctions.py
+
+The functions below are put into the class NatlinkStatus. The natlinkconfigfunctions
+can subclass this class.
+
+The functions below should not change anything in settings, only  get information.
 
 getDNSInstallDir:
     returns the directory where NatSpeak is installed.
@@ -23,9 +28,17 @@ getDNSVersion:
 getWindowsVersion:
     see source below
 
+getLanguage:
+    returns the 3 letter code of the language of the speech profile that
+    is open (only possible when NatSpeak/natlink is running)
+
 getPythonVersion:
     returns, as a string, the python version. Eg. "2.3"
     If it cannot find it in the registry it returns an empty string
+
+getUserDirectory: get the natlink user directory, unimacro will be there. If not return ''
+
+getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
 
 NatlinkIsEnabled:
     return 1 or 0 whether natlink is enabled or not
@@ -34,6 +47,10 @@ NatlinkIsEnabled:
 
 getNSSYSTEMIni(): get the path of nssystem.ini
 getNSAPPSIni(): get the path of nsapps.ini
+
+getBaseModelBaseTopic:
+    return these as strings, not ready yet, only possible when
+    NatSpeak/natlink is running.
     
 """
 
@@ -43,8 +60,7 @@ import RegistryDict, natlinkcorefunctions
 
 from win32com.shell import shell, shellcon
 
-NSSystemIni  = "nssystem.ini"
-NSAppsIni  = "nsapps.ini"
+
 VocIniFile  = r"Vocola\Exec\vocola.ini"
 NSExt73Path  = "ScanSoft\NaturallySpeaking"
 NSExt8Path  = "ScanSoft\NaturallySpeaking8"
@@ -52,7 +68,6 @@ NSExt9Path  = "Nuance\NaturallySpeaking9"
 DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
 DNSPaths = [NSExt9Path, NSExt8Path, NSExt73Path]
 DNSVersions = [9,8,7]
-NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
 # utility functions:
 # report function:
@@ -104,6 +119,8 @@ class NatlinkStatus(object):
     ### from previous modules, needed or not...
     NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
+    NSSystemIni  = "nssystem.ini"
+    NSAppsIni  = "nsapps.ini"
     ## setting of nssystem.ini if natlink is enabled...
     ## this first setting is decisive for NatSpeak if it loads natlink or not
     section1 = "Global Clients"
@@ -146,8 +163,8 @@ class NatlinkStatus(object):
         for dnsdir in DNSPaths:
             cand = os.path.join(trunkPath, dnsdir)
             if os.path.isdir(cand):
-                nssystem = os.path.join(cand, NSSystemIni)
-                nsapps = os.path.join(cand, NSAppsIni)
+                nssystem = os.path.join(cand, self.NSSystemIni)
+                nsapps = os.path.join(cand, self.NSAppsIni)
                 if os.path.isfile(nssystem) and os.path.isfile(nsapps):
                     return cand
         raise IOError("no valid DNS Install Dir found")
@@ -222,7 +239,7 @@ class NatlinkStatus(object):
     def getNSSYSTEMIni(self):
         inidir = self.getDNSIniDir()
         if inidir:
-            nssystemini = os.path.join(inidir, NSSystemIni)
+            nssystemini = os.path.join(inidir, self.NSSystemIni)
             if os.path.isfile(nssystemini):
                 return nssystemini
         raise IOError("Cannot find proper NSSystemIni file")
@@ -230,7 +247,7 @@ class NatlinkStatus(object):
     def getNSAPPSIni(self):
         inidir = self.getDNSIniDir()
         if inidir:
-            nsappsini = os.path.join(inidir, NSAppsIni)
+            nsappsini = os.path.join(inidir, self.NSAppsIni)
             if os.path.isfile(nsappsini):
                 return nsappsini
         raise IOError("Cannot find proper NSAppsIni file")
@@ -286,14 +303,29 @@ class NatlinkStatus(object):
                 print 'Return NO userDirectory'
                 print 'Run  configurenatlink to fix if you like'
                 print '-'*60
-                return ''
         else:
             print 'userDirectory (of user grammars in Natlink, mostly unimacro) is NOT SET.'
             print "Run configurenatlink to fix, or leave it like this"
-            return ''
+        # fall through: 
+        return ''
 
     def getVocolaUserDirectory(self):
-        print 'coming'
+        key = 'VocolaUserDirectory'
+        value = self.userregnl.get(key, '')
+        if value:
+            if os.path.isdir(value):
+                return value
+            else:
+                print '-'*60
+                print 'Invalid VocolaUserDirectory (of vocola user files): %s'% value
+                print 'Return NO VocolaUserDirectory'
+                print 'Run  configurenatlink to fix if you like'
+                print '-'*60
+        else:
+            print 'VocolaUserDirectory (of vocola user files) is NOT SET.'
+            print 'regard Vocola as being DISABLED'
+            print "Run configurenatlink to fix, or leave it like this"
+        # fall through: 
         return ''
 
     def getBaseModelBaseTopic(self, DNSuserDirectory):

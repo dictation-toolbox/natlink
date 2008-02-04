@@ -44,7 +44,7 @@ td{font-family: Verdana, Arial, Helvetica, sans-serif;}
     <td align=right>
       <nobr>
         <font color="#FFFFCC" size="2">
-          (this page updated June 01, 2003)</font>
+          (this page updated June 02, 2007)</font>
       </nobr>
     </td>
   </tr>
@@ -226,22 +226,28 @@ Here are some possible causes:
     &nbsp; 
   </ul>
   <li> You changed an include file (.vch) and didn't run the Vocola translator 
-    by saying "Load Voice Commands".
+    by saying "Load All Voice Commands".
+  <br>&nbsp; 
+  </li>
+  <li> Your command is in a filename which contains a character other
+       than a digit, letter, or underscore before the @ or extension (.vcl); 
+       older versions of NatLink (before May 2007) are known to have a
+       bug which causes them to ignore such files.  Either switch to a
+       later version of NatLink or use a different file name -- this may
+       require renaming the executable if the offending character occurs
+       in its name.
+
   <br>&nbsp; 
   </li>
   <li> NatLink didn't load the translated Python file. 
     <ul>
       <li> Look in the NatLink\MacroSystem directory. There should be both a .py 
-        file and a .pyc with the same name as your .vcl file.</li>
+        file and a .pyc starting with the same name as your .vcl file
+	(the part starting with the @ may be mangled somewhat).</li>
       <li> If the .pyc file is <i>older</i> than the .py file, and you really 
         have talked at the correct application, then NatLink has not noticed the 
-        .py file. There are two possible reasons:</li>
-      <ul>
-        <li> You have created a new global command file (one beginning with underscore, 
-          &quot;_&quot;). NatLink does not notice these.</li>
-        <li> NatLink or NatSpeak is in a bad state.</li>
-      </ul>
-      <li> In either case, you need to exit and restart NatSpeak.</li>
+        .py file.  This means that NatLink or NatSpeak is in a bad state.</li>
+      <li> This can be corrected by exiting and restarting NatSpeak.</li>
     </ul>
   </li>
 </ol>
@@ -258,7 +264,12 @@ causes:
       with the same words. Usually the application-specific command will be recognized, 
       but occasionally the global command is recognized instead. Usually if you 
       repeat the command the application-specific version will be recognized.<br>
-    </li></ul>
+    </li>
+    <li> You may have defined a command with the same words in a command
+         file that you have since deleted or renamed; restart NatSpeak
+	 to discard any such old commands.
+    </li>
+    </ul>
   <br>
   <li> You need to use quotation marks in your Vocola command. Quotation mark 
     delimiters are usually optional in Vocola, but are required in some cases:</li>
@@ -269,6 +280,7 @@ causes:
   </ul>
 </ol>
 </body></html>
+
           </td>
         </tr>
 
@@ -277,7 +289,7 @@ causes:
             <hr>
             <table width=100% border=0 cellpadding=0>
               <tr>
-                <td><i>This page (c) Copyright 2002-2005 by Rick Mohr.
+                <td><i>This page (c) Copyright 2002-2008 by Rick Mohr.
                 <td align=right>
                   <!-- BEGIN WebSTAT Activation Code -->
                   <script type="text/javascript" language="JavaScript" src="http://hits.webstat.com/cgi-bin/wsv2.cgi?51442"></script>

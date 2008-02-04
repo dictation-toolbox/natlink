@@ -2,7 +2,7 @@
 
 include folders.vch;
 
-Folder <folder> = "cd $1{Enter}";
+Folder <folder> = 'cd "$1"{Enter}';
 
 Copy That = {Enter};
 Paste That = {Alt+Space}ep;

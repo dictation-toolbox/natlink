@@ -1,5 +1,5 @@
-import sys, unittest, win32api, os, win32con, copy
-import natlinkconfigfunctions
+import sys, unittest, win32api, os, win32con, copy, shutil
+import natlinkconfigfunctions, natlinkstatus
 reload(natlinkconfigfunctions)
 
 testinifile1 = os.path.join("C:\\", "testinifile.ini")
@@ -65,6 +65,8 @@ if not os.path.normpath(coreDir) in sys.path:
 import natlinkcorefunctions, RegistryDict
 reload(natlinkcorefunctions)
 
+class TestError(Exception):
+    pass
 
 class TestConfigureFunctions(unittest.TestCase):
     """test ini file functions from win32api
@@ -78,7 +80,18 @@ class TestConfigureFunctions(unittest.TestCase):
     second: testing the natlinkcorefunctions:
             getExtendedEnv etc.
 
-    
+    third: test the settings/clearings of the userregnl section of Software/Natlink
+           the tests are all going through the CLI (command line interface) functions,
+           like cli = CLI()
+           and then cli.do_u(path/to/userdirectory) or cli.do_U("dummy") (to clear path) etc.
+
+            these tests are near the bottom of this module. No effect on natlink is tested, only the
+            correct working on the registry...
+    (at each test the registry settings are recorded, and afterwards put back again)
+
+    Note enableNatlink is NOT tested here, as it does a register of a dll (which maybe should
+    not be done too often) and works through ini files anyway, not through the registry.
+
     """
     def setUp(self):
         # for setting getting values test:
@@ -88,7 +101,20 @@ class TestConfigureFunctions(unittest.TestCase):
 ##    lmgroup = "SOFTWARE\Natlink"
         self.Userregnl = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, self.usergroup)
         self.backupUserregnl = dict(self.Userregnl)
-        pass
+
+        ## testfolder:
+        tmp = natlinkcorefunctions.getExtendedEnv("TMP")
+        tmpTest = os.path.join(tmp, 'testconfig')
+        if not os.path.isdir(tmp):
+            raise TestError('test error, not a valid tmp folderpath: %s'% tmp)
+        if os.path.exists(tmpTest):
+            shutil.rmtree(tmpTest)
+        if os.path.exists(tmpTest):
+            raise TestError('test error, test path should not be there: %s'% tmpTest)
+        os.mkdir(tmpTest)
+        self.assert_(os.path.isdir(tmpTest), "Could not make test folder: %s"% tmpTest)
+        self.tmpTest = tmpTest
+
 
 
     def tearDown(self):
@@ -98,6 +124,7 @@ class TestConfigureFunctions(unittest.TestCase):
             os.remove(testinifile1)
         self.restoreRegistrySettings(self.backupUserregnl,
                 RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, self.usergroup))
+        shutil.rmtree(self.tmpTest)
         pass
 
     def restoreRegistrySettings(self, backup, actual):
@@ -109,12 +136,16 @@ class TestConfigureFunctions(unittest.TestCase):
 
     def checkUserregnl(self, key, value, mess=""):
         userregnltest = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, self.usergroup)
-        if key in userregnltest:
-            actual = userregnltest[key]
-            self.assert_(value == actual, "userregnl has not expected result for key: %s, expected: %s, got %s\n%s"%
-                         (key, value, actual, mess))
+        if value != None:
+            if key in userregnltest:
+                actual = userregnltest[key]
+                self.assert_(value == actual, "userregnl has not expected result for key: %s, expected: %s, got %s\n%s"%
+                             (key, value, actual, mess))
+            else:
+                self.fail("userregnl does not have expected key: %s\n%s"% (key, mess))
         else:
-            self.fail("userregnl does not have expected key: %s\n%s"% (key, mess))
+            if key in userregnltest:
+                self.fail("userregnl should not have this key: %s\n%s"% (key, mess))
             
 
 
@@ -310,23 +341,104 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_g("dummy")
         self.checkUserregnl(key, 1, "setting debug output natlink")
         
-    def test_enableDisableNatlinkDebugOutput(self):
-        """This option should set DebugOutput in the registry to 0 or 1
+        
+    def test_setClearDNSInstallDir(self):
+        """This option should set or clear the natspeak install directory
         """
-        key = "NatlinkDebug"
+        key = "DNSInstallDir"
         cli = natlinkconfigfunctions.CLI()
-        cli.do_g("dummy")
-        
-        self.checkUserregnl(key, 1, "setting debug output natlink")
-        cli.do_G("dummy")
-        self.checkUserregnl(key, 0, "clearing debug output natlink")
-        cli.do_g("dummy")
-        self.checkUserregnl(key, 1, "setting debug output natlink")
-        
-        
-    
+        old = self.Userregnl.get(key, None)
+        # not a valid folder:
+        cli.do_d("notAValidFolder")
+        self.checkUserregnl(key, old, "DNSInstallDir, nothing should be changed yet")
 
-                
+        # folder does not have Programs:
+        cli.do_d(self.tmpTest)
+        self.checkUserregnl(key, old, "DNSInstallDir, empty directory should not change DNSInstallDir")
+
+        # now change:
+        programDir = os.path.join(self.tmpTest, 'Program')
+        os.mkdir(programDir)
+        cli.do_d(self.tmpTest)
+        self.checkUserregnl(key, self.tmpTest, "DNSInstallDir should be changed now")
+
+        # now clear:
+        cli.do_D("dummy")
+        self.checkUserregnl(key, None, "DNSInstallDir should be cleared now")
+        
+
+        
+    def test_setClearDNSIniDir(self):
+        """This option should set or clear the natspeak ini files directory
+        """
+        key = "DNSIniDir"
+        cli = natlinkconfigfunctions.CLI()
+        old = self.Userregnl.get(key, None)
+        # not a valid folder:
+        cli.do_c("notAValidFolder")
+        self.checkUserregnl(key, old, "DNSIniDir, nothing should be changed yet")
+
+        # folder does not have ini files in yet:
+        cli.do_c(self.tmpTest)
+        self.checkUserregnl(key, old, "DNSIniDir, empty directory should not change DNSIniDir")
+
+        # now change:
+        nssystemini = os.path.join(self.tmpTest, 'nssystem.ini')
+        win32api.WriteProfileVal("dummy", "dummy", "dummy", nssystemini)
+        cli.do_c(self.tmpTest)
+        self.checkUserregnl(key, old, "DNSIniDir, should not be changed yet, nsapps still missing")
+        nsappsini = os.path.join(self.tmpTest, 'nsapps.ini')
+        win32api.WriteProfileVal("dummy", "dummy", "dummy", nsappsini)
+        cli.do_c(self.tmpTest)
+        self.checkUserregnl(key, self.tmpTest, "DNSIniDir, should be changed now")
+
+        # now clear:
+        cli.do_C("dummy")
+        self.checkUserregnl(key, None, "DNSInstallDir should be cleared now")
+        
+
+        
+    def test_setClearUserDirectory(self):
+        """This option should set or clear the natlink user directory
+        """
+        testName = 'test_setClearUserDirectory'
+        key = "UserDirectory"
+        cli = natlinkconfigfunctions.CLI()
+        old = self.Userregnl.get(key, None)
+        # not a valid folder:
+        cli.do_u("notAValidFolder")
+        self.checkUserregnl(key, old, "%s, nothing should be changed yet"% testName)
+
+        # change userdirectory
+        cli.do_u(self.tmpTest)
+        self.checkUserregnl(key, self.tmpTest, "%s, UserDirectory should be changed now"% testName)
+
+        # now clear:
+        cli.do_U("dummy")
+        self.checkUserregnl(key, None, "%s UserDirectory should be cleared now"% testName)
+        
+
+    def test_setClearVocolaUserDirectory(self):
+        """This option should set or clear the vocola user directory
+        """
+        testName = 'test_setClearVocolaUserDirectory'
+        key = "VocolaUserDirectory"
+        cli = natlinkconfigfunctions.CLI()
+        old = self.Userregnl.get(key, None)
+        # not a valid folder:
+        cli.do_v("notAValidFolder")
+        self.checkUserregnl(key, old, "%s, nothing should be changed yet"% testName)
+
+        # change userdirectory
+        cli.do_v(self.tmpTest)
+        self.checkUserregnl(key, self.tmpTest, "%s, VocolaUserDirectory should be changed now"% testName)
+
+        # now clear:
+        cli.do_V("dummy")
+        self.checkUserregnl(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
+        
+
+        
         
 ##    def test_RegistrySettings(self):
 ##        """test if registry settings are saved and restored correctly
