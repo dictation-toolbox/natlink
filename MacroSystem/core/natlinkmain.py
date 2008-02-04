@@ -391,8 +391,10 @@ prevModInfo = None
 def beginCallback(moduleInfo, checkAll=None):
     global loadedFiles, prevModInfo
     cbd = getCallbackDepth()
-    print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
+    if debugCallback:
+        print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
               (cbd, checkAll, checkForGrammarChanges)
+    # maybe should be 1...
     if getCallbackDepth() > 2:
         return
     t0 = time.time()
