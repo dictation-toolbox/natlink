@@ -80,10 +80,10 @@ import natlinkstatus    # for extracting status info (QH)
 # status now a class:
 status = natlinkstatus.NatlinkStatus()
 
-debugLoad=0
+debugLoad= status.getDebugLoad()
 cmdLineStartup=0
 debugTiming=0
-debugCallback = 0
+debugCallback = status.getDebugCallback()
 #
 # This redirects stdout and stderr to a dialog box.
 #
@@ -107,6 +107,11 @@ class NewStderr:
 if not cmdLineStartup:
     sys.stdout = NewStdout()
     sys.stderr = NewStderr()
+
+if debugLoad:
+    print 'do extra output at (re)loading time: %s'% debugLoad
+if debugCallback:
+    print 'do extra output at callback time: %s'% debugCallback
 
 # QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
 # otherwise no grammar change checking is performed, only at microphone toggle
@@ -294,7 +299,6 @@ def findAndLoadFiles(curModule=None):
         for x in userDirFiles:
             res = pat.match(x)
             if res: filesToLoad[ res.group(1) ] = None
-
     # baseDirectory:           
     searchImportDirs.append(baseDirectory)
     baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
@@ -329,7 +333,7 @@ def findAndLoadFiles(curModule=None):
         loadedFiles[x] = loadFile(x, searchImportDirs, origName)
 
     # Unload any files which have been deleted
-    for name, path in loadedFiles.iteritems():
+    for name, path in loadedFiles.items():
         if path and not getFileDate(path):
             safelyCall(name,'unload')
             del loadedFiles[name]

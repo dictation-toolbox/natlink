@@ -26,7 +26,8 @@
 #      if you are less strict)
 #   - if problems arise, change the test function name you want to isolate to tttest.... and
 #     change at the bottom (about 10 lines from the bottom) the makeSuite line 'test' to 'tttest'.
-#     The testing will take only the function(s) you marked this way.
+#     The testing will take only the function(s) you marked this way. Please do not forget to
+#     change back when finished!!
 #
 # testWordProns and testWordFuncs are adapted to (I think) version 9, see the docstrings there...
 #
@@ -1984,11 +1985,16 @@ def run():
     logFile = open(logFileName, "w")
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
+    # trick: if you only want one or two tests to perform, change
+    # the test names to her example def tttest....
+    # and change the word 'test' into 'tttest'...
+    # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')
 ##    natconnectOption = 0 # no threading has most chances to pass...
     log('\nstarting tests with threading: %s\n'% natconnectOption)
     result = unittest.TextTestRunner().run(suite)
     dumpResult(result, logFile=logFile)
+    
     logFile.close()
 
 if __name__ == "__main__":

@@ -341,6 +341,28 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_g("dummy")
         self.checkUserregnl(key, 1, "setting debug output natlink")
         
+    # now for the real work, the install functions:
+    def test_enableDisableNatlinkmainDebugLoadDebugCallback(self):
+        """This option should set DebugLoad and DebugCallback for natlinkmain on and off
+        """
+        key = "NatlinkmainDebugLoad"
+        cli = natlinkconfigfunctions.CLI()
+        cli.do_x("dummy")
+        
+        self.checkUserregnl(key, 1, "setting natlinkmain debug load on")
+        cli.do_X("dummy")
+        self.checkUserregnl(key, 0, "clearing natlinkmain debug load")
+
+        key = "NatlinkmainDebugCallback"
+        cli = natlinkconfigfunctions.CLI()
+        cli.do_y("dummy")
+        
+        self.checkUserregnl(key, 1, "setting natlinkmain debug callback on")
+        cli.do_Y("dummy")
+        self.checkUserregnl(key, 0, "clearing natlinkmain debug callback")
+
+
+        
         
     def test_setClearDNSInstallDir(self):
         """This option should set or clear the natspeak install directory

@@ -51,6 +51,11 @@ getNSAPPSIni(): get the path of nsapps.ini
 getBaseModelBaseTopic:
     return these as strings, not ready yet, only possible when
     NatSpeak/natlink is running.
+
+getDebugLoad:
+    get value from registry, if set do extra output of natlinkmain at (re)load time
+getDebugCallback:
+    get value from registry, if set do extra output of natlinkmain at callbacks is given
     
 """
 
@@ -362,7 +367,19 @@ class NatlinkStatus(object):
         else:
             print "Found unknown language in acoustic.ini:", lang
             return "xxx"
-   
+
+    # get different debug options for natlinkmain:   
+    def getDebugLoad(self):
+        """gets value for extra info at loading time of natlinkmain"""
+        key = 'NatlinkmainDebugLoad'
+        value = self.userregnl.get(key, None)
+        return value
+    def getDebugCallback(self):
+        """gets value for extra info at callback time of natlinkmain"""
+        key = 'NatlinkmainDebugCallback'
+        value = self.userregnl.get(key, None)
+        return value
+
 
 if __name__ == "__main__":
     status = NatlinkStatus()
@@ -380,4 +397,5 @@ if __name__ == "__main__":
         print 'Strange result in function NatlinkIsEnabled: %s'% nlenabled
 
     print '(Natlink) userDir: %s'% status.getUserDirectory()
-    
+    print 'extra output natlinkmain at load time: %s'% status.getDebugLoad()    
+    print 'extra output natlinkmain at callback time: %s'% status.getDebugCallback()    

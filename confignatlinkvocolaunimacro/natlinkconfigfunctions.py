@@ -319,6 +319,34 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         os.system('regsvr32 /u "%s"'% os.path.join(coreDir, "natlink.dll"))
 
+    def enableDebugLoadOutput(self):
+        """setting registry key so debug output of loading of natlinkmain is given
+
+        """
+        key = "NatlinkmainDebugLoad"
+        self.userregnl[key] = 1
+        
+
+    def disableDebugLoadOutput(self):
+        """disables the natlink debug output of loading of natlinkmain is given
+        """
+        key = "NatlinkmainDebugLoad"
+        self.userregnl[key] = 0
+
+    def enableDebugCallbackOutput(self):
+        """setting registry key so debug output of callback functions of natlinkmain is given
+
+        """
+        key = "NatlinkmainDebugCallback"
+        self.userregnl[key] = 1
+        
+
+    def disableDebugCallbackOutput(self):
+        """disables the natlink debug output of callback functions of natlinkmain
+        """
+        key = "NatlinkmainDebugCallback"
+        self.userregnl[key] = 0
+        
     def enableDebugOutput(self):
         """setting registry key so debug output is in natspeak logfile
 
@@ -416,6 +444,9 @@ v/V - set/clear vocoloauserdir, the user directory for vocola user files. This a
 
 r/R - (un)registernatlink, the natlink.dll file(should not be necessary to do)
 g/G - enable/disable debugoutput: natlink debug output in natlink log file
+
+x/X - enable/disable debug load output of natlinkmain (keep at 0 (X) normally)
+y/Y - enable/disable debug callback output of natlinkmain (keep at 0 (Y) normally)
 
 usage - give this list
 q   - quit
@@ -624,14 +655,40 @@ NatlinkDebug is kept to 0
 """
         print '='*60
 
-        
-    do_enabledebugoutput = do_g
-    do_disabledebutoutput = do_G
-    help_enabledebugoutput = help_g
-    help_disabledebugoutput = help_g
     help_G = help_g
+    # enable/disable natlink debug output...
+    def do_x(self, arg):
+        print "Enable natlinkmain debug load output to messages of pythom macros window"
+        self.config.enableDebugLoadOutput()
+    def do_X(self, arg):
+        print "Disable natlinkmain debug load output to messages of pythom macros window"
+        self.config.disableDebugLoadOutput()
+    # enable/disable natlink debug output...
+    def do_y(self, arg):
+        print "Enable natlinkmain debug Callback output to messages of pythom macros window"
+        self.config.enableDebugCallbackOutput()
+    def do_Y(self, arg):
+        print "Disable natlinkmain debug Callback output to messages of pythom macros window"
+        self.config.disableDebugCallbackOutput()
 
+    def help_x(self):
+        print '-'*60
+        print \
+"""enables (x)/disables (X) natlinkmain debug load output
+enables (y)/disables (Y) natlinkmain debug callback output
 
+This is sometimes lengthy output to the
+"Messages from Python Macros" window.
+
+Mainly used when you suspect problems with the working 
+of natlink, so keep off (X and Y) most of the time.
+"""
+        print '='*60
+
+    help_y = help_x
+    help_X = help_x
+    help_Y = help_x
+    
     # register natlink.dll
     def do_r(self, arg):
         print "(Re) register natlink.dll"
