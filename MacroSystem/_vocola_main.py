@@ -21,7 +21,7 @@
 #  2 (new py file)
 #
 
-import sys
+import sys, string
 import os               # access to file information
 import os.path          # to parse filenames
 import time             # print time in messages
@@ -29,15 +29,16 @@ from stat import *      # file statistics
 import re
 import natlink
 from natlinkutils import *
-
-
-try:
-    # The following files are only present if Scott's installer is being used:
-    import RegistryDict
-    import win32con
-    installer = True
-except ImportError:
-    installer = False
+import natlinkstatus
+status = natlinkstatus.NatlinkStatus()
+##
+##try:
+##    # The following files are only present if Scott's installer is being used:
+##    import RegistryDict
+##    import win32con
+##    installer = True
+##except ImportError:
+##    installer = False
 
 # Returns the date on a file or 0 if the file does not exist        
 def vocolaGetModDate(file):
@@ -66,36 +67,55 @@ NatLinkFolder = os.path.abspath(NatLinkFolder)
 
 import simpscrp
 
-class ThisGrammar(GrammarBase):
+language = status.getLanguage()
 
-    gramSpec = """
-        <NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
-        <loadAll>           exported = Load All [Voice] Commands;
-        <loadCurrent>       exported = Load [Voice] Commands;
-        <loadGlobal>        exported = Load Global [Voice] Commands;
-        <discardOld>        exported = Discard Old [Voice] Commands;
-        <edit>              exported = Edit [Voice] Commands;
-        <editMachine>       exported = Edit Machine [Voice] Commands;
-        <editGlobal>        exported = Edit Global [Voice] Commands;
-        <editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
+class ThisGrammar(GrammarBase):
+    if language == 'nld':
+        gramSpec = """
+<NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
+<loadAll>           exported = (Laad|Lood) alle [stem|vojs] (Commandoos|Commands);
+<loadCurrent>       exported = (Laad|Lood) [stem|vojs] (Commandoos|Commands);
+<loadGlobal>        exported = (Laad|Lood) globale [stem|vojs] (Commandoos|Commands);
+<discardOld>        exported = (Discard|Verwijder) (oude|oold) [stem|vojs] (Commandoos|Commands);
+<edit>              exported = (Eddit|Bewerk) [stem|vojs] (Commandoos|Commands);
+<editMachine>       exported = (Eddit|Bewerk) Machine [stem|vojs] (Commandoos|Commands);
+<editGlobal>        exported = (Eddit|Bewerk) (Global|globale) [stem|vojs] (Commandoos|Commands);
+<editGlobalMachine> exported = (Eddit|Bewerk) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
+    """
+    else:
+        gramSpec = """
+<NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
+<loadAll>           exported = Load All [Voice] Commands;
+<loadCurrent>       exported = Load [Voice] Commands;
+<loadGlobal>        exported = Load Global [Voice] Commands;
+<discardOld>        exported = Discard Old [Voice] Commands;
+<edit>              exported = Edit [Voice] Commands;
+<editMachine>       exported = Edit Machine [Voice] Commands;
+<editGlobal>        exported = Edit Global [Voice] Commands;
+<editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
     """
 
     def initialize(self):
-        self.setNames()
 
         # remove previous Vocola/Python compilation output as it may be out
         # of date (e.g., new compiler, source file deleted, partially
         # written due to crash, new machine name, etc.):
         self.purgeOutput()
-
-        self.loadAllFiles('')
-
-        self.load(self.gramSpec)
-        self.activateAll()
-        # Don't set callback just yet or it will be clobbered
-##        self.needToSetCallback = 1
         self.editedCommandFiles = []       
         self.newCommandFile = 0 # to notice when a new command file is opened    
+
+        self.setNames()
+
+        if self.vocolaEnabled:        
+
+            self.loadAllFiles('')
+
+            self.load(self.gramSpec)
+            self.activateAll()
+            # Don't set callback just yet or it will be clobbered
+    ##        self.needToSetCallback = 1
+        else:
+            print 'vocola not active'
                 
 
     def gotBegin(self,moduleInfo):
@@ -110,17 +130,44 @@ class ThisGrammar(GrammarBase):
     def setNames(self):
         self.VocolaFolder = NatLinkFolder + r'\..\Vocola'
         self.commandFolders = [self.VocolaFolder + r'\Commands']
-        if installer:
-            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,
-                                          "Software\NatLink")             
-            if r:                                                         
-                userCommandFolder = r["VocolaUserDirectory"]              
-                if os.path.isdir(userCommandFolder):                      
-                    self.commandFolders = ([userCommandFolder]            
-                                           + self.commandFolders)         
+##        
+##        if installer:
+##            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,
+##                                          "Software\NatLink")             
+##            if r:                                                         
+##                userCommandFolder = r.get("VocolaUserDirectory", None)
+##                self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
+##                if self.vocolaEnabled:
+##                    self.commandFolders.insert(0, userCommandFolder)
+        userCommandFolder = status.getVocolaUserDirectory()
+                
+        self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
+        if self.vocolaEnabled:
+            self.commandFolders.insert(0, userCommandFolder)                
+            if status.getVocolaTakesLanguages():
+                self.language = status.getLanguage()
+                print '_vocola_main got language: %s'% language
+                if self.language != 'enx':
+                    userCommandFolder2 = os.path.join(userCommandFolder, self.language)
+                    if not os.path.isdir(userCommandFolder2):
+                        print 'creating userCommandFolder for language %s'% self.language
+                        self.createNewSubDirectory(userCommandFolder2)
+                        self.copyToNewSubDirectory(userCommandFolder, userCommandFolder2)
+                    self.commandFolders.insert(0, userCommandFolder2)                
+
         if os.environ.has_key('COMPUTERNAME'):
             self.machine = string.lower(os.environ['COMPUTERNAME'])
         else: self.machine = 'local'
+
+    def createNewSubDirectory(self, subdirectory):
+        os.mkdir(subdirectory)
+
+    def copyToNewSubDirectory(self, trunk, subdirectory):
+        for f in os.listdir(trunk):
+            if f.endswith('.vcl'):
+                self.copyVclFileLanguageVersion(os.path.join(trunk, f),
+                                                os.path.join(subdirectory, f))
+                                
 
     # Get app name by stripping folder and extension from currentModule name
     def getCurrentApplicationName(self):
@@ -286,18 +333,28 @@ class ThisGrammar(GrammarBase):
     
     def openCommandFile(self, file, comment):
         path = self.FindExistingCommandFile(file)
-            
+        wantedPath = os.path.join(self.commandFolders[0], file)
+
+        self.newCommandFile = 1
+
         if not path:
             path = self.commandFolders[0] + '\\' + file
             new = open(path, 'w')
             new.write('# ' + comment + '\n\n')
             new.close()
-            self.newCommandFile = 1
-            self.editedCommandFiles.append(path)        
-        else:
+        elif path == wantedPath:
             self.newCommandFile = 0
-            if not path in self.editedCommandFiles:
-                self.editedCommandFiles.append(path)        
+        else:
+            # copy from other location
+            if wantedPath.startswith(path) and len(wantedPath) - len(path) == 3:
+                print 'copy enx version to language version %s'% self.language
+                self.copyVclFileLanguageVersion(path, wantedPath)
+            else:
+                print 'copy from other location'
+                self.copyVclFile(path, wantedPath)
+            path = wantedPath   
+        if not path in self.editedCommandFiles:
+            self.editedCommandFiles.append(path)
 
         if os.name == 'nt':  call = 'cmd /c' + ' ""' + path + '""'
         else:                call = 'start' + ' "' + path + '"'
@@ -307,6 +364,41 @@ class ThisGrammar(GrammarBase):
             opener = 'start'
             call = opener + ' "' + path + '"'
             simpscrp.Exec(call, 0)
+
+    def copyVclFileLanguageVersion(self, Input, Output):
+        """copy to another location, keeping the include files one directory above
+        """
+        # QH, febr, 5, 2008
+        reInclude = re.compile(r'(include\s+)\w')
+        Input = os.path.normpath(Input)
+        Output = os.path.normpath(Output)
+        input = open(Input, 'r').read()
+        output = open(Output, 'w')
+        output.write("# vocola file for alternate language: %s\n"% self.language)
+        lines = map(string.strip, str(input).split('\n'))
+        for line in lines:
+            if reInclude.match(line):
+                line = 'include ..\\' + line[8:]
+            output.write(line + '\n')
+        output.close()                
+
+    def copyVclFile(self, Input, Output):
+        """copy to another location
+        """
+        # QH, febr, 5, 2008
+        Input = os.path.normpath(Input)
+        Output = os.path.normpath(Output)
+
+        input = open(Input, 'r').read()
+        output = open(Output, 'w')
+        output.write("# vocola file from a sample directory %s\n"% Input)
+        lines = map(string.strip, str(input).split('\n'))
+        for line in lines:
+            output.write(line + '\n')
+        output.close()                
+
+
+
             
     def getLastVocolaModTime(self):
         """get the time of the last edited vocola file
@@ -354,6 +446,8 @@ def vocolaBeginCallback(moduleInfo):
 
 ##    if getCallbackDepth() < 2:
     grammar = thisGrammar
+    if not grammar.vocolaEnabled:
+        return
     current = grammar.getLastVocolaModTime()
 ##    print 'current: %s (number of files edited: %s)'% (current, len(grammar.editedCommandFiles))
     if current > lastVocolaUserModTime:

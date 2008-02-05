@@ -56,7 +56,9 @@ getDebugLoad:
     get value from registry, if set do extra output of natlinkmain at (re)load time
 getDebugCallback:
     get value from registry, if set do extra output of natlinkmain at callbacks is given
-    
+
+getVocolaTakesUnimacroActions
+getVocolaTakesLanguages: additional settings for vocola
 """
 
 import os, re, win32api, win32con
@@ -137,6 +139,25 @@ class NatlinkStatus(object):
     section2 = ".Natlink"
     key2 = "App Support GUID"
     value2 = NATLINK_CLSID    
+
+    userArgs = [None, None]
+
+    def setUserInfo(self, args):
+        """set username and userdirectory at change callback user
+        """
+        self.userArgs[0] = args[0]
+        self.userArgs[1] = args[1]
+        
+
+    def clearUserInfo(self):
+        self.userArgs[0] = None
+        self.userArgs[1] = None
+
+    def getUserName(self):
+        return self.userArgs[0]
+    def getDNSuserDirectory(self):
+        return self.userArgs[1]
+        
  
     def getWindowsVersion(self):
         """extract the windows version
@@ -333,7 +354,7 @@ class NatlinkStatus(object):
         # fall through: 
         return ''
 
-    def getBaseModelBaseTopic(self, DNSuserDirectory):
+    def getBaseModelBaseTopic(self):
         """to be done"""
         return "tobedone", "tobedone"
         if debugLoad: print 'extract BaseModel from DNSuserDirectory: %s'% dir
@@ -348,15 +369,18 @@ class NatlinkStatus(object):
     ##    basetopics = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\topics.ini" )
 
 
-    def getLanguage(self, DNSuserDirectory):
+    def getLanguage(self):
         """this can only be run if natspeak is running
 
         The directory of the user speech profiles must be passed.
         So this function should be called at changeCallback when a new user
         is opened.
         """
-        dir = DNSuserDirectory
-        acousticini = os.path.join(DNSuserDirectory, 'acoustic.ini')
+        dir = self.getDNSuserDirectory()
+        if not dir:
+            print 'no dir yet???%s'% dir
+            return 'zzz'
+        acousticini = os.path.join(dir, 'acoustic.ini')
         if not os.path.isfile(acousticini):
             print 'Warning,  language of the user cannot be found, acoustic.ini not a file'
             return 'yyy'
@@ -380,14 +404,45 @@ class NatlinkStatus(object):
         value = self.userregnl.get(key, None)
         return value
 
+    # get additional options vocola
+    def getVocolaTakesLanguages(self):
+        """gets and value for distinction of different languages in vocola"""
+        
+        key = 'VocolaTakesLanguages'
+        value = self.userregnl.get(key, None)
+        return value
+    
+    def getVocolaTakesUnimacroActions(self):
+        """gets the value for taking unimacro actions
+        will only take effect when unimacro is on (in userDirectory)
+        """
+        
+        key = 'VocolaTakesUnimacroActions'
+        value = self.userregnl.get(key, None)
+        if value:
+            userDirectory = self.getUserDirectory()
+            if userDirectory and os.path.isdir(userDirectory):
+                return value
+
 
 if __name__ == "__main__":
     status = NatlinkStatus()
+    userName = status.getUserName()
+    if userName:
+        print 'user name DNS: %s'% userName
+        print 'user speech profile in: %s'% status.getDNSuserDirectory()
+    else:
+        print 'no user name, DNS not running?'
+    print
+    
     print 'DNS Install Dir: %s'% status.getDNSInstallDir()
     print 'DNS Ini Dir: %s'% status.getDNSIniDir()
     print 'Windows version: %s'% status.getWindowsVersion()
     print 'DNS version: (integer) %s'% status.getDNSVersion()
     print 'Python version: %s'% status.getPythonVersion()
+
+    print
+    
     nlenabled = status.NatlinkIsEnabled()
     if nlenabled:
         print 'Natlink is enabled...'
@@ -397,5 +452,10 @@ if __name__ == "__main__":
         print 'Strange result in function NatlinkIsEnabled: %s'% nlenabled
 
     print '(Natlink) userDir: %s'% status.getUserDirectory()
+    print 
     print 'extra output natlinkmain at load time: %s'% status.getDebugLoad()    
-    print 'extra output natlinkmain at callback time: %s'% status.getDebugCallback()    
+    print 'extra output natlinkmain at callback time: %s'% status.getDebugCallback()
+    print
+    print 'vocola makes  distinction between languages: %s'% status.getVocolaTakesLanguages()
+    print 'vocola takes unimacro actions: %s'% status.getVocolaTakesUnimacroActions()
+    

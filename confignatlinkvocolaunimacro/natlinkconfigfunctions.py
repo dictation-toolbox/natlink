@@ -47,6 +47,8 @@ enableNatlink()  (e)/disableNatlink() (E)
 
 enableVocola()   (v) disableVocola()  (V) (to be done)
 
+
+
 setUserDirectory(path) (u path) or clearUserDirectory() (U)
     
 etc.
@@ -362,8 +364,36 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         key = "NatlinkDebug"
         self.userregnl[key] = 0
+
+    def enableVocolaUnimacroActions(self):
+        """setting registry  unimacro actions can be used in vocola
+
+        """
+        key = "VocolaTakesUnimacroActions"
+        self.userregnl[key] = 1
         
-      
+
+    def disableVocolaUnimacroActions(self):
+        """disables unimacro actions can be used in vocola
+        """
+        key = "VocolaTakesUnimacroActions"
+        self.userregnl[key] = 0
+        
+                
+    def enableVocolaTakesLanguages(self):
+        """setting registry  so vocola can divide different languages
+
+        """
+        key = "VocolaTakesLanguages"
+        self.userregnl[key] = 1
+        
+
+    def disableVocolaTakesLanguages(self):
+        """disables so vocola cannot take different languages
+        """
+        key = "VocolaTakesLanguages"
+        self.userregnl[key] = 0
+        
                 
 
 
@@ -378,7 +408,7 @@ def _main(Options=None):
 
     """
     cli = CLI()
-    shortOptions = "iIDCeEUdVrRgG"
+    shortOptions = "aAbBxXyYiIDCeEUdVrRgG"
     shortArgOptions = "c:u:v:"  
     if Options:
         if type(Options) == types.StringType:
@@ -447,6 +477,9 @@ g/G - enable/disable debugoutput: natlink debug output in natlink log file
 
 x/X - enable/disable debug load output of natlinkmain (keep at 0 (X) normally)
 y/Y - enable/disable debug callback output of natlinkmain (keep at 0 (Y) normally)
+
+a/A - enable/disable unimacro actions in vocola
+b/B - enable/disable distinction between languages for vocola user files
 
 usage - give this list
 q   - quit
@@ -671,6 +704,8 @@ NatlinkDebug is kept to 0
         print "Disable natlinkmain debug Callback output to messages of pythom macros window"
         self.config.disableDebugCallbackOutput()
 
+
+
     def help_x(self):
         print '-'*60
         print \
@@ -714,12 +749,76 @@ Cannot load compatibility module support (GUID=
 If that happens, simply reregister with the -r option.
 """% self.config.NATLINK_CLSID
         print '='*60
-
-    do_registernatlink = do_r
-    do_unregisternatlink = do_R
-    help_registernatlink = help_r
-    help_unregisternatlink = help_r
     help_R = help_r
+
+    def enableVocolaUnimacroActions(self):
+        """setting registry  unimacro actions can be used in vocola
+
+        """
+        key = "VocolaTakesUnimacroActions"
+        self.userregnl[key] = 1
+        
+
+    def disableVocolaUnimacroActions(self):
+        """disables unimacro actions can be used in vocola
+        """
+        key = "VocolaTakesUnimacroActions"
+        self.userregnl[key] = 0
+
+
+    # different Vocola options
+    def do_b(self, arg):
+        print "Enable Vocola different user directory's for different languages"
+        self.config.enableVocolaTakesLanguages()
+    def do_B(self, arg):
+        print "Disable Vocola different user directory's for different languages"
+        self.config.disableVocolaTakesLanguages()
+
+    def help_b(self):
+        print '-'*60
+        print \
+"""Enable (b)/disable (B) different user directory's
+
+If enabled, vocola will look into a subdirectory "xxx" of
+VocolaUserDirectory IF the language code of 
+the user speech profiles is different from "enx".
+
+So for English users this option will have no effect.
+
+If for the first time commands are opened in for example a
+Dutch speech profile (language code "nld") a subdirectory "nld" 
+is made and all vocola user files are copied into this folder.
+"""
+        print '='*60
+
+    help_B = help_b
+
+    def do_a(self, arg):
+        print "Enable Vocola taking unimacro actions"
+        self.config.enableVocolaUnimacroActions()
+    def do_A(self, arg):
+        print "Disable Vocola taking unimacro actions"
+        self.config.disableVocolaUnimacroActions()
+
+    def help_a(self):
+        print '-'*60
+        print \
+"""Enable (a)/disable (A) the use of unimacro actions.
+
+This will only have the effect when unimacro is also on,
+meaning the userDirectory of natlink points to the unimacro
+grammar files.
+
+Two things can done then:
+-use unimacro shorthand commands like W(), BRINGUP() etc
+-use meta actions like <<fileopen>> etc
+
+Currency needs the include file usc.vsh to work
+"""
+        
+
+
+    # enable/disable natlink debug output...
 
 
     def default(self, line):

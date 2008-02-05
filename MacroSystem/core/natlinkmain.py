@@ -229,7 +229,7 @@ def loadFile(modName,searchPath,origName=None):
         return fndName
     except:
         fndFile.close()
-        sys.stderr.write( 'Error loading '+modName+' from '+fndName+'\n' )
+        sys.stderr.write('Error loading '+modName+' from '+fndName+'\n' )
         traceback.print_exc()
         return None
 
@@ -458,8 +458,11 @@ def changeCallback(type,args):
         unloadEverything()
 ## this is not longer needed here, as we fixed the userDirectory
 ##        changeUserDirectory()
-        language = status.getLanguage(DNSuserDirectory)
-        BaseModel, BaseTopic = status.getBaseModelBaseTopic(DNSuserDirectory)
+        status.setUserInfo(args)
+        language = status.getLanguage()
+        if debugCallback:
+            print 'usercallback, language: %s'% language
+        BaseModel, BaseTopic = status.getBaseModelBaseTopic()
         # changed next two lines QH:
         findAndLoadFiles()        
         beginCallback(moduleInfo, checkAll=1)

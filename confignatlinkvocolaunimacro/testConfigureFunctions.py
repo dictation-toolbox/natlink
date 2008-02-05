@@ -460,6 +460,27 @@ class TestConfigureFunctions(unittest.TestCase):
         self.checkUserregnl(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
         
 
+    # Testing addition vocola options
+    def test_enableDisableExtraVocolaOptions(self):
+        """This option should set and cleared the settings for additional vocola options
+        """
+        key = "VocolaTakesLanguages"
+        cli = natlinkconfigfunctions.CLI()
+        cli.do_b("dummy")
+        
+        self.checkUserregnl(key, 1, "setting vocola takes languages")
+        cli.do_B("dummy")
+        self.checkUserregnl(key, 0, "clearing vocola takes languages")
+
+        key = "VocolaTakesUnimacroActions"
+        cli = natlinkconfigfunctions.CLI()
+        cli.do_a("dummy")
+        
+        self.checkUserregnl(key, 1, "setting vocola takes unimacro actions")
+        cli.do_A("dummy")
+        self.checkUserregnl(key, 0, "clearing vocola takes unimacro actions")
+
+
         
         
 ##    def test_RegistrySettings(self):

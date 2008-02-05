@@ -11,7 +11,15 @@ import string
 ConversionError = "Conversion Error"
 DragonError     = "Dragon Error"
 
+import natlinkstatus
+status = natlinkstatus.NatlinkStatus()
 
+useUnimacroActions = status.getVocolaTakesUnimacroActions()
+if useUnimacroActions:
+    try:
+        import actions
+    except ImportError:
+        useUnimacroActions = None
 
 # The UserCall class represents a Vocola user function call.  Vocola's
 # generated Python code uses this class to build up a string
@@ -78,7 +86,11 @@ class Value:
     def perform(self):
         for value in self.values:
             if type(value) is StringType:
-                natlink.playString(value)
+
+                if useUnimacroActions:     
+                    actions.doAction(value)   # intercept unimacro functions!!
+                else:
+                    natlink.playString(value)
             elif value.__class__.__name__ == 'DragonCall':
                 value.perform()
 
