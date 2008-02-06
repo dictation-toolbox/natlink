@@ -305,7 +305,7 @@ def findAndLoadFiles(curModule=None):
 
     # if present, load _vocola_main first, it can generate grammar files
     # before proceeding:
-    vocolaEnabled = (doVocolaFirst and VocolaUserDirectory and doVocolaFirst+'.py' in baseDirFiles)
+    vocolaEnabled = (doVocolaFirst and doVocolaFirst+'.py' in baseDirFiles)
     if debugLoad:
         print 'vocolaEnabled: %s'% vocolaEnabled
     if vocolaEnabled and not vocolaIsLoaded:
@@ -399,7 +399,7 @@ def beginCallback(moduleInfo, checkAll=None):
         print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
               (cbd, checkAll, checkForGrammarChanges)
     # maybe should be 1...
-    if getCallbackDepth() > 2:
+    if getCallbackDepth() > 1:
         return
     t0 = time.time()
     

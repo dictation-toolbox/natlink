@@ -4,6 +4,15 @@
 The functions below are put into the class NatlinkStatus. The natlinkconfigfunctions
 can subclass this class.
 
+
+The following  functions manage information that changes at changeCallback time
+(when a new user opens)
+
+setUserInfo(args) put username and directory of speech profiles of the last opened user in this class.
+getUsername: get active username (only if NatSpeak/natlink is running)
+getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/natlink is running)
+
+
 The functions below should not change anything in settings, only  get information.
 
 getDNSInstallDir:
