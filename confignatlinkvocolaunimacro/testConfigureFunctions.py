@@ -428,15 +428,15 @@ class TestConfigureFunctions(unittest.TestCase):
         cli = natlinkconfigfunctions.CLI()
         old = self.Userregnl.get(key, None)
         # not a valid folder:
-        cli.do_u("notAValidFolder")
+        cli.do_n("notAValidFolder")
         self.checkUserregnl(key, old, "%s, nothing should be changed yet"% testName)
 
         # change userdirectory
-        cli.do_u(self.tmpTest)
+        cli.do_n(self.tmpTest)
         self.checkUserregnl(key, self.tmpTest, "%s, UserDirectory should be changed now"% testName)
 
         # now clear:
-        cli.do_U("dummy")
+        cli.do_N("dummy")
         self.checkUserregnl(key, None, "%s UserDirectory should be cleared now"% testName)
         
 
@@ -501,7 +501,7 @@ class TestConfigureFunctions(unittest.TestCase):
 ##
 
 def _run():
-    unittest.main()
+     unittest.main()
     
 
 if __name__ == "__main__":

@@ -26,12 +26,12 @@ This can be done in three ways:
 
 Afterwards can be set:
 
-DNSInstallDirectory
+DNSInstallDir
     - if not found in one of the predefined subfolders of %PROGRAMFILES%,
       this directory can be set in HKCU\Software\Natlink.
       Functions: setDNSInstallDir(path) (d path) and clearDNSInstallDir() (D)
       
-DNSIniDirectory
+DNSIniDir
     - if not found in one of the subfolders of %COMMON_APPDATA%
       where they are expected, this one can be set in HKCU\Software\Natlink.
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
@@ -447,7 +447,8 @@ class CLI(cmd.Cmd):
     """
     def __init__(self):
         cmd.Cmd.__init__(self)
-        self.prompt = 'config > '
+        self.prompt = 'natlink config> '
+        self.info = 'type u for usage'#<CURSOR
         self.config = NatlinkConfig()
 
     def usage(self):
@@ -467,7 +468,7 @@ c/C - set/clear dnsinidir, the directory where NatSpeak ini files are located
 
 e/E - enable/disable natlink
 
-u/U - set/clear userdirectory, the directory of the user grammar files of natlink (eg unimacro)
+n/N - set/clear userdirectory, the directory of the user grammar files of natlink (eg unimacro)
 
 v/V - set/clear vocoloauserdir, the user directory for vocola user files. This also
       enables/disables vocola
@@ -481,7 +482,7 @@ y/Y - enable/disable debug callback output of natlinkmain (keep at 0 (Y) normall
 a/A - enable/disable unimacro actions in vocola
 b/B - enable/disable distinction between languages for vocola user files
 
-usage - give this list
+u/usage - give this list
 q   - quit
 help command: give more explanation on command
         """
@@ -489,25 +490,29 @@ help command: give more explanation on command
 
     # info----------------------------------------------------------
     def do_i(self, arg):
-        self.config.printStatusDict()
-
-    def help_i(self):
-        print "The command info (i) gives an overview of the settings that are currently set"
-        print "inside the natlink system"
-
+        S = self.config.getNatlinkStatusString()
+        S = S + '\n\nIf you changed things, you must restart NatSpeak'
+        print S
     def do_I(self, arg):
         # registry settings:
         self.config.printRegistrySettings()
 
-    def help_I(self):
+    def help_i(self):
         print \
-"""The command reginfo (I) gives all the registry settings
+"""The command info (i) gives an overview of the settings that are
+currently set inside the natlink system
+
+The command reginfo (I) gives all the registry settings
 that are used by the natlink system (HKCU\Software\Natlink)
 
-They are set by either the natlink/vocola/unimacro installer or by
-functions inside this module and this CLI. All calls of the configure GUI
-go through CLI calls
+They are set by either the natlink/vocola/unimacro installer
+or by functions that are called by the CLI (command line interface).
+
+Settings and registry settings are only "refreshed" into natlink after
+you restart NatSpeak.
 """
+        print '='*60
+    help_I = help_i
 
     # DNS install directory------------------------------------------
     def do_d(self, arg):
@@ -523,24 +528,25 @@ go through CLI calls
         else:
             print 'not a valid folder: %s'% arg
     
-    def help_d(self):
-        print "Set the directory where natspeak is installed, in case"
-        print "the normal place(s) cannot find it"
-        print "normally not needed, only if natspeak is installed on an unexpected location"
 
     def do_D(self, arg):
         print "Clear NatSpeak directory in registry"
         self.config.clearDNSInstallDir()
-    
-    def help_D(self):
-        print "Clears the registry entry where of the directory where natspeak is installed."
-        print "Natlink will again search for NatSpeak install directory in the normal place(s)"
 
-    do_setdnsinstalldir = do_d
-    do_cleardnsinstalldir = do_D
-    help_setdnsinstalldir = help_d
-    help_cleardnsinstalldir = help_D
+    def help_d(self):
+        print \
+"""Set (d path) or clear (D) the directory where natspeak is installed.
 
+Setting is only needed when NatSpeak is not found at one of the "normal" places.
+So setting is often not needed.
+
+When you have a pre-8 version of NatSpeak, setting this option might work.
+
+After you clear this setting, Natlink will, at starting time, again
+search for the NatSpeak install directory in the "normal" place(s).
+"""
+        print '='*60
+    help_D = help_d
 
     # DNS ini directory-----------------------------------------
     def do_c(self, arg):
@@ -556,27 +562,28 @@ go through CLI calls
         else:
             print 'not a valid folder: %s'% arg
     
-    def help_c(self):
-        print "Set the directory where natspeak ini file locations"
-        print " (nssystem.ini and nsapps.ini) are located."
-        print "Only needed if they cannot be found in the normal place(s)"
+
 
     def do_C(self, arg):
             print "Clear NatSpeak Ini files directory in registry"
             self.config.clearDNSIniDir()
+    def help_c(self):
+        print \
+"""Set (c path) of clear (C) the directory where natspeak ini file locations
+(nssystem.ini and nsapps.ini) are located.
+
+Only needed if these cannot be found in the normal place(s):
+-if you have an "alternative" place where you keep your speech profiles
+-if you have a pre-8 version of NatSpeak.
+
+After Clearing this registry entry Natlink will, when it is started by NatSpeak,
+again search for its ini files in the "default/normal" place(s).
+"""
+        print '='*60
+    help_C = help_c
     
-    def help_C(self):
-        print "Clears the registry entry that holds the directory of the"
-        print "natspeak ini (configuration) files. After it is cleared,"
-        print "Natlink will again search for its ini files in the default/normal place(s)"
-
-    do_setdnsinstalldir = do_c
-    do_cleardnsinstalldir = do_C
-    help_setdnsinstalldir = help_c
-    help_cleardnsinstalldir = help_C
-
     # User Directories -------------------------------------------------
-    def do_u(self, arg):
+    def do_n(self, arg):
         if not arg:
             print 'also enter a valid folder'
             return
@@ -589,24 +596,25 @@ go through CLI calls
         else:
             print 'not a valid folder: %s'% arg
     
-    def help_u(self):
-        print "Sets the user directory of natlink."
-        print "This will often be the folder where unimacro is located."
-
-    def do_U(self, arg):
+    def do_N(self, arg):
         print "Clears Natlink User Directory"
         self.config.clearUserDirectory()
     
-    def help_U(self):
-        print "Clears the registry entry that holds the Natlink User Directory"
-        print "After it is cleared, natlink will only look for grammars in"
-        print "the base directory, where normally Vocola is installed."
+    def help_n(self):
+        print \
+"""Sets (n) or clears (N) the user directory of natlink.
+This will often be the folder where unimacro is located.
 
-    do_setnatlinkuserdir = do_u
-    do_clearnatlinkuserdir = do_U
-    help_setnatlinkuserdir = help_u
-    help_clearnatlinkuserdir = help_U
-    
+When you clear this registry entry you probably disable unimacro, as
+unimacro is located in the natlink user directory.
+
+Vocola will still be on, BUT not with possibilities to use
+unimacro shorthand commands and met actions.
+"""
+        print '='*60
+
+    help_N = help_n
+        
     # enable natlink------------------------------------------------
     def do_e(self, arg):
         print "Enable natlink"
@@ -666,6 +674,8 @@ Vocola is meant to be user with a VocolaUserDirectory. Therefore natlinkmain wil
 enable Vocola if no VocolaUserDirectory is set.
 
 """
+        print '='*60
+
     help_V = help_v
 
     # enable/disable natlink debug output...
@@ -777,7 +787,7 @@ If that happens, simply reregister with the -r option.
     def help_b(self):
         print '-'*60
         print \
-"""Enable (b)/disable (B) different user directory's
+"""Enable (b)/disable (B) different vocola user directory's
 
 If enabled, vocola will look into a subdirectory "xxx" of
 VocolaUserDirectory IF the language code of 
@@ -815,8 +825,8 @@ Two things can done then:
 
 Currency needs the include file usc.vsh to work
 """
-        
-
+        print '='*60
+    help_A = help_a
 
     # enable/disable natlink debug output...
 
@@ -830,11 +840,17 @@ Currency needs the include file usc.vsh to work
 
     def do_quit(self, arg):
         sys.exit()
-
-    # shortcuts:
-
     do_q = do_quit
-
+    def do_usage(self, arg):
+        self.usage()
+    do_u = do_usage
+    def help_u(self):
+        print \
+"""u and usage give the list of commands
+lowercase commands usually set/enable something
+uppercase commands usually clear/disable something
+Informational commands: i and I
+"""
     
     
         
@@ -842,7 +858,11 @@ if __name__ == "__main__":
     import sys
     if len(sys.argv) == 1:
       cli = CLI()
-      cli.cmdloop()
+      cli.info = "type u for usage"
+      try:
+          cli.cmdloop()
+      except (KeyboardInterrupt, SystemExit):
+          pass
     else:
       _main()
 

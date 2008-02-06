@@ -322,6 +322,22 @@ class NatlinkStatus(object):
         else:
             print 'NatlinkIsEnabled: should not come here...'
 
+    def VocolaIsEnabled(self):
+        vocDir = self.getVocolaUserDirectory()
+        if vocDir:
+            return 1
+
+    def UnimacroIsEnabled(self):
+        """UnimacroIsEnabled: see if userDirectory is there and
+
+        _control.py is in this directory
+        """
+        userDir = self.getUserDirectory()
+        if userDir and os.path.isdir(userDir):
+            files = os.listdir(userDir)
+            if '_control.py' in files:
+                return 1
+
     def getUserDirectory(self):
         """return the path to the Natlink user directory
 
@@ -377,6 +393,11 @@ class NatlinkStatus(object):
             BaseTopic = "not found in ini files"
     ##    basetopics = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\topics.ini" )
 
+    def getBaseModel(self):
+        return self.getBaseModelBaseTopic()[0]
+    def getBaseTopic(self):
+        return self.getBaseModelBaseTopic()[1]
+
 
     def getLanguage(self):
         """this can only be run if natspeak is running
@@ -429,42 +450,135 @@ class NatlinkStatus(object):
         key = 'VocolaTakesUnimacroActions'
         value = self.userregnl.get(key, None)
         if value:
-            userDirectory = self.getUserDirectory()
-            if userDirectory and os.path.isdir(userDirectory):
+            if self.UnimacroIsEnabled():
                 return value
+
+    def getNatlinkStatusDict(self):
+        """return actual status in a dict"""
+        D = {}
+        for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
+                    'DNSIniDir', 'WindowsVersion', 'DNSVersion',
+                    'PythonVersion', 'userDirectory',
+                    'DebugLoad', 'DebugCallback',
+                    'VocolaTakesLanguages', 'VocolaTakesUnimacroActions']:
+##                    'BaseTopic', 'BaseModel']:
+            keyCap = key[0].upper() + key[1:]
+            execstring = "D['%s'] = self.get%s()"% (key, keyCap)
+            exec(execstring)
+        D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
+        D['vocolaIsEnabled'] = self.VocolaIsEnabled()
+        D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
+        return D
+        
+    def getNatlinkStatusString(self):
+        L = []
+        D = self.getNatlinkStatusDict()
+        if D['userName']:
+            L.append('user speech profile:')
+            self.appendAndRemove(L, D, 'userName')
+            self.appendAndRemove(L, D, 'DNSuserDirectory')
+        else:
+            del D['userName']
+            del D['DNSuserDirectory']
+        # natlink::
+        if D['natlinkIsEnabled']:
+            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is enabled")
+            ## vocola::
+            if D['vocolaIsEnabled']:
+                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is enabled")
+                for key in ('VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
+                    self.appendAndRemove(L, D, key)
+            else:
+                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is disabled")
+                for key in ('VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
+                    del D[key]
+                    
+            ## unimacro or userDirectory:
+            if D['unimacroIsEnabled']:
+                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---unimacro is enabled")
+                for key in ('userDirectory',):
+                    self.appendAndRemove(L, D, key)
+            else:
+                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---unimacro is disabled")
+                if D['userDirectory']:
+                    L.append('but userDirectory is defined:')
+                    for key in ('userDirectory',):
+                        self.appendAndRem.ove(L, D, key)
+                else:
+                    del D['userDirectory']
+            ## remaining natlink options:
+            L.append('other natlink info:')
+            for key in ('DebugLoad', 'DebugCallback'):
+                self.appendAndRemove(L, D, key)
+    
+        else:
+            # natlink disabled:
+            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is disabled")
+            for key in ['DebugLoad', 'DebugCallback',
+                    'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
+                    'vocolaIsEnabled']:
+                del D[key]
+        # system:
+        L.append('system information:')
+        for key in ['DNSInstallDir',
+                    'DNSIniDir', 'DNSVersion',
+                    'WindowsVersion', 'PythonVersion']:
+            self.appendAndRemove(L, D, key)
+
+        # forgotten???
+        if D:
+            L.append('remaining information:')
+            for key in D.keys():
+                self.appendAndRemove(L, D, key)
+
+        return '\n'.join(L)
+
+            
+    def appendAndRemove(self, List, Dict, Key, text=None):
+        if text:
+            List.append(text)
+        else:
+            List.append("\t%s\t%s"% (Key,Dict[Key]))
+        del Dict[Key]
+##            
+##
+##        
+##        D['userName'] = self.getUserName()
+##        D['DNSuserDirectory'] = 
+##        userName = status.getUserName()
+##        if userName:
+##            print 'user name DNS: %s'% userName
+##            print 'user speech profile in: %s'% status.getDNSuserDirectory()
+##        else:
+##            print 'no user name, DNS not running?'
+##        print
+##        
+##        print 'DNS Install Dir: %s'% status.getDNSInstallDir()
+##        print 'DNS Ini Dir: %s'% status.getDNSIniDir()
+##        print 'Windows version: %s'% status.getWindowsVersion()
+##        print 'DNS version: (integer) %s'% status.getDNSVersion()
+##        print 'Python version: %s'% status.getPythonVersion()
+##
+##        print
+##        
+##        nlenabled = status.NatlinkIsEnabled()
+##        if nlenabled:
+##            print 'Natlink is enabled...'
+##        elif nlenabled == 0:
+##            print 'Natlink is NOT enabled'
+##        else:
+##            print 'Strange result in function NatlinkIsEnabled: %s'% nlenabled
+##
+##        print '(Natlink) userDir: %s'% status.getUserDirectory()
+##        print 
+##        print 'extra output natlinkmain at load time: %s'% status.getDebugLoad()    
+##        print 'extra output natlinkmain at callback time: %s'% status.getDebugCallback()
+##        print
+##        print 'vocola makes  distinction between languages: %s'% status.getVocolaTakesLanguages()
+##        print 'vocola takes unimacro actions: %s'% status.getVocolaTakesUnimacroActions()
+        
 
 
 if __name__ == "__main__":
     status = NatlinkStatus()
-    userName = status.getUserName()
-    if userName:
-        print 'user name DNS: %s'% userName
-        print 'user speech profile in: %s'% status.getDNSuserDirectory()
-    else:
-        print 'no user name, DNS not running?'
-    print
-    
-    print 'DNS Install Dir: %s'% status.getDNSInstallDir()
-    print 'DNS Ini Dir: %s'% status.getDNSIniDir()
-    print 'Windows version: %s'% status.getWindowsVersion()
-    print 'DNS version: (integer) %s'% status.getDNSVersion()
-    print 'Python version: %s'% status.getPythonVersion()
-
-    print
-    
-    nlenabled = status.NatlinkIsEnabled()
-    if nlenabled:
-        print 'Natlink is enabled...'
-    elif nlenabled == 0:
-        print 'Natlink is NOT enabled'
-    else:
-        print 'Strange result in function NatlinkIsEnabled: %s'% nlenabled
-
-    print '(Natlink) userDir: %s'% status.getUserDirectory()
-    print 
-    print 'extra output natlinkmain at load time: %s'% status.getDebugLoad()    
-    print 'extra output natlinkmain at callback time: %s'% status.getDebugCallback()
-    print
-    print 'vocola makes  distinction between languages: %s'% status.getVocolaTakesLanguages()
-    print 'vocola takes unimacro actions: %s'% status.getVocolaTakesUnimacroActions()
-    
+    print status.getNatlinkStatusString()
