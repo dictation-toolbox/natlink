@@ -70,7 +70,7 @@ getVocolaTakesUnimacroActions
 getVocolaTakesLanguages: additional settings for vocola
 """
 
-import os, re, win32api, win32con
+import os, re, win32api, win32con, sys
 import RegistryDict, natlinkcorefunctions
 # for getting generalised env variables:
 

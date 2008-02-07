@@ -7,6 +7,7 @@
 #   Base module for the Python-based command and control subsystem
 #
 # Febr 2008 (QH)
+#   - userDirectory inserted at front of sys.path (was appended)
 #   - made special arrangements for _vocola_main, so it calls back before
 #     anything else is done, see doVocolaFirst, vocolaModule and vocolaIsLoaded.
 #     These 3 variables control all. Moreover VocolaUserDirectory must be given,
@@ -87,12 +88,12 @@ debugCallback = status.getDebugCallback()
 #
 # This redirects stdout and stderr to a dialog box.
 #
+# bookkeeping for vocola:
 doVocolaFirst = '_vocola_main'
 vocolaIsLoaded = None  # 1 or None
 vocolaModule = None    # pointer to the module...
 
 reVocolaModuleName = re.compile(r'_vcl[0-9]?$')
-
 
 class NewStdout:
     softspace=1
@@ -182,8 +183,6 @@ loadedFiles = {}
 
 lastModule = ''
 
-
-VocolaUserDirectory = ''
 #
 # This function will load another Python module, usually one which the user
 # supplies.  This function will trap all execptions and report them so an
@@ -325,6 +324,8 @@ def findAndLoadFiles(curModule=None):
     if debugLoad: print 'filesToLoad: %s'% filesToLoad.keys()
     for x in filesToLoad:
         if x == doVocolaFirst: continue
+        # for safety, should not be needed, as vocola purges all generated
+        # grammar files at start, even if it does not load completely
         if not vocolaEnabled and reVocolaModuleName.search(x):
             if debugLoad:
                 print 'skipping %s, vocola not enabled'% x
@@ -385,11 +386,6 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
 # callback since that callback may be coming from code in the module we are
 # trying to reload (consider recognitionMimic).
 #
-def vocolaActive():
-    """active if grammar is loaded and VocolaUserDirectory exists
-    """
-    if doVocolaFirst in loadedFiles and VocolaUserDirectory:
-        return 1
 
 prevModInfo = None
 def beginCallback(moduleInfo, checkAll=None):
@@ -546,7 +542,6 @@ try:
     # get invariant variables:
     DNSversion = status.getDNSVersion()
     WindowsVersion = status.getWindowsVersion()
-    VocolaUserDirectory = status.getVocolaUserDirectory()
     
     # init things identical to when user changes:
     changeCallback('user', getCurrentUser())
