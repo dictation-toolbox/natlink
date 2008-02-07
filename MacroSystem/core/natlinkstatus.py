@@ -189,8 +189,10 @@ class NatlinkStatus(object):
         # first try if set (by configure dialog/natlinkinstallfunctions.py) if regkey is set:
         key = 'DNSIniDir'
         P = self.userregnl.get(key, '')
-        if P and os.path.isdir(P):
-            return P
+        if P:
+            os.path.normpath(P)
+            if os.path.isdir(P):
+                return P
         
         # first try in allusersprofile/'application data'
         allusersprofile = natlinkcorefunctions.getExtendedEnv('ALLUSERSPROFILE')
@@ -201,7 +203,7 @@ class NatlinkStatus(object):
                 nssystem = os.path.join(cand, self.NSSystemIni)
                 nsapps = os.path.join(cand, self.NSAppsIni)
                 if os.path.isfile(nssystem) and os.path.isfile(nsapps):
-                    return cand
+                    return os.path.normpath(cand)
         raise IOError("no valid DNS Install Dir found")
         
     def getDNSVersion(self):
@@ -247,8 +249,10 @@ class NatlinkStatus(object):
         """
         key = 'DNSInstallDir'
         P = self.userregnl.get(key, '')
-        if P and os.path.isdir(P):
-            return P
+        if P:
+            os.path.normpath(P)
+            if os.path.isdir(P):
+                return P
                 
         pf = natlinkcorefunctions.getExtendedEnv('PROGRAMFILES')
         if not os.path.isdir(pf):
@@ -258,7 +262,7 @@ class NatlinkStatus(object):
             if os.path.isdir(cand):
                 programfolder = os.path.join(cand, 'Program')
                 if os.path.isdir(programfolder):
-                    return cand
+                    return os.path.normpath(cand)
         raise IOError("no valid DNS Install Dir found")
 
 
@@ -269,14 +273,18 @@ class NatlinkStatus(object):
             r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE,"SOFTWARE\Python\PythonCore")
         except ValueError:
             return ''
-        return r.keys()[0]
+        version1 = r.keys()[0]
+        version2 = sys.version
+        if version1 != version2:
+            print 'ambiguous version, sys: %s, registry: %s'% (version2, version1)
+        return version1 or version2        
 
     def getNSSYSTEMIni(self):
         inidir = self.getDNSIniDir()
         if inidir:
             nssystemini = os.path.join(inidir, self.NSSystemIni)
             if os.path.isfile(nssystemini):
-                return nssystemini
+                return os.path.normpath(nssystemini)
         raise IOError("Cannot find proper NSSystemIni file")
                 
     def getNSAPPSIni(self):
@@ -284,7 +292,7 @@ class NatlinkStatus(object):
         if inidir:
             nsappsini = os.path.join(inidir, self.NSAppsIni)
             if os.path.isfile(nsappsini):
-                return nsappsini
+                return os.path.normpath(nsappsini)
         raise IOError("Cannot find proper NSAppsIni file")
 
 
@@ -347,7 +355,7 @@ class NatlinkStatus(object):
         value = self.userregnl.get(key, '')
         if value:
             if os.path.isdir(value):
-                return value
+                return os.path.normpath(value)
             else:
                 print '-'*60
                 print 'Invalid userDirectory (of natlink user grammar files, often unimacro): %s'% value
@@ -365,7 +373,7 @@ class NatlinkStatus(object):
         value = self.userregnl.get(key, '')
         if value:
             if os.path.isdir(value):
-                return value
+                return os.path.normpath(value)
             else:
                 print '-'*60
                 print 'Invalid VocolaUserDirectory (of vocola user files): %s'% value

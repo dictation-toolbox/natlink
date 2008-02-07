@@ -539,8 +539,10 @@ try:
     userDirectory = status.getUserDirectory()
     # for unimacro, in order to reach unimacro files to be imported:
     if not userDirectory in sys.path:
-        print 'add userDirectory: %s to sys.path!'% userDirectory
-        sys.path.append(userDirectory)
+        if debugLoad:
+            print 'insert userDirectory: %s to sys.path!'% userDirectory
+        sys.path.insert(0,userDirectory)
+        
     # get invariant variables:
     DNSversion = status.getDNSVersion()
     WindowsVersion = status.getWindowsVersion()
