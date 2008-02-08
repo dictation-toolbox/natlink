@@ -1,3 +1,5 @@
+
+
 NatLink
 	(c) Copyright 1997-1999 by Joel Gould.
 		Portions (c) Copyright 1997-1999 by Dragon Systems, Inc. All Rights Reserved.
@@ -27,6 +29,20 @@ NatLink
 Vocola
 	Copyright (c) 2002-2005 by Rick Mohr. It may be redistributed in any way as long as this copyright notice remains.
 
+Configurenatlinkunimacrovocola:
+	Copyright (c) 2008 by Rick Quintijn Hoogenboom. It may be redistributed in any way as long as this copyright notice remains.
+
+Unimacro (c)  2002-2008 Quintijn Hoogenboom, Ben Staniford, Bart Jan van Os
+	
+		"unimacro" is free software; you can redistribute it and/or modify
+		it under the terms of the GNU General Public License, see:
+		http://www.gnu.org/licenses/gpl.txt
+
+		"unimacro" is distributed in the hope that it will be useful, but
+		WITHOUT ANY WARRANTY; See the GNU General Public License details.
+
+"unimacro" makes use of another SourceForge project "natlink",
+which has the copyright notice shown above.
 
 -----------------------------------
 
