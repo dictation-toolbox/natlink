@@ -43,13 +43,13 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-        print 'baseFolder from argv: %s'% baseFolder
+##        print 'baseFolder from argv: %s'% baseFolder
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print 'baseFolder from __file__: %s'% baseFolder
+##        print 'baseFolder from __file__: %s'% baseFolder
     if not baseFolder:
         baseFolder = os.getcwd()
-        print 'baseFolder was empty, take wd: %s'% baseFolder
+##        print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder
 
 # report function:

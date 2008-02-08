@@ -275,9 +275,19 @@ class NatlinkStatus(object):
             return ''
         version1 = r.keys()[0]
         version2 = sys.version
-        if version1 != version2:
-            print 'ambiguous version, sys: %s, registry: %s'% (version2, version1)
-        return version1 or version2        
+        if version2.startswith(version1):
+            return version1
+        
+        print 'ambiguous version, sys: %s, registry: %s'% (version2, version1)
+        version = version2[:2]
+        print 'use %s'% version
+        return version
+
+    def getCoreDirectory(self):
+        """return this directory
+        """
+        return natlinkcorefunctions.getBaseFolder()
+    
 
     def getCoreDirectory(self):
         """return this directory
@@ -473,7 +483,8 @@ class NatlinkStatus(object):
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion', 'userDirectory',
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
-                    'VocolaTakesLanguages', 'VocolaTakesUnimacroActions']:
+                    'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
+                    'VocolaUserDirectory']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
             execstring = "D['%s'] = self.get%s()"% (key, keyCap)
@@ -504,11 +515,12 @@ class NatlinkStatus(object):
             ## vocola::
             if D['vocolaIsEnabled']:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is enabled")
-                for key in ('VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
+                for key in ('VocolaUserDirectory','VocolaTakesLanguages',
+                            'VocolaTakesUnimacroActions'):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is disabled")
-                for key in ('VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
+                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
                     del D[key]
                     
             ## unimacro or userDirectory:
