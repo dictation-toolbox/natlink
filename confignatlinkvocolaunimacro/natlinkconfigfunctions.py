@@ -200,12 +200,19 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         L.append("If you want the new settings, (re)register natlink.dll (r)")
         L.append("And rerun this program...")
         L.append("Close NatSpeak and all other python applications before rerunning this program")
+        self.message(L)
+        
             
     def message(self, text):
         """prints message, can be overloaded in configureGUI
         """
+        if isinstance(text, basestring):
+            T = text
+        else:
+            # list probably:
+            T = '\n'.join(text)
         print '-'*60
-        print text
+        print T
         print '='*60
         
         
