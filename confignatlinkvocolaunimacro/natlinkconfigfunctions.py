@@ -102,6 +102,17 @@ def getCoreDir(thisDir):
         print 'natlinkstatus.py not found in core directory: %s'% coreFolder
         return thisDir
     return coreFolder
+def fatal_error(message, new_raise=None):
+    """prints a fatal error when running this module"""
+    print 'natlinkconfigfunctions fails because of fatal error:'
+    print message
+    print
+    print 'This can (hopefully) be solved by (re)installing natlink'
+    print 
+    if new_raise:
+        raise new_raise
+    else:
+        raise
 #-----------------------------------------------------
 
 import os, sys, win32api
@@ -111,11 +122,11 @@ if thisDir == coreDir:
     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(coreDir) in sys.path:
-    print 'appending %s to pythonpath...'% coreDir
-    sys.path.append(coreDir)
+    print 'inserting %s to pythonpath...'% coreDir
+    sys.path.insert(0, coreDir)
 
 # from core directory, use registry entries from CURRENT_USER/Software/Natlink:
-import natlinkstatus, natlinkcorefunctions
+import natlinkstatus, natlinkcorefunctions, RegistryDict
 
 import os, os.path, sys, getopt, cmd, types, string, win32con
 
@@ -125,29 +136,79 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     userregnl got from natlinkstatus, as a Class (not instance) variable, so
     should be the same among instances of this class...
     """
-    def getStatusDict(self):
-        """get the relevant variables from natlinkstatus, return in a dict"""
-        
-        D = {}
-        D['DNSInstallDir'] = self.getDNSInstallDir()
-        D['DNSIniDir'] = self.getDNSIniDir()
-        D['DNSVersion'] = self.getDNSVersion()      # integer!
-        D['WindowsVersion'] = self.getWindowsVersion()
-        D['userDirectory'] = self.getUserDirectory()
-        D['VocolaUserDirectory'] = self.getVocolaUserDirectory()
-        
-        return D    
+    def checkPythonPathAndRegistry(self):
+        """checks if core directory and base directory are there
 
-    def printStatusDict(self):
-        """print the relevant variables from natlinkstatus"""
-        D = self.getStatusDict()
-        Keys = D.keys()
-        Keys.sort()
-        for k in Keys:
-            if D[k]:
-                print '%s\t%s'% (k, D[k])
-            else:
-                print '%s\t%s'% (k, '(empty)')
+        1. in the sys.path
+        2. in the registry keys of HKLM\SOFTWARE\Python\PythonCore\2.3\PythonPath\NatLink
+
+        If this last key is not there or empty
+        ---set paths of baseDirectory and coreDirectory
+        ---register natlink.dll
+        It is probably the first time to run this program.
+
+        If the settings are conflicting, either
+        ---you want to reconfigure natlink in a new place (these direcotories)
+        ---you ran this program from a wrong place, exit and start again from the correct directory
+
+        """
+        version = self.getPythonVersion()
+        if not version:
+            fatal_error("no valid python version available")
+        pythonPathSection = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% version
+        lmPythonPath = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSection)
+        coreDir2 = self.getCoreDirectory()
+        if coreDir2 != coreDir:
+            fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
+                                              (coreDir, coreDir2))
+
+        baseDir = os.path.join(coreDir, '..')
+
+        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
+##        if lmPythonPath:
+##            print 'lmPythonPath: ', lmPythonPath.keys()
+        if not 'NatLink' in lmPythonPath:
+            # first time install, silently register
+            self.registerNatlinkDll(silent=1)
+            return 1
+        lmNatlinkPath = lmPythonPath['NatLink']
+        Keys = lmNatlinkPath.keys()
+        if not Keys:
+            # first time install Section is there, but apparently empty
+            self.registerNatlinkDll(silent=1)
+            return 1
+        if Keys != [""]:
+            if '' in Keys:
+                Keys.remove("")
+            fatal_error("The registry section of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\%s\ncontains invalid keys: %s, remove them with the registry editor (regedit)\nAnd rerun this program"%
+                        (pythonPathSection+r'\NatLink', Keys))
+            
+
+        # now section has default "" key, proceed:            
+        oldPathString = lmNatlinkPath[""]
+        if not oldPathString:
+            # empty setting, silently register
+            self.registerNatlinkDll(silent=1)
+            return 1
+            
+        if oldPathString == pathString:
+            return 1 # OK
+        L = []
+        L.append("PythonPath for Natlink does not match in registry with what this program expects")
+        L.append("---settings in Registry: %s"% oldPathString)
+        L.append("---wanted settings: %s" % pathString)
+        L.append("If you want the new settings, (re)register natlink.dll (r)")
+        L.append("And rerun this program...")
+        L.append("Close NatSpeak and all other python applications before rerunning this program")
+            
+    def message(self, text):
+        """prints message, can be overloaded in configureGUI
+        """
+        print '-'*60
+        print text
+        print '='*60
+        
+        
 
     def printRegistrySettings(self):
         print "CURRENT_USER\\Natlink registry settings:"
@@ -297,11 +358,22 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if silent, do through win32api, and not report. This is done whenever natlink is enabled.
 
         if NOT silent, go through os.system, and produce a message window.
+
+        Also sets the pythonpath in the HKLM pythonpath section        
         """
+        version = self.getPythonVersion()
+        if not version:
+            fatal_error("no valid python version available")
+        lmPythonPath = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE,
+                                       r"SOFTWARE\Python\PythonCore\%s\PythonPath"% version)
         DllPath = os.path.join(coreDir, "natlink.dll")
         if not os.path.isfile(DllPath):
             fatal_error("Dll file not found in core folder: %s"% DllPath)
-            
+
+        baseDir = os.path.join(coreDir, '..')
+
+        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
+        lmPythonPath['NatLink']  = {'': pathString}
         if silent:
             try:
                 import win32api
@@ -450,6 +522,7 @@ class CLI(cmd.Cmd):
         self.prompt = 'natlink config> '
         self.info = 'type u for usage'#<CURSOR
         self.config = NatlinkConfig()
+        self.config.checkPythonPathAndRegistry()
 
     def usage(self):
         """gives the usage of the command line options or options when
