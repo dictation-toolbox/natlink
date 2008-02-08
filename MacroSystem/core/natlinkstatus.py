@@ -279,6 +279,11 @@ class NatlinkStatus(object):
             print 'ambiguous version, sys: %s, registry: %s'% (version2, version1)
         return version1 or version2        
 
+    def getCoreDirectory(self):
+        """return this directory
+        """
+        return natlinkcorefunctions.getBaseFolder()
+
     def getNSSYSTEMIni(self):
         inidir = self.getDNSIniDir()
         if inidir:
@@ -467,7 +472,7 @@ class NatlinkStatus(object):
         for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion', 'userDirectory',
-                    'DebugLoad', 'DebugCallback',
+                    'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
@@ -489,8 +494,13 @@ class NatlinkStatus(object):
             del D['userName']
             del D['DNSuserDirectory']
         # natlink::
+        
         if D['natlinkIsEnabled']:
             self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is enabled")
+            key = 'CoreDirectory'
+            self.appendAndRemove(L, D, key)
+            
+
             ## vocola::
             if D['vocolaIsEnabled']:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is enabled")
@@ -522,6 +532,8 @@ class NatlinkStatus(object):
         else:
             # natlink disabled:
             self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is disabled")
+            key = 'CoreDirectory'
+            self.appendAndRemove(L, D, key)
             for key in ['DebugLoad', 'DebugCallback',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'vocolaIsEnabled']:
