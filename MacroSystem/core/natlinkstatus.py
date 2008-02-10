@@ -280,7 +280,7 @@ class NatlinkStatus(object):
         
         print 'ambiguous version, sys: %s, registry: %s'% (version2, version1)
         version = version2[:2]
-        print 'use %s'% version
+        print 'use version %s'% version
         return version
 
     def getCoreDirectory(self):
