@@ -142,7 +142,6 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
 
     item28 = wx.StaticBox( parent, -1, "Natlink" )
     item27 = wx.StaticBoxSizer( item28, wx.VERTICAL )
-    parent.boxSizerNatlink = item27
     
     item29 = wx.FlexGridSizer( 0, 3, 0, 0 )
     item29.AddGrowableCol( 1 )
@@ -175,7 +174,6 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
 
     item38 = wx.StaticBox( parent, -1, "Vocola" )
     item37 = wx.StaticBoxSizer( item38, wx.VERTICAL )
-    parent.boxSizerVocola = item37
     
     item39 = wx.FlexGridSizer( 0, 3, 0, 0 )
     item39.AddGrowableCol( 2 )
@@ -214,7 +212,6 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
 
     item50 = wx.StaticBox( parent, -1, "Unimacro" )
     item49 = wx.StaticBoxSizer( item50, wx.VERTICAL )
-    parent.boxSizerUnimacr = item49
     
     item51 = wx.FlexGridSizer( 0, 3, 0, 0 )
     item51.AddGrowableCol( 2 )
@@ -254,7 +251,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item62 = wx.Button( parent, ID_BUTTONunregister, "unRegister natlink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item60.Add( item62, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item63 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, [20,-1], 0 )
+    item63 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
     item60.Add( item63, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item64 = wx.Button( parent, ID_BUTTONUndo, "Undo", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -263,7 +260,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item65 = wx.Button( parent, ID_BUTTONClose, "Close", wx.DefaultPosition, wx.DefaultSize, 0 )
     item60.Add( item65, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item66 = wx.Button( parent, ID_BUTTONHelp5, "Help-&5", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item66 = wx.Button( parent, ID_BUTTONHelp5, "Help-5", wx.DefaultPosition, wx.DefaultSize, 0 )
     item60.Add( item66, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
     item58.Add( item60, 0, wx.FIXED_MINSIZE|wx.ALIGN_CENTER|wx.ALL|wx.SHAPED, 5 )
