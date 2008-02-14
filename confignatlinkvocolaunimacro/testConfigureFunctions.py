@@ -1,3 +1,17 @@
+#
+# Python Macro Language for Dragon NaturallySpeaking
+#   (c) Copyright 1999 by Joel Gould
+#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
+#
+# testConfigureFunctions
+#   This module tests a lot of the configure things, but
+#   regrettably not all.
+#
+#  (C) Copyright Quintijn Hoogenboom, February 2008
+#
+#----------------------------------------------------------------------------
+
+
 import sys, unittest, win32api, os, win32con, copy, shutil
 import natlinkconfigfunctions, natlinkstatus
 reload(natlinkconfigfunctions)

@@ -534,7 +534,7 @@ try:
     # get the current user information from the natlink module
     userDirectory = status.getUserDirectory()
     # for unimacro, in order to reach unimacro files to be imported:
-    if not userDirectory in sys.path:
+    if userDirectory and os.path.isdir(userDirectory) and not userDirectory in sys.path:
         if debugLoad:
             print 'insert userDirectory: %s to sys.path!'% userDirectory
         sys.path.insert(0,userDirectory)

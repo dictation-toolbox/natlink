@@ -1,4 +1,5 @@
 # _vocola_main.py - NatLink support for Vocola
+# -*- coding: latin-1 -*-
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould

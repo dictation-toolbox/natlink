@@ -1,8 +1,23 @@
+__version__ = "3.1beta"
+#
+# Python Macro Language for Dragon NaturallySpeaking
+#   (c) Copyright 1999 by Joel Gould
+#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
+#
+# natlinkstatus.py
+#   This module gives the status of natlink to natlinkmain
+#
+#  (C) Copyright Quintijn Hoogenboom, February 2008
+#
+#----------------------------------------------------------------------------
+
+
 """ the following functions are provided in this module:
 ( to be used by either natlinkmain.py or natlinkconfigfunctions.py
 
-The functions below are put into the class NatlinkStatus. The natlinkconfigfunctions
-can subclass this class.
+The functions below are put into the class NatlinkStatus.
+The natlinkconfigfunctions can subclass this class, and
+the configurenatlink.py (GUI) again sub-subclasses this one.
 
 
 The following  functions manage information that changes at changeCallback time
@@ -33,7 +48,8 @@ getDNSIniDir:
 getDNSVersion:
     returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, ... (???)
     note distinction is made here between different subversions.
-
+(getDNSFullVersion: get longer version string)
+.
 getWindowsVersion:
     see source below
 
@@ -44,6 +60,8 @@ getLanguage:
 getPythonVersion:
     returns, as a string, the python version. Eg. "2.3"
     If it cannot find it in the registry it returns an empty string
+(getFullPythonVersion: get string of complete version info).
+
 
 getUserDirectory: get the natlink user directory, unimacro will be there. If not return ''
 
@@ -65,10 +83,14 @@ getDebugLoad:
     get value from registry, if set do extra output of natlinkmain at (re)load time
 getDebugCallback:
     get value from registry, if set do extra output of natlinkmain at callbacks is given
+getDebugOutput:
+    get value from registry, output in log file of DNS, should be kept at 0
+    
 
 getVocolaTakesUnimacroActions
 getVocolaTakesLanguages: additional settings for vocola
 """
+
 
 import os, re, win32api, win32con, sys
 import RegistryDict, natlinkcorefunctions
@@ -206,15 +228,10 @@ class NatlinkStatus(object):
                     return os.path.normpath(cand)
         raise IOError("no valid DNS Install Dir found")
         
-    def getDNSVersion(self):
-        """find the correct DNS version number (integer)
+    def getDNSFullVersion(self):
+        """find the Full version string of DNS
 
-        for versions 8 and 9 look in NSSystemIni,
-        for 9 in Documents and Settings
-        for 8 in Program Folder
-
-        for earlier versions try the registry, the result is uncertain.    
-
+        empty if not found, eg for older versions
         """    
         dnsPath = self.getDNSInstallDir()
         # for 9:
@@ -226,11 +243,26 @@ class NatlinkStatus(object):
         if nssystemini and os.path.isfile(nssystemini):
             version =win32api.GetProfileVal( "Product Attributes", "Version" , "",
                                           nssystemini)
-            if version:
-                return int(version[0])
-            else:
-                raise ValueError("getDNSversion: cannot find version while inifile 9 exists")
 
+            return version
+        return ''
+
+    
+    def getDNSVersion(self):
+        """find the correct DNS version number (integer)
+
+        for versions 8 and 9 look in NSSystemIni, take from DNSFullVersion
+        for 9 in Documents and Settings
+        for 8 in Program Folder
+
+        for earlier versions try the registry, the result is uncertain.    
+
+        """
+        version = self.getDNSFullVersion()
+        if version:
+            return int(version[0])
+
+        # older versions:        
         # try falling back on registry:
         r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
         if "NaturallySpeaking8" in r:
@@ -266,6 +298,12 @@ class NatlinkStatus(object):
         raise IOError("no valid DNS Install Dir found")
 
 
+    def getPythonFullVersion(self):
+        """get the version string from sys
+        """
+        version2 = sys.version
+        return version2
+    
     def getPythonVersion(self):
         """get the version of python from the registry
         """
@@ -274,7 +312,7 @@ class NatlinkStatus(object):
         except ValueError:
             return ''
         version1 = r.keys()[0]
-        version2 = sys.version
+        version2 = self.getPythonFullVersion()
         if version2.startswith(version1):
             return version1
         
@@ -457,6 +495,12 @@ class NatlinkStatus(object):
         value = self.userregnl.get(key, None)
         return value
 
+    def getNatlinkDebug(self):
+        """gets value for debug output in DNS logfile"""
+        key = 'NatlinkDebug'
+        value = self.userregnl.get(key, None)
+        return value
+
     # get additional options vocola
     def getVocolaTakesLanguages(self):
         """gets and value for distinction of different languages in vocola"""
@@ -476,15 +520,20 @@ class NatlinkStatus(object):
             if self.UnimacroIsEnabled():
                 return value
 
+    def getInstallVersion(self):
+        return __version__
+
     def getNatlinkStatusDict(self):
         """return actual status in a dict"""
         D = {}
         for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
+                    'DNSFullVersion', 'PythonFullVersion',
                     'PythonVersion', 'userDirectory',
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
-                    'VocolaUserDirectory']:
+                    'VocolaUserDirectory',
+                    'NatlinkDebug', 'InstallVersion']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
             execstring = "D['%s'] = self.get%s()"% (key, keyCap)
@@ -510,7 +559,8 @@ class NatlinkStatus(object):
             self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is enabled")
             key = 'CoreDirectory'
             self.appendAndRemove(L, D, key)
-            
+            key = 'InstallVersion'
+            self.appendAndRemove(L, D, key)
 
             ## vocola::
             if D['vocolaIsEnabled']:
@@ -533,7 +583,7 @@ class NatlinkStatus(object):
                 if D['userDirectory']:
                     L.append('but userDirectory is defined:')
                     for key in ('userDirectory',):
-                        self.appendAndRem.ove(L, D, key)
+                        self.appendAndRemove(L, D, key)
                 else:
                     del D['userDirectory']
             ## remaining natlink options:
@@ -572,44 +622,6 @@ class NatlinkStatus(object):
         else:
             List.append("\t%s\t%s"% (Key,Dict[Key]))
         del Dict[Key]
-##            
-##
-##        
-##        D['userName'] = self.getUserName()
-##        D['DNSuserDirectory'] = 
-##        userName = status.getUserName()
-##        if userName:
-##            print 'user name DNS: %s'% userName
-##            print 'user speech profile in: %s'% status.getDNSuserDirectory()
-##        else:
-##            print 'no user name, DNS not running?'
-##        print
-##        
-##        print 'DNS Install Dir: %s'% status.getDNSInstallDir()
-##        print 'DNS Ini Dir: %s'% status.getDNSIniDir()
-##        print 'Windows version: %s'% status.getWindowsVersion()
-##        print 'DNS version: (integer) %s'% status.getDNSVersion()
-##        print 'Python version: %s'% status.getPythonVersion()
-##
-##        print
-##        
-##        nlenabled = status.NatlinkIsEnabled()
-##        if nlenabled:
-##            print 'Natlink is enabled...'
-##        elif nlenabled == 0:
-##            print 'Natlink is NOT enabled'
-##        else:
-##            print 'Strange result in function NatlinkIsEnabled: %s'% nlenabled
-##
-##        print '(Natlink) userDir: %s'% status.getUserDirectory()
-##        print 
-##        print 'extra output natlinkmain at load time: %s'% status.getDebugLoad()    
-##        print 'extra output natlinkmain at callback time: %s'% status.getDebugCallback()
-##        print
-##        print 'vocola makes  distinction between languages: %s'% status.getVocolaTakesLanguages()
-##        print 'vocola takes unimacro actions: %s'% status.getVocolaTakesUnimacroActions()
-        
-
 
 if __name__ == "__main__":
     status = NatlinkStatus()

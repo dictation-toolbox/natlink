@@ -115,7 +115,7 @@ def fatal_error(message, new_raise=None):
         raise
 #-----------------------------------------------------
 
-import os, sys, win32api
+import os, sys, win32api, shutil
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
 if thisDir == coreDir:
@@ -152,57 +152,77 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         ---you ran this program from a wrong place, exit and start again from the correct directory
 
         """
-        version = self.getPythonVersion()
-        if not version:
-            fatal_error("no valid python version available")
-        pythonPathSection = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% version
-        lmPythonPath = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSection)
+        print "checking PythonPathAndRegistry"
+        lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict()
         coreDir2 = self.getCoreDirectory()
         if coreDir2 != coreDir:
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
 
         baseDir = os.path.join(coreDir, '..')
-
         pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
 ##        if lmPythonPath:
 ##            print 'lmPythonPath: ', lmPythonPath.keys()
-        if not 'NatLink' in lmPythonPath:
+        if not 'NatLink' in lmPythonPathDict:
             # first time install, silently register
             self.registerNatlinkDll(silent=1)
+            self.setNatlinkInPythonPathRegistry()
             return 1
-        lmNatlinkPath = lmPythonPath['NatLink']
-        Keys = lmNatlinkPath.keys()
+        
+        lmNatlinkPathDict = lmPythonPathDict['NatLink']
+        Keys = lmNatlinkPathDict.keys()
         if not Keys:
             # first time install Section is there, but apparently empty
             self.registerNatlinkDll(silent=1)
+            self.setNatlinkInPythonPathRegistry()
             return 1
         if Keys != [""]:
             if '' in Keys:
                 Keys.remove("")
             fatal_error("The registry section of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\%s\ncontains invalid keys: %s, remove them with the registry editor (regedit)\nAnd rerun this program"%
-                        (pythonPathSection+r'\NatLink', Keys))
+                        (PythonPathSectionName+r'\NatLink', Keys))
             
 
         # now section has default "" key, proceed:            
-        oldPathString = lmNatlinkPath[""]
+        oldPathString = lmNatlinkPathDict[""]
         if not oldPathString:
             # empty setting, silently register
             self.registerNatlinkDll(silent=1)
+            self.setNatlinkInPythonPathRegistry()
             return 1
             
         if oldPathString == pathString:
             return 1 # OK
-        L = []
-        L.append("PythonPath for Natlink does not match in registry with what this program expects")
-        L.append("---settings in Registry: %s"% oldPathString)
-        L.append("---wanted settings: %s" % pathString)
-        L.append("If you want the new settings, (re)register natlink.dll (r)")
-        L.append("And rerun this program...")
-        L.append("Close NatSpeak and all other python applications before rerunning this program")
-        self.message(L)
-        
+        ## now for something more serious:::
+        text = \
+"""
+The PythonPath for Natlink does not match in registry with what this program expects
+
+---settings in Registry: %s
+---wanted settings: %s
+
+If you want the new settings, (re)register natlink.dll (r)
+
+And rerun this program...
+
+Close NatSpeak (including Quick Start Mode), and all other python applications before rerunning this program,
+Possibly you have to restart your computer.
+"""% (oldPathString, pathString)
+        self.warning(text)
             
+    def warning(self,text):
+        """is currently overloaded in GUI"""
+        if isinstance(text, basestring):
+            T = text
+        else:
+            # list probably:
+            T = '\n'.join(text)
+        print '-'*60
+        print T
+        print '='*60
+        return T
+    
+
     def message(self, text):
         """prints message, can be overloaded in configureGUI
         """
@@ -214,8 +234,32 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         print '-'*60
         print T
         print '='*60
+
+    def getHKLMPythonPathDict(self):
+        """returns the dict that contains the PythonPath section of HKLM
+        """
+        version = self.getPythonVersion()
+        if not version:
+            fatal_error("no valid python version available")
+        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% version
+        lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName)
+        return lmPythonPathDict, pythonPathSectionName
         
+    def setNatlinkInPythonPathRegistry(self):
+        """sets the HKLM setting of the Python registry"""
+        lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
+        baseDir = os.path.join(coreDir, '..')
+        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
+        lmPythonPathDict['NatLink']  = {'': pathString}
+
         
+    def clearNatlinkFromPythonPathRegistry(self):
+        """clears the HKLM setting of the Python registry"""
+        lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
+        baseDir = os.path.join(coreDir, '..')
+        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
+        if 'NatLink' in lmPythonPathDict.keys():
+            del lmPythonPathDict['NatLink']
 
     def printRegistrySettings(self):
         print "CURRENT_USER\\Natlink registry settings:"
@@ -237,9 +281,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                 print 'set DNS Install Directory to: %s'% new_dir
                 self.userregnl[key] = new_dir
             else:
-                print "setDNSInstallDir, directory misses a Program subdirectory: %s"% new_dir
+                mess =  "setDNSInstallDir, directory misses a Program subdirectory: %s"% new_dir
+                print mess
+                return mess
         else:
-            raise IOError("setDNSInstallDir, not a valid directory: %s"% new_dir)
+            mess = "setDNSInstallDir, not a valid directory: %s"% new_dir
+            print mess
+            return mess
         
     def clearDNSInstallDir(self):
         """clear in registry local_machine\natlink\natlinkcore
@@ -249,8 +297,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if key in self.userregnl:
             del self.userregnl[key]
         else:
-            print 'NatSpeak Install directory was not set in registry, natlink part'
-
+            mess = 'NatSpeak Install directory was not set in registry, natlink part'
+            print mess
+            return mess
+        
     def setDNSIniDir(self, new_dir):
         """set in registry local_machine\natlink
 
@@ -261,15 +311,19 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             nssystem = os.path.join(new_dir, self.NSSystemIni)
             nsapps = os.path.join(new_dir, self.NSAppsIni)
             if not os.path.isfile(nssystem):
-                print 'folder %s does not have the inifile %s'% (new_dir, self.NSSystemIni)
-                return
+                mess = 'folder %s does not have the inifile %s'% (new_dir, self.NSSystemIni)
+                print mess
+                return mess
             if not os.path.isfile(nsapps):
-                print 'folder %s does not have the inifile %s'% (new_dir, self.NSAppsIni)
-                return
-    
+                mess =  'folder %s does not have the inifile %s'% (new_dir, self.NSAppsIni)
+                print mess
+                return mess
             self.userregnl[key] = new_dir
         else:
-            raise IOError("setDNSIniDir, not a valid directory: %s"% new_dir)
+            mess = "setDNSIniDir, not a valid directory: %s"% new_dir
+            print mess
+            return mess
+            
         
     def clearDNSIniDir(self):
         """clear in registry local_machine\natlink\
@@ -279,7 +333,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if key in self.userregnl:
             del self.userregnl[key]
         else:
-            print 'NatSpeak ini directory was not set in registry, natlink part'
+            mess = 'DNS ini files directory was not set in registry'
+            print mess
+            return mess
 
     def setUserDirectory(self, v):
         key = 'UserDirectory'
@@ -316,7 +372,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         win32api.WriteProfileVal(section2, key2, value2, nsappsini)
         print 'natlink enabled, restart NatSpeak'
 
-    def disableNatlink(self):
+    def disableNatlink(self, silent=None):
       
         nssystemini = self.getNSSYSTEMIni()
         section1 = self.section1
@@ -330,15 +386,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         key2 = self.key2
         win32api.WriteProfileVal(section2, key2, None, nsappsini)
         # leaving empty section, sorry, did not find the way to delete a section...
-        print 'natlink disabled, restart NatSpeak'
-        print 'Note natlink.dll is NOT UNREGISTERED, but this is not necessary either'
+        if not silent:
+            print 'natlink disabled, restart NatSpeak'
+            print 'Note natlink.dll is NOT UNREGISTERED, but this is not necessary either'
         
-    def enableVocola(self):
-      print 'enableVocola, coming'
-    def disableVocola(self):
-      print 'disableVocola, coming'
-
-
     def getVocolaUserDir(self):
         key = 'VocolaUserDirectory'
         return self.userregnl.get(key, None)
@@ -355,6 +406,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         key = 'VocolaUserDirectory'
         if key in self.userregnl:
             del self.userregnl[key]
+            self.disableVocolaUnimacroActions()
         else:
             print 'was not set: %s'% key
 
@@ -368,19 +420,14 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         Also sets the pythonpath in the HKLM pythonpath section        
         """
-        version = self.getPythonVersion()
-        if not version:
-            fatal_error("no valid python version available")
-        lmPythonPath = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE,
-                                       r"SOFTWARE\Python\PythonCore\%s\PythonPath"% version)
+        # give fatal error if python is not OK...
+        dummy, dummy = self.getHKLMPythonPathDict()        
         DllPath = os.path.join(coreDir, "natlink.dll")
         if not os.path.isfile(DllPath):
             fatal_error("Dll file not found in core folder: %s"% DllPath)
 
         baseDir = os.path.join(coreDir, '..')
 
-        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
-        lmPythonPath['NatLink']  = {'': pathString}
         if silent:
             try:
                 import win32api
@@ -394,11 +441,14 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         else:
             # os.system:
             os.system('regsvr32 "%s"'% DllPath)
+        self.setNatlinkInPythonPathRegistry()
 
     def unregisterNatlinkDll(self):
         """unregister explicit, should not be done normally
         """
         os.system('regsvr32 /u "%s"'% os.path.join(coreDir, "natlink.dll"))
+        self.clearNatlinkFromPythonPathRegistry()
+        
 
     def enableDebugLoadOutput(self):
         """setting registry key so debug output of loading of natlinkmain is given
@@ -449,7 +499,22 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         """
         key = "VocolaTakesUnimacroActions"
+        uscFile = 'usc.vch'
         self.userregnl[key] = 1
+        # also copy usc.vch from unimacro folder to VocolaUserDirectory
+        fromFolder = os.path.join(self.getUserDirectory(), 'vocola_compatibility')
+        if os.path.isdir(fromFolder):
+            fromFile = os.path.join(fromFolder,uscFile)
+            if os.path.isfile(fromFile):
+                toFolder = self.getVocolaUserDir()
+                if os.path.isdir(toFolder):
+                    toFile = os.path.join(toFolder, uscFile)
+                    print 'copy %s from %s to %s'%(uscFile, fromFolder, toFolder)
+                    shutil.copyfile(fromFile, toFile)
+                    return
+        mess = "could not copy file %s from %s to %s"%(uscFile, fromFolder, toFolder)
+        print mess
+        return mess
         
 
     def disableVocolaUnimacroActions(self):
@@ -524,11 +589,14 @@ def _main(Options=None):
 class CLI(cmd.Cmd):
     """provide interactive shell control for the different options.
     """
-    def __init__(self):
+    def __init__(self, Config=None):
         cmd.Cmd.__init__(self)
         self.prompt = 'natlink config> '
-        self.info = 'type u for usage'#<CURSOR
-        self.config = NatlinkConfig()
+        self.info = 'type u for usage'
+        if Config:
+            self.config = Config   # initialised instance of NatlinkConfig
+        else:
+            self.config = NatlinkConfig()
         self.config.checkPythonPathAndRegistry()
 
     def usage(self):
@@ -604,14 +672,14 @@ you restart NatSpeak.
 ##            if arg.find(' ') > 0:
 ##                arg = '"' + arg + '"'
             print "Change NatSpeak directory to: %s"% arg
-            self.config.setDNSInstallDir(arg)
+            return self.config.setDNSInstallDir(arg)
         else:
             print 'not a valid folder: %s'% arg
     
 
     def do_D(self, arg):
         print "Clear NatSpeak directory in registry"
-        self.config.clearDNSInstallDir()
+        return self.config.clearDNSInstallDir()
 
     def help_d(self):
         print \
@@ -638,7 +706,7 @@ search for the NatSpeak install directory in the "normal" place(s).
 ##            if arg.find(' ') > 0:
 ##                arg = '"' + arg + '"'
             print "Change NatSpeak Ini files directory to: %s"% arg
-            self.config.setDNSIniDir(arg)
+            return self.config.setDNSIniDir(arg)
         else:
             print 'not a valid folder: %s'% arg
     
@@ -646,7 +714,7 @@ search for the NatSpeak install directory in the "normal" place(s).
 
     def do_C(self, arg):
             print "Clear NatSpeak Ini files directory in registry"
-            self.config.clearDNSIniDir()
+            return self.config.clearDNSIniDir()
     def help_c(self):
         print \
 """Set (c path) of clear (C) the directory where natspeak ini file locations
@@ -819,7 +887,8 @@ of natlink, so keep off (X and Y) most of the time.
         print "(Re) register natlink.dll"
         self.config.registerNatlinkDll()
     def do_R(self, arg):
-        print "Unregister natlink.dll"
+        print "Unregister natlink.dll and disable Natlink"
+        self.config.disableNatlink(silent=1)
         self.config.unregisterNatlinkDll()
 
     def help_r(self):
@@ -912,11 +981,8 @@ Currency needs the include file usc.vsh to work
 
 
     def default(self, line):
-        print 'no valid entry: %s'% line
+        print 'no valid entry: %s, press u or usage for list of commands'% line
         print
-        print self.usage()
-        print
-        print 'type help or help command for more information'
 
     def do_quit(self, arg):
         sys.exit()
@@ -931,6 +997,7 @@ lowercase commands usually set/enable something
 uppercase commands usually clear/disable something
 Informational commands: i and I
 """
+    help_usage = help_u
     
     
         
