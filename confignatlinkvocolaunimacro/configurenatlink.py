@@ -35,6 +35,7 @@ class configurenatlink(wx.Panel):
         MainWindow( self, True )
 
         # WDR: handler declarations for configurenatlink
+        wx.EVT_BUTTON(self, ID_BUTTONVocolaEditor, self.OnButtonVocolaEditor)
         wx.EVT_BUTTON(self, ID_BUTTONLogInfo, self.OnButtonLogInfo)
         wx.EVT_BUTTON(self, ID_BUTTONHelp5, self.OnButtonHelp5)
         wx.EVT_BUTTON(self, ID_BUTTONHelp1, self.OnButtonHelp1)
@@ -125,6 +126,7 @@ class configurenatlink(wx.Panel):
         D['WindowsVersion'] = self.GetTextctrlwindowsversion
         D['VocolaTakesLanguages'] = self.GetCheckboxvocolatakeslanguages
         D['VocolaTakesUnimacroActions'] = self.GetCheckboxvocolaunimacroactions
+        D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
         D['DebugCallback'] = self.GetCheckboxdebugcallbackoutput
         D['DebugLoad'] = self.GetCheckboxdebugload
         D['NatlinkDebug'] = self.GetCheckboxnatlinkdebug
@@ -165,7 +167,7 @@ class configurenatlink(wx.Panel):
     ##        print 'D.keys: %s'% D.keys()
             for key in D:
                 if key in self.functions and self.functions[key]:
-                    if key == 'VocolaTakesLanguages':
+                    if key == 'VocolaCommandFilesEditor':
                         pass
                     func = self.functions[key]
                     value = D[key]
@@ -360,6 +362,12 @@ class configurenatlink(wx.Panel):
        
     # WDR: methods for configurenatlink
 
+    def GetTextctrlvocolaeditor(self):
+        return self.FindWindowById( ID_TEXTCTRLVocolaEditor )
+
+    def GetButtonvocolaeditor(self):
+        return self.FindWindowById( ID_BUTTONVocolaEditor )
+
     def GetTextctrlstatus(self):
         return self.FindWindowById( ID_TEXTCTRLstatus )
 
@@ -431,6 +439,37 @@ class configurenatlink(wx.Panel):
         return self.FindWindowById( ID_TEXTCTRLregisternatlink )
 
     # WDR: handler implementations for configurenatlink
+
+    def OnButtonVocolaEditor(self, event):
+        D = self.config.getNatlinkStatusDict()
+        
+        doLetter = 'w'
+        undoLetter = 'W'
+        statustext = 'Vocola Editor is specified, this will take effect after you restart NatSpeak'
+
+        # ask for the correct directory:
+        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite editor please",
+              style=wx.DD_DEFAULT_STYLE)
+        ## search for unimacro directory as proposal:
+        old_path = D['VocolaCommandFilesEditor']
+        Path = nc.getExtendedEnv("PROGRAMFILES")
+        dlg.SetPath(Path)
+        dlg.SetMessage('Please choose the filename of your favorite editor please\nPress cancel to return to default')
+        if dlg.ShowModal() == wx.ID_OK:
+            new_path = dlg.GetPath()
+            if new_path and os.path.isfile(new_path) and new_path.lower().endswith('.exe'):
+                pass
+            else:
+                self.setstatus("no new valid (.ewe) file specified")
+                return
+        else:
+            self.setstatus("Pressed Cancel, return to default")
+            self.do_command( undoLetter, undo=(doLetter, old_path) )             
+            return
+        self.do_command(doLetter,new_path, undo=undoLetter)
+        self.setstatus(statustext)
+        self.setInfo()
+        
 
     def OnButtonLogInfo(self, event):
         self.cli.do_i("dummy")
@@ -845,7 +884,7 @@ class Stderr:
 class MyApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
-        self.frame = MyFrame( None, -1, "Configure Natlink & Vocola & Unimacro", [100,80], [770,820] )
+        self.frame = MyFrame( None, -1, "Configure Natlink & Vocola & Unimacro", [100,80], [770,850] )
         self.frame.Show(True)  
         return True
 

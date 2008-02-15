@@ -17,6 +17,9 @@
 # 3. Commit natlink and release both unimacro and natlink (so no CVS files remain)
 # 4. run this utility.
 #
+GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_keystrokes.py',
+                     '_oops.py', '_setpriority.py', '_tags.py', '_unimacrotest.py']
+
 
 #--------- two utility functions:
 def getBaseFolder(globalsDict=None):
@@ -127,6 +130,7 @@ class InnoScript:
         print >> ofi, r"AppVerName=%s version %s (including vocola and unimacro)" % (self.name, self.version)
         print >> ofi, r"DefaultDirName={pf}\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
+        print >> ofi, r"LicenseFile=..\natlink\COPYRIGHT.txt"
 ##        print >> ofi, "DisableDirPage=yes"
         print >> ofi, "UsePreviousAppDir=yes"
         print >> ofi
@@ -141,7 +145,10 @@ class InnoScript:
         for path in natlink_files:
             print >> ofi, r'Source: "..\natlink\%s"; DestDir: "{app}\natlink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         for path in unimacro_files:
-            print >> ofi, r'Source: "..\unimacro\%s"; DestDir: "{app}\unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+            if filter(None, [path == f for f in GrammarsToDisable]):
+                print >> ofi, r'Source: "..\unimacro\%s"; DestDir: "{app}\unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+            else:
+                print >> ofi, r'Source: "..\unimacro\%s"; DestDir: "{app}\unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
 
         print >> ofi
 
@@ -150,14 +157,19 @@ class InnoScript:
         print >> ofi, r"[Icons]"
         Path = r'..\natlink\confignatlinkvocolaunimacro\configurenatlink.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
-              ("configure natlink GUI", Path)
+              ("configure natlink (GUI)", Path)
         Path = r'..\natlink\confignatlinkvocolaunimacro\natlinkconfigfunctions.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
-                  ("configure natlink CLI", Path)
+                  ("Command line interface CLI", Path)
 
 
-##        print >> ofi, 'Name: "{group}\Uninstall %s"; Filename: "{uninstallexe}"' % self.name
+        # run GUI after install:
+        print >> ofi, r"[Run]"
+        Path = r'natlink\confignatlinkvocolaunimacro\configurenatlink.py'
 
+        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch natlink configuration GUI"; Flags: postinstall'% \
+              Path
+        
     def compile(self):
         try:
             import ctypes
@@ -226,6 +238,9 @@ def _getallfiles(arg, dirname, filenames):
     if dirname.endswith("CVS"):
         raise IOError("found a CVS folder, you should have released unimacro and natlink first!")
     for f in filenames:
+        if f.endswith(".pyc"):
+            continue
+        
         Path = os.path.join(dirname, f)
         if os.path.isdir(Path):
             continue

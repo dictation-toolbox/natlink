@@ -127,6 +127,7 @@ Wversions = {'1/4/10': '98',
              '2/4/0':  'NT4',
              '2/5/0':  '2000',
              '2/5/1':  'XP',
+             '2/6/0':  'Vista'
              }
 
 # the possible languages (for getLanguage)
@@ -440,6 +441,16 @@ class NatlinkStatus(object):
         # fall through: 
         return ''
 
+    def getVocolaCommandFilesEditor(self):
+        key = 'VocolaCommandFilesEditor'
+        value = self.userregnl.get(key, '')
+        if value:
+            print 'use %s for editing vocola command files'% value
+        else:
+            print 'use default (simpscrp) for editing vocola command files'
+            value = 'simpscrp'
+        return value
+
     def getBaseModelBaseTopic(self):
         """to be done"""
         return "tobedone", "tobedone"
@@ -532,7 +543,7 @@ class NatlinkStatus(object):
                     'PythonVersion', 'userDirectory',
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
-                    'VocolaUserDirectory',
+                    'VocolaUserDirectory', 'VocolaCommandFilesEditor',
                     'NatlinkDebug', 'InstallVersion']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
@@ -565,12 +576,13 @@ class NatlinkStatus(object):
             ## vocola::
             if D['vocolaIsEnabled']:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is enabled")
-                for key in ('VocolaUserDirectory','VocolaTakesLanguages',
+                for key in ('VocolaUserDirectory','VocolaCommandFilesEditor',
+                            'VocolaTakesLanguages',
                             'VocolaTakesUnimacroActions'):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is disabled")
-                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
+                for key in ('VocolaUserDirectory','VocolaCommandFilesEditor', 'VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
                     del D[key]
                     
             ## unimacro or userDirectory:

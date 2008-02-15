@@ -45,11 +45,7 @@ Other functions inside this module, with calls from CLI or command line:
 
 enableNatlink()  (e)/disableNatlink() (E)
 
-enableVocola()   (v) disableVocola()  (V) (to be done)
-
-
-
-setUserDirectory(path) (u path) or clearUserDirectory() (U)
+setUserDirectory(path) (n path) or clearUserDirectory() (N)
     
 etc.
 
@@ -355,7 +351,7 @@ Possibly you have to restart your computer.
             print 'natlink user directory key was not set...'
             
       
-    def enableNatlink(self):
+    def enableNatlink(self, silent=None):
         """register natlink.dll and set settings in nssystem.ini and nsapps.ini
 
         """
@@ -370,10 +366,10 @@ Possibly you have to restart your computer.
         key2 = self.key2
         value2 = self.value2
         win32api.WriteProfileVal(section2, key2, value2, nsappsini)
-        print 'natlink enabled, restart NatSpeak'
+        if not silent:
+            print 'natlink enabled, restart NatSpeak'
 
     def disableNatlink(self, silent=None):
-      
         nssystemini = self.getNSSYSTEMIni()
         section1 = self.section1
         key1 = self.key1
@@ -410,6 +406,20 @@ Possibly you have to restart your computer.
         else:
             print 'was not set: %s'% key
 
+    def setVocolaCommandFilesEditor(self, v):
+        key = "VocolaCommandFilesEditor"
+        if v and os.path.isfile(v) and v.endswith(".exe"):
+            self.userregnl[key] = v
+        else:
+            print 'invalid path, not a file or no .exe file: %s'% v
+            
+
+    def clearVocolaCommandFilesEditor(self):
+        key = "VocolaCommandFilesEditor"
+        if key in self.userregnl:
+            del self.userregnl[key]
+        else:
+            print 'was not set: %s'% key
             
     def registerNatlinkDll(self, silent=None):
         """register natlink.dll
@@ -443,10 +453,26 @@ Possibly you have to restart your computer.
             os.system('regsvr32 "%s"'% DllPath)
         self.setNatlinkInPythonPathRegistry()
 
-    def unregisterNatlinkDll(self):
+    def unregisterNatlinkDll(self, silent=None):
         """unregister explicit, should not be done normally
         """
-        os.system('regsvr32 /u "%s"'% os.path.join(coreDir, "natlink.dll"))
+        dummy, dummy = self.getHKLMPythonPathDict()        
+        DllPath = os.path.join(coreDir, "natlink.dll")
+        if os.path.isfile(DllPath):
+
+            if silent:
+                try:
+                    import win32api
+                except:
+                    fatal_error("cannot import win32api, please see if win32all of python is properly installed")
+                
+                try:
+                    win32api.WinExec('regsvr32 /s /u "%s"'% DllPath)
+                except:
+                    pass
+            else:
+                # os.system:
+                os.system('regsvr32 /u "%s"'% DllPath)
         self.clearNatlinkFromPythonPathRegistry()
         
 
@@ -552,8 +578,8 @@ def _main(Options=None):
 
     """
     cli = CLI()
-    shortOptions = "aAbBxXyYiIDCeEUdVrRgG"
-    shortArgOptions = "c:u:v:"  
+    shortOptions = "aAbBxXyYiIDCeEUdVrRgGzZW"
+    shortArgOptions = "c:u:v:w:"  
     if Options:
         if type(Options) == types.StringType:
             Options = Options.split(" ", 1)
@@ -618,12 +644,15 @@ e/E - enable/disable natlink
 
 n/N - set/clear userdirectory, the directory of the user grammar files of natlink (eg unimacro)
 
-v/V - set/clear vocoloauserdir, the user directory for vocola user files. This also
-      enables/disables vocola
+v/V - set/clear vocoloauserdir, the user directory for vocola user files.
+      This also enables/disables vocola
+w/W = set path for opening vocola command files, or clear
 
 r/R - (un)registernatlink, the natlink.dll file(should not be necessary to do)
 g/G - enable/disable debugoutput: natlink debug output in natlink log file
-
+z/Z - silently enables natlink and registers, or disables natlink and unregisters
+      (for installer, to be done/tested)
+      
 x/X - enable/disable debug load output of natlinkmain (keep at 0 (X) normally)
 y/Y - enable/disable debug callback output of natlinkmain (keep at 0 (Y) normally)
 
@@ -826,6 +855,32 @@ enable Vocola if no VocolaUserDirectory is set.
 
     help_V = help_v
 
+    # Vocola Command Files Editor-----------------------------------------------
+    def do_w(self, arg):
+        if os.path.isfile(arg) and arg.endswith(".exe"):
+            print "Setting Setting Vocola Command Files editor to %s"% arg
+            self.config.setVocolaCommandFilesEditor(arg)
+        else:
+            print 'Please specifiy a valid path for vocola command files editor'
+            
+    def do_W(self, arg):
+        print "Clear vocola commands file editor, go back to default simpscrp"
+        self.config.clearVocolaCommandFilesEditor()
+
+    def help_w(self):
+        print \
+"""set/clear vocola  command files editor (w path/W)
+
+By default a utility called "simpscrp" is used.
+
+You can specify a program you like eg
+Notepad, TextPad, NotePad++, UltraEdit, win32pad.
+
+"""
+        print '='*60
+
+    help_W = help_w
+
     # enable/disable natlink debug output...
     def do_g(self, arg):
         print "Enable natlink debug output to natspeak logfile "
@@ -890,25 +945,34 @@ of natlink, so keep off (X and Y) most of the time.
         print "Unregister natlink.dll and disable Natlink"
         self.config.disableNatlink(silent=1)
         self.config.unregisterNatlinkDll()
+    def do_z(self, arg):
+        """register silent and enable natlink"""
+        self.config.registerNatlinkDll(silent=1)
+        self.config.enableNatlink(silent=1)
+        
+    def do_Z(self, arg):
+        """(SILENT) Unregister natlink.dll and disable Natlink"""
+        self.config.disableNatlink(silent=1)
+        self.config.unregisterNatlinkDll(silent=1)
 
     def help_r(self):
         print '-'*60
         print \
 """registers (r)/ unregisters (R) natlink.dll explicitly.
 
-Registring is also done (silent) when you enable natlink, so is mostly NOT NEEDED!
-It shows a message dialog to inform you what happened.
-        
+(Registring is also done (silent) when you enable natlink, so is mostly NOT NEEDED!)
+
 But if you do (-r or -R) a message dialog shows up to inform you what happened.
-If you restart NatSpeak after unregisering natlink.dll, you get a message:
+When you unregister, natlink is also disabled.
 
-Cannot load compatibility module support (GUID=
-%s
-
-If that happens, simply reregister with the -r option.
+If you want to (silent) enable natlink and register silent use -z,
+To disable natlink and unregister (silent) use Z
 """% self.config.NATLINK_CLSID
         print '='*60
     help_R = help_r
+    help_z = help_r
+    help_Z = help_r
+    
 
     def enableVocolaUnimacroActions(self):
         """setting registry  unimacro actions can be used in vocola

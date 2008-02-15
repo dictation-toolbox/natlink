@@ -31,6 +31,7 @@ import re
 import natlink
 from natlinkutils import *
 import natlinkstatus
+import win32api  # for opening command files if own editor is specified
 status = natlinkstatus.NatlinkStatus()
 ##
 ##try:
@@ -141,7 +142,11 @@ class ThisGrammar(GrammarBase):
 ##                if self.vocolaEnabled:
 ##                    self.commandFolders.insert(0, userCommandFolder)
         userCommandFolder = status.getVocolaUserDirectory()
-                
+        self.userCommandFilesEditor = status.getVocolaCommandFilesEditor()
+        if not self.userCommandFilesEditor:
+            print '_vocola_main: unexpected value for userCommandFilesEditor: %s, take simpscrp'% self.userCommandFilesEditor
+            self.userCommandFilesEditor = 'simpscrp'
+            
         self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
         if self.vocolaEnabled:
             self.commandFolders.insert(0, userCommandFolder)                
@@ -361,10 +366,14 @@ class ThisGrammar(GrammarBase):
         else:                call = 'start' + ' "' + path + '"'
         # Win98SE return 'nt', but still requires 'start'
 
-        if simpscrp.Exec(call, 0) != 0:
-            opener = 'start'
-            call = opener + ' "' + path + '"'
-            simpscrp.Exec(call, 0)
+        if self.userCommandFilesEditor == 'simpscrp':
+            if simpscrp.Exec(call, 0) != 0:
+                opener = 'start'
+                call = opener + ' "' + path + '"'
+                simpscrp.Exec(call, 0)
+        else:
+            filename = '"' + path + '"'
+            win32api.ShellExecute(0, 'open', self.userCommandFilesEditor, filename, "", 1)
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above

@@ -473,6 +473,28 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_V("dummy")
         self.checkUserregnl(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
         
+    def test_setClearVocolaCommandFilesEditor(self):
+        """This option should set or clear the vocola command files editor
+        """
+        testName = 'test_setClearVocolaCommandFilesEditor'
+        key = "VocolaCommandFilesEditor"
+        cli = natlinkconfigfunctions.CLI()
+        old = self.Userregnl.get(key, None)
+        # not a valid folder:
+        cli.do_w("not a valid file")
+        self.checkUserregnl(key, old, "%s, nothing should be changed yet"% testName)
+
+        # change to notepad:
+        notepad = os.path.join(natlinkcorefunctions.getExtendedEnv("SYSTEM"), "notepad.exe")
+        if not os.path.isfile(notepad):
+            raise IOError("Test error, cannot find notepad on: %s"% notepad)
+        
+        cli.do_w(notepad)
+        self.checkUserregnl(key, notepad, "%s, VocolaCommandFilesEditor should be changed now"% testName)
+
+        # now clear:
+        cli.do_W("dummy")
+        self.checkUserregnl(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
 
     # Testing addition vocola options
     def test_enableDisableExtraVocolaOptions(self):

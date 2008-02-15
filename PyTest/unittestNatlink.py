@@ -64,7 +64,7 @@ ExitQuietly = 'ExitQuietly'
 nTries = 10
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # with spurious error (if set to 1), missing gotBegin and all that...
-logFileName = r"C:\program files\natlink\PyTest\testresult.txt"
+logFileName = r"D:\natlink\natlink\PyTest\testresult.txt"
 
 ## try more special file names, test in testNatlinkMain:
 spacesFilenameGlobal = '_with spaces'
