@@ -39,18 +39,19 @@ ID_TEXTvocolauserdir = 10024
 ID_TEXTCTRLvocolauserdir = 10025
 ID_BUTTONVocolaEditor = 10026
 ID_TEXTCTRLVocolaEditor = 10027
-ID_CHECKBOXVocolaTakesLanguages = 10028
-ID_CHECKBOXVocolaUnimacroActions = 10029
-ID_BUTTONHelp3 = 10030
-ID_BUTTONNatlinkUserDirectory = 10031
-ID_TEXTnatlinkuserdir = 10032
-ID_TEXTCTRLuserDirectory = 10033
-ID_BUTTONHelp4 = 10034
-ID_BUTTONregister = 10035
-ID_BUTTONunregister = 10036
+ID_CHECKBOXVocolaUsesSimpscrp = 10028
+ID_CHECKBOXVocolaTakesLanguages = 10029
+ID_CHECKBOXVocolaUnimacroActions = 10030
+ID_BUTTONHelp3 = 10031
+ID_BUTTONNatlinkUserDirectory = 10032
+ID_TEXTnatlinkuserdir = 10033
+ID_TEXTCTRLuserDirectory = 10034
+ID_BUTTONHelp4 = 10035
+ID_BUTTONregister = 10036
+ID_BUTTONunregister = 10037
 ID_BUTTONUndo = 5100
-ID_BUTTONClose = 10037
-ID_BUTTONHelp5 = 10038
+ID_BUTTONClose = 10038
+ID_BUTTONHelp5 = 10039
 
 def MainWindow( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
@@ -181,7 +182,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item39.AddGrowableCol( 2 )
     
     item40 = wx.Button( parent, ID_BUTTONVocolaEnable, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item39.Add( item40, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item39.Add( item40, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item41 = wx.StaticText( parent, ID_TEXTvocolauserdir, "Vocola user directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item39.Add( item41, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
@@ -200,7 +201,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item45.SetBackgroundColour( wx.LIGHT_GREY )
     item39.Add( item45, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item46 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item46 = wx.CheckBox( parent, ID_CHECKBOXVocolaUsesSimpscrp, "Vocola Uses Simpscrp", wx.DefaultPosition, wx.DefaultSize, 0 )
     item39.Add( item46, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
     item47 = wx.CheckBox( parent, ID_CHECKBOXVocolaTakesLanguages, "Vocola Multi languages", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -286,9 +287,9 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
 
 # Menubar functions
 
-ID_MENUClose = 10039
-ID_MENUFile = 10040
-ID_MENUhelp = 10041
+ID_MENUClose = 10040
+ID_MENUFile = 10041
+ID_MENUhelp = 10042
 
 def MyMenuBarFunc():
     item0 = wx.MenuBar()

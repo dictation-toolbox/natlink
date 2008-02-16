@@ -473,28 +473,44 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_V("dummy")
         self.checkUserregnl(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
         
-    def test_setClearVocolaCommandFilesEditor(self):
+    def test_setClearVocolaCommandFilesEditorAndUsesSimpscrp(self):
         """This option should set or clear the vocola command files editor
+        in combination with VocolaUsesSimpscrp
         """
-        testName = 'test_setClearVocolaCommandFilesEditor'
+        testName = 'test_setClearVocolaCommandFilesEditorAndUsesSimpscrp'
+        keySimpscrp = "VocolaUsesSimpscrp"
         key = "VocolaCommandFilesEditor"
         cli = natlinkconfigfunctions.CLI()
         old = self.Userregnl.get(key, None)
+
+        # use simpscrp:
+        cli.do_s("dummy")
+        self.checkUserregnl(keySimpscrp, 1, "VocolaUsesSimpscrp should be 1 now %s"% testName)
+        cli.do_S("dummy")
+        self.checkUserregnl(keySimpscrp, 0, "VocolaUsesSimpscrp should be 0 now %s"% testName)
+        
+        # switch on and do test of editor:
+        cli.do_s("dummy")
+        self.checkUserregnl(keySimpscrp, 1, "VocolaUsesSimpscrp should be 1 now %s"% testName)
+        
         # not a valid folder:
         cli.do_w("not a valid file")
         self.checkUserregnl(key, old, "%s, nothing should be changed yet"% testName)
 
         # change to notepad:
-        notepad = os.path.join(natlinkcorefunctions.getExtendedEnv("SYSTEM"), "notepad.exe")
-        if not os.path.isfile(notepad):
-            raise IOError("Test error, cannot find notepad on: %s"% notepad)
+        wordpad = os.path.join(natlinkcorefunctions.getExtendedEnv("PROGRAMFILES"), 'Windows NT',
+                               'Accessories', "wordpad.exe")
+        if not os.path.isfile(wordpad):
+            raise IOError("Test error, cannot find wordpad on: %s"% wordpad)
         
-        cli.do_w(notepad)
-        self.checkUserregnl(key, notepad, "%s, VocolaCommandFilesEditor should be changed now"% testName)
+        cli.do_w(wordpad)
+        self.checkUserregnl(key, wordpad, "%s, VocolaCommandFilesEditor should be changed now"% testName)
 
         # now clear:
         cli.do_W("dummy")
         self.checkUserregnl(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
+
+                
 
     # Testing addition vocola options
     def test_enableDisableExtraVocolaOptions(self):

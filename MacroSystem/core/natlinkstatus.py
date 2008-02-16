@@ -447,8 +447,17 @@ class NatlinkStatus(object):
         if value:
             print 'use %s for editing vocola command files'% value
         else:
-            print 'use default (simpscrp) for editing vocola command files'
-            value = 'simpscrp'
+            if self.getVocolaUsesSimpscrp():
+                print 'use default (simpscrp) for editing vocola command files'
+                value = 'simpscrp'
+            else:
+                print 'use default (notepad) for editing vocola command files'
+                value = 'notepad'
+        return value
+
+    def getVocolaUsesSimpscrp(self):
+        key = 'VocolaUsesSimpscrp'
+        value = self.userregnl.get(key, 1)
         return value
 
     def getBaseModelBaseTopic(self):
@@ -544,6 +553,7 @@ class NatlinkStatus(object):
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'VocolaUserDirectory', 'VocolaCommandFilesEditor',
+                    'VocolaUsesSimpscrp',
                     'NatlinkDebug', 'InstallVersion']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
@@ -578,7 +588,7 @@ class NatlinkStatus(object):
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is enabled")
                 for key in ('VocolaUserDirectory','VocolaCommandFilesEditor',
                             'VocolaTakesLanguages',
-                            'VocolaTakesUnimacroActions'):
+                            'VocolaTakesUnimacroActions', 'VocolaUsesSimpscrp'):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is disabled")

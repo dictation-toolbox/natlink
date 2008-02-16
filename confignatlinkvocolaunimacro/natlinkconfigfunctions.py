@@ -421,6 +421,10 @@ Possibly you have to restart your computer.
         else:
             print 'was not set: %s'% key
             
+    def setVocolaUsesSimpscrp(self, v):
+        key = "VocolaUsesSimpscrp"
+        self.userregnl[key] = v
+
     def registerNatlinkDll(self, silent=None):
         """register natlink.dll
 
@@ -647,6 +651,7 @@ n/N - set/clear userdirectory, the directory of the user grammar files of natlin
 v/V - set/clear vocoloauserdir, the user directory for vocola user files.
       This also enables/disables vocola
 w/W = set path for opening vocola command files, or clear
+s/S = Vocola uses Simpscrp (default is OFF, S)
 
 r/R - (un)registernatlink, the natlink.dll file(should not be necessary to do)
 g/G - enable/disable debugoutput: natlink debug output in natlink log file
@@ -675,6 +680,7 @@ help command: give more explanation on command
         self.config.printRegistrySettings()
 
     def help_i(self):
+        print '-'*60
         print \
 """The command info (i) gives an overview of the settings that are
 currently set inside the natlink system
@@ -711,6 +717,7 @@ you restart NatSpeak.
         return self.config.clearDNSInstallDir()
 
     def help_d(self):
+        print '-'*60
         print \
 """Set (d path) or clear (D) the directory where natspeak is installed.
 
@@ -745,6 +752,7 @@ search for the NatSpeak install directory in the "normal" place(s).
             print "Clear NatSpeak Ini files directory in registry"
             return self.config.clearDNSIniDir()
     def help_c(self):
+        print '-'*60
         print \
 """Set (c path) of clear (C) the directory where natspeak ini file locations
 (nssystem.ini and nsapps.ini) are located.
@@ -778,6 +786,7 @@ again search for its ini files in the "default/normal" place(s).
         self.config.clearUserDirectory()
     
     def help_n(self):
+        print '-'*60
         print \
 """Sets (n) or clears (N) the user directory of natlink.
 This will often be the folder where unimacro is located.
@@ -844,6 +853,7 @@ the Global Clients section of nssystem.ini.
         self.config.clearVocolaUserDir()
 
     def help_v(self):
+        print '-'*60
         print \
 """set/clear vocola userdirectory (v path/V) and also enable/disable Vocola
 
@@ -867,19 +877,39 @@ enable Vocola if no VocolaUserDirectory is set.
         print "Clear vocola commands file editor, go back to default simpscrp"
         self.config.clearVocolaCommandFilesEditor()
 
+    def do_s(self, arg):
+        print "Set Vocola Uses Simpscrp (and by default uses dedicated editor"
+        self.config.setVocolaUsesSimpscrp(1)
+            
+    def do_S(self, arg):
+        print "Clears Vocola Uses Simpscrp, so use python functions instead and Notepad as default editor"
+        self.config.setVocolaUsesSimpscrp(0)
+
     def help_w(self):
+        print '-'*60
         print \
 """set/clear vocola  command files editor (w path/W)
 
-By default a utility called "simpscrp" is used.
+By default a utility called "simpscrp"  or "notepad" is used,
+see also option s/S.
 
 You can specify a program you like eg
-Notepad, TextPad, NotePad++, UltraEdit, win32pad.
+TextPad, NotePad++, UltraEdit, win32pad.
+
+
+Uses Simpscrp (s) or NOT (S)
+This utility runs the Vocola default editor and controls
+the calling of the vcl2py translator.
+Simpscrp sometimes gives trouble, so if you disable, this is
+handled by python functions.
 
 """
         print '='*60
 
     help_W = help_w
+    help_s = help_w
+    help_S = help_w
+    
 
     # enable/disable natlink debug output...
     def do_g(self, arg):
@@ -1055,6 +1085,7 @@ Currency needs the include file usc.vsh to work
         self.usage()
     do_u = do_usage
     def help_u(self):
+        print '-'*60
         print \
 """u and usage give the list of commands
 lowercase commands usually set/enable something

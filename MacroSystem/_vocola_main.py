@@ -62,7 +62,7 @@ NatLinkFolder = os.path.split(
 
 NatLinkFolder = re.sub(r'\core$', "", NatLinkFolder)
 
-pydFolder = os.path.abspath(NatLinkFolder + '\\..\\Vocola\\Exec\\' + sys.version[0:3])
+pydFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'Exec', sys.version[0:3]))
 sys.path.append(pydFolder)
 NatLinkFolder = os.path.abspath(NatLinkFolder)
 
@@ -130,8 +130,8 @@ class ThisGrammar(GrammarBase):
                                       
     # Set member variables -- important folders and computer name
     def setNames(self):
-        self.VocolaFolder = NatLinkFolder + r'\..\Vocola'
-        self.commandFolders = [self.VocolaFolder + r'\Commands']
+        self.VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
+        self.commandFolders = [os.path.join(self.VocolaFolder, '\Commands')]
 ##        
 ##        if installer:
 ##            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,
@@ -143,6 +143,7 @@ class ThisGrammar(GrammarBase):
 ##                    self.commandFolders.insert(0, userCommandFolder)
         userCommandFolder = status.getVocolaUserDirectory()
         self.userCommandFilesEditor = status.getVocolaCommandFilesEditor()
+        self.useSimpscrp = status.getVocolaUsesSimpscrp()
         if not self.userCommandFilesEditor:
             print '_vocola_main: unexpected value for userCommandFilesEditor: %s, take simpscrp'% self.userCommandFilesEditor
             self.userCommandFilesEditor = 'simpscrp'
@@ -245,7 +246,11 @@ class ThisGrammar(GrammarBase):
 
     # Load all command files
     def loadAllFiles(self, options):
+        ## QH, I believe only 1 commandFolder should be done, numbered 0
+        ## as the other numbers can be used for copying default files to your location if
+        ## a new file is started...
         for i in range(len(self.commandFolders)):
+            if i > 0: break    # only take 0
             suffix = "-suffix _vcl" + str(i) + " "
             self.runVocolaTranslator(self.commandFolders[i], suffix + options)
 
@@ -287,7 +292,16 @@ class ThisGrammar(GrammarBase):
         else:       call = '"'      + self.VocolaFolder + r'\Exec\vcl2py.exe" '
         call += options
         call += ' "' + inputFileOrFolder + '" "' + NatLinkFolder + '"'
-        simpscrp.Exec(call, 1)
+        if self.useSimpscrp:
+            simpscrp.Exec(call, 1)
+        else:
+            # do with os.system:
+            prog = os.path.normpath(os.path.join(self.VocolaFolder, 'Exec', 'vcl2py.exe'))
+            if not os.path.isfile(prog):
+                raise IOError('vcl2py.exe not a file: %s'% prog)
+            command = prog + " " + options + ' "' + inputFileOrFolder + '" "' + NatLinkFolder +'"'
+            print 'os.system: %s'% command
+            os.system(command)
 
         for commandFolder in self.commandFolders:
             logName = commandFolder + r'\vcl2py_log.txt'

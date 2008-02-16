@@ -35,6 +35,7 @@ class configurenatlink(wx.Panel):
         MainWindow( self, True )
 
         # WDR: handler declarations for configurenatlink
+        wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaUsesSimpscrp, self.OnCBVocolaUsesSimpscrp)
         wx.EVT_BUTTON(self, ID_BUTTONVocolaEditor, self.OnButtonVocolaEditor)
         wx.EVT_BUTTON(self, ID_BUTTONLogInfo, self.OnButtonLogInfo)
         wx.EVT_BUTTON(self, ID_BUTTONHelp5, self.OnButtonHelp5)
@@ -127,15 +128,17 @@ class configurenatlink(wx.Panel):
         D['VocolaTakesLanguages'] = self.GetCheckboxvocolatakeslanguages
         D['VocolaTakesUnimacroActions'] = self.GetCheckboxvocolaunimacroactions
         D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
+        D['VocolaUsesSimpscrp'] = self.GetCheckboxvocolausessimpscrp
         D['DebugCallback'] = self.GetCheckboxdebugcallbackoutput
         D['DebugLoad'] = self.GetCheckboxdebugload
         D['NatlinkDebug'] = self.GetCheckboxnatlinkdebug
         D['DNSIniDir'] = self.GetTextctrldnsinifilepath
         D['natlinkIsEnabled'] = self.GetButtonnatlinkenable
         D['vocolaIsEnabled'] = self.GetButtonvocolaenable
+        
         D['unimacroIsEnabled'] = self.GetButtonnatlinkuserdirectory
         self.checkboxes = ['VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
-                           'DebugCallback', 'DebugLoad',
+                           'DebugCallback', 'DebugLoad', 'VocolaUsesSimpscrp',
                            'NatlinkDebug']
         return D
 
@@ -362,6 +365,9 @@ class configurenatlink(wx.Panel):
        
     # WDR: methods for configurenatlink
 
+    def GetCheckboxvocolausessimpscrp(self):
+        return self.FindWindowById( ID_CHECKBOXVocolaUsesSimpscrp )
+
     def GetTextctrlvocolaeditor(self):
         return self.FindWindowById( ID_TEXTCTRLVocolaEditor )
 
@@ -439,6 +445,11 @@ class configurenatlink(wx.Panel):
         return self.FindWindowById( ID_TEXTCTRLregisternatlink )
 
     # WDR: handler implementations for configurenatlink
+
+    def OnCBVocolaUsesSimpscrp(self, event):
+        letter = 's'
+        control = self.GetCheckboxvocolausessimpscrp()
+        self.do_checkboxcommand(letter, control)
 
     def OnButtonVocolaEditor(self, event):
         D = self.config.getNatlinkStatusDict()
