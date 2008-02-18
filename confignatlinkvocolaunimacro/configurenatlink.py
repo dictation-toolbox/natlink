@@ -72,7 +72,6 @@ class configurenatlink(wx.Panel):
             def __init__(self, parent=None):
                 self.parent = parent
                 super(NatlinkConfigGUI, self).__init__()
-                    
             def warning(self, text):
                 """overload, to make it also in GUI visible"""
                 super(NatlinkConfigGUI, self).warning(text)
