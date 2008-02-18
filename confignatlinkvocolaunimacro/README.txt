@@ -1,31 +1,15 @@
-The GUI is NOT READY.
+This GUI is now about ready for use.
 
+With this GUI you can configure configure natlink.  It is written in wxPython.  
 
-But with natlinkconfigfunctions.py you can do all the functionality:
+The definitions are made with the (nonfree) wxDesigner program.  The definition file for wxDesigner is called configurenatlink.wdr.
 
-Run this module with python (goto explorer, right click on this file, Open (or Open with, python).
+But the definitions that are read by wxPython are in: configurenatlink_wdr.py
 
-Type i for information, u for usage.
+The program itself is in: configurenatlink.py
 
-In order to try prudent, first 
--enable natlink (e)
--disable vocola (V) (clearing the VocolaUserDirectory)
--disable unimacro (N) (clearing the natlink userDirectory)
+It uses functions from the module: natlinkconfigfunctions.py.
 
--Quit the configure program and RESTART Dragon NaturallySpeaking.
+If the GUI program doesn't work for some reason, you can fall back to the command line interface, which is contained in natlinkconfigfunctions.py.  Just started this program from the start menu or the full that you are in now.
 
-
-After that try to:
--switch on vocola by "v path/to/vocola/user/files"
-
--switch on unimacro (if downloaded separate!) with "n path/to/unimacro/grammar/files"
-
-And additionally try to switch on additional vocola things. See u (usage) for all the commands
-
-
-Quintijn Hoogenboom, Februari 11, 2008
-
-(if you want to copy the results from the python window (for reporting...), 
--Click on the system menu (left top of screen),
--Choose Edit, Select All. The screen should invert to black letters on white screen.
--Press Enter, all the text is now on the Windows clipboard.
+Quintijn Hoogenboom, February 18, took out in date
