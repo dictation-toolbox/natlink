@@ -295,12 +295,12 @@ class ThisGrammar(GrammarBase):
         if self.useSimpscrp:
             simpscrp.Exec(call, 1)
         else:
-            # do with os.system:
+            # do with os.system :
             prog = os.path.normpath(os.path.join(self.VocolaFolder, 'Exec', 'vcl2py.exe'))
             if not os.path.isfile(prog):
                 raise IOError('vcl2py.exe not a file: %s'% prog)
-            command = prog + " " + options + ' "' + inputFileOrFolder + '" "' + NatLinkFolder +'"'
-            print 'os.system: %s'% command
+            rest = options + ' "' + inputFileOrFolder + '" "' + NatLinkFolder +'"'
+            command = prog + " " + rest
             os.system(command)
 
         for commandFolder in self.commandFolders:
@@ -382,9 +382,12 @@ class ThisGrammar(GrammarBase):
 
         if self.userCommandFilesEditor == 'simpscrp':
             if simpscrp.Exec(call, 0) != 0:
+                print 'simpscrip call'
                 opener = 'start'
                 call = opener + ' "' + path + '"'
                 simpscrp.Exec(call, 0)
+            else:
+                print 'simpsrcp call failed????'
         else:
             filename = '"' + path + '"'
             win32api.ShellExecute(0, 'open', self.userCommandFilesEditor, filename, "", 1)
@@ -393,6 +396,8 @@ class ThisGrammar(GrammarBase):
         """copy to another location, keeping the include files one directory above
         """
         # QH, febr, 5, 2008
+        # let include lines to relative paths point to the folder above ..\
+        # so you can take the same include file for the alternate language.
         reInclude = re.compile(r'(include\s+)\w')
         Input = os.path.normpath(Input)
         Output = os.path.normpath(Output)

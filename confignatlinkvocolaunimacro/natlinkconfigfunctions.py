@@ -148,6 +148,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         ---you ran this program from a wrong place, exit and start again from the correct directory
 
         """
+        self.checkedUrgent = None
         print "checking PythonPathAndRegistry"
         lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict()
         coreDir2 = self.getCoreDirectory()
@@ -197,14 +198,21 @@ The PythonPath for Natlink does not match in registry with what this program exp
 ---settings in Registry: %s
 ---wanted settings: %s
 
+You probably just installed natlink in a new location
+and you run the config program for the first time.
+
 If you want the new settings, (re)register natlink.dll (r)
 
 And rerun this program...
 
 Close NatSpeak (including Quick Start Mode), and all other python applications before rerunning this program,
 Possibly you have to restart your computer.
+
+If you do NOT want these new settings, simply close this program and run
+from the correct place.
 """% (oldPathString, pathString)
         self.warning(text)
+        self.checkedUrgent = 1
             
     def warning(self,text):
         """is currently overloaded in GUI"""
@@ -628,6 +636,7 @@ class CLI(cmd.Cmd):
         else:
             self.config = NatlinkConfig()
         self.config.checkPythonPathAndRegistry()
+        self.checkedConfig = self.config.checkedUrgent
 
     def usage(self):
         """gives the usage of the command line options or options when

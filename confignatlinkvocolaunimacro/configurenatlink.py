@@ -72,12 +72,12 @@ class configurenatlink(wx.Panel):
             def __init__(self, parent=None):
                 self.parent = parent
                 super(NatlinkConfigGUI, self).__init__()
+                    
             def warning(self, text):
                 """overload, to make it also in GUI visible"""
                 super(NatlinkConfigGUI, self).warning(text)
                 self.parent.warning(text)
         self.GUI = NatlinkConfigGUI(parent=self)
-        
         try:
             self.cli = nf.CLI(self.GUI)
         except:
@@ -99,7 +99,11 @@ class configurenatlink(wx.Panel):
         if not title.endswith(version):
             title = '%s (%s)'% (title, version)
             self.frame.SetTitle(title)
-        self.urgentMessage = None  # for status text control
+        self.urgentMessage = None
+        if self.cli.checkedConfig:
+            # changed installation, message from natlinkconfigfunctions
+            self.urgentMessage = "REREGISTER Natlink.dll and Close (restart) or Close right away to cancel"
+            self.cli.checkedConfig = None
         self.setInfo()
 
     def warning(self, text, title='Message from Configure Natlink GUI'):                     
@@ -244,6 +248,7 @@ class configurenatlink(wx.Panel):
                     control.Enable(value)
             
             self.composeStatusLine(newStatus)
+            print 'urgentMessage: %s' % self.urgentMessage
             self.urgentStatusLine(self.urgentMessage)
             self.urgentMessage = None
 
