@@ -31,6 +31,7 @@ import re
 import natlink
 from natlinkutils import *
 import natlinkstatus
+import natlinkcorefunctions
 import win32api  # for opening command files if own editor is specified
 status = natlinkstatus.NatlinkStatus()
 ##
@@ -301,7 +302,9 @@ class ThisGrammar(GrammarBase):
                 raise IOError('vcl2py.exe not a file: %s'% prog)
             rest = options + ' "' + inputFileOrFolder + '" "' + NatLinkFolder +'"'
             command = prog + " " + rest
-            os.system(command)
+            
+            result = os.system(command)
+            print 'result of os.system command: %s\ncommand: %s'% (result, command)
 
         for commandFolder in self.commandFolders:
             logName = commandFolder + r'\vcl2py_log.txt'
@@ -390,7 +393,14 @@ class ThisGrammar(GrammarBase):
                 print 'simpsrcp call failed????'
         else:
             filename = '"' + path + '"'
-            win32api.ShellExecute(0, 'open', self.userCommandFilesEditor, filename, "", 1)
+            if self.userCommandFilesEditor == 'notepad':
+                prog = os.path.join(natlinkcorefunctions.getExtendedEnv('SYSTEM'), 'notepad.exe')
+            else:
+                prog = self.userCommandFilesEditor
+            if not os.path.isfile(prog):
+                raise IOError("_vocola_main: cannot program for editing user command files: %s"% prog)
+            print 'open with ShellExecute: %s, filename: %s'% (prog, filename)
+            win32api.ShellExecute(0, 'open', prog, filename, "", 1)
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
