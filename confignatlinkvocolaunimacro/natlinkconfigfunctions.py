@@ -152,7 +152,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         print "checking PythonPathAndRegistry"
         lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict()
         coreDir2 = self.getCoreDirectory()
-        if coreDir2 != coreDir:
+        if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
 
@@ -250,11 +250,24 @@ from the correct place.
         return lmPythonPathDict, pythonPathSectionName
         
     def setNatlinkInPythonPathRegistry(self):
-        """sets the HKLM setting of the Python registry"""
+        """sets the HKLM setting of the Python registry
+
+        do this only when needed...
+
+        """
         lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
         baseDir = os.path.join(coreDir, '..')
-        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
-        lmPythonPathDict['NatLink']  = {'': pathString}
+        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))
+        NatlinkSection = lmPythonPathDict['NatLink']
+        if NatlinkSection:
+            oldPath = NatlinkSection.get('', '')
+        else:
+            oldPath = ''
+        if oldPath.lower() != pathString.lower():
+            try:
+                lmPythonPathDict['NatLink']  = {'': pathString}
+            except:
+                self.warning("cannot set PythonPath for natlink in registry, probably you have insufficient rights to do this")
 
         
     def clearNatlinkFromPythonPathRegistry(self):
@@ -263,7 +276,10 @@ from the correct place.
         baseDir = os.path.join(coreDir, '..')
         pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
         if 'NatLink' in lmPythonPathDict.keys():
-            del lmPythonPathDict['NatLink']
+            try:
+                del lmPythonPathDict['NatLink']
+            except:
+                self.warning("cannot clear python path for natlink in registry (HKLM section), probably you have insufficient rights to do this")
 
     def printRegistrySettings(self):
         print "CURRENT_USER\\Natlink registry settings:"

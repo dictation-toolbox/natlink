@@ -304,7 +304,8 @@ class ThisGrammar(GrammarBase):
             command = prog + " " + rest
             
             result = os.system(command)
-            print 'result of os.system command: %s\ncommand: %s'% (result, command)
+            if result:
+                print 'ERROR, result of os.system command: %s\ncommand: %s'% (result, command)
 
         for commandFolder in self.commandFolders:
             logName = commandFolder + r'\vcl2py_log.txt'

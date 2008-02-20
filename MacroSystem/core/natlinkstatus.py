@@ -357,7 +357,7 @@ class NatlinkStatus(object):
 
     [Global Clients]
     .NatLink=Python Macro System
-    is
+    
     in nsapps.ini check for
     [.NatLink]
     App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
@@ -374,15 +374,29 @@ class NatlinkStatus(object):
         elif self.value1 != actual1 and self.value2 != actual2:
             return 0
         elif self.value1 == actual1:
-            print 'unexpected result: nssystem.ini equal, nsapps DIFFER\n' \
-                  'actual: %s\n' \
-                  'expected: %s'% (actual2, value2)
+            mess = ['Error while checking if Natlink is enabled, unexpected result: ',
+                    'nssystem.ini points to NatlinkIsEnabled:',
+                    '    section: %s, key: %s, value: %s'% (self.section1, self.key1, actual1),
+                    'but nsapps.ini points to Natlink is not enabled:',
+                  '    section: %s, key: %s, value: %s'% (self.section2, self.key2, actual2),
+                  '    should have value: %s'% self.value2]
+            
         elif self.value2 == actual2:
-            print 'unexpected result: nssystem.ini DIFFER, nsapps equal\n' \
-                  'actual: %s\n' \
-                  'expected: %s'% (actual1, value1)
+            # GUID in nsapps may be defined, natspeak first checks nssystem.ini
+            return 0
         else:
-            print 'NatlinkIsEnabled: should not come here...'
+            mess = [ 'NatlinkIsEnabled: should not come here...']
+        self.warning(mess)
+        return 
+
+    def warning(self, text):
+        "to be overloaded in natlinkconfigfunctions and configurenatlink"
+        if isinstance(text, basestring):
+            print text
+        else:
+            # probably list:
+            print '\n'.join(text)
+
 
     def VocolaIsEnabled(self):
         vocDir = self.getVocolaUserDirectory()
@@ -615,7 +629,10 @@ class NatlinkStatus(object):
     
         else:
             # natlink disabled:
-            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is disabled")
+            if D['natlinkIsEnabled'] == 0:
+                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is disabled")
+            else:
+                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
             key = 'CoreDirectory'
             self.appendAndRemove(L, D, key)
             for key in ['DebugLoad', 'DebugCallback',
