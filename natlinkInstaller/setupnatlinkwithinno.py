@@ -82,7 +82,7 @@ def fatal_error(message, new_raise=None):
 import os, sys, shutil
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
-trunkDir = os.path.normpath(os.path.join(thisDir, '..', '..'))
+trunkDir = os.path.normpath(os.path.join(thisDir, '..', '..', '..'))
 print 'trunkDir: %s'% trunkDir
 
 if thisDir == coreDir:
@@ -167,8 +167,8 @@ class InnoScript:
         print >> ofi, r"[Run]"
         Path = r'natlink\confignatlinkvocolaunimacro\configurenatlink.py'
 
-        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch natlink configuration GUI"; Flags: postinstall'% \
-              Path
+##        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch natlink configuration GUI"; Flags: postinstall'% \
+##              Path
         
     def compile(self):
         try:
