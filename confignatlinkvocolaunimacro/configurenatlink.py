@@ -247,7 +247,6 @@ class configurenatlink(wx.Panel):
                     control.Enable(value)
             
             self.composeStatusLine(newStatus)
-            print 'urgentMessage: %s' % self.urgentMessage
             self.urgentStatusLine(self.urgentMessage)
             self.urgentMessage = None
 

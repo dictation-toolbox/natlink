@@ -258,7 +258,7 @@ from the correct place.
         lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
         baseDir = os.path.join(coreDir, '..')
         pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))
-        NatlinkSection = lmPythonPathDict['NatLink']
+        NatlinkSection = lmPythonPathDict.get('NatLink', None)
         if NatlinkSection:
             oldPath = NatlinkSection.get('', '')
         else:
@@ -557,15 +557,19 @@ from the correct place.
         self.userregnl[key] = 1
         # also copy usc.vch from unimacro folder to VocolaUserDirectory
         fromFolder = os.path.join(self.getUserDirectory(), 'vocola_compatibility')
+        toFolder = self.getVocolaUserDir()
         if os.path.isdir(fromFolder):
             fromFile = os.path.join(fromFolder,uscFile)
             if os.path.isfile(fromFile):
-                toFolder = self.getVocolaUserDir()
                 if os.path.isdir(toFolder):
                     toFile = os.path.join(toFolder, uscFile)
                     print 'copy %s from %s to %s'%(uscFile, fromFolder, toFolder)
-                    shutil.copyfile(fromFile, toFile)
-                    return
+                    try:
+                        shutil.copyfile(fromFile, toFile)
+                    except:
+                        pass
+                    else:
+                        return
         mess = "could not copy file %s from %s to %s"%(uscFile, fromFolder, toFolder)
         print mess
         return mess
@@ -1022,7 +1026,7 @@ When you unregister, natlink is also disabled.
 
 If you want to (silent) enable natlink and register silent use -z,
 To disable natlink and unregister (silent) use Z
-"""% self.config.NATLINK_CLSID
+"""
         print '='*60
     help_R = help_r
     help_z = help_r

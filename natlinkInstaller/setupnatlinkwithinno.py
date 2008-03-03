@@ -157,7 +157,7 @@ class InnoScript:
         print >> ofi, r"[Icons]"
         Path = r'..\natlink\confignatlinkvocolaunimacro\configurenatlink.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
-              ("configure natlink (GUI)", Path)
+              ("Configure natlink (GUI)", Path)
         Path = r'..\natlink\confignatlinkvocolaunimacro\natlinkconfigfunctions.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
                   ("Command line interface CLI", Path)

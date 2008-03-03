@@ -283,10 +283,11 @@ class UnittestNatlink(unittest.TestCase):
         (to avoid using unimacro functions in the natlink tests)
         """        
         try:
-            win32gui.GetParent(hndle)
+            parent = win32gui.GetParent(hndle)
         except:
             return 1
-        return 0
+        else:
+            return parent == 0 
 
 
     def wait(self, t=1):
