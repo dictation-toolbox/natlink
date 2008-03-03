@@ -82,7 +82,7 @@ def fatal_error(message, new_raise=None):
 import os, sys, shutil
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
-trunkDir = os.path.normpath(os.path.join(thisDir, '..', '..', '..'))
+trunkDir = os.path.normpath(os.path.join(thisDir, '..', '..'))
 print 'trunkDir: %s'% trunkDir
 
 if thisDir == coreDir:
@@ -128,14 +128,14 @@ class InnoScript:
         print >> ofi, r"OutputBaseFilename=%s"% self.outputFilename
         print >> ofi, r"AppName=%s"% self.name
         print >> ofi, r"AppVerName=%s version %s (including vocola and unimacro)" % (self.name, self.version)
-        print >> ofi, r"DefaultDirName={pf}\%s" % self.name
+        print >> ofi, r"DefaultDirName=C:\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
         print >> ofi, r"LicenseFile=..\natlink\COPYRIGHT.txt"
 ##        print >> ofi, "DisableDirPage=yes"
         print >> ofi, "UsePreviousAppDir=yes"
         print >> ofi
-##        print >> ofi, r'[Languages]'
-##        print >> ofi, r'Name: "nl"; MessagesFile: "..\Dutch.isl"'
+        print >> ofi, r'[Languages]'
+        print >> ofi, r'Name: "en"; MessagesFile: "..\natlink\natlinkInstaller\Natlink.isl"'
 
         print >> ofi
         print >> ofi, r"[Files]"
