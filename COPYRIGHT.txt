@@ -1,5 +1,3 @@
-
-
 NatLink
 	(c) Copyright 1997-1999 by Joel Gould.
 		Portions (c) Copyright 1997-1999 by Dragon Systems, Inc. All Rights Reserved.
