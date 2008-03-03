@@ -1,4 +1,4 @@
-__version__ = "3.1.charlie"
+__version__ = "3.1.delta"
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
