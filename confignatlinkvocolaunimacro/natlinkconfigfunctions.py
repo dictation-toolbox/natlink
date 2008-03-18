@@ -85,12 +85,12 @@ def getCoreDir(thisDir):
     if not os.path.isdir(coreFolder):
         print 'not a directory: %s'% coreFolder
         return thisDir
-    dllPath = os.path.join(coreFolder, 'natlink.dll')
+##    dllPath = os.path.join(coreFolder, 'natlink.dll')
     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
     statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-    if not os.path.isfile(dllPath):
-        print 'natlink.dll not found in core directory: %s'% coreFolder
-        return thisDir
+##    if not os.path.isfile(dllPath):
+##        print 'natlink.dll not found in core directory: %s'% coreFolder
+##        return thisDir
     if not os.path.isfile(mainPath):
         print 'natlinkmain.py not found in core directory: %s'% coreFolder
         return thisDir
@@ -132,6 +132,35 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     userregnl got from natlinkstatus, as a Class (not instance) variable, so
     should be the same among instances of this class...
     """
+    def checkNatlinkDllFile(self):
+        """see if natlink.dll is in core directory, if not copy from correct version
+        """
+        coreDir2 = self.getCoreDirectory()
+        if coreDir2.lower() != coreDir.lower():
+            fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
+                                              (coreDir, coreDir2))
+        dllFile = os.path.join(coreDir, 'natlink.dll')
+        if not os.path.isfile(dllFile):
+            self.copyNatlinkDllPythonVersion()
+            self.checkPythonPathAndRegistry()            
+
+    def copyNatlinkDllPythonVersion(self):
+        """copy the natlink.dll from the correct version"""
+        dllFile = os.path.join(coreDir, 'natlink.dll')
+        if os.path.isfile(dllFile):
+            self.unregisterNatlinkDll()
+            os.remove(dllFile)
+        pythonVersion = self.getPythonVersion().replace(".", "")
+        dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
+        if os.path.isfile(dllVersionFile):
+            try:
+                shutil.copyfile(dllVersionFile, dllFile)
+            except:
+                fatal_error("could not copy %s to %s"% (dllVersionFile, dllFile))
+        
+                        
+
+ 
     def checkPythonPathAndRegistry(self):
         """checks if core directory and base directory are there
 
@@ -502,7 +531,8 @@ from the correct place.
                 # os.system:
                 os.system('regsvr32 /u "%s"'% DllPath)
         self.clearNatlinkFromPythonPathRegistry()
-        
+        # and remove the natlink.dll (there remain pythonversion ones 23, 24 and 25)
+        os.remove(DllPath)
 
     def enableDebugLoadOutput(self):
         """setting registry key so debug output of loading of natlinkmain is given
@@ -655,6 +685,7 @@ class CLI(cmd.Cmd):
             self.config = Config   # initialised instance of NatlinkConfig
         else:
             self.config = NatlinkConfig()
+        self.config.checkNatlinkDllFile()
         self.config.checkPythonPathAndRegistry()
         self.checkedConfig = self.config.checkedUrgent
 

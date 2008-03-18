@@ -39,7 +39,7 @@
 # throw an exception!
 
 ############################################################################
-__version__ = "$Revision$, $Date$, $Author$"
+__version__ = ""   #changed with SVN
 #
 # natlinkmain
 #
@@ -547,15 +547,13 @@ try:
     changeCallback('user', getCurrentUser())
 
 ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
-    print 'Starting natlinkmain with language: %s (DNSversion: %s, WindowsVersion: %s)'% \
-          (language, DNSversion, WindowsVersion)
     if debugLoad:
-        print 'natlinkmain CVS version: %s'% __version__.replace("$", "").strip()
-        print 'complete path: %s'% __file__
-    else:
-        v = __version__.split(',')[0]
-        v = v.strip("$Revision: ")
-        print 'natlinkmain CVS version: %s'% v
+        if language == 'enx':
+            print 'Starting natlinkmain (DNSversion: %s, WindowsVersion: %s)'% \
+              (DNSversion, WindowsVersion)
+        else:
+            print 'Starting natlinkmain with language: %s (DNSversion: %s, WindowsVersion: %s)'% \
+              (language, DNSversion, WindowsVersion)
 
     # load all global files in user directory and current directory
     findAndLoadFiles()
