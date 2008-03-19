@@ -67,6 +67,9 @@ getUserDirectory: get the natlink user directory, unimacro will be there. If not
 
 getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
 
+getUnimacroUserDirectory: get the directory of Unimacro Ini files, if not return '' or
+      the unimacro user directory
+
 NatlinkIsEnabled:
     return 1 or 0 whether natlink is enabled or not
     returns None when strange values are found 
@@ -424,16 +427,6 @@ class NatlinkStatus(object):
         if value:
             if os.path.isdir(value):
                 return os.path.normpath(value)
-            else:
-                print '-'*60
-                print 'Invalid userDirectory (of natlink user grammar files, often unimacro): %s'% value
-                print 'Return NO userDirectory'
-                print 'Run  configurenatlink to fix if you like'
-                print '-'*60
-        else:
-            print 'userDirectory (of user grammars in Natlink, mostly unimacro) is NOT SET.'
-            print "Run configurenatlink to fix, or leave it like this"
-        # fall through: 
         return ''
 
     def getVocolaUserDirectory(self):
@@ -442,32 +435,40 @@ class NatlinkStatus(object):
         if value:
             if os.path.isdir(value):
                 return os.path.normpath(value)
-            else:
-                print '-'*60
-                print 'Invalid VocolaUserDirectory (of vocola user files): %s'% value
-                print 'Return NO VocolaUserDirectory'
-                print 'Run  configurenatlink to fix if you like'
-                print '-'*60
-        else:
-            print 'VocolaUserDirectory (of vocola user files) is NOT SET.'
-            print 'regard Vocola as being DISABLED'
-            print "Run configurenatlink to fix, or leave it like this"
-        # fall through: 
         return ''
+
+    def getUnimacroUserDirectory(self):
+        key = 'UnimacroUserDirectory'
+        value = self.userregnl.get(key, '')
+        if self.UnimacroIsEnabled():
+            if value:
+                if os.path.isdir(value):
+                    return os.path.normpath(value)
+            else:
+                return self.getUserDirectory()
+        else:
+            # unimacro not enabled
+            return ""
 
     def getVocolaCommandFilesEditor(self):
         key = 'VocolaCommandFilesEditor'
         value = self.userregnl.get(key, '')
-        if value:
-            print 'use %s for editing vocola command files'% value
-        else:
+        if not value:
             if self.getVocolaUsesSimpscrp():
-                print 'use default (simpscrp) for editing vocola command files'
                 value = 'simpscrp'
             else:
-                print 'use default (notepad) for editing vocola command files'
                 value = 'notepad'
         return value
+
+    def getUnimacroIniFilesEditor(self):
+        key = 'UnimacroIniFilesEditor'
+        value = self.userregnl.get(key, '')
+        if not value:
+            value = 'notepad'
+        if self.UnimacroIsEnabled():
+            return value
+        else:
+            return ''
 
     def getVocolaUsesSimpscrp(self):
         key = 'VocolaUsesSimpscrp'
@@ -568,6 +569,7 @@ class NatlinkStatus(object):
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'VocolaUserDirectory', 'VocolaCommandFilesEditor',
                     'VocolaUsesSimpscrp',
+                    'UnimacroUserDirectory', 'UnimacroIniFilesEditor',
                     'NatlinkDebug', 'InstallVersion']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
@@ -614,8 +616,12 @@ class NatlinkStatus(object):
                 self.appendAndRemove(L, D, 'unimacroIsEnabled', "---unimacro is enabled")
                 for key in ('userDirectory',):
                     self.appendAndRemove(L, D, key)
+                for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
+                    self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'unimacroIsEnabled', "---unimacro is disabled")
+                for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
+                    del D[key]
                 if D['userDirectory']:
                     L.append('but userDirectory is defined:')
                     for key in ('userDirectory',):

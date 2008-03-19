@@ -22,8 +22,204 @@ nf = None
 nc = None  # natlinkcorefunctions
 # WDR: classes
 
+class InfoPanel(wx.Panel):
+    def __init__(self, parent, id, name="infopanel",
+        pos = wx.DefaultPosition, size = wx.DefaultSize,
+        style = wx.TAB_TRAVERSAL ):
+        self.frame = parent.frame
+        wx.Panel.__init__(self, parent, id, pos, size, style)
+        # WDR: dialog function InfoWindow for infopanel
+        InfoWindow( self, True )
+        # WDR: handler declarations for infopanel
+        wx.EVT_BUTTON(self, ID_BUTTONHelpInfo, self.OnButtonHelpInfo)
+        wx.EVT_BUTTON(self, ID_BUTTONClearDNSInifilePath, self.OnButtonClearDNSInifilePath)
+        wx.EVT_BUTTON(self, ID_BUTTONchangednsinifilepath, self.OnButtonChangeDNSInifilePath)
+        wx.EVT_BUTTON(self, ID_BUTTONClearDNSInstallPath, self.OnButtonClearDNSInstallPath)
+        wx.EVT_BUTTON(self, ID_BUTTONchangednsinstallpath, self.OnButtonChangeDNSInstallPath)
+        wx.EVT_BUTTON(self, ID_BUTTONLogInfo, self.OnButtonLogInfo)
 
-class configurenatlink(wx.Panel):
+    # WDR: methods for infopanel
+    def GetTextctrlpythonversion(self):
+        return self.FindWindowById( ID_TEXTCTRLpythonversion )
+
+    def GetTextctrlwindowsversion(self):
+        return self.FindWindowById( ID_TEXTCTRLWindowsVersion )
+
+    def GetTextctrlnatlinkcorepath(self):
+        return self.FindWindowById( ID_TEXTCTRLnatlinkcorepath )
+
+    def GetTextctrldnsinifilepath(self):
+        return self.FindWindowById( ID_TEXTCTRLdnsinifilepath )
+
+    def GetTextctrldnsinstallpath(self):
+        return self.FindWindowById( ID_TEXTCTRLDNSinstallpath )
+
+    def GetTextctrldnsversion(self):
+        return self.FindWindowById( ID_TEXTCTRLDNSversion )
+
+        return self.FindWindowById( ID_TEXTCTRLpythonversion )
+
+    def GetTextctrlwindowsversion(self):
+        return self.FindWindowById( ID_TEXTCTRLWindowsVersion )
+
+    def GetTextctrlnatlinkcorepath(self):
+        return self.FindWindowById( ID_TEXTCTRLnatlinkcorepath )
+
+
+    # WDR: handler implementations for infopanel
+
+    def OnButtonClearDNSInifilePath(self, event):
+        D = self.cpanel.config.getNatlinkStatusDict()
+        doLetter, undoLetter = 'C', 'c'
+        old_path = D['DNSIniDir']
+        if old_path and os.path.isdir(old_path):
+            undoCmd = (undoLetter, old_path)
+        else:
+            self.setstatus("DNSIniDir was NOT set, so no action needed")
+            return
+    
+        statustext = 'DNSIniDir is Cleared, search (again) for default.'
+        result = self.do_command(doLetter, undo=undoCmd)
+        if result:
+            self.setstatus(result)
+        else:
+            self.setstatus(statustext)
+        self.cpanel.setInfo(leaveStatus=1)
+
+    def OnButtonChangeDNSInifilePath(self, event):
+        # ask for the correct directory:
+        D = self.cpanel.config.getNatlinkStatusDict()
+        doLetter, undoLetter = 'c', 'C'
+        undoCmd = (undoLetter,)
+        dlg = wx.DirDialog(self.frame, "Choose a directory please",
+              style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
+##                  style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
+        ## search for unimacro directory as proposal:
+        Path = D['DNSIniDir']
+        if not (Path and os.path.isdir(Path)):
+            Path = nc.getExtendedEnv("COMMON_APPDATA")
+        
+        dlg.SetPath(Path)
+        dlg.SetMessage('Please specify the directory where the DNS ini files are located')
+        statustext = 'DNS Ini file location is changed'
+        if dlg.ShowModal() == wx.ID_OK:
+            new_path = dlg.GetPath()
+        else:
+            self.setstatus("nothing specified")
+            return
+        result = self.do_command(doLetter,new_path, undo=undoLetter)
+        if result:
+            self.setstatus(result)
+        else:
+            self.setstatus("DNSIniDir changed")
+        self.cpanel.setInfo(leaveStatus=1)
+
+
+    def OnButtonClearDNSInstallPath(self, event):
+
+        D = self.cpanel.config.getNatlinkStatusDict()
+        doLetter, undoLetter = 'D', 'd'
+        old_path = D['DNSInstallDir']
+        if old_path and os.path.isdir(old_path):
+            undoCmd = (undoLetter, old_path)
+        else:
+            self.setstatus("DNSInstallDir was NOT set, so no action needed")
+            return
+    
+        statustext = 'DNSInstallDir is Cleared, search (again) for default.'
+        result = self.do_command(doLetter, undo=undoCmd)
+        if result:
+            self.setstatus(result)
+        else:
+            self.setstatus(statustext)
+        self.cpanel.setInfo(leaveStatus=1)
+
+    def OnButtonChangeDNSInstallPath(self, event):
+        # ask for the correct directory:
+        D = self.cpanel.config.getNatlinkStatusDict()
+        doLetter, undoLetter = 'd', 'D'
+        undoCmd = (undoLetter,)
+        dlg = wx.DirDialog(self.frame, "Choose a directory please",
+              style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
+##                  style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
+        ## search for unimacro directory as proposal:
+        Path = D['DNSInstallDir']
+        if not (Path and os.path.isdir(Path)):
+            Path = nc.getExtendedEnv("PROGRAMFILES")
+        
+        dlg.SetPath(Path)
+        dlg.SetMessage('Please specify the directory where DNS is installed')
+        statustext = 'DNS Install directory is changed'
+        if dlg.ShowModal() == wx.ID_OK:
+            new_path = dlg.GetPath()
+        else:
+            self.setstatus("nothing specified")
+            return
+        result = self.do_command(doLetter,new_path, undo=undoLetter)
+        if result:
+            self.setstatus(result)
+        else:
+            self.setstatus("DNSInstallDir changed")
+        self.cpanel.setInfo(leaveStatus=1)
+
+    def OnButtonLogInfo(self, event):
+        self.cpanel.cli.do_i("dummy")
+        self.cpanel.cli.do_I("dummy")
+        self.cpanel.warning("See the info from natlinkstatus in the log panel")
+
+    def OnButtonHelpInfo(self, event):
+        print '---help on DNS Install Directory:'
+        print 'note the letters correspond to the commands in the self.cli (command line interface)'
+        cli = self.cpanel.cli
+        cli.help_d()
+        print '---help on DNS Ini files Directory:'
+        cli.help_c()
+        text = \
+"""This info panel has no undo function, like the config panel,
+but clearing the settings falls back to NatSpeak defaults
+
+The button Log info gives the complete natlinkstatus info in the log panel
+
+See more help information in the log panel"""
+        self.cpanel.warning(text)
+
+    def setstatus(self, text):
+        """put message on log panel and on status line"""
+        print text
+        self.frame.SetStatusText(text)
+
+    def do_command(self, *args, **kw):
+        """a single letter, optionally followed by a path
+        for infopanel, no undo things, simply ignore
+
+        when calling from undo button, provide 'noundo' = 1 as keyword argument.
+
+    
+        """
+        if len(args) < 1:
+            print 'empty command %s'% `args`
+            return
+        if len(args) > 2:
+            print 'too many posional arguments: %s'% `args`
+            return
+        letter = args[0]
+        if len(args) == 2:
+            pathName = args[1]
+        else:
+            pathName = 'dummy'
+        funcName = 'do_%s'% letter
+        cli = self.cpanel.cli
+        func = getattr(cli, funcName, None)
+        if not func:
+            mess = 'invalid command: %s'% letter
+            print mess
+            return mess
+        result = func(pathName)
+        self.cpanel.setInfo()
+        return result
+
+
+class ConfigureNatlinkPanel(wx.Panel):
     def __init__(self, parent, id, name="configurepanel",
         pos = wx.DefaultPosition, size = wx.DefaultSize,
         style = wx.TAB_TRAVERSAL ):
@@ -35,9 +231,10 @@ class configurenatlink(wx.Panel):
         MainWindow( self, True )
 
         # WDR: handler declarations for configurenatlink
+        wx.EVT_BUTTON(self, ID_BUTTONUnimacroEditor, self.OnButtonUnimacroEditor)
+        wx.EVT_BUTTON(self, ID_BUTTONUnimacroInifilesDirectory, self.OnButtonUnimacroInifilesDirectory)
         wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaUsesSimpscrp, self.OnCBVocolaUsesSimpscrp)
         wx.EVT_BUTTON(self, ID_BUTTONVocolaEditor, self.OnButtonVocolaEditor)
-        wx.EVT_BUTTON(self, ID_BUTTONLogInfo, self.OnButtonLogInfo)
         wx.EVT_BUTTON(self, ID_BUTTONHelp5, self.OnButtonHelp5)
         wx.EVT_BUTTON(self, ID_BUTTONHelp1, self.OnButtonHelp1)
         wx.EVT_BUTTON(self, ID_BUTTONHelp4, self.OnButtonHelp4)
@@ -53,10 +250,6 @@ class configurenatlink(wx.Panel):
         wx.EVT_CHECKBOX(self, ID_CHECKBOXDebugLoad, self.OnDBDebugLoad)
         wx.EVT_BUTTON(self, ID_BUTTONHelp3, self.OnButtonHelp3)
         wx.EVT_BUTTON(self, ID_BUTTONHelp2, self.OnButtonHelp2)
-        wx.EVT_BUTTON(self, ID_BUTTONClearDNSInifilePath, self.OnButtonClearDNSInifilePath)
-        wx.EVT_BUTTON(self, ID_BUTTONchangednsinifilepath, self.OnButtonChangeDNSInifilePath)
-        wx.EVT_BUTTON(self, ID_BUTTONClearDNSInstallPath, self.OnButtonClearDNSInstallPath)
-        wx.EVT_BUTTON(self, ID_BUTTONchangednsinstallpath, self.OnButtonChangeDNSInstallPath)
 
         wx.EVT_BUTTON(self, ID_BUTTONunregister, self.OnButtonUnregister)
         wx.EVT_BUTTON(self, ID_BUTTONregister, self.OnButtonRegister)
@@ -121,13 +314,13 @@ class configurenatlink(wx.Panel):
         # checkboxes should have a getter, an event (OnCB...) and
         # be included in self.checkboxes list.
         
-        D['DNSVersion'] = self.GetTextctrldnsversion
-        D['DNSInstallDir'] = self.GetTextctrldnsinstallpath
-        D['PythonVersion'] = self.GetTextctrlpythonversion
-        D['CoreDirectory'] = self.GetTextctrlnatlinkcorepath
+        D['DNSVersion'] = self.frame.infopanel.GetTextctrldnsversion
+        D['DNSInstallDir'] = self.frame.infopanel.GetTextctrldnsinstallpath
+        D['PythonVersion'] = self.frame.infopanel.GetTextctrlpythonversion
+        D['CoreDirectory'] = self.frame.infopanel.GetTextctrlnatlinkcorepath
         D['userDirectory'] = self.GetTextctrluserdirectory
         D['VocolaUserDirectory'] = self.GetTextctrlvocolauserdir
-        D['WindowsVersion'] = self.GetTextctrlwindowsversion
+        D['WindowsVersion'] = self.frame.infopanel.GetTextctrlwindowsversion
         D['VocolaTakesLanguages'] = self.GetCheckboxvocolatakeslanguages
         D['VocolaTakesUnimacroActions'] = self.GetCheckboxvocolaunimacroactions
         D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
@@ -135,11 +328,13 @@ class configurenatlink(wx.Panel):
         D['DebugCallback'] = self.GetCheckboxdebugcallbackoutput
         D['DebugLoad'] = self.GetCheckboxdebugload
         D['NatlinkDebug'] = self.GetCheckboxnatlinkdebug
-        D['DNSIniDir'] = self.GetTextctrldnsinifilepath
+        D['DNSIniDir'] = self.frame.infopanel.GetTextctrldnsinifilepath
         D['natlinkIsEnabled'] = self.GetButtonnatlinkenable
         D['vocolaIsEnabled'] = self.GetButtonvocolaenable
         
         D['unimacroIsEnabled'] = self.GetButtonnatlinkuserdirectory
+        D['UnimacroUserDirectory'] = self.GetTextctrlunimacroinifilesdirectory
+        D['UnimacroIniFilesEditor'] = self.GetTextctrlunimacroeditor
         self.checkboxes = ['VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                            'DebugCallback', 'DebugLoad', 'VocolaUsesSimpscrp',
                            'NatlinkDebug']
@@ -176,6 +371,9 @@ class configurenatlink(wx.Panel):
                     if key == 'VocolaCommandFilesEditor':
                         pass
                     func = self.functions[key]
+##                    if func == None:
+##                        print "no getter function for %s"% key
+##                        continue
                     value = D[key]
                     thisOneChanged = 0
                     if value != self.startInfo[key]:
@@ -368,6 +566,12 @@ class configurenatlink(wx.Panel):
        
     # WDR: methods for configurenatlink
 
+    def GetTextctrlunimacroeditor(self):
+        return self.FindWindowById( ID_TEXTCTRLunimacroeditor )
+
+    def GetTextctrlunimacroinifilesdirectory(self):
+        return self.FindWindowById( ID_TEXTCTRLunimacroinifilesDirectory )
+
     def GetCheckboxvocolausessimpscrp(self):
         return self.FindWindowById( ID_CHECKBOXVocolaUsesSimpscrp )
 
@@ -379,15 +583,6 @@ class configurenatlink(wx.Panel):
 
     def GetTextctrlstatus(self):
         return self.FindWindowById( ID_TEXTCTRLstatus )
-
-    def GetTextctrlpythonversion(self):
-        return self.FindWindowById( ID_TEXTCTRLpythonversion )
-
-    def GetTextctrlwindowsversion(self):
-        return self.FindWindowById( ID_TEXTCTRLWindowsVersion )
-
-    def GetTextctrlnatlinkcorepath(self):
-        return self.FindWindowById( ID_TEXTCTRLnatlinkcorepath )
 
     def GetButtonnatlinkuserdirectory(self):
         return self.FindWindowById( ID_BUTTONNatlinkUserDirectory )
@@ -449,6 +644,10 @@ class configurenatlink(wx.Panel):
 
     # WDR: handler implementations for configurenatlink
 
+    def OnButtonUnimacroEditor(self, event):
+        pass
+
+
     def OnCBVocolaUsesSimpscrp(self, event):
         letter = 's'
         control = self.GetCheckboxvocolausessimpscrp()
@@ -508,30 +707,48 @@ If eg Natlink shows the button "Enable", it is currently disabled.
 
 in order to let the changes take effect, you have to restart NatSpeak.
 In some cases you have to restart the computer.
+
+If you use Windows Vista, User Account Control must be turned off
+before you can do the register/unregister actions!
 """
         self.warning(text)
         
 
     def OnButtonHelp1(self, event):
-        print '---help on DNS Install Directory:'
-        print 'note the letters correspond to the commands in the self.cli (command line interface)'
-        self.cli.help_d()
-        print '---help on DNS Ini files Directory:'
-        self.cli.help_c()
-        self.warning("See the help information in the log panel")
+        text = \
+"""The status line gives information about what you did or should do.
+
+General status info is in the "info" panel, changing of some settings is there as well.
+See the "log" panel if you need more information.
+"""
+        self.warning(text)
 
     def OnButtonHelp4(self, event):
         print '---help on Enable/disable Unimacro/user grammars:'
         print 'note the letters correspond to the commands in the self.cli (command line interface)'
         self.cli.help_n()
-        L = []
-        L.append("Unimacro is enabled by specifying a directory:")
-        L.append("the natlink user directory (userDirectory).")
-        L.append("")
-        L.append("When you disable, this userDirectory is cleared from in the registry")
-        L.append("")
-        L.append("More information in the log panel")               
-        self.warning('\n'.join(L))
+        self.cli.help_p()
+        self.cli.help_o()
+        text = \
+"""
+Unimacro is enabled by specifying a directory:
+   the natlink user directory (userDirectory)
+
+When you disable, this userDirectory is cleared from in the registry.
+
+When unimacro is enabled, you can also specify:
+-a directory where your own user (ini) files are located (eg in your "Documents" folder)
+-a program for editing these user (ini) files, default is Notepad
+
+For above 2 settings: when you hit the button and subsequently Cancel, the setting is cleared, and
+you fall back to a default value.
+
+If you use you own natlink grammar files, they can coexist with unimacro in the
+userDirectory.
+
+More information in the log panel"""
+
+        self.warning(text)
 
 
     def OnButtonClose(self, event):
@@ -590,7 +807,55 @@ In some cases you have to restart the computer.
         self.do_command(doLetter,new_path, undo=undoLetter)
         self.setstatus(statustext)
         self.setInfo()
-       
+
+    def OnButtonUnimacroInifilesDirectory(self, event):
+        D = self.config.getNatlinkStatusDict()
+        letter = 'o'
+        if not self.config.UnimacroIsEnabled():
+            self.warning("First enable unimacro")
+            return
+        # now go for enable:
+        doLetter = letter.lower()
+        undoLetter = letter.upper()
+        statustext = 'Unimacro Ini Files Directory is set, this will take effect after you restart NatSpeak'
+
+        # ask for the correct directory:
+        dlg = wx.DirDialog(self.frame, "Choose a directory please",
+              style=wx.DD_DEFAULT_STYLE)
+        ## search for unimacro directory as proposal:
+        prevPath = D['UnimacroUserDirectory']
+        if prevPath and os.path.isdir(prevPath):
+            Path = prevPath
+            undo = (doLetter, prevPath)
+        else:
+            prevPath = ""
+            undo = (undoLetter, "")
+            Path = nc.getExtendedEnv("PERSONAL")
+            vPath = os.path.join(Path, "unimacro")
+            if os.path.isdir(vPath):
+                Path = vPath
+
+        dlg.SetPath(Path)
+        dlg.SetMessage('Please specify the directory where Unimacro (user) Ini files are/wil be located')
+        if dlg.ShowModal() == wx.ID_OK:
+            new_path = dlg.GetPath()
+            if new_path and os.path.isdir(new_path):
+                pass
+            else:
+                self.setstatus("no directory specified: %s"% new_path)
+                return
+        else:
+            self.setstatus("Pressed Cancel, return to default")
+            if prevPath:
+                self.do_command( undoLetter, undo=undo )
+            else:
+                self.do_command( undoLetter)
+            return
+        # correct OK:
+        self.do_command(doLetter,new_path, undo=undo)
+        self.setstatus(statustext)
+        self.setInfo()
+      
 
     def OnButtonVocolaEnableDisable(self, event):
         D = self.config.getNatlinkStatusDict()
@@ -705,101 +970,6 @@ In some cases you have to restart the computer.
         
 
 
-    def OnButtonClearDNSInifilePath(self, event):
-        D = self.config.getNatlinkStatusDict()
-        doLetter, undoLetter = 'C', 'c'
-        old_path = D['DNSIniDir']
-        if old_path and os.path.isdir(old_path):
-            undoCmd = (undoLetter, old_path)
-        else:
-            self.setstatus("DNSIniDir was NOT set, so no action needed")
-            return
-    
-        statustext = 'DNSIniDir is Cleared, search (again) for default.'
-        result = self.do_command(doLetter, undo=undoCmd)
-        if result:
-            self.setstatus(result)
-        else:
-            self.setstatus(statustext)
-        self.setInfo(leaveStatus=1)
-
-    def OnButtonChangeDNSInifilePath(self, event):
-        # ask for the correct directory:
-        D = self.config.getNatlinkStatusDict()
-        doLetter, undoLetter = 'c', 'C'
-        undoCmd = (undoLetter,)
-        dlg = wx.DirDialog(self.frame, "Choose a directory please",
-              style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
-##                  style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
-        ## search for unimacro directory as proposal:
-        Path = D['DNSIniDir']
-        if not (Path and os.path.isdir(Path)):
-            Path = nc.getExtendedEnv("COMMON_APPDATA")
-        
-        dlg.SetPath(Path)
-        dlg.SetMessage('Please specify the directory where the DNS ini files are located')
-        statustext = 'DNS Ini file location is changed'
-        if dlg.ShowModal() == wx.ID_OK:
-            new_path = dlg.GetPath()
-        else:
-            self.setstatus("nothing specified")
-            return
-        result = self.do_command(doLetter,new_path, undo=undoLetter)
-        if result:
-            self.setstatus(result)
-        else:
-            self.setstatus("DNSIniDir changed")
-        self.setInfo(leaveStatus=1)
-
-
-    def OnButtonClearDNSInstallPath(self, event):
-
-        D = self.config.getNatlinkStatusDict()
-        doLetter, undoLetter = 'D', 'd'
-        old_path = D['DNSInstallDir']
-        if old_path and os.path.isdir(old_path):
-            undoCmd = (undoLetter, old_path)
-        else:
-            self.setstatus("DNSInstallDir was NOT set, so no action needed")
-            return
-    
-        statustext = 'DNSInstallDir is Cleared, search (again) for default.'
-        result = self.do_command(doLetter, undo=undoCmd)
-        if result:
-            self.setstatus(result)
-        else:
-            self.setstatus(statustext)
-        self.setInfo(leaveStatus=1)
-
-    def OnButtonChangeDNSInstallPath(self, event):
-        # ask for the correct directory:
-        D = self.config.getNatlinkStatusDict()
-        doLetter, undoLetter = 'd', 'D'
-        undoCmd = (undoLetter,)
-        dlg = wx.DirDialog(self.frame, "Choose a directory please",
-              style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
-##                  style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
-        ## search for unimacro directory as proposal:
-        Path = D['DNSInstallDir']
-        if not (Path and os.path.isdir(Path)):
-            Path = nc.getExtendedEnv("PROGRAMFILES")
-        
-        dlg.SetPath(Path)
-        dlg.SetMessage('Please specify the directory where DNS is installed')
-        statustext = 'DNS Install directory is changed'
-        if dlg.ShowModal() == wx.ID_OK:
-            new_path = dlg.GetPath()
-        else:
-            self.setstatus("nothing specified")
-            return
-        result = self.do_command(doLetter,new_path, undo=undoLetter)
-        if result:
-            self.setstatus(result)
-        else:
-            self.setstatus("DNSInstallDir changed")
-        self.setInfo(leaveStatus=1)
-
- 
     def OnButtonUnregister(self, event):
         self.do_command('R')
         self.warning("Close this program, Natspeak, all python applications and\n\npossibly restart your computer\n\nbefore you run this program again!")
@@ -842,9 +1012,13 @@ class MyFrame(wx.Frame):
 ##        self.nb.AddPage(imageId=-1, page=self.errors, select=False,
 ##              text='errors')
         self.nb.frame = self
-        self.cpanel = configurenatlink(self.nb, -1, name='configurepanel')
+        self.infopanel =InfoPanel(self.nb, -1, name='infopanel')
+        self.nb.AddPage(imageId=-1, page=self.infopanel, select=False,
+              text='info')
+        self.cpanel = ConfigureNatlinkPanel(self.nb, -1, name='configurepanel')
         self.nb.AddPage(imageId=-1, page=self.cpanel, select=True,
               text='configure')
+        self.infopanel.cpanel = self.cpanel
 ## self.nb = wx.Notebook(name='notebook', parent=self, style=0)
 
             
@@ -898,7 +1072,8 @@ class Stderr:
 class MyApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
-        self.frame = MyFrame( None, -1, "Configure Natlink & Vocola & Unimacro", [100,80], [770,850] )
+        self.frame = MyFrame( None, -1, "Configure Natlink & Vocola & Unimacro",
+                              [100,80], [770,770] )
         self.frame.Show(True)  
         return True
 

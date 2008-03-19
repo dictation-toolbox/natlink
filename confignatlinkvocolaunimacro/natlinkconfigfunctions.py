@@ -1,3 +1,4 @@
+# -*- coding: latin-1 -*-
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
@@ -46,7 +47,7 @@ Other functions inside this module, with calls from CLI or command line:
 enableNatlink()  (e)/disableNatlink() (E)
 
 setUserDirectory(path) (n path) or clearUserDirectory() (N)
-    
+serUnimacro    
 etc.
 
 More at the bottom, with the CLI description...     
@@ -459,6 +460,26 @@ from the correct place.
         else:
             print 'was not set: %s'% key
 
+
+    def getUnimacroUserDir(self):
+        key = 'UnimacroUserDirectory'
+        return self.userregnl.get(key, None)
+
+    def setUnimacroUserDir(self, v):
+        key = 'UnimacroUserDirectory'
+        if os.path.isdir(v):
+            print 'set unimacro user dir to %s'% v
+            self.userregnl[key] = v
+        else:
+            print 'not a valid directory: %s'% v
+
+    def clearUnimacroUserDir(self):
+        key = 'UnimacroUserDirectory'
+        if key in self.userregnl:
+            del self.userregnl[key]
+        else:
+            print 'was not set: %s'% key
+
     def setVocolaCommandFilesEditor(self, v):
         key = "VocolaCommandFilesEditor"
         if v and os.path.isfile(v) and v.endswith(".exe"):
@@ -469,6 +490,20 @@ from the correct place.
 
     def clearVocolaCommandFilesEditor(self):
         key = "VocolaCommandFilesEditor"
+        if key in self.userregnl:
+            del self.userregnl[key]
+        else:
+            print 'was not set: %s'% key
+
+    def setUnimacroIniFilesEditor(self, v):
+        key = "UnimacroIniFilesEditor"
+        if v and os.path.isfile(v) and v.endswith(".exe"):
+            self.userregnl[key] = v
+        else:
+            print 'invalid path, not a file or no .exe file: %s'% v
+            
+    def clearUnimacroIniFilesEditor(self):
+        key = "UnimacroIniFilesEditor"
         if key in self.userregnl:
             del self.userregnl[key]
         else:
@@ -640,8 +675,8 @@ def _main(Options=None):
 
     """
     cli = CLI()
-    shortOptions = "aAbBxXyYiIDCeEUdVrRgGzZW"
-    shortArgOptions = "c:u:v:w:"  
+    shortOptions = "aAbBxXyYiIDCeEUdVrRgGzZWPO"
+    shortArgOptions = "c:u:v:w:p:o:"  
     if Options:
         if type(Options) == types.StringType:
             Options = Options.split(" ", 1)
@@ -707,10 +742,14 @@ c/C - set/clear dnsinidir, the directory where NatSpeak ini files are located
 e/E - enable/disable natlink
 
 n/N - set/clear userdirectory, the directory of the user grammar files of natlink (eg unimacro)
+o/O - set/clear unimacrouserdir, the directory that contains the user ini files
+p/P - set path for program that opens unimacro ini files,
+      or clear (then use Notepad)
 
 v/V - set/clear vocoloauserdir, the user directory for vocola user files.
       This also enables/disables vocola
-w/W = set path for opening vocola command files, or clear
+w/W = set path for program that opens vocola command files,
+      or clear (then use Simpscrp or Notepad)
 s/S = Vocola uses Simpscrp (default is OFF, S)
 
 r/R - (un)registernatlink, the natlink.dll file(should not be necessary to do)
@@ -858,8 +897,66 @@ Vocola will still be on, BUT not with possibilities to use
 unimacro shorthand commands and met actions.
 """
         print '='*60
-
+        
     help_N = help_n
+
+    # Unimacro User directory and Editor for Unimacro ini files-----------------------------------
+    def do_o(self, arg):
+        if os.path.isdir(arg):
+            print "Setting unimacro user directory to %s"% arg
+            self.config.setUnimacroUserDir(arg)
+        else:
+            print 'Please specifiy a valid path for UnimacroUserDirectory'
+            
+    def do_O(self, arg):
+        print "Clearing unimacro user directory, falling back to default: %s"% self.config.getUserDirectory()
+        self.config.clearUnimacroUserDir()
+
+    def help_o(self):
+        print '-'*60
+        print \
+"""set/clear unimacro userdirectory (o path/O)
+
+If you specify this directory, your user ini files (and possibly other user
+dependent files) will be put there.
+
+If you clear this setting, the user files will come in the
+unimacro directory itself: %s
+
+"""% self.config.getUserDirectory()
+        print '='*60
+
+    help_O = help_o
+
+    # Unimacro Command Files Editor-----------------------------------------------
+    def do_p(self, arg):
+        if os.path.isfile(arg) and arg.endswith(".exe"):
+            print "Setting (path to) Unimacro Ini Files editor to %s"% arg
+            self.config.setUnimacroIniFilesEditor(arg)
+        else:
+            print 'Please specifiy a valid path for Unimacro Ini files editor'
+            
+    def do_P(self, arg):
+        print "Clear Unimacro Ini file editor, go back to default Notepad"
+        self.config.clearUnimacroIniFilesEditor()
+
+    def help_p(self):
+        print '-'*60
+        print \
+"""set/clear path to Unimacro Ini files editor (p path/P)
+
+By default (when you clear this setting) "notepad" is used, but:
+
+You can specify a program you like eg
+TextPad, NotePad++, UltraEdit, win32pad
+
+You can even specify Wordpad, maybe Microsoft Word...
+
+"""
+        print '='*60
+
+    help_P = help_p
+
         
     # enable natlink------------------------------------------------
     def do_e(self, arg):

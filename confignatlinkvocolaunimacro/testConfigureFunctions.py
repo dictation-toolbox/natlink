@@ -18,6 +18,10 @@ reload(natlinkconfigfunctions)
 
 testinifile1 = os.path.join("C:\\", "testinifile.ini")
 
+Accessories = 'Accessories'
+## for Dutch windows system:
+##Accessories = 'Bureau-accessoires'
+
 # need this bunch to get connection with the core folder...
 #--------- two utility functions:
 def getBaseFolder(globalsDict=None):
@@ -499,7 +503,7 @@ class TestConfigureFunctions(unittest.TestCase):
 
         # change to notepad:
         wordpad = os.path.join(natlinkcorefunctions.getExtendedEnv("PROGRAMFILES"), 'Windows NT',
-                               'Accessories', "wordpad.exe")
+                               Accessories, "wordpad.exe")
         if not os.path.isfile(wordpad):
             raise IOError("Test error, cannot find wordpad on: %s"% wordpad)
         
@@ -510,6 +514,53 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_W("dummy")
         self.checkUserregnl(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
 
+                
+    def test_setClearUnimacroIniFilesEditor(self):
+        """This option should set or clear the unimacro ini files editor
+        """
+        testName = 'test_setClearUnimacroIniFilesEditor'
+        key = "UnimacroIniFilesEditor"
+        cli = natlinkconfigfunctions.CLI()
+        old = self.Userregnl.get(key, None)
+
+        
+        # not a valid folder:
+        cli.do_p("not a valid file")
+        self.checkUserregnl(key, old, "%s, nothing should be changed yet"% testName)
+
+        # change to notepad:
+        wordpad = os.path.join(natlinkcorefunctions.getExtendedEnv("PROGRAMFILES"), 'Windows NT',
+                            Accessories, "wordpad.exe")
+        if not os.path.isfile(wordpad):
+            raise IOError("Test error, cannot find wordpad on: %s"% wordpad)
+        
+        cli.do_p(wordpad)
+        self.checkUserregnl(key, wordpad, "%s, UnimacroIniFilesEditor should be changed now"% testName)
+
+        # now clear:
+        cli.do_P("dummy")
+        self.checkUserregnl(key, None, "%s UnimacroIniFilesEditor should be cleared now"% testName)
+
+
+    def test_setClearUnimacroUserDirectory(self):
+        """This option should set or clear the unimacro (ini files) user directory
+        """
+        testName = 'test_setClearUnimacroUserDirectory'
+        key = "UnimacroUserDirectory"
+        cli = natlinkconfigfunctions.CLI()
+        old = self.Userregnl.get(key, None)
+        # not a valid folder:
+        cli.do_o("notAValidFolder")
+        self.checkUserregnl(key, old, "%s, nothing should be changed yet"% testName)
+
+        # change userdirectory
+        cli.do_o(self.tmpTest)
+        self.checkUserregnl(key, self.tmpTest, "%s, UnimacroUserDirectory should be changed now"% testName)
+
+        # now clear:
+        cli.do_O("dummy")
+        self.checkUserregnl(key, None, "%s UnimacroUserDirectory should be cleared now"% testName)
+        
                 
 
     # Testing addition vocola options
