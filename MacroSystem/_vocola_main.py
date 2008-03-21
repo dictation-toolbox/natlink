@@ -1,4 +1,4 @@
-# _vocola_main.py - NatLink support for Vocola
+ # _vocola_main.py - NatLink support for Vocola
 # -*- coding: latin-1 -*-
 #
 # Python Macro Language for Dragon NaturallySpeaking
@@ -67,8 +67,10 @@ pydFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'Exec',
 sys.path.append(pydFolder)
 NatLinkFolder = os.path.abspath(NatLinkFolder)
 
-
-import simpscrp
+try:
+    import simpscrp
+except ImportError:
+    simpscrp = None
 
 language = status.getLanguage()
 
@@ -145,9 +147,18 @@ class ThisGrammar(GrammarBase):
         userCommandFolder = status.getVocolaUserDirectory()
         self.userCommandFilesEditor = status.getVocolaCommandFilesEditor()
         self.useSimpscrp = status.getVocolaUsesSimpscrp()
+        if simpscrp == None:
+            print 'could not import simpscrp, so do not use for loading .vcl files'
+            self.useSimpscrp = None
         if not self.userCommandFilesEditor:
             print '_vocola_main: unexpected value for userCommandFilesEditor: %s, take simpscrp'% self.userCommandFilesEditor
-            self.userCommandFilesEditor = 'simpscrp'
+            if self.useSimpscrp:
+                self.userCommandFilesEditor = 'simpscrp'
+            else:
+                self.userCommandFilesEditor = 'notepad'
+        elif self.userCommandFilesEditor == 'simpscrp' and self.useSimpscrp == None:
+            self.userCommandFilesEditor = 'notepad'
+
             
         self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
         if self.vocolaEnabled:
@@ -390,18 +401,21 @@ class ThisGrammar(GrammarBase):
                 opener = 'start'
                 call = opener + ' "' + path + '"'
                 simpscrp.Exec(call, 0)
+                return
             else:
-                print 'simpsrcp call failed????'
+                print 'simpsrcp call failed, use notepad for .vcl files editor'
+                self.userCommandFilesEditor = 'notepad'
+
+        # no simpscrp:
+        filename = '"' + path + '"'
+        if self.userCommandFilesEditor == 'notepad':
+            prog = os.path.join(natlinkcorefunctions.getExtendedEnv('SYSTEM'), 'notepad.exe')
         else:
-            filename = '"' + path + '"'
-            if self.userCommandFilesEditor == 'notepad':
-                prog = os.path.join(natlinkcorefunctions.getExtendedEnv('SYSTEM'), 'notepad.exe')
-            else:
-                prog = self.userCommandFilesEditor
-            if not os.path.isfile(prog):
-                raise IOError("_vocola_main: cannot program for editing user command files: %s"% prog)
-            print 'open with ShellExecute: %s, filename: %s'% (prog, filename)
-            win32api.ShellExecute(0, 'open', prog, filename, "", 1)
+            prog = self.userCommandFilesEditor
+        if not os.path.isfile(prog):
+            raise IOError("_vocola_main: cannot program for editing user command files: %s"% prog)
+        print 'open with ShellExecute: %s, filename: %s'% (prog, filename)
+        win32api.ShellExecute(0, 'open', prog, filename, "", 1)
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
