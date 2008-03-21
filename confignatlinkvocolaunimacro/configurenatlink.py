@@ -298,8 +298,12 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.cli.checkedConfig = None
         self.setInfo()
 
-    def warning(self, text, title='Message from Configure Natlink GUI'):                     
-        dlg = wx.MessageDialog(self, text, title,
+    def warning(self, text, title='Message from Configure Natlink GUI'):
+        if isinstance(text, basestring):
+            Text = text
+        else:
+            Text = '\n'.join(text)
+        dlg = wx.MessageDialog(self, Text, title,
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()               
@@ -645,7 +649,34 @@ class ConfigureNatlinkPanel(wx.Panel):
     # WDR: handler implementations for configurenatlink
 
     def OnButtonUnimacroEditor(self, event):
-        pass
+        D = self.config.getNatlinkStatusDict()
+        
+        doLetter = 'p'
+        undoLetter = 'P'
+        statustext = 'Unimacro Editor is specified, this will take effect after you restart NatSpeak'
+
+        # ask for the correct directory:
+        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite Unimacro ini files editor please",
+              style=wx.DD_DEFAULT_STYLE)
+        ## search for unimacro directory as proposal:
+        old_path = D['VocolaCommandFilesEditor']
+        Path = nc.getExtendedEnv("PROGRAMFILES")
+        dlg.SetPath(Path)
+        dlg.SetMessage('Please choose the filename of your favorite Unimacro Ini files editor please\nPress cancel to return to default')
+        if dlg.ShowModal() == wx.ID_OK:
+            new_path = dlg.GetPath()
+            if new_path and os.path.isfile(new_path) and new_path.lower().endswith('.exe'):
+                pass
+            else:
+                self.setstatus("no new valid (.ewe) file specified")
+                return
+        else:
+            self.setstatus("Pressed Cancel, return to default")
+            self.do_command( undoLetter, undo=(doLetter, old_path) )             
+            return
+        self.do_command(doLetter,new_path, undo=undoLetter)
+        self.setstatus(statustext)
+        self.setInfo()
 
 
     def OnCBVocolaUsesSimpscrp(self, event):

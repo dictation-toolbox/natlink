@@ -37,7 +37,7 @@ DNSIniDir
       where they are expected, this one can be set in HKCU\Software\Natlink.
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
-When natlink is enabled natlink.dll is registered with
+When natlink is enabled 4.dll is registered with
       win32api.WinExec("regsrvr32 /s pathToNatlinkdll") (silent)
 
 It can be unregistered through function unregisterNatlinkDll() see below.      
@@ -243,6 +243,35 @@ from the correct place.
 """% (oldPathString, pathString)
         self.warning(text)
         self.checkedUrgent = 1
+
+    def checkIniFiles(self):
+        """check if ini files are consistent
+        this is done through the
+
+        """
+        result = self.NatlinkIsEnabled(silent=1)
+        if result == None:
+            self.disableNatlink(silent=1)
+            result = self.NatlinkIsEnabled(silent=1)
+            if result == None:
+                text = \
+"""natlink ini file settings are inconsistently,
+and cannot automatically be disabled.
+
+Try to disable again, aquire administrator rights or report this issue
+"""
+                self.warning(text)
+                return None
+            else:
+                text = \
+"""natlink ini file settings were inconsistent,
+This has been repaired.
+
+Natlink is now disabled.
+"""
+                self.warning(text)
+        return 1
+            
             
     def warning(self,text):
         """is currently overloaded in GUI"""
@@ -415,27 +444,41 @@ from the correct place.
         key1 = self.key1
         value1 = self.value1
         win32api.WriteProfileVal(section1, key1, value1, nssystemini)
-        nsappsini = self.getNSAPPSIni()
-        section2 = self.section2
-        key2 = self.key2
-        value2 = self.value2
-        win32api.WriteProfileVal(section2, key2, value2, nsappsini)
-        if not silent:
-            print 'natlink enabled, restart NatSpeak'
+        result = self.NatlinkIsEnabled(silent=1)
+        if result == None:
+            nsappsini = self.getNSAPPSIni()
+            section2 = self.section2
+            key2 = self.key2
+            value2 = self.value2
+            win32api.WriteProfileVal(section2, key2, value2, nsappsini)
+            result = self.NatlinkIsEnabled(silent=1)
+            if result == None:
+                text = \
+"""cannot set the nsapps.ini setting in order to complete enableNatlink.
+
+Possibly you need administator rights to do this
+"""
+                if not silent:
+                    self.warning(text)
+                return                
+        result = self.NatlinkIsEnabled(silent=1)
+        if result:            
+            if not silent:
+                print 'natlink enabled, restart NatSpeak'
+        else:
+            if not silent:
+                self.warning("failed to enable natlink")
+            
 
     def disableNatlink(self, silent=None):
+        """only do the nssystem.ini setting
+        """
         nssystemini = self.getNSSYSTEMIni()
         section1 = self.section1
         key1 = self.key1
         # trick with None, see testConfigureFunctions...
         # this one disables natlink:
         win32api.WriteProfileVal(section1, key1, None, nssystemini)
-        
-        nsappsini = self.getNSAPPSIni()
-        section2 = self.section2
-        key2 = self.key2
-        win32api.WriteProfileVal(section2, key2, None, nsappsini)
-        # leaving empty section, sorry, did not find the way to delete a section...
         if not silent:
             print 'natlink disabled, restart NatSpeak'
             print 'Note natlink.dll is NOT UNREGISTERED, but this is not necessary either'
@@ -722,6 +765,7 @@ class CLI(cmd.Cmd):
             self.config = NatlinkConfig()
         self.config.checkNatlinkDllFile()
         self.config.checkPythonPathAndRegistry()
+        self.config.checkIniFiles()
         self.checkedConfig = self.config.checkedUrgent
 
     def usage(self):

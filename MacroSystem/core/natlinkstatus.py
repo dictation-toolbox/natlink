@@ -353,7 +353,7 @@ class NatlinkStatus(object):
         raise IOError("Cannot find proper NSAppsIni file")
 
 
-    def NatlinkIsEnabled(self):
+    def NatlinkIsEnabled(self, silent=None):
         """check if the ini file settings are correct
 
     in  nssystem.ini check for:
@@ -365,6 +365,15 @@ class NatlinkStatus(object):
     [.NatLink]
     App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
 
+    if both settings are set, return 1
+    (if nssystem.ini setting is set, you also need the nsapps.ini setting)
+    if nssystem.ini setting is NOT set, return 0
+
+    if nsapps.ini is set but nssystem.ini is not, natlink is NOT enabled, still return 0
+    
+    if nssystem.ini is set, but nsapps.ini is NOT, there is an error, return None and a
+    warning message, UNLESS silent = 1.
+
         """
         nssystemini = self.getNSSYSTEMIni()
         actual1 = win32api.GetProfileVal(self.section1, self.key1, "", nssystemini)
@@ -372,25 +381,33 @@ class NatlinkStatus(object):
 
         nsappsini = self.getNSAPPSIni()
         actual2 = win32api.GetProfileVal(self.section2, self.key2, "", nsappsini)
-        if self.value1 == actual1 and self.value2 == actual2:
-            return 1
-        elif self.value1 != actual1 and self.value2 != actual2:
-            return 0
-        elif self.value1 == actual1:
-            mess = ['Error while checking if Natlink is enabled, unexpected result: ',
-                    'nssystem.ini points to NatlinkIsEnabled:',
-                    '    section: %s, key: %s, value: %s'% (self.section1, self.key1, actual1),
-                    'but nsapps.ini points to Natlink is not enabled:',
-                  '    section: %s, key: %s, value: %s'% (self.section2, self.key2, actual2),
-                  '    should have value: %s'% self.value2]
-            
-        elif self.value2 == actual2:
-            # GUID in nsapps may be defined, natspeak first checks nssystem.ini
+        if self.value1 == actual1:
+            if self.value2 == actual2:
+                # enabled:
+                return 1
+            else:
+                # 
+                mess = ['Error while checking if Natlink is enabled, unexpected result: ',
+                        'nssystem.ini points to NatlinkIsEnabled:',
+                        '    section: %s, key: %s, value: %s'% (self.section1, self.key1, actual1),
+                        'but nsapps.ini points to Natlink is not enabled:',
+                      '    section: %s, key: %s, value: %s'% (self.section2, self.key2, actual2),
+                      '    should have value: %s'% self.value2]
+                if not silent:
+                    self.warning(mess)
+                return None # error!
+        elif actual1:
+            if not silent:
+                self.warning("unexpected value of nssystem.ini value: %s"% actual1)
+            # unexpected value, but not enabled:
             return 0
         else:
-            mess = [ 'NatlinkIsEnabled: should not come here...']
-        self.warning(mess)
-        return 
+            # GUID in nsapps may be defined, natspeak first checks nssystem.ini
+            # so natlink NOT enabled
+            return 0
+        self.warning("unexpected, natlinkstatus should not come here!")
+        return None
+
 
     def warning(self, text):
         "to be overloaded in natlinkconfigfunctions and configurenatlink"
