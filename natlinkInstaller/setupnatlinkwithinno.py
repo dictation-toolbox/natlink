@@ -54,12 +54,13 @@ def getCoreDir(thisDir):
     if not os.path.isdir(coreFolder):
         print 'not a directory: %s'% coreFolder
         return thisDir
-    dllPath = os.path.join(coreFolder, 'natlink.dll')
+## dllPath version dependent, so skip this check:
+##    dllPath = os.path.join(coreFolder, 'natlink.dll')
     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
     statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-    if not os.path.isfile(dllPath):
-        print 'natlink.dll not found in core directory: %s'% coreFolder
-        return thisDir
+##    if not os.path.isfile(dllPath):
+##        print 'natlink.dll not found in core directory: %s'% coreFolder
+##        return thisDir
     if not os.path.isfile(mainPath):
         print 'natlinkmain.py not found in core directory: %s'% coreFolder
         return thisDir

@@ -110,7 +110,7 @@ DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
 DNSPaths = [NSExt9Path, NSExt8Path, NSExt73Path]
 DNSVersions = [9,8,7]
 
-# utility functions:
+# utility functions: 
 # report function:
 def fatal_error(message, new_raise=None):
     """prints a fatal error when running this module"""
@@ -230,7 +230,8 @@ class NatlinkStatus(object):
                 nsapps = os.path.join(cand, self.NSAppsIni)
                 if os.path.isfile(nssystem) and os.path.isfile(nsapps):
                     return os.path.normpath(cand)
-        raise IOError("no valid DNS Install Dir found")
+        print 'no valid DNS Ini files Dir found, please provide one in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
+
         
     def getDNSFullVersion(self):
         """find the Full version string of DNS
@@ -299,7 +300,8 @@ class NatlinkStatus(object):
                 programfolder = os.path.join(cand, 'Program')
                 if os.path.isdir(programfolder):
                     return os.path.normpath(cand)
-        raise IOError("no valid DNS Install Dir found")
+        print 'no valid DNS Install Dir found, please provide one in natlinkconfigfunctions (option "d") or in natlinkconfig  GUI (info panel)'
+        
 
 
     def getPythonFullVersion(self):
@@ -342,7 +344,8 @@ class NatlinkStatus(object):
             nssystemini = os.path.join(inidir, self.NSSystemIni)
             if os.path.isfile(nssystemini):
                 return os.path.normpath(nssystemini)
-        raise IOError("Cannot find proper NSSystemIni file")
+        print "Cannot find proper NSSystemIni file"
+        print 'Try to correct your DNS Ini files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
                 
     def getNSAPPSIni(self):
         inidir = self.getDNSIniDir()
@@ -350,7 +353,8 @@ class NatlinkStatus(object):
             nsappsini = os.path.join(inidir, self.NSAppsIni)
             if os.path.isfile(nsappsini):
                 return os.path.normpath(nsappsini)
-        raise IOError("Cannot find proper NSAppsIni file")
+        print "Cannot find proper NSAppsIni file"
+        print 'Try to correct your DNS Ini files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
 
 
     def NatlinkIsEnabled(self, silent=None):
