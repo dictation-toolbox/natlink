@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# coding=latin-1
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
@@ -218,7 +218,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.setNatlinkInPythonPathRegistry()
             return 1
             
-        if oldPathString == pathString:
+        if oldPathString.lower() == pathString.lower():
             return 1 # OK
         ## now for something more serious:::
         text = \

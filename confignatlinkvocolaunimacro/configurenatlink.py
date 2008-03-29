@@ -1,5 +1,5 @@
 #!/bin/env python
-# -*- coding: latin-1 -*-
+# coding=latin-1
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
@@ -405,7 +405,10 @@ class ConfigureNatlinkPanel(wx.Panel):
                             # take first word of Fullversion as well.
                             fullPart = D['PythonFullVersion']
                             label = '%s (%s)'% (D[key], fullPart.split()[0])
-
+                        elif value == None and key in ["DNSInstallDir", "DNSIniDir"]:
+                            thisOneChanged = 1
+                            label = "Please choose a valid path"
+                            self.urgentMessage = "Invalid DNS path, see info panel"
                         if key.endswith('IsEnabled'):
                             if value:
                                 label = 'Disable'
