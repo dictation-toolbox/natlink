@@ -115,15 +115,22 @@ def getExtendedEnv(var, envDict=None):
     except:
         raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
     if shellnumber < 0:
+        # on some systems have SYSTEMROOT instead of SYSTEM:
+        if var == 'SYSTEM':
+            return getExtendedEnv('SYSTEMROOT', envDict=envDict)
         raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
     try:
         result = shell.SHGetFolderPath (0, shellnumber, 0, 0)
     except:
         raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
 
+    
     result = str(result)
     result = os.path.normpath(result)
     myEnvDict[var] = result
+    # on some systems apparently:
+    if var == 'SYSTEMROOT':
+        myEnvDict['SYSTEM'] = result
     return result
 
 def clearRecentEnv():
@@ -230,3 +237,7 @@ def expandEnvVariableAtStart(filepath, envDict=None):
 
 if __name__ == "__main__":
     print 'this module is in folder: %s'% getBaseFolder(globals())
+    vars = getAllFolderEnvironmentVariables()
+    print 'allfolderenvironmentvariables:  %s'% vars.keys()
+    for k,v in vars.items():
+        print '%s: %s'% (k, v)
