@@ -11,10 +11,9 @@
 #
 #----------------------------------------------------------------------------
 # A setup script for natlink/vocola/unimacro, with inno
-# 1. checkout in a new directory (eg release3.2) natlink and unimacro in two subfolders
-#    (natlink and unimacro)
-# 2. change __version__ in natlinkstatus (Core directory)maximise all
-# 3. Commit natlink and release both unimacro and natlink (so no CVS files remain)
+# 1. choose new release name and change in __version__ of natlinkstatus
+# 2. Commit natlink and unimacro
+# 3. SVN export both natlink and unimacro to a new folder (eg D:\natlink\releases\natlink3.2 if your release number is natlink3.2)
 # 4. run this utility.
 #
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_keystrokes.py',
