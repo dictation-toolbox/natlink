@@ -38,7 +38,7 @@ DNSIniDir
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
 When natlink is enabled 4.dll is registered with
-      win32api.WinExec("regsrvr32 /s pathToNatlinkdll") (silent)
+      win32api.WinExec("regsvr32 /s pathToNatlinkdll") (silent)
 
 It can be unregistered through function unregisterNatlinkDll() see below.      
 
@@ -138,7 +138,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         coreDir2 = self.getCoreDirectory()
         if coreDir2.lower() != coreDir.lower():
-            fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
+            self.copyNatlinkDllPythonVersion()
+            self.checkPythonPathAndRegistry()            
+            if coreDir2.lower() != coreDir.lower():
+                fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
         dllFile = os.path.join(coreDir, 'natlink.dll')
         if not os.path.isfile(dllFile):
@@ -149,8 +152,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """copy the natlink.dll from the correct version"""
         dllFile = os.path.join(coreDir, 'natlink.dll')
         if os.path.isfile(dllFile):
-            self.unregisterNatlinkDll()
-            os.remove(dllFile)
+            try:
+##                self.unregisterNatlinkDll()
+                os.remove(dllFile)
+            except:
+                pass
         pythonVersion = self.getPythonVersion().replace(".", "")
         dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
         if os.path.isfile(dllVersionFile):
@@ -566,7 +572,8 @@ Possibly you need administator rights to do this
         Also sets the pythonpath in the HKLM pythonpath section        
         """
         # give fatal error if python is not OK...
-        dummy, dummy = self.getHKLMPythonPathDict()        
+        dummy, dummy = self.getHKLMPythonPathDict()
+        self.copyNatlinkDllPythonVersion()
         DllPath = os.path.join(coreDir, "natlink.dll")
         if not os.path.isfile(DllPath):
             fatal_error("Dll file not found in core folder: %s"% DllPath)
