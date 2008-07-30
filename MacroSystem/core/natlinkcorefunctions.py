@@ -107,7 +107,7 @@ def getExtendedEnv(var, envDict=None):
     if var == 'HOME':
         var2 = 'PERSONAL'
     else:
-        var2 = var
+        var2 = var.upper()
         
     try:
         CSIDL_variable =  'CSIDL_%s'% var2

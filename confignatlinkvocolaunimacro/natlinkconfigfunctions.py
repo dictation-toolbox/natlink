@@ -156,7 +156,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 ##                self.unregisterNatlinkDll()
                 os.remove(dllFile)
             except:
-                pass
+                message = '\n'.join(["Cannot remove natlink.dll (%s)"% dllFile,
+                                    "", "If this is the first time you install/activate natlink or ",
+                                    "  if you changed to a newer python version, this is a fatal error",
+                                    "", "If this is a re-enable of natlink, do not worry and try to proceed"])
+                self.warning(message)
+                return
+
         pythonVersion = self.getPythonVersion().replace(".", "")
         dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
         if os.path.isfile(dllVersionFile):
@@ -1022,25 +1028,21 @@ You can even specify Wordpad, maybe Microsoft Word...
         print \
 """enable natlink (e) or disable natlink (E)
 
-When you enable natlink the necessary settings in nssystem.ini and nsapps.ini
-are done.
+When you ENABLE natlink the necessary settings in nssystem.ini and nsapps.ini
+are set, and the file natlink.dll  is (re)registered silent.
 
 After you restart natspeak, natlink should start, showing
 the window 'Messages from Python Macros'.
 
-When you enable natlink, the file natlink.dll is (re)registered silent. Use
-the options r/R to register/unregister natlink.dll explicit.
-(see help r, but most often not needed)
-
-When you disable natlink, the necessary  settings in nssystem.ini and nsapps.ini
-are cleared. 
+When you DISABLE natlink, the necessary settings in nssystem.ini are cleared. 
 
 After you restart natspeak, natlink should NOT START ANY MORE
 So the window 'Messages from Python Macros' is NOT SHOWN.
 
-Note: when you disable natlink, the natlink.dll file is NOT unregistered.
-It is not called any more by natspeak, as its declaration is removed from
-the Global Clients section of nssystem.ini.
+Note: when you disable natlink, the file natlink.dll is NOT unregistered,
+and the settings in nsapps.ini are not cleared. 
+The clearing of the setting in nssystem.ini is sufficient to disable natlink
+altogether.
 """
         print "="*60
         
