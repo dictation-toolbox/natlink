@@ -14,10 +14,10 @@
 # 1. choose new release name and change in __version__ of natlinkstatus
 # 2. Commit natlink and unimacro
 # 3. SVN export both natlink and unimacro to a new folder (eg D:\natlink\releases\natlink3.2 if your release number is natlink3.2)
-# 4. run this utility.
+# 4. run this utility FROM THAT FOLDER\natlink\natlinkInstaller.
 #
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_keystrokes.py',
-                     '_oops.py', '_setpriority.py', '_tags.py', '_unimacrotest.py']
+                     '_oops.py', '_setpriority.py', '_tags.py', '_unimacrotest.py', '_modes.py']
 
 
 #--------- two utility functions:
