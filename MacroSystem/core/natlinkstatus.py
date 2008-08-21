@@ -106,8 +106,9 @@ VocIniFile  = r"Vocola\Exec\vocola.ini"
 NSExt73Path  = "ScanSoft\NaturallySpeaking"
 NSExt8Path  = "ScanSoft\NaturallySpeaking8"
 NSExt9Path  = "Nuance\NaturallySpeaking9"
+NSExt10Path  = "Nuance\NaturallySpeaking10"
 DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
-DNSPaths = [NSExt9Path, NSExt8Path, NSExt73Path]
+DNSPaths = [NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
 DNSVersions = [10,9,8,7]
 
 # utility functions: 
