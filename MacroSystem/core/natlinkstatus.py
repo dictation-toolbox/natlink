@@ -1,5 +1,5 @@
-# coding: latin-1#
 __version__ = "3.2"
+#
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
@@ -108,7 +108,7 @@ NSExt8Path  = "ScanSoft\NaturallySpeaking8"
 NSExt9Path  = "Nuance\NaturallySpeaking9"
 DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
 DNSPaths = [NSExt9Path, NSExt8Path, NSExt73Path]
-DNSVersions = [9,8,7]
+DNSVersions = [10,9,8,7]
 
 # utility functions: 
 # report function:
@@ -317,16 +317,13 @@ class NatlinkStatus(object):
             r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE,"SOFTWARE\Python\PythonCore")
         except ValueError:
             return ''
-        version1 = r.keys()
+        version1 = r.keys()[0]
         version2 = self.getPythonFullVersion()
-        decorated = [(-len(k), k) for k in version1]
-        decorated.sort()
-        versionSorted = [k for (dummy, k) in decorated]
-        for shortVersion in versionSorted:
-            if version2.startswith(shortVersion):
-                return shortVersion
-        print 'ambiguous version, sys: %s, registry: %s'% (version2, versionSorted)
-        version = version2[:3]
+        if version2.startswith(version1):
+            return version1
+        
+        print 'ambiguous version, sys: %s, registry: %s'% (version2, version1)
+        version = version2[:2]
         print 'use version %s'% version
         return version
 

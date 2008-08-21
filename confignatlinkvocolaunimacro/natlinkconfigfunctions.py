@@ -38,7 +38,7 @@ DNSIniDir
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
 When natlink is enabled 4.dll is registered with
-      win32api.WinExec("regsvr32 /s pathToNatlinkdll") (silent)
+      win32api.WinExec("regsrvr32 /s pathToNatlinkdll") (silent)
 
 It can be unregistered through function unregisterNatlinkDll() see below.      
 
@@ -138,10 +138,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         coreDir2 = self.getCoreDirectory()
         if coreDir2.lower() != coreDir.lower():
-            self.copyNatlinkDllPythonVersion()
-            self.checkPythonPathAndRegistry()            
-            if coreDir2.lower() != coreDir.lower():
-                fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
+            fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
         dllFile = os.path.join(coreDir, 'natlink.dll')
         if not os.path.isfile(dllFile):
@@ -152,17 +149,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """copy the natlink.dll from the correct version"""
         dllFile = os.path.join(coreDir, 'natlink.dll')
         if os.path.isfile(dllFile):
-            try:
-##                self.unregisterNatlinkDll()
-                os.remove(dllFile)
-            except:
-                message = '\n'.join(["Cannot remove natlink.dll (%s)"% dllFile,
-                                    "", "If this is the first time you install/activate natlink or ",
-                                    "  if you changed to a newer python version, this is a fatal error",
-                                    "", "If this is a re-enable of natlink, do not worry and try to proceed"])
-                self.warning(message)
-                return
-
+            self.unregisterNatlinkDll()
+            os.remove(dllFile)
         pythonVersion = self.getPythonVersion().replace(".", "")
         dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
         if os.path.isfile(dllVersionFile):
@@ -578,8 +566,7 @@ Possibly you need administator rights to do this
         Also sets the pythonpath in the HKLM pythonpath section        
         """
         # give fatal error if python is not OK...
-        dummy, dummy = self.getHKLMPythonPathDict()
-        self.copyNatlinkDllPythonVersion()
+        dummy, dummy = self.getHKLMPythonPathDict()        
         DllPath = os.path.join(coreDir, "natlink.dll")
         if not os.path.isfile(DllPath):
             fatal_error("Dll file not found in core folder: %s"% DllPath)
@@ -1028,21 +1015,25 @@ You can even specify Wordpad, maybe Microsoft Word...
         print \
 """enable natlink (e) or disable natlink (E)
 
-When you ENABLE natlink the necessary settings in nssystem.ini and nsapps.ini
-are set, and the file natlink.dll  is (re)registered silent.
+When you enable natlink the necessary settings in nssystem.ini and nsapps.ini
+are done.
 
 After you restart natspeak, natlink should start, showing
 the window 'Messages from Python Macros'.
 
-When you DISABLE natlink, the necessary settings in nssystem.ini are cleared. 
+When you enable natlink, the file natlink.dll is (re)registered silent. Use
+the options r/R to register/unregister natlink.dll explicit.
+(see help r, but most often not needed)
+
+When you disable natlink, the necessary  settings in nssystem.ini and nsapps.ini
+are cleared. 
 
 After you restart natspeak, natlink should NOT START ANY MORE
 So the window 'Messages from Python Macros' is NOT SHOWN.
 
-Note: when you disable natlink, the file natlink.dll is NOT unregistered,
-and the settings in nsapps.ini are not cleared. 
-The clearing of the setting in nssystem.ini is sufficient to disable natlink
-altogether.
+Note: when you disable natlink, the natlink.dll file is NOT unregistered.
+It is not called any more by natspeak, as its declaration is removed from
+the Global Clients section of nssystem.ini.
 """
         print "="*60
         

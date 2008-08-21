@@ -277,10 +277,6 @@ class ThisGrammar(GrammarBase):
         targets = []
         for i in range(len(self.commandFolders)):
             commandFolder = self.commandFolders[i]
-            if not os.path.isdir(commandFolder):
-                print >> sys.stderr, "Invalid directory for vocola commands: %s"% commandFolder
-                continue
-            
             targets += [[os.path.join(commandFolder,f), i] for f in os.listdir(commandFolder) if p.search(f)]
         for target, i in targets:
             suffix = "-suffix _vcl" + str(i) + " "

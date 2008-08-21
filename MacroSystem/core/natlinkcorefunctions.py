@@ -107,13 +107,14 @@ def getExtendedEnv(var, envDict=None):
     if var == 'HOME':
         var2 = 'PERSONAL'
     else:
-        var2 = var.upper()
+        var2 = var
         
     try:
         CSIDL_variable =  'CSIDL_%s'% var2
         shellnumber = getattr(shellcon,CSIDL_variable, -1)
     except:
-        raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+        print 'getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2
+        return ''
     if shellnumber < 0:
         # on some systems have SYSTEMROOT instead of SYSTEM:
         if var == 'SYSTEM':
@@ -122,7 +123,8 @@ def getExtendedEnv(var, envDict=None):
     try:
         result = shell.SHGetFolderPath (0, shellnumber, 0, 0)
     except:
-        raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+        print 'getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2
+        return ''
 
     
     result = str(result)
