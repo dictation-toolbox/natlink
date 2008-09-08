@@ -305,7 +305,13 @@ Natlink is now disabled.
         if not version:
             fatal_error("no valid python version available")
         pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% version
-        lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName)
+        # key MUST already exist (ensure by passing flags=...:
+        try:
+            lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=win32con.KEY_ALL_ACCESS)
+        except:
+            fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid python version: %s"%
+                             (pythonPathSectionName, version))
+            
         return lmPythonPathDict, pythonPathSectionName
         
     def setNatlinkInPythonPathRegistry(self):
