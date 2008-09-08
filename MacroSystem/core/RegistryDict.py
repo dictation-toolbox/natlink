@@ -224,11 +224,11 @@ class RegistryDict(object):
         self.close()
 
 if __name__=='__main__':
-    try:
-        lm = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software\TestRegistryDict", flags=win32con.KEY_ALL_ACCESS)
-    except:
-        print 'cannot open section which does not yet exist'
-
+##    try:
+##        lm = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software\TestRegistryDict", flags=win32con.KEY_ALL_ACCESS)
+##    except:
+##        print 'cannot open section which does not yet exist'
+##
     lm = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software\TestRegistryDict")
         
     print 'should start with empty dict: ', lm
