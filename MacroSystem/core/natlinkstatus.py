@@ -318,12 +318,18 @@ class NatlinkStatus(object):
             r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE,"SOFTWARE\Python\PythonCore")
         except ValueError:
             return ''
-        version1 = r.keys()[0]
-        version2 = self.getPythonFullVersion()
-        if version2.startswith(version1):
-            return version1
+        versionKeys = r.keys()
+        decorated = [(len(k), k) for k in versionKeys]
+        decorated.sort()
+        decorated.reverse()
+        versionKeysSorted = [k for (dummy,k) in decorated]
         
-        print 'ambiguous version, sys: %s, registry: %s'% (version2, version1)
+        version2 = self.getPythonFullVersion()
+        for version1 in versionKeysSorted:        
+            if version2.startswith(version1):
+                return version1
+        
+        print 'ambiguous version, sys: %s, registry: %s'% (version2, versionKeys)
         version = version2[:2]
         print 'use version %s'% version
         return version
