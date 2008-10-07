@@ -37,7 +37,7 @@ DNSIniDir
       where they are expected, this one can be set in HKCU\Software\Natlink.
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
-When natlink is enabled 4.dll is registered with
+When natlink is enabled natlink.dll is registered with
       win32api.WinExec("regsrvr32 /s pathToNatlinkdll") (silent)
 
 It can be unregistered through function unregisterNatlinkDll() see below.      
@@ -152,7 +152,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.unregisterNatlinkDll()
             os.remove(dllFile)
         pythonVersion = self.getPythonVersion().replace(".", "")
-        dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
+        if int(pythonVersion) >= 25:
+            dllVersionFile = os.path.join(coreDir, 'natlink%s.pyd'% pythonVersion)
+        else:
+            dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
+            
         if os.path.isfile(dllVersionFile):
             try:
                 shutil.copyfile(dllVersionFile, dllFile)

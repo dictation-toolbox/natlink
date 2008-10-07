@@ -19,7 +19,7 @@
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_keystrokes.py',
                      '_oops.py', '_setpriority.py', '_tags.py', '_unimacrotest.py', '_modes.py']
 
-
+ExtensionsToIgnore = [".wmv"]
 #--------- two utility functions:
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -145,6 +145,9 @@ class InnoScript:
         for path in natlink_files:
             print >> ofi, r'Source: "..\natlink\%s"; DestDir: "{app}\natlink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         for path in unimacro_files:
+            if filter(None, [path for ext in ExtensionsToIgnore if path.endswith(ext)]):
+                print 'ignoring because of extension: %s'% path
+                continue
             if filter(None, [path == f for f in GrammarsToDisable]):
                 print >> ofi, r'Source: "..\unimacro\%s"; DestDir: "{app}\unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
             else:
