@@ -547,13 +547,10 @@ try:
     changeCallback('user', getCurrentUser())
 
 ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
-    if debugLoad:
-        if language == 'enx':
-            print 'Starting natlinkmain (DNSversion: %s, WindowsVersion: %s)'% \
-              (DNSversion, WindowsVersion)
-        else:
-            print 'Starting natlinkmain with language: %s (DNSversion: %s, WindowsVersion: %s)'% \
-              (language, DNSversion, WindowsVersion)
+    print 'Starting natlinkmain from: %s\nNatlink version: %s\nDNS version: %s\nPython version: %s\nWindowsVersion: %s'% \
+              (status.getCoreDirectory(), status.getInstallVersion(),
+               DNSversion, status.getPythonVersion(), WindowsVersion)
+        
 
     # load all global files in user directory and current directory
     findAndLoadFiles()
