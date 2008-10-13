@@ -1,4 +1,4 @@
-__version__ = "3.4"
+__version__ = "3.5"
 # coding=latin-1
 #
 # Python Macro Language for Dragon NaturallySpeaking

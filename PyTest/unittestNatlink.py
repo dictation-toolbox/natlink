@@ -1588,9 +1588,12 @@ class UnittestNatlink(unittest.TestCase):
         testGram.checkExperiment(1,'self',['dictate', 'b\\bravo\\h', 'k\\kilo\\h'],
                                  [('dictate', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
 
-        testRecognition(['dictate','hello'])
-        testGram.checkExperiment(1,'self',['dictate', 'hello'],
-                                 [('dictate', 'Start'), ('hello', 'dgndictation')])
+## this experiment sometimes shows the rule dgndictation and sometimes dgnwords
+## so, better not test here!!
+## not mix them!!
+##        testRecognition(['dictate','hello'])
+##        testGram.checkExperiment(1,'self',['dictate', 'hello'],
+##                                 [('dictate', 'Start'), ('hello', 'dgndictation')])
 
         testGram.unload()
         testGram.resetExperiment()
