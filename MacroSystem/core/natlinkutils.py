@@ -163,7 +163,7 @@ def buttonClick(btnName='left',count=1):
 
     if count == 1: playEvents( single )
     elif count == 2: playEvents( single + double )
-    else: raise ValueError, "invalid count"
+    else: raise ValueError( "invalid count" )
 
 #---------------------------------------------------------------------------
 # (internal use) shared base class for all Grammar base classes.  Do not use
@@ -365,9 +365,9 @@ class GrammarBase(GramClassBase):
         if type(gramSpec) == type(""):
             gramSpec = [gramSpec]
         elif type(gramSpec) != type([]):
-            raise GrammarError, "grammar definition must be a list of strings"
+            raise GrammarError( "grammar definition must be a list of strings" )
         elif type(gramSpec[0]) != type(""):
-            raise GrammarError, "grammar definition must be a list of strings"
+            raise GrammarError( "grammar definition must be a list of strings" )
 
         splitApartLines(gramSpec)
         parser = GramParser(gramSpec)
@@ -399,10 +399,10 @@ class GrammarBase(GramClassBase):
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
         if ruleName not in self.validRules:
-            raise GrammarError, "rule %s was not exported in the grammar" % ruleName
+            raise GrammarError( "rule %s was not exported in the grammar" % ruleName )
         if ruleName in self.activeRules:
             if noError: return None
-            raise GrammarError, "rule %s is already active"
+            raise GrammarError( "rule %s is already active" )
         self.gramObj.activate(ruleName,window)
         self.activeRules.append(ruleName)
         if exclusive != None:
@@ -410,10 +410,10 @@ class GrammarBase(GramClassBase):
 
     def deactivate(self, ruleName, noError=0):
         if ruleName not in self.validRules:
-            raise GrammarError, "rule %s was not exported in the grammar" % ruleName
+            raise GrammarError( "rule %s was not exported in the grammar" % ruleName )
         if ruleName not in self.activeRules:
             if noError: return None
-            raise GrammarError, "rule %s is not active"
+            raise GrammarError( "rule %s is not active" )
         self.gramObj.deactivate(ruleName)
         self.activeRules.remove(ruleName)
 
@@ -424,7 +424,7 @@ class GrammarBase(GramClassBase):
                 self.activeRules.remove(x)
         for x in ruleNames:
             if x not in self.validRules:
-                raise GrammarError, "rule %s was not exported in the grammar" % x
+                raise GrammarError( "rule %s was not exported in the grammar" % x )
             if not x in self.activeRules:
                 self.gramObj.activate(x,window)
                 self.activeRules.append(x)
@@ -447,12 +447,12 @@ class GrammarBase(GramClassBase):
 
     def emptyList(self, listName):
         if listName not in self.validLists:
-            raise GrammarError, "list %s was not defined in the grammar" % listName
+            raise GrammarError( "list %s was not defined in the grammar" % listName )
         self.gramObj.emptyList(listName)
 
     def appendList(self, listName, words):
         if listName not in self.validLists:
-            raise GrammarError, "list %s was not defined in the grammar" % listName
+            raise GrammarError( "list %s was not defined in the grammar" % listName )
         if type(words) == type(""):
             self.gramObj.appendList(listName,words)
         else:
@@ -489,8 +489,21 @@ class GrammarBase(GramClassBase):
         fullResults = []
         for x in wordsAndNums:
             words.append( x[0] )
-            fullResults.append( ( x[0], self.ruleMap[x[1]] ) )
-
+            # the numbering of some rules appears to be different in NatSpeak10, catch with try:
+            try:
+                fullResults.append( ( x[0], self.ruleMap[x[1]] ) )
+            except KeyError:
+                if x[1] == 1000000 and 'dgndictation' in self.ruleMap.values():
+                    fullResults.append( ( x[0], 'dgndictation' ) )
+                elif x[1] == 1000001 and 'dgnletters' in self.ruleMap.values():
+                    fullResults.append( ( x[0], 'dgnletters' ) )
+                else:
+                    print '='*50
+                    print 'wordsAndNums: %s'% wordsAndNums
+                    print 'ruleMap: %s'% `self.ruleMap`
+                    mess =  'Invalid key %s for ruleMap'% x[1]
+                    raise KeyError(mess)
+                
         # we also compute a list similar to fullResults except that we group
         # all words which are sequential and in the same rule together in a
         # sublist. For example:

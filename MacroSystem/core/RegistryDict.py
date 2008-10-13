@@ -18,7 +18,7 @@ class RegistryDict(object):
             return None
         elif objtype in (win32con.REG_SZ, win32con.REG_EXPAND_SZ, win32con.REG_RESOURCE_LIST, win32con.REG_LINK, win32con.REG_BINARY, win32con.REG_DWORD, win32con.REG_DWORD_LITTLE_ENDIAN, win32con.REG_DWORD_BIG_ENDIAN, win32con.REG_MULTI_SZ):
             return obj
-        raise NotImplementedError, "Registry type 0x%08X not supported" % (objtype,)
+        raise NotImplementedError( "Registry type 0x%08X not supported" % (objtype,) )
     massageIncomingRegistryValue = staticmethod(massageIncomingRegistryValue)
 
     def __getitem__(self, key):
@@ -28,7 +28,7 @@ class RegistryDict(object):
         except:
             if key == '':
                 # Special case: this dictionary key means "default value"
-                raise KeyError, key
+                raise KeyError( key )
             pass
         # it's probably a registry key then
         try:
@@ -36,7 +36,7 @@ class RegistryDict(object):
         except:
             pass
         # must not be there
-        raise KeyError, key
+        raise KeyError( key )
     
     def has_key(self, key):
         return self.__contains__(key)
@@ -63,7 +63,7 @@ class RegistryDict(object):
         return self.keyhandle == other.keyhandle
 
     def __hash__(self):
-        raise TypeError, "RegistryDict objects are unhashable"
+        raise TypeError( "RegistryDict objects are unhashable" )
   
     def clear(self):
         keylist = list(self.iterkeys())
@@ -151,7 +151,7 @@ class RegistryDict(object):
             item.clear()
             win32api.RegDeleteKey(self.keyhandle, key)
         else:
-            raise ValueError, "Unknown item type in RegistryDict"
+            raise ValueError( "Unknown item type in RegistryDict" )
   
     def __len__(self):
         return len(self.items())
@@ -165,7 +165,7 @@ class RegistryDict(object):
             del self[k]
             return k, v
         except StopIteration:
-            raise KeyError, "RegistryDict is empty"
+            raise KeyError( "RegistryDict is empty" )
             
     def get(self,key,default=None):
         try:

@@ -3,6 +3,13 @@ instead of testnatlink now testing can be done with unittest:
 - unittestNatlink.py
 - unittestPrePost.py
 
+=======================
+Notes when testing with NatSpeak 10 (on Vista):
+
+-after testing an extra natspeak instance remains active, even after closing NatSpeak (the DragonBar). This is also known to happen with voicecode. So you should check in the task manager whether all natspeak instances (processes) have been killed, for repeated testing (if strange things seem to happen)
+
+
+
 Note
 
 1. the icon file that is needed for one of the tests.

@@ -267,7 +267,11 @@ class NatlinkStatus(object):
         """
         version = self.getDNSFullVersion()
         if version:
-            return int(version[0])
+            if version.find('.') > 0:
+                version = int(version.split('.')[0])
+                return version
+            else:
+                return int(version[0])
 
         # older versions:        
         # try falling back on registry:

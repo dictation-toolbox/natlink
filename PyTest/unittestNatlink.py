@@ -40,7 +40,7 @@
 #   - added testParser, testGramimar, testDictGram, testSelectGram
 #
 
-import sys, unittest
+import sys, unittest, types
 import os
 import os.path
 import time
@@ -153,7 +153,7 @@ class UnittestNatlink(unittest.TestCase):
         # window is not empty we raise an exception to avoid possibily screwing 
         # up the users work.
         i = 0
-        while i < 10:
+        while i < 50:
             time.sleep(0.1)
             mod, title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
@@ -374,6 +374,23 @@ class UnittestNatlink(unittest.TestCase):
             time.sleep(1)
         self.assertEquals(expected, actual, 'Function call "%s" returned unexpected result\nExpected: %s, got: %s'%
                           (command, expected, actual))
+    def doTestFuncReturnAlternatives(self, expected,command,localVars=None):
+        
+        # account for different values in case of [None, 0] (wordFuncs)
+        # expected is a tuple of alternatives, which one of them should be equal to expected
+        if localVars == None:
+            actual = eval(command)
+        else:
+            actual = eval(command, globals(), localVars)
+
+        if type(expected) != types.TupleType:
+            raise TestError("doTestFuncReturnAlternatives, invalid input %s, tuple expected"% `expected`)
+        for exp in expected:
+            if actual == exp:
+                break
+        else:
+            self.fail('Function call "%s" returned unexpected result\nnot one of expected values: %s\ngot: %s'%
+                          (command, `expected`, actual))
 
     def doTestFuncReturnWordFlag(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
@@ -661,6 +678,7 @@ class UnittestNatlink(unittest.TestCase):
         #QH why does gotBegin not hit here, sometimes????
         
     #v5/9
+    # version 10 gives (0, 6, 'And ', 4, 4) here:
         callTest.testTextChange(moduleInfo,(0,6,'And ',3,3))
     #else
 ##        callTest.testTextChange(moduleInfo,(0,5,'And',3,3))
@@ -795,6 +813,7 @@ class UnittestNatlink(unittest.TestCase):
         # (3) Szymanski has not been moved to the dictation state
         # (4) HeLLo (with that capitalization) is not in the vocabulary
 
+        # version 10 gives  8 in next test:
         testFuncReturn(0,"natlink.getWordInfo('hello')")
         testFuncReturn(0,"natlink.getWordInfo('hello',0)")
         testFuncReturn(0,"natlink.getWordInfo('hello',1)")
@@ -1087,6 +1106,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
+        testFuncReturnAlternatives = self.doTestFuncReturnAlternatives
         # allow for changes dgnwordflag_DNS8newwrdProp in version 8:
         testFuncReturnWordFlag = self.doTestFuncReturnWordFlag
         # strip 'frots' in front:
@@ -1101,9 +1121,9 @@ class UnittestNatlink(unittest.TestCase):
         testFuncReturn(None,"natlink.getWordProns('Szymanskii')")
 
         # I have looked up the expected pronunciations for these words
-        testFuncReturn(['an','and','~'],"natlink.getWordProns('and')")
-        testFuncReturn(['Dat'],"natlink.getWordProns('that')")
-        testFuncReturn(['on'],"natlink.getWordProns('on')")
+        testFuncReturnAlternatives((['an','and','~'],['an', 'and', '~', '~d']) ,"natlink.getWordProns('and')")
+        testFuncReturnAlternatives((['Dat'], ['Dat', 'Dut']),"natlink.getWordProns('that')")
+        testFuncReturnAlternatives((['on'], ['on', '{n']),"natlink.getWordProns('on')")
 
         # make sure that the pronunciation of 'four' in included in the list
         # of prons of 'for'
@@ -1305,10 +1325,7 @@ class UnittestNatlink(unittest.TestCase):
         otherGram.activateAll(window=calcWindow)
         
         testGram.unload()
-        testGram.load('<Start> exported = hello there;',allResults=1)
-        testGram.activateAll(window=0)
-        testRecognition(['hello','there'])
-       
+
        #This fails testGram.checkExperiment(1,'other',[],[])
        
         testGram.resetExperiment()
@@ -1437,6 +1454,174 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
+
+
+    def testDgndictationEtc(self):
+        self.log("testDgndictationEtc", 1)
+
+        # Create a simple command grammar.  This grammar simply gets the results
+        # of the recognition and saves it in member variables.  It also contains
+        # code to check for the results of the recognition.
+
+        # only in DragonPad, test the imported rules dgndictation, dgnletters and dgnwords        
+        class TestGrammar(GrammarBase):
+
+            def __init__(self):
+                GrammarBase.__init__(self)
+                self.resetExperiment()
+
+            def resetExperiment(self):
+                self.sawBegin = 0
+                self.recogType = None
+                self.words = []
+                self.fullResults = []
+                self.error = None
+
+            def gotBegin(self,moduleInfo):
+                if self.sawBegin > nTries:
+                    self.error = 'Command grammar called gotBegin twice'
+                self.sawBegin += 1
+                if moduleInfo != natlink.getCurrentModule():
+                    self.error = 'Invalid value for moduleInfo in GrammarBase.gotBegin'
+
+            def gotResultsObject(self,recogType,resObj):
+                if self.recogType:
+                    self.error = 'Command grammar called gotResultsObject twice'
+                self.recogType = recogType
+
+            def gotResults(self,words,fullResults):
+                if self.words:
+                    self.error = 'Command grammar called gotResults twice'
+                self.words = words
+                self.fullResults = fullResults
+
+            def checkExperiment(self,sawBegin,recogType,words,fullResults):
+                if self.error:
+                    raise TestError,self.error
+                if self.sawBegin != sawBegin:
+                    raise TestError,'Unexpected result for GrammarBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
+                if self.recogType != recogType:
+                    raise TestError,'Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
+                if self.words != words:
+                    raise TestError,'Unexpected result for GrammarBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
+                if self.fullResults != fullResults:
+                    raise TestError,'Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults))
+                self.resetExperiment()
+        
+        testGram = TestGrammar()
+        testRecognition = self.doTestRecognition
+        testForException = self.doTestForException
+        testActiveRules = self.doTestActiveRules
+
+        testGram.unload()
+        testGram.resetExperiment()
+
+    # test working of dgnwords:
+        self.log("testing dgnwords")
+        testGram.load("""<dgnwords> imported;
+                      <Start> exported = dictate word <dgnwords>;""")
+        testGram.activateAll(window=0)
+        testRecognition(['dictate','word','hello'])
+        testGram.checkExperiment(1,'self',['dictate', 'word', 'hello'],
+                                 [('dictate', 'Start'), ('word', 'Start'), ('hello', 'dgnwords')])
+        testGram.unload()
+        testGram.resetExperiment()
+      
+    # test working of dgnletters:
+        testGram.load("""<dgnletters> imported;
+                      <Start> exported = dictate letters <dgnletters>;""")
+        testGram.activateAll(window=0)
+        testRecognition(['dictate','letters','b\\bravo', 'k\\kilo'])
+        testGram.checkExperiment(1,'self',['dictate', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                 [('dictate', 'Start'), ('letters', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+        testGram.unload()
+        testGram.resetExperiment()
+      
+    # test working of dgndictation:
+        self.log("testing dgndictation")
+        testGram.load("""<dgndictation> imported;
+                      <Start> exported = dictate <dgndictation>;""")
+        testGram.activateAll(window=0)
+        testRecognition(['dictate','hello','there'])
+        testGram.checkExperiment(1,'self',['dictate', 'hello', 'there'],
+                                 [('dictate', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        testGram.unload()
+        testGram.resetExperiment()
+      
+    # try combinations of the three:
+        self.log("testing dgndictation etc combinations")
+        testGram.load("""<dgndictation> imported;
+                        <dgnletters> imported;
+                        <dgnwords> imported;
+                       <Start1> exported = dictate <dgndictation>;
+                       <Start2> exported = dictate letters <dgnletters>;
+                       <Start3> exported = dictate word <dgnwords>;
+                      """)
+        testGram.activateAll(window=0)
+        testRecognition(['dictate','hello','there'])
+        testGram.checkExperiment(1,'self',['dictate', 'hello', 'there'],
+                                 [('dictate', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        testRecognition(['dictate','letters','b\\bravo', 'k\\kilo'])
+        testGram.checkExperiment(1,'self',['dictate', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                 [('dictate', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+
+        testRecognition(['dictate','word','hello'])
+        testGram.checkExperiment(1,'self',['dictate', 'word', 'hello'],
+                                 [('dictate', 'Start3'), ('word', 'Start3'), ('hello', 'dgnwords')])
+
+        testGram.unload()
+        testGram.resetExperiment()
+
+    # try combinations of the three:
+    # not dgnwords is pointless here, dgndictation overrules:
+        self.log("testing dgndictation combined in one rule")
+        testGram.load("""<dgndictation> imported;
+                        <dgnletters> imported;
+                        <dgnwords> imported;
+                       <Start> exported = dictate (<dgndictation>|<dgnletters>|<dgnwords>);
+                      """)
+        testGram.activateAll(window=0)
+        testRecognition(['dictate','hello','there'])
+        testGram.checkExperiment(1,'self',['dictate', 'hello', 'there'],
+                                 [('dictate', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        testRecognition(['dictate','b\\bravo', 'k\\kilo'])
+        testGram.checkExperiment(1,'self',['dictate', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                 [('dictate', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+
+        testRecognition(['dictate','hello'])
+        testGram.checkExperiment(1,'self',['dictate', 'hello'],
+                                 [('dictate', 'Start'), ('hello', 'dgndictation')])
+
+        testGram.unload()
+        testGram.resetExperiment()
+
+    # try others mixing of rules:
+        self.log("testing dgndictation mixing of rules")
+        testGram.load("""<Start> exported = <Start1>|<Start2>| hello | <dummyrule>;
+                    <dummyrule> = dummy rule;
+                       <Start1> exported = dictate <dgndictation>;
+                        <dgndictation> imported;
+                        <dgnletters> imported;
+                       <Start2> exported = dictate letters <dgnletters>;
+                      """)
+        testGram.activateAll(window=0)
+        testRecognition(['dictate','hello','there'])
+        testGram.checkExperiment(1,'self',['dictate', 'hello', 'there'],
+                                 [('dictate', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        testRecognition(['dictate','letters','b\\bravo', 'k\\kilo'])
+        testGram.checkExperiment(1,'self',['dictate', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                 [('dictate', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+
+        testRecognition(['hello'])
+        testGram.checkExperiment(1,'self',['hello'],
+                                 [('hello', 'Start')])
+        testRecognition(['dummy', 'rule'])
+        testGram.checkExperiment(1,'self',['dummy', 'rule'],
+                                 [('dummy', 'dummyrule'), ('rule', 'dummyrule')])
+
+        testGram.unload()
+        testGram.resetExperiment()
+
 
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase

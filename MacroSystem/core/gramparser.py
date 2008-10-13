@@ -62,10 +62,18 @@ from struct import pack
 
 import string
 
-SyntaxError = "SyntaxError"
-LexicalError = "LexicalError"
-SymbolError = "SymbolError"
-GrammarError = "GrammarError"
+class SyntaxError(Exception):
+    pass
+
+class LexicalError(Exception):
+    pass
+
+
+class SymbolError(Exception):
+    pass
+
+class GrammarError(Exception):
+    pass
 
 SeqCode = 1     # sequence
 AltCode = 2     # alternative
@@ -92,7 +100,7 @@ class GramScanner:
 
     def testAndEatToken(self, token):
         if self.token != token:
-            raise SyntaxError, "expecting '%s'" % token
+            raise SyntaxError( "expecting '%s'" % token )
         else:
             value = self.value
             self.getAnotherToken()
@@ -136,7 +144,7 @@ class GramScanner:
             while ch < lnLen and ln[ch] != '"':
                 ch = ch + 1
             if ch >= lnLen:
-                raise LexicalError, "expecting closing quote in word name"
+                raise LexicalError( "expecting closing quote in word name" )
             self.value = ln[self.start+1:ch]
             ch = ch + 1
         
@@ -146,7 +154,7 @@ class GramScanner:
             while ch < lnLen and ln[ch] != "'":
                 ch = ch + 1
             if ch >= lnLen:
-                raise LexicalError, "expecting closing quote in word name"
+                raise LexicalError( "expecting closing quote in word name" )
             self.value = ln[self.start+1:ch]
             ch = ch + 1
         
@@ -156,7 +164,7 @@ class GramScanner:
             while ch < lnLen and ln[ch] != '>':
                 ch = ch + 1
             if ch >= lnLen:
-                raise LexicalError, "expecting closing angle bracket in rule name"
+                raise LexicalError( "expecting closing angle bracket in rule name" )
             self.value = ln[self.start+1:ch]
             ch = ch + 1
 
@@ -166,7 +174,7 @@ class GramScanner:
             while ch < lnLen and ln[ch] != '}':
                 ch = ch + 1
             if ch >= lnLen:
-                raise LexicalError, "expecting closing brace in list name"
+                raise LexicalError( "expecting closing brace in list name" )
             self.value = ln[self.start+1:ch]
             ch = ch + 1
 
@@ -177,7 +185,7 @@ class GramScanner:
             self.value = ln[self.start:ch]
 
         else:
-            raise LexicalError, "unknown character found"
+            raise LexicalError( "unknown character found" )
 
         self.char = ch
 
@@ -212,20 +220,20 @@ class GramParser:
             while self.scanObj.token != '\0':
                 self.parseRule()
         except SyntaxError, message:
-            raise SyntaxError,"Syntax error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError()
+            raise SyntaxError("Syntax error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError() )
         except LexicalError, message:
-            raise LexicalError,"Lexical error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError()
+            raise LexicalError("Lexical error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError())
         except SymbolError, message:
-            raise SymbolError,"Symbol error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError()
+            raise SymbolError("Symbol error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError() )
 
     def parseRule(self):
         if self.scanObj.token != 'rule':
-            raise SyntaxError, "expecting rule name to start rule definition"
+            raise SyntaxError( "expecting rule name to start rule definition" )
         ruleName = self.scanObj.value
         if self.ruleDefines.has_key(ruleName):
-            raise SymbolError, "rule '%s' has already been defined" % ruleName
+            raise SymbolError( "rule '%s' has already been defined" % ruleName )
         if self.importRules.has_key(ruleName):
-            raise SymbolError, "rule '%s' has already been defined as imported" % ruleName
+            raise SymbolError( "rule '%s' has already been defined as imported" % ruleName )
         if self.knownRules.has_key(ruleName):
             ruleNumber = self.knownRules[ruleName]
         else:
@@ -283,7 +291,7 @@ class GramParser:
         if self.scanObj.token == 'word':
             wordName = self.scanObj.value
             if not wordName:
-                raise SyntaxError,"empty word name"                    
+                raise SyntaxError("empty word name" )
             if self.knownWords.has_key(wordName):
                 wordNumber = self.knownWords[wordName]
             else:
@@ -296,7 +304,7 @@ class GramParser:
         elif self.scanObj.token == 'list':
             listName = self.scanObj.value
             if not listName:
-                raise SyntaxError,"empty word name"                    
+                raise SyntaxError("empty word name" )
             if self.knownLists.has_key(listName):
                 listNumber = self.knownLists[listName]
             else:
@@ -309,7 +317,7 @@ class GramParser:
         elif self.scanObj.token == 'rule':
             ruleName = self.scanObj.value
             if not ruleName:
-                raise SyntaxError,"empty word name"                    
+                raise SyntaxError("empty word name" )                  
             if self.knownRules.has_key(ruleName):
                 ruleNumber = self.knownRules[ruleName]
             else:
@@ -332,14 +340,14 @@ class GramParser:
             return [ ('start', OptCode) ] + definition + [ ('end', OptCode) ]
 
         else:
-            raise SyntaxError, "expecting expression (word, rule, etc.)"
+            raise SyntaxError( "expecting expression (word, rule, etc.)" )
 
     def checkForErrors(self):
         if not len(self.exportRules):
-            raise GrammarError, "no rules were exported"
+            raise GrammarError( "no rules were exported" )
         for ruleName in self.knownRules.keys():
             if not self.importRules.has_key(ruleName) and not self.ruleDefines.has_key(ruleName):
-                raise GrammarError, "rule '%s' was not defined or imported" % ruleName
+                raise GrammarError( "rule '%s' was not defined or imported" % ruleName )
 
     def dumpContents(self):
         print "Dumping GramParser object..."

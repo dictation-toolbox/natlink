@@ -140,28 +140,37 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
-        dllFile = os.path.join(coreDir, 'natlink.dll')
+        pythonVersion = self.getPythonVersion().replace(".", "")
+        if int(pythonVersion) >= 25:
+            dllFile = os.path.join(coreDir, 'natlink.pyd')
+        else:
+            dllFile = os.path.join(coreDir, 'natlink.dll')
         if not os.path.isfile(dllFile):
             self.copyNatlinkDllPythonVersion()
             self.checkPythonPathAndRegistry()            
 
     def copyNatlinkDllPythonVersion(self):
         """copy the natlink.dll from the correct version"""
-        dllFile = os.path.join(coreDir, 'natlink.dll')
+        pythonVersion = self.getPythonVersion().replace(".", "")
+        if int(pythonVersion) >= 25:
+            dllFile = os.path.join(coreDir, 'natlink.pyd')
+            dllVersionFile = os.path.join(coreDir, 'natlink%s.pyd'% pythonVersion)
+        else:
+            dllFile = os.path.join(coreDir, 'natlink.dll')
+            dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
         if os.path.isfile(dllFile):
             self.unregisterNatlinkDll()
             os.remove(dllFile)
-        pythonVersion = self.getPythonVersion().replace(".", "")
-        if int(pythonVersion) >= 25:
-            dllVersionFile = os.path.join(coreDir, 'natlink%s.pyd'% pythonVersion)
-        else:
-            dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
             
         if os.path.isfile(dllVersionFile):
             try:
                 shutil.copyfile(dllVersionFile, dllFile)
+                print 'copied dll/pyd file %s to %s'% (dllVersionFile, dllFile)
             except:
                 fatal_error("could not copy %s to %s"% (dllVersionFile, dllFile))
+        else:
+            fatal_error("dllVersionFile %s is missing! Cannot copy to natlink.dll/natlink.pyd"% dllVersionFile)
+            
         
                         
 
@@ -577,7 +586,11 @@ Possibly you need administator rights to do this
         """
         # give fatal error if python is not OK...
         dummy, dummy = self.getHKLMPythonPathDict()        
-        DllPath = os.path.join(coreDir, "natlink.dll")
+        pythonVersion = self.getPythonVersion().replace(".", "")
+        if int(pythonVersion) >= 25:
+            DllPath = os.path.join(coreDir, 'natlink.pyd')
+        else:
+            DllPath = os.path.join(coreDir, 'natlink.dll')
         if not os.path.isfile(DllPath):
             fatal_error("Dll file not found in core folder: %s"% DllPath)
 
@@ -590,19 +603,25 @@ Possibly you need administator rights to do this
                 fatal_error("cannot import win32api, please see if win32all of python is properly installed")
             
             try:
-                win32api.WinExec('regsvr32 /s "%s"'% DllPath)
+                result = win32api.WinExec('regsvr32 /s "%s"'% DllPath)
+                print 'registered %s with result: %s'% (DllPath, result)
             except:
                 fatal_error("cannot register |%s|"% DllPath)                    
         else:
             # os.system:
-            os.system('regsvr32 "%s"'% DllPath)
+            result = os.system('regsvr32 "%s"'% DllPath)
+            print 'registered %s with result: %s'% (DllPath, result)
         self.setNatlinkInPythonPathRegistry()
 
     def unregisterNatlinkDll(self, silent=None):
         """unregister explicit, should not be done normally
         """
         dummy, dummy = self.getHKLMPythonPathDict()        
-        DllPath = os.path.join(coreDir, "natlink.dll")
+        pythonVersion = self.getPythonVersion().replace(".", "")
+        if int(pythonVersion) >= 25:
+            DllPath = os.path.join(coreDir, 'natlink.pyd')
+        else:
+            DllPath = os.path.join(coreDir, 'natlink.dll')
         if os.path.isfile(DllPath):
 
             if silent:
@@ -612,7 +631,8 @@ Possibly you need administator rights to do this
                     fatal_error("cannot import win32api, please see if win32all of python is properly installed")
                 
                 try:
-                    win32api.WinExec('regsvr32 /s /u "%s"'% DllPath)
+                    result = win32api.WinExec('regsvr32 /s /u "%s"'% DllPath)
+                    print result
                 except:
                     pass
             else:
@@ -806,7 +826,7 @@ w/W = set path for program that opens vocola command files,
       or clear (then use Simpscrp or Notepad)
 s/S = Vocola uses Simpscrp (default is OFF, S)
 
-r/R - (un)registernatlink, the natlink.dll file(should not be necessary to do)
+r/R - (un)registernatlink, the natlink.dll  (natlink.pyd) file(should not be necessary to do)
 g/G - enable/disable debugoutput: natlink debug output in natlink log file
 z/Z - silently enables natlink and registers, or disables natlink and unregisters
       (for installer, to be done/tested)
