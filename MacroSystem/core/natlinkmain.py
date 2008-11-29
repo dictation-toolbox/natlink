@@ -82,7 +82,6 @@ import natlinkstatus    # for extracting status info (QH)
 status = natlinkstatus.NatlinkStatus()
 
 debugLoad= status.getDebugLoad()
-debugLoad= 1
 cmdLineStartup=0
 debugTiming=0
 debugCallback = status.getDebugCallback()
