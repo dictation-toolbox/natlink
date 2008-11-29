@@ -66,7 +66,7 @@ __version__ = ""   #changed with SVN
 
 import sys, time
 import string
-import os               # access to file information
+import os, shutil       # access to file information
 import os.path          # to parse filenames
 import imp              # module reloading
 import re               # regular expression parsing    
@@ -82,6 +82,7 @@ import natlinkstatus    # for extracting status info (QH)
 status = natlinkstatus.NatlinkStatus()
 
 debugLoad= status.getDebugLoad()
+debugLoad= 1
 cmdLineStartup=0
 debugTiming=0
 debugCallback = status.getDebugCallback()
@@ -274,7 +275,10 @@ def findAndLoadFiles(curModule=None):
     global loadedFiles, searchImportDirs, vocolaIsLoaded, vocolaModule
 
 
+    moduleHasDot = None
     if curModule:
+        # special case, encountered with vocola modules with . in name:
+        moduleHasDot = curModule.find(".") >= 0
         curModuleEscaped = re.escape(curModule)
         pat = re.compile(r"""
             ^(%s        # filename must match module name
@@ -297,7 +301,7 @@ def findAndLoadFiles(curModule=None):
         userDirFiles = [x for x in os.listdir(userDirectory) if x.endswith('.py')]
         for x in userDirFiles:
             res = pat.match(x)
-            if res: filesToLoad[ res.group(1) ] = None
+            if res: addToFilesToLoad( filesToLoad, res.group(1), userDirectory, moduleHasDot )
     # baseDirectory:           
     searchImportDirs.append(baseDirectory)
     baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
@@ -318,7 +322,7 @@ def findAndLoadFiles(curModule=None):
 
     for x in baseDirFiles:
         res = pat.match(x)
-        if res: filesToLoad[ res.group(1) ] = None
+        if res: addToFilesToLoad( filesToLoad, res.group(1), baseDirectory, moduleHasDot )
 
     # Try to (re)load any files we find
     if debugLoad: print 'filesToLoad: %s'% filesToLoad.keys()
@@ -339,6 +343,37 @@ def findAndLoadFiles(curModule=None):
             safelyCall(name,'unload')
             del loadedFiles[name]
 
+def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
+    """add to the dict of filesToLoad,
+
+    if moduleHasDot (module name for example aaa.bbb), replace aaa.bbb to aaa_dot_bbb and
+    check the python files accordingly. Fix for vocola command files that have a . (dot)
+    in the module name. Also user grammar files can be written according to this trick.
+
+    Note: if manual changes have to be done, the aaa.bbb_ccc.py file MUST exist, never change
+    alone in aaa_dot_bbb_ccc.py
+    (Quintijn 29/11/2008)
+    
+    """
+    if not moduleHasDot:
+        filesToLoad[modName] = None
+        return
+    # special case, check for special name and take that one instead of modName
+    newModName = modName.replace(".", "_dot_")
+    inFile = os.path.join(modDirectory, modName + ".py")
+    outFile = os.path.join(modDirectory, newModName + ".py")
+    dotDate = getFileDate(inFile)
+    _dot_Date = getFileDate(outFile)
+    if dotDate >= _dot_Date:
+        # aaa.bbb.py -->> aaa_dot_bbb.py, only if it outdated.
+##        print 'copy: %s to %s'% (inFile, outFile)
+        shutil.copyfile(inFile, outFile)
+    # set newModName to this one:
+    filesToLoad[newModName] = None
+##    print 'set newModName: %s'% newModName
+    return
+
+    
 #
 # This function is called when we change users.  It calls the unload member
 # function in each loaded module.
