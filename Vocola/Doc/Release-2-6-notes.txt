@@ -1,0 +1,265 @@
+New in 2.6:
+
+* backed out change to handling of Eval arguments made in 2.5.8 because
+  it broke Eval.  Arguments are treated as type integer iff they have
+  the *standard* form of an integer.  This prevents loss of information
+  when an argument needs to be treated as a string even if it has the
+  form of an integer (done via str($1)).  This breaks backward
+  compatibility with commands that relied on "+2" being treated as an
+  integer.  Such commands should either use "2" or int($1) to force
+  treatment as an integer.
+
+* changed example in DefiningFunctions.html using "+10" as an "integer"
+  to use "10" instead to avoid the above problem.
+
+* made the Eval description clearer about how Eval guesses variable types
+  and how to force a type when Eval guesses wrong.
+
+* VocolaVersions.html now warns of the change to Eval's behavior.
+
+
+New in 2.5.9:
+
+* Added Scott's vcledit.vcl as a sample Vocola command file.
+
+* Updated wish list
+
+
+New in 2.5.8:
+
+* Arguments passed to user functions are always passed as strings rather
+  than sometime strings and sometimes integers.
+
+* References/function arguments passed to Eval are treated as type
+  integer iff they contain a string that is the representation of an
+  integer (i.e., an optional plus or minus sign followed by one or more
+  digits).
+
+* Added documentation for WaitForWindow and HTMLHelp.
+
+* Two separate versions of _vocola_main.py are no longer required, one
+  for the installer and one for the non-installer cases.
+
+
+New in 2.5.7:
+
+* when Dragon rejects a Dragon function because of bad syntax, the
+  resulting error message now includes the exact text that produced the
+  syntax error.
+
+* the number of arguments passed to Dragon functions that take a varying
+  number of arguments is now checked (e.g., not too few or too many).
+
+* WakeUp and MenuCancel now correctly take no arguments.
+
+! The Dragon WaitForWindow and HTMLHelp commands are now supported.
+
+* Arguments passed to Dragon functions are now coerced to the
+  appropriate type.  (Previously, they were treated as integer iff they
+  had the form of canonical numbers; this caused problems when a numeric
+  string was passed to a function expecting a string and when a
+  non-canonical number (e.g., "+1") was passed to a function expecting
+  an integer.)  Failed coercions produce Vocola runtime errors.
+
+
+New in 2.5.6:
+
+* variable names (e.g., <foo>) can once again start with leading digits.
+
+* As a baby step towards supporting multiple languages/non-ASCII, Vocola
+  now assumes its input is encoded using Latin-1.  
+
+* Vocola releases starting with this one can now be installed over
+  previous releases installed via the installer.
+
+* Added [search] Google for <_anything> macro to _vocola.vcl sample
+  file.
+
+* Replaced call to quotewords with a handwritten replacement to avoid
+  tickling a bug in the Perl regular expression engine.
+
+
+
+New in 2.5.5:
+
+* Fixed a bug that caused pointless error messages (BadWindow) to be
+  produced when windows disappear in the middle of an utterance.
+
+* _vocola_main.py has been generalized to be able to handle any number
+  of command folders.
+
+* command files with the same name in different command folders no
+  longer cause unpredictable behavior with only one's commands active at
+  a time: now both of their commands will be active at the same time.
+
+* _vocola_main.py now releases its callback when unloaded.
+
+* A bug that sometimes caused not all commands to be properly loaded at
+  startup has been fixed thanks to a patch by Matthew Vermilion.
+
+! New command files are always compiled and loaded (if compilation was
+  successful) at the start of the next utterance.  (Previously, toggling
+  the microphone or issuing an explicit Load ... Commands command was
+  sometimes necessary to load new files.)
+
+* All command files for the current application / global context
+  including machine specific files are now loaded by the Load
+  (Global) [Voice] Commands.  (Previously, only the canonical file
+  (e.g., explorer.vcl for Windows Explorer) was loaded.)
+
+* Command file's whose filenames contain hyphens before an @ no longer
+  work with older versions of NatLink as a side effect of a change
+  required to let Vocola work with applications whose name contains a
+  hyphen (requires a newer version of NatLink).
+
+* Through careful name mangling it now is possible to determine the
+  source file name corresponding to each vocola output filename.
+
+* Vocola now removes old compiled commands on startup when no user
+  command folder is present.  (Previously, this was mistakenly only done
+  when a user command folder was present.)
+
+* A warning about using large number ranges was added to the documentation.
+
+* Fixed bug with ntvdm.vcl example command "Folder <folder>" where it
+  failed to handle folder names containing spaces properly.
+
+
+
+New in 2.5.4:
+
+* A bug that caused user functions and Dragon procedures to crash when
+  called with either a single repeat expression or menu body reference
+  as an argument has been fixed.
+
+* A bug that incorrectly caused an error to be reported when expressions
+  like Repeat(0, foo) that produce no effects (not even "") were passed
+  to user functions has been fixed.
+
+* The Eval function now works correctly on any action instead of just word
+  and reference actions.
+
+* Bugs that caused eval to crash when passed an action producing other
+  than a single effect, the result of a Dragon call, or a word
+  containing a single quotation have been fixed.
+
+* The description of Eval has been modified to describe what it actually
+  does and to provide more useful information for using it.
+
+! A small library of string functions implemented via Eval has been
+  provided (samples/string.vch).
+
+* A misleading error message (Dragon functions may not be nested) was
+  changed to the more informative "conversion error: unable to convert
+  value <v> to a string due to the presence of a Dragon call" message,
+  where <v> is the problematic value in question.
+
+
+
+New in 2.5.3:
+
+* A bug that caused Vocola to produce ill-formed Python code when given
+  a list containing an empty alternative (no actions) has been fixed.
+
+* Strings containing newlines or carriage returns can now be passed to
+  Dragon functions thanks to a workaround provided by Quintijn Hoogenboom.
+
+* The rule for escaping dollar signs in actions has changed slightly to:
+    \$ -> <non special $>
+  it was:
+    \$[a-zA-Z_] -> <non special $><same last char>
+  That is, previously "\$1 \$% $2" interpolated to "$1 \$% <value of $2>";
+  now it interpolates to "$1 $% <value of $2>".
+  
+  The new rule should be both easier to remember (write \$ when you wish
+  a literal $) and easier to automatically produce code using.
+
+* The same rule now applies to include statements (previously, no
+  unescaping was done).  The code for include statements was changed so
+  that all variables are simultaneously substituted only once for
+  consistency (previously, substitution was iterated allowing the values
+  of variables to refer to still other variables).
+
+* A bug that caused backslashes to be doubled in include filenames has
+  been fixed.
+
+* The set of well-formed references in include statements is now the
+  same as that in actions for consistency.  In particular, $12abc is now
+  <value of $12>abc instead of <value of $123abc>.
+
+* A bug that caused context alternatives containing quotes or newlines
+  to produce illegal python code has been fixed.
+
+! From the wish list: Context statement ":" now clears any existing context.  
+
+
+New in 2.5.2:
+
+* A bug with passing strings that are noncanonical representations of
+  numbers (e.g., "0010" or "-012") to user or Dragon functions has been
+  fixed.  (Previously, attempting to pass "0010" instead passed "8" (the
+  value of 10 in octal).)
+
+* The documentation now states more clearly that global command files
+  need only start with an underscore, rather than "_vocola".
+
+
+* The source code now indicates what strings qualify as names and
+  function names.
+
+* Names (of lists, functions, and formals) may now start with underscores.
+
+* Illegal list names are now complained about.
+
+* A bug that caused the parser to barf on formals lists with leading or
+  trailing whitespace has been fixed.
+
+* A warning was added to the documentation about a NatLink bug that
+  causes Vocola filenames with non-word characters to be ignored.
+
+* Fixed a bug that prevented the Edit Machine commands from bringing up
+  an editor when the Vocola user directory pathname contained spaces.
+
+* Added a note to the documentation letting users know that the messages
+  from the Python macros window can be reset by closing it, and that its
+  contents can be copied to a larger window for easier viewing.
+
+* The documentation now indicates that unlike variables, functions must
+  be declared before being used.
+
+
+
+New in 2.5.1 versus 2.5:
+
+* multiple line quotations are now banned.  (They didn't really work
+  before.)  Error handling/reporting for unterminated
+  quotations/quotations spanning multiple lines is now much better.
+
+! Quotation marks of kind X may now be quoted within X-quotations by
+  doubling them:
+     " red "" and '' blue " == ' red " and '''' blue '
+
+
+* A bug that prevented passing strings containing quotations, newlines,
+  or carriage returns to user functions has been fixed.
+
+* A bug that prevented passing strings containing quotations to Dragon
+  functions (e.g., ShellExecute) has been fixed.
+
+* Because a NatLink/DNS bug prevents passing strings containing newlines
+  or carriage returns to Dragon functions, attempting to do this now
+  produces a clear Vocola error rather than an obscure crash.
+
+
+* Bare words are now correctly broken at quotation marks; e.g.,
+  previously fred"foo" was considered one word containing two quotation
+  marks rather than equivalent to Fred "foo".
+
+* A bug that caused comments containing quotation marks to produce
+  syntax errors has been fixed.
+
+* The documentation now correctly states that a keystroke sequence
+  containing a : at the end must be quoted.
+
+* The source code now correctly indicates what tokens qualify as words
+  and bare words.
