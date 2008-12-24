@@ -4,4 +4,3 @@ Show ( google   = www.google.com
      | yahoo    = www.yahoo.com
      | ScanSoft = www.scansoft.com/naturallyspeaking
      ) = {Alt+d}http:// $1 {Enter};
-

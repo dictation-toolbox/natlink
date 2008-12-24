@@ -17,4 +17,3 @@ Border (On=1 | Off=0) = "{Alt+o}l{Tab 2}" $1 {Enter};
 
 Fill (White=1 | Gray=15 | Dark Gray=17) = "{Alt+o}f{Home}{Down " $1 }{Enter};
 Fill None = {Alt+o}f{Tab}{Home}{Enter};
-

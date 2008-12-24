@@ -37,4 +37,3 @@ Tab Key = {Tab};
 [Press]             <mod> <key> <nn> = {$1+$2_$3};
 [Press]       <mod> <mod> <key> <nn> = {$1+$2+$3_$4};
 [Press] <mod> <mod> <mod> <key> <nn> = {$1+$2+$3+$4_$5};
-
