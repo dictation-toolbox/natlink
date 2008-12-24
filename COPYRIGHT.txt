@@ -43,7 +43,7 @@ Vocola
 -----------------------------------
 
 Configurenatlinkunimacrovocola:
-	Copyright (c) 2008 by Rick Quintijn Hoogenboom. It may be
+	Copyright (c) 2008 by Quintijn Hoogenboom. It may be
 	redistributed in any way as long as this copyright notice
 	remains.
 
