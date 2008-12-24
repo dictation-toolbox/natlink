@@ -1,0 +1,63 @@
+###
+### Standard simple functions for manipulating strings
+###
+###   cf. http://en.wikipedia.org/wiki/String_functions_(programming)
+### 
+
+  #
+  # Len: Returns the length of a string. An empty string returns a length of 0.
+  #
+Len(string) := Eval('len(str($string))');
+
+
+  #
+  # Left(string,n): Returns the left n characters of a string. If n is
+  # greater than the length of the string then the whole string is
+  # returned.  Behavior for negative values of n is undefined.
+  #
+Left(string, count)  := Eval('str($string)[0:int($count)]');
+
+
+  #
+  # Right(string,n): Returns the right n characters of a string. If n is
+  # greater than the length of the string then the whole string is
+  # returned.  Behavior for negative values of n is undefined.
+  #
+Right(string, count) :=
+	        Eval('str($string)[max(0,len(str($string))-int($count)):]');
+
+
+  #
+  # Replace(string,from,to): replaces instances of $from in $string with
+  # $to from left to right with replacement text ineligible for further
+  # replacement; returns the resulting string.
+  #
+  # If $string contains no overlapping instances of $from, then this is
+  # equivalent to simultaneously replacing every occurrence of $from with $to.  
+  #
+  # Examples:
+  #
+  #    Replace(re**op*, *,  **) = re****op**
+  #    Replace(o***p,   **, r*) = or**p
+  #
+Replace(string, from, to) := Eval('str($string).replace(str($from), str($to))');
+
+
+  # 
+  # Split(string,separator,index): Splits $string by occurrences
+  # of $separator (itself a string) into a list of substrings then
+  # returns the $index-th(*) substring.
+  #
+  # Example splits: 
+  #     "ab,cd,,ef"   by ","  yields "ab", "cd", "", "ef"
+  #     "ab//cd/e//f" by "//" yields "ab", "cd/e", "f"
+  #     ""            by ","  yields ""
+  #
+  # (*) -  0 denotes the first string, 1 denotes the second string, ...
+  #       -1 denotes the last string, -2 denotes the second to last string, ...
+  #
+  # Behavior for index values that describe nonexistent strings is undefined.
+  # 
+Split(string, separator, index) :=
+	          Eval('str($string).split(str($separator))[int($index)]');
+
