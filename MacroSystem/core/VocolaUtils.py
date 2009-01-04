@@ -1,6 +1,6 @@
 # VocolaUtils.py - Classes used by Vocola's generated Python code
 #
-# This file is copyright (c) 2002-2008 by Rick Mohr. It may be redistributed 
+# This file is copyright (c) 2002-2009 by Rick Mohr.  It may be redistributed 
 # in any way as long as this copyright notice remains.
 
 import natlink
@@ -14,6 +14,7 @@ class ConversionError(Exception):
 class DragonError(Exception):
     pass
 
+
 import natlinkstatus
 status = natlinkstatus.NatlinkStatus()
 
@@ -23,6 +24,7 @@ if useUnimacroActions:
         import actions
     except ImportError:
         useUnimacroActions = None
+
 
 # The UserCall class represents a Vocola user function call.  Vocola's
 # generated Python code uses this class to build up a string
@@ -121,23 +123,25 @@ class Value:
         else:
             message = "unable to convert value " + self.as_string() \
                     + " into a string due to the presence of a Dragon call"
-            raise ConversionError( message )
+            raise ConversionError(message)
                 
     # Attempt to coerce us to an integer:
     def __int__(self):
         if len(self.values) == 0:
-            raise ConversionError( "unable to convert empty value into an integer" )
+            raise ConversionError(
+                  "unable to convert empty value into an integer")
         elif len(self.values) == 1 and type(self.values[0]) is StringType:
             s = self.values[0]
             try:
                 return long(s)
             except ValueError:
-                raise ConversionError( "unable to convert value " + self.as_string() +
-                                       " into an integer" )
+                raise ConversionError(
+                      "unable to convert value " + self.as_string() \
+                      + " into an integer")
         else:
             message = "unable to convert value " + self.as_string() \
                     + " into an integer due to the presence of a Dragon call"
-            raise ConversionError( message )
+            raise ConversionError(message)
 
 
 
@@ -163,7 +167,9 @@ class DragonCall:
         elif argumentType == 's':
             argument = self.quoteAsVisualBasicString(str(value))
         else:
-            raise ValueError("From Vocola,  unexpected data type %s"% argumentType)
+            # there is a vcl2py.pl bug if this happens:
+            raise ValueError("Unknown data type specifier '" + argument +
+                             "' supplied for a Dragon procedure argument")
         
         if self.argumentString != '':
             self.argumentString += ','
@@ -193,7 +199,7 @@ class DragonCall:
             message = "Dragon reported a syntax error when Vocola attempted" \
                     + " to execute the Dragon procedure '" + self.script \
                     + "'; details: " + str(details)
-            raise DragonError( message )
+            raise DragonError(message)
 
  
 
