@@ -52,8 +52,8 @@ include utilities.vch;
 <n> <n> Drag  = dragTo($2, $1);
 <n> <n> Paste =  touch($2, $1) {Ctrl+v};
 
-<upDown>    := (  Up='-' |  Down='+');
-<leftRight> := (Left='-' | Right='+');
+<upDown>    := (  Up='-' |  Down='');
+<leftRight> := (Left='-' | Right='');
 
 Drag <n> <upDown>    = dragBy(0, $2$1);
 Drag <n> <leftRight> = dragBy($2$1, 0);

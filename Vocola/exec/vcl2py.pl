@@ -7,7 +7,7 @@
 #                  (default is "_vcl")
 #   -f          -- force processing even if file(s) not out of date
 #
-# This file is copyright (c) 2002-2008 by Rick Mohr. It may be redistributed 
+# This file is copyright (c) 2002-2009 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 #
 # 12/06/2007  ml  Arguments to Dragon functions are now checked for proper 
@@ -65,7 +65,7 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.6";
+    $VocolaVersion = "2.6.1I";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
@@ -1887,9 +1887,10 @@ sub flatten_menu
 sub make_safe_python_string
 {
     # we have already doubled backslashes by this time
-    $_[0] =~ s/'/\\'/g;
-    $_[0] =~ s/\n/\\n/g;
-    return $_[0];
+    my $text = $_[0] . "";
+    $text =~ s/'/\\'/g;
+    $text =~ s/\n/\\n/g;
+    return $text;
 }
 
 # ---------------------------------------------------------------------------

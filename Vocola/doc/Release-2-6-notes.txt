@@ -1,3 +1,21 @@
+New in 2.6.1:
+
+* Fixed a bug where using an in-line list twice in the same command
+  caused problems when it contained quotation marks.
+
+* Fixed samples/_vocola.vcl so dragging windows works correctly.  (Older
+  version is no longer compatible with Dragon function argument
+  handling: +1 is no longer treated as an integer.)
+
+* fixed end of line conventions in samples/{msdev.vcl,URLs.vch,visio32.vcl,
+  dreamweaver.vcl,keys.vch,mstsc.vcl,natspeak.vcl,nlnotes.vcl,notepad.vcl,
+  winword.vcl}.
+
+* new version of simpscrp.pyd compiled for Python 2.5
+
+* switched VocolaUtils.py to using exception classes instead of strings.
+
+
 New in 2.6:
 
 * backed out change to handling of Eval arguments made in 2.5.8 because
