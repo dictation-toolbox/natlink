@@ -10,6 +10,7 @@
 # This file is copyright (c) 2002-2009 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 #
+# 01/19/2009  ml  Unimacro built-in added
 # 12/06/2007  ml  Arguments to Dragon functions are now checked for proper 
 #                 number and datatype
 # 06/02/2007  ml  Output filenames are now mangled in an invertable fashion
@@ -65,7 +66,7 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.6.1I";
+    $VocolaVersion = "2.6.2";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
@@ -357,6 +358,7 @@ sub convert_filename
 %Vocola_functions = (
                      Eval              => [1,1],
                      Repeat            => [2,2],
+                     Unimacro          => [1,1],
                      );
 
 # Built in Dragon functions with (minimum number of arguments,
@@ -1631,8 +1633,9 @@ sub emit_call
     elsif ($callType eq "user"  ) {&emit_user_call}
     elsif ($callType eq "vocola") {
         my $functionName = $call->{TEXT};
-        if    ($functionName eq "Eval")   {&emit_call_eval}
-        elsif ($functionName eq "Repeat") {&emit_call_repeat}
+        if    ($functionName eq "Eval")     {&emit_call_eval}
+        elsif ($functionName eq "Repeat")   {&emit_call_repeat}
+        elsif ($functionName eq "Unimacro") {&emit_call_Unimacro}
         else {die "Unknown Vocola function: '$functionName'\n"}
     } else {die "Unknown function call type: '$callType'\n"}
     end_nested_call();
@@ -1738,6 +1741,18 @@ sub emit_call_repeat
     emit($indent, "for i in range(int(str(limit))):\n");
     emit_actions($collector, $arguments[1], $indent+1);
 }
+
+sub emit_call_Unimacro
+{
+    my ($collector, $call, $indent) = @_;
+    my $value = get_nested_value_name("call");
+    emit($indent, "$value = UnimacroCall()\n");
+    for my $argument (@{ $call->{ARGUMENTS} }) {
+        emit_argument("$value.addArgument", $argument, $indent);
+    }
+    emit($indent, "$collector($value)\n");
+}
+
 
 # ---------------------------------------------------------------------------
 # Utilities for transforming command terms into NatLink rules 
