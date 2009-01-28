@@ -8,27 +8,6 @@ from types import *
 import string
 
 
-# attempt to import Unimacro, suppressing errors, and noting success status:
-unimacro_available = True
-try:
-    import natlinkstatus
-except ImportError:
-    print "VocolaUtils: cannot import natlinkstatus"
-    unimacro_available = False
-
-if unimacro_available:    
-    status = natlinkstatus.NatlinkStatus()
-    unimacro_available = status.getVocolaTakesUnimacroActions()
-
-if unimacro_available:
-    try:
-        import actions
-    except ImportError:
-        print 'VocolaUtils: you asked for "VocolaTakesUnimacroActionsask", but cannot import "actions.py"'
-        unimacro_available = False
-
-##print "unimacro_available: %s"% unimacro_available
-
 class ConversionError(Exception):
     pass
 
@@ -42,9 +21,7 @@ class DragonError(Exception):
 # (self.getCall()) containing the function's translated name and the
 # function's arguments, which is then interpreted by Python's "eval".
 
-
-
-class UserCall(object):  #(object) new style classes...
+class UserCall:
     def __init__(self, functionName):
         self.functionName = functionName
         self.argumentString = ''
@@ -65,7 +42,7 @@ class UserCall(object):  #(object) new style classes...
     def getCall(self):
         return self.functionName + '(' + self.argumentString + ')'
 
-    # where is the perfom
+
 
 # The Value class represents a sequence of strings and/or Dragon 
 # calls.  Vocola's generated Python code uses this class to build up an
@@ -79,7 +56,7 @@ class Value:
         self.lastValueType = ''
 
     # Append to this Value object an integer, a string, a DragonCall object,
-    # a UnimacroCall object, or another Value object
+    # or another Value object
     def augment(self, v):
         if type(v) is IntType:
             self.augment(str(v))
@@ -97,9 +74,6 @@ class Value:
             else:
                 self.values.append(v)
             self.lastValueType = 'DragonCall'
-        elif v.__class__.__name__ == 'UnimacroCall':
-            self.values.append(v)
-            self.lastValueType = 'UnimacroCall'
         elif v.__class__.__name__ == 'Value':
             for value in v.values: self.augment(value)
         else: print "unexpected argument to augment", type(v)
@@ -109,8 +83,6 @@ class Value:
             if type(value) is StringType:
                 natlink.playString(value)
             elif value.__class__.__name__ == 'DragonCall':
-                value.perform()
-            elif value.__class__.__name__ == 'UnimacroCall':
                 value.perform()
 
     def as_string(self):
@@ -136,8 +108,7 @@ class Value:
             return self.values[0]
         else:
             message = "unable to convert value " + self.as_string() \
-                    + " into a string due to the presence of a " \
-                    + "Dragon or Unimacro call"
+                    + " into a string due to the presence of a Dragon call"
             raise ConversionError(message)
                 
     # Attempt to coerce us to an integer:
@@ -155,8 +126,7 @@ class Value:
                       + " into an integer")
         else:
             message = "unable to convert value " + self.as_string() \
-                    + " into an integer due to the presence of a " \
-                    + "Dragon or Unimacro call"
+                    + " into an integer due to the presence of a Dragon call"
             raise ConversionError(message)
 
 
@@ -216,34 +186,6 @@ class DragonCall:
                     + " to execute the Dragon procedure '" + self.script \
                     + "'; details: " + str(details)
             raise DragonError(message)
-
- 
-
-# The UnimacroCall class represents a (delayed) Unimacro call.
-# Vocola's generated Python code uses this class to build up a string
-# containing the Unimacro action, which is then passed to Unimacro for
-# interpretation when the call is finally performed.
-
-class UnimacroCall:
-    def __init__(self):
-        self.argumentString = ''
-
-    def addArgument(self, value):
-        self.argumentString = str(value)
-
-    def as_string(self):
-        q = string.replace(self.argumentString, '"', '""')
-        return 'Unimacro("' + q + '")'
-    
-    def perform(self):
-        if unimacro_available:
-            #print '[' + self.argumentString + ']'
-##            func = getattr(actions, "do_%s"% funcName)
-            actions.doAction(self.argumentString)
-        else:
-            m = "Vocola: Unimacro call failed because Unimacro is " \
-                + "unavailable or disabled"
-            raise NotImplementedError(m)
 
  
 
