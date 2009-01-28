@@ -52,7 +52,7 @@ def vocolaGetModDate(file):
 # The Vocola translator is a perl program. By default we use the precompiled
 # executable vcl2py.exe, which doesn't require installing perl.
 # To instead use perl and vcl2py.pl, set the following variable to 1:
-usePerl = 1
+usePerl = 0
 
 # C module "simpscrp" defines Exec(), which runs a program in a minimized
 # window and waits for completion. Since such modules need to be compiled
