@@ -1,3 +1,10 @@
+New in 2.6.2:
+
+* New built-in Unimacro(-) added.
+
+* Documentation removed in favor of the web site.
+
+
 New in 2.6.1:
 
 * Fixed a bug where using an in-line list twice in the same command

@@ -8,6 +8,15 @@ from types import *
 import string
 
 
+# attempt to import Unimacro, suppressing errors, and noting success status:
+unimacro_available = False
+try:
+    import actions
+    unimacro_available = True
+except ImportError:
+    pass
+
+
 class ConversionError(Exception):
     pass
 
@@ -56,7 +65,7 @@ class Value:
         self.lastValueType = ''
 
     # Append to this Value object an integer, a string, a DragonCall object,
-    # or another Value object
+    # a UnimacroCall object, or another Value object
     def augment(self, v):
         if type(v) is IntType:
             self.augment(str(v))
@@ -74,6 +83,9 @@ class Value:
             else:
                 self.values.append(v)
             self.lastValueType = 'DragonCall'
+        elif v.__class__.__name__ == 'UnimacroCall':
+            self.values.append(v)
+            self.lastValueType = 'UnimacroCall'
         elif v.__class__.__name__ == 'Value':
             for value in v.values: self.augment(value)
         else: print "unexpected argument to augment", type(v)
@@ -83,6 +95,8 @@ class Value:
             if type(value) is StringType:
                 natlink.playString(value)
             elif value.__class__.__name__ == 'DragonCall':
+                value.perform()
+            elif value.__class__.__name__ == 'UnimacroCall':
                 value.perform()
 
     def as_string(self):
@@ -108,7 +122,8 @@ class Value:
             return self.values[0]
         else:
             message = "unable to convert value " + self.as_string() \
-                    + " into a string due to the presence of a Dragon call"
+                    + " into a string due to the presence of a " \
+                    + "Dragon or Unimacro call"
             raise ConversionError(message)
                 
     # Attempt to coerce us to an integer:
@@ -126,7 +141,8 @@ class Value:
                       + " into an integer")
         else:
             message = "unable to convert value " + self.as_string() \
-                    + " into an integer due to the presence of a Dragon call"
+                    + " into an integer due to the presence of a " \
+                    + "Dragon or Unimacro call"
             raise ConversionError(message)
 
 
@@ -186,6 +202,33 @@ class DragonCall:
                     + " to execute the Dragon procedure '" + self.script \
                     + "'; details: " + str(details)
             raise DragonError(message)
+
+ 
+
+# The UnimacroCall class represents a (delayed) Unimacro call.
+# Vocola's generated Python code uses this class to build up a string
+# containing the Unimacro action, which is then passed to Unimacro for
+# interpretation when the call is finally performed.
+
+class UnimacroCall:
+    def __init__(self):
+        self.argumentString = ''
+
+    def addArgument(self, value):
+        self.argumentString = str(value)
+
+    def as_string(self):
+        q = string.replace(self.argumentString, '"', '""')
+        return 'Unimacro("' + q + '")'
+    
+    def perform(self):
+        if unimacro_available:
+            #print '[' + self.argumentString + ']'
+            actions.doAction(self.argumentString)
+        else:
+            m = "Vocola: Unimacro call failed because Unimacro is " \
+                + "unavailable"
+            raise NotImplementedError(m)
 
  
 
