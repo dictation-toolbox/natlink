@@ -10,10 +10,10 @@
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
-# A setup script for natlink/vocola/unimacro, with inno
+# A setup script for NatLink/Vocola/Unimacro, with inno
 # 1. choose new release name and change in __version__ of natlinkstatus
-# 2. Commit natlink and unimacro
-# 3. SVN export both natlink and unimacro to a new folder (eg D:\natlink\releases\natlink3.2 if your release number is natlink3.2)
+# 2. Commit NatLink and Unimacro
+# 3. SVN export both NatLink and Unimacro to a new folder (eg D:\natlink\releases\natlink3.2 if your release number is natlink3.2)
 # 4. run this utility FROM THAT FOLDER\natlink\natlinkInstaller.
 #
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_keystrokes.py',
@@ -41,7 +41,7 @@ def getBaseFolder(globalsDict=None):
     return baseFolder
 
 def getCoreDir(thisDir):
-    """get the natlink core folder, relative from the current folder
+    """get the NatLink core folder, relative from the current folder
 
     This folder should be relative to this with ../macrosystem/core and should contain
     natlinkmain.py and natlink.dll and natlinkstatus.py
@@ -72,7 +72,7 @@ def fatal_error(message, new_raise=None):
     print 'natlinkconfigfunctions fails because of fatal error:'
     print message
     print
-    print 'This can (hopefully) be solved by (re)installing natlink'
+    print 'This can (hopefully) be solved by (re)installing NatLink'
     print 
     if new_raise:
         raise new_raise
@@ -109,7 +109,7 @@ class InnoScript:
                  dist_dir,
                  version = _version):
         self.dist_dir = dist_dir
-        self.name = name # natlink
+        self.name = name # NatLink
         self.version = version # version from natlinkstatus
 
     def chop(self, pathname):
@@ -127,7 +127,7 @@ class InnoScript:
         self.outputFilename = "setup-natlink-%s"% self.version
         print >> ofi, r"OutputBaseFilename=%s"% self.outputFilename
         print >> ofi, r"AppName=%s"% self.name
-        print >> ofi, r"AppVerName=%s version %s (including vocola 2.6.2I and unimacro)" % (self.name, self.version)
+        print >> ofi, r"AppVerName=%s version %s (including Vocola 2.6.2I and Unimacro)" % (self.name, self.version)
         print >> ofi, r"DefaultDirName=C:\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
         print >> ofi, r"LicenseFile=..\natlink\COPYRIGHT.txt"
@@ -160,7 +160,7 @@ class InnoScript:
         print >> ofi, r"[Icons]"
         Path = r'..\natlink\confignatlinkvocolaunimacro\configurenatlink.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
-              ("Configure natlink (GUI)", Path)
+              ("Configure NatLink (GUI)", Path)
         Path = r'..\natlink\confignatlinkvocolaunimacro\natlinkconfigfunctions.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
                   ("Command line interface CLI", Path)
@@ -170,7 +170,7 @@ class InnoScript:
         print >> ofi, r"[Run]"
         Path = r'natlink\confignatlinkvocolaunimacro\configurenatlink.py'
 
-##        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch natlink configuration GUI"; Flags: postinstall'% \
+##        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch NatLink configuration GUI"; Flags: postinstall'% \
 ##              Path
         
     def compile(self):
@@ -239,7 +239,7 @@ def getAllFiles(startDir):
 
 def _getallfiles(arg, dirname, filenames):
     if dirname.endswith("CVS"):
-        raise IOError("found a CVS folder, you should have released unimacro and natlink first!")
+        raise IOError("found a CVS folder, you should have released Unimacro and NatLink first!")
     for f in filenames:
         if f.endswith(".pyc"):
             continue
