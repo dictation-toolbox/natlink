@@ -788,7 +788,7 @@ class CLI(cmd.Cmd):
     """
     def __init__(self, Config=None):
         cmd.Cmd.__init__(self)
-        self.prompt = 'NatLink config> '
+        self.prompt = '\nNatLink config> '
         self.info = 'type u for usage'
         if Config:
             self.config = Config   # initialised instance of NatlinkConfig
