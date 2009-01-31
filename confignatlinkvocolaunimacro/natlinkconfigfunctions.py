@@ -32,7 +32,7 @@ DNSInstallDir
       this directory can be set in HKCU\Software\Natlink.
       Functions: setDNSInstallDir(path) (d path) and clearDNSInstallDir() (D)
       
-DNSIniDir
+DNSINIDir
     - if not found in one of the subfolders of %COMMON_APPDATA%
       where they are expected, this one can be set in HKCU\Software\Natlink.
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
@@ -259,7 +259,7 @@ from the correct place.
         self.checkedUrgent = 1
 
     def checkIniFiles(self):
-        """check if ini files are consistent
+        """check if INI files are consistent
         this is done through the
 
         """
@@ -269,7 +269,7 @@ from the correct place.
             result = self.NatlinkIsEnabled(silent=1)
             if result == None:
                 text = \
-"""NatLink ini file settings are inconsistently,
+"""NatLink INI file settings are inconsistently,
 and cannot automatically be disabled.
 
 Try to disable again, acquire administrator rights or report this issue
@@ -278,7 +278,7 @@ Try to disable again, acquire administrator rights or report this issue
                 return None
             else:
                 text = \
-"""NatLink ini file settings were inconsistent;
+"""NatLink INI file settings were inconsistent;
 This has been repaired.
 
 NatLink is now disabled.
@@ -406,15 +406,15 @@ NatLink is now disabled.
         """
         key = 'DNSIniDir'
         if os.path.isdir(new_dir):
-            # check ini files:
+            # check INI files:
             nssystem = os.path.join(new_dir, self.NSSystemIni)
             nsapps = os.path.join(new_dir, self.NSAppsIni)
             if not os.path.isfile(nssystem):
-                mess = 'folder %s does not have the inifile %s'% (new_dir, self.NSSystemIni)
+                mess = 'folder %s does not have the INI file %s'% (new_dir, self.NSSystemIni)
                 print mess
                 return mess
             if not os.path.isfile(nsapps):
-                mess =  'folder %s does not have the inifile %s'% (new_dir, self.NSAppsIni)
+                mess =  'folder %s does not have the INI file %s'% (new_dir, self.NSAppsIni)
                 print mess
                 return mess
             self.userregnl[key] = new_dir
@@ -432,7 +432,7 @@ NatLink is now disabled.
         if key in self.userregnl:
             del self.userregnl[key]
         else:
-            mess = 'DNS ini files directory was not set in registry'
+            mess = 'DNS INI files directory was not set in registry'
             print mess
             return mess
 
@@ -808,42 +808,46 @@ class CLI(cmd.Cmd):
 """Usage either as command line options like '-i' or in an interactive
 session using the CLI (command line interface). 
 
-i - info, print information about the NatLink status
-I - reginfo,  print information about the NatLink registry settings
+i       - info, print information about the NatLink status
+I       - reginfo,  print information about the NatLink registry settings
 
-d/D - set/clear DNSInstallDir, the directory where NatSpeak is installed
-c/C - set/clear DNSINIDir, the directory where NatSpeak INI files are located
+d/D     - set/clear DNSInstallDir, the directory where NatSpeak is installed
+c/C     - set/clear DNSINIDir, the directory where NatSpeak INI files are
+          located
 
-e/E - enable/disable NatLink
+e/E     - enable/disable NatLink
 
-n/N - set/clear UserDirectory, the directory of the user grammar files of
-      NatLink (e.g., Unimacro)
-o/O - set/clear UnimacroUserDir, the directory that contains the user INI files
-p/P - set path for program that opens Unimacro INI files,
-      or clear (then use Notepad)
+n/N     - set/clear UserDirectory, the directory of the user grammar files of
+          NatLink (e.g., Unimacro)
+o/O     - set/clear UnimacroUserDir, the directory that contains the user INI
+          files
+p/P     - set path for program that opens Unimacro INI files,
+          or clear (then use Notepad)
 
-v/V - set/clear VocoloaUserDir, the user directory for Vocola user files.
-      This also enables/disables Vocola.
-w/W = set path for program that opens Vocola command files,
-      or clear (then use Simpscrp or Notepad)
-s/S = Vocola uses Simpscrp (default is OFF, S)
+v/V     - set/clear VocoloaUserDir, the user directory for Vocola user files.
+          This also enables/disables Vocola.
+w/W     - set path for program that opens Vocola command files,
+          or clear (then use Simpscrp or Notepad)
+s/S     - Vocola uses Simpscrp (default is OFF, S)
 
-r/R - (un)registernatlink, the natlink.dll  (natlink.pyd) file (should not be
-      necessary to do)
-g/G - enable/disable debug output: NatLink debug output in NatLink log file
-z/Z - silently enables NatLink and registers, or disables NatLink and
-      unregisters (for installer, to be done/tested)
+r/R     - (un)registernatlink, the natlink.dll  (natlink.pyd) file (should not
+          be needed)
+g/G     - enable/disable debug output: NatLink debug output in NatLink log file
+z/Z     - silently enables NatLink and registers, or disables NatLink and
+          unregisters (for installer, to be done/tested)
       
-x/X - enable/disable debug load output of natlinkmain (keep at 0 (X) normally)
-y/Y - enable/disable debug callback output of natlinkmain (keep at 0 (Y)
-      normally)
+x/X     - enable/disable debug load output of natlinkmain (keep at 0 (X)
+          normally)
+y/Y     - enable/disable debug callback output of natlinkmain (keep at 0 (Y)
+          normally)
 
-a/A - enable/disable Unimacro actions in Vocola
-b/B - enable/disable distinction between languages for Vocola user files
+a/A     - enable/disable Unimacro actions in Vocola
+b/B     - enable/disable distinction between languages for Vocola user files
 
 u/usage - give this list
-q   - quit
-help command: give more explanation on command
+q       - quit
+
+help <command>: give more explanation on <command>
         """
         print '='*60
 
@@ -909,7 +913,7 @@ search for the NatSpeak install directory in the "normal" place(s).
         print '='*60
     help_D = help_d
 
-    # DNS ini directory-----------------------------------------
+    # DNS INI directory-----------------------------------------
     def do_c(self, arg):
         if not arg:
             print 'also enter a valid folder'
@@ -918,7 +922,7 @@ search for the NatSpeak install directory in the "normal" place(s).
         if os.path.isdir(arg):
 ##            if arg.find(' ') > 0:
 ##                arg = '"' + arg + '"'
-            print "Change NatSpeak Ini files directory to: %s"% arg
+            print "Change NatSpeak INI files directory to: %s"% arg
             return self.config.setDNSIniDir(arg)
         else:
             print 'not a valid folder: %s'% arg
@@ -931,7 +935,7 @@ search for the NatSpeak install directory in the "normal" place(s).
     def help_c(self):
         print '-'*60
         print \
-"""Set (c path) of clear (C) the directory where NatSpeak ini file locations
+"""Set (c path) of clear (C) the directory where NatSpeak INI file locations
 (nssystem.ini and nsapps.ini) are located.
 
 Only needed if these cannot be found in the normal place(s):
@@ -939,7 +943,7 @@ Only needed if these cannot be found in the normal place(s):
 -if you have a pre-8 version of NatSpeak.
 
 After Clearing this registry entry NatLink will, when it is started by NatSpeak,
-again search for its ini files in the "default/normal" place(s).
+again search for its INI files in the "default/normal" place(s).
 """
         print '='*60
     help_C = help_c
@@ -978,7 +982,7 @@ Unimacro shorthand commands and meta actions.
         
     help_N = help_n
 
-    # Unimacro User directory and Editor for Unimacro ini files-----------------------------------
+    # Unimacro User directory and Editor for Unimacro INI files-----------------------------------
     def do_o(self, arg):
         if os.path.isdir(arg):
             print "Setting Unimacro user directory to %s"% arg
@@ -995,7 +999,7 @@ Unimacro shorthand commands and meta actions.
         print \
 """set/clear Unimacro user directory (o path/O)
 
-If you specify this directory, your user ini files (and possibly other user
+If you specify this directory, your user INI files (and possibly other user
 dependent files) will be put there.
 
 If you clear this setting, the user files will come in the
@@ -1009,19 +1013,19 @@ Unimacro directory itself: %s
     # Unimacro Command Files Editor-----------------------------------------------
     def do_p(self, arg):
         if os.path.isfile(arg) and arg.endswith(".exe"):
-            print "Setting (path to) Unimacro Ini Files editor to %s"% arg
+            print "Setting (path to) Unimacro INI Files editor to %s"% arg
             self.config.setUnimacroIniFilesEditor(arg)
         else:
-            print 'Please specifiy a valid path for Unimacro Ini files editor'
+            print 'Please specifiy a valid path for Unimacro INI files editor'
             
     def do_P(self, arg):
-        print "Clear Unimacro Ini file editor, go back to default Notepad"
+        print "Clear Unimacro INI file editor, go back to default Notepad"
         self.config.clearUnimacroIniFilesEditor()
 
     def help_p(self):
         print '-'*60
         print \
-"""set/clear path to Unimacro Ini files editor (p path/P)
+"""set/clear path to Unimacro INI files editor (p path/P)
 
 By default (when you clear this setting) "notepad" is used, but:
 
