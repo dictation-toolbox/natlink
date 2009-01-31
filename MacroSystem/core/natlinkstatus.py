@@ -6,7 +6,7 @@ __version__ = "3.6"
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
 # natlinkstatus.py
-#   This module gives the status of natlink to natlinkmain
+#   This module gives the status of NatLink to natlinkmain
 #
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
@@ -25,8 +25,8 @@ The following  functions manage information that changes at changeCallback time
 (when a new user opens)
 
 setUserInfo(args) put username and directory of speech profiles of the last opened user in this class.
-getUsername: get active username (only if NatSpeak/natlink is running)
-getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/natlink is running)
+getUsername: get active username (only if NatSpeak/NatLink is running)
+getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/NatLink is running)
 
 
 The functions below should not change anything in settings, only  get information.
@@ -40,10 +40,10 @@ getDNSInstallDir:
     It must contain at least a Program subdirectory
 
 getDNSIniDir:
-    returns the directory where the NatSpeak Inifiles are located,
+    returns the directory where the NatSpeak INI files are located,
     notably nssystem.ini and nsapps.ini.
     If the registry key NatspeakIniDir exists (CURRENT_USER/Software/Natlink),
-    and the folder exists and the needed inifiles are in this folder this path is returned.
+    and the folder exists and the needed INI files are in this folder this path is returned.
     Otherwise it is looked for in %COMMON_APPDATA%\Nuance\... or %COMMON_APPDATA%\Scansoft\...
 
 getDNSVersion:
@@ -56,7 +56,7 @@ getWindowsVersion:
 
 getLanguage:
     returns the 3 letter code of the language of the speech profile that
-    is open (only possible when NatSpeak/natlink is running)
+    is open (only possible when NatSpeak/NatLink is running)
 
 getPythonVersion:
     returns, as a string, the python version. Eg. "2.3"
@@ -64,24 +64,24 @@ getPythonVersion:
 (getFullPythonVersion: get string of complete version info).
 
 
-getUserDirectory: get the natlink user directory, unimacro will be there. If not return ''
+getUserDirectory: get the NatLink user directory, Unimacro will be there. If not return ''
 
 getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
 
-getUnimacroUserDirectory: get the directory of Unimacro Ini files, if not return '' or
-      the unimacro user directory
+getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return '' or
+      the Unimacro user directory
 
 NatlinkIsEnabled:
-    return 1 or 0 whether natlink is enabled or not
+    return 1 or 0 whether NatLink is enabled or not
     returns None when strange values are found 
-    (checked with the Ini file settings of NSSystemIni and NSAppsIni)
+    (checked with the INI file settings of NSSystemIni and NSAppsIni)
 
 getNSSYSTEMIni(): get the path of nssystem.ini
 getNSAPPSIni(): get the path of nsapps.ini
 
 getBaseModelBaseTopic:
     return these as strings, not ready yet, only possible when
-    NatSpeak/natlink is running.
+    NatSpeak/NatLink is running.
 
 getDebugLoad:
     get value from registry, if set do extra output of natlinkmain at (re)load time
@@ -92,7 +92,7 @@ getDebugOutput:
     
 
 getVocolaTakesUnimacroActions
-getVocolaTakesLanguages: additional settings for vocola
+getVocolaTakesLanguages: additional settings for Vocola
 """
 
 
@@ -119,7 +119,7 @@ def fatal_error(message, new_raise=None):
     print 'natlinkconfigfunctions fails because of fatal error:'
     print message
     print
-    print 'This can (hopefully) be solved by (re)installing natlink'
+    print 'This can (hopefully) be solved by (re)installing NatLink'
     print 
     if new_raise:
         raise new_raise
@@ -147,7 +147,7 @@ languages = {"Nederlands": "nld",
              "Italiano": "ita"}
 
 class NatlinkStatus(object):
-    """this class holds the natlink status functions
+    """this class holds the NatLink status functions
 
     so, can be called from natlinkmain.
 
@@ -165,13 +165,13 @@ class NatlinkStatus(object):
 
     NSSystemIni  = "nssystem.ini"
     NSAppsIni  = "nsapps.ini"
-    ## setting of nssystem.ini if natlink is enabled...
-    ## this first setting is decisive for NatSpeak if it loads natlink or not
+    ## setting of nssystem.ini if NatLink is enabled...
+    ## this first setting is decisive for NatSpeak if it loads NatLink or not
     section1 = "Global Clients"
     key1 = ".Natlink"
     value1 = 'Python Macro System'
 
-    ## setting of nsapps.ini if natlink is enabled...
+    ## setting of nsapps.ini if NatLink is enabled...
     ## this setting is ignored if above setting is not there...
     section2 = ".Natlink"
     key2 = "App Support GUID"
@@ -211,7 +211,7 @@ class NatlinkStatus(object):
             return  version
 
     def getDNSIniDir(self):
-        """get the path (one above the users profile paths) where the ini files
+        """get the path (one above the users profile paths) where the INI files
         should be located
         """
         # first try if set (by configure dialog/natlinkinstallfunctions.py) if regkey is set:
@@ -232,7 +232,7 @@ class NatlinkStatus(object):
                 nsapps = os.path.join(cand, self.NSAppsIni)
                 if os.path.isfile(nssystem) and os.path.isfile(nsapps):
                     return os.path.normpath(cand)
-        print 'no valid DNS Ini files Dir found, please provide one in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
+        print 'no valid DNS INI files Dir found, please provide one in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
 
         
     def getDNSFullVersion(self):
@@ -357,7 +357,7 @@ class NatlinkStatus(object):
             if os.path.isfile(nssystemini):
                 return os.path.normpath(nssystemini)
         print "Cannot find proper NSSystemIni file"
-        print 'Try to correct your DNS Ini files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
+        print 'Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
                 
     def getNSAPPSIni(self):
         inidir = self.getDNSIniDir()
@@ -366,11 +366,11 @@ class NatlinkStatus(object):
             if os.path.isfile(nsappsini):
                 return os.path.normpath(nsappsini)
         print "Cannot find proper NSAppsIni file"
-        print 'Try to correct your DNS Ini files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
+        print 'Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)'
 
 
     def NatlinkIsEnabled(self, silent=None):
-        """check if the ini file settings are correct
+        """check if the INI file settings are correct
 
     in  nssystem.ini check for:
 
@@ -385,7 +385,7 @@ class NatlinkStatus(object):
     (if nssystem.ini setting is set, you also need the nsapps.ini setting)
     if nssystem.ini setting is NOT set, return 0
 
-    if nsapps.ini is set but nssystem.ini is not, natlink is NOT enabled, still return 0
+    if nsapps.ini is set but nssystem.ini is not, NatLink is NOT enabled, still return 0
     
     if nssystem.ini is set, but nsapps.ini is NOT, there is an error, return None and a
     warning message, UNLESS silent = 1.
@@ -403,10 +403,10 @@ class NatlinkStatus(object):
                 return 1
             else:
                 # 
-                mess = ['Error while checking if Natlink is enabled, unexpected result: ',
+                mess = ['Error while checking if NatLink is enabled, unexpected result: ',
                         'nssystem.ini points to NatlinkIsEnabled:',
                         '    section: %s, key: %s, value: %s'% (self.section1, self.key1, actual1),
-                        'but nsapps.ini points to Natlink is not enabled:',
+                        'but nsapps.ini points to NatLink is not enabled:',
                       '    section: %s, key: %s, value: %s'% (self.section2, self.key2, actual2),
                       '    should have value: %s'% self.value2]
                 if not silent:
@@ -419,7 +419,7 @@ class NatlinkStatus(object):
             return 0
         else:
             # GUID in nsapps may be defined, natspeak first checks nssystem.ini
-            # so natlink NOT enabled
+            # so NatLink NOT enabled
             return 0
         self.warning("unexpected, natlinkstatus should not come here!")
         return None
@@ -451,7 +451,7 @@ class NatlinkStatus(object):
                 return 1
 
     def getUserDirectory(self):
-        """return the path to the Natlink user directory
+        """return the path to the NatLink user directory
 
         should be set in configurenatlink, otherwise ignore...
         """
@@ -480,7 +480,7 @@ class NatlinkStatus(object):
             else:
                 return self.getUserDirectory()
         else:
-            # unimacro not enabled
+            # Unimacro not enabled
             return ""
 
     def getVocolaCommandFilesEditor(self):
@@ -519,7 +519,7 @@ class NatlinkStatus(object):
         if keyToModel:
             BaseTopic = win32api.GetProfileVal( "Base Topic", keyToModel , "" , dir+"\\topics.ini" )
         else:
-            BaseTopic = "not found in ini files"
+            BaseTopic = "not found in INI files"
     ##    basetopics = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\topics.ini" )
 
     def getBaseModel(self):
@@ -569,17 +569,17 @@ class NatlinkStatus(object):
         value = self.userregnl.get(key, None)
         return value
 
-    # get additional options vocola
+    # get additional options Vocola
     def getVocolaTakesLanguages(self):
-        """gets and value for distinction of different languages in vocola"""
+        """gets and value for distinction of different languages in Vocola"""
         
         key = 'VocolaTakesLanguages'
         value = self.userregnl.get(key, None)
         return value
     
     def getVocolaTakesUnimacroActions(self):
-        """gets the value for taking unimacro actions
-        will only take effect when unimacro is on (in userDirectory)
+        """gets the value for taking Unimacro actions
+        will only take effect when Unimacro is on (in userDirectory)
         """
         
         key = 'VocolaTakesUnimacroActions'
@@ -623,36 +623,36 @@ class NatlinkStatus(object):
         else:
             del D['userName']
             del D['DNSuserDirectory']
-        # natlink::
+        # NatLink::
         
         if D['natlinkIsEnabled']:
-            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is enabled")
+            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---NatLink is enabled")
             key = 'CoreDirectory'
             self.appendAndRemove(L, D, key)
             key = 'InstallVersion'
             self.appendAndRemove(L, D, key)
 
-            ## vocola::
+            ## Vocola::
             if D['vocolaIsEnabled']:
-                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is enabled")
+                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
                 for key in ('VocolaUserDirectory','VocolaCommandFilesEditor',
                             'VocolaTakesLanguages',
                             'VocolaTakesUnimacroActions', 'VocolaUsesSimpscrp'):
                     self.appendAndRemove(L, D, key)
             else:
-                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---vocola is disabled")
+                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
                 for key in ('VocolaUserDirectory','VocolaCommandFilesEditor', 'VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
                     del D[key]
                     
-            ## unimacro or userDirectory:
+            ## Unimacro or userDirectory:
             if D['unimacroIsEnabled']:
-                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---unimacro is enabled")
+                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is enabled")
                 for key in ('userDirectory',):
                     self.appendAndRemove(L, D, key)
                 for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
                     self.appendAndRemove(L, D, key)
             else:
-                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---unimacro is disabled")
+                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is disabled")
                 for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
                     del D[key]
                 if D['userDirectory']:
@@ -661,17 +661,17 @@ class NatlinkStatus(object):
                         self.appendAndRemove(L, D, key)
                 else:
                     del D['userDirectory']
-            ## remaining natlink options:
-            L.append('other natlink info:')
+            ## remaining NatLink options:
+            L.append('other NatLink info:')
             for key in ('DebugLoad', 'DebugCallback'):
                 self.appendAndRemove(L, D, key)
     
         else:
-            # natlink disabled:
+            # NatLink disabled:
             if D['natlinkIsEnabled'] == 0:
-                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is disabled")
+                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---NatLink is disabled")
             else:
-                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---natlink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
+                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---NatLink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
             key = 'CoreDirectory'
             self.appendAndRemove(L, D, key)
             for key in ['DebugLoad', 'DebugCallback',
