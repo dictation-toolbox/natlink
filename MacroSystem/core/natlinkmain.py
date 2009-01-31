@@ -11,11 +11,11 @@
 #   - made special arrangements for _vocola_main, so it calls back before
 #     anything else is done, see doVocolaFirst, vocolaModule and vocolaIsLoaded.
 #     These 3 variables control all. Moreover VocolaUserDirectory must be given,
-#     otherwise vocola will not switch on.
+#     otherwise Vocola will not switch on.
 #
 # Jan 2008 (QH)
-#   - adapted to natlinkstatus, which gives info about natlink, both by
-#     this module and by the natlink config functions.
+#   - adapted to natlinkstatus, which gives info about NatLink, both by
+#     this module and by the NatLink config functions.
 #     Note: status is now a class instance of natlinkstatus.NatlinkStatus
 #
 # QH, May 22, 2007:
@@ -88,7 +88,7 @@ debugCallback = status.getDebugCallback()
 #
 # This redirects stdout and stderr to a dialog box.
 #
-# bookkeeping for vocola:
+# bookkeeping for Vocola:
 doVocolaFirst = '_vocola_main'
 vocolaIsLoaded = None  # 1 or None
 vocolaModule = None    # pointer to the module...
@@ -134,7 +134,7 @@ natlinkmainPrintsAtEnd = 1
 #
 
 # the base directory is one level above the core directory.
-# vocola grammar files are located here.
+# Vocola grammar files are located here.
 baseDirectory = ''
 DNSuserDirectory = ''   # folder of the current user speech profiles...
 #
@@ -142,7 +142,7 @@ DNSuserDirectory = ''   # folder of the current user speech profiles...
 #
 
 userName = ''
-# this is now the natlink user directory, which can be configured
+# this is now the NatLink user directory, which can be configured
 # this folder may be empty, or points to the folder where user-defined grammars
 # are, for example the unimacro grammars.
 userDirectory = ''  
@@ -276,7 +276,7 @@ def findAndLoadFiles(curModule=None):
 
     moduleHasDot = None
     if curModule:
-        # special case, encountered with vocola modules with . in name:
+        # special case, encountered with Vocola modules with . in name:
         moduleHasDot = curModule.find(".") >= 0
         curModuleEscaped = re.escape(curModule)
         pat = re.compile(r"""
@@ -316,7 +316,7 @@ def findAndLoadFiles(curModule=None):
         loadedFiles[x] = loadFile(x, searchImportDirs, origName)
         vocolaIsLoaded = 1
         vocolaModule = sys.modules[doVocolaFirst]
-        # repeat the base directory, as vocola just had the chance to rebuild python grammar files:
+        # repeat the base directory, as Vocola just had the chance to rebuild Python grammar files:
         baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
 
     for x in baseDirFiles:
@@ -327,11 +327,11 @@ def findAndLoadFiles(curModule=None):
     if debugLoad: print 'filesToLoad: %s'% filesToLoad.keys()
     for x in filesToLoad:
         if x == doVocolaFirst: continue
-        # for safety, should not be needed, as vocola purges all generated
+        # for safety, should not be needed, as Vocola purges all generated
         # grammar files at start, even if it does not load completely
         if not vocolaEnabled and reVocolaModuleName.search(x):
             if debugLoad:
-                print 'skipping %s, vocola not enabled'% x
+                print 'skipping %s, Vocola not enabled'% x
             continue
         origName = loadedFiles.get(x, None)
         loadedFiles[x] = loadFile(x, searchImportDirs, origName)
@@ -346,7 +346,7 @@ def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
     """add to the dict of filesToLoad,
 
     if moduleHasDot (module name for example aaa.bbb), replace aaa.bbb to aaa_dot_bbb and
-    check the python files accordingly. Fix for vocola command files that have a . (dot)
+    check the Python files accordingly. Fix for Vocola command files that have a . (dot)
     in the module name. Also user grammar files can be written according to this trick.
 
     Note: if manual changes have to be done, the aaa.bbb_ccc.py file MUST exist, never change
@@ -437,16 +437,16 @@ def beginCallback(moduleInfo, checkAll=None):
         result = vocolaModule.vocolaBeginCallback(moduleInfo)
         if result == 2:
             if debugCallback:
-                print 'vocola made new module, load all python files'
+                print 'Vocola made new module, load all Python files'
             findAndLoadFiles()
             loadModSpecific(moduleInfo)
         elif result == 1:
             if debugCallback:
-                print 'vocola changed a python module, check'
+                print 'Vocola changed a Python module, check'
             checkAll = 1
         else:
             if debugCallback:
-                print 'no changes vocola user files'
+                print 'no changes Vocola user files'
                 
     if checkAll or checkForGrammarChanges:
         if debugCallback:
@@ -565,7 +565,7 @@ try:
     baseDirectory = os.path.normpath(os.path.abspath(os.path.join(baseDirectory,"..")))
     if debugLoad: print "NatLink base dir" + baseDirectory
     
-    # get the current user information from the natlink module
+    # get the current user information from the NatLink module
     userDirectory = status.getUserDirectory()
     # for unimacro, in order to reach unimacro files to be imported:
     if userDirectory and os.path.isdir(userDirectory) and not userDirectory in sys.path:
@@ -581,7 +581,7 @@ try:
     changeCallback('user', getCurrentUser())
 
 ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
-    print 'Starting natlinkmain from: %s\nNatlink version: %s\nDNS version: %s\nPython version: %s\nWindowsVersion: %s'% \
+    print 'Starting natlinkmain from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
               (status.getCoreDirectory(), status.getInstallVersion(),
                DNSversion, status.getPythonVersion(), WindowsVersion)
         
@@ -601,4 +601,4 @@ if debugLoad:
     print "userDirectory: %s\nbaseDirectory: %s"% (userDirectory, baseDirectory)
     print "natlinkmain imported-----------------------------------"
 elif natlinkmainPrintsAtEnd:
-    print 'natlinkmain started (imported)'
+    print 'natlinkmain started (imported)\n'
