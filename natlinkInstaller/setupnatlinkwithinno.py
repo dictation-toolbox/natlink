@@ -210,7 +210,7 @@ def run():
     os.mkdir(dist_dir)
     # create the Installer, using the files py2exe has created.
     # uitleg is included in this generation of the exe file...
-    script = InnoScript("natlink",
+    script = InnoScript("NatLink",
                         dist_dir)
                         
     print "*** creating the inno setup script***"

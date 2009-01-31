@@ -100,7 +100,7 @@ NewFolderName=New Folder
 
 ; *** "Welcome" wizard page
 WelcomeLabel1=Welcome to the [name] Setup Wizard
-WelcomeLabel2=This will install [name/ver] on your computer.%n%nIt is recommended that you close other applications before%ncontinuing, ... especially Dragon NaturallySpeaking.
+WelcomeLabel2=This will install [name/ver] on your computer.%n%nIt is recommended that you close other applications before%ncontinuing, especially Dragon NaturallySpeaking.
 
 
 ; *** "Password" wizard page
