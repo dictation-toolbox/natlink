@@ -12,7 +12,15 @@
 #
 #----------------------------------------------------------------------------
 
-import wx, sys
+try:
+    import wx
+except ImportError:
+    print 'Module wx not found, probably wxPython is not installed.'
+    print 'Either install wxPython or use the natlinkconfigfunctions CLI (Command Line Interface).'
+    print
+    raise
+
+import sys
 from configurenatlink_wdr import *
 import os, os.path, string, copy, types
 

@@ -1016,7 +1016,7 @@ Unimacro directory itself: %s
             print "Setting (path to) Unimacro INI Files editor to %s"% arg
             self.config.setUnimacroIniFilesEditor(arg)
         else:
-            print 'Please specifiy a valid path for Unimacro INI files editor'
+            print 'Please specifiy a valid path for Unimacro INI files editor, not |%s|'% arg
             
     def do_P(self, arg):
         print "Clear Unimacro INI file editor, go back to default Notepad"
@@ -1110,7 +1110,7 @@ will not enable Vocola if no VocolaUserDirectory is set.
             print "Setting Setting Vocola Command Files editor to %s"% arg
             self.config.setVocolaCommandFilesEditor(arg)
         else:
-            print 'Please specifiy a valid path for Vocola command files editor'
+            print 'Please specifiy a valid path for Vocola command files editor: |%s|'% arg
             
     def do_W(self, arg):
         print "Clear Vocola commands file editor, go back to default simpscrp"
