@@ -8,16 +8,24 @@
 #   This module does the natlinkconfigfunctions through a
 #   wxPython GUI
 #
-#  (C) Copyright Quintijn Hoogenboom, February 2008
+#  (C) Copyright Quintijn Hoogenboom, 2008-2009
 #
 #----------------------------------------------------------------------------
 
 try:
     import wx
 except ImportError:
-    print 'Module wx not found, probably wxPython is not installed.'
-    print 'Either install wxPython or use the natlinkconfigfunctions CLI (Command Line Interface).'
+    print 'Unable to run the GUI installer because module wx was not found.  This probably'
+    print 'means that wxPython is not installed.'
     print
+    print 'Either install wxPython (recommended) or use the CLI (Command Line Interface)'
+    print 'NatLink configuration program.'
+    print
+    print 'A version of wxPython suitable for use with NatLink can be obtained from'
+    print 'http://sourceforge.net/project/showfiles.php?group_id=70807&package_id=261793'
+    print
+    while True:
+        pass
     raise
 
 import sys
