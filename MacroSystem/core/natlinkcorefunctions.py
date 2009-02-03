@@ -74,7 +74,7 @@ def fatal_error(message, new_raise=None):
 # to collect all env variables, call getAllFolderEnvironmentVariables, see below
 recentEnv = {}
 
-def getExtendedEnv(var, envDict=None):
+def getExtendedEnv(var, envDict=None, displayMessage=1):
     """get from environ or windows CSLID
 
     HOME is environ['HOME'] or CSLID_PERSONAL
@@ -123,7 +123,8 @@ def getExtendedEnv(var, envDict=None):
     try:
         result = shell.SHGetFolderPath (0, shellnumber, 0, 0)
     except:
-        print 'getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2
+        if displayMessage:
+            print 'getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2
         return ''
 
     
@@ -153,7 +154,7 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
         if k.startswith("CSIDL_"):
             kStripped = k[6:]
             try:
-                v = getExtendedEnv(kStripped)
+                v = getExtendedEnv(kStripped, displayMessage=None)
             except ValueError:
                 continue
             if len(v) > 2 and os.path.isdir(v):

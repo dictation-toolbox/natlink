@@ -165,7 +165,7 @@ class ThisGrammar(GrammarBase):
             self.commandFolders.insert(0, userCommandFolder)                
             if status.getVocolaTakesLanguages():
                 self.language = status.getLanguage()
-                print '_vocola_main got language: %s'% language
+                print '_vocola_main started with language: %s'% language
                 if self.language != 'enx':
                     userCommandFolder2 = os.path.join(userCommandFolder, self.language)
                     if not os.path.isdir(userCommandFolder2):
