@@ -109,14 +109,14 @@ class InfoPanel(wx.Panel):
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
               style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
 ##                  style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
-        ## search for unimacro directory as proposal:
+        ## search for Unimacro directory as proposal:
         Path = D['DNSIniDir']
         if not (Path and os.path.isdir(Path)):
             Path = nc.getExtendedEnv("COMMON_APPDATA")
         
         dlg.SetPath(Path)
-        dlg.SetMessage('Please specify the directory where the DNS ini files are located')
-        statustext = 'DNS Ini file location is changed'
+        dlg.SetMessage('Please specify the directory where the DNS INI files are located')
+        statustext = 'DNS INI file location is changed'
         if dlg.ShowModal() == wx.ID_OK:
             new_path = dlg.GetPath()
         else:
@@ -157,7 +157,7 @@ class InfoPanel(wx.Panel):
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
               style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
 ##                  style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
-        ## search for unimacro directory as proposal:
+        ## search for Unimacro directory as proposal:
         Path = D['DNSInstallDir']
         if not (Path and os.path.isdir(Path)):
             Path = nc.getExtendedEnv("PROGRAMFILES")
@@ -187,7 +187,7 @@ class InfoPanel(wx.Panel):
         print 'note the letters correspond to the commands in the self.cli (command line interface)'
         cli = self.cpanel.cli
         cli.help_d()
-        print '---help on DNS Ini files Directory:'
+        print '---help on DNS INI files Directory:'
         cli.help_c()
         text = \
 """This info panel has no undo function, like the config panel,
@@ -313,7 +313,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.cli.checkedConfig = None
         self.setInfo()
 
-    def warning(self, text, title='Message from Configure Natlink GUI'):
+    def warning(self, text, title='Message from Configure NatLink GUI'):
         if isinstance(text, basestring):
             Text = text
         else:
@@ -379,7 +379,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 ##        for k,v in D.items():
 ##            print '%s: %s'% (k,v)
 ##        print '-------'
-        newStatus = {} # dict with keys Natlink, Vocola, Unimacro, values (value, changed) each of them
+        newStatus = {} # dict with keys NatLink, Vocola, Unimacro, values (value, changed) each of them
         
         
         try:
@@ -445,7 +445,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             else:
                 undoButton.Enable(False)
 
-            # disable vocola take unimacro actions if unimacro is disabled:
+            # disable Vocola take Unimacro actions if Unimacro is disabled:
             if D['unimacroIsEnabled']:
                 value = True
             else:
@@ -474,7 +474,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.parent.Thaw()
 
     def composeStatusLine(self, status):
-        """takes a dict with Natlink, Vocola, Unimacro as keys,
+        """takes a dict with natlink, vocola, unimacro as keys,
         and a tuple (value, changed) as values. Value=0 means disable
         """
         L = []
@@ -674,13 +674,13 @@ class ConfigureNatlinkPanel(wx.Panel):
         statustext = 'Unimacro Editor is specified, this will take effect after you restart NatSpeak'
 
         # ask for the correct directory:
-        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite Unimacro ini files editor please",
+        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite Unimacro INI files editor please",
               style=wx.DD_DEFAULT_STYLE)
-        ## search for unimacro directory as proposal:
+        ## search for Unimacro directory as proposal:
         old_path = D['VocolaCommandFilesEditor']
         Path = nc.getExtendedEnv("PROGRAMFILES")
         dlg.SetPath(Path)
-        dlg.SetMessage('Please choose the filename of your favorite Unimacro Ini files editor please\nPress cancel to return to default')
+        dlg.SetMessage('Please choose the filename of your favorite Unimacro INI files editor please\nPress cancel to return to default')
         if dlg.ShowModal() == wx.ID_OK:
             new_path = dlg.GetPath()
             if new_path and os.path.isfile(new_path) and new_path.lower().endswith('.exe'):
@@ -712,7 +712,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         # ask for the correct directory:
         dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite editor please",
               style=wx.DD_DEFAULT_STYLE)
-        ## search for unimacro directory as proposal:
+        ## search for Unimacro directory as proposal:
         old_path = D['VocolaCommandFilesEditor']
         Path = nc.getExtendedEnv("PROGRAMFILES")
         dlg.SetPath(Path)
@@ -748,11 +748,11 @@ Help about re(register) natlink.dll you will find in the log panel
 About this configure program window:
 
 All actions are performed immediate, mostly doing something
-in the registry section of Natlink. What is changed is shown in red.
+in the registry section of NatLink. What is changed is shown in red.
 
 The Undo button undoes these actions
 
-If eg Natlink shows the button "Enable", it is currently disabled.
+If, for example, NatLink shows the button "Enable", it is currently disabled.
 
 in order to let the changes take effect, you have to restart NatSpeak.
 In some cases you have to restart the computer.
@@ -781,18 +781,18 @@ See the "log" panel if you need more information.
         text = \
 """
 Unimacro is enabled by specifying a directory:
-   the natlink user directory (userDirectory)
+   the NatLink user directory (userDirectory)
 
 When you disable, this userDirectory is cleared from in the registry.
 
-When unimacro is enabled, you can also specify:
--a directory where your own user (ini) files are located (eg in your "Documents" folder)
--a program for editing these user (ini) files, default is Notepad
+When Unimacro is enabled, you can also specify:
+-a directory where your own user (INI) files are located (eg in your "Documents" folder)
+-a program for editing these user (INI) files, default is Notepad
 
 For above 2 settings: when you hit the button and subsequently Cancel, the setting is cleared, and
 you fall back to a default value.
 
-If you use you own natlink grammar files, they can coexist with unimacro in the
+If you use you own NatLink grammar files, they can coexist with Unimacro in the
 userDirectory.
 
 More information in the log panel"""
@@ -818,7 +818,7 @@ More information in the log panel"""
         if D['unimacroIsEnabled']:
             doLetter = letter.upper()
             undoLetter = letter.lower()
-            statustext = 'unimacro/user grammars is DISABLED, this will take effect after you restart NatSpeak'
+            statustext = 'Unimacro/user grammars is DISABLED, this will take effect after you restart NatSpeak'
             prevPath = D['userDirectory']
             undoCmd = (undoLetter, prevPath)
             self.do_command(doLetter, undo=undoCmd)
@@ -828,12 +828,12 @@ More information in the log panel"""
         # now go for enable:
         doLetter = letter.lower()
         undoLetter = letter.upper()
-        statustext = 'unimacro/user grammars is ENABLED, this will take effect after you restart NatSpeak'
+        statustext = 'Unimacro/user grammars is ENABLED, this will take effect after you restart NatSpeak'
 
         # ask for the correct directory:
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
               style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
-        ## search for unimacro directory as proposal:
+        ## search for Unimacro directory as proposal:
         Path = D['CoreDirectory']
         Path = os.path.normpath(os.path.join(Path, '..', '..', '..'))
         if os.path.isdir(Path):
@@ -861,17 +861,17 @@ More information in the log panel"""
         D = self.config.getNatlinkStatusDict()
         letter = 'o'
         if not self.config.UnimacroIsEnabled():
-            self.warning("First enable unimacro")
+            self.warning("First enable Unimacro")
             return
         # now go for enable:
         doLetter = letter.lower()
         undoLetter = letter.upper()
-        statustext = 'Unimacro Ini Files Directory is set, this will take effect after you restart NatSpeak'
+        statustext = 'Unimacro INI Files Directory is set, this will take effect after you restart NatSpeak'
 
         # ask for the correct directory:
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
               style=wx.DD_DEFAULT_STYLE)
-        ## search for unimacro directory as proposal:
+        ## search for Unimacro directory as proposal:
         prevPath = D['UnimacroUserDirectory']
         if prevPath and os.path.isdir(prevPath):
             Path = prevPath
@@ -885,7 +885,7 @@ More information in the log panel"""
                 Path = vPath
 
         dlg.SetPath(Path)
-        dlg.SetMessage('Please specify the directory where Unimacro (user) Ini files are/wil be located')
+        dlg.SetMessage('Please specify the directory where Unimacro (user) INI files are/wil be located')
         if dlg.ShowModal() == wx.ID_OK:
             new_path = dlg.GetPath()
             if new_path and os.path.isdir(new_path):
@@ -927,7 +927,7 @@ More information in the log panel"""
         # ask for the correct directory:
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
               style=wx.DD_DEFAULT_STYLE)
-        ## search for unimacro directory as proposal:
+        ## search for Unimacro directory as proposal:
         Path = nc.getExtendedEnv("PERSONAL")
         vPath = os.path.join(Path, "vocola")
         if os.path.isdir(vPath):
@@ -956,11 +956,11 @@ More information in the log panel"""
         if D['natlinkIsEnabled']:
             doLetter = letter.upper()
             undoLetter = letter.lower()
-            statustext = 'Natlink is DISABLED, this will take effect after you restart NatSpeak'
+            statustext = 'NatLink is DISABLED, this will take effect after you restart NatSpeak'
         else:
             doLetter = letter.lower()
             undoLetter = letter.upper()
-            statustext = 'Natlink is ENABLED, this will take effect after you restart NatSpeak'
+            statustext = 'NatLink is ENABLED, this will take effect after you restart NatSpeak'
         self.do_command(doLetter, undo=undoLetter)
         self.setstatus(statustext)
 
@@ -1002,7 +1002,7 @@ More information in the log panel"""
         self.cli.help_a()
         L = []
         L.append("Vocola is enabled by specifying a directory (VocolaUserDirectory)")
-        L.append("where the vocola command files are/will be located.")
+        L.append("where the Vocola command files are/will be located.")
         L.append("")
         L.append("When you disable Vocola, this setting is cleared in the registry.")
         L.append("")
@@ -1010,10 +1010,10 @@ More information in the log panel"""
         self.warning('\n'.join(L))
 
     def OnButtonHelp2(self, event):
-        print '---help on Enable Natlink and corresponding functions:'
+        print '---help on Enable NatLink and corresponding functions:'
         print 'note the letters correspond to the commands in the self.cli (command line interface)'
         self.cli.help_e()
-        print '---help on Natlink debug options:'
+        print '---help on NatLink debug options:'
         self.cli.help_x()
         self.warning("See the help information in the log panel")
         
@@ -1021,13 +1021,13 @@ More information in the log panel"""
 
     def OnButtonUnregister(self, event):
         self.do_command('R')
-        self.warning("Close this program, Natspeak, all python applications and\n\npossibly restart your computer\n\nbefore you run this program again!")
+        self.warning("Close this program, Natspeak, all Python applications and\n\npossibly restart your computer\n\nbefore you run this program again!")
         self.urgentMessage = "Close this program, restart Natspeak, possibly computer"
         self.setInfo()
 
     def OnButtonRegister(self, event):
         self.do_command('r')
-        self.warning("Close this program, Natspeak, all python applications and\n\npossibly restart your computer\n\nbefore you run this program again!")
+        self.warning("Close this program, Natspeak, all Python applications and\n\npossibly restart your computer\n\nbefore you run this program again!")
         self.urgentMessage = "Close this program, restart Natspeak, possibly computer"
         self.setInfo()
         
@@ -1042,7 +1042,7 @@ class MyFrame(wx.Frame):
         wx.EVT_MENU(self, ID_MENUClose, self.OnMenuClose)
                 
         self.CreateStatusBar(1)
-        self.SetStatusText("This is the Configure Natlink & Vocola & Unimacro GUI")
+        self.SetStatusText("This is the Configure NatLink & Vocola & Unimacro GUI")
         self.CreateMyMenuBar()
         # insert main window here
         self.nb = wx.Notebook(self, -1, name='panel',
@@ -1079,7 +1079,7 @@ class MyFrame(wx.Frame):
         self.Destroy()
 
     def OnMenuHelp(self, event):
-        text = ['This configure GUI makes is possible to configure natlink',
+        text = ['This configure GUI makes is possible to configure NatLink',
                 'including Vocola and Unimacro',"",
                 'Written by Quintijn Hoogenboom, February, 2008',
                 'See http://qh.antenna.nl/unimacro'
@@ -1087,7 +1087,7 @@ class MyFrame(wx.Frame):
         self.warning('\n'.join(text))
                 
 
-    def warning(self, text, title='Message from Configure Natlink GUI'):                     
+    def warning(self, text, title='Message from Configure NatLink GUI'):                     
         dlg = wx.MessageDialog(self, text, title,
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
@@ -1121,7 +1121,7 @@ class Stderr:
 class MyApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
-        self.frame = MyFrame( None, -1, "Configure Natlink & Vocola & Unimacro",
+        self.frame = MyFrame( None, -1, "Configure NatLink & Vocola & Unimacro",
                               [100,80], [770,770] )
         self.frame.Show(True)  
         return True
