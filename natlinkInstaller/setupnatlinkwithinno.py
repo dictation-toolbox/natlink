@@ -128,7 +128,7 @@ class InnoScript:
         print >> ofi, r"OutputBaseFilename=%s"% self.outputFilename
         print >> ofi, r"AppName=%s"% self.name
         print >> ofi, r"AppVerName=%s version %s (including Vocola 2.6.2I and Unimacro)" % (self.name, self.version)
-        print >> ofi, r"DefaultDirName=C:\%s" % self.name
+        print >> ofi, r"DefaultDirName=C:\Program Files\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
         print >> ofi, r"LicenseFile=..\natlink\COPYRIGHT.txt"
 ##        print >> ofi, "DisableDirPage=yes"
@@ -158,12 +158,13 @@ class InnoScript:
 
 
         print >> ofi, r"[Icons]"
-        Path = r'..\natlink\confignatlinkvocolaunimacro\configurenatlink.py'
-        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
-              ("Configure NatLink (GUI)", Path)
+        # these show up in reverse order:
         Path = r'..\natlink\confignatlinkvocolaunimacro\natlinkconfigfunctions.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
                   ("Command line interface CLI", Path)
+        Path = r'..\natlink\confignatlinkvocolaunimacro\configurenatlink.py'
+        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
+              ("Configure NatLink (GUI)", Path)
 
 
         # run GUI after install:
