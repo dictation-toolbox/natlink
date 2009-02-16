@@ -23,6 +23,8 @@ except ImportError:
     print
     print 'A version of wxPython suitable for use with NatLink can be obtained from'
     print 'http://sourceforge.net/project/showfiles.php?group_id=70807&package_id=261793'
+    print '(each package there contains a version of wxPython; get the one appropriate'
+    print ' to the version of Python you have installed.)'
     print
     while True:
         pass
