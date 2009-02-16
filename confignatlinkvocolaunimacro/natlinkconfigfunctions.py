@@ -1097,20 +1097,27 @@ the Global Clients section of nssystem.ini.
             print "Setting Vocola user directory to %s\nand (therefore) enabling Vocola:"% arg
             self.config.setVocolaUserDir(arg)
         else:
-            print 'Please specify a valid path for the Vocola user directory'
+            print 'Please specify a valid path for the Vocola user directory (see help v)'
             
     def do_V(self, arg):
-        print "Clearing Vocola user directory and (therefore) disabling Vocola"
+        print "Clearing Vocola user directory and (therefore) disabling Vocola:"
         self.config.clearVocolaUserDir()
 
     def help_v(self):
         print '-'*60
         print \
-"""Set/clear Vocola user directory (v <path>/V) and also enable/disable Vocola.
+"""Enable/disable Vocola by setting/clearing the Vocola user directory
+(v <path>/V).
 
-Vocola is meant to be used with a VocolaUserDirectory. Therefore natlinkmain
-will not enable Vocola if no VocolaUserDirectory is set.
+Vocola is meant to be used with a Vocola user directory. Therefore
+natlinkmain will not enable Vocola if no Vocola user directory is set.
 
+<path> must be an existing folder; NatLink\Vocola in My Documents is a
+popular choice.  Thus, Sally under Windows XP might use:
+
+  v C:\Documents and Settings\Sally\My Documents\NatLink\Vocola
+
+You may have to manually create this folder first.
 """
         print '='*60
 
