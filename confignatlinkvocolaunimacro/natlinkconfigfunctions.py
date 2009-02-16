@@ -187,7 +187,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         It is probably the first time to run this program.
 
         If the settings are conflicting, either
-        ---you want to reconfigure NatLink in a new place (these direcotories)
+        ---you want to reconfigure NatLink in a new place (these directories)
         ---you ran this program from a wrong place, exit and start again from the correct directory
 
         """
@@ -455,7 +455,7 @@ NatLink is now disabled.
             
       
     def enableNatlink(self, silent=None):
-        """register natlink.dll and set settings in nssystem.ini and nsapps.ini
+        """register natlink.dll and set settings in nssystem.INI and nsapps.ini
 
         """
         self.registerNatlinkDll(silent=1)
@@ -476,7 +476,7 @@ NatLink is now disabled.
                 text = \
 """cannot set the nsapps.ini setting in order to complete enableNatlink.
 
-Possibly you need administator rights to do this
+Possibly you need administrator rights to do this
 """
                 if not silent:
                     self.warning(text)
@@ -791,13 +791,15 @@ class CLI(cmd.Cmd):
         self.prompt = '\nNatLink config> '
         self.info = 'type u for usage'
         if Config:
-            self.config = Config   # initialised instance of NatlinkConfig
+            self.config = Config   # initialized instance of NatlinkConfig
         else:
             self.config = NatlinkConfig()
         self.config.checkNatlinkDllFile()
         self.config.checkPythonPathAndRegistry()
         self.config.checkIniFiles()
         self.checkedConfig = self.config.checkedUrgent
+        print
+        print "Type 'u' for a usage message"
 
     def usage(self):
         """gives the usage of the command line options or options when
@@ -837,11 +839,11 @@ a/A     - enable/disable Unimacro actions in Vocola
 
 [Unimacro]
 
-n/N     - enable/disable Unimarco by setting/clearing UserDirectory, the
+n/N     - enable/disable Unimacro by setting/clearing UserDirectory, the
           directory where user NatLink grammar files are located (e.g.,
           ...\My Documents\NatLink)
 
-o/O     - set/clear UnimacroUserDir, where Unimarco user INI files are located
+o/O     - set/clear UnimacroUserDir, where Unimacro user INI files are located
 p/P     - set/clear path for program that opens Unimacro INI files.
 
 [Repair]
@@ -998,7 +1000,7 @@ Unimacro shorthand commands and meta actions.
             print "Setting Unimacro user directory to %s"% arg
             self.config.setUnimacroUserDir(arg)
         else:
-            print 'Please specifiy a valid path for UnimacroUserDirectory'
+            print 'Please specify a valid path for UnimacroUserDirectory'
             
     def do_O(self, arg):
         print "Clearing Unimacro user directory, falling back to default: %s"% self.config.getUserDirectory()
@@ -1026,7 +1028,7 @@ Unimacro directory itself: %s
             print "Setting (path to) Unimacro INI Files editor to %s"% arg
             self.config.setUnimacroIniFilesEditor(arg)
         else:
-            print 'Please specifiy a valid path for Unimacro INI files editor, not |%s|'% arg
+            print 'Please specify a valid path for Unimacro INI files editor, not |%s|'% arg
             
     def do_P(self, arg):
         print "Clear Unimacro INI file editor, go back to default Notepad"
@@ -1050,34 +1052,34 @@ You can even specify Wordpad, maybe Microsoft Word...
     help_P = help_p
 
         
-    # enable NatLink------------------------------------------------
+    # enable/disable NatLink------------------------------------------------
     def do_e(self, arg):
-        print "Enable NatLink"
+        print "Enabling NatLink:"
         self.config.enableNatlink()
     def do_E(self, arg):
-        print "Disable NatLink"
+        print "Disabling NatLink:"
         self.config.disableNatlink()
 
     def help_e(self):
         print '-'*60
         print \
-"""enable NatLink (e) or disable NatLink (E)
+"""enable NatLink (e) or disable NatLink (E):
 
-When you enable NatLink the necessary settings in nssystem.ini and nsapps.ini
+When you enable NatLink, the necessary settings in nssystem.ini and nsapps.ini
 are done.
 
-After you restart NatSpeak, NatLink should start, showing
-the window 'Messages from Python Macros'.
+After you restart NatSpeak, NatLink should start, opening a window entitled
+'Messages from Python Macros'.
 
-When you enable NatLink, the file natlink.dll is (re)registered silent.  Use
-the options r/R to register/unregister natlink.dll explicitly.
+When you enable NatLink, the file natlink.dll is (re)registered silently.  Use
+the commands r/R to register/unregister natlink.dll explicitly.
 (see help r, but most often not needed)
 
-When you disable NatLink, the necessary  settings in nssystem.ini and nsapps.ini
+When you disable NatLink, the necessary settings in nssystem.ini and nsapps.ini
 are cleared. 
 
 After you restart NatSpeak, NatLink should NOT START ANY MORE
-So the window 'Messages from Python Macros' is NOT SHOWN.
+so the window 'Messages from Python Macros' is NOT OPENED.
 
 Note: when you disable NatLink, the natlink.dll file is NOT unregistered.
 It is not called any more by NatSpeak, as its declaration is removed from
@@ -1092,21 +1094,21 @@ the Global Clients section of nssystem.ini.
     # Vocola and Vocola User directory------------------------------------------------
     def do_v(self, arg):
         if os.path.isdir(arg):
-            print "Setting Vocola user directory to %s\nand (therewith) Enable Vocola"% arg
+            print "Setting Vocola user directory to %s\nand (therefore) enabling Vocola:"% arg
             self.config.setVocolaUserDir(arg)
         else:
-            print 'Please specifiy a valid path for VocolaUserDirectory'
+            print 'Please specify a valid path for the Vocola user directory'
             
     def do_V(self, arg):
-        print "Clearing Vocola user directory and (therewith) Disable Vocola"
+        print "Clearing Vocola user directory and (therefore) disabling Vocola"
         self.config.clearVocolaUserDir()
 
     def help_v(self):
         print '-'*60
         print \
-"""set/clear Vocola userdirectory (v path/V) and also enable/disable Vocola
+"""Set/clear Vocola user directory (v <path>/V) and also enable/disable Vocola.
 
-Vocola is meant to be user with a VocolaUserDirectory. Therefore natlinkmain
+Vocola is meant to be used with a VocolaUserDirectory. Therefore natlinkmain
 will not enable Vocola if no VocolaUserDirectory is set.
 
 """
@@ -1120,10 +1122,10 @@ will not enable Vocola if no VocolaUserDirectory is set.
             print "Setting Setting Vocola Command Files editor to %s"% arg
             self.config.setVocolaCommandFilesEditor(arg)
         else:
-            print 'Please specifiy a valid path for Vocola command files editor: |%s|'% arg
+            print 'Please specify a valid path for Vocola command files editor: |%s|'% arg
             
     def do_W(self, arg):
-        print "Clear Vocola commands file editor, go back to default simpscrp"
+        print "Clear Vocola commands file editor, go back to default Simpscrp"
         self.config.clearVocolaCommandFilesEditor()
 
     def do_s(self, arg):
@@ -1139,7 +1141,7 @@ will not enable Vocola if no VocolaUserDirectory is set.
         print \
 """set/clear Vocola  command files editor (w path/W)
 
-By default a utility called "simpscrp"  or "notepad" is used,
+By default a utility called "Simpscrp"  or "notepad" is used,
 see also option s/S.
 
 You can specify a program you like, for example,
@@ -1239,7 +1241,7 @@ of NatLink, so keep off (X and Y) most of the time.
         print \
 """registers (r)/ unregisters (R) natlink.dll explicitly.
 
-(Registring is also done (silent) when you enable NatLink, so is mostly NOT
+(Registering is also done (silent) when you enable NatLink, so is mostly NOT
 NEEDED!)
 
 But if you do (-r or -R) a message dialog shows up to inform you what happened.
@@ -1309,14 +1311,14 @@ is made and all Vocola user files are copied into this folder.
 """Enable (a)/disable (A) the use of Unimacro actions.
 
 This will only have the effect when Unimacro is also on,
-meaning the userDirectory of NatLink points to the Unimacro
+meaning the UserDirectory of NatLink points to the Unimacro
 grammar files.
 
 Two things can done then:
 -use Unimacro shorthand commands like W(), BRINGUP() etc
 -use meta actions like <<fileopen>> etc
 
-Currency needs the include file usc.vsh to work
+Currency needs the include file usc.vch to work
 """
         print '='*60
     help_A = help_a
@@ -1325,7 +1327,7 @@ Currency needs the include file usc.vsh to work
 
 
     def default(self, line):
-        print 'no valid entry: %s, press u or usage for list of commands'% line
+        print 'no valid entry: %s, type u or usage for list of commands'% line
         print
 
     def do_quit(self, arg):

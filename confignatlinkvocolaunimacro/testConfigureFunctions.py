@@ -87,7 +87,7 @@ class TestError(Exception):
     pass
 
 class TestConfigureFunctions(unittest.TestCase):
-    """test ini file functions from win32api
+    """test INI file functions from win32api
 
     and other functions used in the core of natlink
 
@@ -108,7 +108,7 @@ class TestConfigureFunctions(unittest.TestCase):
     (at each test the registry settings are recorded, and afterwards put back again)
 
     Note enableNatlink is NOT tested here, as it does a register of a dll (which maybe should
-    not be done too often) and works through ini files anyway, not through the registry.
+    not be done too often) and works through INI files anyway, not through the registry.
 
     """
     def setUp(self):
@@ -409,7 +409,7 @@ class TestConfigureFunctions(unittest.TestCase):
 
         
     def test_setClearDNSIniDir(self):
-        """This option should set or clear the natspeak ini files directory
+        """This option should set or clear the natspeak INI files directory
         """
         key = "DNSIniDir"
         cli = natlinkconfigfunctions.CLI()
@@ -418,7 +418,7 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_c("notAValidFolder")
         self.checkUserregnl(key, old, "DNSIniDir, nothing should be changed yet")
 
-        # folder does not have ini files in yet:
+        # folder does not have INI files in yet:
         cli.do_c(self.tmpTest)
         self.checkUserregnl(key, old, "DNSIniDir, empty directory should not change DNSIniDir")
 
@@ -516,7 +516,7 @@ class TestConfigureFunctions(unittest.TestCase):
 
                 
     def test_setClearUnimacroIniFilesEditor(self):
-        """This option should set or clear the unimacro ini files editor
+        """This option should set or clear the unimacro INI files editor
         """
         testName = 'test_setClearUnimacroIniFilesEditor'
         key = "UnimacroIniFilesEditor"
