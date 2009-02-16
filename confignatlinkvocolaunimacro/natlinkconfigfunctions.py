@@ -805,44 +805,54 @@ class CLI(cmd.Cmd):
         """
         print '-'*60
         print \
-"""Usage either as command line options like '-i' or in an interactive
-session using the CLI (command line interface). 
+"""Usage either from the command line like 'natlinkconfigfunctions.py -i'
+or in an interactive session using the CLI (command line interface). 
+
+[Status]
 
 i       - info, print information about the NatLink status
 I       - reginfo,  print information about the NatLink registry settings
 
-d/D     - set/clear DNSInstallDir, the directory where NatSpeak is installed
-c/C     - set/clear DNSINIDir, the directory where NatSpeak INI files are
-          located
+[NatLink]
 
 e/E     - enable/disable NatLink
 
-n/N     - set/clear UserDirectory, the directory of the user grammar files of
-          NatLink (e.g., Unimacro)
-o/O     - set/clear UnimacroUserDir, the directory that contains the user INI
-          files
-p/P     - set path for program that opens Unimacro INI files,
-          or clear (then use Notepad)
+g/G     - enable/disable debug output, which is sent to the NatSpeak log file
+y/Y     - enable/disable debug callback output of natlinkmain 
+x/X     - enable/disable debug load output     of natlinkmain
 
-v/V     - set/clear VocoloaUserDir, the user directory for Vocola user files.
-          This also enables/disables Vocola.
-w/W     - set path for program that opens Vocola command files,
-          or clear (then use Simpscrp or Notepad)
-s/S     - Vocola uses Simpscrp (default is OFF, S)
+d/D     - set/clear DNSInstallDir, the directory where NatSpeak is installed
+c/C     - set/clear DNSINIDir, where NatSpeak INI files are located
 
-r/R     - (un)registernatlink, the natlink.dll  (natlink.pyd) file (should not
-          be needed)
-g/G     - enable/disable debug output: NatLink debug output in NatLink log file
-z/Z     - silently enables NatLink and registers, or disables NatLink and
-          unregisters (for installer, to be done/tested)
-      
-x/X     - enable/disable debug load output of natlinkmain (keep at 0 (X)
-          normally)
-y/Y     - enable/disable debug callback output of natlinkmain (keep at 0 (Y)
-          normally)
+[Vocola]
+
+v/V     - enable/disable Vocola by setting/clearing VocolaUserDir, the user
+          directory for Vocola user files.
+          
+w/W     - set/clear path for program that opens Vocola command files
+s/S     - Vocola uses/does not use Simpscrp
+b/B     - enable/disable distinction between languages for Vocola user files
 
 a/A     - enable/disable Unimacro actions in Vocola
-b/B     - enable/disable distinction between languages for Vocola user files
+
+[Unimacro]
+
+n/N     - enable/disable Unimarco by setting/clearing UserDirectory, the
+          directory where user NatLink grammar files are located (e.g.,
+          ...\My Documents\NatLink)
+
+o/O     - set/clear UnimacroUserDir, where Unimarco user INI files are located
+p/P     - set/clear path for program that opens Unimacro INI files.
+
+[Repair]
+
+r/R     - register/unregister NatLink, the natlink.dll (natlink.pyd) file
+          (should not be needed)
+
+z/Z     - silently enables NatLink and registers / disables NatLink and
+          unregisters (for installer, to be done/tested)
+      
+[Other]
 
 u/usage - give this list
 q       - quit
