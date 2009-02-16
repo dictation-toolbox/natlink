@@ -605,13 +605,21 @@ Possibly you need administrator rights to do this
             
             try:
                 result = win32api.WinExec('regsvr32 /s "%s"'% DllPath)
-                print 'registered %s with result: %s'% (DllPath, result)
+                if result:
+                    print 'did not succeed to register %s (result: %s)'% (DllPath, result)
+##                else:
+##                    print 'registered %s '% DllPath
+                    
             except:
                 fatal_error("cannot register |%s|"% DllPath)                    
         else:
             # os.system:
             result = os.system('regsvr32 "%s"'% DllPath)
-            print 'registered %s with result: %s'% (DllPath, result)
+            if result:
+                print 'failed to register %s (result: %s)'% (DllPath, result)
+            else:
+                print 'registered %s'% DllPath
+                
         self.setNatlinkInPythonPathRegistry()
 
     def unregisterNatlinkDll(self, silent=None):
@@ -633,7 +641,8 @@ Possibly you need administrator rights to do this
                 
                 try:
                     result = win32api.WinExec('regsvr32 /s /u "%s"'% DllPath)
-                    print result
+                    if not result:
+                        print 'failed to unregister %s, result %s'% (DllPath, result)
                 except:
                     pass
             else:

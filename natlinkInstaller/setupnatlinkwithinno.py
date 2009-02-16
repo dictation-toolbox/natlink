@@ -17,7 +17,8 @@
 # 4. run this utility FROM THAT FOLDER\natlink\natlinkInstaller.
 #
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_keystrokes.py',
-                     '_oops.py', '_setpriority.py', '_tags.py', '_unimacrotest.py', '_modes.py']
+                     '_oops.py', '_setpriority.py', '_tags.py', '_unimacrotest.py', '_modes.py',
+                     'winword_styles_unimacro.py']
 
 ExtensionsToIgnore = [".wmv"]
 #--------- two utility functions:
