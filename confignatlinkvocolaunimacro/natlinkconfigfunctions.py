@@ -601,12 +601,12 @@ Possibly you need administrator rights to do this
             try:
                 import win32api
             except:
-                fatal_error("cannot import win32api, please see if win32all of python is properly installed")
+                fatal_error("cannot import win32api, please see if win32all of Fordpython is properly installed")
             
             try:
                 result = win32api.WinExec('regsvr32 /s "%s"'% DllPath)
                 if result:
-                    print 'did not succeed to register %s (result: %s)'% (DllPath, result)
+                    print 'failed to register %s (result: %s)'% (DllPath, result)
 ##                else:
 ##                    print 'registered %s '% DllPath
                     
@@ -860,8 +860,8 @@ p/P     - set/clear path for program that opens Unimacro INI files.
 r/R     - register/unregister NatLink, the natlink.dll (natlink.pyd) file
           (should not be needed)
 
-z/Z     - silently enables NatLink and registers / disables NatLink and
-          unregisters (for installer, to be done/tested)
+z/Z     - silently enables NatLink and registers natlink.dll / disables NatLink
+          and unregisters natlink.dll.
       
 [Other]
 
