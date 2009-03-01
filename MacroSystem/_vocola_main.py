@@ -13,7 +13,7 @@
 # Febr 4, 2008, QH:
 # adapted to natlinkmain, which loads _vocola_main before other modules,
 # and calls back also at begin Callback time before other modules to vocolaBeginCallback.
-# If something changed within vocola, report back to natlinkmain with
+# If something changed within Vocola, report back to natlinkmain with
 #  1 (change py file)
 #  2 (new py file)
 #
@@ -141,20 +141,10 @@ class ThisGrammar(GrammarBase):
 ##                if self.vocolaEnabled:
 ##                    self.commandFolders.insert(0, userCommandFolder)
         userCommandFolder = status.getVocolaUserDirectory()
-        self.userCommandFilesEditor = status.getVocolaCommandFilesEditor()
         self.useSimpscrp = status.getVocolaUsesSimpscrp()
         if simpscrp == None:
             print 'could not import simpscrp, so do not use for loading .vcl files'
             self.useSimpscrp = None
-        if not self.userCommandFilesEditor:
-            print '_vocola_main: unexpected value for userCommandFilesEditor: %s, take simpscrp'% self.userCommandFilesEditor
-            if self.useSimpscrp:
-                self.userCommandFilesEditor = 'simpscrp'
-            else:
-                self.userCommandFilesEditor = 'notepad'
-        elif self.userCommandFilesEditor == 'simpscrp' and self.useSimpscrp == None:
-            self.userCommandFilesEditor = 'notepad'
-
             
         self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
         if self.vocolaEnabled:
