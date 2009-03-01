@@ -1,15 +1,11 @@
- # _vocola_main.py - NatLink support for Vocola
+# _vocola_main.py - NatLink support for Vocola
 # -*- coding: latin-1 -*-
-#
-# Python Macro Language for Dragon NaturallySpeaking
-#   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
 # Contains:
 #    - "Built-in" voice commands
 #    - Autoloading of changed command files
 #
-# This file is copyright (c) 2002-2008 by Rick Mohr. It may be redistributed
+# This file is copyright (c) 2002-2009 by Rick Mohr. It may be redistributed
 # in any way as long as this copyright notice remains.
 #
 #
@@ -391,31 +387,11 @@ class ThisGrammar(GrammarBase):
         if not path in self.editedCommandFiles:
             self.editedCommandFiles.append(path)
 
-        if os.name == 'nt':  call = 'cmd /c' + ' ""' + path + '""'
-        else:                call = 'start' + ' "' + path + '"'
-        # Win98SE return 'nt', but still requires 'start'
-
-        if self.userCommandFilesEditor == 'simpscrp':
-            if simpscrp.Exec(call, 0) != 0:
-                print 'simpscrip call'
-                opener = 'start'
-                call = opener + ' "' + path + '"'
-                simpscrp.Exec(call, 0)
-                return
-            else:
-                print 'simpsrcp call failed, use notepad for .vcl files editor'
-                self.userCommandFilesEditor = 'notepad'
-
-        # no simpscrp:
-        filename = '"' + path + '"'
-        if self.userCommandFilesEditor == 'notepad':
-            prog = os.path.join(natlinkcorefunctions.getExtendedEnv('SYSTEM'), 'notepad.exe')
-        else:
-            prog = self.userCommandFilesEditor
-        if not os.path.isfile(prog):
-            raise IOError("_vocola_main: cannot program for editing user command files: %s"% prog)
-        print 'open with ShellExecute: %s, filename: %s'% (prog, filename)
-        win32api.ShellExecute(0, 'open', prog, filename, "", 1)
+	try:
+	    os.startfile(path)
+	except WindowsError, e: 
+	    print
+	    print "Unable to open voice command file: " + str(e)
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
