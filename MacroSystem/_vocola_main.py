@@ -63,10 +63,8 @@ pydFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'Exec',
 sys.path.append(pydFolder)
 NatLinkFolder = os.path.abspath(NatLinkFolder)
 
-try:
-    import simpscrp
-except ImportError:
-    simpscrp = None
+
+import simpscrp
 
 language = status.getLanguage()
 
@@ -141,10 +139,6 @@ class ThisGrammar(GrammarBase):
 ##                if self.vocolaEnabled:
 ##                    self.commandFolders.insert(0, userCommandFolder)
         userCommandFolder = status.getVocolaUserDirectory()
-        self.useSimpscrp = status.getVocolaUsesSimpscrp()
-        if simpscrp == None:
-            print 'could not import simpscrp, so do not use for loading .vcl files'
-            self.useSimpscrp = None
             
         self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
         if self.vocolaEnabled:
@@ -290,19 +284,7 @@ class ThisGrammar(GrammarBase):
         else:       call = '"'      + self.VocolaFolder + r'\Exec\vcl2py.exe" '
         call += options
         call += ' "' + inputFileOrFolder + '" "' + NatLinkFolder + '"'
-        if self.useSimpscrp:
-            simpscrp.Exec(call, 1)
-        else:
-            # do with os.system :
-            prog = os.path.normpath(os.path.join(self.VocolaFolder, 'Exec', 'vcl2py.exe'))
-            if not os.path.isfile(prog):
-                raise IOError('vcl2py.exe not a file: %s'% prog)
-            rest = options + ' "' + inputFileOrFolder + '" "' + NatLinkFolder +'"'
-            command = prog + " " + rest
-            
-            result = os.system(command)
-            if result:
-                print 'ERROR, result of os.system command: %s\ncommand: %s'% (result, command)
+        simpscrp.Exec(call, 1)
 
         for commandFolder in self.commandFolders:
             logName = commandFolder + r'\vcl2py_log.txt'
