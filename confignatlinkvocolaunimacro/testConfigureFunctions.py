@@ -1,13 +1,9 @@
 #
-# Python Macro Language for Dragon NaturallySpeaking
-#   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
-#
 # testConfigureFunctions
 #   This module tests a lot of the configure things, but
 #   regrettably not all.
 #
-#  (C) Copyright Quintijn Hoogenboom, February 2008
+#  (C) Copyright Quintijn Hoogenboom, 2008-2009
 #
 #----------------------------------------------------------------------------
 
@@ -574,14 +570,6 @@ class TestConfigureFunctions(unittest.TestCase):
         self.checkUserregnl(key, 1, "setting vocola takes languages")
         cli.do_B("dummy")
         self.checkUserregnl(key, 0, "clearing vocola takes languages")
-
-        key = "VocolaTakesUnimacroActions"
-        cli = natlinkconfigfunctions.CLI()
-        cli.do_a("dummy")
-        
-        self.checkUserregnl(key, 1, "setting vocola takes unimacro actions")
-        cli.do_A("dummy")
-        self.checkUserregnl(key, 0, "clearing vocola takes unimacro actions")
 
 
         

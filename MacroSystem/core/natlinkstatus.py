@@ -1,10 +1,6 @@
 __version__ = "3.6"
 # coding=latin-1
 #
-# Python Macro Language for Dragon NaturallySpeaking
-#   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
-#
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
 #
@@ -91,7 +87,6 @@ getDebugOutput:
     get value from registry, output in log file of DNS, should be kept at 0
     
 
-getVocolaTakesUnimacroActions
 getVocolaTakesLanguages: additional settings for Vocola
 """
 
@@ -577,17 +572,6 @@ class NatlinkStatus(object):
         value = self.userregnl.get(key, None)
         return value
     
-    def getVocolaTakesUnimacroActions(self):
-        """gets the value for taking Unimacro actions
-        will only take effect when Unimacro is on (in userDirectory)
-        """
-        
-        key = 'VocolaTakesUnimacroActions'
-        value = self.userregnl.get(key, None)
-        if value:
-            if self.UnimacroIsEnabled():
-                return value
-
     def getInstallVersion(self):
         return __version__
 
@@ -599,7 +583,7 @@ class NatlinkStatus(object):
                     'DNSFullVersion', 'PythonFullVersion',
                     'PythonVersion', 'userDirectory',
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
-                    'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
+                    'VocolaTakesLanguages',
                     'VocolaUserDirectory', 'VocolaCommandFilesEditor',
                     'VocolaUsesSimpscrp',
                     'UnimacroUserDirectory', 'UnimacroIniFilesEditor',
@@ -637,11 +621,11 @@ class NatlinkStatus(object):
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
                 for key in ('VocolaUserDirectory','VocolaCommandFilesEditor',
                             'VocolaTakesLanguages',
-                            'VocolaTakesUnimacroActions', 'VocolaUsesSimpscrp'):
+                            'VocolaUsesSimpscrp'):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
-                for key in ('VocolaUserDirectory','VocolaCommandFilesEditor', 'VocolaTakesLanguages', 'VocolaTakesUnimacroActions'):
+                for key in ('VocolaUserDirectory','VocolaCommandFilesEditor', 'VocolaTakesLanguages'):
                     del D[key]
                     
             ## Unimacro or userDirectory:
@@ -675,7 +659,7 @@ class NatlinkStatus(object):
             key = 'CoreDirectory'
             self.appendAndRemove(L, D, key)
             for key in ['DebugLoad', 'DebugCallback',
-                    'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
+                    'VocolaTakesLanguages',
                     'vocolaIsEnabled']:
                 del D[key]
         # system:

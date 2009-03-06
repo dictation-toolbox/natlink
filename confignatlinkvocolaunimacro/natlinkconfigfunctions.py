@@ -1,9 +1,5 @@
 # coding=latin-1
 #
-# Python Macro Language for Dragon NaturallySpeaking
-#   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
-#
 # natlinkconfigfunctions.py
 #   This module performs the configuration functions.
 #   called from natlinkconfig (a wxPython GUI),
@@ -519,7 +515,6 @@ Possibly you need administrator rights to do this
         key = 'VocolaUserDirectory'
         if key in self.userregnl:
             del self.userregnl[key]
-            self.disableVocolaUnimacroActions()
         else:
             print 'was not set: %s'% key
 
@@ -696,13 +691,11 @@ Possibly you need administrator rights to do this
         key = "NatlinkDebug"
         self.userregnl[key] = 0
 
-    def enableVocolaUnimacroActions(self):
-        """setting registry  Unimacro actions can be used in Vocola
+    def copyUnimacroIncludeFile(self):
+        """copy Unimacro include file into Vocola user directory
 
         """
-        key = "VocolaTakesUnimacroActions"
         uscFile = 'usc.vch'
-        self.userregnl[key] = 1
         # also copy usc.vch from Unimacro folder to VocolaUserDirectory
         fromFolder = os.path.join(self.getUserDirectory(), 'vocola_compatibility')
         toFolder = self.getVocolaUserDir()
@@ -723,13 +716,6 @@ Possibly you need administrator rights to do this
         return mess
         
 
-    def disableVocolaUnimacroActions(self):
-        """disables Unimacro actions can be used in Vocola
-        """
-        key = "VocolaTakesUnimacroActions"
-        self.userregnl[key] = 0
-        
-                
     def enableVocolaTakesLanguages(self):
         """setting registry  so Vocola can divide different languages
 
@@ -843,8 +829,6 @@ v/V     - enable/disable Vocola by setting/clearing VocolaUserDir, the user
 w/W     - set/clear path for program that opens Vocola command files
 s/S     - Vocola uses/does not use Simpscrp
 b/B     - enable/disable distinction between languages for Vocola user files
-
-a/A     - enable/disable Unimacro actions in Vocola
 
 [Unimacro]
 
@@ -1272,21 +1256,6 @@ To disable NatLink and unregister (silent) use Z
     help_Z = help_r
     
 
-    def enableVocolaUnimacroActions(self):
-        """setting registry  Unimacro actions can be used in Vocola
-
-        """
-        key = "VocolaTakesUnimacroActions"
-        self.userregnl[key] = 1
-        
-
-    def disableVocolaUnimacroActions(self):
-        """disables Unimacro actions can be used in Vocola
-        """
-        key = "VocolaTakesUnimacroActions"
-        self.userregnl[key] = 0
-
-
     # different Vocola options
     def do_b(self, arg):
         print "Enable Vocola different user directory's for different languages"
@@ -1313,31 +1282,6 @@ is made and all Vocola user files are copied into this folder.
         print '='*60
 
     help_B = help_b
-
-    def do_a(self, arg):
-        print "Enable Vocola taking Unimacro actions"
-        self.config.enableVocolaUnimacroActions()
-    def do_A(self, arg):
-        print "Disable Vocola taking Unimacro actions"
-        self.config.disableVocolaUnimacroActions()
-
-    def help_a(self):
-        print '-'*60
-        print \
-"""Enable (a)/disable (A) the use of Unimacro actions.
-
-This will only have the effect when Unimacro is also on,
-meaning the UserDirectory of NatLink points to the Unimacro
-grammar files.
-
-Two things can done then:
--use Unimacro shorthand commands like W(), BRINGUP() etc
--use meta actions like <<fileopen>> etc
-
-Currency needs the include file usc.vch to work
-"""
-        print '='*60
-    help_A = help_a
 
     # enable/disable NatLink debug output...
 

@@ -1,9 +1,5 @@
 #!/bin/env python
 #
-# Python Macro Language for Dragon NaturallySpeaking
-#   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
-#
 # natlinkconfig.py
 #   This module does the natlinkconfigfunctions through a
 #   wxPython GUI
@@ -262,7 +258,6 @@ class ConfigureNatlinkPanel(wx.Panel):
         wx.EVT_BUTTON(self, ID_BUTTONVocolaEnable, self.OnButtonVocolaEnableDisable)
         wx.EVT_BUTTON(self, ID_BUTTONNatlinkEnable, self.OnButtonNatlinkEnable)
         wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaTakesLanguages, self.OnCBVocolaTakesLanguages)
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaUnimacroActions, self.OnCBVocolaTakesUnimacroActions)
         wx.EVT_CHECKBOX(self, ID_CHECKBOXDebugCallbackOutput, self.OnCBDebugCallback)
         wx.EVT_CHECKBOX(self, ID_CHECKBOXDebugLoad, self.OnDBDebugLoad)
         wx.EVT_BUTTON(self, ID_BUTTONHelp3, self.OnButtonHelp3)
@@ -343,7 +338,6 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['VocolaUserDirectory'] = self.GetTextctrlvocolauserdir
         D['WindowsVersion'] = self.frame.infopanel.GetTextctrlwindowsversion
         D['VocolaTakesLanguages'] = self.GetCheckboxvocolatakeslanguages
-        D['VocolaTakesUnimacroActions'] = self.GetCheckboxvocolaunimacroactions
         D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
         D['VocolaUsesSimpscrp'] = self.GetCheckboxvocolausessimpscrp
         D['DebugCallback'] = self.GetCheckboxdebugcallbackoutput
@@ -356,7 +350,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['unimacroIsEnabled'] = self.GetButtonnatlinkuserdirectory
         D['UnimacroUserDirectory'] = self.GetTextctrlunimacroinifilesdirectory
         D['UnimacroIniFilesEditor'] = self.GetTextctrlunimacroeditor
-        self.checkboxes = ['VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
+        self.checkboxes = ['VocolaTakesLanguages',
                            'DebugCallback', 'DebugLoad', 'VocolaUsesSimpscrp',
                            'NatlinkDebug']
         return D
@@ -447,21 +441,11 @@ class ConfigureNatlinkPanel(wx.Panel):
             else:
                 undoButton.Enable(False)
 
-            # disable Vocola take Unimacro actions if Unimacro is disabled:
-            if D['unimacroIsEnabled']:
-                value = True
-            else:
-                value = False
-            for key in [ 'VocolaTakesUnimacroActions']:
-                if key in self.functions and self.functions[key]:
-                    control = self.functions[key]()
-                    control.Enable(value)
-
             if D['natlinkIsEnabled']:
                 value = True
             else:
                 value = False
-            for key in ['VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
+            for key in ['VocolaTakesLanguages',
                        'vocolaIsEnabled', 'unimacroIsEnabled',
                         'userDirectory', 'VocolaUserDirectory']:
                 if key in self.functions and self.functions[key]:
@@ -640,9 +624,6 @@ class ConfigureNatlinkPanel(wx.Panel):
 
     def GetCheckboxvocolatakeslanguages(self):
         return self.FindWindowById( ID_CHECKBOXVocolaTakesLanguages )
-
-    def GetCheckboxvocolaunimacroactions(self):
-        return self.FindWindowById( ID_CHECKBOXVocolaUnimacroActions )
 
     def GetCheckboxdebugoutput(self):
         return self.FindWindowById( ID_CHECKBOXDebugOutput )
@@ -976,11 +957,6 @@ More information in the log panel"""
     def OnCBVocolaTakesLanguages(self, event):
         letter = 'b'
         control = self.GetCheckboxvocolatakeslanguages()
-        self.do_checkboxcommand(letter, control)
-
-    def OnCBVocolaTakesUnimacroActions(self, event):
-        letter = 'a'
-        control = self.GetCheckboxvocolaunimacroactions()
         self.do_checkboxcommand(letter, control)
 
     def OnCBDebugCallback(self, event):
