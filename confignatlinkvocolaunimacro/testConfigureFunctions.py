@@ -473,26 +473,14 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_V("dummy")
         self.checkUserregnl(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
         
-    def test_setClearVocolaCommandFilesEditorAndUsesSimpscrp(self):
+    def test_setClearVocolaCommandFilesEditor(self):
         """This option should set or clear the vocola command files editor
-        in combination with VocolaUsesSimpscrp
         """
-        testName = 'test_setClearVocolaCommandFilesEditorAndUsesSimpscrp'
-        keySimpscrp = "VocolaUsesSimpscrp"
+        testName = 'test_setClearVocolaCommandFilesEditor'
         key = "VocolaCommandFilesEditor"
         cli = natlinkconfigfunctions.CLI()
         old = self.Userregnl.get(key, None)
 
-        # use simpscrp:
-        cli.do_s("dummy")
-        self.checkUserregnl(keySimpscrp, 1, "VocolaUsesSimpscrp should be 1 now %s"% testName)
-        cli.do_S("dummy")
-        self.checkUserregnl(keySimpscrp, 0, "VocolaUsesSimpscrp should be 0 now %s"% testName)
-        
-        # switch on and do test of editor:
-        cli.do_s("dummy")
-        self.checkUserregnl(keySimpscrp, 1, "VocolaUsesSimpscrp should be 1 now %s"% testName)
-        
         # not a valid folder:
         cli.do_w("not a valid file")
         self.checkUserregnl(key, old, "%s, nothing should be changed yet"% testName)

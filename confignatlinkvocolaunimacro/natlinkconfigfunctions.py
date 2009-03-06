@@ -567,10 +567,6 @@ Possibly you need administrator rights to do this
         else:
             print 'was not set: %s'% key
             
-    def setVocolaUsesSimpscrp(self, v):
-        key = "VocolaUsesSimpscrp"
-        self.userregnl[key] = v
-
     def registerNatlinkDll(self, silent=None):
         """register natlink.dll
 
@@ -827,7 +823,6 @@ v/V     - enable/disable Vocola by setting/clearing VocolaUserDir, the user
           directory for Vocola user files.
           
 w/W     - set/clear path for program that opens Vocola command files
-s/S     - Vocola uses/does not use Simpscrp
 b/B     - enable/disable distinction between languages for Vocola user files
 
 [Unimacro]
@@ -1125,41 +1120,23 @@ You may have to manually create this folder first.
             print 'Please specify a valid path for Vocola command files editor: |%s|'% arg
             
     def do_W(self, arg):
-        print "Clear Vocola commands file editor, go back to default Simpscrp"
+        print "Clear Vocola commands file editor, go back to default notepad"
         self.config.clearVocolaCommandFilesEditor()
-
-    def do_s(self, arg):
-        print "Set Vocola Uses Simpscrp (and by default uses dedicated editor"
-        self.config.setVocolaUsesSimpscrp(1)
-            
-    def do_S(self, arg):
-        print "Clears Vocola Uses Simpscrp, so use python functions instead and Notepad as default editor"
-        self.config.setVocolaUsesSimpscrp(0)
 
     def help_w(self):
         print '-'*60
         print \
 """set/clear Vocola  command files editor (w path/W)
 
-By default a utility called "Simpscrp"  or "notepad" is used,
-see also option s/S.
+By default the editor "notepad" is used.
 
 You can specify a program you like, for example,
 TextPad, NotePad++, UltraEdit, or win32pad.
-
-
-Uses Simpscrp (s) or NOT (S)
-This utility runs the Vocola default editor and controls
-the calling of the vcl2py translator.
-Simpscrp sometimes gives trouble, so if you disable, this is
-handled by Python functions.
 
 """
         print '='*60
 
     help_W = help_w
-    help_s = help_w
-    help_S = help_w
     
 
     # enable/disable NatLink debug output...

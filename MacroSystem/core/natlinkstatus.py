@@ -482,10 +482,7 @@ class NatlinkStatus(object):
         key = 'VocolaCommandFilesEditor'
         value = self.userregnl.get(key, '')
         if not value:
-            if self.getVocolaUsesSimpscrp():
-                value = 'simpscrp'
-            else:
-                value = 'notepad'
+            value = 'notepad'
         return value
 
     def getUnimacroIniFilesEditor(self):
@@ -497,11 +494,6 @@ class NatlinkStatus(object):
             return value
         else:
             return ''
-
-    def getVocolaUsesSimpscrp(self):
-        key = 'VocolaUsesSimpscrp'
-        value = self.userregnl.get(key, 1)
-        return value
 
     def getBaseModelBaseTopic(self):
         """to be done"""
@@ -585,7 +577,6 @@ class NatlinkStatus(object):
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages',
                     'VocolaUserDirectory', 'VocolaCommandFilesEditor',
-                    'VocolaUsesSimpscrp',
                     'UnimacroUserDirectory', 'UnimacroIniFilesEditor',
                     'NatlinkDebug', 'InstallVersion']:
 ##                    'BaseTopic', 'BaseModel']:
@@ -620,8 +611,7 @@ class NatlinkStatus(object):
             if D['vocolaIsEnabled']:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
                 for key in ('VocolaUserDirectory','VocolaCommandFilesEditor',
-                            'VocolaTakesLanguages',
-                            'VocolaUsesSimpscrp'):
+                            'VocolaTakesLanguages'):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")

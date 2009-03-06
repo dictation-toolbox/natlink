@@ -246,7 +246,6 @@ class ConfigureNatlinkPanel(wx.Panel):
         # WDR: handler declarations for configurenatlink
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroEditor, self.OnButtonUnimacroEditor)
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroInifilesDirectory, self.OnButtonUnimacroInifilesDirectory)
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaUsesSimpscrp, self.OnCBVocolaUsesSimpscrp)
         wx.EVT_BUTTON(self, ID_BUTTONVocolaEditor, self.OnButtonVocolaEditor)
         wx.EVT_BUTTON(self, ID_BUTTONHelp5, self.OnButtonHelp5)
         wx.EVT_BUTTON(self, ID_BUTTONHelp1, self.OnButtonHelp1)
@@ -339,7 +338,6 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['WindowsVersion'] = self.frame.infopanel.GetTextctrlwindowsversion
         D['VocolaTakesLanguages'] = self.GetCheckboxvocolatakeslanguages
         D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
-        D['VocolaUsesSimpscrp'] = self.GetCheckboxvocolausessimpscrp
         D['DebugCallback'] = self.GetCheckboxdebugcallbackoutput
         D['DebugLoad'] = self.GetCheckboxdebugload
         D['NatlinkDebug'] = self.GetCheckboxnatlinkdebug
@@ -351,7 +349,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['UnimacroUserDirectory'] = self.GetTextctrlunimacroinifilesdirectory
         D['UnimacroIniFilesEditor'] = self.GetTextctrlunimacroeditor
         self.checkboxes = ['VocolaTakesLanguages',
-                           'DebugCallback', 'DebugLoad', 'VocolaUsesSimpscrp',
+                           'DebugCallback', 'DebugLoad',
                            'NatlinkDebug']
         return D
 
@@ -580,9 +578,6 @@ class ConfigureNatlinkPanel(wx.Panel):
     def GetTextctrlunimacroinifilesdirectory(self):
         return self.FindWindowById( ID_TEXTCTRLunimacroinifilesDirectory )
 
-    def GetCheckboxvocolausessimpscrp(self):
-        return self.FindWindowById( ID_CHECKBOXVocolaUsesSimpscrp )
-
     def GetTextctrlvocolaeditor(self):
         return self.FindWindowById( ID_TEXTCTRLVocolaEditor )
 
@@ -679,11 +674,6 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.setstatus(statustext)
         self.setInfo()
 
-
-    def OnCBVocolaUsesSimpscrp(self, event):
-        letter = 's'
-        control = self.GetCheckboxvocolausessimpscrp()
-        self.do_checkboxcommand(letter, control)
 
     def OnButtonVocolaEditor(self, event):
         D = self.config.getNatlinkStatusDict()
