@@ -129,6 +129,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     userregnl got from natlinkstatus, as a Class (not instance) variable, so
     should be the same among instances of this class...
     """
+
+
+    
     def checkNatlinkDllFile(self):
         """see if natlink.dll is in core directory, if not copy from correct version
         """
@@ -789,6 +792,8 @@ class CLI(cmd.Cmd):
         self.config.checkPythonPathAndRegistry()
         self.config.checkIniFiles()
         self.checkedConfig = self.config.checkedUrgent
+        if self.config.userregnl.has_key('VocolaUsesSimpscrp'):
+            del self.config.userregnl['VocolaUsesSimpscrp']
         print
         print "Type 'u' for a usage message"
 

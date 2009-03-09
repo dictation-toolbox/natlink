@@ -359,11 +359,20 @@ class ThisGrammar(GrammarBase):
         if not path in self.editedCommandFiles:
             self.editedCommandFiles.append(path)
 
-	try:
-	    os.startfile(path)
-	except WindowsError, e: 
-	    print
-	    print "Unable to open voice command file: " + str(e)
+
+        filename = '"' + path + '"'
+##        if self.userCommandFilesEditor == 'notepad':
+##        else:
+##            prog = self.userCommandFilesEditor
+##        if not os.path.isfile(prog):
+##            raise IOError("_vocola_main: cannot program for editing user command files: %s"% prog)
+        prog = os.path.join(natlinkcorefunctions.getExtendedEnv('SYSTEM'), 'notepad.exe')
+
+        try:
+            os.startfile(path)
+        except WindowsError, e:
+            print 'cannot open "%s" with .vcl file associations, use Notepad instead'% path
+            win32api.ShellExecute(0, 'open', prog, filename, "", 1)
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
@@ -453,7 +462,7 @@ def vocolaBeginCallback(moduleInfo):
     current = grammar.getLastVocolaModTime()
 ##    print 'current: %s (number of files edited: %s)'% (current, len(grammar.editedCommandFiles))
     if current > lastVocolaUserModTime:
-##        print 'newer vocola, newCommandfile: %s'% grammar.newCommandFile
+##        print 'load newer vocola file: %s'% grammar.newCommandFile
         thisGrammar.loadAllFiles('')
         lastVocolaUserModTime = current
         return 1 + grammar.newCommandFile  # 1 for old files, 2 for new files (findAndLoadFiles needed!)

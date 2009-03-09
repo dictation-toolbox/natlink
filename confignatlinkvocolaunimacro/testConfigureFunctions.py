@@ -14,9 +14,9 @@ reload(natlinkconfigfunctions)
 
 testinifile1 = os.path.join("C:\\", "testinifile.ini")
 
-Accessories = 'Accessories'
+##Accessories = 'Accessories'
 ## for Dutch windows system:
-##Accessories = 'Bureau-accessoires'
+Accessories = 'Bureau-accessoires'
 
 # need this bunch to get connection with the core folder...
 #--------- two utility functions:
