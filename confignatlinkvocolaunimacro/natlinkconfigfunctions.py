@@ -49,6 +49,8 @@ etc.
 More at the bottom, with the CLI description...     
 
 """
+
+ObsoleteStatusKeys = ('VocolaUsesSimpscrp', 'VocolaCommandFilesEditor')
 #--------- two utility functions:
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -776,6 +778,7 @@ def _main(Options=None):
             print 'options should not come here'
             cli.usage()
 
+
           
 class CLI(cmd.Cmd):
     """provide interactive shell control for the different options.
@@ -792,8 +795,10 @@ class CLI(cmd.Cmd):
         self.config.checkPythonPathAndRegistry()
         self.config.checkIniFiles()
         self.checkedConfig = self.config.checkedUrgent
-        if self.config.userregnl.has_key('VocolaUsesSimpscrp'):
-            del self.config.userregnl['VocolaUsesSimpscrp']
+        for key in ObsoleteStatusKeys:
+            # see at top of this file!            
+            if self.config.userregnl.has_key(key):
+                del self.config.userregnl[key]
         print
         print "Type 'u' for a usage message"
 
