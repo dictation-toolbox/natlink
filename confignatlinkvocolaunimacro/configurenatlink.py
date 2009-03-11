@@ -12,6 +12,8 @@ try:
     import wx
 except ImportError:
     print 'Unable to run the GUI installer because module wx was not found.  This probably'
+    print 'means that wxPython is not installed.'
+
     print
     print 'Either install wxPython (recommended) or use the CLI (Command Line Interface)'
     print 'NatLink configuration program.'
