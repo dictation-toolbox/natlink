@@ -359,20 +359,14 @@ class ThisGrammar(GrammarBase):
         if not path in self.editedCommandFiles:
             self.editedCommandFiles.append(path)
 
-
-        filename = '"' + path + '"'
-##        if self.userCommandFilesEditor == 'notepad':
-##        else:
-##            prog = self.userCommandFilesEditor
-##        if not os.path.isfile(prog):
-##            raise IOError("_vocola_main: cannot program for editing user command files: %s"% prog)
-        prog = os.path.join(natlinkcorefunctions.getExtendedEnv('SYSTEM'), 'notepad.exe')
-
-        try:
-            os.startfile(path)
-        except WindowsError, e:
-            print 'cannot open "%s" with .vcl file associations, use Notepad instead'% path
-            win32api.ShellExecute(0, 'open', prog, filename, "", 1)
+	try:
+	    os.startfile(path)
+	except WindowsError, e: 
+	    print
+	    print "Unable to open voice command file with associated editor: " + str(e)
+            print "Trying to open it with notepad instead."
+            prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
+            os.spawnv(os.P_NOWAIT, prog, [prog, path])
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
