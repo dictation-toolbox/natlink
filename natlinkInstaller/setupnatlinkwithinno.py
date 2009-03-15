@@ -134,6 +134,19 @@ class InnoScript:
         print >> ofi, r"LicenseFile=..\natlink\COPYRIGHT.txt"
 ##        print >> ofi, "DisableDirPage=yes"
         print >> ofi, "UsePreviousAppDir=yes"
+        print >> ofi, "ChangesAssociations=yes"
+
+        print >> ofi
+        print >> ofi, r'[Registry]'
+        print >> ofi, 'Root: HKCR; Subkey: ".vcl"; ValueType: string; ValueName: ""; ValueData: "Vocola_command_file"; Flags: uninsdeletevalue'
+        print >> ofi, 'Root: HKCR; Subkey: ".vch"; ValueType: string; ValueName: ""; ValueData: "Vocola_include_file"; Flags: uninsdeletevalue'
+
+        print >> ofi, r'Root: HKCR; Subkey: "Vocola_command_file"; ValueType: string; ValueName: ""; ValueData: "Vocola command file"; Flags: uninsdeletekey'
+        print >> ofi, r'Root: HKCR; Subkey: "Vocola_include_file"; ValueType: string; ValueName: ""; ValueData: "Vocola include file"; Flags: uninsdeletekey'
+
+        print >> ofi, r'Root: HKCR; Subkey: "Vocola_command_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """C:\notepad.exe"" ""%1"""'
+        print >> ofi, r'Root: HKCR; Subkey: "Vocola_include_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """C:\notepad.exe"" ""%1"""'
+
         print >> ofi
         print >> ofi, r'[Languages]'
         print >> ofi, r'Name: "en"; MessagesFile: "..\natlink\natlinkInstaller\Natlink.isl"'
