@@ -745,8 +745,8 @@ def _main(Options=None):
 
     """
     cli = CLI()
-    shortOptions = "aAbBxXyYiIDCeEUdVrRgGzZWPO"
-    shortArgOptions = "c:u:v:w:p:o:"  
+    shortOptions = "aAbBxXyYiIDCeEUdVrRgGzZPO"
+    shortArgOptions = "c:u:v:p:o:"  
     if Options:
         if type(Options) == types.StringType:
             Options = Options.split(" ", 1)
@@ -831,10 +831,8 @@ c/C     - set/clear DNSINIDir, where NatSpeak INI files are located
 
 v/V     - enable/disable Vocola by setting/clearing VocolaUserDir, the user
           directory for Vocola user files.
-          
-w/W     - set/clear path for program that opens Vocola command files
 b/B     - enable/disable distinction between languages for Vocola user files
-
+a/A     - Unimacro actions should be restored!!
 [Unimacro]
 
 n/N     - enable/disable Unimacro by setting/clearing UserDirectory, the
@@ -1122,31 +1120,32 @@ You may have to manually create this folder first.
     help_V = help_v
 
     # Vocola Command Files Editor-----------------------------------------------
-    def do_w(self, arg):
-        if os.path.isfile(arg) and arg.endswith(".exe"):
-            print "Setting Setting Vocola Command Files editor to %s"% arg
-            self.config.setVocolaCommandFilesEditor(arg)
-        else:
-            print 'Please specify a valid path for Vocola command files editor: |%s|'% arg
-            
-    def do_W(self, arg):
-        print "Clear Vocola commands file editor, go back to default notepad"
-        self.config.clearVocolaCommandFilesEditor()
-
-    def help_w(self):
-        print '-'*60
-        print \
-"""set/clear Vocola  command files editor (w path/W)
-
-By default the editor "notepad" is used.
-
-You can specify a program you like, for example,
-TextPad, NotePad++, UltraEdit, or win32pad.
-
-"""
-        print '='*60
-
-    help_W = help_w
+##    def do_w(self, arg):
+##        if os.path.isfile(arg) and arg.endswith(".exe"):
+##            print "Setting Setting Vocola Command Files editor to %s"% arg
+##            self.config.setVocolaCommandFilesEditor(arg)
+##        else:
+##            print 'Please specify a valid path for Vocola command files editor: |%s|'% arg
+##            
+##    def do_W(self, arg):
+##        print "Clear Vocola commands file editor, go back to default notepad"
+##        self.config.clearVocolaCommandFilesEditor()
+##
+##    def help_w(self):
+##        print '-'*60
+##        print \
+##"""set/clear Vocola  command files editor (w path/W)
+##
+##By default the editor "notepad" is used.
+##
+##You can specify a program you like, for example,
+##TextPad, NotePad++, UltraEdit, or win32pad.
+##
+##"""
+##    
+##        print '='*60
+##
+##    help_W = help_w
     
 
     # enable/disable NatLink debug output...

@@ -247,7 +247,6 @@ class ConfigureNatlinkPanel(wx.Panel):
         # WDR: handler declarations for configurenatlink
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroEditor, self.OnButtonUnimacroEditor)
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroInifilesDirectory, self.OnButtonUnimacroInifilesDirectory)
-        wx.EVT_BUTTON(self, ID_BUTTONVocolaEditor, self.OnButtonVocolaEditor)
         wx.EVT_BUTTON(self, ID_BUTTONHelp5, self.OnButtonHelp5)
         wx.EVT_BUTTON(self, ID_BUTTONHelp1, self.OnButtonHelp1)
         wx.EVT_BUTTON(self, ID_BUTTONHelp4, self.OnButtonHelp4)
@@ -338,7 +337,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['VocolaUserDirectory'] = self.GetTextctrlvocolauserdir
         D['WindowsVersion'] = self.frame.infopanel.GetTextctrlwindowsversion
         D['VocolaTakesLanguages'] = self.GetCheckboxvocolatakeslanguages
-        D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
+##        D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
         D['DebugCallback'] = self.GetCheckboxdebugcallbackoutput
         D['DebugLoad'] = self.GetCheckboxdebugload
         D['NatlinkDebug'] = self.GetCheckboxnatlinkdebug
