@@ -13,7 +13,7 @@
 # A setup script for NatLink/Vocola/Unimacro, with inno
 # 1. choose new release name and change in __version__ of natlinkstatus
 # 2. Commit NatLink and Unimacro
-# 3. SVN export both NatLink and Unimacro to a new folder (eg D:\natlink\releases\natlink3.2 if your release number is natlink3.2)
+# 3. SVN export both NatLink and Unimacro to a new folder (eg D:\NatLink\releases\natlink3.2 if your release number is natlink3.2)
 # 4. run this utility FROM THAT FOLDER\NatLink\natlinkInstaller.
 #
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
@@ -146,8 +146,9 @@ class InnoScript:
         print >> ofi, r'Root: HKCR; Subkey: "Vocola_command_file"; ValueType: string; ValueName: ""; ValueData: "Vocola command file"; Flags: uninsdeletekey'
         print >> ofi, r'Root: HKCR; Subkey: "Vocola_include_file"; ValueType: string; ValueName: ""; ValueData: "Vocola include file"; Flags: uninsdeletekey'
 
-        print >> ofi, r'Root: HKCR; Subkey: "Vocola_command_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """C:\notepad.exe"" ""%1"""'
-        print >> ofi, r'Root: HKCR; Subkey: "Vocola_include_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """C:\notepad.exe"" ""%1"""'
+        notepad = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
+        print >> ofi, r'Root: HKCR; Subkey: "Vocola_command_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """' + notepad + '"" ""%1"""'
+        print >> ofi, r'Root: HKCR; Subkey: "Vocola_include_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """' + notepad + '"" ""%1"""'
 
         print >> ofi
         print >> ofi, r'[Languages]'
@@ -174,13 +175,12 @@ class InnoScript:
 
 
         print >> ofi, r"[Icons]"
-        # these show up in reverse order:
-        Path = r'..\NatLink\confignatlinkvocolaunimacro\natlinkconfigfunctions.py'
-        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
-                  ("Command line interface CLI", Path)
         Path = r'..\NatLink\confignatlinkvocolaunimacro\configurenatlink.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
-              ("Configure NatLink (GUI)", Path)
+              ("Configure NatLink via GUI", Path)
+        Path = r'..\NatLink\confignatlinkvocolaunimacro\natlinkconfigfunctions.py'
+        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
+              ("Configure NatLink via command line interface", Path)
 
 
         # run GUI after install:
