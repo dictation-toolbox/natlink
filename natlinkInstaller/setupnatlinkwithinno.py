@@ -4,20 +4,21 @@
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
 # setupnatlinkwithinno.py
-#   This module does makes the installer. Mind the steps to be taken below:
+#   This module does makes the installer.  Mind the steps to be taken below:
 #   wxPython GUI
 #
-#  (C) Copyright Quintijn Hoogenboom, February 2008
+#  (C) Copyright Quintijn Hoogenboom, 2008-2009
 #
 #----------------------------------------------------------------------------
 # A setup script for NatLink/Vocola/Unimacro, with inno
 # 1. choose new release name and change in __version__ of natlinkstatus
 # 2. Commit NatLink and Unimacro
 # 3. SVN export both NatLink and Unimacro to a new folder (eg D:\natlink\releases\natlink3.2 if your release number is natlink3.2)
-# 4. run this utility FROM THAT FOLDER\natlink\natlinkInstaller.
+# 4. run this utility FROM THAT FOLDER\NatLink\natlinkInstaller.
 #
-GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_keystrokes.py',
-                     '_oops.py', '_setpriority.py', '_tags.py', '_unimacrotest.py', '_modes.py',
+GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
+                     '_keystrokes.py', '_oops.py', '_setpriority.py',
+                     '_tags.py', '_unimacrotest.py', '_modes.py',
                      'winword_styles_unimacro.py']
 
 ExtensionsToIgnore = [".wmv"]
@@ -44,13 +45,14 @@ def getBaseFolder(globalsDict=None):
 def getCoreDir(thisDir):
     """get the NatLink core folder, relative from the current folder
 
-    This folder should be relative to this with ../macrosystem/core and should contain
-    natlinkmain.py and natlink.dll and natlinkstatus.py
+    This folder should be relative to this with ../MacroSystem/core
+    and should contain natlinkmain.py and natlink.dll and
+    natlinkstatus.py
 
     If not found like this, prints a line and returns thisDir
     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
     """
-    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'macrosystem', 'core') )
+    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
     if not os.path.isdir(coreFolder):
         print 'not a directory: %s'% coreFolder
         return thisDir
@@ -131,7 +133,7 @@ class InnoScript:
         print >> ofi, r"AppVerName=%s version %s (including Vocola 2.6.2I and Unimacro)" % (self.name, self.version)
         print >> ofi, r"DefaultDirName=C:\Program Files\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
-        print >> ofi, r"LicenseFile=..\natlink\COPYRIGHT.txt"
+        print >> ofi, r"LicenseFile=..\NatLink\COPYRIGHT.txt"
 ##        print >> ofi, "DisableDirPage=yes"
         print >> ofi, "UsePreviousAppDir=yes"
         print >> ofi, "ChangesAssociations=yes"
@@ -149,23 +151,23 @@ class InnoScript:
 
         print >> ofi
         print >> ofi, r'[Languages]'
-        print >> ofi, r'Name: "en"; MessagesFile: "..\natlink\natlinkInstaller\Natlink.isl"'
+        print >> ofi, r'Name: "en"; MessagesFile: "..\NatLink\natlinkInstaller\Natlink.isl"'
 
         print >> ofi
         print >> ofi, r"[Files]"
-        natlink_files = getAllFiles('natlink')
-        unimacro_files = getAllFiles('unimacro')
+        natlink_files = getAllFiles('NatLink')
+        unimacro_files = getAllFiles('Unimacro')
         
         for path in natlink_files:
-            print >> ofi, r'Source: "..\natlink\%s"; DestDir: "{app}\natlink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+            print >> ofi, r'Source: "..\NatLink\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         for path in unimacro_files:
             if filter(None, [path for ext in ExtensionsToIgnore if path.endswith(ext)]):
                 print 'ignoring because of extension: %s'% path
                 continue
             if filter(None, [path == f for f in GrammarsToDisable]):
-                print >> ofi, r'Source: "..\unimacro\%s"; DestDir: "{app}\unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+                print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
             else:
-                print >> ofi, r'Source: "..\unimacro\%s"; DestDir: "{app}\unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+                print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
 
         print >> ofi
 
@@ -173,17 +175,17 @@ class InnoScript:
 
         print >> ofi, r"[Icons]"
         # these show up in reverse order:
-        Path = r'..\natlink\confignatlinkvocolaunimacro\natlinkconfigfunctions.py'
-        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
+        Path = r'..\NatLink\confignatlinkvocolaunimacro\natlinkconfigfunctions.py'
+        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
                   ("Command line interface CLI", Path)
-        Path = r'..\natlink\confignatlinkvocolaunimacro\configurenatlink.py'
-        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\natlink\%s"' % \
+        Path = r'..\NatLink\confignatlinkvocolaunimacro\configurenatlink.py'
+        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
               ("Configure NatLink (GUI)", Path)
 
 
         # run GUI after install:
         print >> ofi, r"[Run]"
-        Path = r'natlink\confignatlinkvocolaunimacro\configurenatlink.py'
+        Path = r'NatLink\confignatlinkvocolaunimacro\configurenatlink.py'
 
 ##        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch NatLink configuration GUI"; Flags: postinstall'% \
 ##              Path
