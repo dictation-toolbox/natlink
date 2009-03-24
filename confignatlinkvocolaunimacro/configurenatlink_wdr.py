@@ -139,7 +139,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item31 = wx.Button( parent, ID_BUTTONNatlinkUserDirectory, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
     item30.Add( item31, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item32 = wx.StaticText( parent, ID_TEXTnatlinkuserdir, "Natlink User Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item32 = wx.StaticText( parent, ID_TEXTnatlinkuserdir, "NatLink User Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item30.Add( item32, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item33 = wx.TextCtrl( parent, ID_TEXTCTRLuserDirectory, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
@@ -185,10 +185,10 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item45 = wx.FlexGridSizer( 0, 6, 0, 0 )
     item45.AddGrowableCol( 2 )
     
-    item46 = wx.Button( parent, ID_BUTTONregister, "(re)Register Natlink", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item46 = wx.Button( parent, ID_BUTTONregister, "(re)Register NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item45.Add( item46, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item47 = wx.Button( parent, ID_BUTTONunregister, "unRegister natlink", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item47 = wx.Button( parent, ID_BUTTONunregister, "unRegister NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item45.Add( item47, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item48 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
