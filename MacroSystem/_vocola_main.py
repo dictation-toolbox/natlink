@@ -128,7 +128,10 @@ class ThisGrammar(GrammarBase):
     # Set member variables -- important folders and computer name
     def setNames(self):
         self.VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
-        self.commandFolders = [os.path.join(self.VocolaFolder, '\Commands')]
+        self.commandFolders = []
+        self.systemCommandFolder = os.path.join(self.VocolaFolder, 'Commands')
+        if os.path.isdir(self.systemCommandFolder):
+            self.commandFolders.insert(0, self.systemCommandFolder)
 ##        
 ##        if installer:
 ##            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,
