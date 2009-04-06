@@ -28,21 +28,7 @@ import natlink
 from natlinkutils import *
 import natlinkstatus
 import natlinkcorefunctions
-import win32api  # for opening command files if own editor is specified
 status = natlinkstatus.NatlinkStatus()
-##
-##try:
-##    # The following files are only present if Scott's installer is being used:
-##    import RegistryDict
-##    import win32con
-##    installer = True
-##except ImportError:
-##    installer = False
-
-# Returns the date on a file or 0 if the file does not exist        
-def vocolaGetModDate(file):
-    try: return os.stat(file)[ST_MTIME]
-    except OSError: return 0        # file not found
 
     
 # The Vocola translator is a perl program. By default we use the precompiled
@@ -95,34 +81,27 @@ class ThisGrammar(GrammarBase):
     """
 
     def initialize(self):
+        self.mayHaveCompiled = 0  # has the compiler been called?
+        self.setNames()
 
         # remove previous Vocola/Python compilation output as it may be out
         # of date (e.g., new compiler, source file deleted, partially
         # written due to crash, new machine name, etc.):
         self.purgeOutput()
-        self.editedCommandFiles = []       
-        self.newCommandFile = 0 # to notice when a new command file is opened    
-
-        self.setNames()
 
         if self.vocolaEnabled:        
-
             self.loadAllFiles('')
 
             self.load(self.gramSpec)
             self.activateAll()
-            # Don't set callback just yet or it will be clobbered
-    ##        self.needToSetCallback = 1
         else:
             print 'vocola not active'
+
+
                 
 
     def gotBegin(self,moduleInfo):
         self.currentModule = moduleInfo
-##        if self.needToSetCallback:
-##            # Replace NatLink's "begin" callback function with ours (see below)
-##            natlink.setBeginCallback(vocolaBeginCallback)
-##            self.needToSetCallback = 0
 
                                       
     # Set member variables -- important folders and computer name
@@ -132,15 +111,7 @@ class ThisGrammar(GrammarBase):
         self.systemCommandFolder = os.path.join(self.VocolaFolder, 'Commands')
         if os.path.isdir(self.systemCommandFolder):
             self.commandFolders.insert(0, self.systemCommandFolder)
-##        
-##        if installer:
-##            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,
-##                                          "Software\NatLink")             
-##            if r:                                                         
-##                userCommandFolder = r.get("VocolaUserDirectory", None)
-##                self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
-##                if self.vocolaEnabled:
-##                    self.commandFolders.insert(0, userCommandFolder)
+        
         userCommandFolder = status.getVocolaUserDirectory()
             
         self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
@@ -156,7 +127,6 @@ class ThisGrammar(GrammarBase):
                         self.createNewSubDirectory(userCommandFolder2)
                         self.copyToNewSubDirectory(userCommandFolder, userCommandFolder2)
                     self.commandFolders.insert(0, userCommandFolder2)                
-
         if os.environ.has_key('COMPUTERNAME'):
             self.machine = string.lower(os.environ['COMPUTERNAME'])
         else: self.machine = 'local'
@@ -203,7 +173,7 @@ class ThisGrammar(GrammarBase):
 
             s = self.getSourceFilename(f)
             if s:
-                if vocolaGetModDate(s)>0: continue
+                if vocolaGetModTime(s)>0: continue
 
             f = os.path.join(NatLinkFolder, f)
             print "Deleting: " + f
@@ -241,7 +211,7 @@ class ThisGrammar(GrammarBase):
 
     # Load all command files
     def loadAllFiles(self, options):
-        ## QH, I believe only 1 commandFolder should be done, numbered 0
+## QH, I believe only 1 commandFolder should be done, numbered 0
         ## as the other numbers can be used for copying default files to your location if
         ## a new file is started...
         for i in range(len(self.commandFolders)):
@@ -283,6 +253,8 @@ class ThisGrammar(GrammarBase):
     # Run Vocola translator, converting command files from "inputFileOrFolder"
     # and writing output to NatLink/MacroSystem
     def runVocolaTranslator(self, inputFileOrFolder, options):
+        self.mayHaveCompiled = 1
+
         if usePerl: call = 'perl "' + self.VocolaFolder + r'\Exec\vcl2py.pl" '
         else:       call = '"'      + self.VocolaFolder + r'\Exec\vcl2py.exe" '
         call += options
@@ -341,15 +313,13 @@ class ThisGrammar(GrammarBase):
         path = self.FindExistingCommandFile(file)
         wantedPath = os.path.join(self.commandFolders[0], file)
 
-        self.newCommandFile = 1
-
         if not path:
             path = self.commandFolders[0] + '\\' + file
             new = open(path, 'w')
             new.write('# ' + comment + '\n\n')
             new.close()
         elif path == wantedPath:
-            self.newCommandFile = 0
+            pass
         else:
             # copy from other location
             if wantedPath.startswith(path) and len(wantedPath) - len(path) == 3:
@@ -359,8 +329,6 @@ class ThisGrammar(GrammarBase):
                 print 'copy from other location'
                 self.copyVclFile(path, wantedPath)
             path = wantedPath   
-        if not path in self.editedCommandFiles:
-            self.editedCommandFiles.append(path)
 
 	try:
 	    os.startfile(path)
@@ -405,76 +373,71 @@ class ThisGrammar(GrammarBase):
             output.write(line + '\n')
         output.close()                
 
-
-
             
-    def getLastVocolaModTime(self):
-        """get the time of the last edited vocola file
-        """
-        if self.editedCommandFiles:
-            times = [vocolaGetModDate(f) for f in self.editedCommandFiles]
-            return max(times)
-        else:
-            return 0
+thisGrammar = ThisGrammar()
+thisGrammar.initialize()
+
+
+# Returns the modification time of a file or 0 if the file does not exist
+def vocolaGetModTime(file):
+    try: return os.stat(file)[ST_MTIME]
+    except OSError: return 0        # file not found
+
+# Returns the newest modified time of any Vocola command folder file or
+# 0 if none:
+def getLastVocolaFileModTime():
+    last = 0
+    for folder in thisGrammar.commandFolders:
+        last = max([last] +
+                   [vocolaGetModTime(os.path.join(folder,f))
+                    for f in os.listdir(folder)])
+    return last
 
 
 # When speech is heard this function will be called before any others.
 #   - Compile any changed Vocola command files
 ##   - Remove any vocola output files without corresponding source files
 #   - Make sure NatLink sees any new output files
-#   - Invoke the standard NatLink callback
+#
+# now this callback is called from natlinkmain before other grammars are called
+# also, natlinkmain now guarantees we are not called with CallbackDepth>1
+#
 
-##from natlinkmain import beginCallback
-##from natlinkmain import findAndLoadFiles
-##from natlinkmain import loadModSpecific
-
-##lastNatLinkModTime = 0
-##lastCommandFolderTime = 0
-lastVocolaUserModTime = 0
-
-thisGrammar = ThisGrammar()
-thisGrammar.initialize()
-lastVocolaUserModTime = thisGrammar.getLastVocolaModTime()
+lastNatLinkModTime    = 0
+lastCommandFolderTime = 0
+lastVocolaFileTime    = 0
 
 def vocolaBeginCallback(moduleInfo):
-    global lastVocolaUserModTime
-    #
-    # now this callback is called from natlinkmain Before other grammars are called
-    # 
-##    global lastNatLinkModTime, lastCommandFolderTime
-##    thisGrammar.loadAllFiles('')
+    global lastNatLinkModTime, lastCommandFolderTime, lastVocolaFileTime
+
+    if not thisGrammar.vocolaEnabled:
+        return 0
+
+    current = getLastVocolaFileModTime()
+    if current > lastVocolaFileTime:
+        thisGrammar.loadAllFiles('')
+        lastVocolaFileTime =  current
 
 #    source_changed = 0
 #    for folder in thisGrammar.commandFolders:
-#        if vocolaGetModDate(folder) > lastCommandFolderTime:
-#            lastCommandFolderTime = vocolaGetModDate(folder)
+#        if vocolaGetModTime(folder) > lastCommandFolderTime:
+#            lastCommandFolderTime = vocolaGetModTime(folder)
 #            source_changed = 1
 #    if source_changed:
 #        thisGrammar.deleteOrphanFiles()
 
-##    if getCallbackDepth() < 2:
-    grammar = thisGrammar
-    if not grammar.vocolaEnabled:
-        return
-    current = grammar.getLastVocolaModTime()
-##    print 'current: %s (number of files edited: %s)'% (current, len(grammar.editedCommandFiles))
-    if current > lastVocolaUserModTime:
-##        print 'load newer vocola file: %s'% grammar.newCommandFile
-        thisGrammar.loadAllFiles('')
-        lastVocolaUserModTime = current
-        return 1 + grammar.newCommandFile  # 1 for old files, 2 for new files (findAndLoadFiles needed!)
-##    else:
-##        print 'no change vocola'
-##        # make sure NatLink sees any new .py files:
-##        findAndLoadFiles()
-##        loadModSpecific(moduleInfo)
-
-##    beginCallback(moduleInfo)
+    compiled = thisGrammar.mayHaveCompiled
+    thisGrammar.mayHaveCompiled = 0
+    current = vocolaGetModTime(NatLinkFolder)
+    if current > lastNatLinkModTime:
+        lastNatLinkModTime = current
+        # make sure NatLink sees any new .py files:
+        return 2
+    return compiled
 
 
 
 def unload():
     global thisGrammar
-##    natlink.setBeginCallback(beginCallback)
     if thisGrammar: thisGrammar.unload()
     thisGrammar = None
