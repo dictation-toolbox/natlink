@@ -43,10 +43,9 @@ Other functions inside this module, with calls from CLI or command line:
 enableNatlink()  (e)/disableNatlink() (E)
 
 setUserDirectory(path) (n path) or clearUserDirectory() (N)
-serUnimacro    
 etc.
 
-More at the bottom, with the CLI description...     
+More at the bottom, with the CLI description...
 
 """
 
@@ -110,7 +109,7 @@ def fatal_error(message, new_raise=None):
         raise
 #-----------------------------------------------------
 
-import os, sys, win32api, shutil
+import os, sys, win32api, shutil, re
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
 if thisDir == coreDir:
@@ -696,7 +695,8 @@ Possibly you need administrator rights to do this
         """copy Unimacro include file into Vocola user directory
 
         """
-        uscFile = 'usc.vch'
+        uscFile = 'unimacro.vch'
+        oldUscFile = 'usc.vch'
         # also copy usc.vch from Unimacro folder to VocolaUserDirectory
         fromFolder = os.path.join(self.getUserDirectory(), 'vocola_compatibility')
         toFolder = self.getVocolaUserDir()
@@ -704,6 +704,7 @@ Possibly you need administrator rights to do this
             fromFile = os.path.join(fromFolder,uscFile)
             if os.path.isfile(fromFile):
                 if os.path.isdir(toFolder):
+                    
                     toFile = os.path.join(toFolder, uscFile)
                     print 'copy %s from %s to %s'%(uscFile, fromFolder, toFolder)
                     try:
@@ -711,11 +712,114 @@ Possibly you need administrator rights to do this
                     except:
                         pass
                     else:
+                        oldUscFile = os.path.join(toFolder, oldUscFile)
+                        if os.path.isfile(oldUscFile):
+                            print 'remove old usc.vcl file: %s'% oldUscFile
+                            os.remove(oldUscFile)
                         return
         mess = "could not copy file %s from %s to %s"%(uscFile, fromFolder, toFolder)
         print mess
         return mess
         
+
+    def includeUnimacroVchLineInVocolaFiles(self, subDirectory=None):
+        """include the unimacro wrapper support line into all Vocola Command Files
+        """
+        uscFile = 'unimacro.vch'
+        oldUscFile = 'usc.vch'
+##        reInclude = re.compile(r'^include\s+.*unimacro.vch;$', re.MULTILINE)
+##        reOldInclude = re.compile(r'^include\s+.*usc.vch;$', re.MULTILINE)
+        
+        # also copy usc.vch from Unimacro folder to VocolaUserDirectory
+        toFolder = self.getVocolaUserDir()
+        if subDirectory:
+            toFolder = os.path.join(toFolder, subDirectory)
+            includeLine = 'include ..\\%s;\n'% uscFile
+        else:
+            includeLine = 'include %s;\n'%uscFile
+        oldIncludeLines = ['include %s;'% oldUscFile,
+                           'include ..\\%s;'% oldUscFile]
+            
+        if not os.path.isdir(toFolder):
+            mess = 'cannot find vocola command files directory, not a valid path: %s'% toFolder
+            print mess
+            return mess
+        nFiles = 0
+        for f in os.listdir(toFolder):
+            F = os.path.join(toFolder, f)
+            if f.endswith(".vcl"):
+                changed = 0
+                correct = 0
+                Output = []
+                for line in open(F, 'r'):
+                    if line.strip() == includeLine.strip():
+                        correct = 1
+                    for oldLine in oldIncludeLines:
+                        if line.strip() == oldLine:
+                            changed = 1
+                            break
+                    else:
+                        Output.append(line)
+                if changed or not correct:
+                    # changes were made:
+                    if not correct:
+                        Output.insert(0, includeLine)
+                    open(F, 'w').write(''.join(Output))
+                    nFiles += 1
+            elif len(f) == 3 and os.path.isdir(F):
+                self.includeUnimacroVchLineInVocolaFiles(F)
+        mess = 'changed (included unimacro include line) in %s files (%s)'% (nFiles, toFolder)
+        print mess
+
+    def removeUnimacroVchLineInVocolaFiles(self, subDirectory=None):
+        """remove the unimacro wrapper support line into all Vocola Command Files
+        """
+        uscFile = 'unimacro.vch'
+        oldUscFile = 'usc.vch'
+##        reInclude = re.compile(r'^include\s+.*unimacro.vch;$', re.MULTILINE)
+##        reOldInclude = re.compile(r'^include\s+.*usc.vch;$', re.MULTILINE)
+        
+        # also copy usc.vch from Unimacro folder to VocolaUserDirectory
+        if subDirectory:
+            # for recursive call language subfolders:
+            toFolder = subDirectory
+        else:
+            toFolder = self.getVocolaUserDir()
+            
+        oldIncludeLines = ['include %s;'% oldUscFile,
+                           'include ..\\%s;'% oldUscFile,
+                           'include %s;'% uscFile,
+                           'include ..\\%s;'% uscFile,
+                           'include ../%s;'% oldUscFile,
+                           'include ../%s;'% uscFile
+                           ]
+            
+        if not os.path.isdir(toFolder):
+            mess = 'cannot find vocola command files directory, not a valid path: %s'% toFolder
+            print mess
+            return mess
+        nFiles = 0
+        for f in os.listdir(toFolder):
+            F = os.path.join(toFolder, f)
+            if f.endswith(".vcl"):
+                changed = 0
+                Output = []
+                for line in open(F, 'r'):
+                    for oldLine in oldIncludeLines:
+                        if line.strip() == oldLine:
+                            changed = 1
+                            break
+                    else:
+                        Output.append(line)
+                if changed:
+                    # had break, so changes were made:
+                    open(F, 'w').write(''.join(Output))
+                    nFiles += 1
+            elif len(f) == 3 and os.path.isdir(F):
+                self.removeUnimacroVchLineInVocolaFiles(F)
+        mess = 'removed include lines from %s files(%s)'% (nFiles, toFolder)
+        print mess
+
 
     def enableVocolaTakesLanguages(self):
         """setting registry  so Vocola can divide different languages
@@ -841,6 +945,8 @@ n/N     - enable/disable Unimacro by setting/clearing UserDirectory, the
 
 o/O     - set/clear UnimacroUserDir, where Unimacro user INI files are located
 p/P     - set/clear path for program that opens Unimacro INI files.
+l       - copy include file unimacro.vch into Vocola User Directory
+m/M     - insert/remove include lines for unimacro.vch in all Vocola Command Files
 
 [Repair]
 
@@ -1046,6 +1152,35 @@ You can even specify Wordpad, maybe Microsoft Word...
         print '='*60
 
     help_P = help_p
+
+    # Unimacro Vocola features-----------------------------------------------
+    # managing the include file wrapper business.
+    # can be called from the Vocola compatibility button in the config GUI.
+    def do_l(self, arg):
+        print "Copy include file Unimacro.vch from Unimacro folder into Vocola User Directory"
+        self.config.copyUnimacroIncludeFile()
+
+    def help_l(self):
+        print '-'*60
+        print \
+"""copy unimacro.vch include file into Vocola User Files directory (l)
+
+Insert/remove include lines into each vocola command file (m/M)
+
+With this include file, you can call unimacro shorthand commands in a vocola command.
+
+(You can also with the call to Unimacro() directly, but this include file
+offers you a (thin) wrapper around these functions)
+"""
+        print '='*60
+
+    def do_m(self, arg):
+        print "Include unimacro.vch line in each Vocola Command File"
+        self.config.includeUnimacroVchLineInVocolaFiles()
+    def do_M(self, arg):
+        print 'Remove "Include unimacro.vch" line from each Vocola Command File'
+        self.config.removeUnimacroVchLineInVocolaFiles()
+    help_m = help_M = help_l
 
         
     # enable/disable NatLink------------------------------------------------

@@ -36,6 +36,55 @@ nf = None
 nc = None  # natlinkcorefunctions
 # WDR: classes
 
+class DialogUnimacroVocolaCompatibiliy(wx.Dialog):
+    def __init__(self, parent, title=None):
+        parent = parent
+        id = -1
+        pos = wx.DefaultPosition
+        title = title or "Unimacro/Vocola compatibility"
+        wx.Dialog.__init__(self, parent, id, title, pos)
+        # WDR: dialog function YesNoAbort for MyYesNoAbortDialog
+        
+        
+        # WDR: dialog function DialogVocolaCombatibility for DialogUnimacroVocolaCompatibiliy
+        DialogVocolaCombatibility( self, True )
+        
+        # WDR: handler declarations for DialogUnimacroVocolaCompatibiliy
+        wx.EVT_BUTTON(self, ID_BUTTONCancel, self.OnCancel)
+        wx.EVT_BUTTON(self, ID_BUTTONOK, self.OnOK)
+
+    # WDR: methods for DialogUnimacroVocolaCompatibiliy
+
+    def GetCheckboxremoveunimacroincludelines(self):
+        return self.FindWindowById( ID_CHECKBOXRemoveUnimacroIncludeLines )
+
+    def GetCheckboxmakeunimacroincludelines(self):
+        return self.FindWindowById( ID_CHECKBOXMakeUnimacroIncludeLines )
+
+    def GetCheckboxrefreshunimacrovch(self):
+        return self.FindWindowById( ID_CHECKBOXRefreshUnimacroVch )
+
+    # WDR: handler implementations for DialogUnimacroVocolaCompatibiliy
+
+    def OnOK(self, event):
+        code = 0
+        if self.GetCheckboxremoveunimacroincludelines().GetValue():
+            code += 2
+        if self.GetCheckboxmakeunimacroincludelines().GetValue():
+            code += 4
+        if self.GetCheckboxrefreshunimacrovch().GetValue():
+            code += 1
+
+
+        self.SetReturnCode(code)
+        self.Destroy()
+            
+    def OnCancel(self, event):
+        self.SetReturnCode(0)
+        self.Destroy()
+
+
+
 class InfoPanel(wx.Panel):
     def __init__(self, parent, id, name="infopanel",
         pos = wx.DefaultPosition, size = wx.DefaultSize,
@@ -245,6 +294,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         MainWindow( self, True )
 
         # WDR: handler declarations for configurenatlink
+        wx.EVT_BUTTON(self, ID_BUTTONVocolaCompatibiliy, self.OnButtonVocolaCompatibility)
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroEditor, self.OnButtonUnimacroEditor)
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroInifilesDirectory, self.OnButtonUnimacroInifilesDirectory)
         wx.EVT_BUTTON(self, ID_BUTTONHelp5, self.OnButtonHelp5)
@@ -643,6 +693,45 @@ class ConfigureNatlinkPanel(wx.Panel):
         return self.FindWindowById( ID_TEXTCTRLregisternatlink )
 
     # WDR: handler implementations for configurenatlink
+
+    def OnButtonVocolaCompatibility(self, event):
+        title = "Unimacro features can be used by Vocola"
+        dlg = DialogUnimacroVocolaCompatibiliy(self, title=title)
+##        dlg.SetText(text)
+        answer = dlg.ShowModal()
+        if answer:
+            print 'answer: %s'% answer
+            if answer%2:
+                print "refresh unimacro.vch file from unimacro/vocola_compatibility to vocola user commands directory"
+                doLetter = 'l'
+                statustext = 'Copied unimacro.vch file from unimacro/vocola_compatibility to vocola user commands directory'
+                self.do_command(doLetter)
+                self.setstatus(statustext)
+                self.setInfo()
+                answer -= 1
+            if answer%4:
+                print "remove unimacro include lines from all vocola command files in your vocola user commands directory"
+                doLetter = 'M'
+                undoLetter = "m"
+                statustext = 'Removed unimacro include lines from all vocola command files in your vocola user commands directory'
+                self.do_command(doLetter, undo=undoLetter)
+                self.setstatus(statustext)
+                self.setInfo()
+                answer -= 2
+            if answer == 4:
+                print "include unimacro include lines in all vocola command files in your vocola user commands directory"
+                doLetter = 'm'
+                undoLetter = "M"
+                statustext = "Included unimacro include lines in all vocola command files in your vocola user commands directory"
+                self.do_command(doLetter, undo=undoLetter)
+                self.setstatus(statustext)
+                self.setInfo()
+                print "include unimacro include lines in all vocola command files in your vocola user commands directory"
+        else:
+            print 'nothing chosen'
+            
+
+        
 
     def OnButtonUnimacroEditor(self, event):
         D = self.config.getNatlinkStatusDict()
