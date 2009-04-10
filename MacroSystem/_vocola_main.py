@@ -329,12 +329,11 @@ class ThisGrammar(GrammarBase):
                 print 'copy from other location'
                 self.copyVclFile(path, wantedPath)
             path = wantedPath   
-
-	try:
-	    os.startfile(path)
-	except WindowsError, e: 
-	    print
-	    print "Unable to open voice command file with associated editor: " + str(e)
+        try:
+            os.startfile(path)
+        except WindowsError, e: 
+            print
+            print "Unable to open voice command file with associated editor: " + str(e)
             print "Trying to open it with notepad instead."
             prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
             os.spawnv(os.P_NOWAIT, prog, [prog, path])
