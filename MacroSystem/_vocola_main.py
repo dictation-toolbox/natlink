@@ -82,6 +82,7 @@ class ThisGrammar(GrammarBase):
 
     def initialize(self):
         self.mayHaveCompiled = 0  # has the compiler been called?
+        self.compilerError   = 0  # has a compiler error occurred?
         self.setNames()
 
         # remove previous Vocola/Python compilation output as it may be out
@@ -211,7 +212,7 @@ class ThisGrammar(GrammarBase):
 
     # Load all command files
     def loadAllFiles(self, options):
-## QH, I believe only 1 commandFolder should be done, numbered 0
+        ## QH, I believe only 1 commandFolder should be done, numbered 0
         ## as the other numbers can be used for copying default files to your location if
         ## a new file is started...
         for i in range(len(self.commandFolders)):
@@ -266,6 +267,7 @@ class ThisGrammar(GrammarBase):
             if os.path.isfile(logName):
                 try:
                     log = open(logName, 'r')
+                    self.compilerError = 1
                     print  >> sys.stderr, log.read()
                     log.close()
                     os.remove(logName)
@@ -329,6 +331,7 @@ class ThisGrammar(GrammarBase):
                 print 'copy from other location'
                 self.copyVclFile(path, wantedPath)
             path = wantedPath   
+
         try:
             os.startfile(path)
         except WindowsError, e: 
@@ -415,7 +418,10 @@ def vocolaBeginCallback(moduleInfo):
     current = getLastVocolaFileModTime()
     if current > lastVocolaFileTime:
         thisGrammar.loadAllFiles('')
-        lastVocolaFileTime =  current
+	if not thisGrammar.compilerError:
+            lastVocolaFileTime =  current
+        else:
+            thisGrammar.compilerError = 0	   
 
 #    source_changed = 0
 #    for folder in thisGrammar.commandFolders:
