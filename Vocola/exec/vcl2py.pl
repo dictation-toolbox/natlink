@@ -66,7 +66,7 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.6.2I";
+    $VocolaVersion = "2.6.3I";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement

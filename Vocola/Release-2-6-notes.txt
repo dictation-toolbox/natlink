@@ -1,6 +1,18 @@
+New in 2.6.3:
+
+! Commands are recognized faster because the Vocola compiler is run
+  during recognition only if at least one file in a Vocola command
+  folder has been changed/added.
+
+* Now falls back on using Notepad if no editor has been associated with
+  .vcl files.
+
+* Now using os.startfile(-) instead of Simpscrp to open command files.
+
+
 New in 2.6.2:
 
-* New built-in Unimacro(-) added.
+! New built-in Unimacro(-) added.
 
 * Documentation removed in favor of the web site.
 
@@ -18,7 +30,7 @@ New in 2.6.1:
   dreamweaver.vcl,keys.vch,mstsc.vcl,natspeak.vcl,nlnotes.vcl,notepad.vcl,
   winword.vcl}.
 
-* new version of simpscrp.pyd compiled for Python 2.5
+! new version of simpscrp.pyd compiled for Python 2.5
 
 * switched VocolaUtils.py to using exception classes instead of strings.
 
