@@ -753,7 +753,7 @@ Possibly you need administrator rights to do this
                     nFiles += 1
             elif len(f) == 3 and os.path.isdir(F):
                 self.includeUnimacroVchLineInVocolaFiles(F)
-        mess = '%s files changed in %s (added Unimacro.vch include line)'% (nFiles, toFolder)
+        mess = 'changed %s files in %s'% (nFiles, toFolder)
         print mess
 
     def removeUnimacroVchLineInVocolaFiles(self, subDirectory=None):
@@ -802,7 +802,7 @@ Possibly you need administrator rights to do this
                     nFiles += 1
             elif len(f) == 3 and os.path.isdir(F):
                 self.removeUnimacroVchLineInVocolaFiles(F)
-        mess = 'removed include lines from %s files (%s)'% (nFiles, toFolder)
+        mess = 'removed include lines from %s files in %s'% (nFiles, toFolder)
         print mess
 
 
@@ -1001,7 +1001,7 @@ you restart NatSpeak.
     def help_d(self):
         print '-'*60
         print \
-"""Set (d path) or clear (D) the directory where NatSpeak is installed.
+"""Set (d <path>) or clear (D) the directory where NatSpeak is installed.
 
 Setting is only needed when NatSpeak is not found at one of the "normal" places.
 So setting is often not needed.
@@ -1036,7 +1036,7 @@ search for the NatSpeak install directory in the "normal" place(s).
     def help_c(self):
         print '-'*60
         print \
-"""Set (c path) or clear (C) the directory where NatSpeak INI file locations
+"""Set (c <path>) or clear (C) the directory where NatSpeak INI file locations
 (nssystem.ini and nsapps.ini) are located.
 
 Only needed if these cannot be found in the normal place(s):
@@ -1070,7 +1070,7 @@ again search for its INI files in the "default/normal" place(s).
     def help_n(self):
         print '-'*60
         print \
-"""Sets (n) or clears (N) the user directory of NatLink.
+"""Sets (n <path>) or clears (N) the user directory of NatLink.
 This will often be the folder where Unimacro is located.
 
 When you clear this registry entry, you probably disable Unimacro, as
@@ -1098,7 +1098,7 @@ Unimacro shorthand commands and meta actions.
     def help_o(self):
         print '-'*60
         print \
-"""set/clear Unimacro user directory (o path/O)
+"""set/clear Unimacro user directory (o <path>/O)
 
 If you specify this directory, your user INI files (and possibly other user
 dependent files) will be put there.
@@ -1126,7 +1126,7 @@ Unimacro directory itself: %s
     def help_p(self):
         print '-'*60
         print \
-"""set/clear path to Unimacro INI files editor (p path/P)
+"""set/clear path to Unimacro INI files editor (p <path>/P)
 
 By default (when you clear this setting) "notepad" is used, but:
 
@@ -1150,23 +1150,21 @@ You can even specify Wordpad, maybe Microsoft Word...
     def help_l(self):
         print '-'*60
         print \
-"""copy Unimacro.vch include file into Vocola User Files directory (l)
+"""Copy Unimacro.vch header file into Vocola User Files directory      (l)
 
-Insert/remove include lines into each Vocola command file (m/M)
+Insert/remove 'include Unimacro.vch' lines into/from each Vocola 
+command file                                                        (m/M)
 
-With this include file, you can call Unimacro shorthand commands in a
+Using Unimacro.vch, you can call Unimacro shorthand commands from a
 Vocola command.
-
-(You can also make the call to Unimacro() directly, but this include file
-offers you a (thin) wrapper around these functions)
 """
         print '='*60
 
     def do_m(self, arg):
-        print "Include unimacro.vch line in each Vocola Command File"
+        print 'Insert "include Unimacro.vch" line in each Vocola Command File'
         self.config.includeUnimacroVchLineInVocolaFiles()
     def do_M(self, arg):
-        print 'Remove "Include unimacro.vch" line from each Vocola Command File'
+        print 'Remove "include Unimacro.vch" line from each Vocola Command File'
         self.config.removeUnimacroVchLineInVocolaFiles()
     help_m = help_M = help_l
 
@@ -1182,7 +1180,7 @@ offers you a (thin) wrapper around these functions)
     def help_e(self):
         print '-'*60
         print \
-"""enable NatLink (e) or disable NatLink (E):
+"""Enable NatLink (e) or disable NatLink (E):
 
 When you enable NatLink, the necessary settings in nssystem.ini and nsapps.ini
 are done.
@@ -1228,7 +1226,7 @@ the Global Clients section of nssystem.ini.
 """Enable/disable Vocola by setting/clearing the Vocola user directory
 (v <path>/V).
 
-Vocola is meant to be used with a Vocola user directory. Therefore
+Vocola is meant to be used with a Vocola user directory.  Therefore
 natlinkmain will not enable Vocola if no Vocola user directory is set.
 
 <path> must be an existing folder; NatLink\Vocola in My Documents is a
@@ -1282,7 +1280,7 @@ You may have to manually create this folder first.
     def help_g(self):
         print '-'*60
         print \
-"""enables (g)/disables (G) NatLink debug output (in the NatSpeak log file)
+"""Enables (g)/disables (G) NatLink debug output (in the NatSpeak log file)
 this can be a lot of lines, so preferably disable this one!
 
 Currently it is not clear if this option does anything at all!
@@ -1312,10 +1310,11 @@ NatlinkDebug is kept to 0
     def help_x(self):
         print '-'*60
         print \
-"""enables (x)/disables (X) natlinkmain debug load output
-enables (y)/disables (Y) natlinkmain debug callback output
+"""Enable (x)/disable (X) natlinkmain debug load output
 
-This is sometimes lengthy output to the
+Enable (y)/disable (Y) natlinkmain debug callback output
+
+This sends sometimes lengthy debugging messages to the
 "Messages from Python Macros" window.
 
 Mainly used when you suspect problems with the working 
@@ -1348,16 +1347,16 @@ of NatLink, so keep off (X and Y) most of the time.
     def help_r(self):
         print '-'*60
         print \
-"""registers (r)/ unregisters (R) natlink.dll explicitly.
+"""Registers (r) / unregisters (R) natlink.dll explicitly.
 
-(Registering is also done (silent) when you enable NatLink, so is mostly NOT
+(Registering is also done (silently) when you enable NatLink, so is mostly NOT
 NEEDED!)
 
 But if you do (-r or -R) a message dialog shows up to inform you what happened.
 When you unregister, NatLink is also disabled.
 
-If you want to (silent) enable NatLink and register silent use -z,
-To disable NatLink and unregister (silent) use Z
+If you want to (silently) enable NatLink and register silently use -z,
+To disable NatLink and unregister (silently) use Z
 """
         print '='*60
     help_R = help_r
@@ -1376,17 +1375,17 @@ To disable NatLink and unregister (silent) use Z
     def help_b(self):
         print '-'*60
         print \
-"""Enable (b)/disable (B) different Vocola user directory's
+"""Enable (b)/disable (B) different Vocola user directories
 
 If enabled, Vocola will look into a subdirectory "xxx" of
-VocolaUserDirectory IF the language code of 
-the user speech profiles is different from "enx".
+VocolaUserDirectory IF the language code of the current user speech
+profile is xxx and different from "enx".
 
 So for English users this option will have no effect.
 
-If for the first time commands are opened in for example a
-Dutch speech profile (language code "nld") a subdirectory "nld" 
-is made and all Vocola user files are copied into this folder.
+The first time a command file is opened in, for example, a
+Dutch speech profile (language code "nld"), a subdirectory "nld" 
+is made and all existing Vocola user files are copied into this folder.
 """
         print '='*60
 
