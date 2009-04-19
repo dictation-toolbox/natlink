@@ -334,7 +334,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         try:
             self.cli = nf.CLI(self.GUI)
         except:
-            self.error('could not start cli instance')
+            self.error('could not start CLI instance')
             return
         try:
             nc = __import__('natlinkcorefunctions')
@@ -513,8 +513,8 @@ class ConfigureNatlinkPanel(wx.Panel):
         """
         L = []
         somethingChanged = 0
-        for part in ('natlink', 'vocola', 'unimacro'):
-            value, changed = status[part]
+        for part in ('NatLink', 'Vocola', 'Unimacro'):
+            value, changed = status[part.lower()]
             if value:
                 enableddisabled = 'enabled'
             else:
@@ -525,10 +525,10 @@ class ConfigureNatlinkPanel(wx.Panel):
                 line = line.upper()
                 L.append(line)
             else:
-                line = '%s is %s'% (part.capitalize(), enableddisabled)
+                line = '%s is %s'% (part, enableddisabled)
                 L.append(line)
                 
-            if part == 'natlink' and enableddisabled == 'disabled':
+            if part == 'NatLink' and enableddisabled == 'disabled':
                 break # stop further status info
                     
         statusLine = '; '.join(L)
@@ -702,31 +702,30 @@ class ConfigureNatlinkPanel(wx.Panel):
         if answer:
             print 'answer: %s'% answer
             if answer%2:
-                print "refresh unimacro.vch file from unimacro/vocola_compatibility to vocola user commands directory"
+                print "(re)copy Unimacro.vch file to Vocola user commands directory"
                 doLetter = 'l'
-                statustext = 'Copied unimacro.vch file from unimacro/vocola_compatibility to vocola user commands directory'
+                statustext = 'Copied Unimacro.vch file Vocola user commands directory'
                 self.do_command(doLetter)
                 self.setstatus(statustext)
                 self.setInfo()
                 answer -= 1
             if answer%4:
-                print "remove unimacro include lines from all vocola command files in your vocola user commands directory"
+                print 'remove "include Unimacro.vch" lines from all Vocola command files in your Vocola user commands directory'
                 doLetter = 'M'
                 undoLetter = "m"
-                statustext = 'Removed unimacro include lines from all vocola command files in your vocola user commands directory'
+                statustext = 'Removed "include Unimacro.vch" lines from all Vocola command files in your Vocola user commands directory'
                 self.do_command(doLetter, undo=undoLetter)
                 self.setstatus(statustext)
                 self.setInfo()
                 answer -= 2
             if answer == 4:
-                print "include unimacro include lines in all vocola command files in your vocola user commands directory"
+                print 'add "include Unimacro.vch" lines to all Vocola command files in your Vocola user commands directory'
                 doLetter = 'm'
                 undoLetter = "M"
-                statustext = "Included unimacro include lines in all vocola command files in your vocola user commands directory"
+                statustext = 'add "include Unimacro.vch" lines in all Vocola command files in your Vocola user commands directory'
                 self.do_command(doLetter, undo=undoLetter)
                 self.setstatus(statustext)
                 self.setInfo()
-                print "include unimacro include lines in all vocola command files in your vocola user commands directory"
         else:
             print 'nothing chosen'
             
@@ -764,35 +763,35 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.setInfo()
 
 
-    def OnButtonVocolaEditor(self, event):
-        D = self.config.getNatlinkStatusDict()
-        
-        doLetter = 'w'
-        undoLetter = 'W'
-        statustext = 'Vocola Editor is specified, this will take effect after you restart NatSpeak'
-
-        # ask for the correct directory:
-        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite editor please",
-              style=wx.DD_DEFAULT_STYLE)
-        ## search for Unimacro directory as proposal:
-        old_path = D['VocolaCommandFilesEditor']
-        Path = nc.getExtendedEnv("PROGRAMFILES")
-        dlg.SetPath(Path)
-        dlg.SetMessage('Please choose the filename of your favorite editor please\nPress cancel to return to default')
-        if dlg.ShowModal() == wx.ID_OK:
-            new_path = dlg.GetPath()
-            if new_path and os.path.isfile(new_path) and new_path.lower().endswith('.exe'):
-                pass
-            else:
-                self.setstatus("no new valid (.ewe) file specified")
-                return
-        else:
-            self.setstatus("Pressed Cancel, return to default")
-            self.do_command( undoLetter, undo=(doLetter, old_path) )             
-            return
-        self.do_command(doLetter,new_path, undo=undoLetter)
-        self.setstatus(statustext)
-        self.setInfo()
+#    def OnButtonVocolaEditor(self, event):
+#        D = self.config.getNatlinkStatusDict()
+#        
+#        doLetter = 'w'
+#        undoLetter = 'W'
+#        statustext = 'Vocola Editor is specified, this will take effect after you restart NatSpeak'
+#
+#        # ask for the correct directory:
+#        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite editor please",
+#              style=wx.DD_DEFAULT_STYLE)
+#        ## search for Unimacro directory as proposal:
+#        old_path = D['VocolaCommandFilesEditor']
+#        Path = nc.getExtendedEnv("PROGRAMFILES")
+#        dlg.SetPath(Path)
+#        dlg.SetMessage('Please choose the filename of your favorite editor please\nPress cancel to return to default')
+#        if dlg.ShowModal() == wx.ID_OK:
+#            new_path = dlg.GetPath()
+#            if new_path and os.path.isfile(new_path) and new_path.lower().endswith('.exe'):
+#                pass
+#            else:
+#                self.setstatus("no new valid (.ewe) file specified")
+#                return
+#        else:
+#            self.setstatus("Pressed Cancel, return to default")
+#            self.do_command( undoLetter, undo=(doLetter, old_path) )             
+#            return
+#        self.do_command(doLetter,new_path, undo=undoLetter)
+#        self.setstatus(statustext)
+#        self.setInfo()
         
 
     def OnButtonLogInfo(self, event):
