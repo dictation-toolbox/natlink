@@ -73,13 +73,13 @@ def getBaseFolder(globalsDict=None):
 def getCoreDir(thisDir):
     """get the NatLink core folder, relative from the current folder
 
-    This folder should be relative to this with ../macrosystem/core and should
+    This folder should be relative to this with ../MacroSystem/core and should
     contain natlinkmain.p, natlink.dll, and natlinkstatus.py
 
     If not found like this, prints a line and returns thisDir
     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
     """
-    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'macrosystem', 'core') )
+    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
     if not os.path.isdir(coreFolder):
         print 'not a directory: %s'% coreFolder
         return thisDir
@@ -243,7 +243,7 @@ expects
 ---wanted settings: %s
 
 You probably just installed NatLink in a new location
-and you run the config program for the first time.
+and you ran the config program for the first time.
 
 If you want the new settings, (re)register natlink.dll (r)
 
@@ -542,21 +542,6 @@ Possibly you need administrator rights to do this
         else:
             print 'was not set: %s'% key
 
-    def setVocolaCommandFilesEditor(self, v):
-        key = "VocolaCommandFilesEditor"
-        if v and os.path.isfile(v) and v.endswith(".exe"):
-            self.userregnl[key] = v
-        else:
-            print 'invalid path, not a file or no .exe file: %s'% v
-            
-
-    def clearVocolaCommandFilesEditor(self):
-        key = "VocolaCommandFilesEditor"
-        if key in self.userregnl:
-            del self.userregnl[key]
-        else:
-            print 'was not set: %s'% key
-
     def setUnimacroIniFilesEditor(self, v):
         key = "UnimacroIniFilesEditor"
         if v and os.path.isfile(v) and v.endswith(".exe"):
@@ -580,7 +565,7 @@ Possibly you need administrator rights to do this
 
         Also sets the pythonpath in the HKLM pythonpath section        
         """
-        # give fatal error if python is not OK...
+        # give fatal error if Python is not OK...
         dummy, dummy = self.getHKLMPythonPathDict()        
         pythonVersion = self.getPythonVersion().replace(".", "")
         if int(pythonVersion) >= 25:
@@ -695,9 +680,9 @@ Possibly you need administrator rights to do this
         """copy Unimacro include file into Vocola user directory
 
         """
-        uscFile = 'unimacro.vch'
+        uscFile = 'Unimacro.vch'
         oldUscFile = 'usc.vch'
-        # also copy usc.vch from Unimacro folder to VocolaUserDirectory
+        # also remove usc.vch from VocolaUserDirectory
         fromFolder = os.path.join(self.getUserDirectory(), 'vocola_compatibility')
         toFolder = self.getVocolaUserDir()
         if os.path.isdir(fromFolder):
@@ -723,14 +708,14 @@ Possibly you need administrator rights to do this
         
 
     def includeUnimacroVchLineInVocolaFiles(self, subDirectory=None):
-        """include the unimacro wrapper support line into all Vocola Command Files
+        """include the Unimacro wrapper support line into all Vocola command files
         """
-        uscFile = 'unimacro.vch'
+        uscFile = 'Unimacro.vch'
         oldUscFile = 'usc.vch'
 ##        reInclude = re.compile(r'^include\s+.*unimacro.vch;$', re.MULTILINE)
 ##        reOldInclude = re.compile(r'^include\s+.*usc.vch;$', re.MULTILINE)
         
-        # also copy usc.vch from Unimacro folder to VocolaUserDirectory
+        # also remove includes of usc.vch
         toFolder = self.getVocolaUserDir()
         if subDirectory:
             toFolder = os.path.join(toFolder, subDirectory)
@@ -741,7 +726,7 @@ Possibly you need administrator rights to do this
                            'include ..\\%s;'% oldUscFile]
             
         if not os.path.isdir(toFolder):
-            mess = 'cannot find vocola command files directory, not a valid path: %s'% toFolder
+            mess = 'cannot find Vocola command files directory, not a valid path: %s'% toFolder
             print mess
             return mess
         nFiles = 0
@@ -768,18 +753,18 @@ Possibly you need administrator rights to do this
                     nFiles += 1
             elif len(f) == 3 and os.path.isdir(F):
                 self.includeUnimacroVchLineInVocolaFiles(F)
-        mess = 'changed (included unimacro include line) in %s files (%s)'% (nFiles, toFolder)
+        mess = '%s files changed in %s (added Unimacro.vch include line)'% (nFiles, toFolder)
         print mess
 
     def removeUnimacroVchLineInVocolaFiles(self, subDirectory=None):
-        """remove the unimacro wrapper support line into all Vocola Command Files
+        """remove the Unimacro wrapper support line into all Vocola command files
         """
-        uscFile = 'unimacro.vch'
+        uscFile = 'Unimacro.vch'
         oldUscFile = 'usc.vch'
 ##        reInclude = re.compile(r'^include\s+.*unimacro.vch;$', re.MULTILINE)
 ##        reOldInclude = re.compile(r'^include\s+.*usc.vch;$', re.MULTILINE)
         
-        # also copy usc.vch from Unimacro folder to VocolaUserDirectory
+        # also remove includes of usc.vch
         if subDirectory:
             # for recursive call language subfolders:
             toFolder = subDirectory
@@ -795,7 +780,7 @@ Possibly you need administrator rights to do this
                            ]
             
         if not os.path.isdir(toFolder):
-            mess = 'cannot find vocola command files directory, not a valid path: %s'% toFolder
+            mess = 'cannot find Vocola command files directory, not a valid path: %s'% toFolder
             print mess
             return mess
         nFiles = 0
@@ -817,7 +802,7 @@ Possibly you need administrator rights to do this
                     nFiles += 1
             elif len(f) == 3 and os.path.isdir(F):
                 self.removeUnimacroVchLineInVocolaFiles(F)
-        mess = 'removed include lines from %s files(%s)'% (nFiles, toFolder)
+        mess = 'removed include lines from %s files (%s)'% (nFiles, toFolder)
         print mess
 
 
@@ -849,8 +834,8 @@ def _main(Options=None):
 
     """
     cli = CLI()
-    shortOptions = "aAbBxXyYiIDCeEUdVrRgGzZPO"
-    shortArgOptions = "c:u:v:p:o:"  
+    shortOptions = "iIeEgGyYxXDCVbBNOPlmMrRzZuq"
+    shortArgOptions = "d:c:v:n:o:p:"
     if Options:
         if type(Options) == types.StringType:
             Options = Options.split(" ", 1)
@@ -889,8 +874,8 @@ class CLI(cmd.Cmd):
     """
     def __init__(self, Config=None):
         cmd.Cmd.__init__(self)
-        self.prompt = '\nNatLink config> '
-        self.info = 'type u for usage'
+        self.prompt = '\nNatLink/Vocola/Unimacro config> '
+        self.info = "type 'u' for usage"
         if Config:
             self.config = Config   # initialized instance of NatlinkConfig
         else:
@@ -912,7 +897,7 @@ class CLI(cmd.Cmd):
         """
         print '-'*60
         print \
-"""Usage either from the command line like 'natlinkconfigfunctions.py -i'
+"""Use either from the command line like 'natlinkconfigfunctions.py -i'
 or in an interactive session using the CLI (command line interface). 
 
 [Status]
@@ -935,8 +920,9 @@ c/C     - set/clear DNSINIDir, where NatSpeak INI files are located
 
 v/V     - enable/disable Vocola by setting/clearing VocolaUserDir, the user
           directory for Vocola user files.
+
 b/B     - enable/disable distinction between languages for Vocola user files
-a/A     - Unimacro actions should be restored!!
+
 [Unimacro]
 
 n/N     - enable/disable Unimacro by setting/clearing UserDirectory, the
@@ -945,8 +931,9 @@ n/N     - enable/disable Unimacro by setting/clearing UserDirectory, the
 
 o/O     - set/clear UnimacroUserDir, where Unimacro user INI files are located
 p/P     - set/clear path for program that opens Unimacro INI files.
-l       - copy include file unimacro.vch into Vocola User Directory
-m/M     - insert/remove include lines for unimacro.vch in all Vocola Command Files
+l       - copy header file Unimacro.vch into Vocola User Directory
+m/M     - insert/remove an include line for Unimacro.vch in all Vocola
+          command files
 
 [Repair]
 
@@ -1049,7 +1036,7 @@ search for the NatSpeak install directory in the "normal" place(s).
     def help_c(self):
         print '-'*60
         print \
-"""Set (c path) of clear (C) the directory where NatSpeak INI file locations
+"""Set (c path) or clear (C) the directory where NatSpeak INI file locations
 (nssystem.ini and nsapps.ini) are located.
 
 Only needed if these cannot be found in the normal place(s):
@@ -1086,7 +1073,7 @@ again search for its INI files in the "default/normal" place(s).
 """Sets (n) or clears (N) the user directory of NatLink.
 This will often be the folder where Unimacro is located.
 
-When you clear this registry entry you probably disable Unimacro, as
+When you clear this registry entry, you probably disable Unimacro, as
 Unimacro is located in the NatLink user directory.
 
 Vocola will still be on, BUT without the possibility to use
@@ -1116,7 +1103,7 @@ Unimacro shorthand commands and meta actions.
 If you specify this directory, your user INI files (and possibly other user
 dependent files) will be put there.
 
-If you clear this setting, the user files will come in the
+If you clear this setting, the user INI files will be put in the
 Unimacro directory itself: %s
 
 """% self.config.getUserDirectory()
@@ -1130,7 +1117,7 @@ Unimacro directory itself: %s
             print "Setting (path to) Unimacro INI Files editor to %s"% arg
             self.config.setUnimacroIniFilesEditor(arg)
         else:
-            print 'Please specify a valid path for Unimacro INI files editor, not |%s|'% arg
+            print 'Please specify a valid path for the Unimacro INI files editor, not |%s|'% arg
             
     def do_P(self, arg):
         print "Clear Unimacro INI file editor, go back to default Notepad"
@@ -1163,13 +1150,14 @@ You can even specify Wordpad, maybe Microsoft Word...
     def help_l(self):
         print '-'*60
         print \
-"""copy unimacro.vch include file into Vocola User Files directory (l)
+"""copy Unimacro.vch include file into Vocola User Files directory (l)
 
-Insert/remove include lines into each vocola command file (m/M)
+Insert/remove include lines into each Vocola command file (m/M)
 
-With this include file, you can call unimacro shorthand commands in a vocola command.
+With this include file, you can call Unimacro shorthand commands in a
+Vocola command.
 
-(You can also with the call to Unimacro() directly, but this include file
+(You can also make the call to Unimacro() directly, but this include file
 offers you a (thin) wrapper around these functions)
 """
         print '='*60
