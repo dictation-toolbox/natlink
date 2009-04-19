@@ -1146,7 +1146,7 @@ You can even specify Wordpad, maybe Microsoft Word...
     # managing the include file wrapper business.
     # can be called from the Vocola compatibility button in the config GUI.
     def do_l(self, arg):
-        print "Copy include file Unimacro.vch from Unimacro folder into Vocola User Directory"
+        print "Copy include file Unimacro.vch into Vocola User Directory"
         self.config.copyUnimacroIncludeFile()
 
     def help_l(self):

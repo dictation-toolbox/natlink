@@ -9,8 +9,8 @@ __version__ = "3.6c"
 #----------------------------------------------------------------------------
 
 
-""" the following functions are provided in this module:
-( to be used by either natlinkmain.py or natlinkconfigfunctions.py
+"""The following functions are provided in this module:
+(to be used by either natlinkmain.py or natlinkconfigfunctions.py)
 
 The functions below are put into the class NatlinkStatus.
 The natlinkconfigfunctions can subclass this class, and
@@ -478,13 +478,6 @@ class NatlinkStatus(object):
             # Unimacro not enabled
             return ""
 
-    def getVocolaCommandFilesEditor(self):
-        key = 'VocolaCommandFilesEditor'
-        value = self.userregnl.get(key, '')
-        if not value:
-            value = 'notepad'
-        return value
-
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
         value = self.userregnl.get(key, '')
@@ -576,7 +569,7 @@ class NatlinkStatus(object):
                     'PythonVersion', 'userDirectory',
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages',
-                    'VocolaUserDirectory', 'VocolaCommandFilesEditor',
+                    'VocolaUserDirectory', 
                     'UnimacroUserDirectory', 'UnimacroIniFilesEditor',
                     'NatlinkDebug', 'InstallVersion']:
 ##                    'BaseTopic', 'BaseModel']:
@@ -610,12 +603,11 @@ class NatlinkStatus(object):
             ## Vocola::
             if D['vocolaIsEnabled']:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
-                for key in ('VocolaUserDirectory','VocolaCommandFilesEditor',
-                            'VocolaTakesLanguages'):
+                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages'):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
-                for key in ('VocolaUserDirectory','VocolaCommandFilesEditor', 'VocolaTakesLanguages'):
+                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages'):
                     del D[key]
                     
             ## Unimacro or userDirectory:
