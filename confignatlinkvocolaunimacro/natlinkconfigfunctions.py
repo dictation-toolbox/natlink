@@ -683,7 +683,9 @@ Possibly you need administrator rights to do this
         uscFile = 'Unimacro.vch'
         oldUscFile = 'usc.vch'
         # also remove usc.vch from VocolaUserDirectory
-        fromFolder = os.path.join(self.getUserDirectory(), 'vocola_compatibility')
+        fromFolder = os.path.normpath(os.path.join(thisDir, '..', '..',
+                                                   'Unimacro',
+                                                   'Vocola_compatibility'))
         toFolder = self.getVocolaUserDir()
         if os.path.isdir(fromFolder):
             fromFile = os.path.join(fromFolder,uscFile)
