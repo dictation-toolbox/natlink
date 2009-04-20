@@ -325,8 +325,8 @@ def InfoWindow( parent, call_fit = True, set_sizer = True ):
     return item0
 
 ID_CHECKBOXRefreshUnimacroVch = 10042
-ID_CHECKBOXRemoveUnimacroIncludeLines = 10043
-ID_CHECKBOXMakeUnimacroIncludeLines = 10044
+ID_CHECKBOXMakeUnimacroIncludeLines = 10043
+ID_CHECKBOXRemoveUnimacroIncludeLines = 10044
 ID_BUTTONOK = 10045
 ID_BUTTONCancel = 10046
 
@@ -345,13 +345,13 @@ def DialogVocolaCombatibility( parent, call_fit = True, set_sizer = True ):
     item1.SetBackgroundColour( wx.WHITE )
     item0.Add( item1, 0, wx.ALIGN_CENTER|wx.ALL, 15 )
 
-    item2 = wx.CheckBox( parent, ID_CHECKBOXRefreshUnimacroVch, "Copy include file \"Unimacro.vch\" into your Vocola User Files directory", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item2 = wx.CheckBox( parent, ID_CHECKBOXRefreshUnimacroVch, "Copy the include file \"Unimacro.vch\" into your Vocola User Files directory", wx.DefaultPosition, wx.DefaultSize, 0 )
     item0.Add( item2, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item3 = wx.CheckBox( parent, ID_CHECKBOXRemoveUnimacroIncludeLines, "Remove Unimacro Include lines from your Vocola Command files", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item3 = wx.CheckBox( parent, ID_CHECKBOXMakeUnimacroIncludeLines, "Insert  a \"include Unimacro.vch;\" line in all your Vocola Command Files", wx.DefaultPosition, wx.DefaultSize, 0 )
     item0.Add( item3, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item4 = wx.CheckBox( parent, ID_CHECKBOXMakeUnimacroIncludeLines, "Insert a Unimacro Include line in all your Vocola Command files", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item4 = wx.CheckBox( parent, ID_CHECKBOXRemoveUnimacroIncludeLines, "Remove the \"include Unimacro.vch;\" lines from your Vocola Command Files", wx.DefaultPosition, wx.DefaultSize, 0 )
     item0.Add( item4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item5 = wx.BoxSizer( wx.HORIZONTAL )
