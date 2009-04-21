@@ -693,6 +693,12 @@ Possibly you need administrator rights to do this
                 if os.path.isdir(toFolder):
                     
                     toFile = os.path.join(toFolder, uscFile)
+                    if os.path.isfile(toFile):
+                        print 'remove previous %s'% toFile
+                        try:
+                            os.remove(toFile)
+                        except:
+                            pass
                     print 'copy %s from %s to %s'%(uscFile, fromFolder, toFolder)
                     try:
                         shutil.copyfile(fromFile, toFile)
@@ -725,7 +731,10 @@ Possibly you need administrator rights to do this
         else:
             includeLine = 'include %s;\n'%uscFile
         oldIncludeLines = ['include %s;'% oldUscFile,
-                           'include ..\\%s;'% oldUscFile]
+                           'include ..\\%s;'% oldUscFile,
+                           'include %s;'% uscFile.lower(),
+                           'include ..\\%s;'% uscFile.lower(),
+                           ]
             
         if not os.path.isdir(toFolder):
             mess = 'cannot find Vocola command files directory, not a valid path: %s'% toFolder
@@ -778,8 +787,12 @@ Possibly you need administrator rights to do this
                            'include %s;'% uscFile,
                            'include ..\\%s;'% uscFile,
                            'include ../%s;'% oldUscFile,
-                           'include ../%s;'% uscFile
+                           'include ../%s;'% uscFile,
+                           'include %s;'% uscFile.lower(),
+                           'include ..\\%s;'% uscFile.lower(),
+                           'include ../%s;'% uscFile.lower(),
                            ]
+
             
         if not os.path.isdir(toFolder):
             mess = 'cannot find Vocola command files directory, not a valid path: %s'% toFolder

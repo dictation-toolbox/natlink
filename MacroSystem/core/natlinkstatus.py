@@ -1,4 +1,4 @@
-__version__ = "3.6d"
+__version__ = "3.6e"
 # coding=latin-1
 #
 # natlinkstatus.py
