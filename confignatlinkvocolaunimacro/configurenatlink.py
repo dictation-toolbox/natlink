@@ -334,7 +334,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         try:
             self.cli = nf.CLI(self.GUI)
         except:
-            self.error('could not start cli instance')
+            self.error('could not start CLI instance')
             return
         try:
             nc = __import__('natlinkcorefunctions')
@@ -508,13 +508,13 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.parent.Thaw()
 
     def composeStatusLine(self, status):
-        """takes a dict with natlink, vocola, unimacro as keys,
+        """takes a dict with NatLink, Vocola, Unimacro as keys,
         and a tuple (value, changed) as values. Value=0 means disable
         """
         L = []
         somethingChanged = 0
-        for part in ('natlink', 'vocola', 'unimacro'):
-            value, changed = status[part]
+        for part in ('NatLink', 'Vocola', 'Unimacro'):
+            value, changed = status[part.lower()]
             if value:
                 enableddisabled = 'enabled'
             else:
@@ -525,10 +525,10 @@ class ConfigureNatlinkPanel(wx.Panel):
                 line = line.upper()
                 L.append(line)
             else:
-                line = '%s is %s'% (part.capitalize(), enableddisabled)
+                line = '%s is %s'% (part, enableddisabled)
                 L.append(line)
                 
-            if part == 'natlink' and enableddisabled == 'disabled':
+            if part == 'NatLink' and enableddisabled == 'disabled':
                 break # stop further status info
                     
         statusLine = '; '.join(L)
@@ -702,31 +702,31 @@ class ConfigureNatlinkPanel(wx.Panel):
         if answer:
             print 'answer: %s'% answer
             if answer%2:
-                print "refresh unimacro.vch file from unimacro/vocola_compatibility to vocola user commands directory"
+                print "(re)copy Unimacro.vch file from Unimacro/Vocola_compatibility to Vocola user commands directory"
                 doLetter = 'l'
-                statustext = 'Copied unimacro.vch file from unimacro/vocola_compatibility to vocola user commands directory'
+                statustext = 'Copied Unimacro.vch file from Unimacro/Vocola_compatibility to Vocola user commands directory'
                 self.do_command(doLetter)
                 self.setstatus(statustext)
                 self.setInfo()
                 answer -= 1
             if answer%4:
-                print "remove unimacro include lines from all vocola command files in your vocola user commands directory"
+                print "remove Unimacro include lines from all Vocola command files in your Vocola user commands directory"
                 doLetter = 'M'
                 undoLetter = "m"
-                statustext = 'Removed unimacro include lines from all vocola command files in your vocola user commands directory'
+                statustext = 'Removed Unimacro include lines from all Vocola command files in your Vocola user commands directory'
                 self.do_command(doLetter, undo=undoLetter)
                 self.setstatus(statustext)
                 self.setInfo()
                 answer -= 2
             if answer == 4:
-                print "include unimacro include lines in all vocola command files in your vocola user commands directory"
+                print "include Unimacro include lines in all Vocola command files in your Vocola user commands directory"
                 doLetter = 'm'
                 undoLetter = "M"
-                statustext = "Included unimacro include lines in all vocola command files in your vocola user commands directory"
+                statustext = "Included Unimacro include lines in all Vocola command files in your Vocola user commands directory"
                 self.do_command(doLetter, undo=undoLetter)
                 self.setstatus(statustext)
                 self.setInfo()
-                print "include unimacro include lines in all vocola command files in your vocola user commands directory"
+                print "include Unimacro include lines in all Vocola command files in your Vocola user commands directory"
         else:
             print 'nothing chosen'
             
@@ -907,7 +907,7 @@ More information in the log panel"""
         Path = D['CoreDirectory']
         Path = os.path.normpath(os.path.join(Path, '..', '..', '..'))
         if os.path.isdir(Path):
-            uPath = os.path.join(Path, 'unimacro')
+            uPath = os.path.join(Path, 'Unimacro')
             if os.path.isdir(uPath):
                 Path = uPath
                 
@@ -950,7 +950,7 @@ More information in the log panel"""
             prevPath = ""
             undo = (undoLetter, "")
             Path = nc.getExtendedEnv("PERSONAL")
-            vPath = os.path.join(Path, "unimacro")
+            vPath = os.path.join(Path, "Unimacro")
             if os.path.isdir(vPath):
                 Path = vPath
 
@@ -999,7 +999,7 @@ More information in the log panel"""
               style=wx.DD_DEFAULT_STYLE)
         ## search for Unimacro directory as proposal:
         Path = nc.getExtendedEnv("PERSONAL")
-        vPath = os.path.join(Path, "vocola")
+        vPath = os.path.join(Path, "Vocola")
         if os.path.isdir(vPath):
             Path = vPath
                 
@@ -1079,9 +1079,10 @@ More information in the log panel"""
         self.cli.help_e()
         print '---help on NatLink debug options:'
         self.cli.help_x()
-        text = """Natlink should be enabled before you can use Vocola and/or Unimacro.
+        text = """NatLink should be enabled before you can use Vocola and/or Unimacro.
 
-When Natlink is disabled, Vocola and Unimacro will - consequently - be disabled too.
+When NatLink is disabled, Vocola and Unimacro will -- consequently -- be
+disabled too.
 
 Consult the "log" panel for more information."""
         self.warning(text)
