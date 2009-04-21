@@ -702,31 +702,30 @@ class ConfigureNatlinkPanel(wx.Panel):
         if answer:
             print 'answer: %s'% answer
             if answer%2:
-                print "(re)copy Unimacro.vch file from Unimacro/Vocola_compatibility to Vocola user commands directory"
+                print "(re)copy Unimacro.vch file to Vocola user commands directory"
                 doLetter = 'l'
-                statustext = 'Copied Unimacro.vch file from Unimacro/Vocola_compatibility to Vocola user commands directory'
+                statustext = 'Copied Unimacro.vch file to Vocola user commands directory'
                 self.do_command(doLetter)
                 self.setstatus(statustext)
                 self.setInfo()
                 answer -= 1
             if answer%4:
-                print "remove Unimacro include lines from all Vocola command files in your Vocola user commands directory"
+                print 'remove "include Unimacro.vch" lines from all Vocola command files in your Vocola user commands directory'
                 doLetter = 'M'
                 undoLetter = "m"
-                statustext = 'Removed Unimacro include lines from all Vocola command files in your Vocola user commands directory'
+                statustext = 'Removed "include Unimacro.vch" lines from all Vocola command files in your Vocola user commands directory'
                 self.do_command(doLetter, undo=undoLetter)
                 self.setstatus(statustext)
                 self.setInfo()
                 answer -= 2
             if answer == 4:
-                print "include Unimacro include lines in all Vocola command files in your Vocola user commands directory"
+                print 'add "include Unimacro.vch" lines to all Vocola command files in your Vocola user commands directory'
                 doLetter = 'm'
                 undoLetter = "M"
-                statustext = "Included Unimacro include lines in all Vocola command files in your Vocola user commands directory"
+                statustext = 'added "include Unimacro.vch" lines to all Vocola command files in your Vocola user commands directory'
                 self.do_command(doLetter, undo=undoLetter)
                 self.setstatus(statustext)
                 self.setInfo()
-                print "include Unimacro include lines in all Vocola command files in your Vocola user commands directory"
         else:
             print 'nothing chosen'
             
@@ -765,35 +764,35 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.setInfo()
 
 
-    def OnButtonVocolaEditor(self, event):
-        D = self.config.getNatlinkStatusDict()
-        
-        doLetter = 'w'
-        undoLetter = 'W'
-        statustext = 'Vocola Editor is specified, this will take effect after you restart NatSpeak'
-
-        # ask for the correct directory:
-        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite editor please",
-              style=wx.DD_DEFAULT_STYLE)
-        ## search for Unimacro directory as proposal:
-        old_path = D['VocolaCommandFilesEditor']
-        Path = nc.getExtendedEnv("PROGRAMFILES")
-        dlg.SetPath(Path)
-        dlg.SetMessage('Please choose the filename of your favorite editor please\nPress cancel to return to default')
-        if dlg.ShowModal() == wx.ID_OK:
-            new_path = dlg.GetPath()
-            if new_path and os.path.isfile(new_path) and new_path.lower().endswith('.exe'):
-                pass
-            else:
-                self.setstatus("no new valid (.exe) file specified")
-                return
-        else:
-            self.setstatus("Pressed Cancel, return to default")
-            self.do_command( undoLetter, undo=(doLetter, old_path) )             
-            return
-        self.do_command(doLetter,new_path, undo=undoLetter)
-        self.setstatus(statustext)
-        self.setInfo()
+#    def OnButtonVocolaEditor(self, event):
+#        D = self.config.getNatlinkStatusDict()
+#        
+#        doLetter = 'w'
+#        undoLetter = 'W'
+#        statustext = 'Vocola Editor is specified, this will take effect after you restart NatSpeak'
+#
+#        # ask for the correct directory:
+#        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite editor please",
+#              style=wx.DD_DEFAULT_STYLE)
+#        ## search for Unimacro directory as proposal:
+#        old_path = D['VocolaCommandFilesEditor']
+#        Path = nc.getExtendedEnv("PROGRAMFILES")
+#        dlg.SetPath(Path)
+#        dlg.SetMessage('Please choose the filename of your favorite editor please\nPress cancel to return to default')
+#        if dlg.ShowModal() == wx.ID_OK:
+#            new_path = dlg.GetPath()
+#            if new_path and os.path.isfile(new_path) and new_path.lower().endswith('.exe'):
+#                pass
+#            else:
+#                self.setstatus("no new valid (.exe) file specified")
+#                return
+#        else:
+#            self.setstatus("Pressed Cancel, return to default")
+#            self.do_command( undoLetter, undo=(doLetter, old_path) )             
+#            return
+#        self.do_command(doLetter,new_path, undo=undoLetter)
+#        self.setstatus(statustext)
+#        self.setInfo()
         
 
     def OnButtonLogInfo(self, event):
@@ -845,23 +844,26 @@ Consult the "log" panel if you need more information.
         self.cli.help_l()  # includes help for m and M
         text = \
 """
-Unimacro is enabled by specifying a directory: the NatLink user directory (userDirectory)
+Unimacro is enabled by specifying a directory: the NatLink user directory
+(userDirectory).
 
-When you disable, this userDirectory is cleared from in the registry.
+When you disable Unimacro, this userDirectory is cleared from in the registry.
 
 When Unimacro is enabled, you can also specify:
-    -a directory where your own user (INI) files are located (eg in your "Documents" folder)
-    -a program for editing these user (INI) files, default is Notepad
+    - a directory where your own user (INI) files are located (e.g., in your
+     "My Documents" folder)
+    - a program for editing these user (INI) files, default is Notepad
 
-For above 2 settings: when you hit the button and subsequently Cancel, the setting is cleared, and
-you fall back to a default value.
+For the above 2 settings: when you hit the button and subsequently Cancel, the
+setting is cleared, and you fall back to a default value.
 
-If you use you own NatLink grammar files, they can coexist with Unimacro in the
-userDirectory.
+If you use your own NatLink grammar files, they can coexist with Unimacro in
+the userDirectory.
 
-Vocola can use Unimacro features, if both are Enabled.
-For easier access of Unimacro Shorthand Commands,
-an include file (Unimacro.vch) can be copied into the Vocola User Directory.
+Vocola can use Unimacro features, if both it and Unimacro are enabled.
+For easier access to the Unimacro Shorthand Commands from Vocola, an
+include file (Unimacro.vch) can be copied into the Vocola User
+Directory.
 
 The necessary actions are performed through the "Vocola compatibility" button.
 
@@ -1081,7 +1083,7 @@ More information in the log panel"""
         self.cli.help_x()
         text = """NatLink should be enabled before you can use Vocola and/or Unimacro.
 
-When NatLink is disabled, Vocola and Unimacro will -- consequently -- be
+When NatLink is disabled, Vocola and Unimacro will--consequently--be
 disabled too.
 
 Consult the "log" panel for more information."""
