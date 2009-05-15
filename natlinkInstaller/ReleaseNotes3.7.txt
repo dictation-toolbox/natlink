@@ -1,0 +1,33 @@
+Release notes for NatLink/Vocola/Unimacro combined installer 3.7beta:
+
+New in Vocola version 2.6.3:
+
+* Unimacro actions can now be called from Vocola commands if Unimacro
+  has been installed.
+
+* Commands are recognized faster because the Vocola compiler is run
+  during recognition only if at least one file in a Vocola command
+  folder has been changed/added.
+
+* Python 2.5 is now supported.
+
+
+New in the combined NatLink/Vocola/Unimacro installer:
+
+* automatic loading of changed Vocola command files is working properly
+  again (no extra steps like toggling the microphone required)
+
+* Vocola command files are automatically associated with the Notepad editor.
+
+* The command line configuration program has clearer built-in instructions.
+
+
+New in Unimacro:
+
+* Mostly small adaptations to make Unimacro/Vocola integration work.
+
+* Unimacro website revised in a lot of spots.
+
+* The actions.ini file is not overwritten anymore in this release.
+  Check for changes with the version in the sample_ini directory of
+  unimacro, if you encounter problems.

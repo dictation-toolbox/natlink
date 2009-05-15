@@ -1,4 +1,4 @@
-__version__ = "3.7beta"
+__version__ = "3.7charlie"
 # coding=latin-1
 #
 # natlinkstatus.py
