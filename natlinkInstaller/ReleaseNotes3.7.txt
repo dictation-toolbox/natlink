@@ -30,4 +30,4 @@ New in Unimacro:
 
 * The actions.ini file is not overwritten anymore in this release.
   Check for changes with the version in the sample_ini directory of
-  unimacro, if you encounter problems.
+  unimacro, if you encounter problems. More info in the unimacro website.
