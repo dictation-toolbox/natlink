@@ -529,6 +529,12 @@ Possibly you need administrator rights to do this
 
     def setUnimacroUserDir(self, v):
         key = 'UnimacroUserDirectory'
+        oldDir = self.getUnimacroUserDir()
+        if os.path.normpath(v) != os.path.normpath(oldDir):
+            print '\n-----------\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
+                  'from old UnimacroUserDirectory (%s) to \n' \
+                  'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, v)
+            
         if os.path.isdir(v):
             print 'set Unimacro user dir to %s'% v
             self.userregnl[key] = v

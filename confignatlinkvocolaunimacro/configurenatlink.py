@@ -974,6 +974,7 @@ More information in the log panel"""
             return
         # correct OK:
         self.do_command(doLetter,new_path, undo=undo)
+        self.urgentMessage = "changed UnimacroUserDirectory path, see info in log panel"
         self.setstatus(statustext)
         self.setInfo()
       
