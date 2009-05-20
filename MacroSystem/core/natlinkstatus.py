@@ -329,8 +329,9 @@ class NatlinkStatus(object):
             if version2.startswith(version1):
                 return version1
         
-        print 'ambiguous version, sys: %s, registry: %s'% (version2, versionKeys)
-        version = version2[:2]
+        print 'ambiguous version, python sys gives full version: %s\n' \
+              'the registry gives (in HKLM/%s): %s'% (version2, "SOFTWARE\Python\PythonCore", versionKeys)
+        version = version2[:3]
         print 'use version %s'% version
         return version
 
