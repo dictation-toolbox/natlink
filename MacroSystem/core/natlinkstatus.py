@@ -1,4 +1,4 @@
-__version__ = "3.7delta"
+__version__ = "3.7echo"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,9 @@ __version__ = "3.7delta"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+
+# version 3.7: changed userDirectory to UserDirectory in the getNatlinkStatusDict function.
+#              no influence on the natlinkstatus.getUserDirectory() function.
 
 
 """The following functions are provided in this module:
@@ -436,7 +439,7 @@ class NatlinkStatus(object):
             return 1
 
     def UnimacroIsEnabled(self):
-        """UnimacroIsEnabled: see if userDirectory is there and
+        """UnimacroIsEnabled: see if UserDirectory is there and
 
         _control.py is in this directory
         """
@@ -567,7 +570,7 @@ class NatlinkStatus(object):
         for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'DNSFullVersion', 'PythonFullVersion',
-                    'PythonVersion', 'userDirectory',
+                    'PythonVersion', 'UserDirectory',
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages',
                     'VocolaUserDirectory', 
@@ -611,10 +614,10 @@ class NatlinkStatus(object):
                 for key in ('VocolaUserDirectory', 'VocolaTakesLanguages'):
                     del D[key]
                     
-            ## Unimacro or userDirectory:
+            ## Unimacro or UserDirectory:
             if D['unimacroIsEnabled']:
                 self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is enabled")
-                for key in ('userDirectory',):
+                for key in ('UserDirectory',):
                     self.appendAndRemove(L, D, key)
                 for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
                     self.appendAndRemove(L, D, key)
@@ -622,12 +625,12 @@ class NatlinkStatus(object):
                 self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is disabled")
                 for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
                     del D[key]
-                if D['userDirectory']:
-                    L.append('but userDirectory is defined:')
-                    for key in ('userDirectory',):
+                if D['UserDirectory']:
+                    L.append('but UserDirectory is defined:')
+                    for key in ('UserDirectory',):
                         self.appendAndRemove(L, D, key)
                 else:
-                    del D['userDirectory']
+                    del D['UserDirectory']
             ## remaining NatLink options:
             L.append('other NatLink info:')
             for key in ('DebugLoad', 'DebugCallback'):

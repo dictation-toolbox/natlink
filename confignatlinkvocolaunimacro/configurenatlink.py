@@ -383,7 +383,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['DNSInstallDir'] = self.frame.infopanel.GetTextctrldnsinstallpath
         D['PythonVersion'] = self.frame.infopanel.GetTextctrlpythonversion
         D['CoreDirectory'] = self.frame.infopanel.GetTextctrlnatlinkcorepath
-        D['userDirectory'] = self.GetTextctrluserdirectory
+        D['UserDirectory'] = self.GetTextctrluserdirectory
         D['VocolaUserDirectory'] = self.GetTextctrlvocolauserdir
         D['WindowsVersion'] = self.frame.infopanel.GetTextctrlwindowsversion
         D['VocolaTakesLanguages'] = self.GetCheckboxvocolatakeslanguages
@@ -495,7 +495,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 value = False
             for key in ['VocolaTakesLanguages',
                        'vocolaIsEnabled', 'unimacroIsEnabled',
-                        'userDirectory', 'VocolaUserDirectory']:
+                        'UserDirectory', 'VocolaUserDirectory']:
                 if key in self.functions and self.functions[key]:
                     control = self.functions[key]()
                     control.Enable(value)
@@ -839,35 +839,39 @@ Consult the "log" panel if you need more information.
         print '---help on Enable/disable Unimacro/user grammars:'
         print 'note the letters correspond to the commands in the self.cli (command line interface)'
         self.cli.help_n()
-        self.cli.help_p()
         self.cli.help_o()
+        self.cli.help_p()
         self.cli.help_l()  # includes help for m and M
         text = \
 """
-Unimacro is enabled by specifying a directory: the NatLink user directory
-(userDirectory).
+Unimacro is enabled by specifying a directory: the NatLink User Directory
+(UserDirectory).
 
-When you disable Unimacro, this userDirectory is cleared from in the registry.
+When you disable Unimacro, this UserDirectory setting is cleared from in the registry.
 
 When Unimacro is enabled, you can also specify:
-    - a directory where your own user (INI) files are located (e.g., in your
-     "My Documents" folder)
+    - a directory where your own user (INI) files are located (e.g., a subdirectory
+      in your "[My ]Documents" folder eg "[My ]Documents\Natlink\Unimacro")
+      (default is the NatLink User Directory (UserDirectory), but preferably
+      specify your own directory, in order to keep your ini file settings
+      separate from the (python) grammar files)
     - a program for editing these user (INI) files, default is Notepad
 
 For the above 2 settings: when you hit the button and subsequently Cancel, the
-setting is cleared, and you fall back to a default value.
+setting is cleared, and you fall back to the default value.
 
 If you use your own NatLink grammar files, they can coexist with Unimacro in
-the userDirectory.
+the UserDirectory or you can specify your own UserDirectory.
 
-Vocola can use Unimacro features, if both it and Unimacro are enabled.
+Vocola can use Unimacro features, if both Vocola and Unimacro are enabled.
 For easier access to the Unimacro Shorthand Commands from Vocola, an
 include file (Unimacro.vch) can be copied into the Vocola User
-Directory.
+Directory. More about this on http://qh.antenna.nl/unimacro/features/unimacroandvocola and
+on http://vocola.net/v2
 
-The necessary actions are performed through the "Vocola compatibility" button.
+The necessary actions for this are performed through the "Vocola compatibility" button.
 
-More information in the log panel"""
+More information in the log panel """
 
         self.warning(text)
 
@@ -891,7 +895,7 @@ More information in the log panel"""
             doLetter = letter.upper()
             undoLetter = letter.lower()
             statustext = 'Unimacro/user grammars is DISABLED, this will take effect after you restart NatSpeak'
-            prevPath = D['userDirectory']
+            prevPath = D['UserDirectory']
             undoCmd = (undoLetter, prevPath)
             self.do_command(doLetter, undo=undoCmd)
             self.setstatus(statustext)
@@ -1152,11 +1156,11 @@ class MyFrame(wx.Frame):
         self.Destroy()
 
     def OnMenuHelp(self, event):
-        text = ['This configure GUI makes is possible to configure NatLink',
+        text = ['This configure GUI makes it possible to configure NatLink, ',
                 'including Vocola and Unimacro',"",
-                'Written by Quintijn Hoogenboom, February, 2008',
-                'See http://qh.antenna.nl/unimacro'
-                ]
+                'Detailed help is given through various help buttons and in the "log" panel',""
+                'Written by Quintijn Hoogenboom, February, 2008/May, 2009,',
+                'See also http://qh.antenna.nl/unimacro']
         self.warning('\n'.join(text))
                 
 
@@ -1195,7 +1199,7 @@ class MyApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
         self.frame = MyFrame( None, -1, "Configure NatLink & Vocola & Unimacro",
-                              [100,80], [770,770] )
+                              [110,80], [700,660] )
         self.frame.Show(True)  
         return True
 

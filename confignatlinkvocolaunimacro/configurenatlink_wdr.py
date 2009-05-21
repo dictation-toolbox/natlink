@@ -43,6 +43,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
     
     item2 = wx.StaticBox( parent, -1, "Status" )
+    item2.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item1 = wx.StaticBoxSizer( item2, wx.VERTICAL )
     
     item3 = wx.FlexGridSizer( 0, 3, 0, 0 )
@@ -58,11 +59,12 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item6 = wx.Button( parent, ID_BUTTONHelp1, "Help-&1", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item6, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item1.Add( item3, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item1.Add( item3, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item0.Add( item1, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item0.Add( item1, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
     item8 = wx.StaticBox( parent, -1, "Natlink" )
+    item8.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item7 = wx.StaticBoxSizer( item8, wx.VERTICAL )
     
     item9 = wx.FlexGridSizer( 0, 3, 0, 0 )
@@ -90,11 +92,12 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
 
     item9.Add( item14, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item7.Add( item9, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item7.Add( item9, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item0.Add( item7, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item0.Add( item7, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
     item18 = wx.StaticBox( parent, -1, "Vocola" )
+    item18.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item17 = wx.StaticBoxSizer( item18, wx.VERTICAL )
     
     item19 = wx.FlexGridSizer( 0, 3, 0, 0 )
@@ -123,11 +126,12 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
 
     item19.Add( item25, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item17.Add( item19, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item17.Add( item19, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item0.Add( item17, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item0.Add( item17, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
     item28 = wx.StaticBox( parent, -1, "Unimacro" )
+    item28.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item27 = wx.StaticBoxSizer( item28, wx.VERTICAL )
     
     item29 = wx.FlexGridSizer( 0, 3, 0, 0 )
@@ -172,11 +176,12 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item41 = wx.Button( parent, ID_BUTTONHelp4, "Help-&4", wx.DefaultPosition, wx.DefaultSize, 0 )
     item29.Add( item41, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item27.Add( item29, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item27.Add( item29, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item0.Add( item27, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item0.Add( item27, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
     item43 = wx.StaticBox( parent, -1, "Repair" )
+    item43.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item42 = wx.StaticBoxSizer( item43, wx.VERTICAL )
     
     item44 = wx.FlexGridSizer( 0, 6, 0, 0 )
@@ -200,9 +205,9 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item50 = wx.Button( parent, ID_BUTTONHelp5, "Help-5", wx.DefaultPosition, wx.DefaultSize, 0 )
     item44.Add( item50, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item42.Add( item44, 0, wx.FIXED_MINSIZE|wx.ALIGN_CENTER|wx.ALL|wx.SHAPED, 5 )
+    item42.Add( item44, 0, wx.FIXED_MINSIZE|wx.ALIGN_CENTER|wx.ALL|wx.SHAPED, 0 )
 
-    item0.Add( item42, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item0.Add( item42, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
     if set_sizer == True:
         parent.SetSizer( item0 )
