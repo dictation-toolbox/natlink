@@ -633,7 +633,7 @@ class NatlinkStatus(object):
                     del D['UserDirectory']
             ## remaining NatLink options:
             L.append('other NatLink info:')
-            for key in ('DebugLoad', 'DebugCallback'):
+            for key in ('DebugLoad', 'DebugCallback', 'NatlinkDebug'):
                 self.appendAndRemove(L, D, key)
     
         else:

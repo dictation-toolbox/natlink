@@ -1,12 +1,4 @@
-Release notes for NatLink/Vocola/Unimacro combined installer 3.7beta:
-
-
-Changed in NatLink:
-
-* The internal dictionary entry that gives the (Natlink) UserDirectory in natlinkstatus.getNatlinkStatusDict() 
-  has been capitalized now, so changed from 'userDirectory' into 'UserDirectory'.  As long as you obtain this 
-  value through natlinkstatus.getUserDirectory() no change will be noticed.
-  Note: there are lots of variables (eg in natlinkmain) called 'userDirectory'. 
+Release notes for NatLink/Vocola/Unimacro combined installer 3.7echo:
 
 New in Vocola version 2.6.3:
 
@@ -39,3 +31,10 @@ New in Unimacro:
 * The actions.ini file is not overwritten anymore in this release.
   Check for changes with the version in the sample_ini directory of
   unimacro, if you encounter problems. More info in the unimacro website.
+
+Changed in NatLink (for programmers only):
+
+* The internal dictionary entry that gives the (Natlink) UserDirectory in natlinkstatus.getNatlinkStatusDict() 
+  has been capitalized now, so changed from 'userDirectory' into 'UserDirectory'.  As long as you obtain this 
+  value through natlinkstatus.getUserDirectory() no change will be noticed.
+  Note: there are lots of variables (eg in natlinkmain) called 'userDirectory'. 
