@@ -1,4 +1,4 @@
-__version__ = "3.7echo"
+__version__ = "3.7"
 # coding=latin-1
 #
 # natlinkstatus.py
