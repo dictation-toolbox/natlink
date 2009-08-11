@@ -131,7 +131,7 @@ class InnoScript:
         print >> ofi, r"OutputBaseFilename=%s"% self.outputFilename
         print >> ofi, r"AppName=%s"% self.name
         print >> ofi, r"AppVerName=%s version %s (including Vocola 2.6.3I and Unimacro)" % (self.name, self.version)
-        print >> ofi, r"DefaultDirName=C:\Program Files\%s" % self.name
+        print >> ofi, r"DefaultDirName=C:\NatLink\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
         print >> ofi, r"LicenseFile=..\NatLink\COPYRIGHT.txt"
 ##        print >> ofi, "DisableDirPage=yes"

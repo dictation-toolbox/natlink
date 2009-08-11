@@ -23,6 +23,7 @@ New in the combined NatLink/Vocola/Unimacro installer:
 
 
 New in Unimacro:
+* doMouse commands now can be in multiple monitors, the module monitorinfo now simpler and more reliable.
 
 * Mostly small adaptations to make Unimacro/Vocola integration work.
 
