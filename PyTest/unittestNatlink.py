@@ -933,11 +933,12 @@ class UnittestNatlink(unittest.TestCase):
         self.clearTestFiles()
         toggleMicrophone()
 
-        self.log('create jMg1, 1', 1)
+        self.log('create jMg1, 1', 17)
         
         testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
         createMacroFile(baseDirectory,'__jMg1.py','1')
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
+        # here the recognition is already there, should not be though...
+        #testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
 
         self.log('toggle mic, to get jMg1 in loadedGrammars', 1)
         toggleMicrophone()
@@ -1866,7 +1867,26 @@ class UnittestNatlink(unittest.TestCase):
         
         testRecognition(['Correct','a','Through','of'])
         testGram.checkExperiment(1,'self',['Correct','a','Through','of'],0,18)
+        testGram.unload()
 
+        ##QH more throughWords:
+        #         01234567890123456789012345678
+        buffer = 'a more complicated string of text.'
+        testGram.load(['Select'],throughWords=['Through', 'Until'])
+        testGram.setSelectText(buffer)
+        testGram.activate(window=calcWindow)
+
+        recog = ['Select','complicated','string']
+        testRecognition(recog)
+        testGram.checkExperiment(1,'self',recog,7,25)
+        
+        recog = ['Select','more', 'Through', 'of']
+        testRecognition(recog)
+        testGram.checkExperiment(1,'self',recog,2,28)
+
+        recog = ['Select','a', 'more', 'Until', 'of']
+        testRecognition(recog)
+        testGram.checkExperiment(1,'self',recog,0,28)
 
         # test for command failures
         testForException(TypeError,"testGram.gramObj.setSelectText(1)",locals())
@@ -2175,7 +2195,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def tttest....
+    # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')

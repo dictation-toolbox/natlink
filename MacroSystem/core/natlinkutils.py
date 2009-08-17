@@ -6,6 +6,9 @@
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
 #
+# August 17, 2009
+#   - added throughWords in SelectGramBase, in order to make more
+#     throughWords possible, like "through" and "until".
 # April 1, 2000
 #   - reformated this file to move documentation to the beginning of
 #     the classes
@@ -642,7 +645,9 @@ class DictGramBase(GramClassBase):
 #
 # Here are the functions which derived classes can call:
 #
-#   load( selectWords=['Select'], throughWord='Through', allResults=0, hypothesis=0 )
+# adapt to throughWords as well, for future enhancement VoiceCode
+# Quintijn August, 2009
+#   load( selectWords=['Select'], throughWord='Through', throughWords=None, allResults=0, hypothesis=0 )
 #       selectWords is a list of words or phrases which can introduce a
 #           comand of this type.  For example, you can pass in a list like
 #           ['Select','Correct','Insert Before','Insert After'] to simulate
@@ -718,8 +723,15 @@ class DictGramBase(GramClassBase):
 
 class SelectGramBase(GramClassBase):
 
-    def load( self, selectWords=['Select'], throughWord='Through', allResults=0, hypothesis=0 ):
-        gramBin=self.makeGrammar(selectWords,throughWord)
+    def load( self, selectWords=None, throughWord='Through',
+              throughWords=None,allResults=0, hypothesis=0 ):
+        if selectWords is None:
+            selectWords = ['Select']
+        if throughWords is None:
+            throughWords = [throughWord]
+        # QH, throughWords also maybe a list of words, the default being
+        # ['Through'] (being the throughWord...
+        gramBin=self.makeGrammar(selectWords,throughWords)
         GramClassBase.load(self,gramBin,allResults,hypothesis)
 
     def setSelectText(self,text):
@@ -762,17 +774,20 @@ class SelectGramBase(GramClassBase):
     #       dwChunkSize = size of SRWORD
     #       data = single SRWORD for throughWord
     # Use the routines in gramparser.py to build the grammar just like with
-    # command grammars.        
-    def makeGrammar(self,selectWords,throughWord):
+    # command grammars.
+    # throughWords is a list of words:
+    def makeGrammar(self,selectWords,throughWords):
         output = struct.pack("LL", 10, 0)
         if selectWords:
             wordDict = {}
             for word in selectWords:
                 wordDict[word] = 0
             output = output + packGrammarChunk(0x1017,wordDict)
-        if throughWord:
+        # throughWords maybe more words now:
+        if throughWords:
             wordDict = {}
-            wordDict[throughWord] = 0
+            for word in throughWords:
+                wordDict[word] = 0
             output = output + packGrammarChunk(0x1018,wordDict)
         return output            
         
