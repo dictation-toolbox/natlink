@@ -7,6 +7,9 @@ Also see http://speechwiki.org/NL/NatLinkDocumentation.html
  natlink.txt
     Documentation for NatLink which connects Python to NatSpeak
 
+ August 17, 2009
+    - added throughWords in SelectGramBase, see natlinkutils.py (Quintijn)
+
  April 1, 2000
 	- added GramObj. setSelectText,getSelectText
 	- added ResObj. getSelectInfo

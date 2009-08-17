@@ -1,4 +1,4 @@
-Release notes for NatLink/Vocola/Unimacro combined installer 3.7echo:
+Release notes for NatLink/Vocola/Unimacro combined installer 3.7foxtrot:
 
 New in Vocola version 2.6.3:
 
@@ -35,6 +35,7 @@ New in Unimacro:
 
 Changed in NatLink (for programmers only):
 
+* added throughWords in SelectGramBase, in order to make more "throughWords" possible (see natlinkutils.py)
 * The internal dictionary entry that gives the (Natlink) UserDirectory in natlinkstatus.getNatlinkStatusDict() 
   has been capitalized now, so changed from 'userDirectory' into 'UserDirectory'.  As long as you obtain this 
   value through natlinkstatus.getUserDirectory() no change will be noticed.
