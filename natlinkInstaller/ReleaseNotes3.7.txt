@@ -2,6 +2,8 @@ Release notes for NatLink/Vocola/Unimacro combined installer 3.7foxtrot:
 
 New in Vocola version 2.6.3:
 
+* Test: debugSleepTime in _vocola_main.py (default 1 second), to see message when NatSpeak crashes at the Edit Commands command.
+
 * Unimacro actions can now be called from Vocola commands if Unimacro
   has been installed.
 
@@ -13,6 +15,8 @@ New in Vocola version 2.6.3:
 
 
 New in the combined NatLink/Vocola/Unimacro installer:
+
+* open config program through a .bat file, for elevated mode in Vista
 
 * automatic loading of changed Vocola command files is working properly
   again (no extra steps like toggling the microphone required)
