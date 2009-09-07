@@ -1,3 +1,20 @@
+New in 2.6.4:
+
+! Command sequences work again for DNS 7.0 and later; complicated
+  grammars may require limiting the maximum number of commands per
+  utterance, however, with these versions of DNS.
+
+! Command sequences can be turned on/off/limited on a per .vcl file
+  basis.
+
+* The syntax for controlling command sequences has changed.
+
+* A bug that caused most usages of <_anything> not at the end of a
+  command to fail has been fixed.
+
+* The Vocola INI file is now located in the user's command directory.
+
+
 New in 2.6.3:
 
 ! Commands are recognized faster because the Vocola compiler is run

@@ -10,6 +10,8 @@
 # This file is copyright (c) 2002-2009 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 #
+# 09/06/2009  ml  New $set directive replaces old non-working sequence directive
+#                 binary Use Command Sequences replaced by n-ary MaximumCommands
 # 01/19/2009  ml  Unimacro built-in added
 # 12/06/2007  ml  Arguments to Dragon functions are now checked for proper 
 #                 number and datatype
@@ -66,7 +68,7 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.6.3I";
+    $VocolaVersion = "2.6.4I";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
@@ -108,10 +110,9 @@ sub main
     my $log_file = "$In_folder\\vcl2py_log.txt";
     open LOG, ">$log_file" or die "$@ $log_file\n";
 
-    $Use_command_sequences = 0;
+    $default_maximum_commands = 1;
     read_ini_file($In_folder);
-    print LOG ($Use_command_sequences ? "" : "Not "),
-              "using command sequences\n" if ($Debug >= 1);
+    print LOG ("default maximum commands per utterance = $default_maximum_commands\n") if ($Debug >= 1);
 
     convert_files($in_file, $out_folder, $suffix);
     close LOG;
@@ -125,15 +126,15 @@ sub main
 sub read_ini_file
 {
     my ($in_folder) = @_;
-    my $ini_file = "$in_folder\\..\\exec\\vocola.ini";
-    print LOG "ini file is '$ini_file'\n" if ($Debug >= 1);
+    my $ini_file = "$in_folder\\Vocola.INI";
+    print LOG "INI file is '$ini_file'\n" if ($Debug >= 1);
     open INI, "<$ini_file" or return;
     while (<INI>) {
         next unless /^(.*?)=(.*)$/;
         my $keyword = $1;
         my $value = $2;
-        if ($keyword eq "Use Command Sequences") {
-            $Use_command_sequences = ($value eq "1");
+        if ($keyword eq "MaximumCommands") {
+            $default_maximum_commands = $value;
         }
     }  
 }
@@ -203,6 +204,18 @@ sub convert_file
     }
 
     #print_statements (*LOG, @statements);
+
+    # Handle $set directives:
+    $maximum_commands = $default_maximum_commands;
+    for my $statement (@statements) {
+	if ($statement->{TYPE} eq "set") {
+	    my $key = $statement->{KEY};
+	    if ($key eq "MaximumCommands") {
+		$maximum_commands = $statement->{TEXT};
+	    }
+	}
+    }
+
     if ($Error_count) {
         my $s = ($Error_count == 1) ? "" : "s";
         print LOG "  $Error_count error$s -- file not converted.\n";
@@ -263,7 +276,7 @@ sub convert_filename
 #        context = chars* ('|' chars*)* ':'
 #     definition = variable ':=' menu_body ';'
 #       function = prototype ':=' action* ';'
-#      directive = ('include' | 'sequence') word ';'
+#      directive = ('include' word | '$set' word word) ';'
 #    top_command = terms '=' action* ';'
 #
 #        command = terms ['=' action*]
@@ -304,7 +317,7 @@ sub convert_filename
 # and action), using the following fields:
 #
 # statement: 
-#    TYPE - command/definition/function/context/sequence
+#    TYPE - command/definition/function/context/include/set
 #    command:
 #       NAME    - unique number
 #       TERMS   - list of "term" structures
@@ -320,8 +333,11 @@ sub convert_filename
 #       STRINGS - list of strings to use in context matching;
 #                 the list ("") denotes the noop context restriction (:)
 #       RULENAMES - list of rule names defined for this context
-#    sequence:
-#       TEXT    - yes or no
+#    include:
+#       TEXT    - filename being included
+#    set:
+#       KEY     - key being set
+#       TEXT    - value to set the key to
 # 
 # term:
 #    TYPE   - word/variable/range/menu/dictation
@@ -513,7 +529,7 @@ sub parse_statements    # statements = (context | top_command | definition)*
                 $statement->{NAME} = $Statement_count++;
             }
 
-            if ($statement->{TYPE} ne "include") {
+	    if ($statement->{TYPE} ne "include") {
                 push (@statements, $statement);
             } else {
                 # Handle include file
@@ -650,14 +666,21 @@ sub parse_top_command    # top_command = terms '=' action* ';'
     }
 }
 
-sub parse_directive    # directive = ('include' | 'sequence') word ';'
+sub parse_directive    # directive = ('include' word | '$set' word word) ';'
 {
     if ($_[1] eq ";") {
         &shift_clause;
         my $statement = {};
-        $statement->{TYPE} = "include";
         if (/^\s*include\s+/gc) {
+	    $statement->{TYPE} = "include";
             my $word = &parse_word or die "Can't tell what to include\n";
+            $statement->{TEXT} = $word->{TEXT};
+            &ensure_empty;
+	} elsif (/^\s*\$set\s+/gc) {
+	    $statement->{TYPE} = "set";
+            my $word = &parse_word or die "What to set is missing\n";
+            $statement->{KEY} = $word->{TEXT};
+            $word = &parse_word or die "What to set as value is missing\n";
             $statement->{TEXT} = $word->{TEXT};
             &ensure_empty;
         } else {die "Unrecognized statement\n"}
@@ -1101,7 +1124,7 @@ sub print_statements
     my $out = shift;
     for my $statement (@_) {
         my $type = $statement->{TYPE};
-        if ($type eq "context" || $type eq "include") {
+        if ($type eq "context" || $type eq "include" || $type eq "set") {
             print_directive ($out, $statement);
         } elsif ($type eq "definition") {
             print_definition ($out, $statement);
@@ -1119,7 +1142,12 @@ sub print_statements
 sub print_directive
 {
     my ($out, $statement) = @_;
-    print $out "$statement->{TYPE}:  '$statement->{TEXT}'\n";
+    my $type = $statement->{TYPE};
+    if ($type eq "set") {
+	print $out "\$set '$statement->{KEY}' to '$statement->{TEXT}'\n";
+    } else {
+	print $out "$statement->{TYPE}:  '$statement->{TEXT}'\n";
+    }
 }
 
 sub print_definition
@@ -1300,12 +1328,26 @@ sub emit_sequence_rules
         }
         my $rule_name = "sequence$suffix";
         $context->{RULENAMES} = [$rule_name];
-        if ($Use_command_sequences) {
-            emit(2, "<$rule_name> exported = <any$suffix>+;\n");
-        } else {
-            emit(2, "<$rule_name> exported = <any$suffix>;\n");
-        }
+	emit(2, "<$rule_name> exported = " 
+	        . repeated_upto("<any$suffix>", $maximum_commands) . ";\n");
     }
+}
+
+sub repeated_upto
+{
+    # Create grammar for a $spec repeated 1 upto $count times
+    my $spec = shift;
+    my $count = shift;
+
+    return "$spec+" if $count>99;
+
+    my $result = $spec;
+    while ($count > 1) {
+	$result = "$spec [$result]";
+	$count = $count - 1
+    }
+
+    return $result
 }
 
 sub emit_context_definitions
@@ -1781,12 +1823,12 @@ sub find_terms_for_main_rule
     # concrete (c), variable (v), or optional (o). For example, the
     # profile of "[One] Word <direction>" would be "ocv". (Menus are
     # assumed concrete, and dictation variables are treated like
-    # optional words.)
+    # normal variables.)
 
     $_ = "";
     for my $term (@{ shift->{TERMS} }) {
-        $_ .= ($term->{TYPE} eq "variable")                       ? "v" :
-              ($term->{OPTIONAL} or $term->{TYPE} eq "dictation") ? "o" : "c";
+        $_ .= (($term->{TYPE} eq "variable") or $term->{TYPE} eq "dictation") 
+                 ? "v" : ($term->{OPTIONAL}) ? "o" : "c";
     }
 
     # Identify terms to use for main rule.
