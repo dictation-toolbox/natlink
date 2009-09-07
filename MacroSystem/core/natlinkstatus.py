@@ -1,4 +1,4 @@
-__version__ = "3.7foxtrot"
+__version__ = "3.7golf"
 # coding=latin-1
 #
 # natlinkstatus.py

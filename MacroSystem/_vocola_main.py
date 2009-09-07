@@ -31,6 +31,7 @@ import natlinkcorefunctions
 status = natlinkstatus.NatlinkStatus()
 
     
+debugSleepTime = 1
 # The Vocola translator is a perl program. By default we use the precompiled
 # executable vcl2py.exe, which doesn't require installing perl.
 # To instead use perl and vcl2py.pl, set the following variable to 1:
@@ -333,11 +334,14 @@ class ThisGrammar(GrammarBase):
             path = wantedPath   
 
         try:
+            print 'going to open %s with startfile in 1 second'% path
+            time.sleep(debugSleepTime)
             os.startfile(path)
         except WindowsError, e: 
             print
             print "Unable to open voice command file with associated editor: " + str(e)
-            print "Trying to open it with notepad instead."
+            print "Trying to open it with notepad instead.(using spawnv)..."
+            time.sleep(debugSleepTime)
             prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
             os.spawnv(os.P_NOWAIT, prog, [prog, path])
 
