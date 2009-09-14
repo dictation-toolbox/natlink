@@ -333,17 +333,24 @@ class ThisGrammar(GrammarBase):
                 self.copyVclFile(path, wantedPath)
             path = wantedPath   
 
-        try:
-            print 'going to open %s with startfile in 1 second'% path
-            time.sleep(debugSleepTime)
-            os.startfile(path)
-        except WindowsError, e: 
-            print
-            print "Unable to open voice command file with associated editor: " + str(e)
-            print "Trying to open it with notepad instead.(using spawnv)..."
-            time.sleep(debugSleepTime)
+        if not os.path.isfile(path):
+            raise(IOError, "not an existing file: %s"% path)
+        print 'checking executable to open %s with (in %s seconds)'% (path, debugSleepTime)
+        time.sleep(debugSleepTime)
+        import win32api
+        dummy, prog = win32api.FindExecutable(path)
+        if not os.path.isfile(prog):
             prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
+            if not os.path.isfile(prog):
+                raise IOError("Cannot find program to open %s (neither Notepad on %s)"%
+                              (path, prog))
+        try:
+            print 'open (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
+            time.sleep(debugSleepTime)
             os.spawnv(os.P_NOWAIT, prog, [prog, path])
+        except WindowsError, e: 
+            print 'could not open %s, error message: %s'% (path, e)
+            
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
