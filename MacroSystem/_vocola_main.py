@@ -19,6 +19,7 @@
 #
 
 import sys, string
+import win32api
 import os               # access to file information
 import os.path          # to parse filenames
 import time             # print time in messages
@@ -337,17 +338,22 @@ class ThisGrammar(GrammarBase):
             raise(IOError, "not an existing file: %s"% path)
         print 'checking executable to open %s with (in %s seconds)'% (path, debugSleepTime)
         time.sleep(debugSleepTime)
-        import win32api
-        dummy, prog = win32api.FindExecutable(path)
-        if not os.path.isfile(prog):
-            prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
-            if not os.path.isfile(prog):
-                raise IOError("Cannot find program to open %s (neither Notepad on %s)"%
-                              (path, prog))
         try:
-            print 'open (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
+            dummy, prog = win32api.FindExecutable(path)
+        except: 
+            print 'cannot find executable to open %s with, try Notepad'% path
+            prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
+        else:
+            if not os.path.isfile(prog):
+                prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
+        if not os.path.isfile(prog):
+            raise IOError("Cannot find program to open %s (tried %s)"%
+                          (path, prog))
+        try:
+            print 'open (ShellExecute) (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
             time.sleep(debugSleepTime)
-            os.spawnv(os.P_NOWAIT, prog, [prog, path])
+            win32api.ShellExecute(0, 'open', prog, path, "", 1)
+            #os.spawnv(os.P_NOWAIT, prog, (prog, path))
         except WindowsError, e: 
             print 'could not open %s, error message: %s'% (path, e)
             
