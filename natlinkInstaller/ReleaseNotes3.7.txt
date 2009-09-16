@@ -1,4 +1,4 @@
-Release notes for NatLink/Vocola/Unimacro combined installer 3.7india:
+Release notes for NatLink/Vocola/Unimacro combined installer 3.7hotel:
 
 
 New in Vocola version 2.6.4:
@@ -11,6 +11,8 @@ New in Vocola version 2.6.4:
   basis.
 
 New in Vocola version 2.6.3:
+
+* Problem wiht NatSpeak crashes when opening a Vocola command file probably solved, by changing os.startfile with win32api calls
 
 * Unimacro actions can now be called from Vocola commands if Unimacro
   has been installed.
@@ -27,7 +29,7 @@ New in the combined NatLink/Vocola/Unimacro installer:
 * Test: debugSleepTime in _vocola_main.py (default 1 second), to see
   message when NatSpeak crashes at the Edit Commands command.
 
-* open config program through a .bat file, for elevated mode in Vista
+* open config program can be started through a .bat file, for elevated mode in Vista or Windows 7
 
 * automatic loading of changed Vocola command files is working properly
   again (no extra steps like toggling the microphone required)
