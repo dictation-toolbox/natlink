@@ -317,8 +317,9 @@ class NatlinkStatus(object):
     def getPythonVersion(self):
         """get the version of python from the registry
         """
+        regSection = "SOFTWARE\Python\PythonCore"
         try:
-            r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE,"SOFTWARE\Python\PythonCore")
+            r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, regSection)
         except ValueError:
             return ''
         versionKeys = r.keys()
@@ -331,9 +332,12 @@ class NatlinkStatus(object):
         for version1 in versionKeysSorted:        
             if version2.startswith(version1):
                 return version1
-        
-        print 'ambiguous version, python sys gives full version: %s\n' \
-              'the registry gives (in HKLM/%s): %s'% (version2, "SOFTWARE\Python\PythonCore", versionKeys)
+        if versionKeys:
+            print 'ambiguous python version:\npython (module sys) gives full version: "%s"\n' \
+              'the registry gives (in HKLM/%s): "%s"'% (version2,regSection, versionKeys)
+        else:
+            print 'ambiguous python version:\npython (module sys) gives full version: "%s"\n' \
+              'the registry gives (in HKLM/%s) no keys found in that section'% (version2, regSection)
         version = version2[:3]
         print 'use version %s'% version
         return version
