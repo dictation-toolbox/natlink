@@ -350,6 +350,7 @@ class ThisGrammar(GrammarBase):
             raise IOError("Cannot find program to open %s (tried %s)"%
                           (path, prog))
         try:
+            path = win32api.GetShortPathName(path)
             print 'open (ShellExecute) (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
             time.sleep(debugSleepTime)
             win32api.ShellExecute(0, 'open', prog, path, "", 1)
