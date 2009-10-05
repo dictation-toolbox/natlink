@@ -1,4 +1,4 @@
-__version__ = "3.7hotel"
+__version__ = "3.7india"
 # coding=latin-1
 #
 # natlinkstatus.py

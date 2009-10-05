@@ -1,7 +1,9 @@
-Release notes for NatLink/Vocola/Unimacro combined installer 3.7hotel:
+Release notes for NatLink/Vocola/Unimacro combined installer 3.7india:
 
 
 New in Vocola version 2.6.4:
+
+* fixed problem with "Edit Commands" command (opening a .vcl file)
 
 * Command sequences work again for DNS 7.0 and later; complicated
   grammars may require limiting the maximum number of commands per
@@ -25,9 +27,6 @@ New in Vocola version 2.6.3:
 
 
 New in the combined NatLink/Vocola/Unimacro installer:
-
-* Test: debugSleepTime in _vocola_main.py (default 1 second), to see
-  message when NatSpeak crashes at the Edit Commands command.
 
 * open config program can be started through a .bat file, for elevated mode in Vista or Windows 7
 
