@@ -31,8 +31,11 @@ import natlinkstatus
 import natlinkcorefunctions
 status = natlinkstatus.NatlinkStatus()
 
-    
-debugSleepTime = 1
+
+# Set to non-zero number of seconds to debug starting editors on
+# Vocola source code:
+debugSleepTime = 0
+
 # The Vocola translator is a perl program. By default we use the precompiled
 # executable vcl2py.exe, which doesn't require installing perl.
 # To instead use perl and vcl2py.pl, set the following variable to 1:
@@ -336,12 +339,14 @@ class ThisGrammar(GrammarBase):
 
         if not os.path.isfile(path):
             raise(IOError, "not an existing file: %s"% path)
-        print 'checking executable to open %s with (in %s seconds)'% (path, debugSleepTime)
-        time.sleep(debugSleepTime)
+        if debugSleepTime:
+            print 'checking executable to open %s with (in %s seconds)'% (path, debugSleepTime)
+            time.sleep(debugSleepTime)
         try:
             dummy, prog = win32api.FindExecutable(path)
         except: 
-            print 'cannot find executable to open %s with, try Notepad'% path
+            if debugSleepTime:
+                print 'cannot find executable to open %s with, try Notepad'% path
             prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
         else:
             if not os.path.isfile(prog):
@@ -351,8 +356,9 @@ class ThisGrammar(GrammarBase):
                           (path, prog))
         try:
             path = win32api.GetShortPathName(path)
-            print 'open (ShellExecute) (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
-            time.sleep(debugSleepTime)
+            if debugSleepTime:
+                print 'open (ShellExecute) (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
+                time.sleep(debugSleepTime)
             win32api.ShellExecute(0, 'open', prog, path, "", 1)
             #os.spawnv(os.P_NOWAIT, prog, (prog, path))
         except WindowsError, e: 
