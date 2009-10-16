@@ -14,7 +14,7 @@ New in Vocola version 2.6.4:
 
 New in Vocola version 2.6.3:
 
-* Problem wiht NatSpeak crashes when opening a Vocola command file probably solved, by changing os.startfile with win32api calls
+* Problem with NatSpeak crashes when opening a Vocola command file probably solved, by changing os.startfile with win32api calls
 
 * Unimacro actions can now be called from Vocola commands if Unimacro
   has been installed.
@@ -39,6 +39,7 @@ New in the combined NatLink/Vocola/Unimacro installer:
 
 
 New in Unimacro:
+* fixed WINKEY when called with a number (WINKEY(9))
 * doMouse commands now can be in multiple monitors, the module monitorinfo now simpler and more reliable.
 
 * Mostly small adaptations to make Unimacro/Vocola integration work.
