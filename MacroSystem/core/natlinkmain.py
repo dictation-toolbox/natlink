@@ -504,8 +504,7 @@ def changeCallback(type,args):
     #        thisGrammar.cancelMode()
     # and the grammar should have a cancelMode function that finishes exclusive mode.
     # see _oops, _repeat, _control for examples
-    if not ((type == 'mic') and (args=='on')):
-        changeCallbackLoadedModules(type,args)
+    changeCallbackLoadedModules(type,args)
 ##    else:
 ##        # possibility to do things when changeCallBack with mic on: (experiment)
 ##        changeCallbackLoadedModulesMicOn(type, args)
@@ -525,21 +524,6 @@ def changeCallbackLoadedModules(type,args):
             else:
 ##                print 'call changeCallback for: %s'% x
                 apply(func, [type,args])
-
-def changeCallbackLoadedModulesMicOn(type,args):
-    """QH, special behaviour implemented in eg control, if the mic goes on!
-
-    """    
-    global loadedFiles
-    sysmodules = sys.modules
-    for x in loadedFiles.keys():
-        if loadedFiles[x]:
-            try: func = getattr(sysmodules[x], 'changeCallbackMicOn')
-            except AttributeError: pass
-            else:
-##                print 'call changeCallback for: %s'% x
-                apply(func, [type,args])
-
 
 ############################################################################
 #
