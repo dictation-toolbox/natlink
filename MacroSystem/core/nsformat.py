@@ -45,6 +45,14 @@ flag_not_in_dictation = 28
 flag_guessedpron = 29
 flag_topicadded = 30
 
+flagNames = {}
+name = ''
+for name in globals():
+    if name.startswith('flag_') and type(globals()[name]) == types.IntType and 0 < globals()[name] < 32:
+        flagNames[globals()[name]] = name
+        
+        
+
 #---------------------------------------------------------------------------
 # This is the main formatting entry point.  It takes the old format state and
 # a list of words and returns the new formatting state and the formatted
@@ -260,10 +268,7 @@ def initializeStateFlags(*args):
 
 
     """
-    stateFlags = [0]*32
-    for a in args:
-        stateFlags[a] = 1
-    return stateFlags
+    return tuple(set(*args))
 
 
 def showStateFlags(state):
@@ -271,13 +276,7 @@ def showStateFlags(state):
 
 
     """
-    if type(state) != types.ListType:
-        return ()
-    statelist = []
-    for i in range(len(state)):
-        if state[i]:
-            statelist.append(i)
-    return tuple(statelist)
+    return tuple([flagNames[num] for num in state])
 
 
 #---------------------------------------------------------------------------

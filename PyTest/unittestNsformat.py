@@ -143,13 +143,14 @@ class UnittestNsformat(unittest.TestCase):
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
             formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=0)
+            print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
             self.assert_(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
             self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
                          (word, formattedResult, `newState`, `expectedState`))
             
-    def tttestFormatNumbers(self):
+    def testFormatNumbers(self):
         """words with input of previous word
         
         """
@@ -160,6 +161,7 @@ class UnittestNsformat(unittest.TestCase):
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
             formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=newState)
+            print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
             self.assert_(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
