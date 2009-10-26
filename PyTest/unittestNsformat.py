@@ -76,154 +76,8 @@ class UnittestNsformat(unittest.TestCase):
         # do the global log function:
         log(t)
 
-##    def switchToNatSpeak(self):
-##        natlink.execScript('HeardWord "Start","DragonPad"')
-##        time.sleep(1)
-    #    natlink.execScript('HeardWord "switch","to","DragonPad"')
-    def lookForDragonPad(self):
-        """start/find DragonPad"""
-
-##        try: natlink.execScript('AppBringUp "NatSpeak"')
-##        except natlink.NatError:
-##            raise TestError,'The NatSpeak user interface is not running'
-        natlink.recognitionMimic(['start', "DragonPad"])
-        
-        # This will make sure that the NatSpeak window is empty.  If the NatSpeak
-        # window is not empty we raise an exception to avoid possibily screwing 
-        # up the users work.
-        i = 0
-        while i < 50:
-            time.sleep(0.1)
-            mod, title, hndle = natlink.getCurrentModule()
-            mod = getBaseName(mod)
-            if mod == "natspeak": break
-            i += 1
-        else:
-            self.fail("Not the correct application: %s is brought to the front, should be natspeak"% mod)
-        self.DragonPadMod = mod
-        self.DragonPadHndle = hndle
-        return hndle
-    
-    def lookForCalc(self):
-        """start/find Calc"""
-        natlink.execScript('AppBringUp "calc"')
-        
-        # wait for the window:
-        i = 0
-        while i < 10:
-            time.sleep(0.1)
-            mod, title, hndle = natlink.getCurrentModule()
-            mod = getBaseName(mod)
-            if mod == "calc": break
-            i += 1
-        else:
-            raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
-        self.CalcMod = mod
-        self.CalcHndle = hndle
-        return hndle
-
-    def emptyDragonPad(self):
-        """assume DragonPad is in front already"""
-        natlink.playString('{ctrl+a}{del}')
-        self.doTestWindowContents('')
-        
-
-    def killDragonPad(self):
-        print 'going to kill DragonPad'
-        try:
-            hndle = self.DragonPadHndle
-        except AttributeError:
-            return
-        
-        try:
-            win32gui.SetForegroundWindow(hndle)
-        except:
-            raise TestError("cannot get DragonPad foreground, hndle: %s"% hndle)
-
-        # wait for the right window to appear:        
-        i = 0
-        while i < 10:
-            time.sleep(0.1)
-            mod, title, hndle = natlink.getCurrentModule()
-            mod = getBaseName(mod)
-            if mod == "natspeak": break
-            i += 1
-        else:
-            raise TestError("in killDragonPad, could not get back to DragonPad window, have: %s"% mod)
-
-        natlink.playString("{alt+f4}")
-        print 'closing dragonpad'
-        # wait for the window to disappear (possibly get child window y n dialog)
-        i = 0
-        while i < 10:
-            time.sleep(0.1)
-            mod, title, hndle = natlink.getCurrentModule()
-            if hndle != self.DragonPadHndle: break
-            i += 1
-        else:
-            raise TestError("in killDragonPad, could not close the DragonPad window")
-        del self.DragonPadHndle
-
-        # if gets into child window press n (not save)
-##        mod, title, hndle = natlink.getCurrentModule()
-##        sys.stderr.write('mod, title, hndle: %s, %s, %s'% (mod, title, hndle))
-##        if mod != "natspeak":
-##            return   # finished
-        
-        if not self.isTopWindow(hndle):
-            natlink.playString("n")
-            time.sleep(0.1)
-        mod, title, hndle = natlink.getCurrentModule()
-        if not self.isTopWindow(hndle):
-            raise TestError("in killDragonPad, did not return to a top window")
-
-    
-    def killCalc(self):
-        try:
-            hndle = self.CalcHndle
-        except AttributeError:
-            # not active:
-            return
-        try:
-            win32gui.SetForegroundWindow(hndle)
-        except:
-            raise TestError("cannot get calc in foreground, hndle: %s"% hndle)
-        del self.CalcHndle
-        i = 0
-        while i < 10:
-            time.sleep(0.1)
-            mod, title, hndle = natlink.getCurrentModule()
-            mod = getBaseName(mod)
-            if mod == "calc": break
-            i += 1
-        else:
-            raise TestError("in killCalc, could not get back to Calc window")
-        natlink.playString("{alt+f4}")
-        time.sleep(0.5)
-
-
-    def isTopWindow(self, hndle):
-        """return 1 if it is a top window, child otherwise
-
-        (to avoid using unimacro functions in the natlink tests)
-        """        
-        try:
-            parent = win32gui.GetParent(hndle)
-        except:
-            return 1
-        else:
-            return parent == 0 
-
-
     def wait(self, t=1):
         time.sleep(t)
-
-
-    #---------------------------------------------------------------------------
-    # These test should be run before we call natConnect (now in unittestPrePost.py)
-
-##    def preTests(self):
-##    def postTests(self): # now in unittestPrePost
 
     #---------------------------------------------------------------------------
     # This utility subroutine executes a Python command and makes sure that
@@ -252,166 +106,68 @@ class UnittestNsformat(unittest.TestCase):
             time.sleep(1)
         self.assertEquals(expected, actual, 'Function call "%s" returned unexpected result\nExpected: %s, got: %s'%
                           (command, expected, actual))
-    def doTestFuncReturnAlternatives(self, expected,command,localVars=None):
-        
-        # account for different values in case of [None, 0] (wordFuncs)
-        # expected is a tuple of alternatives, which one of them should be equal to expected
-        if localVars == None:
-            actual = eval(command)
-        else:
-            actual = eval(command, globals(), localVars)
-
-        if type(expected) != types.TupleType:
-            raise TestError("doTestFuncReturnAlternatives, invalid input %s, tuple expected"% `expected`)
-        for exp in expected:
-            if actual == exp:
-                break
-        else:
-            self.fail('Function call "%s" returned unexpected result\nnot one of expected values: %s\ngot: %s'%
-                          (command, `expected`, actual))
-
-    def doTestFuncReturnWordFlag(self, expected,command,localVars=None):
-        # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
-            actual = eval(command)
-        else:
-            actual = eval(command, globals(), localVars)
-
-        if not (actual == expected or
-                actual == expected  + dgnwordflag_DNS8newwrdProp):
-            time.sleep(1)
-            self.fail('Function call "%s" returned unexpected result(accounting for DNS8newwrdProp)\nExpected: %s (+prop8: %s), got: %s'%
-                          (command, expected, expected+dgnwordflag_DNS8newwrdProp, actual))
-
-    def doTestFuncReturnNoneOr0(self, command,localVars=None):
-        # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
-            actual = eval(command)
-        else:
-            actual = eval(command, globals(), localVars)
-
-        if actual not in [None, 0]:
-            self.fail('Function call "%s" did not return 0 or None as expected, but: %s'
-                      % (command, actual))
-
     #---------------------------------------------------------------------------
-    # This types the keysequence {alt+esc}.  Since this is a sequence trapped
-    # by the OS, we must send as system keys.
-
-    def playAltEsc(self):
-        natlink.playString('{alt+esc}',hook_f_systemkeys)
-
-    #---------------------------------------------------------------------------
-
-##    def lookForNatSpeak(self):
-##
-##        # This should find the NatSpeak window.  If the NatSpeak window is not
-##        # available (because, for example, NatSpeak was not started before 
-##        # running this script) then we will get the error:
-##        #   NatError: Error 62167 executing script execScript (line 1)
-##
-##        try:
-##            natlink.execScript('HeardWord "Start","DragonPad"')
-##            time.sleep(1)
-##        except natlink.NatError:
-##            raise TestError,'The NatSpeak user interface is not running'
-##
-##        # This will make sure that the NatSpeak window is empty.  If the NatSpeak
-##        # window is not empty we raise an exception to avoid possibily screwing
-##        # up the users work.
-##
-##        switchToNatSpeak()
-##        if getWindowContents():
-##            raise TestError,'The NatSpeak window is not empty'
-
-    #---------------------------------------------------------------------------
-    # Note 1: testWindowContents will clobber the clipboard.
-    # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
-
-    def tttestPlayString(self):
-        self.log("testPlayString", 0) # not to DragonPad!
-        testForException =self.doTestForException
-        testWindowContents = self.doTestWindowContents
-        # test some obvious error cases
-        testForException(TypeError,"natlink.playString()")
-        testForException(TypeError,"natlink.playString(1)")
-        testForException(TypeError,"natlink.playString('','')")
-        self.wait()
-        natlink.playString('This is a test')
-##        try:
-        self.wait()
-        testWindowContents('This is a test','playString')
-##        except KeyboardInterrupt:
-##            # This failure sometimes happens on Windows 2000
-##            print
-##            print '*******'
-##            print 'One of the NatLink tests has failed.'
-##            print
-##            print 'This particular failure has been seen on Windows 2000 when'
-##            print 'there is a problem switching to Dragon NaturallySpeaking.'
-##            print
-##            print 'To fix this:'
-##            print '(1) Switch to the Dragon NaturallySpeaking window'
-##            print '(2) Switch back to Python'
-##            print '(3) Try this selftest again - testnatlink.run()'
-##            raise ExitQuietly
-
-        natlink.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
-        testWindowContents('This is a testThis i','playString')
-
-        natlink.playString('{ctrl+a}{del}')
-        natlink.playString('testing',hook_f_shift)
-        testWindowContents('Testing','playString')
-
-        natlink.playString(' again')
-        natlink.playString('a{ctrl+c}{del}',hook_f_ctrl)
-        natlink.playString('ep',hook_f_alt)
-        testWindowContents('Testing again\r\n','playString')
-
-        natlink.playString('a{ctrl+c}{del}',hook_f_rightctrl)
-        natlink.playString('ep',hook_f_rightalt)
-        natlink.playString('now',hook_f_rightshift)
-        testWindowContents('Testing again\r\n\r\nNow','playString')
-
-        natlink.playString('{ctrl+a}{del}')
-        natlink.playString('oneWORD ',genkeys_f_uppercase)
-        natlink.playString('twoWORDs ',genkeys_f_lowercase)
-        natlink.playString('threeWORDs',genkeys_f_capitalize)
-        testWindowContents('ONEWORD twowords ThreeWORDs','playString')
-
-        natlink.playString('{ctrl+a}{del}')
-        testWindowContents('','playString')
-
-    #---------------------------------------------------------------------------
-
-    def tttestExecScript(self):
-        self.log("testExecScript", 1)
-
-        testForException = self.doTestForException
-        testForException( natlink.SyntaxError, 'natlink.execScript("UnknownCommand")' )
-
-        # TODO this needs more test
-
-# here we test the nsformat functions, (provided by Joel Gould, now in Core directory)
-# in order to format a recognition (of DictGram) into a string, preserving the state
-# of the formatting flags
+    # here we test the nsformat functions, (provided by Joel Gould, now in Core directory)
+    # in order to format a recognition (of DictGram) into a string, preserving the state
+    # of the formatting flags
     def testNsformat(self):
         self.log("testNsformat")
         pass
         testFuncReturn = self.doTestFuncReturn
 
-        expected1 = ('Hello', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        expected1 = ('Hello', ())
         testFuncReturn(expected1, 'formatWords(["hello"], %s)'% None, locals())
 
-        expected2 = (' again.', [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        expected2 = (' again.', (9, 4))
         testFuncReturn(expected2, 'formatWords(["again", r".\period"], expected1[1])', locals())
 
-        expected3 = ('  New sentence', [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        expected3 = ('  New sentence', ())
         testFuncReturn(expected3, 'formatWords(["new", "sentence"], expected2[1])', locals())
 
-    def tttestFormatconvenstions(self):
-        pass
+        #example from Joels original test:
+        words = [r'\Caps-On', 'as', 'you', 'can', 'see', r',\comma',
+                'this', 'yours truly', 'seems', 'to', 'work', r'\Caps-Off', 'well']
+        expected4 = ('As You Can See, This Yours Truly Seems to Work well', ())
+        testFuncReturn(expected4, 'formatWords(words, None)', locals())
 
+
+
+    def testFormatWord(self):
+        """all words with normal (0) state as input.
+        
+        .\point results in ' .'
+        """
+        words =             ['.', r'.\period', r'.\point', r':\colon', r'-\hyphen', 'normal']
+        formattedExpected = [' .', '.',        ' .', ':', '-', ' normal']
+        stateExpected = [(), (9, 4), (8, 10), (), (8,), (), ()]
+        for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
+            ## all starting with stateFlags 0, normal formatting behaviour:
+            formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=0)
+            self.assert_(formattedResult == expectedWord,
+                         "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
+                         (word, formattedResult, expectedWord))
+            self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
+                         (word, formattedResult, `newState`, `expectedState`))
+            
+    def tttestFormatNumbers(self):
+        """words with input of previous word
+        
+        """
+        words =             [r'3\three', r'.\point', r'five', r'by', r'four', 'centimeter']
+        formattedExpected = ['3', '.',        ' .', ':', '-', ' normal']
+        stateExpected = [(3,), (9,4), (8, 10), (), (8,), (), ()]
+        newState = [8,10,3]
+        for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
+            ## all starting with stateFlags 0, normal formatting behaviour:
+            formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=newState)
+            self.assert_(formattedResult == expectedWord,
+                         "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
+                         (word, formattedResult, expectedWord))
+            self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
+                         (word, formattedResult, `newState`, `expectedState`))
+            
+            
+            
    
 def log(t):
     """log to print and file if present

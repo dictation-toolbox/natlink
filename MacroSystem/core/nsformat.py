@@ -106,156 +106,151 @@ def formatLetters(wordList,state=None):
 
 def formatWord(wordName,wordInfo=None,stateFlags=None):
 
-     #-----
-     # Preparation
+    #-----
+    # Preparation
+    if wordInfo == None:
+        wordInfo = natlink.getWordInfo(wordName)
+    if wordInfo == None:
+        wordInfo = 0
+    # for faster lookup in Python, we convert the bit arrays am array of
+    # bits that are set:
+     
+    wordFlags = set()
+    for i in range(32):
+        if wordInfo & (1<<i):
+            wordFlags.add(i)
 
-     if wordInfo == None:
-         wordInfo = natlink.getWordInfo(wordName)
-     if wordInfo == None:
-         wordInfo = 0
+    if stateFlags == 0:
+        stateFlags = set()
+    elif stateFlags == None:
+        stateFlags = set([flag_no_space_next, flag_active_cap_next])
+    elif type(stateFlags) in (types.ListType, types.TupleType):
+        stateFlags = set(stateFlags)
+        
+    # get the written form
+    if wordName[:2] == '\\\\':
+        wordName = '\\'
+    else:
+        wordName = wordName.split('\\')[0]
 
-     # for faster lookup in Python, we convert the bit arrays into real arrays
-     wordFlags = []
-     for i in range(32):
-         if wordInfo & (1<<i):
-             wordFlags.append(1)
-         else:
-             wordFlags.append(0)
+    #-----
+    # Compute the output string
+    output = ''
 
-     if stateFlags == 0:
-         stateFlags = [0]*32
-     elif stateFlags == None:
-         stateFlags = [0]*32
-         stateFlags[flag_no_space_next] = 1
-         stateFlags[flag_active_cap_next] = 1
+    # compute the number of CRLF's
+    if flag_new_line in wordFlags:
+        output = output + '\r\n'
+    elif flag_new_paragraph in wordFlags:
+        output = output + '\r\n\r\n'
 
-     # get the written form
-     if wordName[:2] == '\\\\':
-         wordName = '\\'
-     else:
-         slash = string.find(wordName,'\\')
-         if slash >= 0:
-             wordName = wordName[:slash]
+    # compute the leading spacing
+    if ( flag_no_formatting in wordFlags or
+          flag_no_space_next in stateFlags or
+          flag_no_space_all in stateFlags or
+          flag_no_space_before in wordFlags or
+          flag_cond_no_space in stateFlags and flag_cond_no_space in wordFlags ):
+        # no leading space
+        pass
+    elif flag_two_spaces_next in stateFlags:
+        output = output + '  '
+    else:
+        output = output + ' '
 
-     #-----
-     # Compute the output string
+    # the no space all flag is used so we can remove the spaces from a phase
+    # which may have imbeded spaces
 
-     output = ''
+    if not flag_no_formatting in wordFlags and flag_no_space_all in stateFlags:
+        wordName = ''.join(wordName.split())
 
-     # compute the number of CRLF's
-     if wordFlags[flag_new_line]:
-         output = output + '\r\n'
-     elif wordFlags[flag_new_paragraph]:
-         output = output + '\r\n\r\n'
+    # compute the capitalization by looking at the long term flags; this
+    # effects all the words in the phrase
 
-     # compute the leading spacing
-     if ( wordFlags[flag_no_formatting] or
-          stateFlags[flag_no_space_next] or
-          stateFlags[flag_no_space_all] or
-          wordFlags[flag_no_space_before] or
-          stateFlags[flag_cond_no_space] and wordFlags[flag_cond_no_space] ):
-         # no leading space
-         pass
-     elif stateFlags[flag_two_spaces_next]:
-         output = output + '  '
-     else:
-         output = output + ' '
+    if flag_no_formatting in wordFlags:
+        # no capitalization change
+        pass
+    elif flag_lowercase_all in stateFlags:
+        wordName = wordName.lower()
+    elif flag_uppercase_all in stateFlags:
+        wordName = wordName.upper()
+    elif flag_cap_all in stateFlags and not flag_title_mode in wordFlags:
+        words = string.split(wordName)
+        words = [w.capitalize() for w in wordName.split()]
+        wordName = ' '.join(words)
+    elif flag_passive_cap_next in stateFlags:
+        wordName = wordName.capitalize()
 
-     # the no space all flag is used so we can remove the spaces from a phase
-     # which may have imbeded spaces
+    # compute the capitalization for the first word in the phrase which
+    # overrides the long term capitalization state
 
-     if not wordFlags[flag_no_formatting] and stateFlags[flag_no_space_all]:
-         wordName = string.join(string.split(wordName),'')
+    if flag_no_formatting in wordFlags:
+        # no capitalization change
+        pass
+    elif flag_lowercase_next in stateFlags:
+        words = wordName.split()
+        words[0] = words[0].lower()
+        wordName= ' '.join(words)
+    elif flag_uppercase_next in stateFlags:
+        words = wordName.split()
+        words[0] = words[0].upper()
+        wordName= ' '.join(words)
+    elif flag_active_cap_next in stateFlags:
+        wordName = wordName.capitalize()
+    elif flag_beginning_title_mode in stateFlags:
+        wordName = wordName.capitalize()
 
-     # compute the capitalization by looking at the long term flags; this
-     # effects all the words in the phrase
+    output = output + wordName
 
-     if wordFlags[flag_no_formatting]:
-         # no capitalization change
-         pass
-     elif stateFlags[flag_lowercase_all]:
-         wordName = string.lower(wordName)
-     elif stateFlags[flag_uppercase_all]:
-         wordName = string.upper(wordName)
-     elif stateFlags[flag_cap_all] and not wordFlags[flag_title_mode]:
-         words = string.split(wordName)
-         words = map(string.capitalize,words)
-         wordName = string.join(words)
-     elif stateFlags[flag_passive_cap_next]:
-         wordName = string.capitalize(wordName)
+    #-----
+    # compute the new state flags
 
-     # compute the capitalization for the first word in the phrase which
-     # overrides the long term capitalization state
+    # clear out the capitalization
+    if not flag_no_cap_change in wordFlags:
+        stateFlags.discard(flag_active_cap_next)
+        stateFlags.discard(flag_passive_cap_next)
+        stateFlags.discard(flag_uppercase_next)
+        stateFlags.discard(flag_lowercase_next)
+        stateFlags.discard(flag_beginning_title_mode)
 
-     if wordFlags[flag_no_formatting]:
-         # no capitalization change
-         pass
-     elif stateFlags[flag_lowercase_next]:
-         words = string.split(wordName)
-         words[0] = string.lower(words[0])
-         wordName= string.join(wordName)
-     elif stateFlags[flag_uppercase_next]:
-         words = string.split(wordName)
-         words[0] = string.upper(words[0])
-         wordName= string.join(wordName)
-     elif stateFlags[flag_active_cap_next]:
-         wordName = string.capitalize(wordName)
-     elif stateFlags[flag_beginning_title_mode]:
-         wordName = string.capitalize(wordName)
+    # reset the state flags
 
-     output = output + wordName
+    if not flag_no_space_change in wordFlags:
+        stateFlags.discard(flag_no_space_next)
+        stateFlags.discard(flag_two_spaces_next)
+        stateFlags.discard(flag_cond_no_space)
+    elif not flag_no_formatting in wordFlags:
+        stateFlags.discard(flag_no_space_next)
+        stateFlags.discard(flag_cond_no_space)
 
-     #-----
-     # compute the new state flags
+    # see if we need to reset the cap flags
 
-     # clear out the capitalization
-     if not wordFlags[flag_no_cap_change]:
-         stateFlags[flag_active_cap_next] = 0
-         stateFlags[flag_passive_cap_next] = 0
-         stateFlags[flag_uppercase_next] = 0
-         stateFlags[flag_lowercase_next] = 0
-         stateFlags[flag_beginning_title_mode] = 0
+    if flag_reset_uc_lc_caps in wordFlags:
+        stateFlags.discard(flag_cap_all)
+        stateFlags.discard(flag_uppercase_all)
+        stateFlags.discard(flag_lowercase_all)
 
-     # reset the state flags
+    # see if we need to reset the no space flags
 
-     if not wordFlags[flag_no_space_change]:
-         stateFlags[flag_no_space_next] = 0
-         stateFlags[flag_two_spaces_next] = 0
-         stateFlags[flag_cond_no_space] = 0
-     elif not wordFlags[flag_no_formatting]:
-         stateFlags[flag_no_space_next] = 0
-         stateFlags[flag_cond_no_space] = 0
+    if flag_reset_no_space in wordFlags:
+        stateFlags.discard(flag_no_space_all)
 
-     # see if we need to reset the cap flags
+    if flag_cap_all in wordFlags:
+        stateFlags.discard(flag_beginning_title_mode)
 
-     if wordFlags[flag_reset_uc_lc_caps]:
-         stateFlags[flag_cap_all] = 0
-         stateFlags[flag_uppercase_all] = 0
-         stateFlags[flag_lowercase_all] = 0
-
-     # see if we need to reset the no space flags
-
-     if wordFlags[flag_reset_no_space]:
-         stateFlags[flag_no_space_all] = 0
-
-     if wordFlags[flag_cap_all]:
-         stateFlags[flag_beginning_title_mode] = 0
-
-     # these flags just get copied
-     copyList = [ flag_active_cap_next, flag_passive_cap_next,
+    # these flags just get copied
+    copyList = [ flag_active_cap_next, flag_passive_cap_next,
          flag_uppercase_next, flag_lowercase_next, flag_no_space_next,
          flag_two_spaces_next, flag_cond_no_space, flag_cap_all,
          flag_uppercase_all, flag_lowercase_all, flag_no_space_all,
          flag_swallow_period, flag_beginning_title_mode ]
 
-     for i in copyList:
-         if wordFlags[i]:
-             stateFlags[i] = 1
+    for i in copyList:
+        if i in wordFlags:
+            stateFlags.add(i)
 
-     if wordFlags[flag_new_paragraph] and wordFlags[flag_is_period]:
-         stateFlags[flag_new_paragraph] = 1
+    if flag_new_paragraph in wordFlags and flag_is_period in wordFlags:
+        stateFlags.add(flag_new_paragraph)
 
-     return output,stateFlags
+    return output,tuple(stateFlags)
 
 def initializeStateFlags(*args):
     """return an initial state, built up by one or more state flags
