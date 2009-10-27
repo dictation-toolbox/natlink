@@ -137,36 +137,136 @@ class UnittestNsformat(unittest.TestCase):
         
         .\point results in ' .'
         """
-        words =             ['.', r'.\period', r'.\point', r':\colon', r'-\hyphen', 'normal']
-        formattedExpected = [' .', '.',        ' .', ':', '-', ' normal']
-        stateExpected = [(), (9, 4), (8, 10), (), (8,), (), ()]
+        words =             ['.', r'.\period', r'.\point', r',\comma', r':\colon', r'-\hyphen', 'normal']
+        formattedExpected = [' .', '.',        ' .',       ',',        ':',        '-', ' normal']
+        stateExpected =      [(), (9, 4),      (8, 10),    (),       (),           (8,), ()]
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
             formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=0)
-            print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
+            print 'stateFlages after formatting of %s: %s (%s)'% (word, `newState`, `showStateFlags(newState)`)
             self.assert_(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
-            self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
+            self.assert_(expectedState == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
                          (word, formattedResult, `newState`, `expectedState`))
+        
+    def testFlagsLike(self):
+        """tests the different predefined flags in nsformat"""
+        for w,t in [(r'.\period', 'period'),
+                    (r',\comma', 'comma'),
+                    (r'-\hyphen', 'hyphen'),
+                    (r':\colon', 'colon'),
+                    ( (10,), 'number'),
+                   ]:
+            varInNsformat = 'flags_like_%s'% t
+            if type(w) == types.TupleType:
+                flags = w
+            else:
+                wInfo = natlink.getWordInfo(w)
+                self.assert_(wInfo != None, "word info for word: %s could not be found. US user???"% w)
+                flags = wordInfoToFlags(wInfo)
+                flags.discard(3)
+                flags = tuple(flags) # no delete flag not interesting
+            fromNsFormat = globals()[varInNsformat]
+            self.assert_(fromNsFormat == flags, "flags_like variable |%s| not as expected\nIn nsformat.py: %s (%s)\nFrom actual word infoExpected: %s (%s)"%
+                         (varInNsformat, fromNsFormat, showStateFlags(fromNsFormat), flags, showStateFlags(flags)))
+    def testInitializeStateFlags(self):
+        """test helper functions of nsformat"""
+        result = initializeStateFlags()
+        expected = ()
+        self.assert_(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
+                     (result, expected))
+
+        result = initializeStateFlags(flag_cond_no_space)
+        expected = (10,)
+        self.assert_(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
+                     (result, expected))
+        
+        result = initializeStateFlags(flag_cond_no_space, flag_no_formatting)
+        expected = (10, 18)
+        self.assert_(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
+                     (result, expected))
+        readable = showStateFlags(result)
+        expectedReadable = ('flag_cond_no_space', 'flag_no_formatting')
+        self.assert_(expectedReadable == readable, "initialised state flags readable were not as expected\nActual: %s, Expected: %s"%
+                     (readable, expectedReadable))
+        
+            
             
     def testFormatNumbers(self):
-        """words with input of previous word
+        """words with input of previous word, influencing numbers, to be kept together
         
         """
-        words =             [r'3\three', r'.\point', r'five', r'by', r'four', 'centimeter']
-        formattedExpected = ['3', '.',        ' .', ':', '-', ' normal']
-        stateExpected = [(3,), (9,4), (8, 10), (), (8,), (), ()]
-        newState = [8,10,3]
-        for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
+        words =             [r'3\three', r'.\point', r'5\five', r'by', r'4\four', 'centimeter',
+                             r',\comma', 'proceeding']
+        formattedExpected = [' 3', '.',        '5', ' by', ' 4', ' centimeter', ',', ' proceeding']
+        wordInfos = [(flag_cond_no_space,), None, (flag_cond_no_space,), None, (flag_cond_no_space,), None, None, None]
+        stateExpected = [(10,), (8, 10), (10,), (), (10,), (), (), (), ()]
+        newState = 0
+        totalResult = []
+        for word, info, expectedWord, expectedState in zip(words,  wordInfos, formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
-            formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=newState)
+            formattedResult, newState = formatWord(word, wordInfo=info, stateFlags=newState)
+            totalResult.append(formattedResult)
             print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
             self.assert_(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
             self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
                          (word, formattedResult, `newState`, `expectedState`))
+        expected = " 3.5 by 4 centimeter, proceeding"
+        actual = ''.join(totalResult)
+        self.assert_(expected == actual, "total result of first test not as expected\nActual: |%s|, expected: |%s|"%
+                         (actual, expected))
+
+
+
+
+        # point without flag_cond_no_space around:
+        words =             [r'the', r'.\point', r'is', r'.\period']
+        formattedExpected = ['The', ' .',        'is', '.']
+        stateExpected =     [(),   (8, 10),      (),  (9, 4)]
+        newState = None  # start of buffer
+        totalResult = []
+        for word, expectedWord, expectedState in zip(words, formattedExpected, stateExpected):
+            ## all starting with stateFlags 0, normal formatting behaviour:
+            formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=newState)
+            totalResult.append(formattedResult)
+            print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
+            self.assert_(formattedResult == expectedWord,
+                         "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
+                         (word, formattedResult, expectedWord))
+            self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: |%s|, expected: |%s|"%
+                         (word, formattedResult, `newState`, `expectedState`))
+
+        expected = "The .is."
+        actual = ''.join(totalResult)
+        self.assert_(expected == actual, "total result of second test not as expected\nActual: |%s|, expected: |%s|"%
+                         (actual, expected))
+
+
+        # words, numbers, words
+        words =             [r'the', r'test', r'is', r'3\three', r'.\point', r'4\four', 'by', r'5\five', 'centimeter']
+        wordInfos = [None, None, None, (flag_cond_no_space,), None, (flag_cond_no_space,), None, (flag_cond_no_space,), None, None, None]
+        formattedExpected = ['The', ' test', ' is', ' 3', '.', '4', ' by', ' 5', ' centimeter']
+        stateExpected =     [(),      (),      (),  (10,), (8, 10), (10,), (), (10,), ()]
+        newState = None  # start of buffer
+        totalResult = []
+        for word, wordInfo, expectedWord, expectedState in zip(words, wordInfos, formattedExpected, stateExpected):
+            ## all starting with stateFlags 0, normal formatting behaviour:
+            formattedResult, newState = formatWord(word, wordInfo=wordInfo, stateFlags=newState)
+            totalResult.append(formattedResult)
+            print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
+            self.assert_(formattedResult == expectedWord,
+                         "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
+                         (word, formattedResult, expectedWord))
+            self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: |%s|, expected: |%s|"%
+                         (word, formattedResult, `newState`, `expectedState`))
+
+        expected = "The test is 3.4 by 5 centimeter"
+        actual = ''.join(totalResult)
+        self.assert_(expected == actual, "total result of third test not as expected\nActual: |%s|, expected: |%s|"%
+                         (actual, expected))
             
             
             
@@ -216,7 +316,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNsformat')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def tttest....
+    # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNsformat, 'test')

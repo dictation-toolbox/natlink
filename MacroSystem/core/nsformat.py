@@ -51,8 +51,13 @@ for name in globals():
     if name.startswith('flag_') and type(globals()[name]) == types.IntType and 0 < globals()[name] < 32:
         flagNames[globals()[name]] = name
         
-        
-
+#
+flags_like_period = (9, 4, 21, 17)  # flag_two_spaces_next = 9,  flag_passive_cap_next = 4, flag_no_space_before = 21
+flags_like_comma = (21, )  # flag_no_space_before = 21  (flag_nodelete = 3 we just ignore here, so leave out)
+flags_like_colon = (21, )  # equal to comma
+flags_like_number = (10,)
+flags_like_point = (8, 10)  # no spacing when in combination with numbers flag_cond_no_space = 10
+flags_like_hyphen = (8, 21)  # no spacing before and after
 #---------------------------------------------------------------------------
 # This is the main formatting entry point.  It takes the old format state and
 # a list of words and returns the new formatting state and the formatted
@@ -123,11 +128,10 @@ def formatWord(wordName,wordInfo=None,stateFlags=None):
     # for faster lookup in Python, we convert the bit arrays am array of
     # bits that are set:
      
-    wordFlags = set()
-    for i in range(32):
-        if wordInfo & (1<<i):
-            wordFlags.add(i)
-
+        
+    wordFlags = wordInfoToFlags(wordInfo)
+    # uncomment when more info is wanted:
+    #print 'wordFlags of |%s| are: %s (%s)'% (wordName, `wordFlags`, `showStateFlags(wordFlags)`)
     if stateFlags == 0:
         stateFlags = set()
     elif stateFlags == None:
@@ -224,10 +228,14 @@ def formatWord(wordName,wordInfo=None,stateFlags=None):
     if not flag_no_space_change in wordFlags:
         stateFlags.discard(flag_no_space_next)
         stateFlags.discard(flag_two_spaces_next)
-        stateFlags.discard(flag_cond_no_space)
+        # comment, experiment QH
+        #stateFlags.discard(flag_cond_no_space)
     elif not flag_no_formatting in wordFlags:
         stateFlags.discard(flag_no_space_next)
-        stateFlags.discard(flag_cond_no_space)
+        # comment, experiment QH
+        #stateFlags.discard(flag_cond_no_space)
+    # try to keep numbers and point together with this flag (QH):
+    stateFlags.discard(flag_cond_no_space)
 
     # see if we need to reset the cap flags
 
@@ -251,6 +259,7 @@ def formatWord(wordName,wordInfo=None,stateFlags=None):
          flag_uppercase_all, flag_lowercase_all, flag_no_space_all,
          flag_swallow_period, flag_beginning_title_mode ]
 
+
     for i in copyList:
         if i in wordFlags:
             stateFlags.add(i)
@@ -268,8 +277,28 @@ def initializeStateFlags(*args):
 
 
     """
-    return tuple(set(*args))
+    return tuple(set(args))
 
+def wordInfoToFlags(wordInfo):
+    """convert wordInfo number into a set of flags
+    """
+    if wordInfo == None:
+        return set()
+    elif wordInfo == 0:
+        return set()
+    wordFlags = set()
+    if type(wordInfo) == types.IntType:
+        if  wordInfo:
+            for i in range(32):
+                if wordInfo & (1<<i):
+                    wordFlags.add(i)
+            else:
+                pass # wordInfo == 0
+    elif type(wordInfo) in (types.TupleType, types.ListType):
+        wordFlags = set(wordInfo)
+    else:
+        wordFlags = wordInfo
+    return wordFlags
 
 def showStateFlags(state):
     """returns an array of the state flags, that are set  (3,5) 
