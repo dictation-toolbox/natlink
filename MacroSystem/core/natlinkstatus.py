@@ -471,6 +471,13 @@ class NatlinkStatus(object):
         if value:
             if os.path.isdir(value):
                 return os.path.normpath(value)
+            else:
+                value2 = natlinkcorefunctions.expandEnvVariableAtStart(value)
+                ## can possibly take expandEnvVariable (which can also hold env variables in
+                ## the middle of the string )
+                if os.path.isdir(value2):
+                    #print 'take UnimacroUserDirectory with homedir (%s) in front: %s'% (homeDir, value2)
+                    return os.path.normpath(value2)
         return ''
 
     def getUnimacroUserDirectory(self):
@@ -480,11 +487,19 @@ class NatlinkStatus(object):
             if value:
                 if os.path.isdir(value):
                     return os.path.normpath(value)
+                else:
+                    value2 = natlinkcorefunctions.expandEnvVariableAtStart(value)
+                    ## can possibly take expandEnvVariable (which can also hold env variables in
+                    ## the middle of the string )
+                    if os.path.isdir(value2):
+                        #print 'take UnimacroUserDirectory with homedir (%s) in front: %s'% (homeDir, value2)
+                        return os.path.normpath(value2)
             else:
                 return self.getUserDirectory()
         else:
             # Unimacro not enabled
             return ""
+        raise IOError("could not find a valid UnimacroUserDirectory (got %s from registry)"% value)
 
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'

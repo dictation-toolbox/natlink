@@ -31,7 +31,7 @@ import os, sys, re, copy
 from win32com.shell import shell, shellcon
 
 # for extended environment variables:
-reEnv = re.compile('%([A-Z_]+)%')
+reEnv = re.compile('(%[A-Z_]+%)')
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -231,9 +231,40 @@ def expandEnvVariableAtStart(filepath, envDict=None):
             print 'invalid (extended) environment variable: %s'% envVar
         else:
             # OK, found:
-            filepart = filepath[len(envVar)+2:]
+            filepart = filepath[len(envVar)+1:]
             filepart = filepart.strip('/\\ ')
             return os.path.normpath(os.path.join(folderpart, filepart))
+    # no match
+    return filepath
+    
+def expandEnvVariables(filepath, envDict=None): 
+    """try to substitute environment variable into a path name,
+
+    ~ only at the start,
+
+    %XXX% can be anywhere in the string.
+
+    """
+    filepath = filepath.strip()
+    
+    if filepath.startswith('~'):
+        folderpart = getExtendedEnv('~', envDict)
+        filepart = filepath[1:]
+        filepart = filepart.strip('/\\ ')
+        filepath = os.path.normpath(os.path.join(folderpart, filepart))
+    
+    if reEnv.search(filepath):
+        List = reEnv.split(filepath)
+        print 'parts: %s'% List
+        List2 = []
+        for part in List:
+            try:
+                folderpart = getExtendedEnv(part, envDict)
+            except ValueError:
+                folderpart = part
+            List2.append(folderpart)
+        filepath = ''.join(List2)
+        return os.path.normpath(filepath)
     # no match
     return filepath
        
@@ -244,3 +275,14 @@ if __name__ == "__main__":
     print 'allfolderenvironmentvariables:  %s'% vars.keys()
     for k,v in vars.items():
         print '%s: %s'% (k, v)
+    # bit too much maybe:
+    for p in ("D:\\natlink\\unimacro", "~/unimacroqh", "~\\natlink\\%HOME%\\personal",
+              "%HOME%\\folder%WINDOWS%\\strange testfolder"):
+        expanded = expandEnvVariables(p)
+        print 'expandEnvVariables: %s: %s'% (p, expanded)
+        
+    for p in ("D:\\natlink\\unimacro", "~/unimacroqh",
+              "%HOME%/personal",
+              "%WINDOWS%\\folder\\strange testfolder"):
+        expanded = expandEnvVariableAtStart(p)
+        print 'expandEnvVariablesAtStart: %s: %s'% (p, expanded)

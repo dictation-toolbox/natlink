@@ -509,7 +509,10 @@ Possibly you need administrator rights to do this
 
     def setVocolaUserDir(self, v):
         key = 'VocolaUserDirectory'
-        if os.path.isdir(v):
+        if v.startswith("~") or v.find("%") >= 0:
+            print "Setting Vocola user dir to %s"% v
+            self.userregnl[key] = v
+        elif os.path.isdir(v):
             print 'set Vocola user dir to %s'% v
             self.userregnl[key] = v
         else:
@@ -536,7 +539,7 @@ Possibly you need administrator rights to do this
                       'from old UnimacroUserDirectory (%s) to \n' \
                       'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, v)
             
-        if os.path.isdir(v):
+        if os.path.isdir(v) or v.startswith("~") or v.find("%") >= 0:
             print 'set Unimacro user dir to %s'% v
             self.userregnl[key] = v
         else:
@@ -875,8 +878,9 @@ def _main(Options=None):
     if args:
         print 'should not have extraneous arguments: %s'% `args`
     for o, v in options:
-        funcName = 'do_%s'% o, None
-        func = getattr(cli, 'do_%s'% o, None)
+        o = o.lstrip('-')
+        funcName = 'do_%s'% o
+        func = getattr(cli, funcName, None)
         if not func:
             print 'option %s not found in cli functions: %s'% (o, funcName)
             cli.usage()
@@ -941,7 +945,7 @@ c/C     - set/clear DNSINIDir, where NatSpeak INI files are located
 [Vocola]
 
 v/V     - enable/disable Vocola by setting/clearing VocolaUserDir, the user
-          directory for Vocola user files.
+          directory for Vocola user files (~ or %HOME% allowed).
 
 b/B     - enable/disable distinction between languages for Vocola user files
 
@@ -952,6 +956,7 @@ n/N     - enable/disable Unimacro by setting/clearing UserDirectory, the
           ...\My Documents\NatLink)
 
 o/O     - set/clear UnimacroUserDir, where Unimacro user INI files are located
+          (~ or %HOME% allowed)
 p/P     - set/clear path for program that opens Unimacro INI files.
 l       - copy header file Unimacro.vch into Vocola User Directory
 m/M     - insert/remove an include line for Unimacro.vch in all Vocola
@@ -1107,11 +1112,14 @@ Unimacro shorthand commands and meta actions.
 
     # Unimacro User directory and Editor for Unimacro INI files-----------------------------------
     def do_o(self, arg):
-        if os.path.isdir(arg):
+        if arg.startswith("~") or arg.find("%") >= 0:
+            print "Setting Unimacro user directory to %s"% arg
+            self.config.setUnimacroUserDir(arg)
+        elif os.path.isdir(arg):
             print "Setting Unimacro user directory to %s"% arg
             self.config.setUnimacroUserDir(arg)
         else:
-            print 'Please specify a valid path for UnimacroUserDirectory'
+            print 'Please specify a valid path for UnimacroUserDirectory, not: %s'% arg
             
     def do_O(self, arg):
         print "Clearing Unimacro user directory, falling back to default: %s"% self.config.getUserDirectory()
@@ -1124,6 +1132,9 @@ Unimacro shorthand commands and meta actions.
 
 If you specify this directory, your user INI files (and possibly other user
 dependent files) will be put there.
+
+You can use (if entered through the CLI) "~" (or %HOME%) for user home directory, or
+another %...% environment variable. (example: "o ~\NatLink\Unimacro")
 
 If you clear this setting, the user INI files will be put in the
 Unimacro directory itself: %s
@@ -1232,11 +1243,14 @@ the Global Clients section of nssystem.ini.
     
     # Vocola and Vocola User directory------------------------------------------------
     def do_v(self, arg):
-        if os.path.isdir(arg):
+        if arg.startswith("~") or arg.find("%") >= 0:
+            print "Setting Vocola user directory to %s"% arg
+            self.config.setVocolaUserDir(arg)
+        elif os.path.isdir(arg):
             print "Setting Vocola user directory to %s\nand (therefore) enabling Vocola:"% arg
             self.config.setVocolaUserDir(arg)
         else:
-            print 'Please specify a valid path for the Vocola user directory (see help v)'
+            print 'Please specify a valid path for the Vocola user directory (see help v), not: %s'% arg
             
     def do_V(self, arg):
         print "Clearing Vocola user directory and (therefore) disabling Vocola:"
@@ -1255,6 +1269,11 @@ natlinkmain will not enable Vocola if no Vocola user directory is set.
 popular choice.  Thus, Sally under Windows XP might use:
 
   v C:\Documents and Settings\Sally\My Documents\NatLink\Vocola
+  
+You can also use (if entered through the CLI) "~" (or %HOME%) for user home directory, or
+another %...% environment variable.
+(so "v ~\NatLink\Vocola" or "v %HOME%\NatLink\Vocola" in above example)
+
 
 You may have to manually create this folder first.
 """
