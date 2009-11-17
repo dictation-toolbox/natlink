@@ -13,9 +13,10 @@
 # A setup script for NatLink/Vocola/Unimacro, with inno
 # 1. choose new release name and change in __version__ of natlinkstatus
 # 2. Commit NatLink and Unimacro
-# 3. SVN export both NatLink and Unimacro to a new folder (eg D:\NatLink\releases\natlink3.2 if your release number is natlink3.2)
+# 3. SVN export both NatLink and Unimacro to a new folder
+#     (eg D:\NatLink\releases\natlink3.2 if your release number is natlink3.2)
 # 4. run this utility FROM THAT FOLDER\NatLink\natlinkInstaller.
-#
+# 5. the result will be in the "dist" subdirectory, also the .iss file
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
                      '_keystrokes.py', '_oops.py', '_setpriority.py',
                      '_tags.py', '_unimacrotest.py', '_modes.py',
@@ -158,7 +159,8 @@ class InnoScript:
         print >> ofi, r"[Files]"
         natlink_files = getAllFiles('NatLink')
         unimacro_files = getAllFiles('Unimacro')
-        
+        # adaptation for Jason Koller, Kaiser hospital Honolulu:
+        kaiser_files = getAllFiles('kaiser_dictation')
         for path in natlink_files:
             print >> ofi, r'Source: "..\NatLink\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         for path in unimacro_files:
@@ -169,7 +171,10 @@ class InnoScript:
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
             else:
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
-
+        # will only be included if directory is present:
+        for path in kaiser_files:
+            print >> ofi, r'Source: "..\kaiser_dictation\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+        
         print >> ofi
 
 
@@ -257,6 +262,8 @@ def getAllFiles(startDir):
 def _getallfiles(arg, dirname, filenames):
     if dirname.endswith("CVS"):
         raise IOError("found a CVS folder, you should have released Unimacro and NatLink first!")
+    if dirname.endswith(".svn"):
+        raise IOError("found a svn folder, you should have exported Unimacro and NatLink first!")
     for f in filenames:
         if f.endswith(".pyc"):
             continue
