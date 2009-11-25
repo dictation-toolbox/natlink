@@ -29,7 +29,7 @@ substituteEnvVariableAtStart: substitute back into a file/folder path an environ
 """ 
 import os, sys, re, copy
 from win32com.shell import shell, shellcon
-
+import win32api
 # for extended environment variables:
 reEnv = re.compile('(%[A-Z_]+%)')
 
@@ -267,7 +267,52 @@ def expandEnvVariables(filepath, envDict=None):
         return os.path.normpath(filepath)
     # no match
     return filepath
-       
+
+defaultFilename = "natlinkstatus.ini"
+defaultSection = 'usersettings'
+class IniFileSection(object):
+    """simulate a part of the registry through inifiles
+    
+        basic file is natlinkstatus.ini
+        basic section is usersettings
+    """
+    def __init__(self, section=None, filename=None):
+        if filename is None:
+            dirName = getBaseFolder()
+            if not os.path.isdir(dirName):
+                raise ValueError("starting inifilesection, invalid directory: %s"%
+                                 dirName)
+            self.filename = os.path.join(dirName, defaultFilename)
+            self.firstUse = (not os.path.isfile(self.filename))
+            self.section =  section or defaultSection
+    def get(self, key, defaultValue=None):
+        """get an item from a key
+        
+        """
+        value = win32api.GetProfileVal( self.section, key, defaultValue,
+                                       self.filename)
+        if value in ("0", "1"):
+            return int(value)
+        return value
+
+    def set(self, key, value):
+        """set an item for akey
+        
+        """
+        value = win32api.WriteProfileVal( self.section, key, value,
+                                       self.filename)
+    def delete(self, key):
+        """delete an item for a key (really set to "")
+        
+        """
+        value = win32api.WriteProfileVal( self.section, key, None,
+                                       self.filename)
+
+    def keys(self):
+        Keys =  win32api.GetProfileSection( self.section, self.filename)
+        Keys = [k.split('=')[0] for k in Keys]
+        return Keys
+
 
 if __name__ == "__main__":
     print 'this module is in folder: %s'% getBaseFolder(globals())

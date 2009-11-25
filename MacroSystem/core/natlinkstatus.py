@@ -7,7 +7,8 @@ __version__ = "3.8"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
-
+# version 3.9: changing to ini files instead of registry
+#              and get python path directly...
 # version 3.7: changed userDirectory to UserDirectory in the getNatlinkStatusDict function.
 #              no influence on the natlinkstatus.getUserDirectory() function.
 
@@ -58,9 +59,10 @@ getLanguage:
     is open (only possible when NatSpeak/NatLink is running)
 
 getPythonVersion:
-    returns, as a string, the python version. Eg. "2.3"
-    If it cannot find it in the registry it returns an empty string
-(getFullPythonVersion: get string of complete version info).
+    new nov 2009: return first three characters of python full version ('2.5')
+#    returns, as a string, the python version. Eg. "2.3"
+#    If it cannot find it in the registry it returns an empty string
+#(getFullPythonVersion: get string of complete version info).
 
 
 getUserDirectory: get the NatLink user directory, Unimacro will be there. If not return ''
@@ -155,8 +157,10 @@ class NatlinkStatus(object):
     """
     usergroup = "SOFTWARE\Natlink"
 ##    lmgroup = "SOFTWARE\Natlink"
-    userregnl = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup)
+    userregnlOld = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup)
 ##    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)
+
+    userregnl = natlinkcorefunctions.IniFileSection()
 
     ### from previous modules, needed or not...
     NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
@@ -176,6 +180,71 @@ class NatlinkStatus(object):
     value2 = NATLINK_CLSID    
 
     userArgs = [None, None]
+
+    def __init__(self):
+
+        # for the migration from registry to ini files:
+        if self.userregnl.firstUse:
+            if self.userregnlOld:
+                self.copyRegSettingsToInifile(self.userregnlOld, self.userregnl)
+            else:
+                print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, run natlinkconfig.py'
+        
+   
+   
+    def checkSysPath(self):
+        """add base and user directory to sys.path
+        
+        if user directory is NOT unimacro directory, also try to add
+        unimacro directory to the path.
+        
+        (the registry is out of use, only the core directory is in the
+        PythonPath \ NatLink setting, for natlink be able to be started.
+        """
+        coreDir = natlinkcorefunctions.getBaseFolder()
+        if coreDir.lower().endswith('core'):
+            baseDir = os.path.normpath(os.path.join(coreDir, ".."))
+            self.InsertToSysPath(coreDir)
+        else:
+            baseDir = None
+            print 'non expected core directory %s, cannot find baseDirectory'% coreDir
+        userDir = self.getUserDirectory()
+        # special for other user directories, insert also unimacro for actions etc.
+        if userDir and userDir.lower().endswith('unimacro'):
+            self.InsertToSysPath(userDir)
+        else:
+            includeUnimacro = self.getIncludeUnimacroInPythonPath()
+            if  includeUnimacro:
+                if not baseDir:
+                    print 'no baseDir found, cannot "IncludeUnimacroInPythonPath"'
+                    return
+                unimacroDir = os.path.join(baseDir, '..', '..', 'unimacro')
+                unimacroDir = os.path.normpath(unimacroDir)
+                if os.path.isdir(unimacroDir):
+                    self.InsertToSysPath(unimacroDir)
+                else:
+                    print 'no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
+                        unimacroDir
+
+    def InsertToSysPath(self, newdir):
+        """leave "." in the first place if it is there"""
+        if not newdir: return
+        newdir = os.path.normpath(newdir)
+        if newdir in sys.path: return
+        if sys.path[0] in ("", "."):
+            sys.path.insert(1, newdir)
+        else:
+            sys.path.insert(0, newdir)
+        print 'inserted in sys.path: %s'% newdir
+            
+   
+    def copyRegSettingsToInifile(self, reg, ini):
+        """for firsttime use, copy values from 
+        """
+        for k,v in reg.items():
+            ini.set(k, v)
+        #except:
+        #    print 'could not copy settings from registry into inifile. Run natlinkconfigfunctions...'
 
     def setUserInfo(self, args):
         """set username and userdirectory at change callback user
@@ -271,15 +340,19 @@ class NatlinkStatus(object):
             else:
                 return int(version[0])
 
-        # older versions:        
-        # try falling back on registry:
-        r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
-        if "NaturallySpeaking8" in r:
-            DNSversion = 8
-        elif "NaturallySpeaking 7.1" in r or "NaturallySpeaking 7.3":
-            DNSversion = 7
-        else:
-            DNSversion = 5
+        try:
+            # older versions:        
+            # try falling back on registry:
+            r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
+            if "NaturallySpeaking8" in r:
+                DNSversion = 8
+            elif "NaturallySpeaking 7.1" in r or "NaturallySpeaking 7.3":
+                DNSversion = 7
+            else:
+                DNSversion = 5
+        except:
+            DNSversion = 10
+
         return DNSversion
 
 
@@ -308,38 +381,40 @@ class NatlinkStatus(object):
         
 
 
-    def getPythonFullVersion(self):
-        """get the version string from sys
-        """
-        version2 = sys.version
-        return version2
+    #def getPythonFullVersion(self):
+    #    """get the version string from sys
+    #    """
+    #    version2 = sys.version
+    #    return version2
     
     def getPythonVersion(self):
         """get the version of python from the registry
         """
-        regSection = "SOFTWARE\Python\PythonCore"
-        try:
-            r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, regSection)
-        except ValueError:
-            return ''
-        versionKeys = r.keys()
-        decorated = [(len(k), k) for k in versionKeys]
-        decorated.sort()
-        decorated.reverse()
-        versionKeysSorted = [k for (dummy,k) in decorated]
-        
-        version2 = self.getPythonFullVersion()
-        for version1 in versionKeysSorted:        
-            if version2.startswith(version1):
-                return version1
-        if versionKeys:
-            print 'ambiguous python version:\npython (module sys) gives full version: "%s"\n' \
-              'the registry gives (in HKLM/%s): "%s"'% (version2,regSection, versionKeys)
-        else:
-            print 'ambiguous python version:\npython (module sys) gives full version: "%s"\n' \
-              'the registry gives (in HKLM/%s) no keys found in that section'% (version2, regSection)
-        version = version2[:3]
-        print 'use version %s'% version
+        version = sys.version[:3]
+        return version
+        #regSection = "SOFTWARE\Python\PythonCore"
+        #try:
+        #    r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, regSection)
+        #except ValueError:
+        #    return ''
+        #versionKeys = r.keys()
+        #decorated = [(len(k), k) for k in versionKeys]
+        #decorated.sort()
+        #decorated.reverse()
+        #versionKeysSorted = [k for (dummy,k) in decorated]
+        #
+        #version2 = self.getPythonFullVersion()
+        #for version1 in versionKeysSorted:        
+        #    if version2.startswith(version1):
+        #        return version1
+        #if versionKeys:
+        #    print 'ambiguous python version:\npython (module sys) gives full version: "%s"\n' \
+        #      'the registry gives (in HKLM/%s): "%s"'% (version2,regSection, versionKeys)
+        #else:
+        #    print 'ambiguous python version:\npython (module sys) gives full version: "%s"\n' \
+        #      'the registry gives (in HKLM/%s) no keys found in that section'% (version2, regSection)
+        #version = version2[:3]
+        #print 'use version %s'% version
         return version
 
     def getCoreDirectory(self):
@@ -347,11 +422,6 @@ class NatlinkStatus(object):
         """
         return natlinkcorefunctions.getBaseFolder()
     
-
-    def getCoreDirectory(self):
-        """return this directory
-        """
-        return natlinkcorefunctions.getBaseFolder()
 
     def getNSSYSTEMIni(self):
         inidir = self.getDNSIniDir()
@@ -572,6 +642,13 @@ class NatlinkStatus(object):
         value = self.userregnl.get(key, None)
         return value
 
+    def getIncludeUnimacroInPythonPath(self):
+        """gets the value of alway include Unimacro directory in PythonPath"""
+        
+        key = 'IncludeUnimacroInPythonPath'
+        value = self.userregnl.get(key, None)
+        return value
+
     # get additional options Vocola
     def getVocolaTakesLanguages(self):
         """gets and value for distinction of different languages in Vocola"""
@@ -583,18 +660,23 @@ class NatlinkStatus(object):
     def getInstallVersion(self):
         return __version__
 
+    def getNatlinkDllRegistered(self):
+        value = self.userregnl.get('NatlinkDllRegistered', None)
+        return value
+
     def getNatlinkStatusDict(self):
         """return actual status in a dict"""
         D = {}
         for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
-                    'DNSFullVersion', 'PythonFullVersion',
+                    'DNSFullVersion', 
                     'PythonVersion', 'UserDirectory',
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages',
                     'VocolaUserDirectory', 
                     'UnimacroUserDirectory', 'UnimacroIniFilesEditor',
-                    'NatlinkDebug', 'InstallVersion']:
+                    'NatlinkDebug', 'InstallVersion', 'NatlinkDllRegistered',
+                    'IncludeUnimacroInPythonPath']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
             execstring = "D['%s'] = self.get%s()"% (key, keyCap)
@@ -687,9 +769,13 @@ class NatlinkStatus(object):
         if text:
             List.append(text)
         else:
-            List.append("\t%s\t%s"% (Key,Dict[Key]))
+            value = Dict[Key]
+            if value == None or value == '':
+                value = '-'
+            List.append("\t%s\t%s"% (Key,value))
         del Dict[Key]
 
 if __name__ == "__main__":
     status = NatlinkStatus()
+    status.checkSysPath()
     print status.getNatlinkStatusString()

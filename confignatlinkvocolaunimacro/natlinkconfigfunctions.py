@@ -130,12 +130,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     userregnl got from natlinkstatus, as a Class (not instance) variable, so
     should be the same among instances of this class...
     """
-
-
+    def __init__(self):
+        natlinkstatus.NatlinkStatus.__init__(self)
     
     def checkNatlinkDllFile(self):
         """see if natlink.dll is in core directory, if not copy from correct version
         """
+        isRegistered = self.userregnl.get("NatlinkDllRegistered")
         coreDir2 = self.getCoreDirectory()
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
@@ -145,7 +146,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             dllFile = os.path.join(coreDir, 'natlink.pyd')
         else:
             dllFile = os.path.join(coreDir, 'natlink.dll')
-        if not os.path.isfile(dllFile):
+        if not os.path.isfile(dllFile) or not isRegistered:
             self.copyNatlinkDllPythonVersion()
             self.checkPythonPathAndRegistry()            
 
@@ -160,7 +161,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
         if os.path.isfile(dllFile):
             self.unregisterNatlinkDll()
-            os.remove(dllFile)
+            try:
+                os.remove(dllFile)
+            except WindowsError:
+                fatal_error('cannot remove dllFile "%s", probably you must exit NatSpeak first'% dllFile)
             
         if os.path.isfile(dllVersionFile):
             try:
@@ -176,13 +180,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
  
     def checkPythonPathAndRegistry(self):
-        """checks if core directory and base directory are there
+        """checks if core directory is
 
         1. in the sys.path
         2. in the registry keys of HKLM\SOFTWARE\Python\PythonCore\2.3\PythonPath\NatLink
 
         If this last key is not there or empty
-        ---set paths of baseDirectory and coreDirectory
+        ---set paths of coreDirectory
         ---register natlink.dll
         It is probably the first time to run this program.
 
@@ -199,8 +203,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
 
-        baseDir = os.path.join(coreDir, '..')
-        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
+        pathString = coreDir
 ##        if lmPythonPath:
 ##            print 'lmPythonPath: ', lmPythonPath.keys()
         if not 'NatLink' in lmPythonPathDict:
@@ -225,6 +228,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         # now section has default "" key, proceed:            
         oldPathString = lmNatlinkPathDict[""]
+        if oldPathString.find(';') > 0:
+            print 'remove double entry, go back to single entry'
+            self.setNatlinkInPythonPathRegistry()
+
+        oldPathString = lmNatlinkPathDict[""]
+        if oldPathString.find(';') > 0:
+            fatal_error("did not fix double entry in registry setting  of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\%s\ncontains more entries separated by ';'. Remove with the registry editor (regedit)\nAnd rerun this program"%PythonPathSectionName+r'\NatLink')
         if not oldPathString:
             # empty setting, silently register
             self.registerNatlinkDll(silent=1)
@@ -335,8 +345,7 @@ NatLink is now disabled.
 
         """
         lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
-        baseDir = os.path.join(coreDir, '..')
-        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))
+        pathString = os.path.normpath(os.path.abspath(coreDir))
         NatlinkSection = lmPythonPathDict.get('NatLink', None)
         if NatlinkSection:
             oldPath = NatlinkSection.get('', '')
@@ -360,12 +369,12 @@ NatLink is now disabled.
             except:
                 self.warning("cannot clear Python path for NatLink in registry (HKLM section), probably you have insufficient rights to do this")
 
-    def printRegistrySettings(self):
-        print "CURRENT_USER\\Natlink registry settings:"
+    def printInifileSettings(self):
+        print 'Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getCoreDirectory()
         Keys = self.userregnl.keys()
         Keys.sort()
-        for k in self.userregnl:
-            print "\t%  s:\t%s"% (k, self.userregnl[k])
+        for k in Keys:
+            print "\t%  s:\t%s"% (k, self.userregnl.get(k))
         print "-"*60
 
 
@@ -378,7 +387,7 @@ NatLink is now disabled.
             programDir = os.path.join(new_dir, 'Program')
             if os.path.isdir(programDir):
                 print 'set DNS Install Directory to: %s'% new_dir
-                self.userregnl[key] = new_dir
+                self.userregnl.set(key, new_dir)
             else:
                 mess =  "setDNSInstallDir, directory misses a Program subdirectory: %s"% new_dir
                 print mess
@@ -393,12 +402,7 @@ NatLink is now disabled.
 
         """
         key = 'DNSInstallDir'
-        if key in self.userregnl:
-            del self.userregnl[key]
-        else:
-            mess = 'NatSpeak install directory was not set in registry, NatLink part'
-            print mess
-            return mess
+        self.userregnl.delete(key)
         
     def setDNSIniDir(self, new_dir):
         """set in registry local_machine\natlink
@@ -417,7 +421,7 @@ NatLink is now disabled.
                 mess =  'folder %s does not have the INI file %s'% (new_dir, self.NSAppsIni)
                 print mess
                 return mess
-            self.userregnl[key] = new_dir
+            self.userregnl.set(key, new_dir)
         else:
             mess = "setDNSIniDir, not a valid directory: %s"% new_dir
             print mess
@@ -429,30 +433,53 @@ NatLink is now disabled.
 
         """
         key = 'DNSIniDir'
-        if key in self.userregnl:
-            del self.userregnl[key]
-        else:
-            mess = 'DNS INI files directory was not set in registry'
-            print mess
-            return mess
+        self.userregnl.delete(key)
 
     def setUserDirectory(self, v):
         key = 'UserDirectory'
         if os.path.isdir(v):
             print 'set NatLinkUserDir to %s'% v
-            self.userregnl[key] = v
+            self.userregnl.set(key, v)
         else:
             print 'no a valid directory: %s'% v
             
         
     def clearUserDirectory(self):
         key = 'UserDirectory'
-        if key in self.userregnl:
+        Keys = self.userregnl.keys()
+        if key in Keys:
             print 'clearing NatLink user directory...'
-            del self.userregnl[key]
+            self.userregnl.delete(key)
         else:
             print 'NatLink user directory key was not set...'
             
+    def alwaysIncludeUnimacroDirectoryInPath(self):
+        """set variable so natlinkstatus knows to include Unimacro in path
+        
+        This is only used when userDirectory is set to another directory as Unimacro.
+        Unimacro is expected at ../../Unimacro relative to the Core directory
+        """
+        key = 'IncludeUnimacroInPythonPath'
+        Keys = self.userregnl.keys()
+        print 'set %s'% key
+        self.userregnl.set(key, 1)
+
+    def ignoreUnimacroDirectoryInPathIfNotUserDirectory(self):
+        """clear variable so natlinkstatus knows to not include Unimacro in path
+        
+        This is only used when userDirectory is set to
+        another directory as Unimacro.
+        Unimacro is expected at ../../Unimacro relative to the Core directory
+        """
+        key = 'IncludeUnimacroInPythonPath'
+        Keys = self.userregnl.keys()
+
+        if key in Keys:
+            print 'clearing variable %s'% key
+            self.userregnl.delete(key)
+        else:
+            print 'was not set %s'% key
+        
       
     def enableNatlink(self, silent=None):
         """register natlink.dll and set settings in nssystem.INI and nsapps.ini
@@ -511,19 +538,16 @@ Possibly you need administrator rights to do this
         key = 'VocolaUserDirectory'
         if v.startswith("~") or v.find("%") >= 0:
             print "Setting Vocola user dir to %s"% v
-            self.userregnl[key] = v
+            self.userregnl.set(key, v)
         elif os.path.isdir(v):
             print 'set Vocola user dir to %s'% v
-            self.userregnl[key] = v
+            self.userregnl.set(key, v)
         else:
             print 'not a valid directory: %s'% v
 
     def clearVocolaUserDir(self):
         key = 'VocolaUserDirectory'
-        if key in self.userregnl:
-            del self.userregnl[key]
-        else:
-            print 'was not set: %s'% key
+        self.userregnl.delete(key)
 
 
     def getUnimacroUserDir(self):
@@ -541,30 +565,24 @@ Possibly you need administrator rights to do this
             
         if os.path.isdir(v) or v.startswith("~") or v.find("%") >= 0:
             print 'set Unimacro user dir to %s'% v
-            self.userregnl[key] = v
+            self.userregnl.set(key, v)
         else:
             print 'not a valid directory: %s'% v
 
     def clearUnimacroUserDir(self):
         key = 'UnimacroUserDirectory'
-        if key in self.userregnl:
-            del self.userregnl[key]
-        else:
-            print 'was not set: %s'% key
+        self.userregnl.delete(key)
 
     def setUnimacroIniFilesEditor(self, v):
         key = "UnimacroIniFilesEditor"
         if v and os.path.isfile(v) and v.endswith(".exe"):
-            self.userregnl[key] = v
+            self.userregnl.set(key, v)
         else:
             print 'invalid path, not a file or no .exe file: %s'% v
             
     def clearUnimacroIniFilesEditor(self):
         key = "UnimacroIniFilesEditor"
-        if key in self.userregnl:
-            del self.userregnl[key]
-        else:
-            print 'was not set: %s'% key
+        self.userregnl.delete(key)
             
     def registerNatlinkDll(self, silent=None):
         """register natlink.dll
@@ -578,6 +596,8 @@ Possibly you need administrator rights to do this
         # give fatal error if Python is not OK...
         dummy, dummy = self.getHKLMPythonPathDict()        
         pythonVersion = self.getPythonVersion().replace(".", "")
+        if not (pythonVersion and len(pythonVersion) == 2):
+            fatal_error('not a valid python version found: |%s|'% pythonVersion)
         if int(pythonVersion) >= 25:
             DllPath = os.path.join(coreDir, 'natlink.pyd')
         else:
@@ -591,24 +611,29 @@ Possibly you need administrator rights to do this
             try:
                 import win32api
             except:
-                fatal_error("cannot import win32api, please see if win32all of Fordpython is properly installed")
+                fatal_error("cannot import win32api, please see if win32all of python is properly installed")
             
             try:
                 result = win32api.WinExec('regsvr32 /s "%s"'% DllPath)
                 if result:
                     print 'failed to register %s (result: %s)'% (DllPath, result)
-##                else:
-##                    print 'registered %s '% DllPath
+                    self.config.set('NatlinkDllRegistered', 0)
+                else:
+                    self.userregnl.set('NatlinkDllRegistered', 1)
+#                    print 'registered %s '% DllPath
                     
             except:
+                self.userregnl.set('NatlinkDllRegistered', 0)
                 fatal_error("cannot register |%s|"% DllPath)                    
         else:
             # os.system:
             result = os.system('regsvr32 "%s"'% DllPath)
             if result:
                 print 'failed to register %s (result: %s)'% (DllPath, result)
+                self.userregnl.set('NatlinkDllRegistered', 0)
             else:
                 print 'registered %s'% DllPath
+                self.userregnl.set('NatlinkDllRegistered', 1)
                 
         self.setNatlinkInPythonPathRegistry()
 
@@ -621,54 +646,60 @@ Possibly you need administrator rights to do this
             DllPath = os.path.join(coreDir, 'natlink.pyd')
         else:
             DllPath = os.path.join(coreDir, 'natlink.dll')
-        if os.path.isfile(DllPath):
+        if not os.path.isfile(DllPath):
+            return
 
-            if silent:
-                try:
-                    import win32api
-                except:
-                    fatal_error("cannot import win32api, please see if win32all of Python is properly installed")
-                
-                try:
-                    result = win32api.WinExec('regsvr32 /s /u "%s"'% DllPath)
-                    if not result:
-                        print 'failed to unregister %s, result %s'% (DllPath, result)
-                except:
+        if silent:
+            try:
+                import win32api
+            except:
+                fatal_error("cannot import win32api, please see if win32all of Python is properly installed")
+            
+            try:
+                result = win32api.WinExec('regsvr32 /s /u "%s"'% DllPath)
+                if not result:
                     pass
-            else:
-                # os.system:
-                os.system('regsvr32 /u "%s"'% DllPath)
-        self.clearNatlinkFromPythonPathRegistry()
-        # and remove the natlink.dll (there remain pythonversion ones 23, 24 and 25)
-        os.remove(DllPath)
+                else:
+                    #print 'failed to unregister %s, result %s'% (DllPath, result)
+                    self.userregnl.set('NatlinkDllRegistered', 0)
+            except:
+                pass
+        else:
+            # os.system:
+            os.system('regsvr32 /u "%s"'% DllPath)
+            self.userregnl.set('NatlinkDllRegistered', 0)
 
+        #self.clearNatlinkFromPythonPathRegistry()
+        # and remove the natlink.dll (there remain pythonversion ones 23, 24 and 25)
+        #os.remove(DllPath)
+        
     def enableDebugLoadOutput(self):
         """setting registry key so debug output of loading of natlinkmain is given
 
         """
         key = "NatlinkmainDebugLoad"
-        self.userregnl[key] = 1
+        self.userregnl.set(key, 1)
         
 
     def disableDebugLoadOutput(self):
         """disables the NatLink debug output of loading of natlinkmain is given
         """
         key = "NatlinkmainDebugLoad"
-        self.userregnl[key] = 0
+        self.userregnl.delete(key)
 
     def enableDebugCallbackOutput(self):
         """setting registry key so debug output of callback functions of natlinkmain is given
 
         """
         key = "NatlinkmainDebugCallback"
-        self.userregnl[key] = 1
+        self.userregnl.set(key, 1)
         
 
     def disableDebugCallbackOutput(self):
         """disables the NatLink debug output of callback functions of natlinkmain
         """
         key = "NatlinkmainDebugCallback"
-        self.userregnl[key] = 0
+        self.userregnl.delete(key)
         
     def enableDebugOutput(self):
         """setting registry key so debug output is in NatSpeak logfile
@@ -677,14 +708,14 @@ Possibly you need administrator rights to do this
         to this option...
         """
         key = "NatlinkDebug"
-        self.userregnl[key] = 1
+        self.userregnl.set(key, 1)
         
 
     def disableDebugOutput(self):
         """disables the NatLink lengthy debug output to NatSpeak logfile
         """
         key = "NatlinkDebug"
-        self.userregnl[key] = 0
+        self.userregnl.delete(key)
 
     def copyUnimacroIncludeFile(self):
         """copy Unimacro include file into Vocola user directory
@@ -836,14 +867,14 @@ Possibly you need administrator rights to do this
 
         """
         key = "VocolaTakesLanguages"
-        self.userregnl[key] = 1
+        self.userregnl.set(key, 1)
         
 
     def disableVocolaTakesLanguages(self):
         """disables so Vocola cannot take different languages
         """
         key = "VocolaTakesLanguages"
-        self.userregnl[key] = 0
+        self.userregnl.set(key, 0)
         
                 
 
@@ -859,7 +890,7 @@ def _main(Options=None):
 
     """
     cli = CLI()
-    shortOptions = "iIeEgGyYxXDCVbBNOPlmMrRzZuq"
+    shortOptions = "iIeEfFgGyYxXDCVbBNOPlmMrRzZuq"
     shortArgOptions = "d:c:v:n:o:p:"
     if Options:
         if type(Options) == types.StringType:
@@ -912,9 +943,7 @@ class CLI(cmd.Cmd):
         self.checkedConfig = self.config.checkedUrgent
         for key in ObsoleteStatusKeys:
             # see at top of this file!            
-            if self.config.userregnl.has_key(key):
-                del self.config.userregnl[key]
-        print
+            self.config.userregnl.delete(key)
         print "Type 'u' for a usage message"
 
     def usage(self):
@@ -954,7 +983,8 @@ b/B     - enable/disable distinction between languages for Vocola user files
 n/N     - enable/disable Unimacro by setting/clearing UserDirectory, the
           directory where user NatLink grammar files are located (e.g.,
           ...\My Documents\NatLink)
-
+f/F     - force Unimacro directory to be in the python path, even if
+          the userDirectory is set to another path (-F: do not force this)
 o/O     - set/clear UnimacroUserDir, where Unimacro user INI files are located
           (~ or %HOME% allowed)
 p/P     - set/clear path for program that opens Unimacro INI files.
@@ -986,7 +1016,7 @@ help <command>: give more explanation on <command>
         print S
     def do_I(self, arg):
         # registry settings:
-        self.config.printRegistrySettings()
+        self.config.printInifileSettings()
 
     def help_i(self):
         print '-'*60
@@ -1093,12 +1123,24 @@ again search for its INI files in the "default/normal" place(s).
     def do_N(self, arg):
         print "Clears NatLink User Directory"
         self.config.clearUserDirectory()
+    def do_f(self, arg):
+        print "Use Unimacro directory in PythonPath even if userDirectory is different"
+        self.config.alwaysIncludeUnimacroDirectoryInPath()
+    def do_F(self, arg):
+        print "Do NOT use Unimacro directory in PythonPath even if userDirectory is different from it."
+        self.config.ignoreUnimacroDirectoryInPathIfNotUserDirectory()
     
     def help_n(self):
         print '-'*60
         print \
 """Sets (n <path>) or clears (N) the user directory of NatLink.
 This will often be the folder where Unimacro is located.
+
+If you use a non-Unimacro directory for userDirectory
+you can use the "f" option for including the Unimacro directory
+to the PythonPath. So modules from Unimacro can be called.
+The Unimacro directory is expected ../../Unimacro in relation to the
+core directory.
 
 When you clear this registry entry, you probably disable Unimacro, as
 Unimacro is located in the NatLink user directory.
@@ -1109,7 +1151,9 @@ Unimacro shorthand commands and meta actions.
         print '='*60
         
     help_N = help_n
-
+    help_f = help_n
+    help_F = help_n
+    
     # Unimacro User directory and Editor for Unimacro INI files-----------------------------------
     def do_o(self, arg):
         if arg.startswith("~") or arg.find("%") >= 0:
@@ -1127,19 +1171,20 @@ Unimacro shorthand commands and meta actions.
 
     def help_o(self):
         print '-'*60
+        userDir = self.config.getUserDirectory()
         print \
 """set/clear Unimacro user directory (o <path>/O)
 
 If you specify this directory, your user INI files (and possibly other user
 dependent files) will be put there.
 
-You can use (if entered through the CLI) "~" (or %HOME%) for user home directory, or
-another %...% environment variable. (example: "o ~\NatLink\Unimacro")
+You can use (if entered through the CLI) "~" (or %%HOME%%) for user home directory, or
+another environment variable (%%...%%). (example: "o ~\NatLink\Unimacro")
 
 If you clear this setting, the user INI files will be put in the
 Unimacro directory itself: %s
 
-"""% self.config.getUserDirectory()
+"""% userDir
         print '='*60
 
     help_O = help_o

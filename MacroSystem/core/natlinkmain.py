@@ -78,13 +78,8 @@ from natlink import *
 import glob             # new way to collect the grammar files
 import pprint
 import natlinkstatus    # for extracting status info (QH)
-# status now a class:
-status = natlinkstatus.NatlinkStatus()
-
-debugLoad= status.getDebugLoad()
 cmdLineStartup=0
 debugTiming=0
-debugCallback = status.getDebugCallback()
 #
 # This redirects stdout and stderr to a dialog box.
 #
@@ -108,6 +103,12 @@ class NewStderr:
 if not cmdLineStartup:
     sys.stdout = NewStdout()
     sys.stderr = NewStderr()
+
+# status:
+status = natlinkstatus.NatlinkStatus()
+status.checkSysPath()
+debugLoad= status.getDebugLoad()
+debugCallback = status.getDebugCallback()
 
 if debugLoad:
     print 'do extra output at (re)loading time: %s'% debugLoad
