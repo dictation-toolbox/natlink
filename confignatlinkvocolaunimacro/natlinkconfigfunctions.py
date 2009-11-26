@@ -437,7 +437,10 @@ NatLink is now disabled.
 
     def setUserDirectory(self, v):
         key = 'UserDirectory'
-        if os.path.isdir(v):
+        if v.startswith("~") or v.find("%") >= 0:
+            print "Setting NatLinkUserDir to %s"% v
+            self.userregnl.set(key, v)
+        elif os.path.isdir(v):
             print 'set NatLinkUserDir to %s'% v
             self.userregnl.set(key, v)
         else:
@@ -1112,13 +1115,7 @@ again search for its INI files in the "default/normal" place(s).
             print 'also enter a valid folder'
             return
         arg = arg.strip()
-        if os.path.isdir(arg):
-##            if arg.find(' ') > 0:
-##                arg = '"' + arg + '"'
-            print "Set NatLink User Directory to %s"% arg
-            self.config.setUserDirectory(arg)
-        else:
-            print 'not a valid folder: %s'% arg
+        self.config.setUserDirectory(arg)
     
     def do_N(self, arg):
         print "Clears NatLink User Directory"
@@ -1156,14 +1153,7 @@ Unimacro shorthand commands and meta actions.
     
     # Unimacro User directory and Editor for Unimacro INI files-----------------------------------
     def do_o(self, arg):
-        if arg.startswith("~") or arg.find("%") >= 0:
-            print "Setting Unimacro user directory to %s"% arg
-            self.config.setUnimacroUserDir(arg)
-        elif os.path.isdir(arg):
-            print "Setting Unimacro user directory to %s"% arg
-            self.config.setUnimacroUserDir(arg)
-        else:
-            print 'Please specify a valid path for UnimacroUserDirectory, not: %s'% arg
+        self.config.setUnimacroUserDir(arg)
             
     def do_O(self, arg):
         print "Clearing Unimacro user directory, falling back to default: %s"% self.config.getUserDirectory()
@@ -1288,14 +1278,7 @@ the Global Clients section of nssystem.ini.
     
     # Vocola and Vocola User directory------------------------------------------------
     def do_v(self, arg):
-        if arg.startswith("~") or arg.find("%") >= 0:
-            print "Setting Vocola user directory to %s"% arg
-            self.config.setVocolaUserDir(arg)
-        elif os.path.isdir(arg):
-            print "Setting Vocola user directory to %s\nand (therefore) enabling Vocola:"% arg
-            self.config.setVocolaUserDir(arg)
-        else:
-            print 'Please specify a valid path for the Vocola user directory (see help v), not: %s'% arg
+        self.config.setVocolaUserDir(arg)
             
     def do_V(self, arg):
         print "Clearing Vocola user directory and (therefore) disabling Vocola:"

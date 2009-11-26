@@ -4,18 +4,21 @@
 # in any way as long as this copyright notice remains.
 
 import natlink
+import natlinkstatus
+natlinkstatus = natlinkstatus.NatlinkStatus()
 from types import *
 import string
 
 
 # attempt to import Unimacro, suppressing errors, and noting success status:
 unimacro_available = False
-try:
-    import actions
-    unimacro_available = True
-except ImportError:
-    pass
-
+if natlinkstatus.UnimacroIsEnabled() or natlinkstatus.getIncludeUnimacroInPythonPath():
+    try:
+        import actions
+        unimacro_available = True
+    except ImportError:
+        print 'Vocola warning: tried to import actions, but no success, ImportError'
+        
 
 class ConversionError(Exception):
     pass

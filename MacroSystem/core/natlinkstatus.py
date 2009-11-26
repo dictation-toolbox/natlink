@@ -181,6 +181,12 @@ class NatlinkStatus(object):
 
     userArgs = [None, None]
 
+    # for quicker access (only once lookup in a run)
+    UserDirectory = None
+    UnimacroUserDirectory = None
+    VocolaUserDirectory = None
+
+
     def __init__(self):
 
         # for the migration from registry to ini files:
@@ -189,7 +195,6 @@ class NatlinkStatus(object):
                 self.copyRegSettingsToInifile(self.userregnlOld, self.userregnl)
             else:
                 print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, run natlinkconfig.py'
-        
    
    
     def checkSysPath(self):
@@ -528,48 +533,88 @@ class NatlinkStatus(object):
 
         should be set in configurenatlink, otherwise ignore...
         """
+        if self.UserDirectory != None: return self.UserDirectory
         key = 'UserDirectory'
         value = self.userregnl.get(key, '')
         if value:
             if os.path.isdir(value):
-                return os.path.normpath(value)
+                value2 = os.path.normpath(value)
+                print 'UserDirectory: %s'% value2
+                self.__class__.UserDirectory = value2
+                return value2
+            else:
+                value2 = natlinkcorefunctions.expandEnvVariables(value)
+                    ## can possibly take expandEnvVariable (which can also hold env variables in
+                    ## the middle of the string )
+                if os.path.isdir(value2):
+                    value2 = os.path.normpath(value2)
+                    print 'UserDirectory (expanded): %s'% value2
+                    self.__class__.UserDirectory = value2
+                    return value2
+                else:
+                    print 'Invalid UserDirectory: %s'% value2
+        self.__class__.UserDirectory = ''
         return ''
 
     def getVocolaUserDirectory(self):
         key = 'VocolaUserDirectory'
+        if self.VocolaUserDirectory: return self.VocolaUserDirectory
+        
         value = self.userregnl.get(key, '')
         if value:
             if os.path.isdir(value):
-                return os.path.normpath(value)
+                value2 = os.path.normpath(value)
+                self.__class__.VocolaUserDirectory = value2
+                return value2
             else:
-                value2 = natlinkcorefunctions.expandEnvVariableAtStart(value)
+                value2 = natlinkcorefunctions.expandEnvVariables(value)
                 ## can possibly take expandEnvVariable (which can also hold env variables in
                 ## the middle of the string )
                 if os.path.isdir(value2):
-                    #print 'take UnimacroUserDirectory with homedir (%s) in front: %s'% (homeDir, value2)
-                    return os.path.normpath(value2)
+                    value2 = os.path.normpath(value2)
+                    self.__class__.VocolaUserDirectory = value2
+                    print 'VocolaUserDirectory (expanded): %s'% value2
+                    return value2
+                else:
+                    print 'not a valid VocolaUserDirectory: %s'% value2
+        self.__class__.VocolaUserDirectory = ''
         return ''
 
     def getUnimacroUserDirectory(self):
         key = 'UnimacroUserDirectory'
+        if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
         value = self.userregnl.get(key, '')
-        if self.UnimacroIsEnabled():
-            if value:
-                if os.path.isdir(value):
-                    return os.path.normpath(value)
-                else:
-                    value2 = natlinkcorefunctions.expandEnvVariableAtStart(value)
-                    ## can possibly take expandEnvVariable (which can also hold env variables in
-                    ## the middle of the string )
-                    if os.path.isdir(value2):
-                        #print 'take UnimacroUserDirectory with homedir (%s) in front: %s'% (homeDir, value2)
-                        return os.path.normpath(value2)
+        if value:
+            if os.path.isdir(value):
+                value2 = os.path.normpath(value)
+                self.__class__.UnimacroUserDirectory = value2
+                return value2
             else:
-                return self.getUserDirectory()
+                value2 = natlinkcorefunctions.expandEnvVariables(value)
+                ## can possibly take expandEnvVariable (which can also hold env variables in
+                ## the middle of the string )
+                if os.path.isdir(value2):
+                    value2 = os.path.normpath(value2)
+                    print 'Take UnimacroUserDirectory (expanded): %s'% value2
+                    self.__class__.UnimacroUserDirectory = value2
+                    return value2
+                else:
+                    value3 = self.getUserDirectory()
+                    print 'not a valid UnimacroUserDirectory:' \
+                          '%s. Take default: %s'% (value2, value3)
+                    self.__class__.UnimacroUserDirectory = value3
+                    return value3
+        elif self.UnimacroIsEnabled():
+            value4 = self.getUserDirectory()
+            print '\nTake UserDirectory for UnimacroUserDirectory: %s\n'\
+                  '---Consider to change this to eg a subdirectory of your\n'\
+                  'Documents directory (like "[My ]Documents\\Natlink\\Unimacro")---\n'% value4
+            self.__class__.UnimacroUserDirectory = value4                
+            return value4
         else:
-            # Unimacro not enabled
+            self.__class__.UnimacroUserDirectory = ""
             return ""
-        raise IOError("could not find a valid UnimacroUserDirectory (got %s from registry)"% value)
+        raise Exception("should not come here, could not find a valid UnimacroUserDirectory")
 
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'

@@ -31,7 +31,7 @@ import os, sys, re, copy
 from win32com.shell import shell, shellcon
 import win32api
 # for extended environment variables:
-reEnv = re.compile('(%[A-Z_]+%)')
+reEnv = re.compile('(%[A-Z_]+%)', re.I)
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -92,6 +92,7 @@ def getExtendedEnv(var, envDict=None, displayMessage=1):
         myEnvDict = envDict
 ##    var = var.strip()
     var = var.strip("% ")
+    var = var.upper()
     
     if var == "~":
         var = 'HOME'
@@ -255,7 +256,7 @@ def expandEnvVariables(filepath, envDict=None):
     
     if reEnv.search(filepath):
         List = reEnv.split(filepath)
-        print 'parts: %s'% List
+        #print 'parts: %s'% List
         List2 = []
         for part in List:
             try:
@@ -320,14 +321,16 @@ if __name__ == "__main__":
     print 'allfolderenvironmentvariables:  %s'% vars.keys()
     for k,v in vars.items():
         print '%s: %s'% (k, v)
-    # bit too much maybe:
-    for p in ("D:\\natlink\\unimacro", "~/unimacroqh", "~\\natlink\\%HOME%\\personal",
-              "%HOME%\\folder%WINDOWS%\\strange testfolder"):
-        expanded = expandEnvVariables(p)
-        print 'expandEnvVariables: %s: %s'% (p, expanded)
-        
+
+    print 'testing       expandEnvVariableAtStart'  
     for p in ("D:\\natlink\\unimacro", "~/unimacroqh",
               "%HOME%/personal",
               "%WINDOWS%\\folder\\strange testfolder"):
         expanded = expandEnvVariableAtStart(p)
         print 'expandEnvVariablesAtStart: %s: %s'% (p, expanded)
+    print 'testing       expandEnvVariables'  
+    for p in ("D:\\%username%", "D:\\natlink\\unimacro", "~/unimacroqh",
+              "%HOME%/personal",
+              "%WINDOWS%\\folder\\strange testfolder"):
+        expanded = expandEnvVariables(p)
+        print 'expandEnvVariables: %s: %s'% (p, expanded)
