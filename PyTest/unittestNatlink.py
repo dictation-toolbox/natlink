@@ -516,7 +516,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testDictObj(self):
+    def tttestDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = DictObj()
@@ -668,6 +668,7 @@ class UnittestNatlink(unittest.TestCase):
         callTest.testTextChange(moduleInfo,(0,0,'Hello',5,5))
         natlink.recognitionMimic(['there'])
 ##        self.wait()
+        ##              012345678901
         testFuncReturn('Hello there',"dictObj.getText(0)",locals())
         callTest.testTextChange(moduleInfo,(5,5,' there',11,11))
 
@@ -678,8 +679,9 @@ class UnittestNatlink(unittest.TestCase):
         #QH why does gotBegin not hit here, sometimes????
         
     #v5/9
+    # version 9 gived (???)) (0, 6, 'And ', 3, 3) here:
     # version 10 gives (0, 6, 'And ', 4, 4) here:
-        callTest.testTextChange(moduleInfo,(0,6,'And ',3,3))
+        callTest.testTextChange(moduleInfo,(0,6,'And ',4, 4))
     #else
 ##        callTest.testTextChange(moduleInfo,(0,5,'And',3,3))
 
@@ -2198,7 +2200,7 @@ def run():
     # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
-    suite = unittest.makeSuite(UnittestNatlink, 'test')
+    suite = unittest.makeSuite(UnittestNatlink, 'tttest')
 ##    natconnectOption = 0 # no threading has most chances to pass...
     log('\nstarting tests with threading: %s\n'% natconnectOption)
     result = unittest.TextTestRunner().run(suite)

@@ -159,8 +159,8 @@ class InnoScript:
         print >> ofi, r"[Files]"
         natlink_files = getAllFiles('NatLink')
         unimacro_files = getAllFiles('Unimacro')
-        # adaptation for Jason Koller, Kaiser hospital Honolulu:
-        kaiser_files = getAllFiles('kaiser_dictation')
+        ## adaptation for Jason Koller, Kaiser hospital Honolulu:
+        #kaiser_files = getAllFiles('kaiser_dictation')
         for path in natlink_files:
             print >> ofi, r'Source: "..\NatLink\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         for path in unimacro_files:
@@ -171,9 +171,9 @@ class InnoScript:
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
             else:
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
-        # will only be included if directory is present:
-        for path in kaiser_files:
-            print >> ofi, r'Source: "..\kaiser_dictation\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+        ## will only be included if directory is present:
+        #for path in kaiser_files:
+        #    print >> ofi, r'Source: "..\kaiser_dictation\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         
         print >> ofi
 
