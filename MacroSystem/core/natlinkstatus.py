@@ -662,6 +662,7 @@ class NatlinkStatus(object):
             print 'Warning,  language of the user cannot be found, acoustic.ini not a file'
             return 'yyy'
         lang = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , acousticini)
+        print 'lang phrase: %s'% lang
         lang =  lang.split("|")[0].strip()
         if lang in languages:
             return languages[lang]

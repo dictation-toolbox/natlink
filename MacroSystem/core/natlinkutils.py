@@ -363,6 +363,7 @@ class GrammarBase(GramClassBase):
         self.activeRules = []
         self.validRules = []
         self.validLists = []
+        self.doOnlyGotResults = None # can rarely be set (QH, dec 2009)
 
     def load(self,gramSpec,allResults=0,hypothesis=0):
         if type(gramSpec) == type(""):
@@ -490,6 +491,12 @@ class GrammarBase(GramClassBase):
         # array of word/ruleNames and an array of only words
         words = []
         fullResults = []
+        if self.doOnlyGotResults:
+            # can switch on in gotResults, so rest of processing is not done.
+            # grammar kaiser_dictation, (voicedictation with exclusive mode catching)
+            # QH (dec, 2009)
+            #print 'skip rest of resultsCallback'
+            return
         for x in wordsAndNums:
             words.append( x[0] )
             # the numbering of some rules appears to be different in NatSpeak10, catch with try:
