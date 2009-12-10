@@ -269,23 +269,39 @@ def expandEnvVariables(filepath, envDict=None):
     # no match
     return filepath
 
-defaultFilename = "natlinkstatus.ini"
-defaultSection = 'usersettings'
-class IniFileSection(object):
+class InifileSection(object):
     """simulate a part of the registry through inifiles
     
         basic file is natlinkstatus.ini
         basic section is usersettings
+        
+        So one instance operates only on one section of one ini file!
+        
+        other instances can be opened by giving the filename
+        and/or the section
+        
+        methods:
+        set(key, value): set a key=value entry in the section
+        get(key, defaultValue=None): get the associated value with
+                 key in the current section.
+                 if empty or not there, the defaultValue is returned
+                 if value = "0" or "1" the integer value 0 or 1 is returned
+        delete(key): deletes from section
+        keys(): return a list of keys in the section
+        
+        
     """
-    def __init__(self, section=None, filename=None):
-        if filename is None:
-            dirName = getBaseFolder()
-            if not os.path.isdir(dirName):
-                raise ValueError("starting inifilesection, invalid directory: %s"%
-                                 dirName)
-            self.filename = os.path.join(dirName, defaultFilename)
-            self.firstUse = (not os.path.isfile(self.filename))
-            self.section =  section or defaultSection
+    def __init__(self, section, filename):
+        """open a section in a inifile
+        
+        """
+        dirName, filePart = os.path.split(filename)
+        if not os.path.isdir(dirName):
+            raise ValueError("InifileSection, filename should be in a valid directory, not: %s"% dirName)
+        self.filename = filename
+        self.firstUse = (not os.path.isfile(self.filename))
+        self.section =  section
+            
     def get(self, key, defaultValue=None):
         """get an item from a key
         
@@ -313,6 +329,23 @@ class IniFileSection(object):
         Keys =  win32api.GetProfileSection( self.section, self.filename)
         Keys = [k.split('=')[0] for k in Keys]
         return Keys
+
+defaultFilename = "natlinkstatus.ini"
+defaultSection = 'usersettings'
+class NatlinkstatusInifileSection(InifileSection):
+    """subclass with fixed filename and section"""
+    
+    def __init__(self):
+        """get the default inifile:
+        In baseDirectory (this directory) the ini file natlinkstatus.ini
+        with section defaultSection
+        """        
+        dirName = getBaseFolder()
+        if not os.path.isdir(dirName):
+            raise ValueError("starting inifilesection, invalid directory: %s"%
+                            dirName)
+        filename = os.path.join(dirName, defaultFilename)
+        InifileSection.__init__(self, section=defaultSection, filename=filename)
 
 
 if __name__ == "__main__":

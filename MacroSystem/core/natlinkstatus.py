@@ -160,7 +160,7 @@ class NatlinkStatus(object):
     userregnlOld = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup)
 ##    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)
 
-    userregnl = natlinkcorefunctions.IniFileSection()
+    userregnl = natlinkcorefunctions.NatlinkstatusInifileSection()
 
     ### from previous modules, needed or not...
     NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
@@ -626,24 +626,71 @@ class NatlinkStatus(object):
         else:
             return ''
 
+    def getLastUsedAcoustics(self):
+        """get name of last used acoustics,
+        
+        used by getLanguage, getBaseModel and getBaseTopic
+        """
+        dir = self.getDNSuserDirectory()
+        #dir = r'D:\projects'  # for testing (at bottom of file)
+        if not os.path.isdir(dir):
+            raise ValueError('not a valid DNSuserDirectory: |%s|, check your configuration'% dir)
+        optionsini = os.path.join(dir, 'options.ini')
+        if not os.path.isfile(optionsini):
+            raise ValueError('not a valid options inifile found: |%s|, check your configuration'% optionsini)
+        
+        section = "Options"
+        inisection = natlinkcorefunctions.InifileSection(section=section,
+                                                         filename=optionsini)
+        keyname = "Last Used Acoustics"
+        keyToModel = inisection.get("Last Used Acoustics")
+        if not keyToModel:
+            raise ValueError('no keyToModel value in options inifile found: (key: |%s|), check your configurationfile %s'%
+                             (keyToModel, optionsini))
+        return keyToModel
+    
+
     def getBaseModelBaseTopic(self):
-        """to be done"""
-        return "tobedone", "tobedone"
-        if debugLoad: print 'extract BaseModel from DNSuserDirectory: %s'% dir
-        keyToModel = win32api.GetProfileVal( "Options", "Last Used Acoustics", "voice" , dir+"\\options.ini" )
-        BaseModel = win32api.GetProfileVal( "Base Acoustic", keyToModel , "" , dir+"\\acoustic.ini" )
-        if debugLoad: print 'extract BaseTopic from DNSuserDirectory: %s'% dir
-        keyToModel = win32api.GetProfileVal( "Options", "Last Used Topic", "" , dir+"\\options.ini" )
-        if keyToModel:
-            BaseTopic = win32api.GetProfileVal( "Base Topic", keyToModel , "" , dir+"\\topics.ini" )
-        else:
-            BaseTopic = "not found in INI files"
-    ##    basetopics = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , dir+"\\topics.ini" )
+        """extract BaseModel and BaseTopic of current user
+        
+        for historical reasons here,
+        better use getBaseModel and getBaseTopic separate...
+        """
+        return self.getBaseModel(), self.getBaseTopic()
 
     def getBaseModel(self):
+        """getting the base model, '' if error occurs
+        """
+        dir = self.getDNSuserDirectory()
+        #dir = r'D:\projects'   # for testing, see bottom of file
+        keyToModel = self.getLastUsedAcoustics()
+        acousticini = os.path.join(dir, 'acoustic.ini')
+        section = "Base Acoustic"
+        basesection = natlinkcorefunctions.InifileSection(section=section,
+                                                         filename=acousticini)
+        BaseModel = basesection.get(keyToModel, "")
+        return BaseModel
+    
+
         return self.getBaseModelBaseTopic()[0]
     def getBaseTopic(self):
-        return self.getBaseModelBaseTopic()[1]
+        """getting the base topic, '' if error occurs
+        """
+        dir = self.getDNSuserDirectory()
+        #dir = r'D:\projects'   # for testing, see bottom of file
+        keyToModel = self.getLastUsedAcoustics()
+        topicsini = os.path.join(dir, 'topics.ini')
+        section = "Base Topic"
+        topicsection = natlinkcorefunctions.InifileSection(section=section,
+                                                         filename=topicsini)
+        keys = topicsection.keys()
+        if len(keys) > 1:
+            print "Warning: getBaseTopic, ambiguous base topic: %s"% keys
+        if not keys:
+            print 'getBaseTopic, no keys found in section %s of inifile: %s'% (section, topicsini)
+            return ''
+        BaseTopic = topicsection.get(keys[0], "")
+        return BaseTopic
 
 
     def getLanguage(self):
@@ -654,21 +701,30 @@ class NatlinkStatus(object):
         is opened.
         """
         dir = self.getDNSuserDirectory()
-        if not dir:
-            print 'no dir yet???%s'% dir
-            return 'zzz'
+        #dir = r'D:\projects' # for testing, see bottom of file
+        keyToModel = self.getLastUsedAcoustics()
         acousticini = os.path.join(dir, 'acoustic.ini')
+        section = "Base Acoustic"
+        
         if not os.path.isfile(acousticini):
-            print 'Warning,  language of the user cannot be found, acoustic.ini not a file'
+            print 'getLanguage: Warning, language of the user cannot be found, acoustic.ini not a file in directory %s'% dir
             return 'yyy'
-        lang = win32api.GetProfileVal( "Base Acoustic", "voice" , "" , acousticini)
-        print 'lang phrase: %s'% lang
+        inisection = natlinkcorefunctions.InifileSection(section=section,
+                                                         filename=acousticini)
+        lang = inisection.get(keyToModel)
+        if not lang:
+            print 'getLanguage: Warning, no model specification string for key %s found in "Base Acoustic" of inifile: %s'% (keyToModel, acousticini)
+            return 'zzz'
         lang =  lang.split("|")[0].strip()
+        if not lang:
+            print 'getLanguage: Warning, no valid specification of language string (key: %s) found in "Base Acoustic" of inifile: %s'% (lang, acousticini)
+            return 'www'
         if lang in languages:
             return languages[lang]
         else:
-            print "Found unknown language in acoustic.ini:", lang
-            return "xxx"
+            print 'getLanguage: Language: %s not found in languageslist: %s, take "xxx"'% \
+                    (lang, languages)
+            return 'xxx'
 
     # get different debug options for natlinkmain:   
     def getDebugLoad(self):
@@ -825,3 +881,12 @@ if __name__ == "__main__":
     status = NatlinkStatus()
     status.checkSysPath()
     print status.getNatlinkStatusString()
+    lang = status.getLanguage()
+    
+    # next things only testable when changing the dir in the functions above
+    # and copying the ini files to this dir...
+    # they normally run only when natspeak is on (and from NatSpeak)
+    #print 'language (test): |%s|'% lang    
+    #print status.getBaseModelBaseTopic()
+    #print status.getBaseModel()
+    #print status.getBaseTopic()
