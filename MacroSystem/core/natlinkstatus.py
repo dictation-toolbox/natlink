@@ -643,7 +643,30 @@ class NatlinkStatus(object):
         inisection = natlinkcorefunctions.InifileSection(section=section,
                                                          filename=optionsini)
         keyname = "Last Used Acoustics"
-        keyToModel = inisection.get("Last Used Acoustics")
+        keyToModel = inisection.get(keyname)
+        if not keyToModel:
+            raise ValueError('no keyToModel value in options inifile found: (key: |%s|), check your configurationfile %s'%
+                             (keyToModel, optionsini))
+        return keyToModel
+
+    def getLastUsedTopic(self):
+        """get name of last used topic,
+        
+        used by getBaseTopic
+        """
+        dir = self.getDNSuserDirectory()
+        #dir = r'D:\projects'  # for testing (at bottom of file)
+        if not os.path.isdir(dir):
+            raise ValueError('not a valid DNSuserDirectory: |%s|, check your configuration'% dir)
+        optionsini = os.path.join(dir, 'options.ini')
+        if not os.path.isfile(optionsini):
+            raise ValueError('not a valid options inifile found: |%s|, check your configuration'% optionsini)
+        
+        section = "Options"
+        inisection = natlinkcorefunctions.InifileSection(section=section,
+                                                         filename=optionsini)
+        keyname = "Last Used Topic"
+        keyToModel = inisection.get(keyname)
         if not keyToModel:
             raise ValueError('no keyToModel value in options inifile found: (key: |%s|), check your configurationfile %s'%
                              (keyToModel, optionsini))
@@ -673,23 +696,21 @@ class NatlinkStatus(object):
     
 
         return self.getBaseModelBaseTopic()[0]
+
     def getBaseTopic(self):
         """getting the base topic, '' if error occurs
         """
         dir = self.getDNSuserDirectory()
         #dir = r'D:\projects'   # for testing, see bottom of file
-        keyToModel = self.getLastUsedAcoustics()
+        keyToModel = self.getLastUsedTopic()
+        if not keyToModel:
+            print 'Warning, no valid key to topic found'
+            return ''
         topicsini = os.path.join(dir, 'topics.ini')
         section = "Base Topic"
         topicsection = natlinkcorefunctions.InifileSection(section=section,
                                                          filename=topicsini)
-        keys = topicsection.keys()
-        if len(keys) > 1:
-            print "Warning: getBaseTopic, ambiguous base topic: %s"% keys
-        if not keys:
-            print 'getBaseTopic, no keys found in section %s of inifile: %s'% (section, topicsini)
-            return ''
-        BaseTopic = topicsection.get(keys[0], "")
+        BaseTopic = topicsection.get(keyToModel, "")
         return BaseTopic
 
 
@@ -704,8 +725,7 @@ class NatlinkStatus(object):
         #dir = r'D:\projects' # for testing, see bottom of file
         keyToModel = self.getLastUsedAcoustics()
         acousticini = os.path.join(dir, 'acoustic.ini')
-        section = "Base Acoustic"
-        
+        section = "Base Acoustic"        
         if not os.path.isfile(acousticini):
             print 'getLanguage: Warning, language of the user cannot be found, acoustic.ini not a file in directory %s'% dir
             return 'yyy'
