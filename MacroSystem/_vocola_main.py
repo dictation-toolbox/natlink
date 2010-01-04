@@ -5,7 +5,7 @@
 #    - "Built-in" voice commands
 #    - Autoloading of changed command files
 #
-# This file is copyright (c) 2002-2009 by Rick Mohr. It may be redistributed
+# This file is copyright (c) 2002-2010 by Rick Mohr. It may be redistributed
 # in any way as long as this copyright notice remains.
 #
 #

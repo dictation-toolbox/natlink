@@ -37,7 +37,7 @@ NatLink
 -----------------------------------
 
 Vocola
-	Copyright (c) 2002-2009 by Rick Mohr. It may be redistributed in
+	Copyright (c) 2002-2010 by Rick Mohr. It may be redistributed in
 	any way as long as this copyright notice remains.
 
 -----------------------------------
