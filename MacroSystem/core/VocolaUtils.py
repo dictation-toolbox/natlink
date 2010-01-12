@@ -1,6 +1,6 @@
 # VocolaUtils.py - Classes used by Vocola's generated Python code
 #
-# This file is copyright (c) 2002-2009 by Rick Mohr.  It may be redistributed 
+# This file is copyright (c) 2002-2010 by Rick Mohr.  It may be redistributed 
 # in any way as long as this copyright notice remains.
 
 import natlink
@@ -77,11 +77,7 @@ class Value:
                 self.values.append(v)
             self.lastValueType = 'String'
         elif v.__class__.__name__ == 'DragonCall':
-            # combine adjacent Dragon calls if possible
-            if self.lastValueType == 'DragonCall':
-                self.values[-1].addDragonCall(v)
-            else:
-                self.values.append(v)
+            self.values.append(v)
             self.lastValueType = 'DragonCall'
         elif v.__class__.__name__ == 'UnimacroCall':
             self.values.append(v)
@@ -176,6 +172,7 @@ class DragonCall:
         if self.argumentString != '':
             self.argumentString += ','
         self.argumentString += ' ' + argument
+        self.rawLastArgument = str(value)  # for SendDragonKeys
 
     def quoteAsVisualBasicString(self, argument):
         q = argument
@@ -196,7 +193,10 @@ class DragonCall:
     def perform(self):
         #print '[' + self.script + ']'
         try:
-            natlink.execScript(self.script)
+            if self.functionName == "SendDragonKeys":
+                natlink.playString(self.rawLastArgument)
+            else:
+                natlink.execScript(self.script)
         except natlink.SyntaxError, details:
             message = "Dragon reported a syntax error when Vocola attempted" \
                     + " to execute the Dragon procedure '" + self.script \

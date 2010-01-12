@@ -7,7 +7,7 @@
 #                  (default is "_vcl")
 #   -f          -- force processing even if file(s) not out of date
 #
-# This file is copyright (c) 2002-2009 by Rick Mohr. It may be redistributed 
+# This file is copyright (c) 2002-2010 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 #
 # 09/06/2009  ml  New $set directive replaces old non-working sequence directive
@@ -68,7 +68,7 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.6.4I";
+    $VocolaVersion = "2.6.5I";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
@@ -659,7 +659,6 @@ sub parse_top_command    # top_command = terms '=' action* ';'
         &shift_clause;
         my $statement = &parse_command;
         &ensure_empty;
-        $statement->{TYPE} = "command";
         $File_empty = 0;
         if ($Debug>=1) {print_command (*LOG, $statement); print LOG "\n"}
         return $statement;
@@ -694,6 +693,7 @@ sub parse_command    # command = terms ['=' action*]
     my $terms = &parse_terms;
     return 0 unless $terms;
     my $command = {};
+    $command->{TYPE} = "command";
     $command->{TERMS} = $terms;
 
     # Count variable terms for range checking in &parse_reference
@@ -838,7 +838,7 @@ sub parse_actions    # action = word | call | reference
             while ($action->{TEXT} =~ /\G(.*?)(?<!\\)\$(\d+|[a-zA-Z_]\w*)/gc) {
                 my ($word, $ref) = ($1, $2);
 		push (@actions, create_word_node($word, 1)) if $word;
-		if ($ref =~ /\d+/) {
+		if ($ref =~ /^\d+/) {
 		    push (@actions, create_reference_node($ref));
 		} else {
 		    push (@actions, create_formal_reference_node($ref));
@@ -1229,7 +1229,7 @@ sub print_actions
 sub print_action
 {
     my ($out, $action) = @_;
-    if    ($action->{TYPE} eq "word")     {print $out "$action->{TEXT}"}
+    if    ($action->{TYPE} eq "word")     {print_word($out, $action)}
     elsif ($action->{TYPE} eq "reference"){print $out "\$$action->{TEXT}"}
     elsif ($action->{TYPE} eq "formalref"){print $out "\$$action->{TEXT}"}
     elsif ($action->{TYPE} eq "call") {
@@ -1243,6 +1243,14 @@ sub print_action
         }
         print $out ")";
     }
+}
+
+sub print_word
+{
+    my ($out, $action) = @_;
+    my $word = $action->{TEXT}; 
+    $word =~ s/\'/\'\'/g;
+    print $out "'$word'" ;
 }
 
 sub print_argument

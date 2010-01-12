@@ -1,3 +1,17 @@
+New in 2.6.5:
+
+* Now works with Python 2.6.
+
+* Debug code for printing data structures now correctly quotes word
+  actions.
+
+* Fixed a bug where using a formal reference containing a digit in a
+  quoted string (e.g., "<$arg1>") produced a runtime crash.
+
+* Fixed a bug wherein SendDragonKeys had stopped working since at least
+  Dragon NaturallySpeaking version 9.5.
+
+
 New in 2.6.4:
 
 ! Command sequences work again for DNS 7.0 and later; complicated
