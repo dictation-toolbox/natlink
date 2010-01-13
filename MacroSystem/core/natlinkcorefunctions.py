@@ -306,8 +306,13 @@ class InifileSection(object):
         """get an item from a key
         
         """
-        value = win32api.GetProfileVal( self.section, key, defaultValue,
-                                       self.filename)
+        if defaultValue is None:
+            defaultValue = ''
+        else:
+            defaultValue = str(defaultValue)
+        value = win32api.GetProfileVal(self.section, key, defaultValue, self.filename)
+##        if value:
+##            print 'get: %s, %s: %s'% (self.section, key, value)
         if value in ("0", "1"):
             return int(value)
         return value
@@ -316,18 +321,27 @@ class InifileSection(object):
         """set an item for akey
         
         """
-        value = win32api.WriteProfileVal( self.section, key, value,
-                                       self.filename)
+##        print 'set: %s, %s: %s'% (self.section, key, value)
+        win32api.WriteProfileVal( self.section, key, value, self.filename)
+        checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
+        if checkValue != value:
+            print 'set failed:  %s, %s: %s, got %s instead'% (self.section, key, value, checkValue)
+
     def delete(self, key):
         """delete an item for a key (really set to "")
         
         """
+        print 'delete: %s, %s'% (self.section, key)
         value = win32api.WriteProfileVal( self.section, key, None,
                                        self.filename)
+        checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
+        if checkValue != 'nonsens':
+            print 'delete failed:  %s, %s: got %s instead'% (self.section, key, checkValue)
 
     def keys(self):
         Keys =  win32api.GetProfileSection( self.section, self.filename)
-        Keys = [k.split('=')[0] for k in Keys]
+        Keys = [k.split('=')[0].strip() for k in Keys]
+        print 'return Keys: %s'% Keys
         return Keys
 
 defaultFilename = "natlinkstatus.ini"

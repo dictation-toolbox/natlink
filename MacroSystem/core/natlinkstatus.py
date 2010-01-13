@@ -1,4 +1,4 @@
-__version__ = "3.8"
+__version__ = "3.9beta"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -9,6 +9,7 @@ __version__ = "3.8"
 #----------------------------------------------------------------------------
 # version 3.9: changing to ini files instead of registry
 #              and get python path directly...
+#              making ready for python2.6
 # version 3.7: changed userDirectory to UserDirectory in the getNatlinkStatusDict function.
 #              no influence on the natlinkstatus.getUserDirectory() function.
 
@@ -533,7 +534,7 @@ class NatlinkStatus(object):
 
         should be set in configurenatlink, otherwise ignore...
         """
-        if self.UserDirectory != None: return self.UserDirectory
+##        if self.UserDirectory != None: return self.UserDirectory
         key = 'UserDirectory'
         value = self.userregnl.get(key, '')
         if value:
@@ -558,7 +559,7 @@ class NatlinkStatus(object):
 
     def getVocolaUserDirectory(self):
         key = 'VocolaUserDirectory'
-        if self.VocolaUserDirectory: return self.VocolaUserDirectory
+##        if self.VocolaUserDirectory: return self.VocolaUserDirectory
         
         value = self.userregnl.get(key, '')
         if value:
@@ -582,7 +583,7 @@ class NatlinkStatus(object):
 
     def getUnimacroUserDirectory(self):
         key = 'UnimacroUserDirectory'
-        if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
+##        if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
         value = self.userregnl.get(key, '')
         if value:
             if os.path.isdir(value):
@@ -632,6 +633,9 @@ class NatlinkStatus(object):
         used by getLanguage, getBaseModel and getBaseTopic
         """
         dir = self.getDNSuserDirectory()
+        if dir is None:
+            print 'probably no speech profile on'
+            return
         #dir = r'D:\projects'  # for testing (at bottom of file)
         if not os.path.isdir(dir):
             raise ValueError('not a valid DNSuserDirectory: |%s|, check your configuration'% dir)
@@ -722,6 +726,9 @@ class NatlinkStatus(object):
         is opened.
         """
         dir = self.getDNSuserDirectory()
+        if dir is None:
+            print 'probably no speech profile on'
+            return
         #dir = r'D:\projects' # for testing, see bottom of file
         keyToModel = self.getLastUsedAcoustics()
         acousticini = os.path.join(dir, 'acoustic.ini')

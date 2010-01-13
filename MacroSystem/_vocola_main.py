@@ -54,7 +54,6 @@ pydFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'Exec',
 sys.path.append(pydFolder)
 NatLinkFolder = os.path.abspath(NatLinkFolder)
 
-
 import simpscrp
 
 language = status.getLanguage()
@@ -442,10 +441,10 @@ def vocolaBeginCallback(moduleInfo):
     current = getLastVocolaFileModTime()
     if current > lastVocolaFileTime:
         thisGrammar.loadAllFiles('')
-	if not thisGrammar.compilerError:
-            lastVocolaFileTime =  current
-        else:
-            thisGrammar.compilerError = 0	   
+    if not thisGrammar.compilerError:
+        lastVocolaFileTime =  current
+    else:
+        thisGrammar.compilerError = 0      
 
 #    source_changed = 0
 #    for folder in thisGrammar.commandFolders:

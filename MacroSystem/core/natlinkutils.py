@@ -652,6 +652,8 @@ class DictGramBase(GramClassBase):
 #
 # Here are the functions which derived classes can call:
 #
+# make default select and through words "select" and "though" (lower case)
+# Quintijn december 2010
 # adapt to throughWords as well, for future enhancement VoiceCode
 # Quintijn August, 2009
 #   load( selectWords=['Select'], throughWord='Through', throughWords=None, allResults=0, hypothesis=0 )
@@ -730,10 +732,10 @@ class DictGramBase(GramClassBase):
 
 class SelectGramBase(GramClassBase):
 
-    def load( self, selectWords=None, throughWord='Through',
+    def load( self, selectWords=None, throughWord='through',
               throughWords=None,allResults=0, hypothesis=0 ):
         if selectWords is None:
-            selectWords = ['Select']
+            selectWords = ['select']
         if throughWords is None:
             throughWords = [throughWord]
         # QH, throughWords also maybe a list of words, the default being

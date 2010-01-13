@@ -146,8 +146,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             dllFile = os.path.join(coreDir, 'natlink.pyd')
         else:
             dllFile = os.path.join(coreDir, 'natlink.dll')
-        if not os.path.isfile(dllFile) or not isRegistered:
+        if not (os.path.isfile(dllFile) and isRegistered == pythonVersion):
             self.copyNatlinkDllPythonVersion()
+            self.registerNatlinkDll()
             self.checkPythonPathAndRegistry()            
 
     def copyNatlinkDllPythonVersion(self):
@@ -622,7 +623,7 @@ Possibly you need administrator rights to do this
                     print 'failed to register %s (result: %s)'% (DllPath, result)
                     self.config.set('NatlinkDllRegistered', 0)
                 else:
-                    self.userregnl.set('NatlinkDllRegistered', 1)
+                    self.userregnl.set('NatlinkDllRegistered', pythonVersion)
 #                    print 'registered %s '% DllPath
                     
             except:
@@ -636,7 +637,7 @@ Possibly you need administrator rights to do this
                 self.userregnl.set('NatlinkDllRegistered', 0)
             else:
                 print 'registered %s'% DllPath
-                self.userregnl.set('NatlinkDllRegistered', 1)
+                self.userregnl.set('NatlinkDllRegistered', pythonVersion)
                 
         self.setNatlinkInPythonPathRegistry()
 

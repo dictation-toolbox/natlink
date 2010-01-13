@@ -433,14 +433,14 @@ class ConfigureNatlinkPanel(wx.Panel):
         D = self.config.getNatlinkStatusDict()
 ##        print 'StatusDict:'
 ##        for k,v in D.items():
-##            print '%s: %s'% (k,v)
+##            if v:
+##                print '%s: %s'% (k,v)
 ##        print '-------'
         newStatus = {} # dict with keys NatLink, Vocola, Unimacro, values (value, changed) each of them
         
         
         try:
             changed = 0
-            print 'D.keys: %s'% D.keys()
             for key in D:
                 if key in self.functions and self.functions[key]:
                     if key == 'VocolaCommandFilesEditor':
@@ -449,6 +449,8 @@ class ConfigureNatlinkPanel(wx.Panel):
 ##                    if func == None:
 ##                        print "no getter function for %s"% key
 ##                        continue
+                    if key == 'UnimacroUserDirectory':
+                        pass
                     value = D[key]
                     thisOneChanged = 0
                     if value != self.startInfo[key]:
