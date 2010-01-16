@@ -1,6 +1,6 @@
 New in 2.6.5:
 
-* Now works with Python 2.6.
+! Now works with Python 2.6.
 
 * Debug code for printing data structures now correctly quotes word
   actions.
