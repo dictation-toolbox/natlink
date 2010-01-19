@@ -22,6 +22,8 @@ GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
                      '_tags.py', '_unimacrotest.py', '_modes.py',
                      'winword_styles_unimacro.py']
 
+FoldersToIgnore = ['sample_global_dictation']
+
 ExtensionsToIgnore = [".wmv"]
 #--------- two utility functions:
 def getBaseFolder(globalsDict=None):
@@ -167,6 +169,10 @@ class InnoScript:
             if filter(None, [path for ext in ExtensionsToIgnore if path.endswith(ext)]):
                 print 'ignoring because of extension: %s'% path
                 continue
+            if filter(None, [path for subdir in FoldersToIgnore if path.find(subdir) >= 0]):
+                print 'ignoring because in FoldersToIgnore: %s'% path
+                continue
+            
             if filter(None, [path == f for f in GrammarsToDisable]):
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
             else:
