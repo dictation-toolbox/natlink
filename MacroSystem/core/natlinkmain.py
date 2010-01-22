@@ -94,11 +94,15 @@ class NewStdout:
     softspace=1
     def write(self,text):
         displayText(text, 0)
+    def flush(self):
+        pass
 
 class NewStderr:
     softspace=1
     def write(self,text):
         displayText(text, 1)
+    def flush(self):
+        pass
 
 if not cmdLineStartup:
     sys.stdout = NewStdout()

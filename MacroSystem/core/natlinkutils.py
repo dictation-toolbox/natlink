@@ -5,7 +5,10 @@
 #
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
-#
+# Dec 2009:
+#   - added the variable self.doOnlyGotResultsObject, which can be set inside a user gotResultsObject
+#     routine, in order to NOT further process the recognition
+#     (for kaiser_dictation.py, dictation to target application, QH)
 # August 17, 2009
 #   - added throughWords in SelectGramBase, in order to make more
 #     throughWords possible, like "through" and "until".
@@ -363,7 +366,7 @@ class GrammarBase(GramClassBase):
         self.activeRules = []
         self.validRules = []
         self.validLists = []
-        self.doOnlyGotResults = None # can rarely be set (QH, dec 2009)
+        self.doOnlyGotResultsObject = None # can rarely be set (QH, dec 2009)
 
     def load(self,gramSpec,allResults=0,hypothesis=0):
         if type(gramSpec) == type(""):
@@ -491,8 +494,8 @@ class GrammarBase(GramClassBase):
         # array of word/ruleNames and an array of only words
         words = []
         fullResults = []
-        if self.doOnlyGotResults:
-            # can switch on in gotResults, so rest of processing is not done.
+        if self.doOnlyGotResultsObject:
+            # can switch on in gotResultsObject, so rest of processing is not done.
             # grammar kaiser_dictation, (voicedictation with exclusive mode catching)
             # QH (dec, 2009)
             #print 'skip rest of resultsCallback'

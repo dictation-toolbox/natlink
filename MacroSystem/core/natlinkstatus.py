@@ -1,4 +1,4 @@
-__version__ = "3.9beta"
+__version__ = "3.9charlie"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -10,6 +10,7 @@ __version__ = "3.9beta"
 # version 3.9: changing to ini files instead of registry
 #              and get python path directly...
 #              making ready for python2.6
+#              minor change to NewStdout and NewStderr in natlinkmain
 # version 3.7: changed userDirectory to UserDirectory in the getNatlinkStatusDict function.
 #              no influence on the natlinkstatus.getUserDirectory() function.
 
