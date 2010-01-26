@@ -58,13 +58,34 @@ class TestError(Exception):
     pass
 ExitQuietly = 'ExitQuietly'
 
+def getBaseFolder(globalsDict=None):
+    """get the folder of the calling module.
+
+    either sys.argv[0] (when run direct) or
+    __file__, which can be empty. In that case take the working directory
+    """
+    globalsDictHere = globalsDict or globals()
+    baseFolder = ""
+    if globalsDictHere['__name__']  == "__main__":
+        baseFolder = os.path.split(sys.argv[0])[0]
+        print 'baseFolder from argv: %s'% baseFolder
+    elif globalsDictHere['__file__']:
+        baseFolder = os.path.split(globalsDictHere['__file__'])[0]
+        print 'baseFolder from __file__: %s'% baseFolder
+    if not baseFolder:
+        baseFolder = os.getcwd()
+        print 'baseFolder was empty, take wd: %s'% baseFolder
+    return baseFolder
+
+thisDir = getBaseFolder(globals())
+
 
 # try some experiments more times, because gotBegin sometimes seems
 # not to hit
 nTries = 10
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # with spurious error (if set to 1), missing gotBegin and all that...
-logFileName = r"D:\natlink\natlink\PyTest\testresult.txt"
+logFileName = os.path.join(thisDir, "testresult.txt")
 
 ## try more special file names, test in testNatlinkMain:
 spacesFilenameGlobal = '_with spaces'
