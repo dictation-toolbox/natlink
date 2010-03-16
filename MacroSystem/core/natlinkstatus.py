@@ -68,8 +68,12 @@ getPythonVersion:
 
 
 getUserDirectory: get the NatLink user directory, Unimacro will be there. If not return ''
+    (if run from natlinkconfigfunctions use getUserDirectoryFromIni, which checks inifile
+     at each call...)
 
 getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
+    (if run from natlinkconfigfunctions use getVocolaDirectoryFromIni, which checks inifile
+     at each call...)
 
 getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return '' or
       the Unimacro user directory
@@ -535,7 +539,12 @@ class NatlinkStatus(object):
 
         should be set in configurenatlink, otherwise ignore...
         """
-##        if self.UserDirectory != None: return self.UserDirectory
+        if self.UserDirectory != None: return self.UserDirectory
+        return self.getUserDirectoryFromIni()
+
+    def getUserDirectoryFromIni(self):
+        """get the UserDirectory from the ini file
+        """
         key = 'UserDirectory'
         value = self.userregnl.get(key, '')
         if value:
@@ -559,8 +568,11 @@ class NatlinkStatus(object):
         return ''
 
     def getVocolaUserDirectory(self):
+        if self.VocolaUserDirectory: return self.VocolaUserDirectory
+        return self.getVocolaUserDirectoryFromIni()
+
+    def getVocolaUserDirectoryFromIni(self):
         key = 'VocolaUserDirectory'
-##        if self.VocolaUserDirectory: return self.VocolaUserDirectory
         
         value = self.userregnl.get(key, '')
         if value:
@@ -583,8 +595,11 @@ class NatlinkStatus(object):
         return ''
 
     def getUnimacroUserDirectory(self):
+        if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
+        return self.getUnimacroUserDirectoryFromIni()
+        
+    def getUnimacroUserDirectoryFromIni(self):
         key = 'UnimacroUserDirectory'
-##        if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
         value = self.userregnl.get(key, '')
         if value:
             if os.path.isdir(value):
@@ -800,17 +815,20 @@ class NatlinkStatus(object):
         for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'DNSFullVersion', 
-                    'PythonVersion', 'UserDirectory',
+                    'PythonVersion',
+                    
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages',
-                    'VocolaUserDirectory', 
-                    'UnimacroUserDirectory', 'UnimacroIniFilesEditor',
+                    'UnimacroIniFilesEditor',
                     'NatlinkDebug', 'InstallVersion', 'NatlinkDllRegistered',
                     'IncludeUnimacroInPythonPath']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
             execstring = "D['%s'] = self.get%s()"% (key, keyCap)
             exec(execstring)
+        D['UserDirectory'] = self.getUserDirectoryFromIni()
+        D['VocolaUserDirectory'] = self.getVocolaUserDirectoryFromIni()
+        D['UnimacroUserDirectory'] = self.getUnimacroUserDirectoryFromIni()
         D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
         D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
