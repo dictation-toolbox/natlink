@@ -407,7 +407,12 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
     """    
     global lastModule
     # this extracts the module base name like "wordpad"
-    curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
+    try:
+        curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
+    except:
+        print "loadModSpecific: invalid modulename, skipping (moduleInfo): %s"% `moduleInfo`
+        curModule = ''
+        
     if curModule and not (onlyIfChanged and curModule==lastModule):
         findAndLoadFiles(curModule)
         lastModule = curModule
