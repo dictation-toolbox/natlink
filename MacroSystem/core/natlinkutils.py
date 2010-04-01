@@ -5,6 +5,12 @@
 #
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
+#
+# March 2010 (QH):
+#   - added deactivateSet() function in GrammarBase
+#   - added exceptlist optional variable to activateAll method of GrammarBase
+#   - added callRuleResultsFunctions in resultsCallback, so the calling of
+#         the rule result functions can be overloaded (for DocstringGrammar)
 # Dec 2009:
 #   - added the variable self.doOnlyGotResultsObject, which can be set inside a user gotResultsObject
 #     routine, in order to NOT further process the recognition
@@ -48,10 +54,7 @@
 ############################################################################
 __version__ = "$Revision$, $Date$, $Author$"
 
-import os
-import os.path
-import copy
-import string
+import os, os.path, copy, types
 import struct
 from natlink import *
 from gramparser import *
@@ -142,9 +145,9 @@ dgnwordflag_DNS8newwrdProp  = 0x20000000
 
 def matchWindow(moduleInfo, modName, wndText):
     if len(moduleInfo)<3 or not moduleInfo[0]: return None
-    curName = string.lower( getBaseName(moduleInfo[0]) )
+    curName = getBaseName(moduleInfo[0]).lower()
     if curName != modName: return None
-    if -1 == string.find(moduleInfo[1], wndText): return None
+    if moduleInfo[1].find(wndText) == -1: return None
     return moduleInfo[2]
 
 #---------------------------------------------------------------------------
@@ -265,8 +268,9 @@ class GramClassBase:
 #       active.  Do not use this function to change the window handle if you
 #       have already activates some rules with a different window handle.
 #
-#   activateAll( window=0, exclusive=None )
+#   activateAll( window=0, exclusive=None, exceptlist=None )
 #       This will activate every exported rule.
+#       can optionally add a list of rules NOT to activate (QH, 2010)
 #
 #   deactivate( ruleName, noError=0 )
 #       Deactivates a single rule by name.
@@ -369,11 +373,11 @@ class GrammarBase(GramClassBase):
         self.doOnlyGotResultsObject = None # can rarely be set (QH, dec 2009)
 
     def load(self,gramSpec,allResults=0,hypothesis=0):
-        if type(gramSpec) == type(""):
+        if type(gramSpec) == types.StringType:
             gramSpec = [gramSpec]
-        elif type(gramSpec) != type([]):
+        elif type(gramSpec) != types.ListType:
             raise GrammarError( "grammar definition must be a list of strings" )
-        elif type(gramSpec[0]) != type(""):
+        elif type(gramSpec[0]) != types.StringType:
             raise GrammarError( "grammar definition must be a list of strings" )
 
         splitApartLines(gramSpec)
@@ -417,14 +421,18 @@ class GrammarBase(GramClassBase):
 
     def deactivate(self, ruleName, noError=0):
         if ruleName not in self.validRules:
+            if noError: return
             raise GrammarError( "rule %s was not exported in the grammar" % ruleName )
         if ruleName not in self.activeRules:
-            if noError: return None
+            if noError: return
             raise GrammarError( "rule %s is not active" )
         self.gramObj.deactivate(ruleName)
         self.activeRules.remove(ruleName)
 
     def activateSet(self, ruleNames, window=0, exclusive=None):
+        if not type(ruleNames ) in (types.ListType, types.TupleType):
+            raise TypeError("activateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
+                            (`ruleNames`, type(ruleNames)))
         for x in copy.copy(self.activeRules):
             if not x in ruleNames:
                 self.gramObj.deactivate(x)
@@ -438,9 +446,23 @@ class GrammarBase(GramClassBase):
         if exclusive != None:
             self.gramObj.setExclusive(exclusive)
 
-    def activateAll(self, window=0, exclusive=None):
+    def deactivateSet(self, ruleNames, noError=0):
+        if not type(ruleNames ) in (types.ListType, types.TupleType):
+            raise TypeError("deactivateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
+                            (`ruleNames`, type(ruleNames)))
+        for x in ruleNames:
+            self.deactivate(x, noError=noError)
+
+    def activateAll(self, window=0, exclusive=None, exceptlist=None):
+        if exceptlist:
+            for x in exceptlist:
+                if x in self.activeRules:
+                    self.gramObj.deactivate(x)
+                    self.activeRules.remove(x)
         for x in self.validRules:
             if x not in self.activeRules:
+                if exceptlist and x in exceptlist:
+                    continue
                 self.gramObj.activate(x,window)
                 self.activeRules.append(x)
         if exclusive != None:
@@ -477,7 +499,7 @@ class GrammarBase(GramClassBase):
         # if the allResults flag is set it is possible that the first
         # parameter will be a string instead of a data structure. We 
         # compute the recognition type from this parameter
-        if type(wordsAndNums) == type(''): 
+        if type(wordsAndNums) == types.StringType: 
             recogType = wordsAndNums
         else:
             recogType = 'self'
@@ -538,9 +560,19 @@ class GrammarBase(GramClassBase):
         #   sequentially scan the results (see seqsAndRules example)
         # - finally we call gotResults
         self.callIfExists( 'gotResultsInit', (words, fullResults) )
+        self.callRuleResultsFunctions(seqsAndRules, fullResults)
+        self.callIfExists( 'gotResults', (words, fullResults) )
+
+    def callRuleResultsFunctions(self, seqsAndRules, fullResults):
+        """call the rule functions, can be overloaded
+        """
         for x in seqsAndRules:
             self.callIfExists( 'gotResults_'+x[1], (x[0], fullResults) )
-        self.callIfExists( 'gotResults', (words, fullResults) )
+            ## for new style grammars (docstring):
+            #self.callIfExists( 'rule_'+x[1], (x[0], fullResults) )
+            #self.callIfExists( 'rule_'+x[1]+'_exported', (x[0], fullResults) )
+            #self.callIfExists( 'rule_'+x[1]+'_imported', (x[0], fullResults) )
+
 
 #---------------------------------------------------------------------------
 # DictGramBase

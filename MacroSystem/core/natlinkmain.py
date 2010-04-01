@@ -6,6 +6,9 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+# March 2010 (QH) loading (in findAndLoadFiles) _control.py last, the
+#            Unimacro control grammar (for introspection)
+#
 # Febr 2008 (QH)
 #   - userDirectory inserted at front of sys.path (was appended)
 #   - made special arrangements for _vocola_main, so it calls back before
@@ -113,7 +116,6 @@ status = natlinkstatus.NatlinkStatus()
 status.checkSysPath()
 debugLoad= status.getDebugLoad()
 debugCallback = status.getDebugCallback()
-
 if debugLoad:
     print 'do extra output at (re)loading time: %s'% debugLoad
 if debugCallback:
@@ -328,10 +330,18 @@ def findAndLoadFiles(curModule=None):
         res = pat.match(x)
         if res: addToFilesToLoad( filesToLoad, res.group(1), baseDirectory, moduleHasDot )
 
+
     # Try to (re)load any files we find
     if debugLoad: print 'filesToLoad: %s'% filesToLoad.keys()
+    # to Unimacro grammar control last:
+    controlModule = None
     for x in filesToLoad:
-        if x == doVocolaFirst: continue
+        if x == doVocolaFirst:
+            continue
+        if x == '_control':
+            if debugLoad: print 'skipping _control'
+            controlModule = x
+            continue
         # for safety, should not be needed, as Vocola purges all generated
         # grammar files at start, even if it does not load completely
         if not vocolaEnabled and reVocolaModuleName.search(x):
@@ -340,6 +350,15 @@ def findAndLoadFiles(curModule=None):
             continue
         origName = loadedFiles.get(x, None)
         loadedFiles[x] = loadFile(x, searchImportDirs, origName)
+
+    # if unimacro module _control exists, load it last:
+    if controlModule:
+        if debugLoad:
+            print 'loading _control last'
+        origName = loadedFiles.get(controlModule, None)
+        loadedFiles[controlModule] = loadFile(controlModule, searchImportDirs, origName)
+        
+
 
     # Unload any files which have been deleted
     for name, path in loadedFiles.items():

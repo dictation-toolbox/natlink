@@ -175,7 +175,7 @@ class UnittestNatlink(unittest.TestCase):
         # up the users work.
         i = 0
         while i < 50:
-            time.sleep(0.1)
+            time.sleep(0.2)
             mod, title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
             if mod == "natspeak": break
@@ -369,7 +369,7 @@ class UnittestNatlink(unittest.TestCase):
         natlink.playString('{ctrl+end}x{ctrl+a}{ctrl+c}{ctrl+end}{backspace}')
         contents = natlink.getClipboard()
         if contents == '' or contents[-1:] !='x':
-            raise TestError,'Failed to read the contents of the NatSpeak window'
+            raise TestError,'Failed to read the contents of the NatSpeak window: |%s|'% repr(contents)
         return contents[:-1]
 
     def doTestWindowContents(self, expected,testName=None):
@@ -537,7 +537,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestDictObj(self):
+    def testDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = DictObj()
@@ -1454,12 +1454,43 @@ class UnittestNatlink(unittest.TestCase):
             ##expected: ['three'], got: ['one', 'three']
             ##fix around line 420 (copy.copy) in natlinkutils.py, QH
     
-            
+        ## test exceptlist feature:
+        ## ['one', 'three', 'four'] are the exported rules
+        testGram.activateAll(exceptlist=['one'])
+        testActiveRules(testGram, ['three', 'four'])
+        testGram.activateAll(exceptlist=None)
+        testActiveRules(testGram, ['one', 'three', 'four'])
+        testGram.deactivateAll()
+        testActiveRules(testGram, [])
+        # extra in exceptlist does not matter:
+        testGram.activateAll(exceptlist=['one', 'two', 'three', 'four', 'five'])
+        testActiveRules(testGram, [])
+        testGram.activateAll(exceptlist=['three', 'four'])
+        testActiveRules(testGram, ['one'])
+        testGram.activateAll(exceptlist=['one', 'three'])
+        testActiveRules(testGram, ['four'])
         
+        # test (new, 2010) function deactivateSet
+        testGram.activateAll(exceptlist=['one'])
+        testActiveRules(testGram, ['three', 'four'])
+        testGram.deactivateSet(['three'])
+        testActiveRules(testGram, ['four'])
+        testGram.deactivateSet(['four'])
+        testActiveRules(testGram, [])
+        # non existing rule:
+        testForException(gramparser.GrammarError,"testGram.deactivateSet(['five'])",locals())
+        # trick for this:
+        testGram.deactivateSet(['five'], noError=1)
+        testActiveRules(testGram, [])
 
-        # try a few illegal grammars to make sure they are reported properly (we
-        # already tested the grammar parser so this does not have to be
-        # exhaustive)
+        testGram.activateAll()
+        testGram.deactivateSet(['four', 'three'])
+        testActiveRules(testGram, ['one'])
+
+        # must pass a list to deactivateset
+        testForException(TypeError,"testGram.deactivateSet('five')",locals())
+        testForException(TypeError,"testGram.activateSet('four')",locals())
+
         testGram.unload()
         testForException(SyntaxError,"testGram.load('badrule;')",locals())
         testForException(GrammarError,"testGram.load('<rule> = hello;')",locals())
@@ -2221,7 +2252,7 @@ def run():
     # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
-    suite = unittest.makeSuite(UnittestNatlink, 'tttest')
+    suite = unittest.makeSuite(UnittestNatlink, 'test')
 ##    natconnectOption = 0 # no threading has most chances to pass...
     log('\nstarting tests with threading: %s\n'% natconnectOption)
     result = unittest.TextTestRunner().run(suite)
