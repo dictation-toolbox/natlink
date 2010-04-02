@@ -7,6 +7,10 @@ Also see http://speechwiki.org/NL/NatLinkDocumentation.html
  natlink.txt
     Documentation for NatLink which connects Python to NatSpeak
 
+March 2010 (QH) loading (in findAndLoadFiles) _control.py last, the
+            Unimacro control grammar (for introspection)
+           natlinkutils.GrammarBase, enhanced function activateAll and
+		   added function deactivateSet (see natlinkutils.py)
  August 17, 2009
     - added throughWords in SelectGramBase, see natlinkutils.py (Quintijn)
 

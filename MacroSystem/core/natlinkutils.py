@@ -564,15 +564,10 @@ class GrammarBase(GramClassBase):
         self.callIfExists( 'gotResults', (words, fullResults) )
 
     def callRuleResultsFunctions(self, seqsAndRules, fullResults):
-        """call the rule functions, can be overloaded
+        """call the rule functions, can be overloaded (eg in DocstringGrammar)
         """
         for x in seqsAndRules:
             self.callIfExists( 'gotResults_'+x[1], (x[0], fullResults) )
-            ## for new style grammars (docstring):
-            #self.callIfExists( 'rule_'+x[1], (x[0], fullResults) )
-            #self.callIfExists( 'rule_'+x[1]+'_exported', (x[0], fullResults) )
-            #self.callIfExists( 'rule_'+x[1]+'_imported', (x[0], fullResults) )
-
 
 #---------------------------------------------------------------------------
 # DictGramBase

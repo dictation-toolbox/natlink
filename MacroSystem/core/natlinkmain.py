@@ -8,7 +8,9 @@
 #
 # March 2010 (QH) loading (in findAndLoadFiles) _control.py last, the
 #            Unimacro control grammar (for introspection)
-#
+ #August 17, 2009
+ #   - added throughWords in SelectGramBase, see natlinkutils.py (Quintijn)
+ #
 # Febr 2008 (QH)
 #   - userDirectory inserted at front of sys.path (was appended)
 #   - made special arrangements for _vocola_main, so it calls back before
