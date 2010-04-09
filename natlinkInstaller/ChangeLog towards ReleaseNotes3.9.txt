@@ -1,0 +1,32 @@
+Release notes for NatLink/Vocola/Unimacro towards 3.9:
+
+
+New in Vocola version 2.6.4:
+
+* Python 2.6 is now supported.
+
+
+New in the combined NatLink/Vocola/Unimacro installer:
+* User configuration is now done through configuration file "natlinkstatus.ini"
+in the Core directory instead of the User section of the registry.
+
+New in Unimacro:
+* making spoken forms for number lists and number grammars.
+* DocstringGrammar included (on top of IniGrammar), making rules definition in docstrings possible.
+* monitorfunctions.py for switching tasks across monitors and moving resizing windows (tasks)
+* _tasks.py: revised, for use with monitorfunctions
+* Included new Unimacro Shorthand Commands: TASKOD, TASKMAX, TASKMIN, TASKRESTORE
+* Excluded windkey.dll. Sending the windows key now goes through api calls. So changed the Unimacro Shorthand Command WINKEY.
+* enhanced DATE and added TIME actions (can also speak (ttsplaystring))
+
+Changed in NatLink (for programmers only):
+* added deactivateSet() function in GrammarBase
+* added exceptlist optional variable to activateAll method of GrammarBase
+* added callRuleResultsFunctions in resultsCallback, so the calling of the rule result functions can be overloaded (for DocstringGrammar)
+* natlinkmain.py (QH): loading (in findAndLoadFiles) _control.py last, the Unimacro control grammar (for introspection)
+* added a "flush" method to NewStdout and NewStderr in natlinkmain.py (python 2.6 wanted them appearently) (QH)
+* added a variable self.self.doOnlyGotResultsObject, which can make the resultsCallback skip the
+  gotResults_... and gotResults functions
+  
+  
+

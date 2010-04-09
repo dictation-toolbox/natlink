@@ -19,8 +19,7 @@
 # 5. the result will be in the "dist" subdirectory, also the .iss file
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
                      '_keystrokes.py', '_oops.py', '_setpriority.py',
-                     '_tags.py', '_unimacrotest.py', '_modes.py',
-                     'winword_styles_unimacro.py']
+                     '_tags.py', '_unimacrotest.py', '_modes.py']
 
 FoldersToIgnore = ['sample_global_dictation']
 
