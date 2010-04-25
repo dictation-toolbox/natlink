@@ -552,7 +552,9 @@ class GrammarBase(GramClassBase):
                 seqsAndRules[-1:][0][0].append(x[0])
             else:
                 seqsAndRules.append( ([x[0]], x[1]) )
-        
+        # provide fullResults and seqsAndRules also as instance variables:
+        self.fullResults = fullResults
+        self.seqsAndRules = seqsAndRules
         # now we make the callbacks (in each case we only call the fucntion 
         # if it exists in the derived class)
         # - we first call gotResultsInit
@@ -565,9 +567,24 @@ class GrammarBase(GramClassBase):
 
     def callRuleResultsFunctions(self, seqsAndRules, fullResults):
         """call the rule functions, can be overloaded (eg in DocstringGrammar)
+        
+        Also give self.nextRule (the name) self.nextWords, self.prevRule, self.prevWords
+        so the result of the adjacent rules are known
         """
-        for x in seqsAndRules:
-            self.callIfExists( 'gotResults_'+x[1], (x[0], fullResults) )
+        ruleName, ruleWords = None, None
+        for i, x in enumerate(seqsAndRules):
+            if i == 0:
+                ruleName, self.nextRule = None, x[1]
+                ruleWords, self.nextWords = [], x[0]
+            else:
+                self.prevRule, ruleName, self.nextRule = ruleName, self.nextRule, x[1]
+                self.prevWords, ruleWords, self.nextWords = ruleWords, self.nextWords, x[0]
+                self.callIfExists( 'gotResults_'+ruleName, (ruleWords, fullResults) )
+
+        self.prevRule, ruleName, self.nextRule = ruleName, self.nextRule, None
+        self.prevWords, ruleWords, self.nextWords = ruleWords, self.nextWords, []
+        self.callIfExists( 'gotResults_'+ruleName, (ruleWords, fullResults) )
+
 
 #---------------------------------------------------------------------------
 # DictGramBase
