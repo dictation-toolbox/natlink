@@ -14,6 +14,7 @@
 #
 # This file represents the simplest possible example of a NatLink macro.
 #
+# See also the variant _first_sample_docstring.py in the folder DisabledGrammars of Unimacro
 
 import natlink
 from natlinkutils import *

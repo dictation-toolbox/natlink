@@ -7,6 +7,7 @@
 # adapted for word styles by Quintijn Hoogenboom (23/10/2008), for comparison with
 # Dragonfly example...
 #
+# See also the variant winword_styles_unimacro.py in the folder DisabledGrammars of Unimacro
 
 import natlink
 from natlinkutils import *
