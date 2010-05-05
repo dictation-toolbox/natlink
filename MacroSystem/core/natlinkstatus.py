@@ -138,7 +138,8 @@ Wversions = {'1/4/10': '98',
              '2/4/0':  'NT4',
              '2/5/0':  '2000',
              '2/5/1':  'XP',
-             '2/6/0':  'Vista'
+             '2/6/0':  'Vista',
+             '2/6/1':  '7'
              }
 
 # the possible languages (for getLanguage)
