@@ -762,6 +762,9 @@ Possibly you need administrator rights to do this
 
     def includeUnimacroVchLineInVocolaFiles(self, subDirectory=None):
         """include the Unimacro wrapper support line into all Vocola command files
+        
+        as a side effect, set the variable for Unimacro in Vocola support:
+        VocolaTakesUnimacroActions...
         """
         uscFile = 'Unimacro.vch'
         oldUscFile = 'usc.vch'
@@ -808,8 +811,12 @@ Possibly you need administrator rights to do this
                     open(F, 'w').write(''.join(Output))
                     nFiles += 1
             elif len(f) == 3 and os.path.isdir(F):
+                # subdirectory, recursive
                 self.includeUnimacroVchLineInVocolaFiles(F)
-        mess = 'changed %s files in %s'% (nFiles, toFolder)
+        self.enableVocolaTakesUnimacroActions()
+        mess = 'changed %s files in %s, and set the variable "%s"'% (nFiles, toFolder,
+                                                                     VocolaTakesUnimacroActions)
+        
         print mess
 
     def removeUnimacroVchLineInVocolaFiles(self, subDirectory=None):
@@ -879,6 +886,20 @@ Possibly you need administrator rights to do this
         """
         key = "VocolaTakesLanguages"
         self.userregnl.set(key, 0)
+
+    def enableVocolaTakesUnimacroActions(self):
+        """setting registry  so Vocola can divide different languages
+
+        """
+        key = "VocolaTakesUnimacroActions"
+        self.userregnl.set(key, 1)
+        
+
+    def disableVocolaTakesUnimacroActions(self):
+        """disables so Vocola does not take Unimacro Actions
+        """
+        key = "VocolaTakesUnimacroActions"
+        self.userregnl.set(key, 0)
         
                 
 
@@ -894,7 +915,7 @@ def _main(Options=None):
 
     """
     cli = CLI()
-    shortOptions = "iIeEfFgGyYxXDCVbBNOPlmMrRzZuq"
+    shortOptions = "aAiIeEfFgGyYxXDCVbBNOPlmMrRzZuq"
     shortArgOptions = "d:c:v:n:o:p:"
     if Options:
         if type(Options) == types.StringType:
@@ -981,6 +1002,7 @@ v/V     - enable/disable Vocola by setting/clearing VocolaUserDir, the user
           directory for Vocola user files (~ or %HOME% allowed).
 
 b/B     - enable/disable distinction between languages for Vocola user files
+a/A     - enable/disable the possibility to use Unimacro actions in Vocola
 
 [Unimacro]
 
@@ -1442,10 +1464,32 @@ To disable NatLink and unregister (silently) use Z
         print "Disable Vocola different user directory's for different languages"
         self.config.disableVocolaTakesLanguages()
 
+    def do_a(self, arg):
+        print "Enable Vocola taking Unimacro actions"
+        self.config.enableVocolaUnimacroActions()
+    def do_A(self, arg):
+        print "Disable Vocola taking Unimacro actions"
+        self.config.disableVocolaTakesLanguages()
+
+    def help_a(self):
+        print '-'*60
+        print \
+"""----Enable (a)/disable (A) Vocola taking Unimacro actions.
+        
+These actions (Unimacro Shorthand Commands) and "meta actions" are processed by
+the Unimacro actions module.
+
+If Unimacro is NOT enabled, or a directory
+different from the Unimacro directory is used as "UserDirectory", it will also
+be necessary that the (original) Unimacro directory is put in the python path.
+The special option for that is (f) (But often not needed).
+"""
+        print '='*60
+        
     def help_b(self):
         print '-'*60
         print \
-"""Enable (b)/disable (B) different Vocola user directories
+"""----Enable (b)/disable (B) different Vocola user directories
 
 If enabled, Vocola will look into a subdirectory "xxx" of
 VocolaUserDirectory IF the language code of the current user speech
@@ -1460,6 +1504,7 @@ is made and all existing Vocola user files are copied into this folder.
         print '='*60
 
     help_B = help_b
+    help_A = help_a
 
     # enable/disable NatLink debug output...
 

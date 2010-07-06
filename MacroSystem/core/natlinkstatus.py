@@ -802,6 +802,13 @@ class NatlinkStatus(object):
         key = 'VocolaTakesLanguages'
         value = self.userregnl.get(key, None)
         return value
+
+    def getVocolaTakesUnimacroActions(self):
+        """gets and value for optional Vocola takes Unimacro actions"""
+        
+        key = 'VocolaTakesUnimacroActions'
+        value = self.userregnl.get(key, None)
+        return value
     
     def getInstallVersion(self):
         return __version__
@@ -819,7 +826,7 @@ class NatlinkStatus(object):
                     'PythonVersion',
                     
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
-                    'VocolaTakesLanguages',
+                    'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'UnimacroIniFilesEditor',
                     'NatlinkDebug', 'InstallVersion', 'NatlinkDllRegistered',
                     'IncludeUnimacroInPythonPath']:
@@ -857,11 +864,13 @@ class NatlinkStatus(object):
             ## Vocola::
             if D['vocolaIsEnabled']:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
-                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages'):
+                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages',
+                            'VocolaTakesUnimacroActions'):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
-                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages'):
+                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages',
+                            'VocolaTakesUnimacroActions'):
                     del D[key]
                     
             ## Unimacro or UserDirectory:

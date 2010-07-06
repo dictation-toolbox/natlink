@@ -289,3 +289,10 @@ def combineDictationWords(fullResults):
             i = i + 1
             inDictation = 0
     return fullResults
+
+def UnimacroIsAvailable():
+    """returns if Unimacro is available,
+    
+    so Unimacro Shorthand Commands and Unimacro actions can be done
+    """
+    return unimacro_available

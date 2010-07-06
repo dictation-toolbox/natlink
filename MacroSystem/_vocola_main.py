@@ -30,7 +30,7 @@ from natlinkutils import *
 import natlinkstatus
 import natlinkcorefunctions
 status = natlinkstatus.NatlinkStatus()
-
+from VocolaUtils import UnimacroIsAvailable
 
 # Set to non-zero number of seconds to debug starting editors on
 # Vocola source code:
@@ -322,8 +322,17 @@ class ThisGrammar(GrammarBase):
         if not path:
             path = self.commandFolders[0] + '\\' + file
             new = open(path, 'w')
+            # insert include line to Unimacro.vch:
+            if UnimacroIsAvailable():
+                if self.language == 'enx' or not status.getVocolaTakesLanguages():
+                    includeLine = 'include Unimacro.vch;\n'
+                else:
+                    includeLine = 'include ..\\Unimacro.vch;\n'
+                new.write(includeLine)                    
             new.write('# ' + comment + '\n\n')
             new.close()
+
+
         elif path == wantedPath:
             pass
         else:
