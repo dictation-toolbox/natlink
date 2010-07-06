@@ -302,6 +302,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         MainWindow( self, True )
 
         # WDR: handler declarations for configurenatlink
+        wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaTakesUnimacroActions, self.OnCheckVocolaTakesUnimacroActions)
         wx.EVT_CHECKBOX(self, ID_IncludeUnimacroInPythonPath, self.OnButtonIncludeUnimacroInPythonPath)
         wx.EVT_BUTTON(self, ID_BUTTONVocolaCompatibiliy, self.OnButtonVocolaCompatibility)
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroEditor, self.OnButtonUnimacroEditor)
@@ -396,6 +397,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['VocolaUserDirectory'] = self.GetTextctrlvocolauserdir
         D['WindowsVersion'] = self.frame.infopanel.GetTextctrlwindowsversion
         D['VocolaTakesLanguages'] = self.GetCheckboxvocolatakeslanguages
+        D['VocolaTakesUnimacroActions'] = self.GetCheckboxvocolatakesunimacroactions
 ##        D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
         D['DebugCallback'] = self.GetCheckboxdebugcallbackoutput
         D['DebugLoad'] = self.GetCheckboxdebugload
@@ -409,6 +411,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['UnimacroIniFilesEditor'] = self.GetTextctrlunimacroeditor
         D['IncludeUnimacroInPythonPath'] = self.GetIncludeunimacroinpythonpath
         self.checkboxes = ['VocolaTakesLanguages',
+                           'VocolaTakesUnimacroActions',
                            'DebugCallback', 'DebugLoad',
                            'NatlinkDebug',
                            'IncludeUnimacroInPythonPath'
@@ -637,6 +640,8 @@ class ConfigureNatlinkPanel(wx.Panel):
 
        
     # WDR: methods for configurenatlink
+    def GetCheckboxvocolatakesunimacroactions(self):
+        return self.FindWindowById( ID_CHECKBOXVocolaTakesUnimacroActions )
 
     def GetIncludeunimacroinpythonpath(self):
         return self.FindWindowById( ID_IncludeUnimacroInPythonPath )
@@ -712,6 +717,12 @@ class ConfigureNatlinkPanel(wx.Panel):
         return self.FindWindowById( ID_TEXTCTRLregisternatlink )
 
     # WDR: handler implementations for configurenatlink
+
+    def OnCheckVocolaTakesUnimacroActions(self, event):
+        letter = 'a'
+        control = self.GetCheckboxvocolatakesunimacroactions()
+        self.do_checkboxcommand(letter, control)
+        
 
     def OnButtonIncludeUnimacroInPythonPath(self, event):
         letter = 'f'

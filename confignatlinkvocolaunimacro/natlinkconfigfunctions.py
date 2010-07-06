@@ -1466,10 +1466,10 @@ To disable NatLink and unregister (silently) use Z
 
     def do_a(self, arg):
         print "Enable Vocola taking Unimacro actions"
-        self.config.enableVocolaUnimacroActions()
+        self.config.enableVocolaTakesUnimacroActions()
     def do_A(self, arg):
         print "Disable Vocola taking Unimacro actions"
-        self.config.disableVocolaTakesLanguages()
+        self.config.disableVocolaTakesUnimacroActions()
 
     def help_a(self):
         print '-'*60
