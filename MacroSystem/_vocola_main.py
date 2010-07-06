@@ -30,8 +30,19 @@ from natlinkutils import *
 import natlinkstatus
 import natlinkcorefunctions
 status = natlinkstatus.NatlinkStatus()
-from VocolaUtils import UnimacroIsAvailable
 
+want_unimacro = status.getVocolaTakesUnimacroActions()
+if want_unimacro:
+    try:
+        import actions
+    except ImportError:
+        print 'WARNING: You want to use Unimacro actions in Vocola,'
+        print 'but the Unimacro module "actions" cannot be imported.\n'
+        print 'Either enable Unimacro, or switch on the '
+        print 'option "Include Unimacro directory in PythonPath" in the '
+        print 'config program or with '
+        print 'the option "f" in the CLI (Command Line Interpreter).'
+        want_unimacro = None
 # Set to non-zero number of seconds to debug starting editors on
 # Vocola source code:
 debugSleepTime = 0
@@ -323,7 +334,7 @@ class ThisGrammar(GrammarBase):
             path = self.commandFolders[0] + '\\' + file
             new = open(path, 'w')
             # insert include line to Unimacro.vch:
-            if UnimacroIsAvailable():
+            if want_unimacro:
                 if self.language == 'enx' or not status.getVocolaTakesLanguages():
                     includeLine = 'include Unimacro.vch;\n'
                 else:

@@ -9,8 +9,11 @@ New in Vocola version 2.6.4:
 New in the combined NatLink/Vocola/Unimacro installer:
 * User configuration is now done through configuration file "natlinkstatus.ini"
 in the Core directory instead of the User section of the registry.
+* New in the combined NatLink/Vocola/Unimacro installer:
 
 New in Unimacro:
+
+* Added Unimacro Shorthand Command AC (doActionConditionally), checking for a window with a title.
 * making spoken forms for number lists and number grammars.
 * DocstringGrammar included (on top of IniGrammar), making rules definition in docstrings possible.
 * monitorfunctions.py for switching tasks across monitors and moving resizing windows (tasks)

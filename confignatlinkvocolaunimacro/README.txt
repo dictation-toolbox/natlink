@@ -20,5 +20,6 @@ the command line interface, which is contained in
 natlinkconfigfunctions.py.  Just start this program from the start
 menu or the folder that you are in now.
 
+Important: start with the available ".bat files", sometimes in "elevated mode".
 
-Quintijn Hoogenboom, February 18, ???, reviewed April 6, 2009
+Quintijn Hoogenboom, February 18, ???, reviewed April 6, 2009/July 2010

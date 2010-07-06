@@ -1110,7 +1110,8 @@ More information in the log panel """
     def OnButtonHelp3(self, event):
         print '---help on Enable/disable Vocola:'
         print 'note the letters correspond to the commands in the self.cli (command line interface)'
-        self.cli.help_v()
+        self.cli.help_b()
+        self.cli.help_a()
         print '---help on additional Vocola options:'
         L = []
         L.append("Vocola is enabled by specifying a directory (VocolaUserDirectory)")
@@ -1240,7 +1241,7 @@ class MyApp(wx.App):
     def OnInit(self):
         wx.InitAllImageHandlers()
         self.frame = MyFrame( None, -1, "Configure NatLink & Vocola & Unimacro",
-                              [110,80], [700,660] )
+                              [110,80], [700,680] )
         self.frame.Show(True)  
         return True
 

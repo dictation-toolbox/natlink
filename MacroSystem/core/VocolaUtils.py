@@ -7,15 +7,18 @@ import natlink
 from types import *
 import string
 
+import natlinkstatus
+status = natlinkstatus.NatlinkStatus()
+want_unimacro = status.getVocolaTakesUnimacroActions()
+if want_unimacro:
+    try:
+        import actions
+    except ImportError:
+        print 'WARNING: Cannot use Unimacro actions. '
+        print 'See messages from _vocola_main...'
+        want_unimacro = None
 
-# attempt to import Unimacro, suppressing errors, and noting success status:
-unimacro_available = False
-try:
-    import actions
-    unimacro_available = True
-except ImportError:
-    pass
-
+unimacro_available = want_unimacro
 
 class ConversionError(Exception):
     pass
@@ -226,10 +229,9 @@ class UnimacroCall:
             #print '[' + self.argumentString + ']'
             actions.doAction(self.argumentString)
         else:
-            m = "Vocola: Unimacro call failed because Unimacro is " \
-                + "unavailable"
+            m = 'Vocola: Unimacro call "%s" failed because Unimacro is ' \
+                'unavailable'% self.argumentString
             raise NotImplementedError(m)
-
  
 
 # The Evaluator class represents a Vocola "Eval" expression.  Vocola's
