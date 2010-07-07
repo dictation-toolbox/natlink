@@ -19,7 +19,7 @@
 #
 
 import sys, string
-import win32api
+import win32api, win32gui, pywintypes
 import os               # access to file information
 import os.path          # to parse filenames
 import time             # print time in messages
@@ -77,10 +77,10 @@ class ThisGrammar(GrammarBase):
 <loadCurrent>       exported = (Laad|Lood) [stem|vojs] (Commandoos|Commands);
 <loadGlobal>        exported = (Laad|Lood) globale [stem|vojs] (Commandoos|Commands);
 <discardOld>        exported = (Discard|Verwijder) (oude|oold) [stem|vojs] (Commandoos|Commands);
-<edit>              exported = (Eddit|Bewerk) [stem|vojs] (Commandoos|Commands);
-<editMachine>       exported = (Eddit|Bewerk) Machine [stem|vojs] (Commandoos|Commands);
-<editGlobal>        exported = (Eddit|Bewerk) (Global|globale) [stem|vojs] (Commandoos|Commands);
-<editGlobalMachine> exported = (Eddit|Bewerk) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
+<edit>              exported = (Eddit|Bewerk|Sjoo|Toon) [stem|vojs] (Commandoos|Commands);
+<editMachine>       exported = (Eddit|Bewerk|Sjoo|Toon) Machine [stem|vojs] (Commandoos|Commands);
+<editGlobal>        exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) [stem|vojs] (Commandoos|Commands);
+<editGlobalMachine> exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
     """
     else:
         gramSpec = """
@@ -89,17 +89,16 @@ class ThisGrammar(GrammarBase):
 <loadCurrent>       exported = Load [Voice] Commands;
 <loadGlobal>        exported = Load Global [Voice] Commands;
 <discardOld>        exported = Discard Old [Voice] Commands;
-<edit>              exported = Edit [Voice] Commands;
-<editMachine>       exported = Edit Machine [Voice] Commands;
-<editGlobal>        exported = Edit Global [Voice] Commands;
-<editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
+<edit>              exported = (Edit|Show) [Voice] Commands;
+<editMachine>       exported = (Edit|Show) Machine [Voice] Commands;
+<editGlobal>        exported = (Edit|Show) Global [Voice] Commands;
+<editGlobalMachine> exported = (Edit|Show) Global Machine [Voice] Commands;
     """
 
     def initialize(self):
         self.mayHaveCompiled = 0  # has the compiler been called?
         self.compilerError   = 0  # has a compiler error occurred?
         self.setNames()
-
         # remove previous Vocola/Python compilation output as it may be out
         # of date (e.g., new compiler, source file deleted, partially
         # written due to crash, new machine name, etc.):
@@ -296,26 +295,30 @@ class ThisGrammar(GrammarBase):
         app = self.getCurrentApplicationName()
         file = app + '.vcl'
         comment = 'Voice commands for ' + app
-        self.openCommandFile(file, comment)
+        onlyShow = (words[0] in ['Show', 'Sjoo', 'Toon'])
+        self.openCommandFile(file, comment, onlyShow=onlyShow)
 
     # "Edit Machine Commands" -- open command file for current app & machine
     def gotResults_editMachine(self, words, fullResults):
         app = self.getCurrentApplicationName()
         file = app + '@' + self.machine + '.vcl'
         comment = 'Voice commands for ' + app + ' on ' + self.machine
-        self.openCommandFile(file, comment)
+        onlyShow = (words[0] in ['Show', 'Sjoo', 'Toon'])
+        self.openCommandFile(file, comment, onlyShow=onlyShow)
 
     # "Edit Global Commands" -- open global command file
     def gotResults_editGlobal(self, words, fullResults):
         file = '_vocola.vcl'
         comment = 'Global voice commands'
-        self.openCommandFile(file, comment)
+        onlyShow = (words[0] in ['Show', 'Sjoo', 'Toon'])
+        self.openCommandFile(file, comment, onlyShow=onlyShow)
 
     # "Edit Global Machine Commands" -- open global command file for machine
     def gotResults_editGlobalMachine(self, words, fullResults):
         file = '_vocola@' + self.machine + '.vcl'
         comment = 'Global voice commands on ' + self.machine
-        self.openCommandFile(file, comment)
+        onlyShow = (words[0] in ['Show', 'Sjoo', 'Toon'])
+        self.openCommandFile(file, comment, onlyShow=onlyShow)
 
     # Open a Vocola command file (using the application associated with ".vcl")
     
@@ -326,7 +329,17 @@ class ThisGrammar(GrammarBase):
 
         return ""
     
-    def openCommandFile(self, file, comment):
+    def openCommandFile(self, file, comment, onlyShow=None):
+        """open a command file with Notepad.
+        
+        Create new if it did not exist before, possibly with include line
+        to Unimacro.vch,
+        
+        If the file was called before in this NatSpeak session, try to
+        switch to the previously opened window (using AppBringUp)
+        
+        If onlyShow is set, do NOT give focus, bring to foreground only.
+        """
         path = self.FindExistingCommandFile(file)
         wantedPath = os.path.join(self.commandFolders[0], file)
 
@@ -342,7 +355,6 @@ class ThisGrammar(GrammarBase):
                 new.write(includeLine)                    
             new.write('# ' + comment + '\n\n')
             new.close()
-
 
         elif path == wantedPath:
             pass
@@ -373,16 +385,31 @@ class ThisGrammar(GrammarBase):
         if not os.path.isfile(prog):
             raise IOError("Cannot find program to open %s (tried %s)"%
                           (path, prog))
-        try:
-            path = win32api.GetShortPathName(path)
-            if debugSleepTime:
-                print 'open (ShellExecute) (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
-                time.sleep(debugSleepTime)
-            win32api.ShellExecute(0, 'open', prog, path, "", 1)
-            #os.spawnv(os.P_NOWAIT, prog, (prog, path))
-        except WindowsError, e: 
-            print 'could not open %s, error message: %s'% (path, e)
-            
+        path = win32api.GetShortPathName(path)
+        if debugSleepTime:
+            print 'open (ShellExecute) (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
+            time.sleep(debugSleepTime)
+        trunk, ext = os.path.splitext(file)
+        appString = "%s %s"% (prog, path)
+        appName = "vocolaedit%s"% trunk
+        if onlyShow:
+            appStyle = 4
+        else:
+            appStyle = 1
+        print 'file: %s, appName: %s, appString: %s, appStyle: %s'% (
+            file, appName, appString, appStyle)
+        natlink.execScript('AppBringup "%s", "%s", %s'% (appName, appString, appStyle))
+        
+        #    
+        #    win32api.ShellExecute(0, 'open', prog, path, "", 1)
+        #    #os.spawnv(os.P_NOWAIT, prog, (prog, path))
+        #except WindowsError, e: 
+        #    print 'could not open %s, error message: %s'% (path, e)
+        #else:
+        #    time.sleep(0.1)
+        #    hndle = win32gui.GetForegroundWindow()
+        #    self.editedFilesHndles[file] = hndle
+        #    print 'set remember hndle of %s to %s'% (file, hndle)
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
