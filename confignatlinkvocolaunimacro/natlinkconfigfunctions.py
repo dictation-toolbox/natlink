@@ -530,9 +530,15 @@ Possibly you need administrator rights to do this
         # trick with None, see testConfigureFunctions...
         # this one disables NatLink:
         win32api.WriteProfileVal(section1, key1, None, nssystemini)
-        if not silent:
-            print 'NatLink disabled, restart NatSpeak'
-            print 'Note natlink.dll is NOT UNREGISTERED, but this is not necessary either'
+        result = self.NatlinkIsEnabled(silent=1)
+        if result:            
+            t = 'NatLink is NOT disabled, possibly you need administrator rights'
+            print t
+            self.warning(t)
+        else:
+            if not silent:
+                print 'NatLink disabled, restart NatSpeak'
+                print 'Note natlink.dll is NOT UNREGISTERED, but this is not necessary either'
         
     def getVocolaUserDir(self):
         key = 'VocolaUserDirectory'

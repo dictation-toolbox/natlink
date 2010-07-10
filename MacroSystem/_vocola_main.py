@@ -385,12 +385,13 @@ class ThisGrammar(GrammarBase):
         if not os.path.isfile(prog):
             raise IOError("Cannot find program to open %s (tried %s)"%
                           (path, prog))
-        path = win32api.GetShortPathName(path)
+        #path = win32api.GetShortPathName(path)
         if debugSleepTime:
             print 'open (ShellExecute) (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
             time.sleep(debugSleepTime)
         trunk, ext = os.path.splitext(file)
-        appString = "%s %s"% (prog, path)
+            
+        appString = '%s %s'% (prog, path)
         appName = "vocolaedit%s"% trunk
         if onlyShow:
             appStyle = 4
