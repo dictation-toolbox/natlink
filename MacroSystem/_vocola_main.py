@@ -133,12 +133,12 @@ class ThisGrammar(GrammarBase):
         if self.vocolaEnabled:
             self.commandFolders.insert(0, userCommandFolder)                
             if status.getVocolaTakesLanguages():
-                self.language = status.getLanguage()
+                language = status.getLanguage()
                 print '_vocola_main started with language: %s'% language
-                if self.language != 'enx':
-                    userCommandFolder2 = os.path.join(userCommandFolder, self.language)
+                if language != 'enx':
+                    userCommandFolder2 = os.path.join(userCommandFolder, language)
                     if not os.path.isdir(userCommandFolder2):
-                        print 'creating userCommandFolder for language %s'% self.language
+                        print 'creating userCommandFolder for language %s'% language
                         self.createNewSubDirectory(userCommandFolder2)
                         self.copyToNewSubDirectory(userCommandFolder, userCommandFolder2)
                     self.commandFolders.insert(0, userCommandFolder2)                
@@ -348,7 +348,7 @@ class ThisGrammar(GrammarBase):
             new = open(path, 'w')
             # insert include line to Unimacro.vch:
             if want_unimacro:
-                if self.language == 'enx' or not status.getVocolaTakesLanguages():
+                if language == 'enx' or not status.getVocolaTakesLanguages():
                     includeLine = 'include Unimacro.vch;\n'
                 else:
                     includeLine = 'include ..\\Unimacro.vch;\n'
@@ -361,7 +361,7 @@ class ThisGrammar(GrammarBase):
         else:
             # copy from other location
             if wantedPath.startswith(path) and len(wantedPath) - len(path) == 3:
-                print 'copy enx version to language version %s'% self.language
+                print 'copy enx version to language version %s'% language
                 self.copyVclFileLanguageVersion(path, wantedPath)
             else:
                 print 'copy from other location'
@@ -423,7 +423,7 @@ class ThisGrammar(GrammarBase):
         Output = os.path.normpath(Output)
         input = open(Input, 'r').read()
         output = open(Output, 'w')
-        output.write("# vocola file for alternate language: %s\n"% self.language)
+        output.write("# vocola file for alternate language: %s\n"% language)
         lines = map(string.strip, str(input).split('\n'))
         for line in lines:
             if reInclude.match(line):
