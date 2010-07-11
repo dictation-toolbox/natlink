@@ -1,7 +1,7 @@
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
+#   Portions (c) Copyright 1999 by Dragon Systems, *Inc.
 #
 # setupnatlinkwithinno.py
 #   This module does makes the installer.  Mind the steps to be taken below:
@@ -132,7 +132,7 @@ class InnoScript:
         self.outputFilename = "setup-natlink-%s"% self.version
         print >> ofi, r"OutputBaseFilename=%s"% self.outputFilename
         print >> ofi, r"AppName=%s"% self.name
-        print >> ofi, r"AppVerName=%s version %s (including Vocola 2.6.5I and Unimacro)" % (self.name, self.version)
+        print >> ofi, r"AppVerName=%s version %s (including Vocola 2.7I and Unimacro)" % (self.name, self.version)
         print >> ofi, r"DefaultDirName=C:\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
         print >> ofi, r"LicenseFile=..\NatLink\COPYRIGHT.txt"

@@ -59,6 +59,7 @@ insert DDE Poke = "DdeExecute(APP, TOPIC, ITEM, VALUE)"{left} ;
 insert DLL Call = "DllCall(LIB, FUNC, STRINGARG)"{left} ;
 insert Drag To Point (Left = 1 | Right = 2 | Middle = 4 ) = "DragToPoint(" $1 ")";
 insert eval = "Eval()"{Left} ;
+insert eval template = "EvalTemplate()"{Left} ;
 insert Go To Sleep = "GoToSleep()"{left} ;
 insert Menu Cancel = "MenuCancel()" ;
 insert MenuPick = "MenuPick()" {Left} ;

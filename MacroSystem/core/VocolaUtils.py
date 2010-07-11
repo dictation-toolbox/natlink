@@ -1,274 +1,21 @@
-# VocolaUtils.py - Classes used by Vocola's generated Python code
-#
-# This file is copyright (c) 2002-2010 by Rick Mohr.  It may be redistributed 
-# in any way as long as this copyright notice remains.
+###
+### VocolaUtils.py - Code used by Vocola's generated Python code
+###
+### This file is copyright (c) 2002-2010 by Rick Mohr.  It may be redistributed 
+### in any way as long as this copyright notice remains.
+###
 
 import natlink
-from types import *
+from   types import *
 import string
-
-import natlinkstatus
-status = natlinkstatus.NatlinkStatus()
-want_unimacro = status.getVocolaTakesUnimacroActions()
-if want_unimacro:
-    try:
-        import actions
-    except ImportError:
-        print 'WARNING: Cannot use Unimacro actions. '
-        print 'See messages from _vocola_main...'
-        want_unimacro = None
-
-unimacro_available = want_unimacro
-
-class ConversionError(Exception):
-    pass
-
-class DragonError(Exception):
-    pass
+import re
+import sys
 
 
-
-# The UserCall class represents a Vocola user function call.  Vocola's
-# generated Python code uses this class to build up a string
-# (self.getCall()) containing the function's translated name and the
-# function's arguments, which is then interpreted by Python's "eval".
-
-class UserCall:
-    def __init__(self, functionName):
-        self.functionName = functionName
-        self.argumentString = ''
-
-    def addArgument(self, value):
-        # for now, coerce arguments to strings:
-        argument = str(value)
-        if self.argumentString != '':
-            self.argumentString += ','
-        self.argumentString += ' ' + self.quoteAsPythonString(argument)
-
-    def quoteAsPythonString(self, argument):
-        q = string.replace(argument, '\\', '\\\\')
-        q = string.replace(q, '"', '\\"')
-        q = string.replace(q, '\n', '\\n')
-        return '"' + q + '"'
-
-    def getCall(self):
-        return self.functionName + '(' + self.argumentString + ')'
-
-
-
-# The Value class represents a sequence of strings and/or Dragon 
-# calls.  Vocola's generated Python code uses this class to build up an
-# action sequence to be performed.  It also uses this class to build up
-# an argument to a function call (which may be constructed from several
-# pieces).
-
-class Value:
-    def __init__(self):
-        self.values = []
-        self.lastValueType = ''
-
-    # Append to this Value object an integer, a string, a DragonCall object,
-    # a UnimacroCall object, or another Value object
-    def augment(self, v):
-        if type(v) is IntType:
-            self.augment(str(v))
-        elif type(v) is StringType:
-            # combine adjacent strings if possible
-            if self.lastValueType == 'String':
-                self.values[-1] += v
-            else:
-                self.values.append(v)
-            self.lastValueType = 'String'
-        elif v.__class__.__name__ == 'DragonCall':
-            self.values.append(v)
-            self.lastValueType = 'DragonCall'
-        elif v.__class__.__name__ == 'UnimacroCall':
-            self.values.append(v)
-            self.lastValueType = 'UnimacroCall'
-        elif v.__class__.__name__ == 'Value':
-            for value in v.values: self.augment(value)
-        else: print "unexpected argument to augment", type(v)
-
-    def perform(self):
-        for value in self.values:
-            if type(value) is StringType:
-                natlink.playString(value)
-            elif value.__class__.__name__ == 'DragonCall':
-                value.perform()
-            elif value.__class__.__name__ == 'UnimacroCall':
-                value.perform()
-
-    def as_string(self):
-        if len(self.values) == 0:
-            return "(no actions)"
-        result = ""
-        for value in self.values:
-            if len(result) > 0:
-                result += "; "
-            if type(value) is StringType:
-                q = string.replace(value, '"', '""')
-                result += '"' + q + '"'
-            else:
-                q = value.as_string()
-                result += string.replace(q, "\n", "; ")
-        return result
-                
-    # Attempt to coerce us to a string:
-    def __str__(self):
-        if len(self.values) == 0:
-            return ""
-        elif len(self.values) == 1 and type(self.values[0]) is StringType:
-            return self.values[0]
-        else:
-            message = "unable to convert value " + self.as_string() \
-                    + " into a string due to the presence of a " \
-                    + "Dragon or Unimacro call"
-            raise ConversionError(message)
-                
-    # Attempt to coerce us to an integer:
-    def __int__(self):
-        if len(self.values) == 0:
-            raise ConversionError(
-                  "unable to convert empty value into an integer")
-        elif len(self.values) == 1 and type(self.values[0]) is StringType:
-            s = self.values[0]
-            try:
-                return long(s)
-            except ValueError:
-                raise ConversionError(
-                      "unable to convert value " + self.as_string() \
-                      + " into an integer")
-        else:
-            message = "unable to convert value " + self.as_string() \
-                    + " into an integer due to the presence of a " \
-                    + "Dragon or Unimacro call"
-            raise ConversionError(message)
-
-
-
-# The DragonCall class represents a (delayed) Vocola Dragon
-# call.  Vocola's generated Python code uses this class to build up a
-# string containing the function name and arguments, which is then
-# interpreted by Dragon's "execScript" when the call is finally
-# performed.
-
-class DragonCall:
-    def __init__(self, functionName, argumentTypes):
-        self.functionName = functionName
-        self.argumentTypes = argumentTypes
-        self.argumentString = ''
-        self.argumentNumber = -1
-
-    def addArgument(self, value):
-        self.argumentNumber += 1
-        argumentType = self.argumentTypes[self.argumentNumber]
-
-        if argumentType == 'i':
-            argument = str(int(value))
-        elif argumentType == 's':
-            argument = self.quoteAsVisualBasicString(str(value))
-        else:
-            # there is a vcl2py.pl bug if this happens:
-            raise ValueError("Unknown data type specifier '" + argument +
-                             "' supplied for a Dragon procedure argument")
-        
-        if self.argumentString != '':
-            self.argumentString += ','
-        self.argumentString += ' ' + argument
-        self.rawLastArgument = str(value)  # for SendDragonKeys
-
-    def quoteAsVisualBasicString(self, argument):
-        q = argument
-        q = string.replace(q, '"', '""')
-        q = string.replace(q, "\n", '" + chr$(10) + "')
-        q = string.replace(q, "\r", '" + chr$(13) + "')
-        return '"' + q + '"'
-
-    def finalize(self):
-        self.script = self.functionName + self.argumentString
-
-    def as_string(self):
-        return self.script
-    
-    def addDragonCall(self, dragon_call):
-        self.script += '\n' + dragon_call.script
-
-    def perform(self):
-        #print '[' + self.script + ']'
-        try:
-            if self.functionName == "SendDragonKeys":
-                natlink.playString(self.rawLastArgument)
-            else:
-                natlink.execScript(self.script)
-        except natlink.SyntaxError, details:
-            message = "Dragon reported a syntax error when Vocola attempted" \
-                    + " to execute the Dragon procedure '" + self.script \
-                    + "'; details: " + str(details)
-            raise DragonError(message)
-
- 
-
-# The UnimacroCall class represents a (delayed) Unimacro call.
-# Vocola's generated Python code uses this class to build up a string
-# containing the Unimacro action, which is then passed to Unimacro for
-# interpretation when the call is finally performed.
-
-class UnimacroCall:
-    def __init__(self):
-        self.argumentString = ''
-
-    def addArgument(self, value):
-        self.argumentString = str(value)
-
-    def as_string(self):
-        q = string.replace(self.argumentString, '"', '""')
-        return 'Unimacro("' + q + '")'
-    
-    def perform(self):
-        if unimacro_available:
-            #print '[' + self.argumentString + ']'
-            actions.doAction(self.argumentString)
-        else:
-            m = 'Vocola: Unimacro call "%s" failed because Unimacro is ' \
-                'unavailable'% self.argumentString
-            raise NotImplementedError(m)
- 
-
-# The Evaluator class represents a Vocola "Eval" expression.  Vocola's
-# generated Python code uses this class to build up a string containing
-# a Python expression to be evaluated, and then evaluates it.
-
-class Evaluator:
-    def __init__(self):
-        self.variables = {}
-
-    def setNextVariableName(self, name):
-        self.nextName = name
-
-    def setVariable(self, value):
-        string = str(value)
-        # Convert to number if has form of a canonical number:
-        if self.isCanonicalNumber(string):
-            self.variables[self.nextName] = long(string)
-        else: self.variables[self.nextName] = string
-
-    def evaluate(self, expression):
-        string = 'str(' + expression + ')'
-        #print 'Evaluating expression:  ' + string
-        return eval(string, self.variables)
-
-    # is string the canonical representation of a long?
-    def isCanonicalNumber(self, string):  # private
-        try:
-            return str(long(string)) == string
-        except ValueError:
-            return 0
-
-
-
+#
 # Massage recognition results to make a single entry for each
 # <dgndictation> result.
-
+#
 def combineDictationWords(fullResults):
     i = 0
     inDictation = 0
@@ -281,7 +28,8 @@ def combineDictationWords(fullResults):
             if backslashPosition > 0:
                 word = word[:backslashPosition]
             if inDictation:
-                fullResults[i-1] = [fullResults[i-1][0] + " " + word, "dgndictation"]
+                fullResults[i-1] = [fullResults[i-1][0] + " " + word,
+                                    "dgndictation"]
                 del fullResults[i]
             else:
                 fullResults[i] = [word, "dgndictation"]
@@ -292,9 +40,199 @@ def combineDictationWords(fullResults):
             inDictation = 0
     return fullResults
 
-def UnimacroIsAvailable():
-    """returns if Unimacro is available,
+
+
+##
+## Runtime error handling:
+## 
+
+class VocolaRuntimeError(Exception):
+    pass
+
+def to_long(string):
+    try:
+        return long(string)
+    except ValueError:
+        raise VocolaRuntimeError("unable to convert '"
+                                 + string.replace("'", "''")
+                                 + "' into an integer")
+
+def do_flush(functional_context, buffer):
+    if functional_context:
+        raise VocolaRuntimeError('attempt to call Unimacro or make a Dragon call in a functional context!')
+    if buffer != '':
+        natlink.playString(convert_keys(buffer))
+    return ''
+
+
+import traceback
+
+def handle_error(filename, line, command, exception):
+    print 
+    print >> sys.stderr, "While executing the following Vocola command:"
+    print >> sys.stderr, "    " + command
+    print >> sys.stderr, "defined at line " + str(line) + " of " + filename + ","
+    print >> sys.stderr, "the following error occurred:"
+    print >> sys.stderr, "    " + type(exception).__name__ + ": " + str(exception)
+    #traceback.print_exc()
+    #raise exception
+
+
+
+##
+## Dragon built-ins: 
+##
+ 
+dragon_prefix = ""
+
+def convert_keys(keys):
+    # Roughly, {<keyname>_<count>}'s -> {<keyname> <count>}:
+    #   (is somewhat generous about what counts as a key name)
+    #
+    # Because we can't be sure of the current code page, treat all non-ASCII
+    # characters as potential accented letters for now.  
+    keys = re.sub(r"""(?x) 
+                      \{ ( (?: [a-zA-Z\x80-\xff]+ \+ )*
+                           (?:[^}]|[-a-zA-Z0-9/*+.\x80-\xff]+) )
+                      [ _]
+                      (\d+) \}""", r'{\1 \2}', keys)
+    return keys
+
+def call_Dragon(function_name, argument_types, arguments):
+    global dragon_prefix
+
+    def quoteAsVisualBasicString(argument):
+        q = argument
+        q = string.replace(q, '"', '""')
+        q = string.replace(q, "\n", '" + chr$(10) + "')
+        q = string.replace(q, "\r", '" + chr$(13) + "')
+        return '"' + q + '"'
+
+    script = ""
+    for argument in arguments:
+        argument_type = argument_types[0]
+        argument_types = argument_types[1:]
+
+        if argument_type == 'i':
+            argument = str(to_long(argument))
+        elif argument_type == 's':
+            if function_name == "SendDragonKeys" or function_name == "SendKeys" \
+                    or function_name == "SendSystemKeys":
+                argument = convert_keys(argument)
+            argument = quoteAsVisualBasicString(str(argument))
+        else:
+            # there is a vcl2py.pl bug if this happens:
+            raise VocolaRuntimeError("Vocola compiler error: unknown data type " +
+                                     " specifier '" + argument_type +
+                                   "' supplied for a Dragon procedure argument")
+
+        if script != '':
+            script += ','
+        script += ' ' + argument
+
+    script = dragon_prefix + function_name + script
+    dragon_prefix = ""
+    #print '[' + script + ']'
+    try:
+        if function_name == "SendDragonKeys":
+            natlink.playString(convert_keys(arguments[0]))
+        elif function_name == "ShiftKey":
+            dragon_prefix = script + chr(10)
+        else:
+            natlink.execScript(script)
+    except Exception, e:
+        m = "when Vocola called Dragon to execute:\n" \
+            + '        ' + script + '\n' \
+            + '    Dragon reported the following error:\n' \
+            + '        ' + type(e).__name__ + ": " + str(e)
+        raise VocolaRuntimeError, m
+
+
+
+##
+## Unimacro built-in:
+##
+
+# attempt to import Unimacro, suppressing errors, and noting success status:
+unimacro_available = False
+try:
+    import actions
+    unimacro_available = True
+except ImportError:
+    pass
+
+def call_Unimacro(argumentString):
+    if unimacro_available:
+        #print '[' + argumentString + ']'
+        try:
+            actions.doAction(argumentString)
+        except Exception, e:
+            m = "when Vocola called Unimacro to execute:\n" \
+                + '        Unimacro(' + argumentString + ')\n' \
+                + '    Unimacro reported the following error:\n' \
+                + '        ' + type(e).__name__ + ": " + str(e)
+            raise VocolaRuntimeError, m
+    else:
+        m = "Unimacro call failed because Unimacro is unavailable"
+        raise VocolaRuntimeError(m)
+
+
+
+##
+## EvalTemplate built-in function:
+##
+
+def eval_template(template, *arguments):
+    variables = {}
     
-    so Unimacro Shorthand Commands and Unimacro actions can be done
-    """
-    return unimacro_available
+    waiting = list(arguments)
+    def get_argument():
+        if len(waiting) == 0:
+            raise VocolaRuntimeError(
+                "insufficient number of arguments passed to Eval[Template]")
+        return waiting.pop(0)
+            
+    def get_variable(value):
+        argument_number = len(arguments)-len(waiting)
+        name = "v" + str(argument_number)
+        variables[name] = value
+        return name
+    
+    # is string the canonical representation of a long?
+    def isCanonicalNumber(string):
+        try:
+            return str(long(string)) == string
+        except ValueError:
+            return 0
+    
+    def handle_descriptor(m):
+        descriptor = m.group()
+        if descriptor == "%%":
+            return "%"
+        elif descriptor == "%s":
+            return get_variable(str(get_argument()))
+        elif descriptor == "%i":
+            return get_variable(to_long(get_argument()))
+        elif descriptor == "%a":
+            a = get_argument()
+            if isCanonicalNumber(a):
+                return get_variable(long(a))
+            else:
+                return get_variable(str(a))
+        else:
+            return descriptor
+    
+    expression = re.sub(r'%.', handle_descriptor, template)
+    try:
+        return eval('str(' + expression + ')', variables.copy())
+    except Exception, e:
+        m = "when Eval[Template] called Python to evaluate:\n" \
+            + '        str(' + expression + ')\n' \
+            + '    under the following bindings:\n'
+        names = variables.keys()
+        names.sort()
+        for v in names:
+            m += '        ' + str(v) + ' -> ' + repr(variables[v]) + '\n'
+        m += '    Python reported the following error:\n' \
+            + '        ' + type(e).__name__ + ": " + str(e)
+        raise VocolaRuntimeError, m

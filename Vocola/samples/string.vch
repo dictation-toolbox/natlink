@@ -1,13 +1,15 @@
 ###
 ### Standard simple functions for manipulating strings
 ###
+###   Version 1.3
+###
 ###   cf. http://en.wikipedia.org/wiki/String_functions_(programming)
 ### 
 
   #
   # Len: Returns the length of a string. An empty string returns a length of 0.
   #
-Len(string) := Eval('len(str($string))');
+Len(string)          := EvalTemplate('len(%s)', $string);
 
 
   #
@@ -15,7 +17,7 @@ Len(string) := Eval('len(str($string))');
   # greater than the length of the string then the whole string is
   # returned.  Behavior for negative values of n is undefined.
   #
-Left(string, count)  := Eval('str($string)[0:int($count)]');
+Left(string, count)  := EvalTemplate('%s[0:%i]', $string, $count);
 
 
   #
@@ -23,8 +25,7 @@ Left(string, count)  := Eval('str($string)[0:int($count)]');
   # greater than the length of the string then the whole string is
   # returned.  Behavior for negative values of n is undefined.
   #
-Right(string, count) :=
-	        Eval('str($string)[max(0,len(str($string))-int($count)):]');
+Right(string, count)  := EvalTemplate('%s[-%i:]', $string, $count);
 
 
   #
@@ -40,7 +41,8 @@ Right(string, count) :=
   #    Replace(re**op*, *,  **) = re****op**
   #    Replace(o***p,   **, r*) = or**p
   #
-Replace(string, from, to) := Eval('str($string).replace(str($from), str($to))');
+Replace(string, from, to) := EvalTemplate('%s.replace(%s, %s)', 
+                                          $string, $from, $to);
 
 
   # 
@@ -59,5 +61,4 @@ Replace(string, from, to) := Eval('str($string).replace(str($from), str($to))');
   # Behavior for index values that describe nonexistent strings is undefined.
   # 
 Split(string, separator, index) :=
-	          Eval('str($string).split(str($separator))[int($index)]');
-
+    EvalTemplate('%s.split(%s)[%i]', $string, $separator, $index);

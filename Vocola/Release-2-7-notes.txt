@@ -1,0 +1,41 @@
+New in 2.7:
+
+! Code generation for actions completely rewritten
+
+! Runtime errors are now caught and displayed in a more user-friendly
+  manner.  (No incomprehensible Python stack traces anymore.)
+
+! New built-in EvalTemplate, which provides a more powerful version of Eval.
+
+* Eval is now implemented via transformation to EvalTemplate.
+
+! User functions are now implemented by unrolling; this allows passing
+  instructions like SendDragonKeys(-), not just string-valued
+  expressions, to user functions.
+
+! How underscores in keystroke strings (e.g., "hello{enter_2}") are
+  handled has changed:
+
+  Now underscores are converted only just before a keystroke sending
+  procedure like SendDragonKeys is called; moreover, only underscores
+  that occur in the right place in a keystroke are converted.  E.g.,
+  {__2} types __, not "  ".
+
+  This is much more consistent than the previous behavior, which could
+  convert underscores not part of a keystroke (e.g., {a}_{b} used to
+  produce "a b", as well as failed to convert underscores that were part
+  of a keystroke if the entire keystroke was not contained in a single
+  string action (e.g., {left_ F(x)} didn't work before).
+
+* Fixed a bug making ShiftKey not work.
+
+* Fixed a bug where combining <_anything> and an optional word caused
+  only the first word of the <_anything> to be returned.
+
+* New samples file, _Dragon_help.vcl, showing how to use the HTMLHelp
+  call to display help for Vocola calls using Dragon NaturallySpeaking
+  professional/legal/medical.
+
+* Fixed a bug where if the first error in a Vocola file was an undefined
+  variable reference, then the (base) file name containing the error(s)
+  was not displayed.

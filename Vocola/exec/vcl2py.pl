@@ -10,6 +10,15 @@
 # This file is copyright (c) 2002-2010 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 #
+# 05/28/2010  ml  Print_* functions -> unparse_* to avoid compiler bug
+# 05/08/2010  ml  Underscores now converted to spaces by VocolaUtils
+# 03/31/2010  ml  Runtime errors now caught and passed to handle_error along 
+#                 with filename and line number of error location
+# 01/27/2010  ml  Actions now implemented via direct translation to
+#                 Python, with no delay of Dragon calls, etc.
+# 01/01/2010  ml  User functions are now implemented via unrolling
+# 12/30/2009  ml  Eval is now implemented via transformation to EvalTemplate
+# 12/28/2009  ml  New EvalTemplate built-in function
 # 09/06/2009  ml  New $set directive replaces old non-working sequence directive
 #                 binary Use Command Sequences replaced by n-ary MaximumCommands
 # 01/19/2009  ml  Unimacro built-in added
@@ -68,7 +77,7 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.6.5I";
+    $VocolaVersion = "2.7I";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
@@ -185,6 +194,7 @@ sub convert_file
 
     %Definitions = ();
     %Functions = ();
+    %Function_definitions = ();
     @Forward_references = ();
     @Included_files = ();
     @Include_stack = ();
@@ -203,7 +213,9 @@ sub convert_file
         unshift(@statements, $context);
     }
 
-    #print_statements (*LOG, @statements);
+    #print LOG unparse_statements (@statements);
+    transform_nodes(@statements);
+    #print LOG unparse_statements (@statements);
 
     # Handle $set directives:
     $maximum_commands = $default_maximum_commands;
@@ -322,6 +334,8 @@ sub convert_filename
 #       NAME    - unique number
 #       TERMS   - list of "term" structures
 #       ACTIONS - list of "action" structures
+#       LINE    - last line number of command if it is a top-level command
+#       FILE    - filename of file containing command
 #    definition:
 #       NAME    - name of variable being defined
 #       MENU    - "menu" structure defining alternatives
@@ -365,6 +379,7 @@ sub convert_filename
 #    call:
 #       TEXT      - name of function called
 #       CALLTYPE  - dragon/vocola/user
+#       ARGTYPES  - [dragon only] types of call arguments
 #       ARGUMENTS - list of lists of actions, to be passed in call
 
 # ---------------------------------------------------------------------------
@@ -373,6 +388,7 @@ sub convert_filename
 
 %Vocola_functions = (
                      Eval              => [1,1],
+                     EvalTemplate      => [1,-1],
                      Repeat            => [2,2],
                      Unimacro          => [1,1],
                      );
@@ -429,7 +445,7 @@ sub parse_file    # returns a list of statements
     my $in_file = shift;
     push(@Included_files, $in_file);
     push(@Include_stack, $in_file);
-    $in_file = "$In_folder/$in_file";
+    $in_file = "$In_folder\\$in_file";
     $Line_number = -1;
     my $text = read_file($in_file);   # strip comments, deal unbalanced quotes
 
@@ -573,7 +589,7 @@ sub parse_context    # context = chars* ('|' chars*)* ':'
             push (@strings, "");
         }
         $statement->{STRINGS} = \@strings;
-        if ($Debug>=1) {print_directive (*LOG, $statement)}
+        if ($Debug>=1) {print LOG unparse_directive ($statement)}
         return $statement;
     }
 }
@@ -604,7 +620,7 @@ sub parse_variable_definition    # definition = variable ':=' menu_body ';'
         &ensure_empty;
         if ($menu->{TYPE} eq "menu") {verify_referenced_menu($menu)};
         $statement->{MENU} = $menu;
-        if ($Debug>=1) {print_definition (*LOG, $statement)}
+        if ($Debug>=1) {print LOG unparse_definition ($statement)}
         return $statement;
     }
 }
@@ -634,7 +650,8 @@ sub parse_function_definition   # function = prototype ':=' action* ';'
         defined ($Functions{$functionName})
             and die "Redefinition of $functionName()\n";
         $Functions{$functionName} = @formals;  # remember number of formals
-        if ($Debug>=1) {print_function_definition (*LOG, $statement)}
+        $Function_definitions{$functionName} = $statement;
+        if ($Debug>=1) {print LOG unparse_function_definition ($statement)}
         return $statement;
     }
 }
@@ -660,7 +677,7 @@ sub parse_top_command    # top_command = terms '=' action* ';'
         my $statement = &parse_command;
         &ensure_empty;
         $File_empty = 0;
-        if ($Debug>=1) {print_command (*LOG, $statement); print LOG "\n"}
+        if ($Debug>=1) {print LOG unparse_command ($statement, 1) . "\n"}
         return $statement;
     }
 }
@@ -683,7 +700,7 @@ sub parse_directive    # directive = ('include' word | '$set' word word) ';'
             $statement->{TEXT} = $word->{TEXT};
             &ensure_empty;
         } else {die "Unrecognized statement\n"}
-        if ($Debug>=1) {print_directive (*LOG, $statement)}
+        if ($Debug>=1) {print LOG unparse_directive ($statement)}
         return $statement;
     }
 }
@@ -692,8 +709,13 @@ sub parse_command    # command = terms ['=' action*]
 {
     my $terms = &parse_terms;
     return 0 unless $terms;
+
     my $command = {};
     $command->{TYPE} = "command";
+    $command->{LINE} = $Line_number;
+    my $last = $#Include_stack;
+    my $file = $Include_stack[$last];
+    $command->{FILE} = $file;
     $command->{TERMS} = $terms;
 
     # Count variable terms for range checking in &parse_reference
@@ -760,7 +782,7 @@ sub parse_term    #  term = simple_term | range | menu
         $term = &parse_menu_body;
         if (not /\G\s*\)/gc) {die "End of alternative set before ')'\n"}
         if ($Debug>=2) {print LOG "Found menu:  "; 
-                        print_menu (*LOG, $term); print LOG "\n"}
+                        print LOG unparse_menu ($term, 1) . "\n"}
     } elsif (/\G\s*(\d*)\.\.(\d*)/gc) {
         $term = {};
         $term->{TYPE} = "range";
@@ -830,9 +852,6 @@ sub parse_actions    # action = word | call | reference
         if ($action->{TYPE} ne "word" || $action->{TEXT} eq "") {
             push (@actions, $action);
         } else {
-            # convert e.g. "{Tab_2}" to "{Tab 2}"
-            $action->{TEXT} =~ s/\{(.*?)_(.*?)\}/\{$1 $2\}/g;
-
             # expand in-string references (e.g. "{Up $1}") and unquote 
             # $'s (e.g., \$ -> $)
             while ($action->{TEXT} =~ /\G(.*?)(?<!\\)\$(\d+|[a-zA-Z_]\w*)/gc) {
@@ -994,6 +1013,7 @@ sub shift_delimiter
 
 sub log_error
 {
+    # a variant of this code may be found in check_forward_references
     print LOG "Converting $Input_name\n" unless $Error_count;
     print LOG &format_error_message;
     $Error_count++;
@@ -1110,6 +1130,7 @@ sub check_forward_references
     for my $forward_reference (@Forward_references) {
         my $variable = $forward_reference->{VARIABLE};
         if (not $Definitions{$variable}) {
+	    print LOG "Converting $Input_name\n" unless $Error_count;
             print LOG $forward_reference->{MESSAGE};
             $Error_count++;
         }
@@ -1117,147 +1138,295 @@ sub check_forward_references
 }
 
 # ---------------------------------------------------------------------------
-# Printing of data structures (for debugging)
+# Unparsing of data structures (for debugging and generating error messages)
 
-sub print_statements
+sub unparse_statements
 {
-    my $out = shift;
+    my $result = "";
     for my $statement (@_) {
         my $type = $statement->{TYPE};
         if ($type eq "context" || $type eq "include" || $type eq "set") {
-            print_directive ($out, $statement);
+            $result .= unparse_directive ($statement);
         } elsif ($type eq "definition") {
-            print_definition ($out, $statement);
+            $result .= unparse_definition ($statement);
         } elsif ($type eq "function") {
-            print_function_definition ($out, $statement);
+            $result .= unparse_function_definition ($statement);
         } elsif ($type eq "command") {
-            print $out "C$statement->{NAME}:  ";
-            print_command ($out, $statement);
-            print $out ";\n";
+            $result .=  "C$statement->{NAME}:  ";
+            $result .= unparse_command ($statement, 1) . ";\n";
         }
     }
-    print $out "\n";
+    return $result . "\n";
 }
 
-sub print_directive
+sub unparse_directive
 {
-    my ($out, $statement) = @_;
+    my $statement = shift;
     my $type = $statement->{TYPE};
     if ($type eq "set") {
-	print $out "\$set '$statement->{KEY}' to '$statement->{TEXT}'\n";
+	return "\$set '$statement->{KEY}' to '$statement->{TEXT}'\n";
     } else {
-	print $out "$statement->{TYPE}:  '$statement->{TEXT}'\n";
+	return "$statement->{TYPE}:  '$statement->{TEXT}'\n";
     }
 }
 
-sub print_definition
+sub unparse_definition
 {
-    my ($out, $statement) = @_;
-    print $out "<$statement->{NAME}> := ";
-    print_menu ($out, $statement->{MENU});
-    print $out ";\n";
+    my $statement = shift;
+    return "<$statement->{NAME}> := " . unparse_menu ($statement->{MENU}, 1)
+	. ";\n";
 }
 
-sub print_function_definition
+sub unparse_function_definition
 {
-    my ($out, $statement) = @_;
-    print $out "$statement->{NAME}(";
-    print $out join(',', @{ $statement->{FORMALS} });
-    print $out ") := ";
-    print_actions ($out, @{ $statement->{ACTIONS} });
-    print $out ";\n";
+    my $statement = shift;
+    my $result = "$statement->{NAME}(" . join(',', @{ $statement->{FORMALS} });
+    $result .= ") := " . unparse_actions (@{ $statement->{ACTIONS} });
+    return $result . ";\n";
 }
 
-sub print_command
+sub unparse_command
 {
-    my ($out, $command) = @_;
-    print_terms ($out, @{ $command->{TERMS} });
-    if ($command->{ACTIONS}) {
-        print $out " = ";
-        print_actions ($out, @{ $command->{ACTIONS} });
+    my ($command, $show_actions) = @_;
+    my $result = unparse_terms ($show_actions, @{ $command->{TERMS} });
+    if ($command->{ACTIONS} && $show_actions) {
+        my $result .= " = " . unparse_actions (@{ $command->{ACTIONS} });
     }
+    return $result;
 }
 
-sub print_terms
+sub unparse_terms
 {
-    my $out = shift;
-    print_term($out, shift);
+    my $show_actions = shift;
+    my $result = unparse_term(shift, $show_actions);
     for my $term (@_) {
-        print $out " ";
-        print_term($out, $term);
+        $result .= " " . unparse_term($term, $show_actions);
     }
+    return $result;
 }
 
-sub print_term
+sub unparse_term
 {
-    my ($out, $term) = @_;
-    #print $out "$term->{NUMBER}:";
-    if ($term->{OPTIONAL}) {print $out "["}
-    if    ($term->{TYPE} eq "word")      {print $out "$term->{TEXT}"}
-    elsif ($term->{TYPE} eq "variable")  {print $out "<$term->{TEXT}>"}
-    elsif ($term->{TYPE} eq "dictation") {print $out "<_anything>"}
-    elsif ($term->{TYPE} eq "menu")      {print_menu ($out, $term)}
+    my ($term, $show_actions) = @_;
+    my $result = "";
+    if ($term->{OPTIONAL}) {$result .=  "["}
+    if    ($term->{TYPE} eq "word")      {$result .= "$term->{TEXT}"}
+    elsif ($term->{TYPE} eq "variable")  {$result .= "<$term->{TEXT}>"}
+    elsif ($term->{TYPE} eq "dictation") {$result .= "<_anything>"}
+    elsif ($term->{TYPE} eq "menu")      {$result .= unparse_menu ($term, 
+								   $show_actions)}
     elsif ($term->{TYPE} eq "range") {
-        print $out "$term->{FROM}..$term->{TO}";
+        $result .= "$term->{FROM}..$term->{TO}";
     }
-    if ($term->{OPTIONAL}) {print $out "]"}
+    if ($term->{OPTIONAL}) {$result .=  "]"}
+    return $result;
 }
 
-sub print_menu
+sub unparse_menu
 {
-    my $out = shift;
     my @commands = @{ shift->{COMMANDS} };
-    print $out "(";
-    print_command($out, shift @commands);
+    my $show_actions = shift;
+    my $result = "(" . unparse_command(shift @commands, $show_actions);
     for my $command (@commands) {
-        print $out " | ";
-        print_command($out, $command);
+        $result .= " | " . unparse_command($command, $show_actions);
     }
-    print $out ")";
+    return $result . ")";
 }
 
-sub print_actions
+sub unparse_actions
 {
-    my $out = shift;
-    print_action($out, shift);
+    my $result = unparse_action(shift);
     for my $action (@_) {
-        print $out " ";
-        print_action($out, $action);
+        $result .= " " . unparse_action($action);
     }
+    return $result;
 }
 
-sub print_action
+sub unparse_action
 {
-    my ($out, $action) = @_;
-    if    ($action->{TYPE} eq "word")     {print_word($out, $action)}
-    elsif ($action->{TYPE} eq "reference"){print $out "\$$action->{TEXT}"}
-    elsif ($action->{TYPE} eq "formalref"){print $out "\$$action->{TEXT}"}
+    my $action = shift;
+    if    ($action->{TYPE} eq "word")     {return unparse_word($action)}
+    elsif ($action->{TYPE} eq "reference"){return "\$$action->{TEXT}"}
+    elsif ($action->{TYPE} eq "formalref"){return "\$$action->{TEXT}"}
     elsif ($action->{TYPE} eq "call") {
-        print $out "$action->{TEXT}(";
+        my $result = "$action->{TEXT}(";
         if (my @arguments = @{ $action->{ARGUMENTS} }) {
-            print_argument($out, shift @arguments);
+            $result .= unparse_argument(shift @arguments);
             for my $argument (@arguments) {
-                print $out ", ";
-                print_argument($out, $argument);
+                $result .= ", " . unparse_argument($argument);
             }
         }
-        print $out ")";
+        return $result . ")";
     }
 }
 
-sub print_word
+sub unparse_word
 {
-    my ($out, $action) = @_;
+    my $action = shift;
     my $word = $action->{TEXT}; 
     $word =~ s/\'/\'\'/g;
-    print $out "'$word'" ;
+    return "'$word'" ;
 }
 
-sub print_argument
+sub unparse_argument
 {
-    my ($out, $argument) = @_;
-    print_actions($out, @{$argument});
+    my $argument = shift;
+    return unparse_actions(@{$argument});
 }
+
+# ---------------------------------------------------------------------------
+# Transform Eval into EvalTemplate, unroll user functions
+
+  # takes a list of non-action nodes
+sub transform_nodes
+{
+    foreach my $node (@_) {
+	transform_node($node);
+    }
+}
+
+sub transform_node
+{
+    my $node = shift;
+
+    if ($node->{COMMANDS})  { transform_nodes(@{ $node->{COMMANDS} }); }
+    if ($node->{TERMS})     { transform_nodes(@{ $node->{TERMS} }); }
+    if ($node->{MENU})      { transform_node(    $node->{MENU}); }
+
+    if ($node->{ACTIONS})   { 
+	$node->{ACTIONS} = transform_actions({}, @{ $node->{ACTIONS} }); 
+    }
+}
+
+# transforms above are destructive, transforms below are functional
+# except transform_eval
+
+sub transform_actions
+{
+    my $substitution = shift;
+    my @new_actions = ();
+
+    foreach my $action (@_) {
+	push(@new_actions, transform_action($substitution, $action));
+    }
+
+    return \@new_actions;
+}
+
+sub transform_arguments          # lists of actions
+{
+    my $substitution = shift;
+    my @new_arguments = ();
+
+    foreach my $argument (@_) {
+	push(@new_arguments, transform_actions($substitution, @{$argument}));
+    }
+
+    return \@new_arguments;
+}
+
+sub transform_action
+{
+    my ($substitution, $action) = @_;
+
+    if ($action->{TYPE} eq "formalref") { 
+	my $name = $action->{TEXT};
+	if ($substitution->{$name}) {
+	    return @{ $substitution->{$name} };
+	}
+    }
+
+    if ($action->{TYPE} eq "call") { 
+	return transform_call($substitution, $action); 
+    }
+
+    return $action;
+}
+
+sub transform_call
+{
+    my ($substitution, $call) = @_;
+
+    my $new_call = {};
+    $new_call->{TYPE}      = $call->{TYPE};
+    $new_call->{TEXT}      = $call->{TEXT};
+    $new_call->{CALLTYPE}  = $call->{CALLTYPE};
+    if ($call->{ARGTYPES}) { $new_call->{ARGTYPES}  = $call->{ARGTYPES}; }
+    $new_call->{ARGUMENTS} = $call->{ARGUMENTS};
+
+    if ($new_call->{CALLTYPE} eq "vocola" and $new_call->{TEXT} eq "Eval") {
+	transform_eval($new_call);
+    }
+
+    $new_call->{ARGUMENTS} = transform_arguments($substitution, 
+						 @{$new_call->{ARGUMENTS}});
+
+    if ($new_call->{CALLTYPE} eq "user") {
+        my @arguments  = @{ $new_call->{ARGUMENTS} };
+
+        my $definition = $Function_definitions{$new_call->{TEXT}};
+        my @formals    = @{ $definition->{FORMALS} };
+        my $body       = $definition->{ACTIONS};
+
+	my $bindings = {};
+	my $i = 0;
+	foreach $argument (@arguments) {
+	    $bindings->{$formals[$i]} = $argument;
+	    $i += 1;
+	}
+
+	return @{ transform_actions($bindings, @{ $body }) };
+    }
+
+    return $new_call;
+}
+
+# Eval() is a special form that takes a single argument, which is
+# composed of a series of actions.  A call to EvalTemplate is
+# constructed at compile time from the actions where each word action
+# supplies a piece of template text and each non-word action denotes a
+# hole in the template (represented by "%a") that will be "filled" at
+# runtime by the result of evaluating that non-word action.
+#
+# Example: the template for Eval(1 + $2-$3) is "1+%a-%a", yielding the
+# call EvalTemplate("1+%a-%a", $2, $3); assuming $2 has value "3" and
+# $3 has value "5", this evaluates to "8".
+#
+# (Values are treated as integers by %a if and only if they have the
+# form of a canonical integer; e.g., 13 but not "013".)
+
+sub transform_eval
+{
+    my $call = shift;
+    my @arguments = @{ $call->{ARGUMENTS} };
+
+    my $template = "";
+    my @new_arguments = ();
+    foreach my $action (@{ $arguments[0] }) {
+	if ($action->{TYPE} eq "word") {
+	    my $text = $action->{TEXT};
+	    $text =~ s/%/%%/g;
+	    $template .= $text;
+	} else {
+	    $template .= "%a";
+	    my @new_argument = ();
+	    push(@new_argument, $action);
+	    push(@new_arguments, \@new_argument);
+	}
+    }
+
+    my $template_word = {};
+    $template_word->{TYPE} = "word";
+    $template_word->{TEXT} = $template;
+
+    my @template_argument = ();
+    push(@template_argument, $template_word);
+    unshift(@new_arguments, \@template_argument);
+
+    $call->{TEXT}      = "EvalTemplate"; 
+    $call->{ARGUMENTS} = \@new_arguments;
+}
+
 
 # ---------------------------------------------------------------------------
 # Emit NatLink output
@@ -1277,7 +1446,7 @@ sub emit_output
     for my $statement (@statements) {
         my $type = $statement->{TYPE};
         if    ($type eq "definition") {emit_definition_actions ($statement)}
-        if    ($type eq "function")   {emit_function_actions ($statement)}
+        if    ($type eq "function")   {}
         elsif ($type eq "command")    {emit_top_command_actions ($statement)}
     }
     &emit_file_trailer;
@@ -1522,20 +1691,10 @@ sub emit_range_grammar
 sub emit_definition_actions
 {
     my $definition = shift;
-    emit(1, "def get_$definition->{NAME}(self, word):\n");
-    emit(2, "actions = Value()\n");
-    emit_menu_actions("actions.augment", $definition->{MENU}, 2);
-    emit(2, "return actions\n\n");
-}
-
-sub emit_function_actions
-{
-    my $function = shift;
-    my $formals = join(', ', ("self", @{ $function->{FORMALS} }));
-    emit(1, "def do_$function->{NAME}($formals):\n");
-    emit(2, "actions = Value()\n");
-    emit_actions("actions.augment", $function->{ACTIONS}, 2);
-    emit(2, "return actions\n\n");
+    emit(1, 
+	 "def get_$definition->{NAME}(self, list_buffer, functional, word):\n");
+    emit_menu_actions("list_buffer", "functional", $definition->{MENU}, 2);
+    emit(2, "return list_buffer\n\n");
 }
 
 sub emit_top_command_actions
@@ -1546,23 +1705,44 @@ sub emit_top_command_actions
     my $function = "gotResults_$command->{NAME}";
     @Variable_terms = get_variable_terms($command); # used in emit_reference
 
+    my $command_specification = unparse_terms(0, @terms);
+
     emit(1, "\# ");
-    print_terms (*OUT, @terms);
+    print OUT unparse_terms (0, @terms);
     emit(0, "\n");
     emit(1, "def $function(self, words, fullResults):\n");
+    emit(2, "if self.firstWord<0:\n");
+    emit(3, "return\n");
     emit_optional_term_fixup(@terms);
-    emit(2, "actions = Value()\n");
-    emit_actions("actions.augment", $command->{ACTIONS}, 2);
-    emit(2, "actions.perform()\n");
-    emit(2, "self.firstWord += $nterms\n");
+    emit(2, "try:\n");
+    emit(3, "top_buffer = ''\n");
+    emit_actions("top_buffer", "False", $command->{ACTIONS}, 3);
+    emit_flush("top_buffer", "False", 3);
+    emit(3, "self.firstWord += $nterms\n");
 
     # If repeating a command with no <variable> terms (e.g. "Scratch That
     # Scratch That"), our gotResults function will be called only once, with
     # all recognized words. Recurse!
     unless (has_variable_term(@terms)) {
-        emit(2, "if len(words) > $nterms: self.$function(words[$nterms:], fullResults)\n");
+        emit(3, "if len(words) > $nterms: self.$function(words[$nterms:], fullResults)\n");
     }
+
+    emit(2, "except Exception, e:\n");
+    my $file = $command->{FILE};
+    $file =~ s/\\/\\\\/g;
+    emit(3, "handle_error('" . make_safe_python_string($file)
+            . "', " . $command->{LINE} . ", '" 
+	    . make_safe_python_string($command_specification) 
+            . "', e)\n");
+    emit(3, "self.firstWord = -1\n");
     emit(0, "\n");
+}
+
+sub emit_flush
+{
+    my ($buffer, $functional, $indent) = @_;
+
+    emit($indent, "$buffer = do_flush($functional, $buffer);\n");
 }
 
 sub has_variable_term
@@ -1581,30 +1761,36 @@ sub has_variable_term
 sub emit_optional_term_fixup
 {
     for my $term (@_) {
+	my $index = $term->{NUMBER};
         if ($term->{OPTIONAL}) {
-            my $index = $term->{NUMBER};
             my $text = $term->{TEXT};
             emit(2, "opt = $index + self.firstWord\n");
             emit(2, "if opt >= len(fullResults) or fullResults[opt][0] != '$text':\n");
             emit(3, "fullResults.insert(opt, 'dummy')\n");
         }
+	elsif ($term->{TYPE} eq "dictation") {
+	    emit(2, "fullResults = combineDictationWords(fullResults)\n");
+            emit(2, "opt = $index + self.firstWord\n");
+            emit(2, "if opt >= len(fullResults) or fullResults[opt][1] != 'dgndictation':\n");
+            emit(3, "fullResults.insert(opt, ['', 'dgndictation'])\n");
+	}
     }   
 }
 
 sub emit_actions
 {
-    my ($collector, $actions, $indent) = @_;
+    my ($buffer, $functional, $actions, $indent) = @_;
     for my $action (@{$actions}) {
         my $type = $action->{TYPE};
         if ($type eq "reference") {
-            emit_reference($collector, $action, $indent);
+            emit_reference($buffer, $functional, $action, $indent);
         } elsif ($type eq "formalref") {
-            emit($indent, "$collector($action->{TEXT})\n");
+	    die "Compiler Error: not all formal references transformed away.\n";
         } elsif ($type eq "word") {
             my $safe_text = make_safe_python_string($action->{TEXT});
-            emit($indent, "$collector('$safe_text')\n");
+            emit($indent, "$buffer += '$safe_text'\n");
         } elsif ($type eq "call") {
-            emit_call($collector, $action, $indent);
+            emit_call($buffer, $functional, $action, $indent);
         } else {
             die "Unknown action type: '$type'\n";
         }
@@ -1627,32 +1813,26 @@ sub get_variable_terms
 
 sub emit_reference
 {
-    my ($collector, $action, $indent) = @_;
+    my ($buffer, $functional, $action, $indent) = @_;
     my $reference_number = $action->{TEXT} - 1;
     my $variable = $Variable_terms[$reference_number];
     my $term_number = $variable->{NUMBER};
-    if ($variable->{TYPE} eq "dictation") {
-        emit($indent, "fullResults = combineDictationWords(fullResults)\n");
-        emit($indent, "i = $term_number + self.firstWord\n");
-        emit($indent, "if (len(fullResults) <= i) or (fullResults[i][1] != 'dgndictation'):\n");
-        emit($indent + 1, "fullResults.insert(i, ['','dummy'])\n");
-    }
     emit($indent, "word = fullResults[$term_number + self.firstWord][0]\n");
     if ($variable->{TYPE} eq "menu") {
-        emit_menu_actions($collector, $variable, $indent);
+        emit_menu_actions($buffer, $functional, $variable, $indent);
     } elsif ($variable->{TYPE} eq "range" or $variable->{TYPE} eq "dictation") {
-        emit($indent, "$collector(word)\n");
+        emit($indent, "$buffer += word\n");
     } elsif ($variable->{TYPE} eq "variable") {
         my $function = "self.get_$variable->{TEXT}";
-        emit($indent, "$collector($function(word))\n");
+        emit($indent, "$buffer = $function($buffer, $functional, word)\n");
     }
 }
 
 sub emit_menu_actions
 {
-    my ($collector, $menu, $indent) = @_;
+    my ($buffer, $functional, $menu, $indent) = @_;
     if (not menu_has_actions($menu)) {
-        emit($indent, "$collector(word)\n");
+        emit($indent, "$buffer += word\n");
     } else {
         my @commands = flatten_menu($menu);
         my $if = "if";
@@ -1662,12 +1842,13 @@ sub emit_menu_actions
             emit($indent, "$if word == '$text':\n");
             if ($command->{ACTIONS}) {
 		if (@{$command->{ACTIONS}}) {
-		    emit_actions($collector, $command->{ACTIONS}, $indent+1);
+		    emit_actions($buffer, $functional, 
+				 $command->{ACTIONS}, $indent+1);
 		} else {
 		    emit($indent+1, "pass  # no actions\n");
 		}
             } else {
-                emit($indent+1, "$collector('$text')\n");
+                emit($indent+1, "$buffer += '$text'\n");
             }
             $if = "elif";
         }
@@ -1676,131 +1857,89 @@ sub emit_menu_actions
 
 sub emit_call
 {
-    my ($collector, $call, $indent) = @_;
+    my ($buffer, $functional, $call, $indent) = @_;
     my $callType = $call->{CALLTYPE};
     begin_nested_call();
     if    ($callType eq "dragon") {&emit_dragon_call}
-    elsif ($callType eq "user"  ) {&emit_user_call}
-    elsif ($callType eq "vocola") {
+    elsif ($callType eq "user"  ) {
+	die "No user function call should be present here!";
+    } elsif ($callType eq "vocola") {
         my $functionName = $call->{TEXT};
-        if    ($functionName eq "Eval")     {&emit_call_eval}
-        elsif ($functionName eq "Repeat")   {&emit_call_repeat}
-        elsif ($functionName eq "Unimacro") {&emit_call_Unimacro}
+        if    ($functionName eq "Eval")         {
+	    die "Compiler error: Eval not transformed away\n";
+	} elsif ($functionName eq "EvalTemplate") {&emit_call_eval_template}
+        elsif ($functionName eq   "Repeat")       {&emit_call_repeat}
+        elsif ($functionName eq   "Unimacro")     {&emit_call_Unimacro}
         else {die "Unknown Vocola function: '$functionName'\n"}
     } else {die "Unknown function call type: '$callType'\n"}
     end_nested_call();
 }
-
-sub emit_dragon_call
-{
-    my ($collector, $call, $indent) = @_;
-    my $functionName = $call->{TEXT};
-    my $argumentTypes = $call->{ARGTYPES};
-    my $value = get_nested_value_name("call");
-    emit($indent, "$value = DragonCall('$functionName', '$argumentTypes')\n");
-    for my $argument (@{ $call->{ARGUMENTS} }) {
-        emit_argument("$value.addArgument", $argument, $indent);
-    }
-    emit($indent, "$value.finalize()\n");
-    emit($indent, "$collector($value)\n");
-}
-
-sub emit_user_call
-{
-    my ($collector, $call, $indent) = @_;
-    my $functionName = $call->{TEXT};
-    my $value = get_nested_value_name("usercall");
-    emit($indent, "$value = UserCall('self.do_$functionName')\n");
-    for my $argument (@{ $call->{ARGUMENTS} }) {
-        emit_argument("$value.addArgument", $argument, $indent);
-    }
-    emit($indent, "$collector(eval($value.getCall()))\n");
-}
-
-  # ensures: calls $collector exactly once with a Value
-sub emit_argument
-{
-    # Note that an argument is a list of actions
-    my ($collector, $argument, $indent) = @_;
-    my $value = get_nested_value_name("argument");
-    emit($indent, "$value = Value()\n");
-    emit_actions("$value.augment", $argument, $indent);
-    emit($indent, "$collector($value)\n");
-}
-
 sub begin_nested_call{ $NestedCallLevel += 1}
 sub   end_nested_call{ $NestedCallLevel -= 1}
-sub get_nested_value_name
+
+sub get_nested_buffer_name
 {
     my $root = shift;
     return ($NestedCallLevel == 1) ? $root : "$root$NestedCallLevel";
 }
 
-# Eval() is a special form that takes a single argument, which is
-# composed of a series of actions.  A template is constructed at
-# compile time from the actions where each word action supplies a
-# piece of template text and each non-word action denotes a hole in
-# the template (represented by an appropriately named variable) that
-# will be "filled" at runtime by the result of evaluating that
-# non-word action.
-#
-# Hole filling and Python evaluation are done by evaluating the
-# template under appropriate bindings of the variables to the results
-# of the non-word actions.
-#
-# Example: the template for Eval(1 + $2-$3) is "1+v2-v3"; assuming $2
-# has value "3" and $3 has value "5", we evaluate the template under
-# the bindings [v2 -> 3; v3 -> 5], yielding "8".
-#
-#
-# (Values are treated as integers if and only if they have the form of
-# a canonical integer; e.g., 13 but not "013".)
-
-sub emit_call_eval
-{
-    my ($collector, $call, $indent) = @_;
-    my @arguments = @{ $call->{ARGUMENTS} };
-    my $expression = "";
-    my $evaluator = get_nested_value_name("evaluator");
-    emit($indent, "$evaluator = Evaluator()\n");
-    my $exp_no = 0;
-    for my $action (@{$arguments[0]}) {
-        my $type = $action->{TYPE};
-        my $text = $action->{TEXT};
-        if ($type ne "word") {
-	    $text = "v" . $text;
-	    if ($type eq "call") {
-		$exp_no += 1;
-		$text = "exp$exp_no";
-	    }
-	    emit($indent, "$evaluator.setNextVariableName('$text')\n");
-	    emit_argument("$evaluator.setVariable", [$action], $indent);
-	}
-        $expression .= $text;
-    }
-    my $expression = make_safe_python_string($expression);
-    emit($indent, "$collector($evaluator.evaluate('$expression'))\n");
-}
-
 sub emit_call_repeat
 {
-    my ($collector, $call, $indent) = @_;
+    my ($buffer, $functional, $call, $indent) = @_;
     my @arguments = @{ $call->{ARGUMENTS} };
-    emit($indent, "limit = Value()\n");
-    emit_actions("limit.augment", $arguments[0], $indent);
-    emit($indent, "for i in range(int(str(limit))):\n");
-    emit_actions($collector, $arguments[1], $indent+1);
+
+    my $argument_buffer = get_nested_buffer_name("limit");
+    emit($indent, "$argument_buffer = ''\n");
+    emit_actions("$argument_buffer", "True", $arguments[0], $indent);
+    emit($indent, "for i in range(to_long($argument_buffer)):\n");
+    emit_actions($buffer, $functional, $arguments[1], $indent+1);
+}
+
+sub emit_arguments
+{
+    my ($call, $name, $indent) = @_;
+    my $arguments = "";
+
+    my $i=0;
+    for my $argument (@{ $call->{ARGUMENTS} }) {
+	if ($i ne 0) { $arguments .= ", "; }
+	$i += 1;
+	my $argument_buffer = get_nested_buffer_name($name) . "_arg$i";
+	emit($indent, "$argument_buffer = ''\n");
+	emit_actions($argument_buffer, "True", $argument, $indent);
+	$arguments .= $argument_buffer;
+    }
+
+    return $arguments;
+}
+
+sub emit_dragon_call
+{
+    my ($buffer, $functional, $call, $indent) = @_;
+    my $functionName  = $call->{TEXT};
+    my $argumentTypes = $call->{ARGTYPES};
+
+    emit_flush($buffer, $functional, $indent);
+    my $arguments = emit_arguments($call, "dragon", $indent);
+    emit($indent, 
+	 "call_Dragon('$functionName', '$argumentTypes', [$arguments])\n");
+}
+
+sub emit_call_eval_template
+{
+    my ($buffer, $functional, $call, $indent) = @_;
+
+    my $arguments = emit_arguments($call, "eval_template", $indent);
+    emit($indent, "$buffer += eval_template($arguments)\n");
 }
 
 sub emit_call_Unimacro
 {
-    my ($collector, $call, $indent) = @_;
-    my $value = get_nested_value_name("call");
-    emit($indent, "$value = UnimacroCall()\n");
-    for my $argument (@{ $call->{ARGUMENTS} }) {
-        emit_argument("$value.addArgument", $argument, $indent);
-    }
-    emit($indent, "$collector($value)\n");
+    my ($buffer, $functional, $call, $indent) = @_;
+
+    emit_flush($buffer, $functional, $indent);
+    my $arguments = emit_arguments($call, "unimacro", $indent);
+    emit($indent, "call_Unimacro($arguments)\n");
 }
 
 
