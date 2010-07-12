@@ -324,7 +324,8 @@ class InifileSection(object):
 ##        print 'set: %s, %s: %s'% (self.section, key, value)
         win32api.WriteProfileVal( self.section, key, value, self.filename)
         checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
-        if checkValue != value:
+        if not (checkValue == value or \
+                          value in [0, 1] and checkValue == str(value)):
             print 'set failed:  %s, %s: %s, got %s instead'% (self.section, key, value, checkValue)
 
     def delete(self, key):

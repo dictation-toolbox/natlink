@@ -369,12 +369,16 @@ class UnittestNatlink(unittest.TestCase):
     def getWindowContents(self):
         clearClipboard()
         self.wait()
-        natlink.playString('{ctrl+end}x{ctrl+a}{ctrl+c}')
+        natlink.playString('{ctrl+end}x{ctrl+a}')
+        self.wait()
+        natlink.playString('{ctrl+c}')
         self.wait()
         contents = natlink.getClipboard()
         self.wait()
         natlink.playString('{ctrl+end}{backspace}')
-        if contents == '' or contents[-1:] !='x':
+        if contents == '':
+            return ''
+        if contents[-1:] !='x':
             raise TestError,'Failed to read the contents of the NatSpeak window: |%s|'% repr(contents)
         return contents[:-1]
 
@@ -2003,8 +2007,9 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Try a slightly enhanced way of calling the rules, also giving nextWords, nextRule,
     # prevWords, prevRule, and also fullResults and seqsAndRules as instance variables.
+    # QH, april 2010:
 
-    def tttestNextPrevRulesAndWords(self):
+    def testNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -2066,8 +2071,10 @@ class UnittestNatlink(unittest.TestCase):
         testEqualLists([[], ['test'], ['big'], ['blue']], testGram.allPrevWords, "first experiment, prev words")
         testEqualLists([['big'], ['blue'], ['chair'], []], testGram.allNextWords, "first experiment, next words")
         # test fullResults and seqsAndRules:
-        testEqualLists([['big'], ['blue'], ['chair'], []], testGram.fullResults, "first experiment, fullResults")
-        testEqualLists([['big'], ['blue'], ['chair'], []], testGram.seqsAndRules, "first experiment, seqsAndRules")
+        testEqualLists([('test', 'run'), ('big', 'optional'), ('blue', 'run'), ('chair', 'extra')],
+                        testGram.fullResults, "first experiment, fullResults")
+        testEqualLists([(['test'], 'run'), (['big'], 'optional'), (['blue'], 'run'), (['chair'], 'extra')],
+                        testGram.seqsAndRules, "first experiment, seqsAndRules")
         # check total and reset:
         testGram.checkExperiment(['test', 'big', 'blue', 'chair'])
 
@@ -2079,11 +2086,13 @@ class UnittestNatlink(unittest.TestCase):
         testEqualLists([[], ['test', 'red', 'green', 'blue']], testGram.allPrevWords, "second experiment, prev words")
         testEqualLists([['table'], []], testGram.allNextWords, "second experiment, next words")
         # test fullResults and seqsAndRules:
-        testEqualLists([['big'], ['blue'], ['chair'], []], testGram.fullResults, "first experiment, fullResults")
-        testEqualLists([['big'], ['blue'], ['chair'], []], testGram.seqsAndRules, "first experiment, seqsAndRules")
+        testEqualLists([('test', 'run'), ('red', 'run'), ('green', 'run'),
+                                  ('blue', 'run'), ('table', 'extra')],
+                         testGram.fullResults, "first experiment, fullResults")
+        testEqualLists([(['test', 'red', 'green', 'blue'], 'run'), (['table'], 'extra')],
+                         testGram.seqsAndRules, "first experiment, seqsAndRules")
         # check total and reset:
         testGram.checkExperiment(['test', 'red', 'green', 'blue', 'table'])
-
 
         testGram.unload()
 
@@ -2382,7 +2391,7 @@ def run():
     # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
-    suite = unittest.makeSuite(UnittestNatlink, 'tttest')
+    suite = unittest.makeSuite(UnittestNatlink, 'test')
 ##    natconnectOption = 0 # no threading has most chances to pass...
     log('\nstarting tests with threading: %s\n'% natconnectOption)
     result = unittest.TextTestRunner().run(suite)
