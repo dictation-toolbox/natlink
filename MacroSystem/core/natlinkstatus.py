@@ -540,7 +540,7 @@ class NatlinkStatus(object):
 
         should be set in configurenatlink, otherwise ignore...
         """
-        if self.UserDirectory != None: return self.UserDirectory
+        if not self.UserDirectory is None: return self.UserDirectory
         return self.getUserDirectoryFromIni()
 
     def getUserDirectoryFromIni(self):
@@ -563,13 +563,16 @@ class NatlinkStatus(object):
                     print 'UserDirectory (expanded): %s'% value2
                     self.__class__.UserDirectory = value2
                     return value2
+                elif value2:
+                    print 'Invalid UserDirectory: %s (ignore value)'% value2
                 else:
-                    print 'Invalid UserDirectory: %s'% value2
+                    print 'No UserDirectory specified'
+                    
         self.__class__.UserDirectory = ''
         return ''
 
     def getVocolaUserDirectory(self):
-        if self.VocolaUserDirectory: return self.VocolaUserDirectory
+        if not self.VocolaUserDirectory is None: return self.VocolaUserDirectory
         return self.getVocolaUserDirectoryFromIni()
 
     def getVocolaUserDirectoryFromIni(self):
@@ -590,8 +593,10 @@ class NatlinkStatus(object):
                     self.__class__.VocolaUserDirectory = value2
                     print 'VocolaUserDirectory (expanded): %s'% value2
                     return value2
+                elif value2:
+                    print 'not a valid VocolaUserDirectory: %s (ignore value)'% value2
                 else:
-                    print 'not a valid VocolaUserDirectory: %s'% value2
+                    print 'No VocolaUserDirectory specified'
         self.__class__.VocolaUserDirectory = ''
         return ''
 
