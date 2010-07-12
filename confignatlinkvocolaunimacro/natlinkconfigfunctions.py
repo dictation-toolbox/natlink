@@ -542,7 +542,8 @@ Possibly you need administrator rights to do this
         
     def getVocolaUserDir(self):
         key = 'VocolaUserDirectory'
-        return self.userregnl.get(key, None)
+        value = self.userregnl.get(key, None)
+        return value
 
     def setVocolaUserDir(self, v):
         key = 'VocolaUserDirectory'
