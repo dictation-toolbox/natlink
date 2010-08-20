@@ -19,7 +19,7 @@
 #
 
 import sys, string
-import win32api, win32gui, pywintypes
+import win32api, win32gui
 import os               # access to file information
 import os.path          # to parse filenames
 import time             # print time in messages
