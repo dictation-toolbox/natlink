@@ -108,15 +108,17 @@ import RegistryDict, natlinkcorefunctions
 
 from win32com.shell import shell, shellcon
 
-
+# adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
 NSExt73Path  = "ScanSoft\NaturallySpeaking"
 NSExt8Path  = "ScanSoft\NaturallySpeaking8"
 NSExt9Path  = "Nuance\NaturallySpeaking9"
 NSExt10Path  = "Nuance\NaturallySpeaking10"
+NSExt11Path  = "Nuance\NaturallySpeaking11"
 DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
-DNSPaths = [NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
-DNSVersions = [10,9,8,7]
+DNSPaths = [NSExt11Path, NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
+DNSVersions = [11,10,9,8,7]
+# augment above when a new version is there!
 
 # utility functions: 
 # report function:
