@@ -1,4 +1,4 @@
-__version__ = "3.9echo"
+__version__ = "3.9foxtrot"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "3.9echo"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# version 3.9foxtrot: adaptation NatSpeak 11
 # version 3.9: changing to ini files instead of registry
 #              and get python path directly...
 #              making ready for python2.6
