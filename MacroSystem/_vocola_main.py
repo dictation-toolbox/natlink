@@ -397,8 +397,9 @@ class ThisGrammar(GrammarBase):
             appStyle = 4
         else:
             appStyle = 1
-        print 'file: %s, appName: %s, appString: %s, appStyle: %s'% (
-            file, appName, appString, appStyle)
+        if debugSleepTime:
+            print 'file: %s, appName: %s, appString: %s, appStyle: %s'% (
+                file, appName, appString, appStyle)
         natlink.execScript('AppBringup "%s", "%s", %s'% (appName, appString, appStyle))
         
         #    
