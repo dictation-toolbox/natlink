@@ -603,6 +603,21 @@ class NatlinkStatus(object):
         self.__class__.VocolaUserDirectory = ''
         return ''
 
+    def getOriginalUnimacroDirectory(self):
+        """for use of finding sample_ini directories for example,
+        
+        if userDirectory different from unimacro directory, find the one in relation to core
+        prevent recursive calling with fromGetUserDirectory variable...
+        """
+        coreDir = self.getCoreDirectory()
+        oud = os.path.normpath(os.path.join(coreDir, '..', '..', '..', 'Unimacro'))
+        if os.path.isdir(oud):
+            return oud
+        else:
+            print 'cannot find original Unimacro directory'
+            return ''
+
+
     def getUnimacroUserDirectory(self):
         if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
         return self.getUnimacroUserDirectoryFromIni()
