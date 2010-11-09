@@ -13,6 +13,7 @@ in the Core directory instead of the User section of the registry.
 
 New in Unimacro:
 
+* Added a mechanism for spoken forms lists for numbers lists
 * Added Unimacro Shorthand Command AC (doActionConditionally), checking for a window with a title.
 * making spoken forms for number lists and number grammars.
 * DocstringGrammar included (on top of IniGrammar), making rules definition in docstrings possible.
