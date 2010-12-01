@@ -12,7 +12,9 @@ in the Core directory instead of the User section of the registry.
 * New in the combined NatLink/Vocola/Unimacro installer:
 
 New in Unimacro:
-
+* Changed child behaves like top (_folders grammar) towards actions
+* Introduce top behaves like child (killWindow or KW actions)
+* Added chrome/google chrome to possible browsers (grammar _general)
 * Added a mechanism for spoken forms lists for numbers lists
 * Added Unimacro Shorthand Command AC (doActionConditionally), checking for a window with a title.
 * making spoken forms for number lists and number grammars.
