@@ -1,15 +1,18 @@
 # vcl2py:  Convert Vocola voice command files to NatLink Python "grammar"
 #          classes implementing the voice commands
 #
-# Usage:  perl vcl2py.pl [-suffix <s>] [-f] inputFileOrFolder outputFolder
+# Usage:  perl vcl2py.pl [-extensions <f>] [-suffix <s>] 
+#                        [-f] inputFileOrFolder outputFolder
 # Where:
-#   -suffix <s> -- use suffix <s> to distinguish Vocola generated files
-#                  (default is "_vcl")
-#   -f          -- force processing even if file(s) not out of date
+#   -extensions <f> -- specify filename containing extension interface information
+#   -suffix <s>     -- use suffix <s> to distinguish Vocola generated files
+#                      (default is "_vcl")
+#   -f              -- force processing even if file(s) not out of date
 #
 # This file is copyright (c) 2002-2010 by Rick Mohr. It may be redistributed 
 # in any way as long as this copyright notice remains.
 #
+# 11/28/2010  ml  Extensions can now be called
 # 05/28/2010  ml  Print_* functions -> unparse_* to avoid compiler bug
 # 05/08/2010  ml  Underscores now converted to spaces by VocolaUtils
 # 03/31/2010  ml  Runtime errors now caught and passed to handle_error along 
@@ -77,10 +80,17 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.7I";
+    $VocolaVersion = "2.7.1";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
+
+    $extensions_info = 0;
+    if ($ARGV[0] eq "-extensions") {
+        shift @ARGV;
+        $extensions_info = $ARGV[0];
+        shift @ARGV;
+    }
 
     $suffix = "_vcl";
     if ($ARGV[0] eq "-suffix") {
@@ -100,7 +110,7 @@ sub main
         $input = $ARGV[0];
         $out_folder = $ARGV[1];
     } else {
-        die "Usage: perl vcl2py.pl [-suffix <s>] [-f] inputFileOrFolder outputFolder\n";
+        die "Usage: perl vcl2py.pl [-extensions <f>] [-suffix <s>] [-f] inputFileOrFolder outputFolder\n";
     }
 
     my $in_file = "";
@@ -121,6 +131,7 @@ sub main
 
     $default_maximum_commands = 1;
     read_ini_file($In_folder);
+    read_extensions_file($extensions_info) if ($extensions_info);
     print LOG ("default maximum commands per utterance = $default_maximum_commands\n") if ($Debug >= 1);
 
     convert_files($in_file, $out_folder, $suffix);
@@ -145,6 +156,24 @@ sub read_ini_file
         if ($keyword eq "MaximumCommands") {
             $default_maximum_commands = $value;
         }
+    }  
+}
+
+sub read_extensions_file
+{
+    my ($extensions_file) = @_;
+    print LOG "extensions file is '$extensions_file'\n" if ($Debug >= 1);
+    open EXTENSIONS, "<$extensions_file" or return;
+    while (<EXTENSIONS>) {
+        next unless /^([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([^,\n\r]*)[\n\r]*$/;
+        my $extension_name    = $1;
+        my $minimum_arguments = $2;
+        my $maximum_arguments = $3;
+        my $needs_flushing    = $4;
+        my $module_name       = $5;
+        my $function_name     = $6;
+
+	$Extension_functions{$extension_name} = [$minimum_arguments, $maximum_arguments, $needs_flushing, $module_name, $function_name];
     }  
 }
 
@@ -302,7 +331,7 @@ sub convert_filename
 #
 #      prototype = functionName '(' formals ')'
 #        formals = [name (',' name)*]
-#           call = functionName '(' arguments ')'
+#           call = callName '(' arguments ')'
 #      arguments = [action* (',' action*)*]
 #
 #
@@ -318,6 +347,7 @@ sub convert_filename
 #           name = [a-zA-Z_]\w*
 #   variableName = \w+
 #   functionName = [a-zA-Z_]\w*
+#       callName = [a-zA-Z_][\w.]*
 #
 #
 # The parser works as follows:
@@ -378,7 +408,7 @@ sub convert_filename
 #       TEXT      - name of formal (i.e. user function argument) referenced
 #    call:
 #       TEXT      - name of function called
-#       CALLTYPE  - dragon/vocola/user
+#       CALLTYPE  - dragon/vocola/user/extension
 #       ARGTYPES  - [dragon only] types of call arguments
 #       ARGUMENTS - list of lists of actions, to be passed in call
 
@@ -392,6 +422,12 @@ sub convert_filename
                      Repeat            => [2,2],
                      Unimacro          => [1,1],
                      );
+
+# Vocola extensions with (extension_name, minimum_arguments, maximum_arguments,
+# needs_flushing, module_name, function_name); initialized by 
+# read_extensions_file():
+
+%Extension_functions = ();
 
 # Built in Dragon functions with (minimum number of arguments,
 # template of types of all possible arguments); template has one
@@ -635,10 +671,10 @@ sub check_variable_name
 sub parse_function_definition   # function = prototype ':=' action* ';'
                                 # prototype = functionName '(' formals ')'
 {
-    if (/\G\s*([a-zA-Z_]\w*?)\s*\(\s*(.*?)\s*\)/gc) {
+    if (/\G\s*([a-zA-Z_.][\w.]*?)\s*\(\s*(.*?)\s*\)/gc) {
         my $functionName = $1;
         my $formalsString = $2;
-        if ($Debug>=2) {print LOG "Found function:  $functionName()\n"}
+        if ($Debug>=2) {print LOG "Found user function:  $functionName()\n"}
         my $statement = {};
         $statement->{TYPE} = "function";
         $statement->{NAME} = $functionName;
@@ -647,6 +683,8 @@ sub parse_function_definition   # function = prototype ':=' action* ';'
         @Formals = @formals; # Used below in &parse_formal_reference
         &shift_clause;
         $statement->{ACTIONS} = &parse_actions;
+	if ($functionName =~ /\./)
+	    {die "illegal user function name: $functionName\n"}
         defined ($Functions{$functionName})
             and die "Redefinition of $functionName()\n";
         $Functions{$functionName} = @formals;  # remember number of formals
@@ -906,41 +944,50 @@ sub create_formal_reference_node
     return $action;
 }
 
-sub parse_call    # call = functionName '(' arguments ')'
+sub parse_call    # call = callName '(' arguments ')'
 {
-    if (/\G\s*(\w+?)\s*\(/gc) {
-        my $functionName = $1;
-        if ($Debug>=2) {print LOG "Found call:  $functionName()\n"}
+    if (/\G\s*([\w.]+?)\s*\(/gc) {
+        my $callName = $1;
+        if ($Debug>=2) {print LOG "Found call:  $callName()\n"}
         my $action = {};
         $action->{TYPE} = "call";
-        $action->{TEXT} = $functionName;
+        $action->{TEXT} = $callName;
         $action->{ARGUMENTS} = &parse_arguments;
         if (not /\G\s*\)/gc) {die "Missing ')'\n"}
         my $nActuals = @{ $action->{ARGUMENTS} };
 	my $lFormals, $uFormals, @callFormals;
-        if (defined($Dragon_functions{$functionName})) {
-	    @callFormals = $Dragon_functions{$functionName};
+	if ($callName =~ /\./) {
+	    if (defined($Extension_functions{$callName})) {
+		@callFormals = $Extension_functions{$callName};
+		$lFormals = $callFormals[0][0];
+		$uFormals = $callFormals[0][1];
+		$action->{CALLTYPE} = "extension";
+	    } else {
+		die "Call to unknown extension '$callName'\n";
+	    }
+	} elsif (defined($Dragon_functions{$callName})) {
+	    @callFormals = $Dragon_functions{$callName};
 	    $lFormals =        $callFormals[0][0];
 	    $uFormals = length($callFormals[0][1]);
             $action->{CALLTYPE} = "dragon";
             $action->{ARGTYPES} = $callFormals[0][1];
-        } elsif (defined($Vocola_functions{$functionName})) {
-	    @callFormals = $Vocola_functions{$functionName};
+        } elsif (defined($Vocola_functions{$callName})) {
+	    @callFormals = $Vocola_functions{$callName};
 	    $lFormals = $callFormals[0][0];
 	    $uFormals = $callFormals[0][1];
             $action->{CALLTYPE} = "vocola";
-        } elsif (defined($Functions{$functionName})) {
-	    $lFormals = $uFormals = $Functions{$functionName};
+        } elsif (defined($Functions{$callName})) {
+	    $lFormals = $uFormals = $Functions{$callName};
             $action->{CALLTYPE} = "user";
         } else {
-            die "Call to unknown function '$functionName'\n";
+            die "Call to unknown function '$callName'\n";
         }
 
         if ($lFormals != -1 and $nActuals < $lFormals) {
-            die "Too few arguments passed to '$functionName' (minimum of $lFormals required)\n";
+            die "Too few arguments passed to '$callName' (minimum of $lFormals required)\n";
         } 
         if ($uFormals != -1 and $nActuals > $uFormals) {
-            die "Too many arguments passed to '$functionName' (maximum of $uFormals allowed)\n";
+            die "Too many arguments passed to '$callName' (maximum of $uFormals allowed)\n";
         } 
         return $action;
     }
@@ -1860,17 +1907,18 @@ sub emit_call
     my ($buffer, $functional, $call, $indent) = @_;
     my $callType = $call->{CALLTYPE};
     begin_nested_call();
-    if    ($callType eq "dragon") {&emit_dragon_call}
-    elsif ($callType eq "user"  ) {
+    if    ($callType eq "dragon"   ) {&emit_dragon_call}
+    elsif ($callType eq "extension") {&emit_extension_call}
+    elsif ($callType eq "user"     ) {
 	die "No user function call should be present here!";
     } elsif ($callType eq "vocola") {
-        my $functionName = $call->{TEXT};
-        if    ($functionName eq "Eval")         {
+        my $callName = $call->{TEXT};
+        if    ($callName eq "Eval")         {
 	    die "Compiler error: Eval not transformed away\n";
-	} elsif ($functionName eq "EvalTemplate") {&emit_call_eval_template}
-        elsif ($functionName eq   "Repeat")       {&emit_call_repeat}
-        elsif ($functionName eq   "Unimacro")     {&emit_call_Unimacro}
-        else {die "Unknown Vocola function: '$functionName'\n"}
+	} elsif ($callName eq "EvalTemplate") {&emit_call_eval_template}
+        elsif ($callName eq   "Repeat")       {&emit_call_repeat}
+        elsif ($callName eq   "Unimacro")     {&emit_call_Unimacro}
+        else {die "Unknown Vocola function: '$callName'\n"}
     } else {die "Unknown function call type: '$callType'\n"}
     end_nested_call();
 }
@@ -1916,13 +1964,32 @@ sub emit_arguments
 sub emit_dragon_call
 {
     my ($buffer, $functional, $call, $indent) = @_;
-    my $functionName  = $call->{TEXT};
+    my $callName  = $call->{TEXT};
     my $argumentTypes = $call->{ARGTYPES};
 
     emit_flush($buffer, $functional, $indent);
     my $arguments = emit_arguments($call, "dragon", $indent);
     emit($indent, 
-	 "call_Dragon('$functionName', '$argumentTypes', [$arguments])\n");
+	 "call_Dragon('$callName', '$argumentTypes', [$arguments])\n");
+}
+
+sub emit_extension_call
+{
+    my ($buffer, $functional, $call, $indent) = @_;
+    my $callName      = $call->{TEXT};
+    my @callFormals   = $Extension_functions{$callName};
+    my $needsFlushing = $callFormals[0][2];
+    my $import_name   = $callFormals[0][3];
+    my $function_name = $callFormals[0][4];
+
+    if ($needsFlushing) { emit_flush($buffer, $functional, $indent); }
+    my $arguments = emit_arguments($call, "extension", $indent);
+    emit($indent, "import $import_name\n");
+    if ($needsFlushing) {
+	emit($indent, "$function_name($arguments)\n");
+    } else {
+	emit($indent, "$buffer += str($function_name($arguments))\n");
+    }
 }
 
 sub emit_call_eval_template
@@ -2111,6 +2178,7 @@ sub emit_file_header
 import natlink
 from natlinkutils import *
 from VocolaUtils import *
+
 
 class ThisGrammar(GrammarBase):
 

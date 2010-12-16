@@ -59,10 +59,8 @@ def to_long(string):
 
 def do_flush(functional_context, buffer):
     if functional_context:
-        raise VocolaRuntimeError('attempt to call Unimacro or make a Dragon call in a functional context!')
+        raise VocolaRuntimeError('attempt to call Unimacro, Dragon, or a Vocola extension procedure in a functional context!')
     if buffer != '':
-        #print 'buffer: %s'% repr(buffer)
-        #print 'convert_keys(buffer): %s'% repr(convert_keys(buffer))
         natlink.playString(convert_keys(buffer))
     return ''
 

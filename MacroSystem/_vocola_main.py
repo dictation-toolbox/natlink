@@ -7,19 +7,25 @@
 #
 # This file is copyright (c) 2002-2010 by Rick Mohr. It may be redistributed
 # in any way as long as this copyright notice remains.
+
+
 #
+# WARNING: This version of _vocola_main.py has been modified to work
+#          with Quintijn's installer/version of NatLink and has a
+#          number of unofficial changes/improvements.  The code has
+#          been organized to minimize the diff's with the official
+#          version.
 #
-#
-# Febr 4, 2008, QH:
+
+# February 4, 2008, QH:
 # adapted to natlinkmain, which loads _vocola_main before other modules,
-# and calls back also at begin Callback time before other modules to vocolaBeginCallback.
+# and calls back also at begin Callback time before other modules to
+# vocolaBeginCallback.
 # If something changed within Vocola, report back to natlinkmain with
 #  1 (change py file)
 #  2 (new py file)
-#
 
-import sys, string
-import win32api, win32gui
+import sys
 import os               # access to file information
 import os.path          # to parse filenames
 import time             # print time in messages
@@ -27,25 +33,16 @@ from stat import *      # file statistics
 import re
 import natlink
 from natlinkutils import *
+
+
+import string
+import win32api, win32gui
 import natlinkstatus
 import natlinkcorefunctions
-status = natlinkstatus.NatlinkStatus()
+status        = natlinkstatus.NatlinkStatus()
+VocolaEnabled = not not status.getVocolaUserDirectory()
+language      = status.getLanguage()
 
-want_unimacro = status.getVocolaTakesUnimacroActions()
-if want_unimacro:
-    try:
-        import actions
-    except ImportError:
-        print 'WARNING: You want to use Unimacro actions in Vocola,'
-        print 'but the Unimacro module "actions" cannot be imported.\n'
-        print 'Either enable Unimacro, or switch on the '
-        print 'option "Include Unimacro directory in PythonPath" in the '
-        print 'config program or with '
-        print 'the option "f" in the CLI (Command Line Interpreter).'
-        want_unimacro = None
-# Set to non-zero number of seconds to debug starting editors on
-# Vocola source code:
-debugSleepTime = 0
 
 # The Vocola translator is a perl program. By default we use the precompiled
 # executable vcl2py.exe, which doesn't require installing perl.
@@ -61,15 +58,31 @@ NatLinkFolder = os.path.split(
 
 NatLinkFolder = re.sub(r'\core$', "", NatLinkFolder)
 
-pydFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'Exec', sys.version[0:3]))
+pydFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'exec', sys.version[0:3]))
 sys.path.append(pydFolder)
+ExecFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola','exec'))
+sys.path.append(ExecFolder)
+ExtensionsFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'extensions'))
+sys.path.append(ExtensionsFolder)
 NatLinkFolder = os.path.abspath(NatLinkFolder)
+
 
 import simpscrp
 
-language = status.getLanguage()
-
 class ThisGrammar(GrammarBase):
+
+    gramSpec = """
+        <NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
+        <loadAll>           exported = Load All [Voice] Commands;
+        <loadCurrent>       exported = Load [Voice] Commands;
+        <loadGlobal>        exported = Load Global [Voice] Commands;
+        <loadExtensions>    exported = Load [Voice] Extensions;
+        <discardOld>        exported = Discard Old [Voice] Commands;
+        <edit>              exported = Edit [Voice] Commands;
+        <editMachine>       exported = Edit Machine [Voice] Commands;
+        <editGlobal>        exported = Edit Global [Voice] Commands;
+        <editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
+    """
     if language == 'nld':
         gramSpec = """
 <NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
@@ -82,35 +95,26 @@ class ThisGrammar(GrammarBase):
 <editGlobal>        exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) [stem|vojs] (Commandoos|Commands);
 <editGlobalMachine> exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
     """
-    else:
-        gramSpec = """
-<NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
-<loadAll>           exported = Load All [Voice] Commands;
-<loadCurrent>       exported = Load [Voice] Commands;
-<loadGlobal>        exported = Load Global [Voice] Commands;
-<discardOld>        exported = Discard Old [Voice] Commands;
-<edit>              exported = (Edit|Show) [Voice] Commands;
-<editMachine>       exported = (Edit|Show) Machine [Voice] Commands;
-<editGlobal>        exported = (Edit|Show) Global [Voice] Commands;
-<editGlobalMachine> exported = (Edit|Show) Global Machine [Voice] Commands;
-    """
 
     def initialize(self):
+        if not VocolaEnabled:
+            print "Vocola not active"
+            return
+
         self.mayHaveCompiled = 0  # has the compiler been called?
         self.compilerError   = 0  # has a compiler error occurred?
         self.setNames()
+
         # remove previous Vocola/Python compilation output as it may be out
         # of date (e.g., new compiler, source file deleted, partially
         # written due to crash, new machine name, etc.):
         self.purgeOutput()
 
-        if self.vocolaEnabled:        
-            self.loadAllFiles('')
+        self.load_extensions()
+        self.loadAllFiles('')
 
-            self.load(self.gramSpec)
-            self.activateAll()
-        else:
-            print 'vocola not active'
+        self.load(self.gramSpec)
+        self.activateAll()
 
 
                 
@@ -123,24 +127,21 @@ class ThisGrammar(GrammarBase):
     def setNames(self):
         self.VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
         self.commandFolders = []
-        self.systemCommandFolder = os.path.join(self.VocolaFolder, 'Commands')
-        if os.path.isdir(self.systemCommandFolder):
-            self.commandFolders.insert(0, self.systemCommandFolder)
+        systemCommandFolder = os.path.join(self.VocolaFolder, 'Commands')
+        if os.path.isdir(systemCommandFolder):
+            self.commandFolders.insert(0, systemCommandFolder)
         
         userCommandFolder = status.getVocolaUserDirectory()
-            
-        self.vocolaEnabled = (userCommandFolder and os.path.isdir(userCommandFolder))
-        if self.vocolaEnabled:
-            self.commandFolders.insert(0, userCommandFolder)                
-            if status.getVocolaTakesLanguages():
-                language = status.getLanguage()
-                print '_vocola_main started with language: %s'% language
-                if language != 'enx':
-                    userCommandFolder2 = os.path.join(userCommandFolder, language)
-                    if not os.path.isdir(userCommandFolder2):
-                        print 'creating userCommandFolder for language %s'% language
-                        self.createNewSubDirectory(userCommandFolder2)
-                        self.copyToNewSubDirectory(userCommandFolder, userCommandFolder2)
+        self.commandFolders.insert(0, userCommandFolder)                
+        if status.getVocolaTakesLanguages():
+            language = status.getLanguage()
+            print '_vocola_main started with language: %s'% language
+            if language != 'enx':
+                userCommandFolder2 = os.path.join(userCommandFolder, language)
+                if not os.path.isdir(userCommandFolder2):
+                    print 'creating userCommandFolder for language %s'% language
+                    self.createNewSubDirectory(userCommandFolder2)
+                    self.copyToNewSubDirectory(userCommandFolder, userCommandFolder2)
                     self.commandFolders.insert(0, userCommandFolder2)                
         if os.environ.has_key('COMPUTERNAME'):
             self.machine = string.lower(os.environ['COMPUTERNAME'])
@@ -200,6 +201,22 @@ class ThisGrammar(GrammarBase):
     def gotResults_NatLinkWindow(self, words, fullResults):
         print "This is the NatLink/Vocola output window"
 
+    # "Load Extensions" -- scan for new/changed extensions:
+    def gotResults_loadExtensions(self, words, fullResults):
+        self.load_extensions(True)
+        for module in sys.modules.keys():
+            if module.startswith("vocola_ext_"):
+                del sys.modules[module]
+
+    def load_extensions(self, verbose=False):
+        #if sys.modules.has_key("scan_extensions"):
+        #    del sys.modules["scan_extensions"]
+        import scan_extensions
+        arguments = ["scan_extensions", ExtensionsFolder]
+        if verbose:
+            arguments.insert(1, "-v")
+        scan_extensions.main(arguments)
+
 ### Loading Vocola Commands
 
     # "Load All Commands" -- translate all Vocola files
@@ -226,11 +243,7 @@ class ThisGrammar(GrammarBase):
 
     # Load all command files
     def loadAllFiles(self, options):
-        ## QH, I believe only 1 commandFolder should be done, numbered 0
-        ## as the other numbers can be used for copying default files to your location if
-        ## a new file is started...
         for i in range(len(self.commandFolders)):
-            if i > 0: break    # only take 0
             suffix = "-suffix _vcl" + str(i) + " "
             self.runVocolaTranslator(self.commandFolders[i], suffix + options)
 
@@ -270,8 +283,9 @@ class ThisGrammar(GrammarBase):
     def runVocolaTranslator(self, inputFileOrFolder, options):
         self.mayHaveCompiled = 1
 
-        if usePerl: call = 'perl "' + self.VocolaFolder + r'\Exec\vcl2py.pl" '
-        else:       call = '"'      + self.VocolaFolder + r'\Exec\vcl2py.exe" '
+        if usePerl: call = 'perl "' + self.VocolaFolder + r'\exec\vcl2py.pl" '
+        else:       call = '"'      + self.VocolaFolder + r'\exec\vcl2py.exe" '
+        call += '-extensions "' + ExtensionsFolder + r'\extensions.csv" '
         call += options
         call += ' "' + inputFileOrFolder + '" "' + NatLinkFolder + '"'
         simpscrp.Exec(call, 1)
@@ -295,30 +309,26 @@ class ThisGrammar(GrammarBase):
         app = self.getCurrentApplicationName()
         file = app + '.vcl'
         comment = 'Voice commands for ' + app
-        onlyShow = (words[0] in ['Show', 'Sjoo', 'Toon'])
-        self.openCommandFile(file, comment, onlyShow=onlyShow)
+        self.openCommandFile(file, comment)
 
     # "Edit Machine Commands" -- open command file for current app & machine
     def gotResults_editMachine(self, words, fullResults):
         app = self.getCurrentApplicationName()
         file = app + '@' + self.machine + '.vcl'
         comment = 'Voice commands for ' + app + ' on ' + self.machine
-        onlyShow = (words[0] in ['Show', 'Sjoo', 'Toon'])
-        self.openCommandFile(file, comment, onlyShow=onlyShow)
+        self.openCommandFile(file, comment)
 
     # "Edit Global Commands" -- open global command file
     def gotResults_editGlobal(self, words, fullResults):
         file = '_vocola.vcl'
         comment = 'Global voice commands'
-        onlyShow = (words[0] in ['Show', 'Sjoo', 'Toon'])
-        self.openCommandFile(file, comment, onlyShow=onlyShow)
+        self.openCommandFile(file, comment)
 
     # "Edit Global Machine Commands" -- open global command file for machine
     def gotResults_editGlobalMachine(self, words, fullResults):
         file = '_vocola@' + self.machine + '.vcl'
         comment = 'Global voice commands on ' + self.machine
-        onlyShow = (words[0] in ['Show', 'Sjoo', 'Toon'])
-        self.openCommandFile(file, comment, onlyShow=onlyShow)
+        self.openCommandFile(file, comment)
 
     # Open a Vocola command file (using the application associated with ".vcl")
     
@@ -329,36 +339,24 @@ class ThisGrammar(GrammarBase):
 
         return ""
     
-    def openCommandFile(self, file, comment, onlyShow=None):
-        """open a command file with Notepad.
-        
-        Create new if it did not exist before, possibly with include line
-        to Unimacro.vch,
-        
-        If the file was called before in this NatSpeak session, try to
-        switch to the previously opened window (using AppBringUp)
-        
-        If onlyShow is set, do NOT give focus, bring to foreground only.
-        """
+    def openCommandFile(self, file, comment):
         path = self.FindExistingCommandFile(file)
-        wantedPath = os.path.join(self.commandFolders[0], file)
-
         if not path:
             path = self.commandFolders[0] + '\\' + file
+
             new = open(path, 'w')
-            # insert include line to Unimacro.vch:
-            if want_unimacro:
-                if language == 'enx' or not status.getVocolaTakesLanguages():
-                    includeLine = 'include Unimacro.vch;\n'
-                else:
-                    includeLine = 'include ..\\Unimacro.vch;\n'
-                new.write(includeLine)                    
             new.write('# ' + comment + '\n\n')
+            # insert include line to Unimacro.vch:
+            if status.getVocolaTakesUnimacroActions():
+                if language == 'enx' or not status.getVocolaTakesLanguages():
+                    includeLine = 'include Unimacro.vch;\n\n'
+                else:
+                    includeLine = 'include ..\\Unimacro.vch;\n\n'
+                new.write(includeLine)                    
             new.close()
 
-        elif path == wantedPath:
-            pass
-        else:
+        wantedPath = os.path.join(self.commandFolders[0], file)
+        if path and path != wantedPath:
             # copy from other location
             if wantedPath.startswith(path) and len(wantedPath) - len(path) == 3:
                 print 'copy enx version to language version %s'% language
@@ -368,50 +366,14 @@ class ThisGrammar(GrammarBase):
                 self.copyVclFile(path, wantedPath)
             path = wantedPath   
 
-        if not os.path.isfile(path):
-            raise(IOError, "not an existing file: %s"% path)
-        if debugSleepTime:
-            print 'checking executable to open %s with (in %s seconds)'% (path, debugSleepTime)
-            time.sleep(debugSleepTime)
         try:
-            dummy, prog = win32api.FindExecutable(path)
-        except: 
-            if debugSleepTime:
-                print 'cannot find executable to open %s with, try Notepad'% path
+            os.startfile(path)
+        except WindowsError, e: 
+            print
+            print "Unable to open voice command file with associated editor: " + str(e)
+            print "Trying to open it with notepad instead."
             prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
-        else:
-            if not os.path.isfile(prog):
-                prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
-        if not os.path.isfile(prog):
-            raise IOError("Cannot find program to open %s (tried %s)"%
-                          (path, prog))
-        #path = win32api.GetShortPathName(path)
-        if debugSleepTime:
-            print 'open (ShellExecute) (after %s seconds) %s with program %s'% (debugSleepTime, path, prog)
-            time.sleep(debugSleepTime)
-        trunk, ext = os.path.splitext(file)
-            
-        appString = '%s %s'% (prog, path)
-        appName = "vocolaedit%s"% trunk
-        if onlyShow:
-            appStyle = 4
-        else:
-            appStyle = 1
-        if debugSleepTime:
-            print 'file: %s, appName: %s, appString: %s, appStyle: %s'% (
-                file, appName, appString, appStyle)
-        natlink.execScript('AppBringup "%s", "%s", %s'% (appName, appString, appStyle))
-        
-        #    
-        #    win32api.ShellExecute(0, 'open', prog, path, "", 1)
-        #    #os.spawnv(os.P_NOWAIT, prog, (prog, path))
-        #except WindowsError, e: 
-        #    print 'could not open %s, error message: %s'% (path, e)
-        #else:
-        #    time.sleep(0.1)
-        #    hndle = win32gui.GetForegroundWindow()
-        #    self.editedFilesHndles[file] = hndle
-        #    print 'set remember hndle of %s to %s'% (file, hndle)
+            os.spawnv(os.P_NOWAIT, prog, [prog, path])
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
@@ -448,6 +410,7 @@ class ThisGrammar(GrammarBase):
         output.close()                
 
             
+
 thisGrammar = ThisGrammar()
 thisGrammar.initialize()
 
@@ -484,16 +447,15 @@ lastVocolaFileTime    = 0
 def vocolaBeginCallback(moduleInfo):
     global lastNatLinkModTime, lastCommandFolderTime, lastVocolaFileTime
 
-    if not thisGrammar.vocolaEnabled:
+    if not VocolaEnabled:
         return 0
 
     current = getLastVocolaFileModTime()
     if current > lastVocolaFileTime:
+        thisGrammar.compilerError = 0	   
         thisGrammar.loadAllFiles('')
-    if not thisGrammar.compilerError:
-        lastVocolaFileTime =  current
-    else:
-        thisGrammar.compilerError = 0      
+	if not thisGrammar.compilerError:
+            lastVocolaFileTime =  current
 
 #    source_changed = 0
 #    for folder in thisGrammar.commandFolders:
