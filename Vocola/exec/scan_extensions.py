@@ -18,13 +18,16 @@ def process_extension(output, verbose, extension):
 
     last_line   = ""
     line_number = 0
-    with open(extension + ".py", "r") as f:
+    f = open(extension + ".py", "r")
+    try:
         for line in f:
             funcs, procs = scan(output, last_line, line, extension, line_number)
             functions   += funcs
             procedures  += procs
             line_number += 1
             last_line = line
+    finally:
+        f.close()
 
     log("        found %d function(s), %d procedures(s)" % \
             (functions, procedures), verbose)
@@ -123,11 +126,14 @@ def main(argv):
     log("\nScanning for Vocola extensions...", verbose)
 
     os.chdir(extensions_folder)
-    with open(os.path.normpath(os.path.join(extensions_folder,"extensions.csv")),
-              "w") as output:
+    output = open(os.path.normpath(os.path.join(extensions_folder,
+                                                "extensions.csv")), "w")
+    try:
         for file in os.listdir(extensions_folder):
             if  file.startswith("vocola_ext_") and file.endswith(".py"):
                 process_extension(output, verbose, file[0:-3])
+    finally:
+        output.close()
 
 if __name__ == "__main__":
     main(sys.argv)
