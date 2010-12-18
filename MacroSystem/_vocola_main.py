@@ -88,6 +88,7 @@ class ThisGrammar(GrammarBase):
 <NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
 <loadAll>           exported = (Laad|Lood) alle [stem|vojs] (Commandoos|Commands);
 <loadCurrent>       exported = (Laad|Lood) [stem|vojs] (Commandoos|Commands);
+<loadExtensions>    exported = Laad [stem] extensies;
 <loadGlobal>        exported = (Laad|Lood) globale [stem|vojs] (Commandoos|Commands);
 <discardOld>        exported = (Discard|Verwijder) (oude|oold) [stem|vojs] (Commandoos|Commands);
 <edit>              exported = (Eddit|Bewerk|Sjoo|Toon) [stem|vojs] (Commandoos|Commands);
