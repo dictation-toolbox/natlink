@@ -1,4 +1,4 @@
-__version__ = "3.9juliett"
+__version__ = "3.9kilo"
 # coding=latin-1
 #
 # natlinkstatus.py
