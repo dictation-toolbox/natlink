@@ -1,4 +1,4 @@
-Release notes for NatLink/Vocola/Unimacro towards 3.9:
+Release NatLink/Vocola/Unimacro 3.9:
 
 
 New in Vocola version 2.7.1 and 2.7
