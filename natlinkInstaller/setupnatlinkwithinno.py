@@ -272,7 +272,8 @@ def _getallfiles(arg, dirname, filenames):
     for f in filenames:
         if f.endswith(".pyc"):
             continue
-        
+        if f.endswith (".csv"):
+            continue # extensions.csv skipped (vocola)
         Path = os.path.join(dirname, f)
         if os.path.isdir(Path):
             continue
