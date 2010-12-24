@@ -368,54 +368,14 @@ class ThisGrammar(GrammarBase):
             path = wantedPath   
 
         try:
-            os.startfile(path)
+            natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
+            #os.startfile(path)
         except WindowsError, e: 
             print
             print "Unable to open voice command file with associated editor: " + str(e)
             print "Trying to open it with notepad instead."
             prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
             os.spawnv(os.P_NOWAIT, prog, [prog, path])
-
-    def openFileDefault(self, filename, mode=None, windowStyle=None, name=None):
-        """open the file in the default window
-
-        if the file is opened with AppBringUp ( not one of the exceptions), the optional
-        name is given, which can be used with to switch to command!
-        In the messages window the name of the AppBringUp command is given.
-        
-        """
-        mode = mode or 'open'
-        if not os.path.isfile(filename):
-            self.DisplayMessage('the file you want to open does not exist: %s'% filename)
-            return
-        path, f = os.path.split(filename)
-        trunk,ext = os.path.splitext(f)
-        if mode == 'edit' and ext not in ['.py']:
-            mode = 'open'
-##            print 'edit mode changed to open for file: %s'% filename
-
-        if mode == 'edit' and ext in ['.py'] and PythonwinPath:
-            editProg = os.path.join(PythonwinPath, "pythonwin.exe")
-            #print 'editProg: %s'% editProg
-            time.sleep(3)
-            win32api.ShellExecute(0, 'open', editProg, filename, "", 1)
-        elif mode == 'edit' or ext in ['.txt', '.ini', '.css']:
-            # so py, txt, ini and css are opened in unimacroinifileseditor:
-            editProg = status.getUnimacroIniFilesEditor()
-            if editProg == "notepad":
-                editProg = os.path.join(natlinkcorefunctions.getExtendedEnv('SYSTEM'), 'notepad.exe')
-
-            if not os.path.isfile(editProg):
-                raise IOError("natlinkutilsbj: cannot find edit program: %s"% editProg)
-##            print 'open with ShellExecute: %s, filename: %s'% (editProg, filename)
-            win32api.ShellExecute(0, 'open', editProg, filename, "", 1)
-            return
-        else:
-            # else, take passed name or trunk of file:
-            name = name or trunk
-##        print 'open with AppBringUp %s, name: %s'% (filename, name)
-            natqh.AppBringUp(name, filename, windowStyle=windowStyle)
-
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
