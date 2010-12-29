@@ -14,7 +14,7 @@ natut = __import__('natlinkutils')
 
 ### change here:
 testfile = r'C:\temp\test.txt'
-allresultsflag = 0
+allresultsflag = 1
 
 ###
 
@@ -30,10 +30,14 @@ class UtilGrammar(ancestor):
     def initialize(self):
         # with allResults gives error after you call "open file with startfile"
         if allresultsflag:
+            print 'loading/activating allresultserror grammar WITH flag: %s (test should crash NatSpeak)'% allresultsflag
+            print 'the command that crashed is "edit commands" of Vocola'
             self.load(self.gramSpec, allResults=allresultsflag)
         else:
+            print 'loading/activating allresultserror grammar WITHOUT flag, test should run without crash'
+            print 'Try the command "edit commands" of Vocola'
             self.load(self.gramSpec)
-        print 'activate rules of test grammar "all results error"'
+        #print 'activate rules of test grammar "all results error"'
         self.activateAll()
         
     def gotBegin(self, moduleInfo):
