@@ -14,7 +14,7 @@ natut = __import__('natlinkutils')
 
 ### change here:
 testfile = r'C:\temp\test.txt'
-allresultsflag = 1
+allresultsflag = 0  # with 1 NatSpeak will crash at the command "Edit Commands"
 
 ###
 
