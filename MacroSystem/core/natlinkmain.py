@@ -6,11 +6,13 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+# December 2010 (QH): keep track of grammar files with errors, so they only reload when
+#                     changes are made (wrongFiles global dict)
 # March 2010 (QH) loading (in findAndLoadFiles) _control.py last, the
 #            Unimacro control grammar (for introspection)
- #August 17, 2009
- #   - added throughWords in SelectGramBase, see natlinkutils.py (Quintijn)
- #
+#August 17, 2009
+#   - added throughWords in SelectGramBase, see natlinkutils.py (Quintijn)
+#
 # Febr 2008 (QH)
 #   - userDirectory inserted at front of sys.path (was appended)
 #   - made special arrangements for _vocola_main, so it calls back before
@@ -116,7 +118,7 @@ if not cmdLineStartup:
 # status:
 status = natlinkstatus.NatlinkStatus()
 status.checkSysPath()
-debugLoad= status.getDebugLoad()
+debugLoad = status.getDebugLoad()
 debugCallback = status.getDebugCallback()
 if debugLoad:
     print 'do extra output at (re)loading time: %s'% debugLoad
@@ -186,6 +188,7 @@ BaseTopic = ''
 
 loadedFiles = {}
 
+wrongFiles = {} # timestamp of files with an error in it...
 #
 # Module which was active last time we looked for module specific files
 #
@@ -201,7 +204,7 @@ lastModule = ''
 #
 
 def loadFile(modName,searchPath,origName=None):
-    
+    global wrongFiles  # keep track of non edited files with errors
     try: fndFile,fndName,fndDesc = imp.find_module(modName, searchPath)
     except ImportError: return None     # module not found
     if origName:
@@ -230,16 +233,30 @@ def loadFile(modName,searchPath,origName=None):
             return None
         if debugLoad: print "Loading", modName
 
+    if fndName in wrongFiles:
+        sourceDate = getFileDate(fndName)
+        if not sourceDate:
+            print '-- wrong grammar file removed: %s'% fndName
+            del wrongFiles[fndName]
+            return
+        elif sourceDate <= wrongFiles[fndName]:
+            print '-- skip unchanged wrong grammar file: %s'% fndName
+            return
+
     try:
         imp.load_module(modName,fndFile,fndName,fndDesc)
                                     
         fndFile.close()
+        if fndName in wrongFiles:
+            del wrongFiles[fndName]  # release that 
         return fndName
     except:
         fndFile.close()
         sys.stderr.write('Error loading '+modName+' from '+fndName+'\n' )
         traceback.print_exc()
-        return None
+        sourceDate = getFileDate(fndName)
+        wrongFiles[fndName] = sourceDate
+        return
 
 # Returns the date on a file or 0 if the file does not exist        
 
@@ -281,7 +298,6 @@ def safelyCall(modName,funcName):
 
 def findAndLoadFiles(curModule=None):
     global loadedFiles, searchImportDirs, vocolaIsLoaded, vocolaModule
-
 
     moduleHasDot = None
     if curModule:
@@ -332,12 +348,11 @@ def findAndLoadFiles(curModule=None):
         res = pat.match(x)
         if res: addToFilesToLoad( filesToLoad, res.group(1), baseDirectory, moduleHasDot )
 
-
     # Try to (re)load any files we find
     if debugLoad: print 'filesToLoad: %s'% filesToLoad.keys()
     # to Unimacro grammar control last:
     controlModule = None
-    for x in filesToLoad:
+    for x in filesToLoad.keys():
         if x == doVocolaFirst:
             continue
         if x == '_control':
@@ -360,8 +375,6 @@ def findAndLoadFiles(curModule=None):
         origName = loadedFiles.get(controlModule, None)
         loadedFiles[controlModule] = loadFile(controlModule, searchImportDirs, origName)
         
-
-
     # Unload any files which have been deleted
     for name, path in loadedFiles.items():
         if path and not getFileDate(path):
@@ -396,7 +409,6 @@ def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
     # set newModName to this one:
     filesToLoad[newModName] = None
 ##    print 'set newModName: %s'% newModName
-    return
 
     
 #

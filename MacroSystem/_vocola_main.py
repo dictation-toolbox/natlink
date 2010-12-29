@@ -368,8 +368,8 @@ class ThisGrammar(GrammarBase):
             path = wantedPath   
 
         try:
-            natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
-            #os.startfile(path)
+            #natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
+            os.startfile(path)
         except WindowsError, e: 
             print
             print "Unable to open voice command file with associated editor: " + str(e)
