@@ -52,7 +52,6 @@
 #   See also the constants at the top of this file.
 
 ############################################################################
-__version__ = "$Revision$, $Date$, $Author$"
 
 import os, os.path, copy, types
 import struct
