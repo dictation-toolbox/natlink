@@ -13,8 +13,11 @@ natut = __import__('natlinkutils')
 
 
 ### change here:
+### only if you try the second command, make sure testfile points to some file.
+### although the exception when there is no testfile is not fatal.
 testfile = r'C:\temp\test.txt'
-allresultsflag = 0 # with 1 NatSpeak will crash at the command "Edit Commands"
+
+allresultsflag = 1  # with 1 NatSpeak will crash at the command "Edit Commands"
 
 ###
 

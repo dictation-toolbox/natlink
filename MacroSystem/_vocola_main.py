@@ -163,7 +163,7 @@ class ThisGrammar(GrammarBase):
                     print 'creating userCommandFolder for language %s'% language
                     self.createNewSubDirectory(userCommandFolder2)
                     self.copyToNewSubDirectory(userCommandFolder, userCommandFolder2)
-                    self.commandFolders.insert(0, userCommandFolder2)                
+                self.commandFolders.insert(0, userCommandFolder2)                
         if os.environ.has_key('COMPUTERNAME'):
             self.machine = string.lower(os.environ['COMPUTERNAME'])
         else: self.machine = 'local'
@@ -352,7 +352,6 @@ class ThisGrammar(GrammarBase):
         self.openCommandFile(file, comment)
 
     # Open a Vocola command file (using the application associated with ".vcl")
-    
     def FindExistingCommandFile(self, file):
         for commandFolder in self.commandFolders:
             f = commandFolder + '\\' + file
@@ -388,8 +387,14 @@ class ThisGrammar(GrammarBase):
             path = wantedPath   
 
         try:
-            #natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
-            os.startfile(path)
+            # reverted to execScript because of problems with allResults flag and
+            # os.startfile. see Unimacro websites, installation, problems with natlink
+            # QH: would prefer  win32api.ShellExecute(0, 'open', editProg, filename, "", 1)
+            # NatSpeak pauses quite a while after starting this and old style (8.3) paths
+            # appear in window title...
+            # also not sure how it handles when no program is coupled to .vcl files
+            natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
+            #os.startfile(path)
         except WindowsError, e: 
             print
             print "Unable to open voice command file with associated editor: " + str(e)
@@ -476,7 +481,7 @@ def vocolaBeginCallback(moduleInfo):
     if current > lastVocolaFileTime:
         thisGrammar.compilerError = 0	   
         thisGrammar.loadAllFiles('')
-	if not thisGrammar.compilerError:
+        if not thisGrammar.compilerError:
             lastVocolaFileTime =  current
 
 #    source_changed = 0
