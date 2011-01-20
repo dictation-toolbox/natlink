@@ -165,7 +165,7 @@ class NatlinkStatus(object):
     in the PyTest folder there are/come test functions in TestNatlinkStatus
 
     """
-    usergroup = "SOFTWARE\Natlink"
+    usergroup = "SOFTWARE\\Natlink"
 ##    lmgroup = "SOFTWARE\Natlink"
     userregnlOld = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup)
 ##    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)

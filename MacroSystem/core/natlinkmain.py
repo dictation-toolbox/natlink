@@ -572,7 +572,6 @@ def changeCallbackLoadedModules(type,args):
 #
 # Here is the initialization code.
 #
-
 try:
     # compute the directory where this module came from
 
