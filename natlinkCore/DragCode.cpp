@@ -1688,13 +1688,11 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	}
 	assert( m_pISRCentral == NULL );
 	
-//just set _DebugLogging to false (QH, 13/1/2011)(for the time being?)
+
 #ifdef UseCLR
-	//DotNetMisc dnm;
-	//int r = dnm.GetDebugLogOptions();
-	//_DebugLogging = (BOOL)r;
-	//_DebugLogging = (BOOL)r;
-	_DebugLogging = false;
+	DotNetMisc dnm;
+	int r = dnm.GetDebugLogOptions();
+	_DebugLogging = (BOOL)r;
 #else
 	_DebugLogging = false;
 #endif
