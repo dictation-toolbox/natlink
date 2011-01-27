@@ -720,13 +720,18 @@ Possibly you need administrator rights to do this
         """
         key = "NatlinkDebug"
         self.userregnl.set(key, 1)
-        
+        # double in registry, natlink.pyd takes this one:
+        print 'Enable NatlinkDebug, also set key %s to 1 in registry, current user (need elevated mode)'% key
+        self.userregnlOld[key] = 1
 
     def disableDebugOutput(self):
         """disables the NatLink lengthy debug output to NatSpeak logfile
         """
         key = "NatlinkDebug"
         self.userregnl.delete(key)
+        # double in registry, natlink.pyd takes this one:
+        print 'Disable NatlinkDebug, also set key %s to 0 in registry, current user (need elevated mode)'% key
+        self.userregnlOld[key] = 0
 
     def copyUnimacroIncludeFile(self):
         """copy Unimacro include file into Vocola user directory
@@ -1428,6 +1433,15 @@ of NatLink, so keep off (X and Y) most of the time.
     # register natlink.dll
     def do_r(self, arg):
         print "(Re) register natlink.dll"
+        isRegistered = self.config.userregnl.get("NatlinkDllRegistered")
+        if isRegistered:
+            print "Un register natlink.dll first if you want to re register"
+            print "If you want to try a new natlink.pyd, first exit this program,"
+            print "Remove %s\natlink.pyd"% coreDir
+            print "and restart (in elevated mode) this program."
+            print "The correct python version of natlink.dll will be copied to natlink.pyd"
+            print "and it will be registered again."
+            return
         self.config.registerNatlinkDll()
     def do_R(self, arg):
         print "Unregister natlink.dll and disable NatLink"
@@ -1448,11 +1462,22 @@ of NatLink, so keep off (X and Y) most of the time.
         print \
 """Registers (r) / unregisters (R) natlink.dll explicitly.
 
-(Registering is also done (silently) when you enable NatLink, so is mostly NOT
-NEEDED!)
+(Registering is also done (silently) when you start this program or the
+configuration GUI, so is mostly NOT NEEDED!)
 
 But if you do (-r or -R) a message dialog shows up to inform you what happened.
 When you unregister, NatLink is also disabled.
+
+When you want to try a new version of natlink.pyd, take the following steps:
+-exit NaturallySpeaking
+-unregister natlink.pyd (in elevated mode)
+-remove natlink.pyd (in the MacroSystem/core directory of NatLink)
+-rerun this program or the configure program in elevated mode.
+
+The correct version of natlink.pyd (corresponding with your python version 2.5, 2.6)
+will be copied to this name and registered.
+
+-finally Enable NatLink again.
 
 If you want to (silently) enable NatLink and register silently use -z,
 To disable NatLink and unregister (silently) use Z
