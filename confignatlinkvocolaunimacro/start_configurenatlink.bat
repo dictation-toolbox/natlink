@@ -1,1 +1,1 @@
-@%0\..\configurenatlink.py %1
+@%0\..\configurenatlink.pyw %1
