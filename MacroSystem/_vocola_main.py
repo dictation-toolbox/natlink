@@ -353,6 +353,7 @@ class ThisGrammar(GrammarBase):
         self.openCommandFile(file, comment)
 
     # Open a Vocola command file (using the application associated with ".vcl")
+
     def FindExistingCommandFile(self, file):
         for commandFolder in self.commandFolders:
             f = commandFolder + '\\' + file
