@@ -388,24 +388,17 @@ class ThisGrammar(GrammarBase):
                 self.copyVclFile(path, wantedPath)
             path = wantedPath   
 
-        try:
-            # reverted to execScript because of problems with allResults flag and
-            # os.startfile. see Unimacro websites, installation, problems with natlink
-            # QH: would prefer  win32api.ShellExecute(0, 'open', editProg, path, "", 1)
-            # NatSpeak pauses quite a while after starting this and old style (8.3) paths
-            # appear in window title...
-            # also not sure how it handles when no program is coupled to .vcl files
-            #natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
-            win32api.ShellExecute(0, 'open', path, "", "", 1)
+        #try:
+        natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
             #os.startfile(path)
-        except pywintypes.error, details:
-            if details[0] != 31:
-                print 'unknow details number of pywintypes.error'
-                raise
-            print "Unable to open voice command file with associated editor, open with notepad instead."
-            prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
-            win32api.ShellExecute(0, 'open', prog, path, "", 1)
-            #os.spawnv(os.P_NOWAIT, prog, [prog, path])
+        #except pywintypes.error, details:
+        #    if details[0] != 31:
+        #        print 'unknow details number of pywintypes.error'
+        #        raise
+        #    print "Unable to open voice command file with associated editor, open with notepad instead."
+        #    prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
+        #    win32api.ShellExecute(0, 'open', prog, path, "", 1)
+        #    #os.spawnv(os.P_NOWAIT, prog, [prog, path])
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above

@@ -3,7 +3,7 @@ from win32api import ShellExecute, GetVersionEx
 
 # see natlinkstatus.py for windows versions (getWindowsVersion)
 wversion = GetVersionEx()
-if wversion[1] == 2 and wversion[0] >= 6:
+if wversion[3] == 2 and wversion[0] >= 6:
     # Vista and later
     openpar = "runas"
 else:
