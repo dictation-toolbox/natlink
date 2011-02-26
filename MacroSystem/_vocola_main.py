@@ -388,17 +388,22 @@ class ThisGrammar(GrammarBase):
                 self.copyVclFile(path, wantedPath)
             path = wantedPath   
 
+        #
+        # NatLink/DNS bug causes os.startfile or wpi32api.ShellExecute
+        # to crash DNS if allResults is on in *any* grammer (e.g., Unimacro)
+        #
+        # Accordingly, use AppBringUp instead:
+        #
+
         #try:
-        natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
-            #os.startfile(path)
-        #except pywintypes.error, details:
-        #    if details[0] != 31:
-        #        print 'unknow details number of pywintypes.error'
-        #        raise
-        #    print "Unable to open voice command file with associated editor, open with notepad instead."
+        #    os.startfile(path)
+        #except WindowsError, e: 
+        #    print
+        #    print "Unable to open voice command file with associated editor: " + str(e)
+        #    print "Trying to open it with notepad instead."
         #    prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
-        #    win32api.ShellExecute(0, 'open', prog, path, "", 1)
-        #    #os.spawnv(os.P_NOWAIT, prog, [prog, path])
+        #    os.spawnv(os.P_NOWAIT, prog, [prog, path])
+        natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
