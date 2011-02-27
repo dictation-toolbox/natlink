@@ -404,7 +404,12 @@ class ThisGrammar(GrammarBase):
         #    prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
         #    os.spawnv(os.P_NOWAIT, prog, [prog, path])
         #natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
-        natlink.execScript('AppBringUp "%s"'% path)
+        #natlink.execScript('AppBringUp "%s"'% path)
+        pythonPath = sys.executable
+        scriptPath = os.path.join(ExecFolder, "starteditorwithfile.py")
+        scriptline = '%s %s'% (scriptPath, path)
+        print 'scriptline: %s'% scriptline
+        natlink.execScript('AppBringUp "%s", "%s"'% (pythonPath, scriptline))
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
