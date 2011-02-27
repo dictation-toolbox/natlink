@@ -403,7 +403,8 @@ class ThisGrammar(GrammarBase):
         #    print "Trying to open it with notepad instead."
         #    prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
         #    os.spawnv(os.P_NOWAIT, prog, [prog, path])
-        natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
+        #natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
+        natlink.execScript('AppBringUp "%s"'% path)
 
     def copyVclFileLanguageVersion(self, Input, Output):
         """copy to another location, keeping the include files one directory above
