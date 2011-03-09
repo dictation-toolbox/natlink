@@ -54,6 +54,12 @@ in the Core directory instead of the User section of the registry.
 * New in the combined NatLink/Vocola/Unimacro installer:
 
 New in Unimacro:
+
+* added _latex grammar (Frank)
+* added spokenforms module, for numbers lists spoken forms only
+* extended _folders grammar
+* added _shownumbersplus grammar
+* improved introspection methods (show ..., show active grammars, ...)
 * Changed child behaves like top (_folders grammar) towards actions
 * Introduce top behaves like child (killWindow or KW actions)
 * Added chrome/google chrome to possible browsers (grammar _general)
@@ -68,6 +74,7 @@ New in Unimacro:
 * enhanced DATE and added TIME actions (can also speak (ttsplaystring))
 
 Changed in NatLink (for programmers only):
+* callIfExists returns the return value of the calling function, so can be used with methods that need this return value also. 
 * added deactivateSet() function in GrammarBase
 * added exceptlist optional variable to activateAll method of GrammarBase
 * added callRuleResultsFunctions in resultsCallback, so the calling of the rule result functions can be overloaded (for DocstringGrammar)

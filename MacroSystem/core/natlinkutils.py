@@ -220,7 +220,8 @@ class GramClassBase:
     def callIfExists(self, funcName, argList):
         try: func = getattr(self, funcName)
         except AttributeError: pass
-        else: apply(func, argList)
+        else:
+            return apply(func, argList)
 
 #---------------------------------------------------------------------------
 # GrammarBase

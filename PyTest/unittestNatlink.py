@@ -217,6 +217,11 @@ class UnittestNatlink(unittest.TestCase):
             hndle = self.DragonPadHndle
         except AttributeError:
             return
+
+        natlink.execScript('SendSystemKeys "{numkey*}"')
+        time.sleep(0.5)
+        natlink.execScript('SendSystemKeys "{esc}"')
+        time.sleep(0.5)
         
         try:
             win32gui.SetForegroundWindow(hndle)
