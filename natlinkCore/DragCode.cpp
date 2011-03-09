@@ -1390,7 +1390,7 @@ void CDragonCode::DebuglogMessage( const char * pszText )
 	// just turn this option off by return direct:
 	// for building debug version of natlink....pyd, comment out
 	// this return; (QH, febr, 2011)
-	return;
+	//return;
 	if (_DebugLogging)
 	{
 		logMessage(pszText);
