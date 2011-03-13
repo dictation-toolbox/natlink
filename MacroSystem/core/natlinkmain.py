@@ -195,6 +195,18 @@ wrongFiles = {} # timestamp of files with an error in it...
 
 lastModule = ''
 
+def unloadModule(modName):
+    """calls the 'unload' function of the module.
+    
+    used in _control for specific unloading and reloading of modules
+    """
+    global lastModule, loadedFiles
+    safelyCall(modName, 'unload')
+    if modName in loadedFiles:
+        del loadedFiles[modName]
+    if modName == lastModule:
+        lastModule = ''
+        
 #
 # This function will load another Python module, usually one which the user
 # supplies.  This function will trap all execptions and report them so an
@@ -203,9 +215,11 @@ lastModule = ''
 # changed.
 #
 
-def loadFile(modName,searchPath,origName=None):
+
+
+def loadFile(modName, origName=None):
     global wrongFiles  # keep track of non edited files with errors
-    try: fndFile,fndName,fndDesc = imp.find_module(modName, searchPath)
+    try: fndFile,fndName,fndDesc = imp.find_module(modName, searchImportDirs)
     except ImportError: return None     # module not found
     if origName:
         if fndName[-3:] != ".py":
@@ -297,7 +311,7 @@ def safelyCall(modName,funcName):
 #
 
 def findAndLoadFiles(curModule=None):
-    global loadedFiles, searchImportDirs, vocolaIsLoaded, vocolaModule
+    global loadedFiles, vocolaIsLoaded, vocolaModule
 
     moduleHasDot = None
     if curModule:
@@ -318,16 +332,13 @@ def findAndLoadFiles(curModule=None):
             [.]py$      # extension .py
           """, re.VERBOSE|re.IGNORECASE)
 
-    searchImportDirs = []
     filesToLoad = {}
     if userDirectory != '':
-        searchImportDirs.append(userDirectory)
         userDirFiles = [x for x in os.listdir(userDirectory) if x.endswith('.py')]
         for x in userDirFiles:
             res = pat.match(x)
             if res: addToFilesToLoad( filesToLoad, res.group(1), userDirectory, moduleHasDot )
     # baseDirectory:           
-    searchImportDirs.append(baseDirectory)
     baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
 
     # if present, load _vocola_main first, it can generate grammar files
@@ -338,7 +349,7 @@ def findAndLoadFiles(curModule=None):
     if vocolaEnabled and not vocolaIsLoaded:
         x = doVocolaFirst
         origName = loadedFiles.get(x, None)
-        loadedFiles[x] = loadFile(x, searchImportDirs, origName)
+        loadedFiles[x] = loadFile(x, origName)
         vocolaIsLoaded = 1
         vocolaModule = sys.modules[doVocolaFirst]
         # repeat the base directory, as Vocola just had the chance to rebuild Python grammar files:
@@ -366,14 +377,14 @@ def findAndLoadFiles(curModule=None):
                 print 'skipping %s, Vocola not enabled'% x
             continue
         origName = loadedFiles.get(x, None)
-        loadedFiles[x] = loadFile(x, searchImportDirs, origName)
+        loadedFiles[x] = loadFile(x, origName)
 
     # if unimacro module _control exists, load it last:
     if controlModule:
         if debugLoad:
             print 'loading _control last'
         origName = loadedFiles.get(controlModule, None)
-        loadedFiles[controlModule] = loadFile(controlModule, searchImportDirs, origName)
+        loadedFiles[controlModule] = loadFile(controlModule, origName)
         
     # Unload any files which have been deleted
     for name, path in loadedFiles.items():
@@ -450,6 +461,18 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
         findAndLoadFiles(curModule)
         lastModule = curModule
 
+def setSearchImportDirs():
+    """set the global list of import dirs, to be used for import
+    
+    either [userDirectory, baseDirectory] or [baseDirectory] (if no userDirectory)
+    """
+    global searchImportDirs
+    searchImportDirs = []
+    if userDirectory != '':
+        searchImportDirs.append(userDirectory)
+    searchImportDirs.append(baseDirectory)
+
+
 #
 # When a new utterance begins we check all the loaded modules for changes.
 # After that, we check to see whether we have to load a new module based on
@@ -495,7 +518,7 @@ def beginCallback(moduleInfo, checkAll=None):
         if debugCallback:
             print 'check for changed files (all files)...'
         for x in loadedFiles.keys():
-            loadedFiles[x] = loadFile(x, searchImportDirs, loadedFiles[x])
+            loadedFiles[x] = loadFile(x, loadedFiles[x])
         loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
     else:
         if debugCallback:
@@ -599,6 +622,10 @@ try:
             print 'insert userDirectory: %s to sys.path!'% userDirectory
         sys.path.insert(0,userDirectory)
         
+
+    # setting searchImportDirs:
+    setSearchImportDirs()
+
     # get invariant variables:
     DNSversion = status.getDNSVersion()
     WindowsVersion = status.getWindowsVersion()
@@ -611,7 +638,6 @@ try:
               (status.getCoreDirectory(), status.getInstallVersion(),
                DNSversion, status.getPythonVersion(), WindowsVersion)
         
-
     # load all global files in user directory and current directory
     findAndLoadFiles()
 
