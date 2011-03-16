@@ -17,12 +17,12 @@
 #     (eg D:\NatLink\releases\natlink3.2 if your release number is natlink3.2)
 # 4. run this utility FROM THAT FOLDER\NatLink\natlinkInstaller.
 # 5. the result will be in the "dist" subdirectory, also the .iss file
-GrammarsToEnable = ['_control.py', '_folders.py', '_lines.py',
-                     '_numberstest.py', 'firefox_browsing.py',
-                     'sol.py', 'freecell.py']
-#GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
-#                     '_keystrokes.py', '_oops.py', '_setpriority.py',
-#                     '_tags.py', '_unimacrotest.py', '_modes.py', '_shownumbersplus.py']
+#GrammarsToEnable = ['_control.py', '_folders.py', '_lines.py',
+#                     '_numberstest.py', 'firefox_browsing.py',
+#                     'sol.py', 'freecell.py']
+GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
+                     '_keystrokes.py', '_oops.py', '_setpriority.py',
+                     '_tags.py', '_unimacrotest.py', '_modes.py', '_shownumbersplus.py']
 
 FoldersToIgnore = ['sample_global_dictation']
 
@@ -175,10 +175,10 @@ class InnoScript:
                 print 'ignoring because in FoldersToIgnore: %s'% path
                 continue
             
-            if filter(None, [path == f for f in GrammarsToEnable]):
-                print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
-            else:
+            if filter(None, [path == f for f in GrammarsToDisable]):
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+            else:
+                print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         ## will only be included if directory is present:
         #for path in kaiser_files:
         #    print >> ofi, r'Source: "..\kaiser_dictation\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
