@@ -22,7 +22,8 @@
 #                     'sol.py', 'freecell.py']
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
                      '_keystrokes.py', '_oops.py', '_setpriority.py',
-                     '_tags.py', '_unimacrotest.py', '_modes.py', '_shownumbersplus.py']
+                     '_tags.py', '_unimacrotest.py', '_modes.py', '_shownumbersplus.py',
+                     '_latex.py']
 
 FoldersToIgnore = ['sample_global_dictation']
 
@@ -188,17 +189,17 @@ class InnoScript:
 
 
         print >> ofi, r"[Icons]"
-        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.bat'
+        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
               ("Configure NatLink via GUI", Path)
-        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.bat'
+        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.py'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
               ("Configure NatLink via command line interface", Path)
 
 
         # run GUI after install:
         print >> ofi, r"[Run]"
-        Path = r'NatLink\confignatlinkvocolaunimacro\configurenatlink.py'
+        Path = r'NatLink\confignatlinkvocolaunimacro\start_configurenatlink.py'
 
 ##        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch NatLink configuration GUI"; Flags: postinstall'% \
 ##              Path

@@ -1,9 +1,11 @@
-The release 3.9lima is nearly stable. 
+The release 3.9mike is nearly stable. 
 
-The Vocola commands "edit commands" or "edit global commands" may crash NatSpeak. Please report if this happens.
+-The Vocola commands "edit commands" or "edit global commands" now do not crash NatSpeak any more. But please report if you encounter this still. 
 
-New: Unimacro: numbers.py has been moved to numbersspokenforms.py (the mechanism for making spoken forms of numbers lists in grammars)
+-Unimacro: switching on and off grammars has been enhanced. The command "show active grammars" (for introspection) is improved. 
 
-New: Unimacro: _shownumberplus.py for controlling shownumbersplus of Max Roth, ergodirect, http://www.ergoarchitect.com/ShowNumbersPlus.html
+-New is the _latex module (by Frank Olaf Sem-Jacobsen), improved is especially the _folders grammar. 
+
+-New: Unimacro: _shownumberplus.py for controlling shownumbersplus of Max Roth, ergodirect, http://www.ergoarchitect.com/ShowNumbersPlus.html 
 
 Quintijn
