@@ -1,4 +1,6 @@
-The release 3.9mike is nearly stable. 
+The release 3.9november is nearly stable. 
+
+-Reverted start menu detail (.py back to .bat)
 
 -The Vocola commands "edit commands" or "edit global commands" now do not crash NatSpeak any more. But please report if you encounter this still. 
 

@@ -189,10 +189,14 @@ class InnoScript:
 
 
         print >> ofi, r"[Icons]"
-        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.py'
+        #Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.py'
+        # revert:
+        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.bat'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
               ("Configure NatLink via GUI", Path)
-        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.py'
+        #Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.py'
+        # revert:
+        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.bat'
         print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
               ("Configure NatLink via command line interface", Path)
 
