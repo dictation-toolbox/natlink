@@ -1,4 +1,4 @@
-__version__ = "3.9november"
+__version__ = "3.9oscar"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -14,7 +14,6 @@ __version__ = "3.9november"
 #              minor change to NewStdout and NewStderr in natlinkmain
 # version 3.7: changed userDirectory to UserDirectory in the getNatlinkStatusDict function.
 #              no influence on the natlinkstatus.getUserDirectory() function.
-
 
 """The following functions are provided in this module:
 (to be used by either natlinkmain.py or natlinkconfigfunctions.py)
@@ -103,11 +102,11 @@ getVocolaTakesLanguages: additional settings for Vocola
 """
 
 
-import os, re, win32api, win32con, sys
+import os, re, win32api, win32con, sys, pprint
 import RegistryDict, natlinkcorefunctions
 # for getting generalised env variables:
 
-from win32com.shell import shell, shellcon
+##from win32com.shell import shell, shellcon
 
 # adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
@@ -154,7 +153,8 @@ languages = {"Nederlands": "nld",
              "Australian English": "enx",
              "Indian English": "enx",
              "SEAsian English": "enx",
-             "Italiano": "ita"}
+             "Italiano": "ita",
+             "Español": "esp"}
 
 class NatlinkStatus(object):
     """this class holds the NatLink status functions
@@ -431,6 +431,13 @@ class NatlinkStatus(object):
         #version = version2[:3]
         #print 'use version %s'% version
         return version
+
+    def getPythonPath(self):
+        """return the python path, for checking in config GUI
+        """
+        return sys.path
+    def printPythonPath(self):
+        pprint.pprint(self.getPythonPath())
 
     def getCoreDirectory(self):
         """return this directory
@@ -783,12 +790,14 @@ class NatlinkStatus(object):
             print 'getLanguage: Warning, no model specification string for key %s found in "Base Acoustic" of inifile: %s'% (keyToModel, acousticini)
             return 'zzz'
         lang =  lang.split("|")[0].strip()
+        lang = lang.split("(")[0].strip()
         if not lang:
             print 'getLanguage: Warning, no valid specification of language string (key: %s) found in "Base Acoustic" of inifile: %s'% (lang, acousticini)
             return 'www'
         if lang in languages:
             return languages[lang]
         else:
+            
             print 'getLanguage: Language: %s not found in languageslist: %s, take "xxx"'% \
                     (lang, languages)
             return 'xxx'

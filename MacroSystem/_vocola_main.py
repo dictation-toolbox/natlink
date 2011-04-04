@@ -104,6 +104,21 @@ class ThisGrammar(GrammarBase):
         <editGlobal>        exported = Edit Global [Voice] Commands;
         <editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
     """
+    if language == 'esp':
+        gramSpec = """
+<NatLinkWindow>   exported = [Mostrar] Ventana De (NatLink|Vocola) ;
+<loadAll> exported = Cargar Todos Los Comandos [deVoz];
+<loadCurrent> exported = Cargar Comandos [deVoz];
+<loadGlobal> exported = Cargar Comandos [deVoz] Globales;
+<loadExtensions> exported = Cargar Extensiones [deVoz];
+<discardOld> exported = Descartar Comandos [deVoz] Viejos;
+<edit> exported = Editar Comandos [deVoz];
+<editMachine> exported = Editar Comandos [deVoz] De La Computadora;
+<editGlobal> exported = Editar Comandos [deVoz] Globales ;
+<editGlobalMachine> exported = Editar Comandos [deVoz] Globales De La Computadora;
+    """
+
+
     if language == 'nld':
         gramSpec = """
 <NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;

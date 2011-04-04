@@ -995,7 +995,8 @@ or in an interactive session using the CLI (command line interface).
 [Status]
 
 i       - info, print information about the NatLink status
-I       - reginfo,  print information about the NatLink registry settings
+I       - settings, print information about the natlinkstatus.ini settings
+j       - print PythonPath variable
 
 [NatLink]
 
@@ -1053,8 +1054,11 @@ help <command>: give more explanation on <command>
         S = S + '\n\nIf you changed things, you must restart NatSpeak'
         print S
     def do_I(self, arg):
-        # registry settings:
+        # inifile natlinkstatus.ini settings:
         self.config.printInifileSettings()
+    def do_j(self, arg):
+        # print PythonPath:
+        self.config.printPythonPath()
 
     def help_i(self):
         print '-'*60
@@ -1062,17 +1066,19 @@ help <command>: give more explanation on <command>
 """The command info (i) gives an overview of the settings that are
 currently set inside the NatLink system.
 
-The command reginfo (I) gives all the registry settings
-that are used by the NatLink system (HKCU\Software\Natlink).
+The command settings (I) gives all the NatLink settings, kept in
+natlinkstatus.ini (overlap with (i))
 
-They are set by either the NatLink/Vocola/Unimacro installer
+The command (j) gives the PythonPath variable which should contain several
+NatLink directories after the config GUI runs succesfully
+
+Settings are set by either the NatLink/Vocola/Unimacro installer
 or by functions that are called by the CLI (command line interface).
 
-Settings and registry settings are only "refreshed" into NatLink after
-you restart NatSpeak.
+After you change settings, restart NatSpeak.
 """
         print '='*60
-    help_I = help_i
+    help_j = help_I = help_i
 
     # DNS install directory------------------------------------------
     def do_d(self, arg):
