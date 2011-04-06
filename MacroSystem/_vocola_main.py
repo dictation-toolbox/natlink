@@ -164,9 +164,9 @@ class ThisGrammar(GrammarBase):
     def setNames(self):
         self.VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
         self.commandFolders = []
-        systemCommandFolder = os.path.join(self.VocolaFolder, 'Commands')
-        if os.path.isdir(systemCommandFolder):
-            self.commandFolders.insert(0, systemCommandFolder)
+        #systemCommandFolder = os.path.join(self.VocolaFolder, 'Commands')
+        #if os.path.isdir(systemCommandFolder):
+        #    self.commandFolders.insert(0, systemCommandFolder)
         
         userCommandFolder = status.getVocolaUserDirectory()
         self.commandFolders.insert(0, userCommandFolder)                
@@ -174,12 +174,14 @@ class ThisGrammar(GrammarBase):
             language = status.getLanguage()
             print '_vocola_main started with language: %s'% language
             if language != 'enx':
-                userCommandFolder2 = os.path.join(userCommandFolder, language)
-                if not os.path.isdir(userCommandFolder2):
-                    print 'creating userCommandFolder for language %s'% language
-                    self.createNewSubDirectory(userCommandFolder2)
-                    self.copyToNewSubDirectory(userCommandFolder, userCommandFolder2)
-                self.commandFolders.insert(0, userCommandFolder2)                
+                for uDir in copy.copy(self.commandFolders):
+                    userCommandFolder2 = os.path.join(uDir, language)
+                    if not os.path.isdir(userCommandFolder2):
+                        print 'creating userCommandFolder for language %s'% language
+                        self.createNewSubDirectory(userCommandFolder2)
+                        self.copyToNewSubDirectory(uDir, userCommandFolder2)
+                    self.commandFolders.remove(uDir)
+                    self.commandFolders.insert(0, userCommandFolder2)
         if os.environ.has_key('COMPUTERNAME'):
             self.machine = string.lower(os.environ['COMPUTERNAME'])
         else: self.machine = 'local'
@@ -280,9 +282,12 @@ class ThisGrammar(GrammarBase):
 
     # Load all command files
     def loadAllFiles(self, options):
-        for i in range(len(self.commandFolders)):
-            suffix = "-suffix _vcl" + str(i) + " "
-            self.runVocolaTranslator(self.commandFolders[i], suffix + options)
+        for i, cmdFolder in enumerate(self.commandFolders):
+            if i:
+                suffix = "-suffix _vcl" + str(i) + " "
+            else:
+                suffix = "-suffix _vcl "                 
+            self.runVocolaTranslator(cmdFolder, suffix + options)
 
     # Load command files for specific application
     def loadSpecificFiles(self, module):
