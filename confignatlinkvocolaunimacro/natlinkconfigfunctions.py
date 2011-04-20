@@ -827,7 +827,7 @@ Possibly you need administrator rights to do this
                 self.includeUnimacroVchLineInVocolaFiles(F)
         self.enableVocolaTakesUnimacroActions()
         mess = 'changed %s files in %s, and set the variable "%s"'% (nFiles, toFolder,
-                                                                     VocolaTakesUnimacroActions)
+                                                                     "VocolaTakesUnimacroActions")
         
         print mess
 
