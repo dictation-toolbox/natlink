@@ -1,3 +1,13 @@
+New in 2.7.2:
+
+* Bug fix for NatLink/DNS bug where allResults true on any grammer
+  (including non-Vocola ones) causes os.startfile and
+  win32api.ShellExecute to crash DNS.
+
+* There is now at most one Vocola command folder: the one specified when
+  using an installer, otherwise NatLink\Vocola\commands if it exists.
+
+
 New in 2.7.1:
 
 ! Vocola can now be extended with extensions written in Python.
