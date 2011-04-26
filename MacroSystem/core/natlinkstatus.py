@@ -1,4 +1,4 @@
-__version__ = "3.9oscar"
+__version__ = "3.9papa"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "3.9oscar"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# version 3.9papa: removed system command directories vocola (mdl)
 # version 3.9foxtrot: adaptation NatSpeak 11
 # version 3.9: changing to ini files instead of registry
 #              and get python path directly...

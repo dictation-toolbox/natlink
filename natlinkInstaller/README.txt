@@ -1,17 +1,8 @@
-The release 3.9oscar is nearly stable. 
+The release 3.9papa is nearly stable.
 
--Spanish recognised now
+-Vocola: system command folders removed
 
--solitaire grammar as example of exclusive mode.
+-Register of natlink.pyd sometimes seems to suck
 
--Again everted start menu detail (.bat again to .py)
+-Unimacro grammars are sometimes not tested thoroughly enough (folders actions for example)
 
--The Vocola commands "edit commands" or "edit global commands" now do not crash NatSpeak any more. But please report if you encounter this still. 
-
--Unimacro: switching on and off grammars has been enhanced. The command "show active grammars" (for introspection) is improved. 
-
--New is the _latex module (by Frank Olaf Sem-Jacobsen), improved is especially the _folders grammar. 
-
--New: Unimacro: _shownumberplus.py for controlling shownumbersplus of Max Roth, ergodirect, http://www.ergoarchitect.com/ShowNumbersPlus.html 
-
-Quintijn
