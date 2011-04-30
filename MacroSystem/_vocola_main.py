@@ -312,6 +312,8 @@ class ThisGrammar(GrammarBase):
     # Run Vocola translator, converting command files from "inputFileOrFolder"
     # and writing output to NatLink/MacroSystem
     def runVocolaTranslator(self, inputFileOrFolder, options):
+        self.mayHaveCompiled = 1
+
         if usePerl: call = 'perl "' + self.VocolaFolder + r'\exec\vcl2py.pl" '
         else:       call = '"'      + self.VocolaFolder + r'\exec\vcl2py.exe" '
         call += '-extensions "' + ExtensionsFolder + r'\extensions.csv" '
