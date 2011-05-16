@@ -561,7 +561,9 @@ def changeCallback(type,args):
         userName, DNSuserDirectory = args
         moduleInfo = getCurrentModule()
         if debugCallback:
-            print "changeCallback, User changed to", userName
+            print "---------changeCallback, User changed to", userName
+        else:
+            print "\n------ user changed to: %s\n"% userName
         unloadEverything()
 ## this is not longer needed here, as we fixed the userDirectory
 ##        changeUserDirectory()
