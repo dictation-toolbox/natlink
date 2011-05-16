@@ -1,5 +1,16 @@
 New in 2.7.2:
 
+! Standard version of Vocola assumes English and turns on spoken forms
+  for numbers 0..9 in ranges automatically.  Combined installer version
+  (2.7.2I) recognizes the current language, and turns on appropriate
+  spoken forms for 0..9 when they are known.
+
+! New feature '$set numbers "word,...";' to deal with corrupted DNS
+  profiles and the DNS 11 bug with <_anything>.
+
+* Fixed range syntax, enforcement that alternative sets may not contain
+  a range and something else.
+
 * Bug fix for NatLink/DNS bug where allResults true on any grammer
   (including non-Vocola ones) causes os.startfile and
   win32api.ShellExecute to crash DNS.

@@ -1,16 +1,20 @@
 # vcl2py:  Convert Vocola voice command files to NatLink Python "grammar"
 #          classes implementing the voice commands
 #
-# Usage:  perl vcl2py.pl [-extensions <f>] [-suffix <s>] 
+# Usage:  perl vcl2py.pl [-extensions <f>] [-numbers <s0>,<s1>,<s2>,...]
+#                        [-suffix <s>] 
 #                        [-f] inputFileOrFolder outputFolder
 # Where:
 #   -extensions <f> -- specify filename containing extension interface information
+#   -numbers <s0>,<s1>,<s2>,...
+#                   -- use spoken form <s0> instead of "0" in ranges,
+#                                      <s1> instead of "1" in ranges, etc.
 #   -suffix <s>     -- use suffix <s> to distinguish Vocola generated files
 #                      (default is "_vcl")
 #   -f              -- force processing even if file(s) not out of date
 #
 #
-# Copyright (c) 2002-2010 by Rick Mohr.
+# Copyright (c) 2002-2011 by Rick Mohr.
 # 
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -33,6 +37,7 @@
 # SOFTWARE.
 #
 #
+#  5/14/2011  ml  Selected numbers in ranges can now be spelled out
 # 11/28/2010  ml  Extensions can now be called
 # 05/28/2010  ml  Print_* functions -> unparse_* to avoid compiler bug
 # 05/08/2010  ml  Underscores now converted to spaces by VocolaUtils
@@ -101,7 +106,7 @@ use File::stat;          # for mtime
 
 sub main
 {
-    $VocolaVersion = "2.7.1";
+    $VocolaVersion = "2.7.2";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
@@ -110,6 +115,18 @@ sub main
     if ($ARGV[0] eq "-extensions") {
         shift @ARGV;
         $extensions_info = $ARGV[0];
+        shift @ARGV;
+    }
+
+    %Number_words = ();
+    if ($ARGV[0] eq "-numbers") {
+        shift @ARGV;
+        my @numbers = split(/\s*,\s*/, $ARGV[0]);
+	my $i = 0;
+	for my $number (@numbers) {
+	    $Number_words{$i} = $number;
+	    $i = $i + 1;
+	} 
         shift @ARGV;
     }
 
@@ -131,7 +148,7 @@ sub main
         $input = $ARGV[0];
         $out_folder = $ARGV[1];
     } else {
-        die "Usage: perl vcl2py.pl [-extensions <f>] [-suffix <s>] [-f] inputFileOrFolder outputFolder\n";
+        die "Usage: perl vcl2py.pl [-extensions <f>] [-numbers <s0>,<s1>,<s2>,...] [-suffix <s>] [-f] inputFileOrFolder outputFolder\n";
     }
 
     my $in_file = "";
@@ -238,19 +255,20 @@ sub convert_file
 
     $in_stats  = stat("$In_folder/$Input_name");
     $out_stats = stat("$out_file");
-    $in_date  = $in_stats->mtime;
-    $out_date = $out_stats ? $out_stats->mtime : 0;
+    $in_date   = $in_stats->mtime;
+    $out_date  = $out_stats ? $out_stats->mtime : 0;
     return unless $in_date > $out_date || $Force_processing;
 
-    %Definitions = ();
-    %Functions = ();
+    %Definitions          = ();
+    %Functions            = ();
     %Function_definitions = ();
-    @Forward_references = ();
-    @Included_files = ();
-    @Include_stack = ();
-    $Error_count = 0;
-    $File_empty = 1;
-    $Statement_count = 1;
+
+    @Forward_references   = ();
+    @Included_files       = ();
+    @Include_stack        = ();
+    $Error_count          = 0;
+    $File_empty           = 1;
+    $Statement_count      = 1;
 
     if ($Debug>=1) {print LOG "\n==============================\n";}
 
@@ -274,6 +292,14 @@ sub convert_file
 	    my $key = $statement->{KEY};
 	    if ($key eq "MaximumCommands") {
 		$maximum_commands = $statement->{TEXT};
+	    } elsif ($key eq "numbers") {
+		%Number_words = ();
+		my @numbers = split(/\s*,\s*/, $statement->{TEXT});
+		my $i = 0;
+		for my $number (@numbers) {
+		    $Number_words{$i} = $number;
+		    $i = $i + 1;
+		} 
 	    }
 	}
     }
@@ -842,7 +868,7 @@ sub parse_term    #  term = simple_term | range | menu
         if (not /\G\s*\)/gc) {die "End of alternative set before ')'\n"}
         if ($Debug>=2) {print LOG "Found menu:  "; 
                         print LOG unparse_menu ($term, 1) . "\n"}
-    } elsif (/\G\s*(\d*)\.\.(\d*)/gc) {
+    } elsif (/\G\s*(\d+)\.\.(\d+)/gc) {
         $term = {};
         $term->{TYPE} = "range";
         $term->{FROM} = $1;
@@ -1153,7 +1179,7 @@ sub expand_variables
 
 sub verify_referenced_menu
 {
-    my ($menu, $parent_has_actions) = @_;
+    my ($menu, $parent_has_actions, $parent_has_alternatives) = @_;
     my @commands = @{ $menu->{COMMANDS} };
     for my $command (@commands) {
         my $has_actions = $parent_has_actions;
@@ -1170,15 +1196,20 @@ sub verify_referenced_menu
         }
         my @terms = @{ $command->{TERMS} };
         if (@terms > 1) {die "Alternative is too complex\n"}
+        my $has_alternatives = $parent_has_alternatives;
+	if (not @commands == 1) {
+	    $has_alternatives = 1;
+	}
         my $type = $terms[0]->{TYPE};
-        if    ($type eq "menu"){verify_referenced_menu($terms[0],$has_actions)}
+        if    ($type eq "menu"){verify_referenced_menu($terms[0],$has_actions,
+						       $has_alternatives)}
         elsif ($type eq "variable" or $type eq "definition") {
             die "Alternative cannot be a variable\n";
-        }
-        elsif ($type eq "range") {
-            # allow a single range with no actions
-            return if (not $has_actions and @commands == 1);
-            die "Alternative cannot be a range\n";
+        } elsif ($type eq "range") {
+            # allow a single range with no actions if it is the only
+            # alternative in the (nested) set:
+            return if (not $has_actions and not $has_alternatives);
+            die "Range may not be an alternative to something else or have actions\n";
         }
     }
 }
@@ -1511,6 +1542,7 @@ sub emit_output
         elsif ($type eq "command")    {emit_command_grammar ($statement)}
     }
     &emit_sequence_and_context_code;
+    &emit_number_words;
     for my $statement (@statements) {
         my $type = $statement->{TYPE};
         if    ($type eq "definition") {emit_definition_actions ($statement)}
@@ -1751,10 +1783,41 @@ sub emit_range_grammar
 {
     my $i  = @_[0]->{FROM};
     my $to = @_[0]->{TO};
-    emit(0, "($i");
-    while (++$i <= $to) {emit(0, " | $i")}
+    emit(0, "(" . emit_number_word($i));
+    while (++$i <= $to) {emit(0, " | " . emit_number_word($i))}
     emit(0, ") ");
 }
+
+sub emit_number_word
+{
+    my $i = shift;
+
+    if (defined($Number_words{$i})) {
+	return "'$Number_words{$i}'";
+    }
+
+    return "$i";
+}
+
+sub emit_number_words
+{
+    emit(1, "def convert_number_word(self, word):\n");
+
+    if (!keys %Number_words) {
+	emit(2, "return word\n\n");
+	return;
+    }
+
+    my $elif = "if  ";
+    foreach my $number ( sort keys %Number_words ) {
+	emit(2, "$elif word == '$Number_words{$number}':\n");
+	emit(3, "return '$number'\n");
+	$elif = "elif";
+    } 
+
+    emit(2, "else:\n");
+    emit(3, "return word\n\n");
+} 
 
 sub emit_definition_actions
 {
@@ -1883,12 +1946,14 @@ sub emit_reference
 {
     my ($buffer, $functional, $action, $indent) = @_;
     my $reference_number = $action->{TEXT} - 1;
-    my $variable = $Variable_terms[$reference_number];
-    my $term_number = $variable->{NUMBER};
+    my $variable         = $Variable_terms[$reference_number];
+    my $term_number      = $variable->{NUMBER};
     emit($indent, "word = fullResults[$term_number + self.firstWord][0]\n");
     if ($variable->{TYPE} eq "menu") {
         emit_menu_actions($buffer, $functional, $variable, $indent);
-    } elsif ($variable->{TYPE} eq "range" or $variable->{TYPE} eq "dictation") {
+    } elsif ($variable->{TYPE} eq "range") {
+	emit($indent, "$buffer += self.convert_number_word(word)\n");
+    } elsif ($variable->{TYPE} eq "dictation") {
         emit($indent, "$buffer += word\n");
     } elsif ($variable->{TYPE} eq "variable") {
         my $function = "self.get_$variable->{TEXT}";
@@ -1900,7 +1965,11 @@ sub emit_menu_actions
 {
     my ($buffer, $functional, $menu, $indent) = @_;
     if (not menu_has_actions($menu)) {
-        emit($indent, "$buffer += word\n");
+	if (menu_is_range($menu)) {
+	    emit($indent, "$buffer += self.convert_number_word(word)\n");
+	} else {
+	    emit($indent, "$buffer += word\n");
+	}
     } else {
         my @commands = flatten_menu($menu);
         my $if = "if";
@@ -2149,6 +2218,19 @@ sub menu_has_actions
         }
     }
     return;
+}
+
+sub menu_is_range  # verified menu => can contain only 1 range as a 1st term
+{
+    my $menu = shift;
+    my @commands = @{ $menu->{COMMANDS} };
+    for my $command (@commands) {
+        my @terms = @{ $command->{TERMS} };
+        my $type = $terms[0]->{TYPE};
+        if ($type eq "menu" and menu_is_range($terms[0])) { return 1; }
+        if ($type eq "range") { return 1; }
+    }
+    return 0;    
 }
 
 # To emit actions for a menu, build a flat list of (canonicalized) commands:

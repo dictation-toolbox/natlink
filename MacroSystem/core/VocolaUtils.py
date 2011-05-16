@@ -2,7 +2,7 @@
 ### VocolaUtils.py - Code used by Vocola's generated Python code
 ###
 ###
-### Copyright (c) 2002-2010 by Rick Mohr.
+### Copyright (c) 2002-2011 by Rick Mohr.
 ### 
 ### Permission is hereby granted, free of charge, to any person
 ### obtaining a copy of this software and associated documentation

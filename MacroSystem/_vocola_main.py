@@ -6,7 +6,7 @@
 #    - Autoloading of changed command files
 #
 #
-# Copyright (c) 2002-2010 by Rick Mohr.
+# Copyright (c) 2002-2011 by Rick Mohr.
 # 
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -317,6 +317,8 @@ class ThisGrammar(GrammarBase):
         if usePerl: call = 'perl "' + self.VocolaFolder + r'\exec\vcl2py.pl" '
         else:       call = '"'      + self.VocolaFolder + r'\exec\vcl2py.exe" '
         call += '-extensions "' + ExtensionsFolder + r'\extensions.csv" '
+        if language == "enx":
+            call += '-numbers zero,one,two,three,four,five,six,seven,eight,nine '
         call += options
         call += ' "' + inputFileOrFolder + '" "' + NatLinkFolder + '"'
         simpscrp.Exec(call, 1)
