@@ -1,4 +1,4 @@
-__version__ = "3.9papa"
+__version__ = "3.9quebec"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "3.9papa"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# version 3.9quebec: working to a final release, with Vocola 2.7.2
 # version 3.9papa: removed system command directories vocola (mdl)
 # version 3.9foxtrot: adaptation NatSpeak 11
 # version 3.9: changing to ini files instead of registry
@@ -552,7 +553,10 @@ class NatlinkStatus(object):
         should be set in configurenatlink, otherwise ignore...
         """
         if not self.UserDirectory is None: return self.UserDirectory
-        return self.getUserDirectoryFromIni()
+        uDir = self.getUserDirectoryFromIni()
+        if uDir:
+            print 'UserDirectory: %s'% uDir
+        return uDir 
 
     def getUserDirectoryFromIni(self):
         """get the UserDirectory from the ini file
@@ -562,7 +566,6 @@ class NatlinkStatus(object):
         if value:
             if os.path.isdir(value):
                 value2 = os.path.normpath(value)
-                print 'UserDirectory: %s'% value2
                 self.__class__.UserDirectory = value2
                 return value2
             else:
@@ -571,7 +574,7 @@ class NatlinkStatus(object):
                     ## the middle of the string )
                 if os.path.isdir(value2):
                     value2 = os.path.normpath(value2)
-                    print 'UserDirectory (expanded): %s'% value2
+                    #print 'UserDirectory (expanded): %s'% value2
                     self.__class__.UserDirectory = value2
                     return value2
                 elif value2:
