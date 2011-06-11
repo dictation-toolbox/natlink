@@ -105,15 +105,15 @@ class ThisGrammar(GrammarBase):
     if language == 'esp':
         gramSpec = """
 <NatLinkWindow>     exported = [Mostrar] Ventana De (NatLink|Vocola) ;
-<loadAll>           exported = Cargar Todos Los Comandos [deVoz];
-<loadCurrent>       exported = Cargar Comandos [deVoz];
-<loadGlobal>        exported = Cargar Comandos [deVoz] Globales;
-<loadExtensions>    exported = Cargar Extensiones [deVoz];
-<discardOld>        exported = Descartar Comandos [deVoz] Viejos;
-<edit>              exported = Editar Comandos [deVoz];
-<editMachine>       exported = Editar Comandos [deVoz] De La Computadora;
-<editGlobal>        exported = Editar Comandos [deVoz] Globales ;
-<editGlobalMachine> exported = Editar Comandos [deVoz] Globales De La Computadora;
+<loadAll>           exported = (Recargar|Cargar) Todos Los Comandos [de voz];
+<loadCurrent>       exported = (Recargar|Cargar) Comandos [de voz];
+<loadGlobal>        exported = (Recargar|Cargar) Comandos [de voz] Globales;
+<loadExtensions>    exported = (Recargar|Cargar) Extensiones [de voz];
+<discardOld>        exported = Descartar Comandos [de voz] Viejos;
+<edit>              exported = (Modificar|Editar) Comandos [de voz];
+<editMachine>       exported = (Modificar|Editar) Comandos [de voz] De (este ordenador|La Computadora);
+<editGlobal>        exported = (Modificar|Editar) Comandos [de voz] Globales ;
+<editGlobalMachine> exported = (Modificar|Editar) Comandos [de voz] Globales De (este ordenador|La Computadora);
     """
     if language == 'nld':
         gramSpec = """
@@ -130,6 +130,11 @@ class ThisGrammar(GrammarBase):
     """
 
     def initialize(self):
+        # remove previous Vocola/Python compilation output as it may be out
+        # of date (e.g., new compiler, source file deleted, partially
+        # written due to crash, new machine name, etc.):
+        self.purgeOutput()
+
         if not VocolaEnabled:
             print "Vocola not active"
             return
@@ -137,11 +142,6 @@ class ThisGrammar(GrammarBase):
         self.mayHaveCompiled = 0  # has the compiler been called?
         self.compilerError   = 0  # has a compiler error occurred?
         self.setNames()
-
-        # remove previous Vocola/Python compilation output as it may be out
-        # of date (e.g., new compiler, source file deleted, partially
-        # written due to crash, new machine name, etc.):
-        self.purgeOutput()
 
         self.load_extensions()
         self.loadAllFiles('')
