@@ -6,6 +6,11 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+# June 2011 (QH):
+#   improved the include or exclude mechanism of Vocola (_vocola_main). In
+#   _vocola_main the compiled .py and .pyc grammar files from Vocola command files
+#   are automatically purged if Vocola not active (first time after a deactivate of Vocola)
+#   vocolaEnabled is set at start, but made false if Vocola is not active.
 # December 2010 (QH): keep track of grammar files with errors, so they only reload when
 #                     changes are made (wrongFiles global dict)
 # March 2010 (QH) loading (in findAndLoadFiles) _control.py last, the
@@ -91,6 +96,7 @@ debugTiming=0
 # This redirects stdout and stderr to a dialog box.
 #
 # bookkeeping for Vocola:
+vocolaEnabled = 1  # first time try, is set to 0 if _vocola_main signals it is not active
 doVocolaFirst = '_vocola_main'
 vocolaIsLoaded = None  # 1 or None
 vocolaModule = None    # pointer to the module...
@@ -194,6 +200,9 @@ wrongFiles = {} # timestamp of files with an error in it...
 #
 
 lastModule = ''
+
+# for information printing only
+changeCallbackUserFirst = 1
 
 def unloadModule(modName):
     """calls the 'unload' function of the module.
@@ -322,7 +331,7 @@ def safelyCall(modName,funcName):
 #
 
 def findAndLoadFiles(curModule=None):
-    global loadedFiles, vocolaIsLoaded, vocolaModule
+    global loadedFiles, vocolaIsLoaded, vocolaModule, vocolaEnabled
 
     moduleHasDot = None
     if curModule:
@@ -354,7 +363,7 @@ def findAndLoadFiles(curModule=None):
 
     # if present, load _vocola_main first, it can generate grammar files
     # before proceeding:
-    vocolaEnabled = (doVocolaFirst and doVocolaFirst+'.py' in baseDirFiles)
+    vocolaEnabled = (vocolaEnabled and doVocolaFirst and doVocolaFirst+'.py' in baseDirFiles)
     if debugLoad:
         print 'vocolaEnabled: %s'% vocolaEnabled
     if vocolaEnabled and not vocolaIsLoaded:
@@ -363,9 +372,13 @@ def findAndLoadFiles(curModule=None):
         loadedFiles[x] = loadFile(x, origName)
         vocolaIsLoaded = 1
         vocolaModule = sys.modules[doVocolaFirst]
+        if not vocolaModule.VocolaEnabled:
+            # vocola module signals vocola is not enabled:
+            vocolaEnabled = 0
+            del loadedFiles[x]
+            if debugLoad: print 'Vocola is disabled...'
         # repeat the base directory, as Vocola just had the chance to rebuild Python grammar files:
         baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
-
     for x in baseDirFiles:
         res = pat.match(x)
         if res: addToFilesToLoad( filesToLoad, res.group(1), baseDirectory, moduleHasDot )
@@ -380,12 +393,6 @@ def findAndLoadFiles(curModule=None):
         if x == '_control':
             if debugLoad: print 'skipping _control'
             controlModule = x
-            continue
-        # for safety, should not be needed, as Vocola purges all generated
-        # grammar files at start, even if it does not load completely
-        if not vocolaEnabled and reVocolaModuleName.search(x):
-            if debugLoad:
-                print 'skipping %s, Vocola not enabled'% x
             continue
         origName = loadedFiles.get(x, None)
         loadedFiles[x] = loadFile(x, origName)
@@ -510,7 +517,7 @@ def beginCallback(moduleInfo, checkAll=None):
         return
     t0 = time.time()
     
-    if vocolaIsLoaded:
+    if vocolaEnabled and vocolaIsLoaded:
         result = vocolaModule.vocolaBeginCallback(moduleInfo)
         if result == 2:
             if debugCallback:
@@ -547,7 +554,7 @@ def beginCallback(moduleInfo, checkAll=None):
 #
 
 def changeCallback(type,args):
-    global userName, DNSuserDirectory, language, BaseModel, BaseTopic, DNSmode
+    global userName, DNSuserDirectory, language, BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst
     if debugCallback:
         print 'changeCallback, type: %s, args: %s'% (type, args)
     if type == 'mic' and args == 'on':
@@ -562,8 +569,11 @@ def changeCallback(type,args):
         moduleInfo = getCurrentModule()
         if debugCallback:
             print "---------changeCallback, User changed to", userName
+        elif changeCallbackUserFirst:
+            changeCallbackUserFirst = 0
         else:
             print "\n------ user changed to: %s\n"% userName
+
         unloadEverything()
 ## this is not longer needed here, as we fixed the userDirectory
 ##        changeUserDirectory()
