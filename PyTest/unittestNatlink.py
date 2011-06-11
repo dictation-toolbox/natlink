@@ -122,9 +122,9 @@ class UnittestNatlink(unittest.TestCase):
         self.user = natlink.getCurrentUser()[0]
         self.setMicState = "off"
         self.lookForDragonPad()
-        if self.getWindowContents():
-            print 'The DragonPad window is not empty, probably open when starting the tests...'
-            #raise TestError('The DragonPad window is not empty, probably open when starting the tests...')
+        #if self.getWindowContents():
+        #    print 'The DragonPad window is not empty, probably open when starting the tests...'
+        #    #raise TestError('The DragonPad window is not empty, probably open when starting the tests...')
 
 
 
@@ -138,8 +138,8 @@ class UnittestNatlink(unittest.TestCase):
             natlink.playString("\n\ntearDown, reopen user: '%s'"% self.user)
             self.clearTestFiles()
             # reopen user:
-            natlink.openUser(self.user)
-            self.killDragonPad()
+            #natlink.openUser(self.user)
+            #self.killDragonPad()
         finally:
             self.disconnect()
 
@@ -181,6 +181,7 @@ class UnittestNatlink(unittest.TestCase):
             mod = getBaseName(mod)
             if mod == "natspeak": break
             i += 1
+            print 'waiting for DragonPad: %s'% i
         else:
             self.fail("Not the correct application: %s is brought to the front, should be natspeak"% mod)
         self.DragonPadMod = mod
@@ -737,6 +738,11 @@ class UnittestNatlink(unittest.TestCase):
 ##        self.wait()
         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
         # unimacro version stops here, no beginCallback:::
+        
+        
+        # versions 10 and 11 seem to have an intermediate result, just selecting with empty text
+        # this is also apparent in _kaiser_dictation, not tested very thorough...
+        #callTest.testTextChange(moduleInfo,(4,4,'', 4, 10))
         callTest.testTextChange(moduleInfo,(4,10,' another phrase',19,19))
     #else        callTest.testTextChange(moduleInfo,(5,10,'another phrase',19,19))
 
