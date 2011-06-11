@@ -151,6 +151,8 @@ class ThisGrammar(GrammarBase):
         if not VocolaEnabled:
             print "Vocola not active"
             return
+        else:
+            print "Vocola version 2.7.2I starting..."
 
         self.mayHaveCompiled = 0  # has the compiler been called?
         self.compilerError   = 0  # has a compiler error occurred?
