@@ -36,7 +36,9 @@
 #          been organized to minimize the diff's with the official
 #          version.
 #
-
+# June 2011, QH:
+#   added purge py pyc files if Vocola not active  (also changes in natlinkmain)
+#
 # February 4, 2008, QH:
 # adapted to natlinkmain, which loads _vocola_main before other modules,
 # and calls back also at begin Callback time before other modules to
@@ -54,12 +56,13 @@ from stat import *      # file statistics
 import re
 import natlink
 from natlinkutils import *
-
+reVocolaPyPycPattern = re.compile(r"_vcl\d*\.pyc?$")
 
 import natlinkstatus
 import natlinkcorefunctions
 status        = natlinkstatus.NatlinkStatus()
 VocolaEnabled = not not status.getVocolaUserDirectory()
+
 language      = status.getLanguage()
 
 
@@ -85,11 +88,14 @@ ExtensionsFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 
 sys.path.append(ExtensionsFolder)
 NatLinkFolder = os.path.abspath(NatLinkFolder)
 
+# needed also in checkUnimacroVchFile:
+UserCommandFolder = status.getVocolaUserDirectory()
+UnimacroVchFile = 'Unimacro.vch'
 
 import simpscrp
 
 class ThisGrammar(GrammarBase):
-
+    
     gramSpec = """
         <NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
         <loadAll>           exported = Load All [Voice] Commands;
@@ -102,6 +108,7 @@ class ThisGrammar(GrammarBase):
         <editGlobal>        exported = Edit Global [Voice] Commands;
         <editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
     """
+
     if language == 'esp':
         gramSpec = """
 <NatLinkWindow>     exported = [Mostrar] Ventana De (NatLink|Vocola) ;
@@ -115,7 +122,7 @@ class ThisGrammar(GrammarBase):
 <editGlobal>        exported = (Modificar|Editar) Comandos [de voz] Globales ;
 <editGlobalMachine> exported = (Modificar|Editar) Comandos [de voz] Globales De (este ordenador|La Computadora);
     """
-    if language == 'fra':
+    elif language == 'fra':
         gramSpec = """
 <NatLinkWindow>     exported = [Afficher] Fenetre (NatLink|Vocola);
 <loadAll>           exported = Charger Toutes Les Commandes [Vocales];
@@ -128,7 +135,7 @@ class ThisGrammar(GrammarBase):
 <editGlobal>        exported = Editer Commandes [Vocales] Globales;
 <editGlobalMachine> exported = Editer Commandes [Vocales] Globales Machine;
     """
-    if language == 'nld':
+    elif language == 'nld':
         gramSpec = """
 <NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
 <loadAll>           exported = (Laad|Lood) alle [stem|vojs] (Commandoos|Commands);
@@ -141,6 +148,11 @@ class ThisGrammar(GrammarBase):
 <editGlobal>        exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) [stem|vojs] (Commandoos|Commands);
 <editGlobalMachine> exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
     """
+    elif language != 'enx':
+        print >> sys.stderr, '\n\n_vocola_main: no translated commands for language "%s" are available (yet),\n' \
+              'consider providing the translated commands to the community, see http://vocola.net'% language
+        print >> sys.stderr, '\nfor now the english commands, like "Edit Commands" and "Edit Global Commands" are activated.\n'
+        
 
     def initialize(self):
         # remove previous Vocola/Python compilation output as it may be out
@@ -178,7 +190,8 @@ class ThisGrammar(GrammarBase):
         else: self.machine = 'local'
 
         self.commandFolder = None
-        userCommandFolder = status.getVocolaUserDirectory()
+        # defined now at top:
+        userCommandFolder = UserCommandFolder
         if os.path.isdir(userCommandFolder):                      
             self.commandFolder = userCommandFolder
         if not self.commandFolder:
@@ -468,10 +481,37 @@ class ThisGrammar(GrammarBase):
             output.write(line + '\n')
         output.close()                
 
+def checkUnimacroVchFile():
+    """return 1 if the include file Unimacro.vch is present in the vocola user directory
+    """
+    if os.path.isfile(os.path.join(UserCommandFolder, UnimacroVchFile) ):
+        return 1
 
+def purgeAllVocolaPyPycFiles():
+    """delete compiled grammar files, is called when Vocola in not active
+    """
+    #pattern = re.compile("_vcl\d*\.pyc?$")  # this pattern is probably wrong, needs r"...", QH
+    toPurge = [f for f in os.listdir(NatLinkFolder) if reVocolaPyPycPattern.search(f)]
+    if toPurge:
+        print 'Purging %s Vocola output files (.py and .pyc) from "%s"'% (len(toPurge), NatLinkFolder)
+        for f in toPurge:
+            os.remove(os.path.join(NatLinkFolder, f))
+            
+# only load if VocolaEnabled is true:
+if VocolaEnabled:
+    # check (if applicable) for Unimacro.vch include file:
+    if status.getVocolaTakesUnimacroActions():
+        if not checkUnimacroVchFile():
+            print >> sys.stderr, '\nThe Option "VocolaTakesUnimacroActions" is switched on,\nbut no file "Unimacro.vch" is found.\n' \
+                  '\nPlease (re)run the NatLink/Vocola/Unimacro configuration GUI,\npress the "Vocola compatibilty" button, \n' \
+                  'and check at least the first checkbox in\nthe dialog "Unimacro features can be used by Vocola" . \n' \
+                  '\nThen restart Dragon.\n\n'
 
-thisGrammar = ThisGrammar()
-thisGrammar.initialize()
+    thisGrammar = ThisGrammar()
+    thisGrammar.initialize()
+else:
+    print "Vocola not active"
+    purgeAllVocolaPyPycFiles()
 
 
 # Returns the modification time of a file or 0 if the file does not exist
