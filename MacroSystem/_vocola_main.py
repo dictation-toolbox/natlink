@@ -36,9 +36,7 @@
 #          been organized to minimize the diff's with the official
 #          version.
 #
-# June 2011, QH:
-#   added purge py pyc files if Vocola not active  (also changes in natlinkmain)
-#
+
 # February 4, 2008, QH:
 # adapted to natlinkmain, which loads _vocola_main before other modules,
 # and calls back also at begin Callback time before other modules to
@@ -56,7 +54,7 @@ from stat import *      # file statistics
 import re
 import natlink
 from natlinkutils import *
-reVocolaPyPycPattern = re.compile(r"_vcl\d*\.pyc?$")
+
 
 import natlinkstatus
 import natlinkcorefunctions
@@ -143,21 +141,6 @@ class ThisGrammar(GrammarBase):
 <editGlobal>        exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) [stem|vojs] (Commandoos|Commands);
 <editGlobalMachine> exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
     """
- 
-    if language == 'fra':
-        gramSpec = """
-<NatLinkWindow>     exported = [Afficher] Fenetre (NatLink|Vocola);
-<loadAll>           exported = Charger Toutes Les Commandes [Vocales];
-<loadCurrent>       exported = Charger Commandes [Vocales];
-<loadGlobal>        exported = Charger Commandes [Vocales] Globales ;
-<loadExtensions>    exported = Charger Extensions [Vocales];
-<discardOld>        exported = Effacer Commandes [Vocales] Precedentes;
-<edit>              exported = Editer Commandes [Vocales];
-<editMachine>       exported = Editer Commandes [Vocales] Machine;
-<editGlobal>        exported = Editer Commandes [Vocales] Globales;
-<editGlobalMachine> exported = Editer Commandes [Vocales] Globales Machine;
-    """
- 
 
     def initialize(self):
         # remove previous Vocola/Python compilation output as it may be out
@@ -485,23 +468,10 @@ class ThisGrammar(GrammarBase):
             output.write(line + '\n')
         output.close()                
 
-def purgeAllVocolaPyPycFiles():
-    """delete compiled grammar files, is called when Vocola in not active
-    """
-    #pattern = re.compile("_vcl\d*\.pyc?$")  # this pattern is probably wrong, needs r"...", QH
-    toPurge = [f for f in os.listdir(NatLinkFolder) if reVocolaPyPycPattern.search(f)]
-    if toPurge:
-        print 'Purging %s Vocola output files (.py and .pyc) from "%s"'% (len(toPurge), NatLinkFolder)
-        for f in toPurge:
-            os.remove(os.path.join(NatLinkFolder, f))
-            
-# only load if VocolaEnabled is true:
-if VocolaEnabled:
-    thisGrammar = ThisGrammar()
-    thisGrammar.initialize()
-else:
-    print "Vocola not active"
-    purgeAllVocolaPyPycFiles()
+
+
+thisGrammar = ThisGrammar()
+thisGrammar.initialize()
 
 
 # Returns the modification time of a file or 0 if the file does not exist
