@@ -446,9 +446,10 @@ def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
 #
 
 def unloadEverything():
-    global loadedFiles, vocolaIsLoaded
+    global loadedFiles, vocolaIsLoaded, vocolaModule
     for x in loadedFiles:
         if loadedFiles[x]:
+            if debugLoad: print 'unload grammar %s'% x
             safelyCall(x,'unload')
             if x == doVocolaFirst:
                 vocolaIsLoaded = None
@@ -570,6 +571,7 @@ def changeCallback(type,args):
         if debugCallback:
             print "---------changeCallback, User changed to", userName
         elif changeCallbackUserFirst:
+            # first time, no print message, but next time do...
             changeCallbackUserFirst = 0
         else:
             print "\n------ user changed to: %s\n"% userName
