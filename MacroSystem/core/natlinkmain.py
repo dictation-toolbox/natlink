@@ -6,6 +6,13 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+# August 2011 (QH): added function reorderKeys, which influences the order
+#   of the grammars to load. Hardcoded are _tasks.py (first) and _control (last)
+#   _vocola_main could be set here too, but already has a special treatment.
+#   This is done because _control needs to know about other Unimacro grammars
+#   and _lines can call functions in _tasks, so the tasks grammar must exist before
+#   lines is loaded
+#
 # June 2011 (QH):
 #   improved the include or exclude mechanism of Vocola (_vocola_main). In
 #   _vocola_main the compiled .py and .pyc grammar files from Vocola command files
@@ -76,8 +83,7 @@ __version__ = ""   #changed with SVN
 # debugging to print information about when a module is loaded.
 #
 
-import sys, time
-import string
+import sys, time, copy
 import os, shutil       # access to file information
 import os.path          # to parse filenames
 import imp              # module reloading
@@ -384,31 +390,43 @@ def findAndLoadFiles(curModule=None):
         if res: addToFilesToLoad( filesToLoad, res.group(1), baseDirectory, moduleHasDot )
 
     # Try to (re)load any files we find
-    if debugLoad: print 'filesToLoad: %s'% filesToLoad.keys()
     # to Unimacro grammar control last:
     controlModule = None
-    for x in filesToLoad.keys():
+
+    # user wishes?? _control last, _tasks first for Unimacro
+    keysToLoad = reorderKeys(filesToLoad.keys())
+    if debugLoad: print 'filesToLoad: %s'% keysToLoad
+    
+    for x in keysToLoad:
         if x == doVocolaFirst:
-            continue
-        if x == '_control':
-            if debugLoad: print 'skipping _control'
-            controlModule = x
             continue
         origName = loadedFiles.get(x, None)
         loadedFiles[x] = loadFile(x, origName)
 
-    # if unimacro module _control exists, load it last:
-    if controlModule:
-        if debugLoad:
-            print 'loading _control last'
-        origName = loadedFiles.get(controlModule, None)
-        loadedFiles[controlModule] = loadFile(controlModule, origName)
-        
     # Unload any files which have been deleted
     for name, path in loadedFiles.items():
         if path and not getFileDate(path):
             safelyCall(name,'unload')
             del loadedFiles[name]
+
+def reorderKeys(modulesKeys):
+    """here is the chance to influence the order of loading
+    
+    for Unimacro do _control last and _tasks first
+    """
+    L = copy.copy(modulesKeys)
+    gramsLast = ['_control']
+    gramsFirst = ['_tasks']
+    for g in gramsFirst:
+        if g in L:
+            L.remove(g)
+            L.insert(0, g)
+    for g in gramsLast:
+        if g in L:
+            L.remove(g)
+            L.append(g)
+    #print 'list of grammars to load: %s'% L
+    return L
 
 def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
     """add to the dict of filesToLoad,

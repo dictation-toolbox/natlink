@@ -1,4 +1,4 @@
-__version__ = "3.9sierra"
+__version__ = "3.9sierraArnoud"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,10 @@ __version__ = "3.9sierra"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# version 3.9sierraArnoud: a private intermediate release for Arnoud van den Eerenbeemt
+#                          making search macro's across applications
+# version 3.9sierra: nearly stable, but a lot of details with Dragon 11 have to
+#                    be investigated
 # version 3.9quebec: working to a final release, with Vocola 2.7.2
 # version 3.9papa: removed system command directories vocola (mdl)
 # version 3.9foxtrot: adaptation NatSpeak 11

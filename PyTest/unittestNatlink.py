@@ -54,6 +54,11 @@ from natlinkutils import *
 import natlinkutils
 import win32gui
 
+# make different versions testing possible:
+import natlinkstatus
+nlstatus = natlinkstatus.NatlinkStatus()
+DNSVersion = nlstatus.getDNSVersion()
+
 class TestError(Exception):
     pass
 ExitQuietly = 'ExitQuietly'
@@ -411,6 +416,7 @@ class UnittestNatlink(unittest.TestCase):
             time.sleep(1)
         self.assertEquals(expected, actual, 'Function call "%s" returned unexpected result\nExpected: %s, got: %s'%
                           (command, expected, actual))
+    
     def doTestFuncReturnAlternatives(self, expected,command,localVars=None):
         
         # account for different values in case of [None, 0] (wordFuncs)
@@ -492,7 +498,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def testPlayString(self):
+    def tttestPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -548,7 +554,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testExecScript(self):
+    def tttestExecScript(self):
         self.log("testExecScript", 1)
 
         testForException = self.doTestForException
@@ -558,7 +564,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testDictObj(self):
+    def tttestDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = DictObj()
@@ -839,11 +845,20 @@ class UnittestNatlink(unittest.TestCase):
         see below
 
         QH, april 2007 (natspeak 9.1 SP1)
+        
+        
+        with Dragon 11:
+            DNSVersion is used to separate tests, eg in Dragon 11
+            letters have become A\\letter or A\\letter\\alpha etc
+            AND existing words seem to return only 8, so only testing word existence
+            
+        
         """
         self.log("testWordFuncs", 1)
         # getWordInfo #
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
+        testFuncReturnAlt = self.doTestFuncReturnAlternatives
         testFuncReturnWordFlag = self.doTestFuncReturnWordFlag
         # two alternatives permitted (QH)
         testFuncReturnNoneOr0 = self.doTestFuncReturnNoneOr0
@@ -862,54 +877,125 @@ class UnittestNatlink(unittest.TestCase):
         # (3) Szymanski has not been moved to the dictation state
         # (4) HeLLo (with that capitalization) is not in the vocabulary
 
-        # version 10 gives  8 in next test:
-        testFuncReturn(0,"natlink.getWordInfo('hello')")
-        testFuncReturn(0,"natlink.getWordInfo('hello',0)")
-        testFuncReturn(0,"natlink.getWordInfo('hello',1)")
-        testFuncReturn(0,"natlink.getWordInfo('hello',2)")
-        testFuncReturn(0,"natlink.getWordInfo('hello',3)")
-        testFuncReturn(0,"natlink.getWordInfo('hello',4)")
-        testFuncReturn(0,"natlink.getWordInfo('hello',5)")
-        testFuncReturn(0,"natlink.getWordInfo('hello',6)")
-        testFuncReturn(0,"natlink.getWordInfo('hello',7)")
+        # version 10 gives  8 in next test ("word cannot be deleted"), the list of  arguments give valid alternative\
+        # return values...
+        # Dragon 11 seems to give only 8 as return, in other words, only word existence can be tested with this mechanism...
+        normalWordInfo = (0, 8) # accepted alternatives for a function call (must be a tuple)
+            
+        testFuncReturnAlt(normalWordInfo, "natlink.getWordInfo('hello')")
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hello',0)") # same as call above
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hello',1)") # also look in backup dictionary
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hello',2)") # consider non-dictation words (???)
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hello',3)") # 1 and 2 together
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('Hello',4)") # search case insensitive
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hELLo',4)") # search case insensitive
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hellO',5)") # case insensitive with above combinations
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('heLLo',6)")
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hello',7)")
 
-        testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_no_space_before,
-                       "natlink.getWordInfo(',\\comma')")
-        testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_title_mode,
-                       "natlink.getWordInfo('and')")
+        if DNSVersion >= 11:
+            commaWord = r',\comma\comma'
+            hyphenWord = r'-\hyphen\hyphen'
+        else:
+            commaWord = r',\comma'
+            hyphenWord = r'-\hyphen'
+            
         
+        if DNSVersion < 11:
+            testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_no_space_before,
+                       "natlink.getWordInfo(r'%s')"% hyphenifWord)
+            testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_no_space_before,
+                       "natlink.getWordInfo(r'%s')"% commaWord)
+        else: # in Dragon 11 only 8 as return value
+            testFuncReturn(8, "natlink.getWordInfo('%s')"% hyphenWord)
+            testFuncReturn(8, "natlink.getWordInfo('%s')"% commaWord)
+            
+        # extra words:
+        if DNSVersion >= 11:
+            # spelling letters (also see voicecode/sr_interface)
+            for word in [r'a\determiner', r'A\letter', r'A\letter\alpha',
+                         r'a\lowercase-letter\lowercase A',
+                         r'a\lowercase-letter\lowercase alpha',
+                         r'A\uppercase-letter\uppercase A',
+                         r'A\uppercase-letter\uppercase alpha',
+                         r'I\letter', r'I\pronoun', r'I\letter\India',
+                         ]:
+                cmdLine = "natlink.getWordInfo(r'%s')"% word
+                testFuncReturn(8, cmdLine)
+
+            # numbers:            
+            for word in [r'one\pronoun', r'one\number', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+                         'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'hundred']:
+                cmdLine = "natlink.getWordInfo(r'%s')"% word
+                testFuncReturn(8, cmdLine)
+            for word in [r'one\pronoun', r'one\number', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']:
+                cmdLine = "natlink.getWordInfo(r'%s')"% word
+                testFuncReturn(8, cmdLine)
+
+            for word in [r'.\period\period', r'.\dot\dot', r',\comma\comma',
+                         r'\new-paragraph\new paragraph']:
+                cmdLine = "natlink.getWordInfo(r'%s')"% word
+                testFuncReturn(8, cmdLine)
+                
+
+
+
+            ## spell mode letters:
+            #for word in [r'u\spelling-letter\U', '\xf6\\spelling-letter\\O umlaut',
+            #                '\xfc\\spelling-letter\\U umlaut',
+            #                '\xfc\\spelling-letter\\uniform umlaut']:
+            #    cmdLine = "natlink.getWordInfo(r'%s')"% word
+            #    testFuncReturn(8, cmdLine)
+
+
+
+        #testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_title_mode,
+        #               "natlink.getWordInfo('and')")
+        #
         # this none/0 stuff is nonsense
-        testFuncReturnNoneOr0("natlink.getWordInfo('FrotzBlatz',0)")
-        testFuncReturnNoneOr0("natlink.getWordInfo('FrotzBlatz',7)")
+        testFuncReturn(None, "natlink.getWordInfo('FrotzBlatz',0)")
+        testFuncReturn(None, "natlink.getWordInfo('FrotzBlatz',7)")
+
+            
+
+
         
         #
         #sw my dict _has_ Szymanski
         #
-        testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',0)")
-        testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',6)")
-        testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',1)")
-        testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',1)")
-        testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',5)")
+        testWord = 'Szymanskii'
+        if not natlink.getWordInfo(testWord) is None:
+            print 'word not in active vocabulary'
+            natlink.deleteWord(testWord)
+        testFuncReturn(None, "natlink.getWordInfo('%s',0)"% testWord)
+
+        #
+        #
+        #testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',0)")
+        #testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',6)")
+        #testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',1)")
+        #testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',1)")
+        #testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',5)")
+        #
+        testFuncReturn(None,"natlink.getWordInfo('HeLLo',0)") # strange capitalization
+        testFuncReturnAlt(normalWordInfo, "natlink.getWordInfo('HeLLo',4)")  # case insensitive search
         
-        testFuncReturnNoneOr0("natlink.getWordInfo('HeLLo',0)")
-        testFuncReturnNoneOr0("natlink.getWordInfo('HeLLo',4)")
-        
-        # setWordInfo #
-
-        testForException(TypeError,"natlink.setWordInfo()")
-        testForException(TypeError,"natlink.setWordInfo(1)")
-        testForException(TypeError,"natlink.setWordInfo('hello')")
-        testForException(TypeError,"natlink.setWordInfo('hello','')")
-
-        testFuncReturnNoneOr0("natlink.getWordInfo('hello')")
-        natlink.setWordInfo('hello',dgnwordflag_nodelete)
-        testFuncReturn(dgnwordflag_nodelete,"natlink.getWordInfo('hello')")
-        natlink.setWordInfo('hello',0)
-        testFuncReturnNoneOr0("natlink.getWordInfo('hello')")
-
-        testForException(natlink.UnknownName,"natlink.setWordInfo('FrotzBlatz',0)")
-        testForException(natlink.UnknownName,"natlink.setWordInfo('Szymanskii',0)") 
-        testForException(natlink.InvalidWord,"natlink.setWordInfo('a\\b\\c\\d\\f',0)")
+        # setWordInfo
+        if DNSVersion < 11:
+            testForException(TypeError,"natlink.setWordInfo()")
+            testForException(TypeError,"natlink.setWordInfo(1)")
+            testForException(TypeError,"natlink.setWordInfo('hello')")
+            testForException(TypeError,"natlink.setWordInfo('hello','')")
+    
+            testFuncReturnAlt(normalWordInfo, "natlink.getWordInfo('hello')")
+            natlink.setWordInfo('hello',dgnwordflag_nodelete)
+            testFuncReturn(dgnwordflag_nodelete,"natlink.getWordInfo('hello')")
+            natlink.setWordInfo('hello',0)
+            testFuncReturnNoneOr0("natlink.getWordInfo('hello')")
+    
+            testForException(natlink.UnknownName,"natlink.setWordInfo('FrotzBlatz',0)")
+            testForException(natlink.UnknownName,"natlink.setWordInfo('Szymanskii',0)") 
+            testForException(natlink.InvalidWord,"natlink.setWordInfo('a\\b\\c\\d\\f',0)")
         
         # addWord #
 
@@ -918,7 +1004,7 @@ class UnittestNatlink(unittest.TestCase):
         testForException(TypeError,"natlink.addWord('FrotzBlatz','hello')")
         testForException(natlink.InvalidWord,"natlink.addWord('a\\b\\c\\d\\f')")
 
-        testFuncReturn(0,"natlink.getWordInfo('hello')")
+        testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hello')")
     ## version 8:
     ##        testFuncReturn(0,"natlink.addWord('hello',dgnwordflag_nodelete)")
     ##        testFuncReturn(0,"natlink.getWordInfo('hello')")
@@ -926,12 +1012,12 @@ class UnittestNatlink(unittest.TestCase):
         testFuncReturn(1,"natlink.addWord('hello',dgnwordflag_nodelete)")
         testFuncReturn(dgnwordflag_nodelete,"natlink.getWordInfo('hello')")
         
-        testFuncReturnNoneOr0("natlink.getWordInfo('FrotzBlatz')")
-        testFuncReturnWordFlag(1,"natlink.addWord('FrotzBlatz',dgnwordflag_useradded)")
+        #testFuncReturnNoneOr0("natlink.setWordInfo('FrotzBlatz')")
+        #testFuncReturnWordFlag(1,"natlink.addWord('FrotzBlatz',dgnwordflag_useradded)")
         # The first time we run this code, the extra internal use only flag
         # 0x20000000 is added to this word.  But if ytou run the test suite
         # twice without shuttong down NatSpeak the flag will disappear.
-        testFuncReturn(dgnwordflag_useradded,"natlink.getWordInfo('FrotzBlatz')&~0x20000000")
+        #testFuncReturn(dgnwordflag_useradded,"natlink.getWordInfo('FrotzBlatz')&~0x20000000")
 
         testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',0)")
         testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',1)")
@@ -939,18 +1025,21 @@ class UnittestNatlink(unittest.TestCase):
         testFuncReturnWordFlag(dgnwordflag_is_period,"natlink.getWordInfo('Szymanskii')")
         
         # deleteWord #
-        
         testForException(TypeError,"natlink.deleteWord()")
         testForException(TypeError,"natlink.deleteWord(1)")
-
-        testFuncReturn(dgnwordflag_is_period+dgnwordflag_DNS8newwrdProp,"natlink.getWordInfo('Szymanskii')")
+        if DNSVersion < 11: 
+            testFuncReturn(dgnwordflag_is_period+dgnwordflag_DNS8newwrdProp,"natlink.getWordInfo('Szymanskii')")
         natlink.deleteWord('Szymanskii')
-        testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',0)")
-        testFuncReturnNoneOr0("natlink.getWordInfo('Szymanskii',1)")
+        testFuncReturn(None, "natlink.getWordInfo('Szymanskii',0)")
         
-        testFuncReturn(dgnwordflag_useradded,"natlink.getWordInfo('FrotzBlatz')&~0x20000000")
-        natlink.deleteWord('FrotzBlatz')
-        testFuncReturnNoneOr0("natlink.getWordInfo('FrotzBlatz')")
+        if DNSVersion < 11: 
+            testFuncReturn(normalWordInfo, "natlink.getWordInfo('Szymanskii',1)")  # looking in backup dictionary broken in Dragon 11
+        
+        if DNSVersion < 11: 
+            testFuncReturn(dgnwordflag_useradded,"natlink.getWordInfo('FrotzBlatz')&~0x20000000")
+        if not natlink.getWordInfo('FrotzBlatz') is None:
+            natlink.deleteWord('FrotzBlatz')
+        testFuncReturn(None, "natlink.getWordInfo('FrotzBlatz')")
 
         testForException(natlink.UnknownName,"natlink.deleteWord('FrotzBlatz')")
         testForException(natlink.UnknownName,"natlink.deleteWord('Szymanskii')")
@@ -961,7 +1050,7 @@ class UnittestNatlink(unittest.TestCase):
     # conditions.  The way we test that a file is loaded is to test that a
     # command has been defined using recognitionMimic
 
-    def testNatLinkMain(self):
+    def tttestNatLinkMain(self):
 
         testRecognition = self.doTestRecognition
         baseDirectory = os.path.split(sys.modules['natlinkutils'].__dict__['__file__'])[0]
@@ -1135,7 +1224,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testWordProns(self):
+    def tttestWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
@@ -1242,10 +1331,10 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
-    def testParser(self):
+    def tttestParser(self):
         self.log("testParser", 1)
 
-        def testGrammarError(exceptionType,gramSpec):
+        def tttestGrammarError(exceptionType,gramSpec):
             try:
                 parser = GramParser([gramSpec])
                 parser.doParse()
@@ -1277,7 +1366,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of command grammars using GrammarBase    
 
-    def testGrammar(self):
+    def tttestGrammar(self):
         self.log("testGrammar", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -1537,7 +1626,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def testDgndictationEtc(self):
+    def tttestDgndictationEtc(self):
         self.log("testDgndictationEtc", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -1710,7 +1799,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase
 
-    def testDictGram(self):
+    def tttestDictGram(self):
         self.log("testDictGram")
 
         # Create a dictation grammar.  This grammar simply gets the results of
@@ -1858,7 +1947,7 @@ class UnittestNatlink(unittest.TestCase):
 
 
 
-    def testSelectGram(self):
+    def tttestSelectGram(self):
         self.log("testSelectGram")
 
         # Create a selection grammar.  This grammar simply gets the results of
@@ -1983,7 +2072,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def testTrayIcon(self):
+    def tttestTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -2020,7 +2109,7 @@ class UnittestNatlink(unittest.TestCase):
     # prevWords, prevRule, and also fullResults and seqsAndRules as instance variables.
     # QH, april 2010:
 
-    def testNextPrevRulesAndWords(self):
+    def tttestNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -2133,7 +2222,7 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched to "%s" mic'% micState)
             time.sleep(w)
 
-    def testNestedMimics(self):
+    def tttestNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -2282,7 +2371,7 @@ class CallbackTester:
     # Tests the contents of the object.  For this test we assume that we saw
     # both a begin callback and a test change callback with the indicated
     # values
-    def testTextChange(self,moduleInfo,textChange):
+    def tttestTextChange(self,moduleInfo,textChange):
         if self.sawBegin != moduleInfo:
             raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
         if self.sawTextChange != textChange:
@@ -2291,7 +2380,7 @@ class CallbackTester:
     
     # Tests the contents of the object.  For this test we assume that we saw
     # both a begin callback and a results callback with the indicated values
-    def testResults(self,moduleInfo,results):
+    def tttestResults(self,moduleInfo,results):
         if self.sawBegin != moduleInfo:
             raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
         if self.sawResults == None and results != None:
@@ -2399,7 +2488,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def test....
+    # the test names to her example def tttest....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')
