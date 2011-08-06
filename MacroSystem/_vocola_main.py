@@ -129,6 +129,19 @@ class ThisGrammar(GrammarBase):
 <editGlobal>        exported = Editer Commandes [Vocales] Globales;
 <editGlobalMachine> exported = Editer Commandes [Vocales] Globales Machine;
     """
+    elif language == 'deu':
+        gramSpec = """
+<NatLinkWindow>     exported = [Zeige] (NatLink|Vocola) Fenster;
+<loadAll>           exported = Lade alle [Sprach] Befehle;
+<loadCurrent>       exported = Lade [Sprach] Befehle;
+<loadGlobal>        exported = Lade globale [Sprach] Befehle;
+<loadExtensions>    exported = Lade [Sprach] Extensions;
+<discardOld>        exported = Verwerfe alte [Sprach] Befehle;
+<edit>              exported = Bearbeite [Sprach] Befehle;
+<editMachine>       exported = Bearbeite Maschinen [Sprach] Befehle;
+<editGlobal>        exported = Bearbeite globale [Sprach] Befehle;
+<editGlobalMachine> exported = Bearbeite globale Maschinen [Sprach] Befehle;
+    """   
     elif language == 'nld':
         gramSpec = """
 <NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
