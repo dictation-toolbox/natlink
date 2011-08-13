@@ -902,8 +902,8 @@ class UnittestNatlink(unittest.TestCase):
             
         
         if DNSVersion < 11:
-            testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_no_space_before,
-                       "natlink.getWordInfo(r'%s')"% hyphenifWord)
+            testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_no_space_before + dgnwordflag_no_space_next,
+                       "natlink.getWordInfo(r'%s')"% hyphenWord)
             testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_no_space_before,
                        "natlink.getWordInfo(r'%s')"% commaWord)
         else: # in Dragon 11 only 8 as return value
@@ -991,7 +991,9 @@ class UnittestNatlink(unittest.TestCase):
             natlink.setWordInfo('hello',dgnwordflag_nodelete)
             testFuncReturn(dgnwordflag_nodelete,"natlink.getWordInfo('hello')")
             natlink.setWordInfo('hello',0)
-            testFuncReturnNoneOr0("natlink.getWordInfo('hello')")
+            natlink.setWordInfo('hello',dgnwordflag_nodelete)
+            # nodelete_flag is not cleared in version 10:
+            testFuncReturn(dgnwordflag_nodelete, "natlink.getWordInfo('hello')")
     
             testForException(natlink.UnknownName,"natlink.setWordInfo('FrotzBlatz',0)")
             testForException(natlink.UnknownName,"natlink.setWordInfo('Szymanskii',0)") 
