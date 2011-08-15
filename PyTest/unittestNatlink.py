@@ -1727,9 +1727,10 @@ class UnittestNatlink(unittest.TestCase):
                       <Start> exported = DICTATE letters <dgnletters>;""")
         testGram.activateAll(window=0)
         if DNSVersion < 11:
-            testRecognition(['DICTATE','letters','b\\b'])
-            testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
-                                     [('DICTATE', 'Start'), ('letters', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+            testRecognition(['DICTATE','letters','b',])
+            testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\\\l'],
+                                     [('DICTATE', 'Start'), ('letters', 'Start'),
+                                        ('b\\\\l', 'dgnletters')])
 
         else:
             # Dragon 11
