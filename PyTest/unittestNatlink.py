@@ -500,7 +500,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def tttestPlayString(self):
+    def testPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -556,7 +556,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestExecScript(self):
+    def testExecScript(self):
         self.log("testExecScript", 1)
 
         testForException = self.doTestForException
@@ -566,7 +566,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestDictObj(self):
+    def testDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = DictObj()
@@ -1058,7 +1058,7 @@ class UnittestNatlink(unittest.TestCase):
     # conditions.  The way we test that a file is loaded is to test that a
     # command has been defined using recognitionMimic
 
-    def tttestNatLinkMain(self):
+    def testNatLinkMain(self):
 
         testRecognition = self.doTestRecognition
         baseDirectory = os.path.split(sys.modules['natlinkutils'].__dict__['__file__'])[0]
@@ -1232,7 +1232,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestWordProns(self):
+    def testWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
@@ -1339,10 +1339,10 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
-    def tttestParser(self):
+    def testParser(self):
         self.log("testParser", 1)
 
-        def tttestGrammarError(exceptionType,gramSpec):
+        def testGrammarError(exceptionType,gramSpec):
             try:
                 parser = GramParser([gramSpec])
                 parser.doParse()
@@ -1374,7 +1374,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of command grammars using GrammarBase    
 
-    def tttestGrammar(self):
+    def testGrammar(self):
         self.log("testGrammar", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -1635,7 +1635,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def tttestDgndictationEtc(self):
+    def testDgndictationEtc(self):
         self.log("testDgndictationEtc", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -1696,57 +1696,99 @@ class UnittestNatlink(unittest.TestCase):
         testGram.resetExperiment()
 
     # test working of dgnwords:
+    # because of a clash with one of the Unimacro grammars 'dictate' in now made 'DICTATE'
         self.log("testing dgnwords")
         testGram.load("""<dgnwords> imported;
-                      <Start> exported = dictate word <dgnwords>;""")
+                      <Start> exported = DICTATE word <dgnwords>;""")
         testGram.activateAll(window=0)
-        testRecognition(['dictate','word','hello'])
-        testGram.checkExperiment(1,'self',['dictate', 'word', 'hello'],
-                                 [('dictate', 'Start'), ('word', 'Start'), ('hello', 'dgnwords')])
+        testRecognition(['DICTATE','word','hello'])
+        testGram.checkExperiment(1,'self',['DICTATE', 'word', 'hello'],
+                                 [('DICTATE', 'Start'), ('word', 'Start'), ('hello', 'dgnwords')])
         testGram.unload()
         testGram.resetExperiment()
       
     # test working of dgnletters:
+    # dgnletters stp[
         testGram.load("""<dgnletters> imported;
-                      <Start> exported = dictate letters <dgnletters>;""")
+                      <Start> exported = DICTATE letters <dgnletters>;""")
         testGram.activateAll(window=0)
-        testRecognition(['dictate','letters','b\\bravo', 'k\\kilo'])
-        testGram.checkExperiment(1,'self',['dictate', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
-                                 [('dictate', 'Start'), ('letters', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+        if DNSVersion < 11:
+            testRecognition(['DICTATE','letters','b\\b'])
+            testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                     [('DICTATE', 'Start'), ('letters', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+
+        else:
+            # Dragon 11
+            testRecognition(['DICTATE','letters', r'b\spelling-letter\B'])
+            testGram.checkExperiment(1, 'self', ['DICTATE','letters', r'b\spelling-letter\B'],
+                                    [('DICTATE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
+
+            testRecognition(['DICTATE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'])
+            testGram.checkExperiment(1, 'self', ['DICTATE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'],
+                                    [('DICTATE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
+                                     ('!\\spelling-exclamation-mark\\exclamation mark', 'dgnletters')])
+            
+            
+            testRecognition(['DICTATE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', ',\spelling-comma\comma'])
+            testGram.checkExperiment(1,'self',['DICTATE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', ',\spelling-comma\comma'],
+                                    [('DICTATE', 'Start'), ('letters', 'Start'), ('c\\spelling-letter\\C', 'dgnletters'),
+                                        ('d\\spelling-letter\\delta', 'dgnletters'), (',\\spelling-comma\\comma', 'dgnletters')])
+            
         testGram.unload()
         testGram.resetExperiment()
       
     # test working of dgndictation:
         self.log("testing dgndictation")
         testGram.load("""<dgndictation> imported;
-                      <Start> exported = dictate <dgndictation>;""")
+                      <Start> exported = DICTATE <dgndictation>;""")
         testGram.activateAll(window=0)
-        testRecognition(['dictate','hello','there'])
-        testGram.checkExperiment(1,'self',['dictate', 'hello', 'there'],
-                                 [('dictate', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        testRecognition(['DICTATE','hello','testing'])
+        testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'testing'],
+                                 [('DICTATE', 'Start'), ('hello', 'dgndictation'), ('testing', 'dgndictation')])
         testGram.unload()
         testGram.resetExperiment()
       
     # try combinations of the three:
         self.log("testing dgndictation etc combinations")
-        testGram.load("""<dgndictation> imported;
-                        <dgnletters> imported;
-                        <dgnwords> imported;
-                       <Start1> exported = dictate <dgndictation>;
-                       <Start2> exported = dictate letters <dgnletters>;
-                       <Start3> exported = dictate word <dgnwords>;
-                      """)
+        if DNSVersion < 11:
+            testGram.load("""<dgndictation> imported;
+                            <dgnletters> imported;
+                            <dgnwords> imported;
+                           <Start1> exported = DICTATE <dgndictation>;
+                           <Start2> exported = DICTATE letters <dgnletters>;
+                           <Start3> exported = DICTATE word <dgnwords>;
+                          """)
+        else:
+            # Dragon 11 seems to have lost <dgnwords>:
+            testGram.load("""<dgndictation> imported;
+                            <dgnletters> imported;
+                            <dgnwords> imported;
+                           <Start1> exported = DICTATE <dgndictation>;
+                           <Start2> exported = DICTATE letters <dgnletters>;
+                          """)
+            
         testGram.activateAll(window=0)
-        testRecognition(['dictate','hello','there'])
-        testGram.checkExperiment(1,'self',['dictate', 'hello', 'there'],
-                                 [('dictate', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
-        testRecognition(['dictate','letters','b\\bravo', 'k\\kilo'])
-        testGram.checkExperiment(1,'self',['dictate', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
-                                 [('dictate', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+        testRecognition(['DICTATE','hello','there'])
+        testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
+                                 [('DICTATE', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        if DNSVersion < 11:
+            testRecognition(['DICTATE','letters','b\\bravo', 'k\\kilo'])
+            testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                     [('DICTATE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+        else:
+            testRecognition(['DICTATE','letters',r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
+            testGram.checkExperiment(1,'self',['DICTATE', 'letters', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
+                                     [('DICTATE', 'Start2'), ('letters', 'Start2'), ('b\\spelling-letter\\bravo', 'dgnletters'),
+                                        ('k\\spelling-letter\\K', 'dgnletters')])
 
-        testRecognition(['dictate','word','hello'])
-        testGram.checkExperiment(1,'self',['dictate', 'word', 'hello'],
-                                 [('dictate', 'Start3'), ('word', 'Start3'), ('hello', 'dgnwords')])
+        testRecognition(['DICTATE','word','hello'])
+        if DNSVersion < 11:
+            testGram.checkExperiment(1,'self',['DICTATE', 'word', 'hello'],
+                                     [('DICTATE', 'Start3'), ('word', 'Start3'), ('hello', 'dgnwords')])
+        else:
+            # Dragon 11, <dgnwords> no longer works:
+            testGram.checkExperiment(1,'self',['DICTATE', 'word', 'hello'],
+                                    [('DICTATE', 'Start1'), ('word', 'dgndictation'), ('hello', 'dgndictation')])
 
         testGram.unload()
         testGram.resetExperiment()
@@ -1757,22 +1799,29 @@ class UnittestNatlink(unittest.TestCase):
         testGram.load("""<dgndictation> imported;
                         <dgnletters> imported;
                         <dgnwords> imported;
-                       <Start> exported = dictate (<dgndictation>|<dgnletters>|<dgnwords>);
+                       <Start> exported = DICTATE (<dgndictation>|<dgnletters>|<dgnwords>);
                       """)
         testGram.activateAll(window=0)
-        testRecognition(['dictate','hello','there'])
-        testGram.checkExperiment(1,'self',['dictate', 'hello', 'there'],
-                                 [('dictate', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
-        testRecognition(['dictate','b\\bravo', 'k\\kilo'])
-        testGram.checkExperiment(1,'self',['dictate', 'b\\bravo\\h', 'k\\kilo\\h'],
-                                 [('dictate', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+        testRecognition(['DICTATE','hello','there'])
+        testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
+                                 [('DICTATE', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        if DNSVersion < 11:
+            testRecognition(['DICTATE','b\\bravo', 'k\\kilo'])
+            testGram.checkExperiment(1,'self',['DICTATE', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                     [('DICTATE', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+        else:
+            # also see above for dgnletters!
+            testRecognition(['DICTATE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
+            testGram.checkExperiment(1,'self', ['DICTATE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
+                                     [('DICTATE', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
+                                      ('k\\spelling-letter\\K', 'dgnletters')])
 
 ## this experiment sometimes shows the rule dgndictation and sometimes dgnwords
 ## so, better not test here!!
 ## not mix them!!
-##        testRecognition(['dictate','hello'])
-##        testGram.checkExperiment(1,'self',['dictate', 'hello'],
-##                                 [('dictate', 'Start'), ('hello', 'dgndictation')])
+##        testRecognition(['DICTATE','hello'])
+##        testGram.checkExperiment(1,'self',['DICTATE', 'hello'],
+##                                 [('DICTATE', 'Start'), ('hello', 'dgndictation')])
 
         testGram.unload()
         testGram.resetExperiment()
@@ -1781,18 +1830,23 @@ class UnittestNatlink(unittest.TestCase):
         self.log("testing dgndictation mixing of rules")
         testGram.load("""<Start> exported = <Start1>|<Start2>| hello | <dummyrule>;
                     <dummyrule> = dummy rule;
-                       <Start1> exported = dictate <dgndictation>;
+                       <Start1> exported = DICTATE <dgndictation>;
                         <dgndictation> imported;
                         <dgnletters> imported;
-                       <Start2> exported = dictate letters <dgnletters>;
+                       <Start2> exported = DICTATE letters <dgnletters>;
                       """)
         testGram.activateAll(window=0)
-        testRecognition(['dictate','hello','there'])
-        testGram.checkExperiment(1,'self',['dictate', 'hello', 'there'],
-                                 [('dictate', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
-        testRecognition(['dictate','letters','b\\bravo', 'k\\kilo'])
-        testGram.checkExperiment(1,'self',['dictate', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
-                                 [('dictate', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+        testRecognition(['DICTATE','hello','there'])
+        testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
+                                 [('DICTATE', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        if DNSVersion < 11:
+            testRecognition(['DICTATE','letters','b\\bravo', 'k\\kilo'])
+            testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                     [('DICTATE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+        else:
+            pass
+            # we believe this test will pass with correct letters!
+
 
         testRecognition(['hello'])
         testGram.checkExperiment(1,'self',['hello'],
@@ -1902,7 +1956,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase
 
-    def tttestDictGram(self):
+    def testDictGram(self):
         self.log("testDictGram")
 
         # Create a dictation grammar.  This grammar simply gets the results of
@@ -1961,9 +2015,17 @@ class UnittestNatlink(unittest.TestCase):
         testGram.load()
         testGram.activate(window=calcWindow)
         self.wait()
-        testRecognition(['this','is','a','test','.\\period'])
-        testGram.checkExperiment(1,'self',['this','is','a','test','.\\period'])
-
+        
+        if DNSVersion < 11:
+            period = r'.\period'
+        else:
+            period = r'.\period\period'
+        
+        testRecognition(['this','is','a','test',period])
+        if DNSVersion < 11:
+            testGram.checkExperiment(1,'self',['this','is','a','test', period])
+        else:
+            testGram.checkExperiment(1,'self', ['this', 'is', 'a\\determiner', 'test', '.\\period\\period'])
         # try unloading and reloading
         testGram.unload()
         testGram.load()
@@ -2050,7 +2112,7 @@ class UnittestNatlink(unittest.TestCase):
 
 
 
-    def tttestSelectGram(self):
+    def testSelectGram(self):
         self.log("testSelectGram")
 
         # Create a selection grammar.  This grammar simply gets the results of
@@ -2175,7 +2237,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def tttestTrayIcon(self):
+    def testTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -2212,7 +2274,7 @@ class UnittestNatlink(unittest.TestCase):
     # prevWords, prevRule, and also fullResults and seqsAndRules as instance variables.
     # QH, april 2010:
 
-    def tttestNextPrevRulesAndWords(self):
+    def testNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -2325,7 +2387,7 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched to "%s" mic'% micState)
             time.sleep(w)
 
-    def tttestNestedMimics(self):
+    def testNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -2474,7 +2536,7 @@ class CallbackTester:
     # Tests the contents of the object.  For this test we assume that we saw
     # both a begin callback and a test change callback with the indicated
     # values
-    def tttestTextChange(self,moduleInfo,textChange):
+    def testTextChange(self,moduleInfo,textChange):
         if self.sawBegin != moduleInfo:
             raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
         if self.sawTextChange != textChange:
@@ -2483,7 +2545,7 @@ class CallbackTester:
     
     # Tests the contents of the object.  For this test we assume that we saw
     # both a begin callback and a results callback with the indicated values
-    def tttestResults(self,moduleInfo,results):
+    def testResults(self,moduleInfo,results):
         if self.sawBegin != moduleInfo:
             raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
         if self.sawResults == None and results != None:
@@ -2591,7 +2653,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def tttest....
+    # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')
