@@ -142,6 +142,7 @@ class UnittestNatlink(unittest.TestCase):
             self.lookForDragonPad()
             natlink.playString("\n\ntearDown, reopen user: '%s'"% self.user)
             self.clearTestFiles()
+            self.clearDragonPad()
             # reopen user:
             #natlink.openUser(self.user)
             #self.killDragonPad()
@@ -194,6 +195,21 @@ class UnittestNatlink(unittest.TestCase):
         self.DragonPadMod = mod
         self.DragonPadHndle = hndle
         return hndle
+
+    def clearDragonPad(self):
+        """check DragonPad in foreground and send """
+
+##        try: natlink.execScript('AppBringUp "NatSpeak"')
+##        except natlink.NatError:
+##            raise TestError,'The NatSpeak user interface is not running'
+##         ??? Start instead of start ???
+        mod, title, hndle = natlink.getCurrentModule()
+        mod = getBaseName(mod)
+        print 'mod: %s'% mod
+        if mod != "natspeak":
+            raise TestError("clearDragonPad: DragonPad should be in the foreground, not: %s"% mod)
+        natlink.playString("{ctrl+a}{del}")
+        time.sleep(0.2)
     
     def lookForCalc(self):
         """start/find Calc"""
@@ -969,6 +985,8 @@ class UnittestNatlink(unittest.TestCase):
         #               "natlink.getWordInfo('and')")
         #
         # this none/0 stuff is nonsense
+        #if this test does not pass, the word FrotzBlatz is (erroneously) inserted in your vocab. Do not worry,
+        #just run the tests from a clean user profile
         testFuncReturn(None, "natlink.getWordInfo('FrotzBlatz',0)")
         testFuncReturn(None, "natlink.getWordInfo('FrotzBlatz',7)")
 
@@ -1265,6 +1283,13 @@ class UnittestNatlink(unittest.TestCase):
         
         self.log("testWordProns", 1)
 
+        if DNSVersion >= 11:
+            natlink.playString('Dragon 11 getWordProns seems not valid any more...')
+            print 'Dragon 11 getWordProns seems not valid any more...'
+            time.sleep(1)
+            return
+
+
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         testFuncReturnAlternatives = self.doTestFuncReturnAlternatives
@@ -1286,6 +1311,7 @@ class UnittestNatlink(unittest.TestCase):
         testFuncReturnAlternatives((['Dat'], ['Dat', 'Dut']),"natlink.getWordProns('that')")
         testFuncReturnAlternatives((['on'], ['on', '{n']),"natlink.getWordProns('on')")
 
+
         # make sure that the pronunciation of 'four' in included in the list
         # of prons of 'for'
         pronFour = natlink.getWordProns('four')
@@ -1305,6 +1331,7 @@ class UnittestNatlink(unittest.TestCase):
         testForException(TypeError,"natlink.addWord('FrotzBlatz',0,0)")
         testForException(TypeError,"natlink.addWord('FrotzBlatz',0,[0])")
         testForException(TypeError,"natlink.addWord('FrotzBlatz',0,'one','two')")
+        
         
         # now add in FrotzBlatz with a known pron
         testFuncReturn(1,"natlink.addWord('FrotzBlatz',dgnwordflag_useradded,'on')")
@@ -2215,7 +2242,14 @@ class UnittestNatlink(unittest.TestCase):
         testGram.checkExperiment(1,'self',['Insert Before','simple'],2,8)
         
         testRecognition(['Correct','a','Through','of'])
-        testGram.checkExperiment(1,'self',['Correct','a','Through','of'],0,18)
+        
+        if DNSVersion < 11:
+            aResult = 'a'
+        else:
+            aResult = 'a\\determiner'
+
+            
+        testGram.checkExperiment(1,'self',['Correct',aResult,'Through','of'],0,18)
         testGram.unload()
 
         ##QH more throughWords:
