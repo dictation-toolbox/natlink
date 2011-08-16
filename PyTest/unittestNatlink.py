@@ -960,9 +960,6 @@ class UnittestNatlink(unittest.TestCase):
                          'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety', 'hundred']:
                 cmdLine = "natlink.getWordInfo(r'%s')"% word
                 testFuncReturn(8, cmdLine)
-            for word in [r'one\pronoun', r'one\number', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']:
-                cmdLine = "natlink.getWordInfo(r'%s')"% word
-                testFuncReturn(8, cmdLine)
 
             for word in [r'.\period\period', r'.\dot\dot', r',\comma\comma',
                          r'\new-paragraph\new paragraph']:
@@ -1089,178 +1086,194 @@ class UnittestNatlink(unittest.TestCase):
     # Here we test the ability to load and unload macro files under various
     # conditions.  The way we test that a file is loaded is to test that a
     # command has been defined using recognitionMimic
+    
+    # august 2011, QH, added check for a command recognition. Some of the recogs are dictate
+    # and were therefore recognised while not expected.
+    # note with these dictate recognitions, the results box and the screen show quite different texts
+    # (to be studied!, eg why is PYTHON in the results box and python (as dictate) appears in the screen??
 
     def testNatLinkMain(self):
 
-        testRecognition = self.doTestRecognition
-        baseDirectory = os.path.split(sys.modules['natlinkutils'].__dict__['__file__'])[0]
-        userDirectory = natlink.getCurrentUser()[1]
-        import natlinkmain
-        baseDirectory = natlinkmain.baseDirectory
-        userDirectory = natlinkmain.userDirectory
-        toggleMicrophone = self.toggleMicrophone
-        # Basic test of globals.  Make sure that our macro file is not
-        # loaded.  Then load the file and make sure it is loaded.
+        # through this grammar we get the recogtype:
+        recCmdDict = RecordCommandOrDictation()
+        recCmdDict.initialize()
 
-        mes = '\n'.join(['testNatLinkMain testing\n',
-               'clearing previous macro files from:',
-               '\tuserDir: %s'% userDirectory,
-               '\tbaseDir: %s\n\n'% baseDirectory])
-        natlink.playString(mes)
-        ## for extra safety:
-        self.clearTestFiles()
-        toggleMicrophone()
-
-        self.log('create jMg1, 1', 17)
-        
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
-        createMacroFile(baseDirectory,'__jMg1.py','1')
-        # here the recognition is already there, should not be though...
-        #testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
-
-        self.log('toggle mic, to get jMg1 in loadedGrammars', 1)
-        toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],1)
-        self.lookForDragonPad()
-        natlink.playString('{ctrl+a}{del}')
-
-        # now separate two parts. Note this cannot be checked here together,
-        # because changes in natlinkmain take no effect when done from this
-        # program!
-        if natlinkmain.checkForGrammarChanges:
-            # Modify the macro file and make sure the modification takes effect
-            # even if the microphone is not toggled.
-
-            self.log('\nNow change grammar file jMg1 to 2, check for changes at each utterance', 1)
-
-            createMacroFile(baseDirectory,'__jMg1.py','2')
-            self.wait(2)
-            ## with checking at each utterance next two lines should pass
-            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','2'],1)
-            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
-
-        else:
-            self.log('\nNow change grammar file jMg1 to 2, no recognise immediate, only after mic toggle', 1)
-
-            createMacroFile(baseDirectory,'__jMg1.py','2')
-            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','2'],0)
-            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],1)
-            toggleMicrophone(1)
-            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','2'],1)
-            testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
-
-        # Make sure a user specific file also works
-        # now with extended file names (glob.glob, request of Mark Lillibridge) (QH):
-        self.log('now new grammar file: %s'% specialFilenameGlobal, 1)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','7'],0)
-        createMacroFile(userDirectory,specialFilenameGlobal+'.py','7')
-        toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','7'],1)
-
-        self.log('now new grammar file: %s'% spacesFilenameGlobal, 1)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','21'],0)
-        createMacroFile(userDirectory,spacesFilenameGlobal+'.py','21')
-        toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','21'],1)
-
-
-        self.log('now new grammar file (should not be recognised)... %s'% "_.py", 1)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','8'],0)
-        createMacroFile(userDirectory,"_.py",'8')
-        toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','8'],0)
-
-        # Make sure user specific files have precidence over global files
-        self.log('now new grammar file: jMg2, 4', 1)
-
-        createMacroFile(baseDirectory,'__jMg2.py','4')
-        createMacroFile(userDirectory,'__jMg2.py','3')
-        toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','3'],1)
-
-        # Make sure that we do the right thing with application specific
-        # files.  They get loaded when the application is activated.
-        self.log('now new grammar file: calc_jMg1, 5', 1)
-
-        createMacroFile(baseDirectory,'calc__jMg1.py','5')
-        createMacroFile(userDirectory,'calc__jMg1.py','6')
-        toggleMicrophone()
-        
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],0)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','6'],0)
-        self.lookForCalc()
-##        natlink.execScript('AppBringUp "calc"')
-        # priority for user macro file:
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','6'],1)
-        # 5 (base dir never recognised):
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],0)
-
-
-
-
-        # more intricate filename:
-        createMacroFile(baseDirectory,specialFilenameCalc+'.py','8')
-        toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','8'],1)
-
-        # filenames with spaces (not valid)
-        createMacroFile(baseDirectory,spacesFilenameCalcInvalid+'.py','22')
-        toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','22'],0)
-        # filenames with spaces (valid)
-        createMacroFile(baseDirectory,spacesFilenameCalcValid+'.py','23')
-        toggleMicrophone()
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','23'],1)
-        
-        #other filenames:
-##        createMacroFile(baseDirectory,'calc.py', '9')  # chances are calc is already there, so skip now...
-        createMacroFile(baseDirectory,'calc_.py', '10')
-        # this name should be invalid:
-        createMacroFile(baseDirectory,'calculator.py', '11')
-        toggleMicrophone()
-##        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','9'],1)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','10'],1)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','11'],0)
-
-
-
-        
-        self.killCalc()
-        # OOPS, rule 6 remains valid, must be deactivated in gotBegin, user responsibility:
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','6'],1)
-        
-    ##        natlink.playString('{Alt+F4}')
-#-----------------------------------------------------------
-        # clean up any files created during this test
-        safeRemove(baseDirectory,'__jMg1.py')
-        safeRemove(baseDirectory,'__jMg2.py')
-        safeRemove(userDirectory,'__jMg2.py')
-        safeRemove(userDirectory,specialFilenameGlobal+'.py')
-        safeRemove(baseDirectory,'calc__jMg1.py')
-        safeRemove(baseDirectory,'calc_.py')
-        safeRemove(baseDirectory,'calculator.py')
-        safeRemove(userDirectory,'calc__jMg1.py')
-        safeRemove(baseDirectory,specialFilenameCalc+'.py')
-        toggleMicrophone()
-
-        # now that the files are gone, make sure that we no longer recognize
-        # from them
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','1'],0)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','2'],0)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','3'],0)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','4'],0)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','5'],0)
-        # some of the specialFilename cases:
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','7'],0)
-        testRecognition(['this', 'is', 'automated', 'testing', 'from', 'Python','8'],0)
-
-## is done in tearDown:
-##        # make sure no .pyc files are lying around
-##        safeRemove(baseDirectory,'__jMg1.pyc')
-##        safeRemove(baseDirectory,'__jMg2.pyc')
-##        safeRemove(userDirectory,'__jMg2.pyc')
-##        safeRemove(baseDirectory,'calc__jMg1.pyc')
-
+        try:
+            testCommandRecognition = self.doTestCommandRecognition
+            baseDirectory = os.path.split(sys.modules['natlinkutils'].__dict__['__file__'])[0]
+            userDirectory = natlink.getCurrentUser()[1]
+            import natlinkmain
+            baseDirectory = natlinkmain.baseDirectory
+            userDirectory = natlinkmain.userDirectory
+            toggleMicrophone = self.toggleMicrophone
+            # Basic test of globals.  Make sure that our macro file is not
+            # loaded.  Then load the file and make sure it is loaded.
+    
+            mes = '\n'.join(['testNatLinkMain testing\n',
+                   'clearing previous macro files from:',
+                   '\tuserDir: %s'% userDirectory,
+                   '\tbaseDir: %s\n\n'% baseDirectory])
+            natlink.playString(mes)
+            ## for extra safety:
+            self.clearTestFiles()
+            toggleMicrophone()
+     
+            self.log('create jMg1, 17', 17)
+            createMacroFile(baseDirectory,'__jMg1.py', '17')
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
+            self.log('create jMg1, 1', 1)
+            
+            createMacroFile(baseDirectory,'__jMg1.py','one')
+            # here the recognition is already there, should not be though...
+            #testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],0)
+    
+            self.log('toggle mic, to get jMg1 in loadedGrammars', 1)
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 1)
+            self.lookForDragonPad()
+            natlink.playString('{ctrl+a}{del}')
+    
+            # now separate two parts. Note this cannot be checked here together,
+            # because changes in natlinkmain take no effect when done from this
+            # program!
+            if natlinkmain.checkForGrammarChanges:
+                # Modify the macro file and make sure the modification takes effect
+                # even if the microphone is not toggled.
+    
+                self.log('\nNow change grammar file jMg1 to 2, check for changes at each utterance', 1)
+    
+                createMacroFile(baseDirectory,'__jMg1.py','two')
+                self.wait(2)
+                ## with checking at each utterance next two lines should pass
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','two'],recCmdDict, 1)
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
+    
+            else:
+                self.log('\nNow change grammar file jMg1 to 2, no recognise immediate, only after mic toggle', 1)
+    
+                createMacroFile(baseDirectory,'__jMg1.py','two')
+                # If next line fails, the checking is immediate, in spite of checkForGrammarChanges being on:
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','two'],recCmdDict, 0)
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 1)
+                toggleMicrophone(1)
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','two'],recCmdDict, 1)
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
+    
+            # Make sure a user specific file also works
+            # now with extended file names (glob.glob, request of Mark Lillibridge) (QH):
+            self.log('now new grammar file: %s'% specialFilenameGlobal, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','7'],recCmdDict, 0)
+            createMacroFile(userDirectory,specialFilenameGlobal+'.py','7')
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','7'],recCmdDict, 1)
+    
+            self.log('now new grammar file: %s'% spacesFilenameGlobal, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','21'],recCmdDict, 0)
+            createMacroFile(userDirectory,spacesFilenameGlobal+'.py','21')
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','21'],recCmdDict, 1)
+    
+    
+            self.log('now new grammar file (should not be recognised)... %s'% "_.py", 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','8'],recCmdDict, 0)
+            createMacroFile(userDirectory,"_.py",'8')
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','8'],recCmdDict, 0)
+    
+            # Make sure user specific files have precidence over global files
+            self.log('now new grammar file: jMg2, 4', 1)
+    
+            createMacroFile(baseDirectory,'__jMg2.py','4')
+            createMacroFile(userDirectory,'__jMg2.py','3')
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','3'],recCmdDict, 1)
+    
+            # Make sure that we do the right thing with application specific
+            # files.  They get loaded when the application is activated.
+            self.log('now new grammar file: calc_jMg1, 5', 1)
+    
+            createMacroFile(baseDirectory,'calc__jMg1.py','5')
+            createMacroFile(userDirectory,'calc__jMg1.py','6')
+            toggleMicrophone()
+            
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','5'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','6'],recCmdDict, 0)
+            self.lookForCalc()
+    ##        natlink.execScript('AppBringUp "calc"')
+            # priority for user macro file:
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','6'],recCmdDict, 1)
+            # 5 (base dir never recognised):
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','5'],recCmdDict, 0)
+    
+    
+    
+    
+            # more intricate filename:
+            createMacroFile(baseDirectory,specialFilenameCalc+'.py','8')
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','8'],recCmdDict, 1)
+    
+            # filenames with spaces (not valid)
+            createMacroFile(baseDirectory,spacesFilenameCalcInvalid+'.py','22')
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','22'], recCmdDict,  0)
+            # filenames with spaces (valid)
+            createMacroFile(baseDirectory,spacesFilenameCalcValid+'.py','23')
+            toggleMicrophone()
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','23'],recCmdDict, 1)
+            
+            #other filenames:
+    ##        createMacroFile(baseDirectory,'calc.py', '9')  # chances are calc is already there, so skip now...
+            createMacroFile(baseDirectory,'calc_.py', '10')
+            # this name should be invalid:
+            createMacroFile(baseDirectory,'calculator.py', '11')
+            toggleMicrophone()
+    ##        testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','9'],1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','10'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','11'],recCmdDict, 0)
+    
+    
+    
+            
+            self.killCalc()
+            # OOPS, rule 6 remains valid, must be deactivated in gotBegin, user responsibility:
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','6'],recCmdDict, 1)
+            
+        ##        natlink.playString('{Alt+F4}')
+    #-----------------------------------------------------------
+            # clean up any files created during this test
+            safeRemove(baseDirectory,'__jMg1.py')
+            safeRemove(baseDirectory,'__jMg2.py')
+            safeRemove(userDirectory,'__jMg2.py')
+            safeRemove(userDirectory,specialFilenameGlobal+'.py')
+            safeRemove(baseDirectory,'calc__jMg1.py')
+            safeRemove(baseDirectory,'calc_.py')
+            safeRemove(baseDirectory,'calculator.py')
+            safeRemove(userDirectory,'calc__jMg1.py')
+            safeRemove(baseDirectory,specialFilenameCalc+'.py')
+            toggleMicrophone()
+    
+            # now that the files are gone, make sure that we no longer recognize
+            # from them
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','two'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','3'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','4'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','5'],recCmdDict, 0)
+            # some of the specialFilename cases:
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','7'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','8'],recCmdDict, 0)
+    
+    ## is done in tearDown:
+    ##        # make sure no .pyc files are lying around
+    ##        safeRemove(baseDirectory,'__jMg1.pyc')
+    ##        safeRemove(baseDirectory,'__jMg2.pyc')
+    ##        safeRemove(userDirectory,'__jMg2.pyc')
+    ##        safeRemove(baseDirectory,'calc__jMg1.pyc')
+        finally:
+            recCmdDict.unload()
+            
 
     #---------------------------------------------------------------------------
 
@@ -1376,6 +1389,24 @@ class UnittestNatlink(unittest.TestCase):
             natlink.recognitionMimic(words)
         else:
             self.doTestForException(natlink.MimicFailed,"natlink.recognitionMimic(words)",locals())
+
+    # for testNatlinkMain, recognition should be in the specified grammar:
+    def doTestCommandRecognition(self, words, cmdgrammar, shouldWork=1):
+        try:
+            natlink.recognitionMimic(words)
+        except natlink.MimicFailed:
+            if shouldWork:
+                raise TestError("mimic of %s should have worked"% words)
+            else:
+                return
+        else:
+            # mimic was ok, but was it a command??
+            if cmdgrammar.hadRecog and cmdgrammar.hadRecog == 'command':
+                return
+            else:
+                raise TestError("Recognition: %s was made, but not in the specified grammar (hadRecog: %s"%
+                                words, cmdgrammar.hadRecog)
+
 
     #---------------------------------------------------------------------------
     # Test the Grammar parser
@@ -2138,7 +2169,7 @@ class UnittestNatlink(unittest.TestCase):
         testForException(TypeError,"testGram.gramObj.setContext('left',2)",locals())
         testForException(TypeError,"testGram.gramObj.setContext('left','right','error')",locals())
         testForException(natlink.WrongType,"testGram.gramObj.emptyList('list')",locals())
-        testForException(natlink.WrongType,"testGram.gramObj.appendList('list','1')",locals())
+        testForException(natlink.WrongType,"testGram.gramObj.appendList('list','one')",locals())
         testForException(natlink.WrongType,"testGram.gramObj.setSelectText('')",locals())
         testForException(natlink.WrongType,"testGram.gramObj.getSelectText()",locals())
         
@@ -2266,16 +2297,23 @@ class UnittestNatlink(unittest.TestCase):
         recog = ['Select','more', 'Through', 'of']
         testRecognition(recog)
         testGram.checkExperiment(1,'self',recog,2,28)
-
-        recog = ['Select','a', 'more', 'Until', 'of']
+        if DNSVersion < 11:
+            aResult = 'a'
+        else:
+            aResult = 'a\\determiner'
+            
+        recog = ['Select',aResult, 'more', 'Until', 'of']
         testRecognition(recog)
+        
+            
+        
         testGram.checkExperiment(1,'self',recog,0,28)
 
         # test for command failures
         testForException(TypeError,"testGram.gramObj.setSelectText(1)",locals())
         testForException(TypeError,"testGram.gramObj.setSelectText('text','text')",locals())
         testForException(natlink.WrongType,"testGram.gramObj.emptyList('list')",locals())
-        testForException(natlink.WrongType,"testGram.gramObj.appendList('list','1')",locals())
+        testForException(natlink.WrongType,"testGram.gramObj.appendList('list','one')",locals())
         testForException(natlink.WrongType,"testGram.gramObj.setContext('left','right')",locals())
 
         # clean up
@@ -2604,6 +2642,54 @@ class CallbackTester:
             raise TestError,"Wrong results from results callback\n  saw: %s\n  expecting: %s "%(repr(self.sawResults[0]),repr(results))
         self.reset()
 
+class RecordCommandOrDictation(GrammarBase):
+    """through this class you can collect if which type of recognition was there
+    
+    if self.hadRecog == '', initialize was called, but no recognition
+    if self.hadRecog in 'gotbegin', 'dictation' or 'command', the state
+        (no recognition, dictate or command) is given
+    """
+    gramSpec = '<dummycommand> exported = {emptylist};'
+    def initialize(self):
+        self.load(self.gramSpec, allResults=1)
+        self.activateAll()
+        self.hadRecog = ''
+    def gotBegin(self,moduleInfo):
+        self.hadRecog = 'getbegin'
+    def gotResultsObject(self, recogType, resObj):
+        try:
+            words = resObj.getWords(0)
+        except (natlink.OutOfRange, IndexError):
+            self.hadRecog = 'norecog'
+            return
+        if recogType == 'self':
+            raise TestError("grammar RecordCommandOrDictation should never hit itself: %s"% recogType)
+        if recogType == 'other':
+            self.hadRecog = 'command'
+        else:
+            self.hadRecog = 'dictate'
+    
+    def __init__(self):
+        GrammarBase.__init__(self)
+
+    # change callback of DictObj
+    def onTextChange(self,delStart,delEnd,newText,selStart,selEnd):
+        # because of the bug in NatSpeak where we can get two change
+        # callbacks in a row, especially when dealing with scratch that, we
+        # ignore all but the first callback
+        if self.sawTextChange == None:
+            self.sawTextChange = (delStart,delEnd,newText,selStart,selEnd)
+        elif self.sawTextChange != (delStart,delEnd,newText,selStart,selEnd):
+            ds, de, nt, ss, se = self.sawTextChange
+            raise TestError('CallbackTester  more runs gives different results,\nexpected: %s,%s,"%s",%s,%s\ngot:  %s,%s,"%s",%s,%s'%
+                           (ds, de, nt, ss, se, delStart,delEnd,newText,selStart,selEnd ))
+        
+
+    # begin callback of natlink,GramObj and DictObj
+    def onBegin(self,moduleInfo):
+        self.sawBegin = moduleInfo
+
+
 #---------------------------------------------------------------------------
 # Forces all macro files to be reloaded by toggling the microphone
 # toggleMicrophone now as method above...
@@ -2628,10 +2714,17 @@ macroFileTemplate = """
 import natlink
 from natlinkutils import *
 class ThisGrammar(GrammarBase):
-    gramSpec = '<Start> exported = this is automated testing from Python %s;'
+    gramSpec = '<Start> exported = this is automated testing from PYTHON %s;'
     def initialize(self):
         self.load(self.gramSpec)
         self.activateAll()
+        self.hadRecog = 0
+    def gotBegin(self,moduleInfo):
+        self.hadRecog = 0
+    def gotResults(self,words, fullResults):
+        self.hadRecog = 1
+    
+        
 thisGrammar = ThisGrammar()
 thisGrammar.initialize()
 def unload():
