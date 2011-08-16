@@ -747,7 +747,10 @@ class UnittestNatlink(unittest.TestCase):
     #v5/9
     # version 9 gived (???)) (0, 6, 'And ', 3, 3) here:
     # version 10 gives (0, 6, 'And ', 4, 4) here:
-        callTest.doTestTextChange(moduleInfo,(0,6,'And ',4, 4))
+        if DNSVersion <= 9:
+            callTest.doTestTextChange(moduleInfo,(0,6,'And ',3, 3))
+        else:
+            callTest.doTestTextChange(moduleInfo,(0,6,'And ',4, 4))
     #else
 ##        callTest.doTestTextChange(moduleInfo,(0,5,'And',3,3))
 
