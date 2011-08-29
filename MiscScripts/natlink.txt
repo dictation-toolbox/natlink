@@ -7,6 +7,9 @@ Also see http://speechwiki.org/NL/NatLinkDocumentation.html
  natlink.txt
     Documentation for NatLink which connects Python to NatSpeak
 
+August 2010 (QH) order of loading now influenced by function "reorderKeys" in natlinkmain.
+  Note some functions no longer work in Dragon 11, see also unittestNatlink.py...
+
 March 2010 (QH) loading (in findAndLoadFiles) _control.py last, the
             Unimacro control grammar (for introspection)
            natlinkutils.GrammarBase, enhanced function activateAll and
@@ -379,6 +382,7 @@ getAllUsers()
     Returns an array of strings of the names of all existing users.
 
 getWordInfo( word, flags )
+	Dragon 11: function does not work any more
 	Looks a word up in the vocabulary and returns an integer which
 	represents the word formatting information.  The word formatting
 	information can be 0.  If the word does not exist in the vocabulary then
@@ -478,6 +482,7 @@ setWordInfo( word, wordInfo )
 	Raises UnknownName if the word is not in the active vocabulary.
 
 getWordProns( wordName )
+	Dragon 11: function does not work any more
 	Returns a list of pronunciations for the given word.  Each pronunciation
 	is a string.  Returns None if the word does not exist.
 

@@ -36,7 +36,10 @@
 #          been organized to minimize the diff's with the official
 #          version.
 #
-
+# August 24, 2011, QH:
+#   added checkUnimacroCompatibility, for automatic copying the Unimacro.vch file into the
+#   VocolaUserDirectory.
+# 
 # February 4, 2008, QH:
 # adapted to natlinkmain, which loads _vocola_main before other modules,
 # and calls back also at begin Callback time before other modules to
@@ -54,7 +57,7 @@ from stat import *      # file statistics
 import re
 import natlink
 from natlinkutils import *
-
+import shutil
 
 import natlinkstatus
 import natlinkcorefunctions
@@ -166,6 +169,10 @@ Commands" and "Edit Global Commands" are activated.
         
 
     def initialize(self):
+
+        # check the Unimacro compatibility:
+        self.checkUnimacroCompatibility()
+
         # remove previous Vocola/Python compilation output as it may be out
         # of date (e.g., new compiler, source file deleted, partially
         # written due to crash, new machine name, etc.):
@@ -187,17 +194,7 @@ Commands" and "Edit Global Commands" are activated.
         self.load(self.gramSpec)
         self.activateAll()
 
-        if status.getVocolaTakesUnimacroActions():
-            if not os.path.isfile(os.path.join(status.getVocolaUserDirectory(), 'Unimacro.vch') ):
-                print >> sys.stderr, """\n
-Warning: The option "VocolaTakesUnimacroActions" is switched on, but
-no file "Unimacro.vch" is found.  Please (re)run the
-NatLink/Vocola/Unimacro configuration GUI, press the "Vocola
-compatibilty" button, and check at least the first checkbox in the
-dialog "Unimacro features can be used by Vocola".  Then restart Dragon
-NaturallySpeaking.
-\n"""
-                
+
 
     def gotBegin(self,moduleInfo):
         self.currentModule = moduleInfo
@@ -502,10 +499,46 @@ NaturallySpeaking.
             output.write(line + '\n')
         output.close()                
 
+    def checkUnimacroCompatibility(self):
+        """check the existence of Unimacro.vch from Unimacro\vocola_compatibility
+        
+        (only if VocolaTakesUnimacroActions is switched on!)
+        """
+        if not status.getVocolaTakesUnimacroActions(): return
+        destDir = status.getVocolaUserDirectory()
+        sourceDir = os.path.join(status.getUserDirectory(), 'vocola_compatibility')
+        destPath = os.path.join(destDir, 'Unimacro.vch')
+        sourcePath = os.path.join(sourceDir, 'Unimacro.vch')
+        sourceTime, destTime = vocolaGetModTime(sourcePath), vocolaGetModTime(destPath)
 
+        if not (sourceTime or destTime):
+            print >> sys.stderr, """\n
+Error: The option "VocolaTakesUnimacroActions" is switched on, but
+no file "Unimacro.vch" is found.
 
-thisGrammar = ThisGrammar()
-thisGrammar.initialize()
+Please fix the configuration of NatLink/Vocola/Unimacro and restart Dragon
+
+Either ensure the source file is at:
+    "%s",
+or switch off the option "Vocola takes Unimacro Actions"
+"""% sourceDir
+            return
+        
+        if destTime < sourceTime:
+            try:
+                shutil.copyfile(sourcePath, destPath)
+            except IOError:
+                print >> sys.stderr, """\n
+Warning: Could not copy example "Unimacro.vch" to:
+    "%s";
+
+There is a valid "Unimacro.vch" available, but a newer file is available at:
+    "%s".
+
+Please fix the configuration of NatLink/Vocola/Unimacro and restart Dragon,
+if you want to use the updated version of this file."""% (destDir, sourceDir)
+            else:
+                print 'succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s"'% (sourceDir, destDir)
 
 
 # Returns the modification time of a file or 0 if the file does not exist
@@ -537,6 +570,8 @@ lastNatLinkModTime    = 0
 lastCommandFolderTime = 0
 lastVocolaFileTime    = 0
 
+
+
 def vocolaBeginCallback(moduleInfo):
     global lastNatLinkModTime, lastCommandFolderTime, lastVocolaFileTime
 
@@ -567,6 +602,8 @@ def vocolaBeginCallback(moduleInfo):
         return 2
     return compiled
 
+thisGrammar = ThisGrammar()
+thisGrammar.initialize()
 
 
 def unload():
