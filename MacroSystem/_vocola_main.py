@@ -537,10 +537,6 @@ Dragon, if you want to use the updated version of this file."""% (destDir, sourc
                 print 'Succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s".'% (sourceDir, destDir)
 
 
-thisGrammar = ThisGrammar()
-thisGrammar.initialize()
-
-
 # Returns the modification time of a file or 0 if the file does not exist
 def vocolaGetModTime(file):
     try: return os.stat(file)[ST_MTIME]
@@ -600,6 +596,8 @@ def vocolaBeginCallback(moduleInfo):
         return 2
     return compiled
 
+thisGrammar = ThisGrammar()
+thisGrammar.initialize()
 
 
 def unload():
