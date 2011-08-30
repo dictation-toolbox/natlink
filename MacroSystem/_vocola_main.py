@@ -599,7 +599,6 @@ def vocolaBeginCallback(moduleInfo):
 thisGrammar = ThisGrammar()
 thisGrammar.initialize()
 
-
 def unload():
     global thisGrammar
     if thisGrammar: thisGrammar.unload()

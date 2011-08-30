@@ -377,12 +377,17 @@ def findAndLoadFiles(curModule=None):
         origName = loadedFiles.get(x, None)
         loadedFiles[x] = loadFile(x, origName)
         vocolaIsLoaded = 1
-        vocolaModule = sys.modules[doVocolaFirst]
-        if not vocolaModule.VocolaEnabled:
-            # vocola module signals vocola is not enabled:
-            vocolaEnabled = 0
-            del loadedFiles[x]
-            if debugLoad: print 'Vocola is disabled...'
+        if doVocolaFirst:
+            if not doVocolaFirst in sys.modules:
+                sys.stderr.write("_vocola_main could not be loaded, please fix errors\n")
+                vocolaEnabled = 0
+            else:
+                vocolaModule = sys.modules[doVocolaFirst]
+                if not vocolaModule.VocolaEnabled:
+                    # vocola module signals vocola is not enabled:
+                    vocolaEnabled = 0
+                    del loadedFiles[x]
+                    if debugLoad: print 'Vocola is disabled...'
         # repeat the base directory, as Vocola just had the chance to rebuild Python grammar files:
         baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
     for x in baseDirFiles:
