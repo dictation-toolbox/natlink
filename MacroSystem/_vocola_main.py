@@ -36,6 +36,7 @@
 #          been organized to minimize the diff's with the official
 #          version.
 #
+
 # August 24, 2011, QH:
 #   added checkUnimacroCompatibility, for automatic copying the Unimacro.vch file into the
 #   VocolaUserDirectory.
@@ -57,10 +58,11 @@ from stat import *      # file statistics
 import re
 import natlink
 from natlinkutils import *
-import shutil
+
 
 import natlinkstatus
 import natlinkcorefunctions
+import shutil
 status        = natlinkstatus.NatlinkStatus()
 VocolaEnabled = not not status.getVocolaUserDirectory()
 language      = status.getLanguage()
@@ -169,9 +171,7 @@ Commands" and "Edit Global Commands" are activated.
         
 
     def initialize(self):
-
-        # check the Unimacro compatibility:
-        self.checkUnimacroCompatibility()
+        self.updateUnimacroHeaderIfNeeded()
 
         # remove previous Vocola/Python compilation output as it may be out
         # of date (e.g., new compiler, source file deleted, partially
@@ -193,7 +193,6 @@ Commands" and "Edit Global Commands" are activated.
 
         self.load(self.gramSpec)
         self.activateAll()
-
 
 
     def gotBegin(self,moduleInfo):
@@ -499,28 +498,25 @@ Commands" and "Edit Global Commands" are activated.
             output.write(line + '\n')
         output.close()                
 
-    def checkUnimacroCompatibility(self):
-        """check the existence of Unimacro.vch from Unimacro\vocola_compatibility
+    def updateUnimacroHeaderIfNeeded(self):
+        if not status.getVocolaTakesUnimacroActions(): 
+            return
         
-        (only if VocolaTakesUnimacroActions is switched on!)
-        """
-        if not status.getVocolaTakesUnimacroActions(): return
-        destDir = status.getVocolaUserDirectory()
-        sourceDir = os.path.join(status.getUserDirectory(), 'vocola_compatibility')
-        destPath = os.path.join(destDir, 'Unimacro.vch')
-        sourcePath = os.path.join(sourceDir, 'Unimacro.vch')
+        destDir              = status.getVocolaUserDirectory()
+        sourceDir            = os.path.join(status.getUserDirectory(), 'vocola_compatibility')
+        destPath             = os.path.join(destDir,   'Unimacro.vch')
+        sourcePath           = os.path.join(sourceDir, 'Unimacro.vch')
         sourceTime, destTime = vocolaGetModTime(sourcePath), vocolaGetModTime(destPath)
 
         if not (sourceTime or destTime):
             print >> sys.stderr, """\n
-Error: The option "VocolaTakesUnimacroActions" is switched on, but
+Error: The option "Vocola Takes Unimacro Actions" is switched on, but
 no file "Unimacro.vch" is found.
 
-Please fix the configuration of NatLink/Vocola/Unimacro and restart Dragon
-
-Either ensure the source file is at:
+Please fix the configuration of NatLink/Vocola/Unimacro and restart
+Dragon.  Either ensure the source file is at:
     "%s",
-or switch off the option "Vocola takes Unimacro Actions"
+or switch off the option "Vocola Takes Unimacro Actions".
 """% sourceDir
             return
         
@@ -530,15 +526,19 @@ or switch off the option "Vocola takes Unimacro Actions"
             except IOError:
                 print >> sys.stderr, """\n
 Warning: Could not copy example "Unimacro.vch" to:
-    "%s";
-
-There is a valid "Unimacro.vch" available, but a newer file is available at:
     "%s".
 
-Please fix the configuration of NatLink/Vocola/Unimacro and restart Dragon,
-if you want to use the updated version of this file."""% (destDir, sourceDir)
+There is a valid "Unimacro.vch" available, but a newer file is
+available at: "%s".
+
+Please fix the configuration of NatLink/Vocola/Unimacro and restart
+Dragon, if you want to use the updated version of this file."""% (destDir, sourceDir)
             else:
-                print 'succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s"'% (sourceDir, destDir)
+                print 'Succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s".'% (sourceDir, destDir)
+
+
+thisGrammar = ThisGrammar()
+thisGrammar.initialize()
 
 
 # Returns the modification time of a file or 0 if the file does not exist
@@ -570,8 +570,6 @@ lastNatLinkModTime    = 0
 lastCommandFolderTime = 0
 lastVocolaFileTime    = 0
 
-
-
 def vocolaBeginCallback(moduleInfo):
     global lastNatLinkModTime, lastCommandFolderTime, lastVocolaFileTime
 
@@ -602,8 +600,6 @@ def vocolaBeginCallback(moduleInfo):
         return 2
     return compiled
 
-thisGrammar = ThisGrammar()
-thisGrammar.initialize()
 
 
 def unload():
