@@ -1,10 +1,9 @@
-The release 3.9sierra is nearly stable.
-
--Vocola: system command folders removed, purging compiled files if Vocola is disabled
-   - added commands for spanish, french (dutch was apart from english already present)
-
--Unimacro grammars: _keystrokes revised...
-
--Unimacro added shorthand command SCLIP, sending keys via the clipboard
+The release 3.9tango is nearly stable.
 
 -Dragon 11 issues: working on, not complete...
+-Python 2.7 now probably supported.
+
+-August 30: small fix in unimacro "actions.ini". If you already downloaded 3.9tango, remove "actions.ini" from your Unimacro User Directory, download 3.9tango again and reinstall and restart Dragon.
+
+
+
