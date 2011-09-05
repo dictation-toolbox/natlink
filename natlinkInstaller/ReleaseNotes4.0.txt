@@ -1,0 +1,26 @@
+Quintijn's combined installer release 4.0 news.
+
+
+---Now installs version 2.7.2I of Vocola:
+
+  * Changes in version 2.7.2 of Vocola:
+    * Workarounds for some Dragon bugs, including the DNS 11 bug where
+      using <_anything> prevents recognition of 0 to 9.
+    * see http://vocola.net/v2/VocolaVersions.asp for Vocola 2.7.1 and
+      earlier release notes.
+
+  * Unofficial installer modifications:
+    * built-in Vocola commands (e.g., "load commands") now available for
+      Spanish and German as well as the previous English and German.
+    * Unimacro.vch is automatically updated at start up if the "Vocola Takes
+      Unimacro Actions" option is enabled.
+
+
+---New in Unimacro:
+
+
+---New in the combined NatLink/Vocola/Unimacro installer:
+
+
+---Changed in NatLink (for programmers only):
+ 
