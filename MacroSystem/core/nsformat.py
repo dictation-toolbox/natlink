@@ -8,10 +8,11 @@ __version__ = "$Revision: 105 $, $Date: 2008-12-04 12:47:13 +0100 (do, 04 dec 20
 # code written by Joel Gould, posted on the natpython discussion list on Wed, 28 Aug 2002
 #
 # inserted in the unimacro package june 2006
+# adapted for Dragon 11, oct 2011, Quintijn
 #
 
-import string, types
-import natlink
+import string, types, copy
+import natlink, natlinkmain
 
 flag_useradded = 0
 flag_varadded = 1
@@ -58,6 +59,22 @@ flags_like_colon = (21, )  # equal to comma
 flags_like_number = (10,)
 flags_like_point = (8, 10)  # no spacing when in combination with numbers flag_cond_no_space = 10
 flags_like_hyphen = (8, 21)  # no spacing before and after
+flags_like_open_quote = (8, )
+flags_like_close_quote = (21, )
+# word flags from properties part of the word:
+# Dragon 11...
+propDict = {}
+propDict['period'] = flags_like_period
+propDict['comma'] = flags_like_comma
+propDict['caps-on'] = (flag_cap_all, flag_no_space_next)
+propDict['caps-off'] = (flag_reset_uc_lc_caps, flag_no_space_next)
+propDict['all-caps-on'] = (flag_uppercase_all,)
+propDict['all-caps-off'] = (flag_reset_uc_lc_caps,)
+propDict['left-double-quote'] = flags_like_open_quote
+propDict['right-double-quote'] = flags_like_close_quote
+
+
+
 #---------------------------------------------------------------------------
 # This is the main formatting entry point.  It takes the old format state and
 # a list of words and returns the new formatting state and the formatted
@@ -67,24 +84,48 @@ flags_like_hyphen = (8, 21)  # no spacing before and after
 # tuples of (wordName,wordInfo) instead of just the list of words.
 
 def formatWords(wordList,state=None):
+    global flags_like_period
+    language = natlinkmain.status.getLanguage()
+    if language != 'enx':
+        flags_like_period = (4, 21, 17) # one space after period.
+        
+    # get the getWordsInfo function, now returning a tuple of properties
+    DNSversion = natlinkmain.DNSversion
+    if DNSversion >= 11:
+        gwi = getWordInfo11
+    else:
+        gwi = getWordInfo10
 
-     output = ''
-     for entry in wordList:
+    
 
-         if type(entry)==type(()):
-             assert( len(entry)==2 )
-             wordName = entry[0]
-             wordInfo = entry[1]
-         else:
-             wordName = entry
-             wordInfo = natlink.getWordInfo(wordName)
-             if wordInfo == None:
-                 wordInfo = 0
+    output = ''
+    emptySet = set( () )
+    for entry in wordList:
 
-         newText,state = formatWord(wordName,wordInfo,state)
-         output = output + newText
+        if type(entry)==type(()):
+            assert( len(entry)==2 )
+            wordName = entry[0]
+            wordInfo = entry[1]
+        else:
+            wordName = entry
+            wordInfo = gwi(wordName)
+        if wordInfo is None:
+            wordInfo = set()
+        if type(wordInfo) != type(emptySet):
+            wordInfo = wordInfoToFlags(wordInfo)
 
-     return output,state
+        # init state to a set:
+        if state == 0:
+            state = set()
+        elif state is None:
+            state = set([flag_no_space_next, flag_active_cap_next])
+        elif type(state) != type(emptySet):
+            state = wordInfoToFlags(state)
+
+        newText, state = formatWord(wordName,wordInfo,state)
+        output = output + newText
+
+    return output, state
 
 def formatLetters(wordList,state=None):
     """this is more tricks, formats dngletters input
@@ -116,28 +157,43 @@ def formatLetters(wordList,state=None):
 # word using the standard Dragon NaturallySpeaking state machine.
 #
 # This code was adapted from shared\resobj.cpp
-
-def formatWord(wordName,wordInfo=None,stateFlags=None):
-
+def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
+    ##adapted: wordInfo and stateFlags are now sets of state flags
+    emptySet = set()
+    if gwi is None:
+        # get the proper getWordInfo function
+        DNSversion = natlinkmain.DNSversion
+        if DNSversion >= 11:
+            gwi = getWordInfo11
+        else:
+            gwi = getWordInfo10
     #-----
     # Preparation
-    if wordInfo == None:
-        wordInfo = natlink.getWordInfo(wordName)
-    if wordInfo == None:
-        wordInfo = 0
+    # assume wordInfo is a set already
+    if type(wordInfo) == type(emptySet):
+        wordFlags = wordInfo
+    else:
+        # should not come here:
+        wordFlags = gwi(wordName)
+
+    if wordFlags == set(flags_like_open_quote):
+        pass
+
     # for faster lookup in Python, we convert the bit arrays am array of
     # bits that are set:
-     
-        
-    wordFlags = wordInfoToFlags(wordInfo)
     # uncomment when more info is wanted:
     #print 'wordFlags of |%s| are: %s (%s)'% (wordName, `wordFlags`, `showStateFlags(wordFlags)`)
-    if stateFlags == 0:
-        stateFlags = set()
-    elif stateFlags == None:
-        stateFlags = set([flag_no_space_next, flag_active_cap_next])
-    elif type(stateFlags) in (types.ListType, types.TupleType):
-        stateFlags = set(stateFlags)
+    if type(stateFlags) == type(emptySet):
+        pass
+    else:
+        pass
+        # should not come here:
+        #if stateFlags == 0:
+        #    stateFlags = set()
+        #elif stateFlags == None:
+        #    stateFlags = set([flag_no_space_next, flag_active_cap_next])
+        #elif type(stateFlags) in (types.ListType, types.TupleType):
+        #    stateFlags = set(stateFlags)
         
     # get the written form
     if wordName[:2] == '\\\\':
@@ -269,6 +325,35 @@ def formatWord(wordName,wordInfo=None,stateFlags=None):
 
     return output,tuple(stateFlags)
 
+def getWordInfo11(word):
+    """new getWordInfo function, extracts the word flags from
+    the middle word  like .\period\period
+    
+    return the resulting tuple of flags
+    
+    """
+    if word.find('\\') == -1:
+        return 0  # no flags
+    wList = word.split('\\')
+    if len(wList) == 3:
+        prop = wList[1]
+        if prop in propDict:
+            return set(propDict[prop])
+        else:
+            print 'getWordInfo11, unknown word property: "%s" ("%s")'% (prop, word)          
+            return set()  # empty tuple
+    
+
+
+def getWordInfo10(word):
+    """old getWordInfo function, extracts the word flags from
+    the word properties and convert to a tuple of values
+    
+    """
+    wordInfo = natlink.getWordInfo(word)       
+    wordFlags = wordInfoToFlags(wordInfo)
+    return wordFlags
+
 def initializeStateFlags(*args):
     """return an initial state, built up by one or more state flags
 
@@ -277,15 +362,17 @@ def initializeStateFlags(*args):
 
 
     """
-    return tuple(set(args))
+    return set(args)
 
 def wordInfoToFlags(wordInfo):
     """convert wordInfo number into a set of flags
+    
     """
+    emptySet = set(())
     if wordInfo == None:
-        return set()
+        return emptySet
     elif wordInfo == 0:
-        return set()
+        return emptySet
     wordFlags = set()
     if type(wordInfo) == types.IntType:
         if  wordInfo:
@@ -296,8 +383,8 @@ def wordInfoToFlags(wordInfo):
                 pass # wordInfo == 0
     elif type(wordInfo) in (types.TupleType, types.ListType):
         wordFlags = set(wordInfo)
-    else:
-        wordFlags = wordInfo
+    elif type(wordInfo) == type(emptySet):
+        wordFlags = copy.copy(wordInfo)
     return wordFlags
 
 def showStateFlags(state):
@@ -312,40 +399,71 @@ def showStateFlags(state):
 
 def testSubroutine(state,input,output):
 
-     words = string.split(input)
-     for i in range(len(words)):
-         words[i] = string.replace(words[i],'_',' ')
-     actual,state = formatWords(words,state)
-     if actual != output:
-         print 'Expected "%s"'%output
-         print 'Actually "%s"'%actual
-         raise 'TestError'
-     return state
+    words = string.split(input)
+    for i in range(len(words)):
+        words[i] = string.replace(words[i],'_',' ')
+    actual,state = formatWords(words,state)
+    if actual != output:
+        print 'Expected "%s"'%output
+        print 'Actually "%s"'%actual
+        raise 'TestError'
+    return state
 
 #---------------------------------------------------------------------------
 
 def testFormatting():
 
-     state=None
-     state=testSubroutine(state,
-         r'this is a test sentence .\period',
-         'This is a test sentence.')
-     state=testSubroutine(state,
-         r'\Caps-On as you can see ,\comma this yours_truly seems to work \Caps-Off well',
-         '  As You Can See, This Yours Truly Seems to Work well')
-     state=testSubroutine(state,
-         r'an "\open-quote example of testing .\period "\close-quote hello',
-         ' an "example of testing."  Hello')
-     state=testSubroutine
+    state=None
+    state=testSubroutine(state,
+        r'this is a test sentence .\period',
+        'This is a test sentence.')
+    state=testSubroutine(state,
+        r'\Caps-On as you can see ,\comma this yours_truly seems to work \Caps-Off well',
+        '  As You Can See, This Yours Truly Seems to Work well')
+    state=testSubroutine(state,
+        r'an "\left-double-quote\open-quote example of testing .\period\period "\right-double-quote\close-quote hello',
+        ' an "example of testing."  Hello')
+    state=testSubroutine
 
-     print 'Formatting tests passed.'
+    print 'Formatting tests passed.'
+
+def testFormatting11():
+
+    state=None
+    # assume english, two spaces after .:
+
+
+    state=testSubroutine(state,
+        r'first .\period\period next',
+        'First.  Next')
+    # continuing the previous:
+    state=testSubroutine(state,
+        r'this is a second sentence .\period\period',
+        ' this is a second sentence.')
+    state=testSubroutine(state,
+        r'and a third sentence .\period\period',
+        '  And a third sentence.')
+    state=testSubroutine(state,
+        r'\caps-on\Caps-On as you can see ,\comma\comma this yours_truly works \caps-off\Caps-Off well',
+        '  As You Can See, This Yours Truly Works well')
+
+    state=testSubroutine(state,
+        r'an "\left-double-quote\open-quote example of testing .\period\period "\right-double-quote\close-quote hello',
+        ' an "example of testing."  Hello')
+    state=testSubroutine
+
+
+    print 'Formatting tests passed.'
 
 if __name__=='__main__':
-     natlink.natConnect()
-     try:
-         testFormatting()
-         natlink.natDisconnect()
-     except:
-         natlink.natDisconnect()
-         raise
+    natlink.natConnect()
+    try:
+        if natlinkmain.DNSversion >= 11:
+            testFormatting11()
+        else:
+            testFormatting()
+        natlink.natDisconnect()
+    except:
+        natlink.natDisconnect()
+        raise
 
