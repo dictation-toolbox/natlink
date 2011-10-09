@@ -136,8 +136,12 @@ def formatWords(wordList,state=None):
         # init state to a set:
         if state == 0:
             state = set()
+        elif state == -1:
+            state = set(flag_no_space_next)
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
+        elif type(state) in (types.ListType, types.TupleType):
+            state = set(state)
         elif type(state) != type(emptySet):
             state = wordInfoToFlags(state)
             print 'formatWords starting with: %s'% state
@@ -206,14 +210,21 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     if type(stateFlags) == type(emptySet):
         pass
     else:
-        pass
-        # should not come here:
-        #if stateFlags == 0:
-        #    stateFlags = set()
-        #elif stateFlags == None:
-        #    stateFlags = set([flag_no_space_next, flag_active_cap_next])
-        #elif type(stateFlags) in (types.ListType, types.TupleType):
-        #    stateFlags = set(stateFlags)
+        # for testing only, this function should not be called direct, but this is
+        # done from the testing routines
+        state = copy.copy(stateFlags)
+        if state == 0:
+            state = set()
+        elif state == -1:
+            state = set(flag_no_space_next)
+        elif state is None:
+            state = set([flag_no_space_next, flag_active_cap_next])
+        elif type(state) in (types.ListType, types.TupleType):
+            state = set(state)
+        else:
+            raise ValueError("formatWord, invalid stateFlags: %s"% repr(stateFlags))
+        stateFlags = copy.copy(state)
+
         
     # get the written form
     if wordName[:2] == '\\\\':
@@ -453,72 +464,8 @@ def testFormatting10():
     state=testSubroutine(state,
         r'an "\open-quote example of testing .\period "\close-quote hello',
         ' an "example of testing."  Hello')
-    state = None
-    
-    # special signs:
-    state=testSubroutine(state,
-        r'an example with many signs :\colon ;\semicolon and @\at-sign and [\left-bracket',
-        r'An example with many signs:; and@and [')
-        
-    state = None
-    state=testSubroutine(state,
-        r'and continuing with ]\right-bracket and -\hyphen and -\minus-sign .\period',
-        'And continuing with] and-and -.')
-    state=testSubroutine
 
-    # capping and spacing:
-    state = None
-    # after the colon is incorrect (at least different actual dictate result)!
-    state=testSubroutine(state,
-        r'hello \No-Space there and no spacing :\colon \No-Space-On Daisy Dakar and more \No-Space-Off and normal Daila_Lama again .\period',
-        'Hellothere and no spacing:DaisyDakarandmore and normal Daila Lama again.')
-    state=testSubroutine
-
-    state = None
-    state=testSubroutine(state,
-        r'\No-Caps Daisy Dakar lowercase example \No-Caps-On Daisy DAL Daila_Lama and Dakar \No-Caps-Off and Dakar and Dalai_Lama again .\period',
-        'daisy Dakar lowercase example daisy dal daila lama and dakar and Dakar and Dalai Lama again.')
-    state=testSubroutine
-
-    state = None
-    state=testSubroutine(state,
-        r'\Cap uppercase example and normal and \Caps-On and continuing with an uppercase example and \Caps-Off ,\comma normal again .\period',
-        'Uppercase example and normal and and Continuing with an Uppercase Example and, normal again.')
-    state=testSubroutine
-
-    state = None
-    state=testSubroutine(state,
-        r'\All-Caps examples and normal and \All-Caps-On and continuing with \All-Caps-Off ,\comma normal again .\period',
-        'EXAMPLES and normal and AND CONTINUING WITH, normal again.')
-    state=testSubroutine
-
-    state = None
-    state=testSubroutine(state,
-        r'combined \All-Caps-On hello \No-Space there and \No-Space-On back again and \All-Caps-Off continuing no spacing \No-Space-Off now normal again .\period',
-        'Combined HELLOTHERE ANDBACKAGAINANDcontinuingnospacing now normal again.')
-
-    # propagating the properties:
-    state = None
-    state=testSubroutine(state,
-        r'\All-Caps-On this is a test',
-        'THIS IS A TEST')
-    state=testSubroutine(state,
-        r'continuing in the next phrase \No-Space-On with no \All-Caps-Off spacing',
-        ' CONTINUING IN THE NEXT PHRASEWITHNOspacing')
-    state=testSubroutine(state,
-        r'and resuming like that .\period this  \No-Space-Off is now at last normal .\period',
-        'andresuminglikethat.This is now at last normal.')
-
-    # new line, new paragraph:
-    state = None
-    state=testSubroutine(state,
-        r'Now for the \New-Line and for the \New-Paragraph testing .\period',
-        'Now for the\r\nand for the\r\n\r\nTesting.')
-    
-
-    
-
-    print 'Formatting tests passed.'
+    print 'Example Formatting tests passed, more in unittestNsformat (in PyTest directory)'
 
 def testFormatting11():
 
@@ -534,82 +481,10 @@ def testFormatting11():
         r'this is a second sentence .\period\period',
         ' this is a second sentence.')
     state=testSubroutine(state,
-        r'and a third sentence .\period\period',
-        '  And a third sentence.')
-    state=testSubroutine(state,
         r'\caps-on\Caps-On as you can see ,\comma\comma this yours_truly works \caps-off\caps_off well',
         '  As You Can See, This Yours Truly Works well')
 
-    state=testSubroutine(state,
-        r'an "\left-double-quote\open-quote example of testing .\period\period "\right-double-quote\close_quote hello',
-        ' an "example of testing."  Hello')
-    state=testSubroutine
-
-    # special signs:
-    state = None
-    state=testSubroutine(state,
-        r'an example with many signs :\colon\colon ;\semicolon\semicolon and @\at-sign\at_sign and [\left-square-bracket\left_bracket',
-        r'An example with many signs:; and@and [')
-        
-    state = None
-    state=testSubroutine(state,
-        r'and continuing with ]\right-square-bracket\right_bracket and -\hyphen\hyphen and -\minus-sign\minus_sign .\period\period',
-        'And continuing with] and-and -.')
-    state=testSubroutine
-
-    # capping and spacing:
-    state = None
-    # after the colon is incorrect (at least different actual dictate result)!
-    state=testSubroutine(state,
-        r'hello \no-space\no_space there and no spacing :\colon\colon \no-space-on\no_space_on Daisy Dakar and more \no-space-off\no_space_off and normal Daila_Lama again .\period\period',
-        'Hellothere and no spacing:DaisyDakarandmore and normal Daila Lama again.')
-    state=testSubroutine
-
-    state = None
-    state=testSubroutine(state,
-        r'\no-caps\no_caps Daisy Dakar lowercase example \no-caps-on\no_caps_on Daisy DAL Daila_Lama and Dakar \no-caps-off\no_caps_off and Dakar and Dalai_Lama again .\period\period',
-        'daisy Dakar lowercase example daisy dal daila lama and dakar and Dakar and Dalai Lama again.')
-    state=testSubroutine
-
-    state = None
-    # note the capping of title words, can not be prevented here...!!
-    state=testSubroutine(state,
-        r'\cap\Cap uppercase example and normal and \caps-on\caps_on and continuing with an uppercase example and \caps-off\caps_off ,\comma\comma normal again .\period\period',
-        'Uppercase example and normal and And Continuing With An Uppercase Example And, normal again.')
-    state=testSubroutine
-
-    state = None
-    state=testSubroutine(state,
-        r'\all-caps\all_caps examples and normal and \all-caps-on\all_caps_on and continuing with \all-caps-off\all_caps_off ,\comma\comma normal again .\period\period',
-        'EXAMPLES and normal and AND CONTINUING WITH, normal again.')
-    state=testSubroutine
-
-    state = None
-    state=testSubroutine(state,
-        r'combined \all-caps-on\all_caps_on hello \no-space\no_space there and \no-space-on\no_space_on back again and \all-caps-off\all_caps_off continuing no spacing \no-space-off\no_space_off now normal again .\period\period',
-        'Combined HELLOTHERE ANDBACKAGAINANDcontinuingnospacing now normal again.')
-
-    # propagating the properties:
-    state = None
-    state=testSubroutine(state,
-        r'\all-caps-on\all_caps_on this is a test',
-        'THIS IS A TEST')
-    state=testSubroutine(state,
-        r'continuing in the next phrase \no-space-on\no_space_on with no \all-caps-off\all_caps_off spacing',
-        ' CONTINUING IN THE NEXT PHRASEWITHNOspacing')
-    state=testSubroutine(state,
-        r'and resuming like that .\period\period this  \no-space-off\no_space_off is now at last normal .\period\period',
-        'andresuminglikethat.This is now at last normal.')
-
-    # new line, new paragraph:
-    state = None
-    state=testSubroutine(state,
-        r'Now for the \new-line\new_line and for the \new-paragraph\new_paragraph testing .\period\period',
-        'Now for the\r\nand for the\r\n\r\nTesting.')
-
-
-
-    print 'Formatting tests passed.'
+    print 'Example Formatting tests (11) passed, more in unittestNsformat (in PyTest directory)'
 
 if __name__=='__main__':
     natlink.natConnect()
