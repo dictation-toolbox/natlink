@@ -55,24 +55,45 @@ for name in globals():
 #
 flags_like_period = (9, 4, 21, 17)  # flag_two_spaces_next = 9,  flag_passive_cap_next = 4, flag_no_space_before = 21
 flags_like_comma = (21, )  # flag_no_space_before = 21  (flag_nodelete = 3 we just ignore here, so leave out)
-flags_like_colon = (21, )  # equal to comma
 flags_like_number = (10,)
 flags_like_point = (8, 10)  # no spacing when in combination with numbers flag_cond_no_space = 10
 flags_like_hyphen = (8, 21)  # no spacing before and after
-flags_like_open_quote = (8, )
-flags_like_close_quote = (21, )
+flags_like_open_quote = (8, 20) # no space next and no cap change
+flags_like_close_quote = (21, 20, 19) # no space before, no cap change and no space change (??)
+
 # word flags from properties part of the word:
 # Dragon 11...
 propDict = {}
 propDict['period'] = flags_like_period
 propDict['comma'] = flags_like_comma
-propDict['caps-on'] = (flag_cap_all, flag_no_space_next)
-propDict['caps-off'] = (flag_reset_uc_lc_caps, flag_no_space_next)
-propDict['all-caps-on'] = (flag_uppercase_all,)
-propDict['all-caps-off'] = (flag_reset_uc_lc_caps,)
+propDict['cap'] = (19, 18, flag_active_cap_next)
+propDict['caps-on'] = (19, 18,  flag_cap_all)
+propDict['caps-off'] = (19, 18, flag_reset_uc_lc_caps)
+propDict['all-caps'] = (19, 18, flag_uppercase_next)
+propDict['all-caps-on'] = (19, 18, flag_uppercase_all)
+propDict['all-caps-off'] = (19, 18, flag_reset_uc_lc_caps)
+propDict['no-caps'] = (19, 18, flag_lowercase_next)
+propDict['no-caps-on'] = (19, 18, flag_lowercase_all)
+propDict['no-caps-off'] = (19, 18, flag_reset_uc_lc_caps)
+propDict['no-space'] = (18, 20, flag_no_space_next)
+propDict['no-space-on'] = (18, 20, flag_no_space_all)
+propDict['no-space-off'] = (18, 20, flag_reset_no_space)
 propDict['left-double-quote'] = flags_like_open_quote
 propDict['right-double-quote'] = flags_like_close_quote
+# left- as left-double-quote
+# right- as right-double-quote
 
+propDict['question-mark'] = flags_like_period
+propDict['exclamation-mark'] = flags_like_period
+
+propDict['hyphen'] = flags_like_hyphen
+propDict['at-sign'] = flags_like_hyphen
+propDict['colon'] = flags_like_comma
+propDict['semicolon'] = flags_like_comma
+propDict['apostrophe-ess'] = flags_like_comma
+
+propDict['new-line'] = (flag_no_formatting, flag_no_space_next, flag_no_cap_change, flag_new_line)
+propDict['new-paragraph'] = (flag_no_formatting, flag_no_space_next, flag_passive_cap_next, flag_new_paragraph)
 
 
 #---------------------------------------------------------------------------
@@ -95,8 +116,6 @@ def formatWords(wordList,state=None):
         gwi = getWordInfo11
     else:
         gwi = getWordInfo10
-
-    
 
     output = ''
     emptySet = set( () )
@@ -121,6 +140,7 @@ def formatWords(wordList,state=None):
             state = set([flag_no_space_next, flag_active_cap_next])
         elif type(state) != type(emptySet):
             state = wordInfoToFlags(state)
+            print 'formatWords starting with: %s'% state
 
         newText, state = formatWord(wordName,wordInfo,state)
         output = output + newText
@@ -333,16 +353,24 @@ def getWordInfo11(word):
     
     """
     if word.find('\\') == -1:
-        return 0  # no flags
+        return set()  # no flags
     wList = word.split('\\')
     if len(wList) == 3:
         prop = wList[1]
+        if not prop:
+            return set()
         if prop in propDict:
             return set(propDict[prop])
+        elif prop.startswith('left-'):
+            return set(propDict['left-double-quote'])
+        elif prop.startswith('right-'):
+            return set(propDict['right-double-quote'])
         else:
             print 'getWordInfo11, unknown word property: "%s" ("%s")'% (prop, word)          
             return set()  # empty tuple
-    
+    else:
+        # should not come here
+        return set()
 
 
 def getWordInfo10(word):
@@ -413,11 +441,6 @@ def testSubroutine(state,input,output):
 #---------------------------------------------------------------------------
 
 def testFormatting10():
-
-    state = None
-    state=testSubroutine(state,
-        r'this is a \Numeral one .\period',
-        'This is a test sentence.')
 
     state = None
     state=testSubroutine(state,
@@ -501,7 +524,7 @@ def testFormatting11():
 
     state=None
     # assume english, two spaces after .:
-
+    # note _ is converted into a space, inside a word ()
 
     state=testSubroutine(state,
         r'first .\period\period next',
@@ -514,13 +537,76 @@ def testFormatting11():
         r'and a third sentence .\period\period',
         '  And a third sentence.')
     state=testSubroutine(state,
-        r'\caps-on\Caps-On as you can see ,\comma\comma this yours_truly works \caps-off\Caps-Off well',
+        r'\caps-on\Caps-On as you can see ,\comma\comma this yours_truly works \caps-off\caps_off well',
         '  As You Can See, This Yours Truly Works well')
 
     state=testSubroutine(state,
-        r'an "\left-double-quote\open-quote example of testing .\period\period "\right-double-quote\close-quote hello',
+        r'an "\left-double-quote\open-quote example of testing .\period\period "\right-double-quote\close_quote hello',
         ' an "example of testing."  Hello')
     state=testSubroutine
+
+    # special signs:
+    state = None
+    state=testSubroutine(state,
+        r'an example with many signs :\colon\colon ;\semicolon\semicolon and @\at-sign\at_sign and [\left-square-bracket\left_bracket',
+        r'An example with many signs:; and@and [')
+        
+    state = None
+    state=testSubroutine(state,
+        r'and continuing with ]\right-square-bracket\right_bracket and -\hyphen\hyphen and -\minus-sign\minus_sign .\period\period',
+        'And continuing with] and-and -.')
+    state=testSubroutine
+
+    # capping and spacing:
+    state = None
+    # after the colon is incorrect (at least different actual dictate result)!
+    state=testSubroutine(state,
+        r'hello \no-space\no_space there and no spacing :\colon\colon \no-space-on\no_space_on Daisy Dakar and more \no-space-off\no_space_off and normal Daila_Lama again .\period\period',
+        'Hellothere and no spacing:DaisyDakarandmore and normal Daila Lama again.')
+    state=testSubroutine
+
+    state = None
+    state=testSubroutine(state,
+        r'\no-caps\no_caps Daisy Dakar lowercase example \no-caps-on\no_caps_on Daisy DAL Daila_Lama and Dakar \no-caps-off\no_caps_off and Dakar and Dalai_Lama again .\period\period',
+        'daisy Dakar lowercase example daisy dal daila lama and dakar and Dakar and Dalai Lama again.')
+    state=testSubroutine
+
+    state = None
+    # note the capping of title words, can not be prevented here...!!
+    state=testSubroutine(state,
+        r'\cap\Cap uppercase example and normal and \caps-on\caps_on and continuing with an uppercase example and \caps-off\caps_off ,\comma\comma normal again .\period\period',
+        'Uppercase example and normal and And Continuing With An Uppercase Example And, normal again.')
+    state=testSubroutine
+
+    state = None
+    state=testSubroutine(state,
+        r'\all-caps\all_caps examples and normal and \all-caps-on\all_caps_on and continuing with \all-caps-off\all_caps_off ,\comma\comma normal again .\period\period',
+        'EXAMPLES and normal and AND CONTINUING WITH, normal again.')
+    state=testSubroutine
+
+    state = None
+    state=testSubroutine(state,
+        r'combined \all-caps-on\all_caps_on hello \no-space\no_space there and \no-space-on\no_space_on back again and \all-caps-off\all_caps_off continuing no spacing \no-space-off\no_space_off now normal again .\period\period',
+        'Combined HELLOTHERE ANDBACKAGAINANDcontinuingnospacing now normal again.')
+
+    # propagating the properties:
+    state = None
+    state=testSubroutine(state,
+        r'\all-caps-on\all_caps_on this is a test',
+        'THIS IS A TEST')
+    state=testSubroutine(state,
+        r'continuing in the next phrase \no-space-on\no_space_on with no \all-caps-off\all_caps_off spacing',
+        ' CONTINUING IN THE NEXT PHRASEWITHNOspacing')
+    state=testSubroutine(state,
+        r'and resuming like that .\period\period this  \no-space-off\no_space_off is now at last normal .\period\period',
+        'andresuminglikethat.This is now at last normal.')
+
+    # new line, new paragraph:
+    state = None
+    state=testSubroutine(state,
+        r'Now for the \new-line\new_line and for the \new-paragraph\new_paragraph testing .\period\period',
+        'Now for the\r\nand for the\r\n\r\nTesting.')
+
 
 
     print 'Formatting tests passed.'
