@@ -352,6 +352,7 @@ def getWordInfo10(word):
     """
     wordInfo = natlink.getWordInfo(word)       
     wordFlags = wordInfoToFlags(wordInfo)
+    print 'wordFlags of %s: %s'% (word, wordFlags)
     return wordFlags
 
 def initializeStateFlags(*args):
@@ -411,19 +412,88 @@ def testSubroutine(state,input,output):
 
 #---------------------------------------------------------------------------
 
-def testFormatting():
+def testFormatting10():
 
-    state=None
+    state = None
+    state=testSubroutine(state,
+        r'this is a \Numeral one .\period',
+        'This is a test sentence.')
+
+    state = None
     state=testSubroutine(state,
         r'this is a test sentence .\period',
         'This is a test sentence.')
+
     state=testSubroutine(state,
         r'\Caps-On as you can see ,\comma this yours_truly seems to work \Caps-Off well',
         '  As You Can See, This Yours Truly Seems to Work well')
     state=testSubroutine(state,
-        r'an "\left-double-quote\open-quote example of testing .\period\period "\right-double-quote\close-quote hello',
+        r'an "\open-quote example of testing .\period "\close-quote hello',
         ' an "example of testing."  Hello')
+    state = None
+    
+    # special signs:
+    state=testSubroutine(state,
+        r'an example with many signs :\colon ;\semicolon and @\at-sign and [\left-bracket',
+        r'An example with many signs:; and@and [')
+        
+    state = None
+    state=testSubroutine(state,
+        r'and continuing with ]\right-bracket and -\hyphen and -\minus-sign .\period',
+        'And continuing with] and-and -.')
     state=testSubroutine
+
+    # capping and spacing:
+    state = None
+    # after the colon is incorrect (at least different actual dictate result)!
+    state=testSubroutine(state,
+        r'hello \No-Space there and no spacing :\colon \No-Space-On Daisy Dakar and more \No-Space-Off and normal Daila_Lama again .\period',
+        'Hellothere and no spacing:DaisyDakarandmore and normal Daila Lama again.')
+    state=testSubroutine
+
+    state = None
+    state=testSubroutine(state,
+        r'\No-Caps Daisy Dakar lowercase example \No-Caps-On Daisy DAL Daila_Lama and Dakar \No-Caps-Off and Dakar and Dalai_Lama again .\period',
+        'daisy Dakar lowercase example daisy dal daila lama and dakar and Dakar and Dalai Lama again.')
+    state=testSubroutine
+
+    state = None
+    state=testSubroutine(state,
+        r'\Cap uppercase example and normal and \Caps-On and continuing with an uppercase example and \Caps-Off ,\comma normal again .\period',
+        'Uppercase example and normal and and Continuing with an Uppercase Example and, normal again.')
+    state=testSubroutine
+
+    state = None
+    state=testSubroutine(state,
+        r'\All-Caps examples and normal and \All-Caps-On and continuing with \All-Caps-Off ,\comma normal again .\period',
+        'EXAMPLES and normal and AND CONTINUING WITH, normal again.')
+    state=testSubroutine
+
+    state = None
+    state=testSubroutine(state,
+        r'combined \All-Caps-On hello \No-Space there and \No-Space-On back again and \All-Caps-Off continuing no spacing \No-Space-Off now normal again .\period',
+        'Combined HELLOTHERE ANDBACKAGAINANDcontinuingnospacing now normal again.')
+
+    # propagating the properties:
+    state = None
+    state=testSubroutine(state,
+        r'\All-Caps-On this is a test',
+        'THIS IS A TEST')
+    state=testSubroutine(state,
+        r'continuing in the next phrase \No-Space-On with no \All-Caps-Off spacing',
+        ' CONTINUING IN THE NEXT PHRASEWITHNOspacing')
+    state=testSubroutine(state,
+        r'and resuming like that .\period this  \No-Space-Off is now at last normal .\period',
+        'andresuminglikethat.This is now at last normal.')
+
+    # new line, new paragraph:
+    state = None
+    state=testSubroutine(state,
+        r'Now for the \New-Line and for the \New-Paragraph testing .\period',
+        'Now for the\r\nand for the\r\n\r\nTesting.')
+    
+
+    
 
     print 'Formatting tests passed.'
 
@@ -461,7 +531,7 @@ if __name__=='__main__':
         if natlinkmain.DNSversion >= 11:
             testFormatting11()
         else:
-            testFormatting()
+            testFormatting10()
         natlink.natDisconnect()
     except:
         natlink.natDisconnect()
