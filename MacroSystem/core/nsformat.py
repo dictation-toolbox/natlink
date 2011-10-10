@@ -143,7 +143,7 @@ def formatWords(wordList,state=None):
         if state == 0:
             state = set([])
         elif state == -1:
-            print "no space next at start"
+            #print "no space next at start"
             state = set([flag_no_space_next])
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
@@ -151,7 +151,7 @@ def formatWords(wordList,state=None):
             state = set(state)
         elif type(state) != type(emptySet):
             state = wordInfoToFlags(state)
-            print 'formatWords starting with: %s'% state
+            #print 'formatWords starting with: %s'% state
 
         newText, state = formatWord(wordName,wordInfo,state)
         output = output + newText
@@ -162,7 +162,9 @@ def formatLetters(wordList):
     """this is more tricks, formats dngletters input
 
         do as input the flag_no_space_all!
-        return only the resulting string!! 
+        return only the resulting string!!
+        
+        obsolete with Dragon 11...
     """
     result = []
     inputState = (flag_no_space_all,)
