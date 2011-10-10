@@ -123,9 +123,20 @@ class UnittestNsformat(unittest.TestCase):
         for i in range(len(words)):
             words[i] = string.replace(words[i],'_',' ')
         actual,state = formatWords(words,state)
-        self.assertEquals(output, actual, "output not as expected: expected: |%s|, actual output: |%s| (input: %s, state in: %s, state out: %s)"%
+        self.assertEquals(output, actual, "output not as expected: expected: |%s|, actual output: |%s|\n\t\t(input: %s, state in: %s, state out: %s)"%
                                 (output, actual, words, inputState, state))
         return state
+
+    def doTestFormatLetters(self, input, output):
+        """do the testing, with no inputState (this is fixed for this function)
+        
+        """
+        words = string.split(input)
+        for i in range(len(words)):
+            words[i] = string.replace(words[i],'_',' ')
+        actual = formatLetters(words)
+        self.assertEquals(output, actual, "output of formatLetters not as expected: expected: |%s|, actual output: |%s|\n\t\t(input: %s)"%
+                                (output, actual, words))
 
     #---------------------------------------------------------------------------
     def tttestFormatWord(self):
@@ -149,6 +160,19 @@ class UnittestNsformat(unittest.TestCase):
             expTuple = set(expectedState)
             self.assert_(expTuple == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
                          (word, formattedResult, `newState`, `expTuple`))
+
+    def testFormatLetters(self):
+        """all words with normal (0) state as input.
+        
+        .\point results in ' .'
+        """
+        testFunc = self.doTestFormatLetters
+        if DNSVersion <= 10:
+            words = r'x\xray\h y\yankee\h !\exclamation-mark'
+        else:
+            words =             ['.', r'.\period\period', r'.\point\point', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
+        state=testFunc(words, 'xy!')
+
         
     def tttestFlagsLike(self):
         """tests the different predefined flags in nsformat"""

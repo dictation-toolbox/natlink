@@ -162,12 +162,13 @@ def formatLetters(wordList):
     """this is more tricks, formats dngletters input
 
         do as input the flag_no_space_all!
+        return only the resulting string!! 
     """
     result = []
     inputState = (flag_no_space_all,)
     res, state = formatWords(wordList, inputState)
             
-    return res, state
+    return res
                           
 #---------------------------------------------------------------------------
 # This is the formatting subroutine.  It handles the formatting for a single
@@ -386,7 +387,7 @@ def getWordInfo10(word):
     """
     wordInfo = natlink.getWordInfo(word)       
     wordFlags = wordInfoToFlags(wordInfo)
-    print 'wordFlags of %s: %s'% (word, wordFlags)
+    #print 'wordFlags of %s: %s'% (word, wordFlags)
     return wordFlags
 
 def initializeStateFlags(*args):
