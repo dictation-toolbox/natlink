@@ -119,14 +119,16 @@ class UnittestNsformat(unittest.TestCase):
         NOTE: returns the output state!!!
         """
         words = string.split(input)
+        inputState = copy.copy(state)
         for i in range(len(words)):
             words[i] = string.replace(words[i],'_',' ')
         actual,state = formatWords(words,state)
-        self.assertEquals(output, actual, "output not as expected")
+        self.assertEquals(output, actual, "output not as expected: expected: |%s|, actual output: |%s| (input: %s, state in: %s, state out: %s)"%
+                                (output, actual, words, inputState, state))
         return state
 
     #---------------------------------------------------------------------------
-    def testFormatWord(self):
+    def tttestFormatWord(self):
         """all words with normal (0) state as input.
         
         .\point results in ' .'
@@ -148,7 +150,7 @@ class UnittestNsformat(unittest.TestCase):
             self.assert_(expTuple == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
                          (word, formattedResult, `newState`, `expTuple`))
         
-    def testFlagsLike(self):
+    def tttestFlagsLike(self):
         """tests the different predefined flags in nsformat"""
         if DNSVersion <= 10:
             gwi = getWordInfo10
@@ -180,7 +182,7 @@ class UnittestNsformat(unittest.TestCase):
             self.assert_(fromNsFormat == flags, "flags_like variable |%s| not as expected\nIn nsformat.py: %s (%s)\nFrom actual word infoExpected: %s (%s)"%
                          (varInNsformat, fromNsFormat, showStateFlags(fromNsFormat), flags, showStateFlags(flags)))
             
-    def testInitializeStateFlags(self):
+    def tttestInitializeStateFlags(self):
         """test helper functions of nsformat"""
         result = initializeStateFlags()
         expected = set()
@@ -203,7 +205,7 @@ class UnittestNsformat(unittest.TestCase):
         
             
             
-    def testFormatNumbers(self):
+    def tttestFormatNumbers(self):
         """words with input of previous word, influencing numbers, to be kept together
         
         needs testing again, oct 2010 QH
@@ -315,13 +317,13 @@ class UnittestNsformat(unittest.TestCase):
                 ' hello')
             state = -1
             state=testSubroutine(state,
-                r'hello \space-bar\space-bar ',
+                r'hello \space-bar\space-bar',
                 'hello ')
         
 
 
             
-    def testStartConditionsFormatWords(self):
+    def tttestStartConditionsFormatWords(self):
         """testing the initial states that can be passed
         
         a set of numbers, or
@@ -345,7 +347,7 @@ class UnittestNsformat(unittest.TestCase):
 
 
 
-    def testFormatting10(self):
+    def tttestFormatting10(self):
         """these are a lot of tests for Dragon 10 (and before)
         
         study the words tested below!
@@ -427,7 +429,7 @@ class UnittestNsformat(unittest.TestCase):
             r'Now for the \New-Line and for the \New-Paragraph testing .\period',
             'Now for the\r\nand for the\r\n\r\nTesting.')
         
-    def testFormatting11(self):
+    def tttestFormatting11(self):
         """these are a lot of tests for Dragon 11 (and possibly beyond)
         
         study the words tested below!
@@ -571,7 +573,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNsformat')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def test....
+    # the test names to her example def tttest....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNsformat, 'test')

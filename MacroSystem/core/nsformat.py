@@ -158,28 +158,14 @@ def formatWords(wordList,state=None):
 
     return output, state
 
-def formatLetters(wordList,state=None):
+def formatLetters(wordList):
     """this is more tricks, formats dngletters input
-        input the wordList in one stroke!
-        
-        #flag_lowercase_next = 7
-        #flag_no_space_next = 8
-        initialise with:
-        state = nsformat.initializeStateFlags(nsformat.flag_no_space_next)
-        before you issue the command
+
+        do as input the flag_no_space_all!
     """
     result = []
-    for w in wordList:
-        res, state = formatWords([w], state)
-        res = res.strip() # strip each entry, except when you have an explicit space as below:
-##        print 'res: %s (len: %s), state: %s'% (res, len(res), `showStateFlags(state)`)
-        if res:
-            result.append(res)
-        elif len(filter(None, state)) == 1 and state[8] or w.endswith('spatie') or w.endswith("space-bar"):
-            # first seems to catch a space in enx, second is for a space in Dutch::::
-            result.append(' ') # very strange, 8 = flag_no_space_next, but this seems to work
-    res = ''.join(result)
-##    print 'formatLetters res: %s'% res 
+    inputState = (flag_no_space_all,)
+    res, state = formatWords(wordList, inputState)
             
     return res, state
                           
