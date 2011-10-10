@@ -63,7 +63,8 @@ flags_like_close_quote = (21, 20, 19) # no space before, no cap change and no sp
 # word flags from properties part of the word:
 # Dragon 11...
 propDict = {}
-propDict['space-bar'] = (flag_space_bar, )
+propDict['space-bar'] = (flag_space_bar, flag_no_space_next, flag_no_formatting,
+                         flag_no_cap_change, flag_no_space_before) #  (8, 18, 20, 21, 27)
 
 propDict['period'] = flags_like_period
 propDict['point'] = flags_like_point
@@ -247,6 +248,8 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
         output = output + '\r\n'
     elif flag_new_paragraph in wordFlags:
         output = output + '\r\n\r\n'
+    elif flag_space_bar in wordFlags:  # fix QH, oct 2011
+        output = output + ' '
 
     # compute the leading spacing
     if ( flag_no_formatting in wordFlags or
