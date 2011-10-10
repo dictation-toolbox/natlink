@@ -50,8 +50,7 @@ flagNames = {}
 name = ''
 for name in globals():
     if name.startswith('flag_') and type(globals()[name]) == types.IntType and 0 < globals()[name] < 32:
-        flagNames[globals()[name]] = name
-        
+        flagNames[globals()[name]] = name    
 #
 flags_like_period = (9, 4, 21, 17)  # flag_two_spaces_next = 9,  flag_passive_cap_next = 4, flag_no_space_before = 21
 flags_like_comma = (21, )  # flag_no_space_before = 21  (flag_nodelete = 3 we just ignore here, so leave out)
@@ -64,7 +63,11 @@ flags_like_close_quote = (21, 20, 19) # no space before, no cap change and no sp
 # word flags from properties part of the word:
 # Dragon 11...
 propDict = {}
+propDict['space-bar'] = (flag_space_bar, )
+
 propDict['period'] = flags_like_period
+propDict['point'] = flags_like_point
+propDict['dot'] = flags_like_point
 propDict['comma'] = flags_like_comma
 propDict['cap'] = (19, 18, flag_active_cap_next)
 propDict['caps-on'] = (19, 18,  flag_cap_all)
@@ -95,6 +98,8 @@ propDict['apostrophe-ess'] = flags_like_comma
 propDict['new-line'] = (flag_no_formatting, flag_no_space_next, flag_no_cap_change, flag_new_line)
 propDict['new-paragraph'] = (flag_no_formatting, flag_no_space_next, flag_passive_cap_next, flag_new_paragraph)
 
+# spelling props:
+propDict['spelling-cap'] = propDict['cap']
 
 #---------------------------------------------------------------------------
 # This is the main formatting entry point.  It takes the old format state and
@@ -135,9 +140,10 @@ def formatWords(wordList,state=None):
 
         # init state to a set:
         if state == 0:
-            state = set()
+            state = set([])
         elif state == -1:
-            state = set(flag_no_space_next)
+            print "no space next at start"
+            state = set([flag_no_space_next])
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
         elif type(state) in (types.ListType, types.TupleType):
@@ -354,7 +360,7 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     if flag_new_paragraph in wordFlags and flag_is_period in wordFlags:
         stateFlags.add(flag_new_paragraph)
 
-    return output,tuple(stateFlags)
+    return output, stateFlags
 
 def getWordInfo11(word):
     """new getWordInfo function, extracts the word flags from

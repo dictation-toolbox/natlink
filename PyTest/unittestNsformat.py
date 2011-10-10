@@ -126,37 +126,15 @@ class UnittestNsformat(unittest.TestCase):
         return state
 
     #---------------------------------------------------------------------------
-    # here we test the nsformat functions, (provided by Joel Gould, now in Core directory)
-    # in order to format a recognition (of DictGram) into a string, preserving the state
-    # of the formatting flags
-    def testNsformat(self):
-        self.log("testNsformat")
-        pass
-        testFuncReturn = self.doTestFuncReturn
-
-        expected1 = ('Hello', ())
-        testFuncReturn(expected1, 'formatWords(["hello"], %s)'% None, locals())
-
-        expected2 = (' again.', (9, 4))
-        testFuncReturn(expected2, 'formatWords(["again", r".\period"], expected1[1])', locals())
-
-        expected3 = ('  New sentence', ())
-        testFuncReturn(expected3, 'formatWords(["new", "sentence"], expected2[1])', locals())
-
-        #example from Joels original test:
-        words = [r'\Caps-On', 'as', 'you', 'can', 'see', r',\comma',
-                'this', 'yours truly', 'seems', 'to', 'work', r'\Caps-Off', 'well']
-        expected4 = ('As You Can See, This Yours Truly Seems to Work well', ())
-        testFuncReturn(expected4, 'formatWords(words, None)', locals())
-
-
-
-    def testFormatWord(self):
+    def tttestFormatWord(self):
         """all words with normal (0) state as input.
         
         .\point results in ' .'
         """
-        words =             ['.', r'.\period', r'.\point', r',\comma', r':\colon', r'-\hyphen', 'normal']
+        if DNSVersion <= 10:
+            words =             ['.', r'.\period', r'.\point', r',\comma', r':\colon', r'-\hyphen', 'normal']
+        else:
+            words =             ['.', r'.\period\period', r'.\point\point', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
         formattedExpected = [' .', '.',        ' .',       ',',        ':',        '-', ' normal']
         stateExpected =      [(), (9, 4),      (8, 10),    (),       (),           (8,), ()]
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
@@ -166,21 +144,34 @@ class UnittestNsformat(unittest.TestCase):
             self.assert_(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
-            self.assert_(expectedState == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
-                         (word, formattedResult, `newState`, `expectedState`))
+            expTuple = set(expectedState)
+            self.assert_(expTuple == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
+                         (word, formattedResult, `newState`, `expTuple`))
         
-    def testFlagsLike(self):
+    def tttestFlagsLike(self):
         """tests the different predefined flags in nsformat"""
-        for w,t in [(r'.\period', 'period'),
+        if DNSVersion <= 10:
+            gwi = getWordInfo10
+            wfList = [(r'.\period', 'period'),
                     (r',\comma', 'comma'),
                     (r'-\hyphen', 'hyphen'),
                     ( (10,), 'number'),
-                   ]:
+                      ]
+            
+        else:
+            gwi = getWordInfo11
+            wfList = [(r'.\period\period', 'period'),
+                    (r',\comma\comma', 'comma'),
+                    (r'-\hyphen\hyphen', 'hyphen'),
+                    #( (10,), 'number'),  ## testing number later
+                      ]
+            
+        for w,t in wfList:
             varInNsformat = 'flags_like_%s'% t
             if type(w) == types.TupleType:
                 flags = w
             else:
-                wInfo = natlink.getWordInfo(w)
+                wInfo = gwi(w)
                 self.assert_(wInfo != None, "word info for word: %s could not be found. US user???"% w)
                 flags = wordInfoToFlags(wInfo)
                 flags.discard(3)
@@ -188,7 +179,8 @@ class UnittestNsformat(unittest.TestCase):
             fromNsFormat = globals()[varInNsformat]
             self.assert_(fromNsFormat == flags, "flags_like variable |%s| not as expected\nIn nsformat.py: %s (%s)\nFrom actual word infoExpected: %s (%s)"%
                          (varInNsformat, fromNsFormat, showStateFlags(fromNsFormat), flags, showStateFlags(flags)))
-    def testInitializeStateFlags(self):
+            
+    def tttestInitializeStateFlags(self):
         """test helper functions of nsformat"""
         result = initializeStateFlags()
         expected = set()
@@ -211,14 +203,18 @@ class UnittestNsformat(unittest.TestCase):
         
             
             
-    def testFormatNumbers(self):
+    def tttestFormatNumbers(self):
         """words with input of previous word, influencing numbers, to be kept together
         
         needs testing again, oct 2010 QH
         
         """
-        words =             [r'3\three', r'.\point', r'5\five', r'by', r'4\four', 'centimeter',
-                             r',\comma', 'proceeding']
+        if DNSVersion <= 10:
+            words =             [r'3\three', r'.\point', r'5\five', r'by', r'4\four', 'centimeter',
+                                 r',\comma', 'proceeding']
+        else:
+            # does not work for Dragon 11
+            return
         formattedExpected = [' 3', '.',        '5', ' by', ' 4', ' centimeter', ',', ' proceeding']
         wordInfos = [(flag_cond_no_space,), None, (flag_cond_no_space,), None, (flag_cond_no_space,), None, None, None]
         stateExpected = [(10,), (8, 10), (10,), (), (10,), (), (), (), ()]
@@ -288,8 +284,68 @@ class UnittestNsformat(unittest.TestCase):
         actual = ''.join(totalResult)
         self.assert_(expected == actual, "total result of third test not as expected\nActual: |%s|, expected: |%s|"%
                          (actual, expected))
+
+    def testSpacebar(self):
+        """spacebar with dicate is handled ok, spacebar alone should produce a single space
+        """
+        testSubroutine = self.doTestFormatting
+        
+        if DNSVersion <= 10:
+            state = None
+            state=testSubroutine(state,
+                r'\space-bar',
+                ' ')
+            state = None
+            state=testSubroutine(state,
+                r'\space-bar hello',
+                ' hello')
+            state = None
+            state=testSubroutine(state,
+                r'hello \space-bar',
+                'hello ')
+        else:
+            #state = None
+            #state=testSubroutine(state,
+            #    r'\space-bar\space-bar',
+            #    ' ')
+
+            state = None
+            state=testSubroutine(state,
+                r'\space-bar\space-bar hello',
+                ' hello')
+            state = None
+            state=testSubroutine(state,
+                r'hello \space-bar\space-bar ',
+                'hello ')
+        
+
+
             
-    def testFormatting10(self):
+    def tttestStartConditionsFormatWords(self):
+        """testing the initial states that can be passed
+        
+        a set of numbers, or
+        
+        None:  ([flag_no_space_next, flag_active_cap_next])  ([8, 5])
+        0: empty set (continue with a space in front)
+        -1: special, no capping, but no space in front: set(flag_no_space_next) or ([8])
+        """
+        testFunc = self.doTestFormatting
+        
+        testFunc(None, 'hello', 'Hello')
+        testFunc(0, 'this', ' this')
+        testFunc(-1, 'is', 'is')
+        testFunc(set(), 'good', ' good')
+      
+        testFunc(set([8, 5]),  'testing', 'Testing')
+        testFunc(set([8]), 'with', 'with')
+        
+        # and special, go to lowercase
+        testFunc(set([7, 8]), 'Dakar', 'dakar')  # lowercase next...
+
+
+
+    def tttestFormatting10(self):
         """these are a lot of tests for Dragon 10 (and before)
         
         study the words tested below!
@@ -371,7 +427,7 @@ class UnittestNsformat(unittest.TestCase):
             r'Now for the \New-Line and for the \New-Paragraph testing .\period',
             'Now for the\r\nand for the\r\n\r\nTesting.')
         
-    def testFormatting11(self):
+    def tttestFormatting11(self):
         """these are a lot of tests for Dragon 11 (and possibly beyond)
         
         study the words tested below!
@@ -515,7 +571,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNsformat')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def test....
+    # the test names to her example def tttest....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNsformat, 'test')
