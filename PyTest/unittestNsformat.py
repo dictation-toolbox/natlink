@@ -157,9 +157,9 @@ class UnittestNsformat(unittest.TestCase):
             self.assert_(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
-            expTuple = set(expectedState)
-            self.assert_(expTuple == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
-                         (word, formattedResult, `newState`, `expTuple`))
+            expSet = set(expectedState)
+            self.assert_(expSet == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
+                         (word, formattedResult, repr(newState), repr(expSet)))
 
     def testFormatLetters(self):
         """all words with normal (0) state as input.
@@ -234,7 +234,7 @@ class UnittestNsformat(unittest.TestCase):
         needs testing again, oct 2010 QH
         
         """
-        if DNSVersion <= 10:
+        if DNSVersion < 10:
             words =             [r'3\three', r'.\point', r'5\five', r'by', r'4\four', 'centimeter',
                                  r',\comma', 'proceeding']
         else:
@@ -255,7 +255,7 @@ class UnittestNsformat(unittest.TestCase):
                          (word, formattedResult, expectedWord))
             expectedState = set(expectedState)  # changes QH oct 2011
             self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
-                         (word, formattedResult, `newState`, `expectedState`))
+                         (word, formattedResult, repr(newState), repr(expectedState)))
         expected = " 3.5 by 4 centimeter, proceeding"
         actual = ''.join(totalResult)
         self.assert_(expected == actual, "total result of first test not as expected\nActual: |%s|, expected: |%s|"%
