@@ -101,6 +101,8 @@ propDict['new-paragraph'] = (flag_no_formatting, flag_no_space_next, flag_passiv
 
 # spelling props:
 propDict['spelling-cap'] = propDict['cap']
+propDict['letter'] = (flag_no_space_next,)   # lowercase is hardcoded in below.
+propDict['uppercase-letter'] = (flag_no_space_next,)
 
 #---------------------------------------------------------------------------
 # This is the main formatting entry point.  It takes the old format state and
@@ -132,6 +134,8 @@ def formatWords(wordList,state=None):
             wordName = entry[0]
             wordInfo = entry[1]
         else:
+            if entry.find('\\letter\\') > 0:
+                entry = entry.lower()  # letters lowercase...
             wordName = entry
             wordInfo = gwi(wordName)
         if wordInfo is None:

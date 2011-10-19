@@ -1,4 +1,4 @@
-__version__ = "3.9tango"
+__version__ = "4.0"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "3.9tango"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# version 4.0 at last, Quintijn, oct 2011
 # version 3.9sierraArnoud: a private intermediate release for Arnoud van den Eerenbeemt
 #                          making search macro's across applications
 # version 3.9sierra: nearly stable, but a lot of details with Dragon 11 have to
