@@ -27,7 +27,7 @@
 
 import natlink, nsformat
 from   types import *
-import string
+import string, copy
 import re
 import sys
 
@@ -42,12 +42,13 @@ def combineDictationWords(fullResults):
     wordsList = []
     itemsToDelete = []
     #print 'combinedictationwords, start: %s'% fullResults
-    while i < len(fullResults):
+    #while i < len(fullResults):
+    for i, fr in enumerate(copy.copy(fullResults)):
         #print '%s: %s'% (i, repr(fullResults[i]))
-        if fullResults[i][1] == "dgndictation":
+        if fr[1] == "dgndictation":
             if not inDictation:
                 dgndNum = i
-            wordsList.append(fullResults[i][0])
+            wordsList.append(fr[0])
             if inDictation:
                 itemsToDelete.append(i)
             inDictation = 1
