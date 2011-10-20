@@ -845,7 +845,9 @@ Help about re(register) natlink.dll you will find in the log panel
 About this configure program window:
 
 All actions are performed immediate, mostly doing something
-in the registry section of NatLink. What is changed is shown in red.
+in the natlinkstatus.ini file of NatLink (in the MacroSystem/Core directory).
+
+What is changed is shown in red.
 
 The Undo button undoes these actions
 
@@ -854,8 +856,8 @@ If, for example, NatLink shows the button "Enable", it is currently disabled.
 In order to let the changes take effect, you have to restart NatSpeak.
 In some (rare) cases you have to restart the computer.
 
-If you use Windows Vista, User Account Control must be turned off
-before you can do the register/unregister actions!
+Windows Vista and Windows 7 must run in "elevated mode". The startup script
+from the Windows Start menu ensures this.
 """
         self.warning(text)
         
@@ -882,11 +884,11 @@ Consult the "log" panel if you need more information.
 Unimacro is enabled by specifying a directory: the NatLink User Directory
 (UserDirectory).
 
-When you disable Unimacro, this UserDirectory setting is cleared from in the registry.
+When you disable Unimacro, this UserDirectory setting is cleared from the natlinkstatus.ini file.
 
 When Unimacro is enabled, you can also specify:
     - a directory where your own user (INI) files are located (e.g., a subdirectory
-      in your "[My ]Documents" folder eg "[My ]Documents\Natlink\Unimacro")
+      in your "Documents" folder eg "Documents\Natlink\Unimacro")
       (default is the NatLink User Directory (UserDirectory), but preferably
       specify your own directory, in order to keep your ini file settings
       separate from the (python) grammar files)
@@ -905,14 +907,11 @@ Vocola can use Unimacro features.
 If Unimacro is NOT enabled, still this feature can be switched on if
 also the checkbox 'IncludeUnimacroInPythonPath' is checked.
 
-For easier access to the Unimacro Shorthand Commands from Vocola, an
-include file (Unimacro.vch) can be copied into the Vocola User
-Directory. More about this on http://qh.antenna.nl/unimacro/features/unimacroandvocola and
-on http://vocola.net/v2
+The necessary include file (Unimacro.vch) is copied into the Vocola User
+Directory at startup of NatLink/Vocola/Unimacro when Dragon starts.
 
-The necessary actions for this are performed through the "Vocola compatibility" button.
-
-More information in the log panel """
+More control on the Unimacro features in the "Vocola compatibility" dialog.
+"""
 
         self.warning(text)
 
@@ -1117,7 +1116,7 @@ More information in the log panel """
         L.append("Vocola is enabled by specifying a directory (VocolaUserDirectory)")
         L.append("where the Vocola command files are/will be located.")
         L.append("")
-        L.append("When you disable Vocola, this setting is cleared in the registry.")
+        L.append("When you disable Vocola, this setting is cleared in the natlinkstatus.ini file.")
         L.append("")
         L.append("More information in the log panel")
         self.warning('\n'.join(L))

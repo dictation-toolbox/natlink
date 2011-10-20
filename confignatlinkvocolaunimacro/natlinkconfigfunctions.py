@@ -609,6 +609,11 @@ Possibly you need administrator rights to do this
         pythonVersion = self.getPythonVersion().replace(".", "")
         if not (pythonVersion and len(pythonVersion) == 2):
             fatal_error('not a valid python version found: |%s|'% pythonVersion)
+            
+        # for safety unregister always:
+        print 'first unregister, just to be sure...'
+        self.unregisterNatlinkDll(silent=1)    
+            
         if int(pythonVersion) >= 25:
             DllPath = os.path.join(coreDir, 'natlink.pyd')
         else:
@@ -1441,9 +1446,10 @@ of NatLink, so keep off (X and Y) most of the time.
         print "(Re) register natlink.dll"
         isRegistered = self.config.userregnl.get("NatlinkDllRegistered")
         if isRegistered:
-            print "Un register natlink.dll first if you want to re register"
+            print "If you have problems re-registering natlink.pyd, please try the following:"
+            print "Un-register natlink.pyd first, then"
             print "If you want to try a new natlink.pyd, first exit this program,"
-            print "Remove %s\natlink.pyd"% coreDir
+            print "Remove %s\\natlink.pyd"% coreDir
             print "and restart (in elevated mode) this program."
             print "The correct python version of natlink.dll will be copied to natlink.pyd"
             print "and it will be registered again."

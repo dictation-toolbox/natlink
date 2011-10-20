@@ -25,7 +25,7 @@
 ### DEALINGS IN THE SOFTWARE.
 ###
 
-import natlink
+import natlink, nsformat
 from   types import *
 import string
 import re
@@ -39,28 +39,40 @@ import sys
 def combineDictationWords(fullResults):
     i = 0
     inDictation = 0
+    wordsList = []
+    itemsToDelete = []
+    #print 'combinedictationwords, start: %s'% fullResults
     while i < len(fullResults):
+        #print '%s: %s'% (i, repr(fullResults[i]))
         if fullResults[i][1] == "dgndictation":
-            # This word came from a "recognize anything" rule.
-            # Convert to written form if necessary, e.g. "@\at-sign" --> "@"
-            word = fullResults[i][0]
-            backslashPosition = string.find(word, "\\")
-            if backslashPosition > 0:
-                word = word[:backslashPosition]
+            if not inDictation:
+                dgndNum = i
+            wordsList.append(fullResults[i][0])
             if inDictation:
-                fullResults[i-1] = [fullResults[i-1][0] + " " + word,
-                                    "dgndictation"]
-                del fullResults[i]
-            else:
-                fullResults[i] = [word, "dgndictation"]
-                i = i + 1
+                itemsToDelete.append(i)
             inDictation = 1
         else:
-            i = i + 1
-            inDictation = 0
+            if inDictation:
+                formatted = nsformat.formatWords(wordsList, state=-1)[0]
+                fullResults[dgndNum] = (formatted, "dgndictation")
+                #print 'result formatting %s: %s'% (dgndNum, formatted)
+                wordsList = []  
+                inDictation = 0
+                
+        i = i + 1
+    # at end:
+    if inDictation:
+        formatted = nsformat.formatWords(wordsList, state=-1)[0]
+        fullResults[dgndNum] = (formatted, "dgndictation")
+        #print 'result formatting (last part) %s: %s'% (dgndNum, formatted)
+    # clean up double entries:
+    if itemsToDelete:
+        itemsToDelete.reverse()
+        for i in itemsToDelete:
+            del fullResults[i]
+
+    #print 'fullResults at end: %s'% repr(fullResults)
     return fullResults
-
-
 
 ##
 ## Runtime error handling:

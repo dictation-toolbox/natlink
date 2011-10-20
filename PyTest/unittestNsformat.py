@@ -364,6 +364,17 @@ class UnittestNsformat(unittest.TestCase):
       
         testFunc(set([8, 5]),  'testing', 'Testing')
         testFunc(set([8]), 'with', 'with')
+
+        # uppercase all (12)
+        testFunc(set([8, 12]),  'testing more words', 'TESTING MORE WORDS')
+
+        # capitalize all (11)
+        testFunc(set([8, 11]),  'capitalize words in a title', 'Capitalize Words In A Title')
+
+        # lowercase all (13) and no-spacing all (14)
+        
+        testFunc(set([13, 14]),  'Dakar @\\at-sign\\at_sign world .com\\dot_com', 'dakar@world.com')
+
         
         # and special, go to lowercase
         testFunc(set([7, 8]), 'Dakar', 'dakar')  # lowercase next...
