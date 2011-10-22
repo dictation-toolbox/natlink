@@ -25,9 +25,9 @@
 ### DEALINGS IN THE SOFTWARE.
 ###
 
-import natlink, nsformat
+import natlink
 from   types import *
-import string, copy
+import string
 import re
 import sys
 
@@ -39,41 +39,28 @@ import sys
 def combineDictationWords(fullResults):
     i = 0
     inDictation = 0
-    wordsList = []
-    itemsToDelete = []
-    #print 'combinedictationwords, start: %s'% fullResults
-    #while i < len(fullResults):
-    for i, fr in enumerate(copy.copy(fullResults)):
-        #print '%s: %s'% (i, repr(fullResults[i]))
-        if fr[1] == "dgndictation":
-            if not inDictation:
-                dgndNum = i
-            wordsList.append(fr[0])
+    while i < len(fullResults):
+        if fullResults[i][1] == "dgndictation":
+            # This word came from a "recognize anything" rule.
+            # Convert to written form if necessary, e.g. "@\at-sign" --> "@"
+            word = fullResults[i][0]
+            backslashPosition = string.find(word, "\\")
+            if backslashPosition > 0:
+                word = word[:backslashPosition]
             if inDictation:
-                itemsToDelete.append(i)
+                fullResults[i-1] = [fullResults[i-1][0] + " " + word,
+                                    "dgndictation"]
+                del fullResults[i]
+            else:
+                fullResults[i] = [word, "dgndictation"]
+                i = i + 1
             inDictation = 1
         else:
-            if inDictation:
-                formatted = nsformat.formatWords(wordsList, state=-1)[0]
-                fullResults[dgndNum] = (formatted, "dgndictation")
-                #print 'result formatting %s: %s'% (dgndNum, formatted)
-                wordsList = []  
-                inDictation = 0
-                
-        i = i + 1
-    # at end:
-    if inDictation:
-        formatted = nsformat.formatWords(wordsList, state=-1)[0]
-        fullResults[dgndNum] = (formatted, "dgndictation")
-        #print 'result formatting (last part) %s: %s'% (dgndNum, formatted)
-    # clean up double entries:
-    if itemsToDelete:
-        itemsToDelete.reverse()
-        for i in itemsToDelete:
-            del fullResults[i]
-
-    #print 'fullResults at end: %s'% repr(fullResults)
+            i = i + 1
+            inDictation = 0
     return fullResults
+
+
 
 ##
 ## Runtime error handling:
