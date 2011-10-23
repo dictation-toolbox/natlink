@@ -182,7 +182,7 @@ Commands" and "Edit Global Commands" are activated.
             print "Vocola not active"
             return
         else:
-            print "Vocola version 2.7.2I starting..."
+            print "Vocola version 2.7.2+I starting..."
 
         self.mayHaveCompiled = 0  # has the compiler been called?
         self.compilerError   = 0  # has a compiler error occurred?
@@ -538,10 +538,6 @@ Dragon, if you want to use the updated version of this file."""% (destDir, sourc
 
 
 
-thisGrammar = ThisGrammar()
-thisGrammar.initialize()
-
-
 # Returns the modification time of a file or 0 if the file does not exist
 def vocolaGetModTime(file):
     try: return os.stat(file)[ST_MTIME]
@@ -601,6 +597,10 @@ def vocolaBeginCallback(moduleInfo):
         return 2
     return compiled
 
+
+
+thisGrammar = ThisGrammar()
+thisGrammar.initialize()
 
 
 def unload():

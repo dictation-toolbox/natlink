@@ -1,7 +1,7 @@
 Quintijn's combined installer release 4.0 news.
 
 
----Now installs version 2.7.2I of Vocola:
+---Now installs version 2.7.2+I of Vocola:
 
   * Changes in version 2.7.2 of Vocola:
     * Workarounds for some Dragon bugs, including the DNS 11 bug where
