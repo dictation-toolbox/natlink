@@ -55,7 +55,8 @@ for name in globals():
 flags_like_period = (9, 4, 21, 17)  # flag_two_spaces_next = 9,  flag_passive_cap_next = 4, flag_no_space_before = 21
 flags_like_comma = (21, )  # flag_no_space_before = 21  (flag_nodelete = 3 we just ignore here, so leave out)
 flags_like_number = (10,)
-flags_like_point = (8, 10)  # no spacing when in combination with numbers flag_cond_no_space = 10
+flags_like_point = (8, 10, 21)  # no spacing (combination with numbers seems
+                                # obsolete (cond_no_space = 10)
 flags_like_hyphen = (8, 21)  # no spacing before and after
 flags_like_open_quote = (8, 20) # no space next and no cap change
 flags_like_close_quote = (21, 20, 19) # no space before, no cap change and no space change (??)
