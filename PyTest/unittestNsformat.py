@@ -147,8 +147,8 @@ class UnittestNsformat(unittest.TestCase):
         if DNSVersion <= 10:
             words =             ['.', r'.\period', r'.\point', r',\comma', r':\colon', r'-\hyphen', 'normal']
         else:
-            words =             ['.', r'.\period\period', r'.\point\point', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
-        formattedExpected = [' .', '.',        ' .',       ',',        ':',        '-', ' normal']
+            words =             ['.', r'.\period\period', r'.\dot\dot', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
+        formattedExpected = [' .', '.',        '.',       ',',        ':',        '-', ' normal']
         stateExpected =      [(), (9, 4),      (8, 10),    (),       (),           (8,), ()]
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
@@ -493,6 +493,12 @@ class UnittestNsformat(unittest.TestCase):
         state=testSubroutine(state,
             r'an "\left-double-quote\open-quote example of testing .\period\period "\right-double-quote\close_quote hello',
             ' an "example of testing."  Hello')
+        state=testSubroutine
+
+        state = None
+        state=testSubroutine(state,
+            r'a hello .\dot\dot test message .\period\period and proceed with more .\dot\dot testing .\period\period',
+            'A hello.test message.  And proceed with more.testing.')
         state=testSubroutine
     
         # special signs:
