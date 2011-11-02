@@ -9,6 +9,6 @@ This release 4.0 can be considered as stable:
 -etc. See http://qh.antenna.nl/unimacro for a lot more...
 
 Please consider making a donation to Quintijn for all the hard work to get this release working...
-(see http://qh.antenna.nl/unimacro/aboutunimacro.html).
+(see http://qh.antenna.nl/unimacro/aboutunimacro/index.html).
 
 

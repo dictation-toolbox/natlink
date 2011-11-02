@@ -475,7 +475,13 @@ class UnittestNsformat(unittest.TestCase):
         state=None
         # assume english, two spaces after .:
         # note _ is converted into a space, inside a word ()
-    
+
+        # custom word added (*\\modulo)    
+        state=testSubroutine(state,
+            r'hello *\\modulo world',
+            'Hello * world')
+        
+        state=None
         state=testSubroutine(state,
             r'first .\period\period next',
             'First.  Next')
