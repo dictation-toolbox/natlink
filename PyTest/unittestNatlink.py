@@ -944,9 +944,57 @@ class UnittestNatlink(unittest.TestCase):
                 
         else:
             # NatSpeak <= 10:
+            # spelling letters (also see voicecode/sr_interface)
+            total = []
+            for word, expected in [(r'a', 'A'),
+                         (r'A.', 'A A.'),
+                         (r'a\alpha', 'A A. a'),
+                         ([r'I.', r'i\india'], 'A A. a I. i'),
+                         ]:
+                if isinstance(word, basestring):
+                    words = [word]
+                    total.append(word)
+                else:
+                    words = word[:]
+                    total.extend(words)
+                testMimicResult(words, expected)
             
-            pass
-                
+            time.sleep(0.5)
+            self.clearDragonPad()
+            # total string in once:
+            expected = 'A A. a I. i' # not clear why now a space at end of result.
+            testMimicResult(total, expected)
+            self.clearDragonPad()
+            
+            
+            ## numbers:            
+            for word, expected in [(r'one', 'One'),
+                         #(r'1\one', 'One'),
+                         (['two', 'three', 'four', 'five'], '2345'), 
+                         (['six', 'seven', 'eight', 'nine'], '6789')]:
+            
+                if isinstance(word, basestring):
+                    words = [word]
+                    total.append(word)
+                else:
+                    words = word[:]
+                    total.extend(words)
+                testMimicResult(words, expected)
+                self.clearDragonPad()
+
+            # control characters:
+            for word, expected in [(r'.\full-stop', '.'),
+                        (r'.\dot', '.'), 
+                        (r',\comma', ','),
+                        ([r'\Caps-On', 'hello', 'world'], 'Hello World'),
+                        ([r'\All-Caps-On', 'hello', 'world'], 'HELLO WORLD')]:
+                if isinstance(word, basestring):
+                    words = [word]
+                else:
+                    words = word[:]
+                testMimicResult(words, expected)
+                self.clearDragonPad()
+            # end of testing recognitionMimic for NatSpeak <= 10    
 
         
     def tttestWordFuncs(self):
