@@ -38,16 +38,16 @@
 #
 
 # August 24, 2011, QH:
-#   added checkUnimacroCompatibility, for automatic copying the Unimacro.vch file into the
-#   VocolaUserDirectory.
+#   added checkUnimacroCompatibility, for automatic copying the
+#   Unimacro.vch file into the VocolaUserDirectory.
 # 
 # February 4, 2008, QH:
-# adapted to natlinkmain, which loads _vocola_main before other modules,
-# and calls back also at begin Callback time before other modules to
-# vocolaBeginCallback.
-# If something changed within Vocola, report back to natlinkmain with
-#  1 (change py file)
-#  2 (new py file)
+#   adapted to natlinkmain, which loads _vocola_main before other
+#   modules, and calls back also at begin Callback time before other
+#   modules to vocolaBeginCallback.
+#   If something changed within Vocola, report back to natlinkmain with
+#     1 (change py file)
+#     2 (new py file)
 
 import string
 import sys
@@ -110,16 +110,16 @@ class ThisGrammar(GrammarBase):
 
     if language == 'esp':
         gramSpec = """
-<NatLinkWindow>     exported = [Mostrar] Ventana De (NatLink|Vocola) ;
+<NatLinkWindow>     exported = [Mostrar] Ventana de (NatLink|Vocola) ;
 <loadAll>           exported = (Recargar|Cargar) Todos Los Comandos [de voz];
 <loadCurrent>       exported = (Recargar|Cargar) Comandos [de voz];
 <loadGlobal>        exported = (Recargar|Cargar) Comandos [de voz] Globales;
 <loadExtensions>    exported = (Recargar|Cargar) Extensiones [de voz];
 <discardOld>        exported = Descartar Comandos [de voz] Viejos;
 <edit>              exported = (Modificar|Editar) Comandos [de voz];
-<editMachine>       exported = (Modificar|Editar) Comandos [de voz] De (este ordenador|La Computadora);
+<editMachine>       exported = (Modificar|Editar) Comandos [de voz] de (este ordenador|la Computadora);
 <editGlobal>        exported = (Modificar|Editar) Comandos [de voz] Globales ;
-<editGlobalMachine> exported = (Modificar|Editar) Comandos [de voz] Globales De (este ordenador|La Computadora);
+<editGlobalMachine> exported = (Modificar|Editar) Comandos [de voz] Globales de (este ordenador|la Computadora);
     """
     elif language == 'fra':
         gramSpec = """
