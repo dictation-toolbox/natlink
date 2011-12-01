@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natlink", "natlink.vcproj", "{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Inhouse Release|Win32 = Inhouse Release|Win32
+		Release Python2.5|Win32 = Release Python2.5|Win32
+		Release Python2.6|Win32 = Release Python2.6|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}.Debug|Win32.Build.0 = Debug|Win32
+		{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}.Inhouse Release|Win32.ActiveCfg = Inhouse Release|Win32
+		{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}.Inhouse Release|Win32.Build.0 = Inhouse Release|Win32
+		{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}.Release Python2.5|Win32.ActiveCfg = Release Python2.5|Win32
+		{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}.Release Python2.5|Win32.Build.0 = Release Python2.5|Win32
+		{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}.Release Python2.6|Win32.ActiveCfg = Release Python2.6|Win32
+		{16A35A0A-FB2B-4700-BF0D-CFE2C8A1BDCF}.Release Python2.6|Win32.Build.0 = Release Python2.6|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
