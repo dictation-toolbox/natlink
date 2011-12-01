@@ -1,6 +1,6 @@
 #!/bin/env python
 #
-# natlinkconfig.py
+# confignatlinkvocolaunimacro.py
 #   This module does the natlinkconfigfunctions through a
 #   wxPython GUI
 #

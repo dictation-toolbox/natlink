@@ -1,0 +1,15 @@
+Working on new test releases, 4.1alpha
+
+--- New in Vocola:
+
+
+---New in Unimacro:
+  * tasks grammar improved and added "give name" option
+  * folders grammar made more secure. More work to be done
+  * spanish translations (Javier Panta) for esp_spokenforms.ini and _control.ini and _folders.ini
+
+---New in the combined NatLink/Vocola/Unimacro installer:
+
+---Changed in NatLink (for programmers only):
+  
+ 

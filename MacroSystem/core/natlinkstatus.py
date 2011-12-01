@@ -211,7 +211,7 @@ class NatlinkStatus(object):
             if self.userregnlOld:
                 self.copyRegSettingsToInifile(self.userregnlOld, self.userregnl)
             else:
-                print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, run natlinkconfig.py'
+                print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
    
    
     def checkSysPath(self):
