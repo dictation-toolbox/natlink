@@ -1286,10 +1286,10 @@ void CDragonCode::onMenuCommand( WPARAM wParam )
 			SetDlgItemText(hWnd, IDC_RICHEDIT, NULL);
 			break;
 
-		case ID_WINDOW_COPYTOCLIPBOARD:
+		case ID_WINDOW_SELECTALL:
 			{
-				MessageBox(NULL, "To be done", "", 0);
-
+				HWND hEdit = GetDlgItem( hWnd, IDC_RICHEDIT );
+				SendMessage( hEdit, EM_SETSEL, 0, -1 );
 				
 			}
 			break;

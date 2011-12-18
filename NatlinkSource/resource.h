@@ -2,13 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by natlink.rc
 //
-
-/*
- Modifications/Additions starting December 2011
-	Marked up as "RW Added" or something similar throughout the code
-	(c) Copyright by Rüdiger Wilke
-*/
-
 #define IDS_PROJNAME                    100
 #define IDR_APPSUPP                     101
 #define IDD_STDOUT                      201
@@ -23,10 +16,7 @@
 #define IDI_LEFT2                       209
 #define IDI_UP                          210
 #define IDI_UP2                         211
-#define IDI_NODIR                      212
-// 
-// RW Added
-//
+#define IDI_NODIR                       212
 #define ID_OPTIONS_RELOAD               32768
 #define ID_OPTIONS_DRAGLOG              32771
 #define ID_WINDOW_TOPLEFT               32773
@@ -37,8 +27,7 @@
 #define ID_WINDOW_CLEAR                 32778
 #define ID_WINDOW_COPYTOCLIPBOARD       32779
 #define ID_HELP_ABOUT                   32780
-//
-// End RW Added
+#define ID_WINDOW_SELECTALL             32781
 
 // Next default values for new objects
 // 
@@ -46,7 +35,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        213
-#define _APS_NEXT_COMMAND_VALUE         32781
+#define _APS_NEXT_COMMAND_VALUE         32782
 #define _APS_NEXT_CONTROL_VALUE         202
 #define _APS_NEXT_SYMED_VALUE           102
 #endif

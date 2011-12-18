@@ -1,12 +1,5 @@
 // Microsoft Visual C++ generated resource script.
 //
-
-/*
- Modifications/Additions starting December 2011
-	Marked up as "RW Added" or something similar throughout the code
-	(c) Copyright by Rüdiger Wilke
-*/
-
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -105,7 +98,7 @@ IDR_APPSUPP             REGISTRY                "appsupp.reg"
 
 IDD_STDOUT DIALOGEX 0, 0, 266, 134
 STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Messages from NatLink (Mod) / Python Macros" // RW Added: modified the caption
+CAPTION "Messages from NatLink (Mod) / Python Macros"
 MENU IDR_MENU
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -171,8 +164,6 @@ IDI_NODIR               ICON                    "idi_nodir.ico"
 // Menu
 //
 
-// RW Added: revamped the entire message window, adding menu items etc.
-//
 IDR_MENU MENU 
 BEGIN
     POPUP "&Options"
@@ -190,7 +181,7 @@ BEGIN
         MENUITEM "Remember Position",           ID_WINDOW_REMEMBERPOSITION
         MENUITEM SEPARATOR
         MENUITEM "Clear",                       ID_WINDOW_CLEAR
-        MENUITEM "Copy to Clipboard",           ID_WINDOW_COPYTOCLIPBOARD
+        MENUITEM "Select All",                  ID_WINDOW_SELECTALL
     END
     POPUP "Help"
     BEGIN
