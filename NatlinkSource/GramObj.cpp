@@ -14,6 +14,8 @@
 #include "ResObj.h"
 #include "Excepts.h"
 
+#pragma warning( disable : 4996 )
+
 // defined in PythWrap.cpp
 CResObj * resobj_new();
 

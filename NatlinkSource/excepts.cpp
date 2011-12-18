@@ -14,6 +14,9 @@
 #include "ResObj.h"
 #include "Excepts.h"
 
+#pragma warning( disable : 4996 )
+
+
 // This is our set of error objects, one for each error listed in Excepts.h
 PyObject * ErrObjects[ ERROR_COUNT ];
 

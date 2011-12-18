@@ -1,5 +1,12 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
+
+/*
+ Modifications/Additions starting December 2011
+	Marked up as "RW Added" or something similar throughout the code
+	(c) Copyright by Rüdiger Wilke
+*/
+
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -27,18 +34,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\0"
 END
@@ -46,7 +53,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -69,15 +75,13 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "natlink Module\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "NATLINK\0"
-            VALUE "LegalCopyright", "Copyright 1997\0"
-            VALUE "OriginalFilename", "NATLINK.DLL\0"
-            VALUE "ProductName", "natlink Module\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "OLESelfRegister", "\0"
+            VALUE "FileDescription", "natlink Module"
+            VALUE "FileVersion", "1, 0, 0, 0"
+            VALUE "InternalName", "NATLINK"
+            VALUE "LegalCopyright", "Copyright 1997"
+            VALUE "OriginalFilename", "NATLINK.DLL"
+            VALUE "ProductName", "natlink Module"
+            VALUE "ProductVersion", "1, 0, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -86,40 +90,35 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-IDR_APPSUPP             REGISTRY DISCARDABLE    "appsupp.reg"
+IDR_APPSUPP             REGISTRY                "appsupp.reg"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_STDOUT DIALOG DISCARDABLE  0, 0, 265, 134
-STYLE DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Messages from Python Macros"
+IDD_STDOUT DIALOGEX 0, 0, 266, 134
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Messages from NatLink (Mod) / Python Macros" // RW Added: modified the caption
 MENU IDR_MENU
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_RICHEDIT,"RICHEDIT",ES_MULTILINE | ES_READONLY | 
-                    WS_BORDER | WS_VSCROLL | WS_TABSTOP,7,7,251,120
+    CONTROL         "",IDC_RICHEDIT,"RICHEDIT",TCS_RAGGEDRIGHT | TCS_MULTISELECT | WS_BORDER | WS_VSCROLL | WS_TABSTOP,7,7,253,120
 END
 
-IDD_WAITFOR DIALOG DISCARDABLE  10, 10, 186, 49
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
-    WS_SYSMENU
+IDD_WAITFOR DIALOG  10, 10, 186, 49
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Natlink / Python Subsystem"
 FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "Close",IDCANCEL,67,28,50,14
-    LTEXT           "Python code is waiting for speech (waitForSpeech).  Click Close to return control to the Python interpreter.",
-                    IDC_STATIC,7,7,172,16
+    LTEXT           "Python code is waiting for speech (waitForSpeech).  Click Close to return control to the Python interpreter.",IDC_STATIC,7,7,172,16
 END
 
 
@@ -129,12 +128,12 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_STDOUT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 258
+        RIGHTMARGIN, 260
         TOPMARGIN, 7
         BOTTOMMARGIN, 127
     END
@@ -157,26 +156,45 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_RIGHT				ICON	DISCARDABLE		"idi_right.ico"
-IDI_RIGHT2				ICON	DISCARDABLE		"idi_right2.ico"
-IDI_DOWN				ICON	DISCARDABLE		"idi_down.ico"	
-IDI_DOWN2				ICON	DISCARDABLE		"idi_down2.ico"
-IDI_LEFT				ICON	DISCARDABLE		"idi_left.ico"	
-IDI_LEFT2				ICON	DISCARDABLE		"idi_left2.ico"
-IDI_UP					ICON	DISCARDABLE		"idi_up.ico"			
-IDI_UP2 				ICON	DISCARDABLE		"idi_up2.ico" 	
-IDI_NODIR				ICON	DISCARDABLE		"idi_nodir.ico"
+IDI_RIGHT               ICON                    "idi_right.ico"
+IDI_RIGHT2              ICON                    "idi_right2.ico"
+IDI_DOWN                ICON                    "idi_down.ico"
+IDI_DOWN2               ICON                    "idi_down2.ico"
+IDI_LEFT                ICON                    "idi_left.ico"
+IDI_LEFT2               ICON                    "idi_left2.ico"
+IDI_UP                  ICON                    "idi_up.ico"
+IDI_UP2                 ICON                    "idi_up2.ico"
+IDI_NODIR               ICON                    "idi_nodir.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_MENU MENU DISCARDABLE 
+// RW Added: revamped the entire message window, adding menu items etc.
+//
+IDR_MENU MENU 
 BEGIN
-    POPUP "&File"
+    POPUP "&Options"
     BEGIN
-        MENUITEM "&Reload Everything",          IDD_RELOAD
+        MENUITEM "&Reload Everything",          ID_OPTIONS_RELOAD
+        MENUITEM "Dragon Logging",              ID_OPTIONS_DRAGLOG
+    END
+    POPUP "Window"
+    BEGIN
+        MENUITEM "Top Left",                    ID_WINDOW_TOPLEFT
+        MENUITEM "Top Right",                   ID_WINDOW_TOPRIGHT
+        MENUITEM "Bottom Left",                 ID_WINDOW_BOTTOMLEFT
+        MENUITEM "Bottom Right",                ID_WINDOW_BOTTOMRIGHT
+        MENUITEM SEPARATOR
+        MENUITEM "Remember Position",           ID_WINDOW_REMEMBERPOSITION
+        MENUITEM SEPARATOR
+        MENUITEM "Clear",                       ID_WINDOW_CLEAR
+        MENUITEM "Copy to Clipboard",           ID_WINDOW_COPYTOCLIPBOARD
+    END
+    POPUP "Help"
+    BEGIN
+        MENUITEM "About",                       ID_HELP_ABOUT
     END
 END
 
@@ -186,7 +204,7 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "natlink"
 END

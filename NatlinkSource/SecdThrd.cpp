@@ -15,6 +15,14 @@
 	- initial version
 */
 
+
+/*
+ Modifications/Additions starting December 2011
+	Marked up as "RW Added" or something similar throughout the code
+	(c) Copyright by Rüdiger Wilke
+*/
+
+
 #include "stdafx.h"
 #include "resource.h"
 #include "SecdThrd.h"
@@ -32,6 +40,12 @@
 
 // The color for error messages
 #define DARKRED RGB( 128, 0, 0 )
+
+// RW Added: suppress deprecation warnings
+//
+#pragma warning( disable : 4996 )
+//
+
 
 //---------------------------------------------------------------------------
 // Called when a message is sent to the dialog box.  Return FALSE to tell
@@ -57,7 +71,41 @@ BOOL CALLBACK dialogProc(
 		return TRUE;
 		
 	 case WM_DESTROY:
-		PostQuitMessage( 0 );
+		 {
+			// 
+			// RW Added: get the INI file path, but keep local here
+			//
+			LPTSTR  strDLLPath1 = new TCHAR[_MAX_PATH];
+			::GetModuleFileName((HINSTANCE)&__ImageBase, strDLLPath1, _MAX_PATH);
+			TCHAR m_pszDLLPath[MAX_PATH];
+			if ( strDLLPath1 )
+			{
+				int n = strlen(strDLLPath1);
+				strncpy(m_pszDLLPath, strDLLPath1, n-11);
+				m_pszDLLPath[n-11]='\0';
+				strcat(m_pszDLLPath, "natlinkstatus.ini");
+			}
+			
+			// get the current message window parameters and save to INI file
+
+			RECT rc;
+			char szValue[256];
+			GetWindowRect(hWnd, &rc);
+			LONG lBottom = rc.bottom;
+			sprintf(szValue, "%i", lBottom);
+			WritePrivateProfileString("WindowSettings", "Bottom", szValue, m_pszDLLPath);
+			sprintf(szValue, "%i", rc.left);
+			WritePrivateProfileString("WindowSettings", "Left", szValue, m_pszDLLPath);
+			sprintf(szValue, "%i", rc.right);
+			WritePrivateProfileString("WindowSettings", "Right", szValue, m_pszDLLPath);
+			sprintf(szValue, "%i", rc.top);
+			WritePrivateProfileString("WindowSettings", "Top", szValue, m_pszDLLPath);
+
+			// End RW Added
+
+			PostQuitMessage( 0 );
+		 }
+
 		return FALSE;
 
 	 case WM_CLOSE:
@@ -97,6 +145,19 @@ BOOL CALLBACK dialogProc(
 			delete pszText;
 		}
 		return TRUE;
+
+	 // RW Added: track resizing of the window and call repaint
+	 //
+	 case WM_SIZE:
+		 {
+			 HWND hEdit = GetDlgItem( hWnd, IDC_RICHEDIT );
+			 MoveWindow(hEdit, 0, 0,
+				 LOWORD(lParam),        // width of client area 
+				 HIWORD(lParam),        // height of client area 
+				 TRUE);					// repaint window
+		 }
+		 return TRUE;
+	 // End RW Added
 		
 	 default:
 		return FALSE;
@@ -125,7 +186,7 @@ DWORD CALLBACK threadMain( void * pArg )
 
 	pThis->setOutWnd( hWnd );
 	pThis->signalEvent();
-
+	
 	if( hWnd == NULL )
 	{
 		return 1;

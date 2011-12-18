@@ -9,6 +9,12 @@
 	which implement the export Python natlink functions.
 */
 
+/*
+ Modifications/Additions starting December 2011
+	Marked up as "RW Added" or something similar throughout the code
+	(c) Copyright by Rüdiger Wilke
+*/
+
 struct CGramObj;
 struct CResObj;
 struct CDictObj;
@@ -52,6 +58,20 @@ class CDragonCode
 		m_bHasTrayIcon = FALSE;
 		m_pTrayIconCallback = NULL;
 		m_pMessageStack = NULL;
+		//
+		// RW Added:
+		//
+		m_bWriteToDragonLog = FALSE;
+		m_bRememberWindowPosition = FALSE;
+		m_pszINIFile = NULL;
+		m_defHeight = 280;
+		m_defWidth = 395;
+		m_initTop = 0;
+		m_initLeft = 0;
+		m_initRight = 0;
+		m_initBottom = 0;
+		m_xSize = 0;
+		m_ySize = 0;
 	}
 	
 	~CDragonCode() {
@@ -111,6 +131,12 @@ class CDragonCode
 	// this is called from CDgnAppSupport at initialization time
 	void setAppClass( CDgnAppSupport * pAppClass ) { m_pAppClass = pAppClass; }
 	void setDuringInit( BOOL bState ) { m_bDuringInit = bState; }
+	
+	// RW Added:
+	//
+	void setWriteToDragonLog( BOOL bState ) { m_bWriteToDragonLog = bState; }
+	void setRememberWindowPosition( BOOL bState ) { m_bRememberWindowPosition = bState; }
+	// End RW Added
 
 	// these functions are called from CGramObj
 	ISRCentral * pISRCentral() { return m_pISRCentral; }
@@ -217,6 +243,8 @@ class CDragonCode
 	// deadlock
 	BOOL m_bDuringInit;
 
+
+
 	// during paused callback we restrict some function calls to avoid
 	// deadlock
 	BOOL m_bDuringPaused;
@@ -276,11 +304,34 @@ class CDragonCode
  public:
 	void logMessage( const char * pszText );
 	void logCookie( const char * pszText, QWORD qCookie );
+
+
  protected:
 
 	// subroutines of natConnect
 	BOOL initGetSiteObject( IServiceProvider * & pIDgnSite );
 	BOOL initSecondWindow();
+	//
+	// RW Added:
+	//
+	BOOL getINIFlags();
+	BOOL setINIFlags();
+	BOOL m_bWriteToDragonLog;
+	BOOL m_bRememberWindowPosition;
+	// the name of the INI config file (or en empty string if not known). 
+	char * m_pszINIFile;
+	// message window parameters
+	int m_defWidth;
+	int m_defHeight;
+	int m_initTop;
+	int m_initLeft;
+	int m_initRight;
+	int m_initBottom;
+	int m_xSize;
+	int m_ySize;
+	//
+	// End RW Added
+
 
 	// this is a stack of the things we are looking for in a message loop
 	CMessageStack * m_pMessageStack;
@@ -291,3 +342,18 @@ class CDragonCode
 	INH_DRAGCODE_CLASS
 #endif
 };
+
+#ifndef INIREADER_H
+#define INIREADER_H
+class CIniReader
+{
+public:
+ CIniReader(char* szFileName); 
+ int ReadInteger(char* szSection, char* szKey, int iDefaultValue);
+ float ReadFloat(char* szSection, char* szKey, float fltDefaultValue);
+ bool ReadBoolean(char* szSection, char* szKey, bool bolDefaultValue);
+ char* ReadString(char* szSection, char* szKey, const char* szDefaultValue);
+private:
+  char m_szFileName[255];
+};
+#endif//INIREADER_H

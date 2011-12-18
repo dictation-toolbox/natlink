@@ -7,6 +7,12 @@
 	This file contains the guts of the natlink functionality.
 */
 
+/*
+ Modifications/Additions starting December 2011
+	Marked up as "RW Added" or something similar throughout the code
+	(c) Copyright by Rüdiger Wilke
+*/
+
 //---------------------------------------------------------------------------
 //
 // Notes about nested callbacks:
@@ -124,6 +130,12 @@
 #include "appsupp.h"
 #include "SecdThrd.h"
 #include "Excepts.h"
+#include <string>
+
+// RW: Added
+EXTERN_C IMAGE_DOS_HEADER __ImageBase; // retrieve DLL path, thanks for pointing to it, QH
+#pragma warning( disable : 4996 ) // Suppress deprecation warnings
+//
 
 // defined in PythWrap.cpp
 CResObj * resobj_new();
@@ -573,7 +585,8 @@ LRESULT CALLBACK hiddenWndProc(
 
 	switch( uMsg )
 	{
-	 case WM_COMMAND:
+
+	case WM_COMMAND:
 		// menu command, posted from second thread
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
 		pDragCode->logMessage("+ hiddenWndProc WM_COMMAND\n");
@@ -1189,8 +1202,14 @@ void CDragonCode::onTimer()
 
 void CDragonCode::onMenuCommand( WPARAM wParam )
 {
-	if( LOWORD(wParam) == IDD_RELOAD )
+	// RW Added: Get a global handle on the message window
+	HWND hWnd = GetForegroundWindow();
+	HMENU hMenu = GetMenu( hWnd );
+	//
+
+	switch ( LOWORD (wParam) ) // RW Added: using switch (...) instead of if (...)
 	{
+		case ID_OPTIONS_RELOAD:
 		// currently we do not support this operation if we are using thread
 		// support because I have not worked through the issues about what
 		// to do about the thread state
@@ -1200,7 +1219,7 @@ void CDragonCode::onMenuCommand( WPARAM wParam )
 		}
 		
 		// reload the Python subsystem
-		displayText( "Reloading Python subsystem...\r\n", FALSE, FALSE );
+		displayText( "\nReloading Python subsystem...\r\n", FALSE, FALSE );
 
 		// Although we do not really care about the Python reference count
 		// we do want to reset the callbacks so we do not make a call into
@@ -1218,7 +1237,88 @@ void CDragonCode::onMenuCommand( WPARAM wParam )
 		releaseObjects();
 
 		m_pAppClass->reloadPython();
+
+		break;
+		
+		// RW Added: Various messages raised from new menut items ...
+		case ID_WINDOW_REMEMBERPOSITION:
+			{
+				if ( !hMenu )
+					displayText(
+					"No menu handle.\n", FALSE, FALSE );
+
+				if ( m_bRememberWindowPosition )
+				{
+					setRememberWindowPosition( FALSE );
+					displayText( "Remembering Window Position deactivated now.\n", 0, 0 );
+				}
+				else
+				{
+					setRememberWindowPosition( TRUE );
+					displayText( "Remembering Window Position activated now.\n", 0, 0 );
+				}
+
+				CheckMenuItem( hMenu, ID_WINDOW_REMEMBERPOSITION, m_bRememberWindowPosition ? MF_CHECKED : MF_UNCHECKED );				
+			}
+		break;
+
+		case ID_WINDOW_TOPLEFT:
+			MoveWindow(hWnd, 0, 0, m_defWidth, m_defHeight, TRUE);
+			break;
+
+		case ID_WINDOW_TOPRIGHT:
+			MoveWindow(hWnd, m_xSize-m_defWidth, 0, m_defWidth, m_defHeight, TRUE);
+			break;
+
+		case ID_WINDOW_BOTTOMLEFT:
+			MoveWindow(hWnd, 0, m_ySize-m_defHeight, m_defWidth, m_defHeight, TRUE);
+			break;
+		
+		case ID_WINDOW_BOTTOMRIGHT:
+			MoveWindow(hWnd, m_xSize-m_defWidth, m_ySize-m_defHeight, m_defWidth, m_defHeight, TRUE);
+			break;
+
+		case ID_HELP_ABOUT:
+			MessageBox(NULL, "To be done", "", 0);
+			break;
+
+		case ID_WINDOW_CLEAR:
+			SetDlgItemText(hWnd, IDC_RICHEDIT, NULL);
+			break;
+
+		case ID_WINDOW_COPYTOCLIPBOARD:
+			{
+				MessageBox(NULL, "To be done", "", 0);
+
+				
+			}
+			break;
+
+		case ID_OPTIONS_DRAGLOG:
+			{
+				if ( !hMenu )
+					displayText( "No menu handle.\n", FALSE, FALSE );
+
+				if ( m_bWriteToDragonLog )
+				{
+					setWriteToDragonLog( FALSE );
+					displayText( "Dragon Logging deactivated now.\n", FALSE, TRUE );
+				}
+				else
+				{
+					setWriteToDragonLog( TRUE );
+					displayText( "Dragon Logging activated now.\n", FALSE, TRUE );
+				}
+
+				CheckMenuItem( hMenu, ID_OPTIONS_DRAGLOG, m_bWriteToDragonLog ? MF_CHECKED : MF_UNCHECKED );
+				
+			}
+		break;
+
+		// End of messages from new menu items
+
 	}
+
 }
 
 //---------------------------------------------------------------------------
@@ -1344,6 +1444,16 @@ DWORD CDragonCode::testFileName( const char * pszFileName )
 
 void CDragonCode::logMessage( const char * pszText )
 {
+	// RW Added: check for global state, if FALSE just quit,
+	// don't write to Dragon log file
+	//
+	if ( !m_bWriteToDragonLog )
+	{
+		return;
+	}
+	//
+	//
+
 	if( !m_pszLogFile )
 	{
 		return;
@@ -1475,6 +1585,10 @@ BOOL CDragonCode::initGetSiteObject( IServiceProvider * & pIDgnSite )
 BOOL CDragonCode::initSecondWindow()
 {
 	// create a window for posting ourself messages
+	
+	// RW Added: retrieve configurations settings from INI file
+	getINIFlags();
+	//
 
 	HINSTANCE hInstance = _Module.GetModuleInstance();
 
@@ -1487,7 +1601,7 @@ BOOL CDragonCode::initSecondWindow()
 	regCls.cbWndExtra = 4;
 	RegisterClassEx( &regCls );
 
-	m_hMsgWnd = CreateWindow(
+	m_hMsgWnd = CreateWindow( 
 		"natlink",
 		"natlink",
 		WS_POPUP,
@@ -1502,6 +1616,50 @@ BOOL CDragonCode::initSecondWindow()
 		return FALSE;
 	}
 
+	// RW Added: Get a handle to the message window and
+	// process global variables according to INI settings
+	
+	HWND hWnd = GetForegroundWindow();
+	
+	// if "Remember Position" move the window accordingly
+
+	if ( m_bRememberWindowPosition )
+	{
+		MoveWindow(hWnd, m_initLeft, m_initTop, m_initRight-m_initLeft, m_initBottom-m_initTop, TRUE);
+	}
+	else
+	{
+		MoveWindow(hWnd, 0, 0, m_defWidth, m_defHeight, TRUE);
+	}
+	
+	// post some intialization messages
+
+	if ( m_bWriteToDragonLog )
+	{
+		displayText( "Dragon Logging initially activated.\n", FALSE, FALSE );
+	}
+	else
+		displayText( "Dragon Logging initially deactivated.\n", FALSE, FALSE );
+
+	if ( m_bRememberWindowPosition )
+	{
+		displayText( "Remembering Window Position initially activated.\n\n", FALSE, FALSE );
+	}
+	else
+	{
+		displayText( "Remembering Window Position initially deactivated.\n\n", FALSE, FALSE );
+	}
+
+	// check/uncheck the menu items accordingly
+	
+	HMENU hMenu = GetMenu(hWnd);
+	if ( !hMenu )
+		displayText("No menu handle!\n\n", TRUE, FALSE);
+	CheckMenuItem( hMenu, ID_OPTIONS_DRAGLOG, m_bWriteToDragonLog ? MF_CHECKED : MF_UNCHECKED );
+	CheckMenuItem( hMenu, ID_WINDOW_REMEMBERPOSITION, m_bRememberWindowPosition ? MF_CHECKED : MF_UNCHECKED );
+
+	// RW Added ends here
+
 	// we store out class pointer in the window's extra data field so we
 	// get called back when a menu message occurs
 	SetWindowLong( m_hMsgWnd, 0, (LONG)this );
@@ -1511,7 +1669,7 @@ BOOL CDragonCode::initSecondWindow()
 	{
 		m_pSecdThrd->setMsgWnd( m_hMsgWnd );
 	}
-
+	
 	return TRUE;
 }
 
@@ -1624,9 +1782,127 @@ SDATA makeEmptyGrammar()
 }
 
 //---------------------------------------------------------------------------
+//
+// RW Added: get the configuration settings from INI file
+//
+
+BOOL CDragonCode::getINIFlags()
+{
+	// retrieve the DLL path, thanks to QH for pointing to it
+
+	LPTSTR  strDLLPath1 = new TCHAR[_MAX_PATH];
+    ::GetModuleFileName((HINSTANCE)&__ImageBase, strDLLPath1, _MAX_PATH);
+
+	// build the INI file path
+
+	m_pszINIFile = new char[_MAX_PATH];
+	if ( strDLLPath1 )
+	{
+		int n = strlen(strDLLPath1);
+		strncpy(m_pszINIFile, strDLLPath1, n-11);
+		m_pszINIFile[n-11]='\0';
+		strcat(m_pszINIFile, "natlinkstatus.ini");
+	}
+	
+	// check for INI file
+
+	FILE *fp;
+	fp=fopen( m_pszINIFile, "r" );
+
+	// if available
+
+	if ( fp )
+	{
+		fclose( fp );
+		displayText("Initializing user config settings from:\n", 0, 0);
+		displayText(m_pszINIFile, 0, 0);
+		displayText("\n", 0, 0);
+		
+		// read settings
+
+		int iResult = GetPrivateProfileInt("usersettings", "WriteToDragonLog", 0, m_pszINIFile); 
+		switch ( iResult )
+			{
+				case 1:
+				   setWriteToDragonLog( TRUE );
+				   break;
+				case 2:
+					setWriteToDragonLog( FALSE );
+					break;
+			}
+
+		iResult = GetPrivateProfileInt("WindowSettings", "RememberPosition", 0, m_pszINIFile); 
+		switch ( iResult )
+			{
+				case 1:
+				   setRememberWindowPosition( TRUE );
+				   break;
+				case 2:
+					setRememberWindowPosition( FALSE );
+					break;
+			}
+
+		m_initTop = GetPrivateProfileInt("WindowSettings", "Top", 0, m_pszINIFile);
+		m_initBottom = GetPrivateProfileInt("WindowSettings", "Bottom", 0, m_pszINIFile);
+		m_initLeft = GetPrivateProfileInt("WindowSettings", "Left", 0, m_pszINIFile);
+		m_initRight = GetPrivateProfileInt("WindowSettings", "Right", 0, m_pszINIFile);
+
+	}
+
+	// if INI not available
+
+	else
+	{
+		displayText("Failed to open INI file: \n", 1, 0);
+		displayText(m_pszINIFile, 1, 0);
+		displayText("\nDoes it exist? - Using default settings instead ...\n\n", 1, 0);
+	}
+
+	// free the memory from the DLL path file
+	if( strDLLPath1 )
+	{
+		delete strDLLPath1;
+		strDLLPath1 = NULL;
+	}
+	
+	return TRUE;
+}
+
+//
+// RW Added: write the configuration settings to the INI file
+//
+BOOL CDragonCode::setINIFlags()
+{
+	char szValue[255];
+	sprintf(szValue, "%s", m_bWriteToDragonLog ? "1" : "0");
+	WritePrivateProfileString("usersettings", "WriteToDragonLog", szValue, m_pszINIFile);
+	// Add your code here like this:
+	sprintf(szValue, "%s", m_bRememberWindowPosition ? "1" : "0");
+	WritePrivateProfileString("WindowSettings", "RememberPosition", szValue, m_pszINIFile);
+	
+
+	// free the memory from the INI file
+	if( m_pszINIFile )
+	{
+		delete m_pszINIFile;
+		m_pszINIFile = NULL;
+	}
+
+	return TRUE;
+}
+
 
 BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 {
+	//
+	// RW Added: get the screen size (working area) set global
+	//
+	RECT rectDesktop;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &rectDesktop, 0);
+	m_xSize = rectDesktop.right-rectDesktop.left;
+	m_ySize = rectDesktop.bottom-rectDesktop.top;
+	// 
+
 	HRESULT rc;
 
 	NOTDURING_INIT( "natConnect" );
@@ -1776,7 +2052,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	{
 		return FALSE;
 	}
-
+	
 	// now we create a local Python thread state which we can use in callbacks
 	if( !m_pThreadState && bUseThreads )
 	{
@@ -1785,7 +2061,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 		m_pThreadState = PyThreadState_New( threadStateSave->interp );
 		PyThreadState_Swap( threadStateSave );
 	}
-
+	
 	return TRUE;
 }
 
@@ -1857,6 +2133,12 @@ BOOL CDragonCode::natDisconnect()
 		delete m_pszLogFile;
 		m_pszLogFile = NULL;
 	}
+
+	// RW Added: retrieve current configuration settings
+	// to make the persistent in INI file
+	//
+	setINIFlags();
+	//
 
 	return TRUE;
 }

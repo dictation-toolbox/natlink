@@ -11,8 +11,8 @@ class CSecondThread
 {
  public:
 	// the constructor will create the thread
-	CSecondThread();
-
+	 CSecondThread();
+	 
 	// the destructor will terminate the thread
 	~CSecondThread();
 
@@ -43,4 +43,5 @@ class CSecondThread
 
 	// This is the handle of the output window itself
 	HWND m_hOutWnd;
+
 };

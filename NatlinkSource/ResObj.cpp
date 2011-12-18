@@ -13,6 +13,8 @@
 #include "Excepts.h"
 #include "GramObj.h"
 
+#pragma warning( disable : 4996 )
+
 // This macro is used at the top of functions which can not be called
 // when no grammar has been loaded
 #define MUSTBETINITED( func ) \
