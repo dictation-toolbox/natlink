@@ -516,6 +516,7 @@ class GrammarBase(GramClassBase):
         # array of word/ruleNames and an array of only words
         words = []
         fullResults = []
+        wordsByRule = {}
         if self.doOnlyGotResultsObject:
             # can switch on in gotResultsObject, so rest of processing is not done.
             # grammar kaiser_dictation, (voicedictation with exclusive mode catching)
@@ -526,18 +527,21 @@ class GrammarBase(GramClassBase):
             words.append( x[0] )
             # the numbering of some rules appears to be different in NatSpeak10, catch with try:
             try:
-                fullResults.append( ( x[0], self.ruleMap[x[1]] ) )
+                ruleName = self.ruleMap[x[1]]
             except KeyError:
                 if x[1] == 1000000 and 'dgndictation' in self.ruleMap.values():
-                    fullResults.append( ( x[0], 'dgndictation' ) )
+                    ruleName = 'dgndictation'
                 elif x[1] == 1000001 and 'dgnletters' in self.ruleMap.values():
-                    fullResults.append( ( x[0], 'dgnletters' ) )
+                    ruleName = 'dgnletters'
                 else:
                     print '='*50
                     print 'wordsAndNums: %s'% wordsAndNums
                     print 'ruleMap: %s'% `self.ruleMap`
                     mess =  'Invalid key %s for ruleMap'% x[1]
                     raise KeyError(mess)
+
+            fullResults.append( ( x[0], ruleName ) )
+            wordsByRule.setdefault(ruleName, []).append(x[0])
                 
         # we also compute a list similar to fullResults except that we group
         # all words which are sequential and in the same rule together in a
@@ -555,6 +559,7 @@ class GrammarBase(GramClassBase):
         # provide fullResults and seqsAndRules also as instance variables:
         self.fullResults = fullResults
         self.seqsAndRules = seqsAndRules
+        self.wordsByRule = wordsByRule
         # now we make the callbacks (in each case we only call the fucntion 
         # if it exists in the derived class)
         # - we first call gotResultsInit

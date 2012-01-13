@@ -96,16 +96,16 @@ import simpscrp
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
-        <loadAll>           exported = Load All [Voice] Commands;
-        <loadCurrent>       exported = Load [Voice] Commands;
-        <loadGlobal>        exported = Load Global [Voice] Commands;
-        <loadExtensions>    exported = Load [Voice] Extensions;
-        <discardOld>        exported = Discard Old [Voice] Commands;
-        <edit>              exported = Edit [Voice] Commands;
-        <editMachine>       exported = Edit Machine [Voice] Commands;
-        <editGlobal>        exported = Edit Global [Voice] Commands;
-        <editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
+<NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
+<loadAll>           exported = Load All [Voice] Commands;
+<loadCurrent>       exported = Load [Voice] Commands;
+<loadGlobal>        exported = Load Global [Voice] Commands;
+<loadExtensions>    exported = Load [Voice] Extensions;
+<discardOld>        exported = Discard Old [Voice] Commands;
+<edit>              exported = Edit [Voice] Commands;
+<editMachine>       exported = Edit Machine [Voice] Commands;
+<editGlobal>        exported = Edit Global [Voice] Commands;
+<editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
     """
 
     if language == 'esp':
@@ -120,6 +120,19 @@ class ThisGrammar(GrammarBase):
 <editMachine>       exported = (Modificar|Editar) Comandos [de voz] de (este ordenador|la Computadora);
 <editGlobal>        exported = (Modificar|Editar) Comandos [de voz] Globales ;
 <editGlobalMachine> exported = (Modificar|Editar) Comandos [de voz] Globales de (este ordenador|la Computadora);
+    """
+    elif language == 'ita':
+        gramSpec = """
+<NatLinkWindow>     exported = [Mostra] Finestra Di (NatLink|Vocola) ;
+<loadAll>           exported = Carica Tutti I Comandi [Vocali];
+<loadCurrent>       exported = Carica I Comandi [Vocali];
+<loadGlobal>        exported = Carica  Comandi [Vocali] Gliobali;
+<loadExtensions>    exported = Carica Estensioni [Vocali];
+<discardOld>        exported = Annulla Vecchi Comandi [Vocali];
+<edit>              exported = Modifica Comandi [Vocali];
+<editMachine>       exported = Modifica Comandi [Vocali] [del] Computer;
+<editGlobal>        exported = Modifica Comandi [Vocali] Globali;
+<editGlobalMachine> exported = Modifica Comandi [Vocali] Globali [del] Computer;
     """
     elif language == 'fra':
         gramSpec = """

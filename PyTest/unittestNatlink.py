@@ -484,6 +484,11 @@ class UnittestNatlink(unittest.TestCase):
             return
         self.fail("Fail in doTestEqualLists: %s\nexpected: %s\ngot: %s"% (message, expected, got))
 
+    def doTestEqualDicts(self, expected, got, message):
+        if expected == got:
+            return
+        self.fail("Fail in doTestEqualDicts: %s\nexpected: %s\ngot: %s"% (message, expected, got))
+
     #---------------------------------------------------------------------------
     # This types the keysequence {alt+esc}.  Since this is a sequence trapped
     # by the OS, we must send as system keys.
@@ -2515,14 +2520,16 @@ class UnittestNatlink(unittest.TestCase):
     # Try a slightly enhanced way of calling the rules, also giving nextWords, nextRule,
     # prevWords, prevRule, and also fullResults and seqsAndRules as instance variables.
     # QH, april 2010:
+    # Added test for self.rulesByName dict...
 
     def testNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
+        testwordsByRule = self.doTestEqualDicts
         class TestGrammar(GrammarBase):
 
             gramSpec = """
-                <run> exported = test [<optional>+] {colors}+ <extra>;
+                <run> exported = test [<optional>+] {colors}+ <extra> [<optional>];
                 <optional>  = very | small | big;
                 <extra> = {furniture};
             """
@@ -2572,21 +2579,25 @@ class UnittestNatlink(unittest.TestCase):
         testGram = TestGrammar()
         testGram.initialize()
         testGram.testNum = 1
-        natlink.recognitionMimic(['test', 'big', 'blue', 'chair'])
+        natlink.recognitionMimic(['test', 'very', 'big', 'blue', 'chair'])
         testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
         testEqualLists(['optional', 'run', 'extra', None], testGram.allNextRules, "first experiment, next rules")
-        testEqualLists([[], ['test'], ['big'], ['blue']], testGram.allPrevWords, "first experiment, prev words")
-        testEqualLists([['big'], ['blue'], ['chair'], []], testGram.allNextWords, "first experiment, next words")
+        testEqualLists([[], ['test'], ['very', 'big'], ['blue']], testGram.allPrevWords, "first experiment, prev words")
+        testEqualLists([['very', 'big'], ['blue'], ['chair'], []], testGram.allNextWords, "first experiment, next words")
         # test fullResults and seqsAndRules:
-        testEqualLists([('test', 'run'), ('big', 'optional'), ('blue', 'run'), ('chair', 'extra')],
+        testEqualLists([('test', 'run'), ('very', 'optional'), ('big', 'optional'), ('blue', 'run'), ('chair', 'extra')],
                         testGram.fullResults, "first experiment, fullResults")
-        testEqualLists([(['test'], 'run'), (['big'], 'optional'), (['blue'], 'run'), (['chair'], 'extra')],
+        testEqualLists([(['test'], 'run'), (['very', 'big'], 'optional'), (['blue'], 'run'), (['chair'], 'extra')],
                         testGram.seqsAndRules, "first experiment, seqsAndRules")
         # check total and reset:
-        testGram.checkExperiment(['test', 'big', 'blue', 'chair'])
+        
+        # check dict wordsByRule (new jan 2012)
+        expDict = {'optional': ['very', 'big'], 'run': ['test', 'blue'], 'extra': ['chair']}
+        testwordsByRule(expDict, testGram.wordsByRule, 'RulesByName not as expected')
+        testGram.checkExperiment(['test', 'very', 'big', 'blue', 'chair'])
 
 
-        # more words, less rules:
+        # more words, less rules
         natlink.recognitionMimic(['test', 'red', 'green', 'blue', 'table'])
         testEqualLists([None, 'run'], testGram.allPrevRules, "second experiment, prev rules")
         testEqualLists(['extra', None], testGram.allNextRules, "second experiment, next rules")
@@ -2598,8 +2609,34 @@ class UnittestNatlink(unittest.TestCase):
                          testGram.fullResults, "first experiment, fullResults")
         testEqualLists([(['test', 'red', 'green', 'blue'], 'run'), (['table'], 'extra')],
                          testGram.seqsAndRules, "first experiment, seqsAndRules")
+
+        # check dict wordsByRule (new jan 2012)
+        expDict = {'run': ['test', 'red', 'green', 'blue'], 'extra': ['table']}
+        testwordsByRule(expDict, testGram.wordsByRule, 'RulesByName not as expected')
+
         # check total and reset:
         testGram.checkExperiment(['test', 'red', 'green', 'blue', 'table'])
+
+        # more words, optional at two places (see wordsByRule):
+        natlink.recognitionMimic(['test', 'very', 'green', 'table', 'small'])
+        testEqualLists([None, 'run', 'optional', 'run', 'extra'], testGram.allPrevRules, "third experiment, prev rules")
+        testEqualLists(['optional', 'run', 'extra', 'optional', None], testGram.allNextRules, "third experiment, next rules")
+        testEqualLists([[], ['test'], ['very'], ['green'], ['table']], testGram.allPrevWords, "third experiment, prev words")
+        testEqualLists([['very'], ['green'], ['table'], ['small'], []]
+                                    , testGram.allNextWords, "third experiment, next words")
+        # test fullResults and seqsAndRules:
+        testEqualLists([('test', 'run'), ('very', 'optional'), ('green', 'run'),
+                            ('table', 'extra'), ('small', 'optional')],
+                         testGram.fullResults, "third experiment, fullResults")
+        testEqualLists([(['test'], 'run'), (['very'], 'optional'), (['green'], 'run'),
+                            (['table'], 'extra'), (['small'], 'optional')],
+                         testGram.seqsAndRules, "third experiment, seqsAndRules")
+        
+        # check dict wordsByRule (new jan 2012)
+        expDict = {'optional': ['very', 'small'], 'run': ['test', 'green'], 'extra': ['table']}
+        testwordsByRule(expDict, testGram.wordsByRule, 'third experiment, RulesByName not as expected')
+        # check total and reset:
+        testGram.checkExperiment(['test', 'very', 'green', 'table', 'small'])
 
         testGram.unload()
 
