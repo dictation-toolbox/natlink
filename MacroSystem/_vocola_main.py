@@ -6,7 +6,7 @@
 #    - Autoloading of changed command files
 #
 #
-# Copyright (c) 2002-2011 by Rick Mohr.
+# Copyright (c) 2002-2012 by Rick Mohr.
 # 
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -96,82 +96,82 @@ import simpscrp
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-<NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
-<loadAll>           exported = Load All [Voice] Commands;
-<loadCurrent>       exported = Load [Voice] Commands;
-<loadGlobal>        exported = Load Global [Voice] Commands;
-<loadExtensions>    exported = Load [Voice] Extensions;
-<discardOld>        exported = Discard Old [Voice] Commands;
-<edit>              exported = Edit [Voice] Commands;
-<editMachine>       exported = Edit Machine [Voice] Commands;
-<editGlobal>        exported = Edit Global [Voice] Commands;
-<editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
+        <NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
+        <edit>              exported = Edit [Voice] Commands;
+        <editGlobal>        exported = Edit Global [Voice] Commands;
+        <editMachine>       exported = Edit Machine [Voice] Commands;
+        <editGlobalMachine> exported = Edit Global Machine [Voice] Commands;
+        <loadAll>           exported = Load All [Voice] Commands;
+        <loadCurrent>       exported = Load [Voice] Commands;
+        <loadGlobal>        exported = Load Global [Voice] Commands;
+        <loadExtensions>    exported = Load [Voice] Extensions;
+        <discardOld>        exported = Discard Old [Voice] Commands;
     """
 
-    if language == 'esp':
+    if language == 'nld':
         gramSpec = """
-<NatLinkWindow>     exported = [Mostrar] Ventana de (NatLink|Vocola) ;
-<loadAll>           exported = (Recargar|Cargar) Todos Los Comandos [de voz];
-<loadCurrent>       exported = (Recargar|Cargar) Comandos [de voz];
-<loadGlobal>        exported = (Recargar|Cargar) Comandos [de voz] Globales;
-<loadExtensions>    exported = (Recargar|Cargar) Extensiones [de voz];
-<discardOld>        exported = Descartar Comandos [de voz] Viejos;
-<edit>              exported = (Modificar|Editar) Comandos [de voz];
-<editMachine>       exported = (Modificar|Editar) Comandos [de voz] de (este ordenador|la Computadora);
-<editGlobal>        exported = (Modificar|Editar) Comandos [de voz] Globales ;
-<editGlobalMachine> exported = (Modificar|Editar) Comandos [de voz] Globales de (este ordenador|la Computadora);
-    """
-    elif language == 'ita':
-        gramSpec = """
-<NatLinkWindow>     exported = [Mostra] Finestra Di (NatLink|Vocola) ;
-<loadAll>           exported = Carica Tutti I Comandi [Vocali];
-<loadCurrent>       exported = Carica I Comandi [Vocali];
-<loadGlobal>        exported = Carica  Comandi [Vocali] Gliobali;
-<loadExtensions>    exported = Carica Estensioni [Vocali];
-<discardOld>        exported = Annulla Vecchi Comandi [Vocali];
-<edit>              exported = Modifica Comandi [Vocali];
-<editMachine>       exported = Modifica Comandi [Vocali] [del] Computer;
-<editGlobal>        exported = Modifica Comandi [Vocali] Globali;
-<editGlobalMachine> exported = Modifica Comandi [Vocali] Globali [del] Computer;
+<NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
+<edit>              exported = (Eddit|Bewerk|Sjoo|Toon) [stem|vojs] (Commandoos|Commands);
+<editGlobal>        exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) [stem|vojs] (Commandoos|Commands);
+<editMachine>       exported = (Eddit|Bewerk|Sjoo|Toon) Machine [stem|vojs] (Commandoos|Commands);
+<editGlobalMachine> exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
+<loadAll>           exported = (Laad|Lood) alle [stem|vojs] (Commandoos|Commands);
+<loadCurrent>       exported = (Laad|Lood) [stem|vojs] (Commandoos|Commands);
+<loadGlobal>        exported = (Laad|Lood) globale [stem|vojs] (Commandoos|Commands);
+<loadExtensions>    exported = Laad [stem] extensies;
+<discardOld>        exported = (Discard|Verwijder) (oude|oold) [stem|vojs] (Commandoos|Commands);
     """
     elif language == 'fra':
         gramSpec = """
 <NatLinkWindow>     exported = [Afficher] Fenetre (NatLink|Vocola);
+<edit>              exported = Editer Commandes [Vocales];
+<editGlobal>        exported = Editer Commandes [Vocales] Globales;
+<editMachine>       exported = Editer Commandes [Vocales] Machine;
+<editGlobalMachine> exported = Editer Commandes [Vocales] Globales Machine;
 <loadAll>           exported = Charger Toutes Les Commandes [Vocales];
 <loadCurrent>       exported = Charger Commandes [Vocales];
 <loadGlobal>        exported = Charger Commandes [Vocales] Globales;
 <loadExtensions>    exported = Charger Extensions [Vocales];
 <discardOld>        exported = Effacer Commandes [Vocales] Precedentes;
-<edit>              exported = Editer Commandes [Vocales];
-<editMachine>       exported = Editer Commandes [Vocales] Machine;
-<editGlobal>        exported = Editer Commandes [Vocales] Globales;
-<editGlobalMachine> exported = Editer Commandes [Vocales] Globales Machine;
     """
     elif language == 'deu':
         gramSpec = """
 <NatLinkWindow>     exported = [Zeige] (NatLink|Vocola) Fenster;
+<edit>              exported = Bearbeite [Sprach] Befehle;
+<editGlobal>        exported = Bearbeite globale [Sprach] Befehle;
+<editMachine>       exported = Bearbeite Maschinen [Sprach] Befehle;
+<editGlobalMachine> exported = Bearbeite globale Maschinen [Sprach] Befehle;
 <loadAll>           exported = Lade alle [Sprach] Befehle;
 <loadCurrent>       exported = Lade [Sprach] Befehle;
 <loadGlobal>        exported = Lade globale [Sprach] Befehle;
 <loadExtensions>    exported = Lade [Sprach] Extensions;
 <discardOld>        exported = Verwerfe alte [Sprach] Befehle;
-<edit>              exported = Bearbeite [Sprach] Befehle;
-<editMachine>       exported = Bearbeite Maschinen [Sprach] Befehle;
-<editGlobal>        exported = Bearbeite globale [Sprach] Befehle;
-<editGlobalMachine> exported = Bearbeite globale Maschinen [Sprach] Befehle;
     """   
-    elif language == 'nld':
+    elif language == 'ita':
         gramSpec = """
-<NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
-<loadAll>           exported = (Laad|Lood) alle [stem|vojs] (Commandoos|Commands);
-<loadCurrent>       exported = (Laad|Lood) [stem|vojs] (Commandoos|Commands);
-<loadExtensions>    exported = Laad [stem] extensies;
-<loadGlobal>        exported = (Laad|Lood) globale [stem|vojs] (Commandoos|Commands);
-<discardOld>        exported = (Discard|Verwijder) (oude|oold) [stem|vojs] (Commandoos|Commands);
-<edit>              exported = (Eddit|Bewerk|Sjoo|Toon) [stem|vojs] (Commandoos|Commands);
-<editMachine>       exported = (Eddit|Bewerk|Sjoo|Toon) Machine [stem|vojs] (Commandoos|Commands);
-<editGlobal>        exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) [stem|vojs] (Commandoos|Commands);
-<editGlobalMachine> exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
+<NatLinkWindow>     exported = [Mostra] Finestra Di (NatLink|Vocola);
+<edit>              exported = Modifica Comandi [Vocali];
+<editGlobal>        exported = Modifica Comandi [Vocali] Globali;
+<editMachine>       exported = Modifica Comandi [Vocali] [del] Computer;
+<editGlobalMachine> exported = Modifica Comandi [Vocali] Globali [del] Computer;
+<loadAll>           exported = Carica Tutti I Comandi [Vocali];
+<loadCurrent>       exported = Carica I Comandi [Vocali];
+<loadGlobal>        exported = Carica Comandi [Vocali] Gliobali;
+<loadExtensions>    exported = Carica Estensioni [Vocali];
+<discardOld>        exported = Annulla Vecchi Comandi [Vocali];
+    """
+    elif language == 'esp':
+        gramSpec = """
+<NatLinkWindow>     exported = [Mostrar] Ventana de (NatLink|Vocola) ;
+<edit>              exported = (Modificar|Editar) Comandos [de voz];
+<editGlobal>        exported = (Modificar|Editar) Comandos [de voz] Globales ;
+<editMachine>       exported = (Modificar|Editar) Comandos [de voz] de (este ordenador|la Computadora);
+<editGlobalMachine> exported = (Modificar|Editar) Comandos [de voz] Globales de (este ordenador|la Computadora);
+<loadAll>           exported = (Recargar|Cargar) Todos Los Comandos [de voz];
+<loadCurrent>       exported = (Recargar|Cargar) Comandos [de voz];
+<loadGlobal>        exported = (Recargar|Cargar) Comandos [de voz] Globales;
+<loadExtensions>    exported = (Recargar|Cargar) Extensiones [de voz];
+<discardOld>        exported = Descartar Comandos [de voz] Viejos;
     """
     elif language != 'enx':
         print >> sys.stderr,  """\n\n
