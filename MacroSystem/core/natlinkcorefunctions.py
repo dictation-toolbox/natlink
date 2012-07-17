@@ -382,3 +382,4 @@ if __name__ == "__main__":
               "%WINDOWS%\\folder\\strange testfolder"):
         expanded = expandEnvVariables(p)
         print 'expandEnvVariables: %s: %s'% (p, expanded)
+

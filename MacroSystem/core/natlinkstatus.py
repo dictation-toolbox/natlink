@@ -225,28 +225,31 @@ class NatlinkStatus(object):
         """
         coreDir = natlinkcorefunctions.getBaseFolder()
         if coreDir.lower().endswith('core'):
+
             baseDir = os.path.normpath(os.path.join(coreDir, ".."))
             self.InsertToSysPath(coreDir)
+            self.InsertToSysPath(baseDir)
         else:
             baseDir = None
             print 'non expected core directory %s, cannot find baseDirectory'% coreDir
         userDir = self.getUserDirectory()
         # special for other user directories, insert also unimacro for actions etc.
-        if userDir and userDir.lower().endswith('unimacro'):
+        if userDir: 
             self.InsertToSysPath(userDir)
-        else:
-            includeUnimacro = self.getIncludeUnimacroInPythonPath()
-            if  includeUnimacro:
-                if not baseDir:
-                    print 'no baseDir found, cannot "IncludeUnimacroInPythonPath"'
-                    return
-                unimacroDir = os.path.join(baseDir, '..', '..', 'unimacro')
-                unimacroDir = os.path.normpath(unimacroDir)
-                if os.path.isdir(unimacroDir):
-                    self.InsertToSysPath(unimacroDir)
-                else:
-                    print 'no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
-                        unimacroDir
+
+    
+        includeUnimacro = self.getIncludeUnimacroInPythonPath()
+        if  includeUnimacro:
+            if not baseDir:
+                print 'no baseDir found, cannot "IncludeUnimacroInPythonPath"'
+                return
+            unimacroDir = os.path.join(baseDir, '..', '..', 'unimacro')
+            unimacroDir = os.path.normpath(unimacroDir)
+            if os.path.isdir(unimacroDir):
+                self.InsertToSysPath(unimacroDir)
+            else:
+                print 'no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
+                    unimacroDir
 
     def InsertToSysPath(self, newdir):
         """leave "." in the first place if it is there"""
