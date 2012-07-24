@@ -9,6 +9,10 @@
 # run from a (preferably clean) US user profile, easiest from IDLE.
 # do not run from pythonwin. See also README.txt in PyTest folder
 #
+# july 2012
+# parser tests in unittest of QH (will be put in natlink at some time)
+# test actual recognitions from different grammar constructs.
+# 
 # May 1, 2007 - QH
 # try to unify with unimacro version of natlinkmain/natlinkutils.
 # putting under unittest
@@ -1533,11 +1537,16 @@ class UnittestNatlink(unittest.TestCase):
     # Performs a recognition mimic and makes sure that the mic succeeds or fails
     # as expected.
 
-    def doTestRecognition(self, words,shouldWork=1):
+    def doTestRecognition(self, words,shouldWork=1, log=None):
         if shouldWork:
             natlink.recognitionMimic(words)
+            if log:
+                self.log("recognised: %s"% words)
         else:
             self.doTestForException(natlink.MimicFailed,"natlink.recognitionMimic(words)",locals())
+            if log:
+                self.log("did not recognise (as expected): %s"% words)
+
 
     def doTestMimicResult(self, words, expected):
         """test the mimic of words (a list) and check the expected window contents
@@ -1857,14 +1866,72 @@ class UnittestNatlink(unittest.TestCase):
         testForException(natlink.NatError,"testGram.gramObj.emptyList('list')",locals())
         testForException(natlink.NatError,"testGram.gramObj.appendList('list','word')",locals())
 
-
-        
-
-
         # clean up
         testGram.unload()
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
+
+    def testGrammarRecognitions(self):
+        self.log("testGrammarRecognitions", 1)
+
+        # Create a lot of grammars to test the actual recognition results
+        class TestGrammar(GrammarBase):
+
+            def loadAndActivate(self, gramSpec):
+                self.load(gramSpec)
+                self.activateAll(exclusive=1)
+                
+            def __init__(self):
+                GrammarBase.__init__(self)
+                
+            def gotBegin(self,moduleInfo):
+                self.words = []
+
+            def gotResults(self,words,fullResults):
+                self.words = words
+                self.fullResults = fullResults
+
+        testGram = TestGrammar()
+        testRecognition = self.doTestRecognition
+
+        ## test possible error in _repeat grammar:
+        ## do the brackets work as expected?? (QH, july 2012)
+        gramSpec = "<hello> exported = hello world;"
+        self.log("loading gramSpec: %s"% gramSpec, 1)
+        testGram.loadAndActivate(gramSpec)
+        recog = ["hello", "world"]
+        testRecognition(recog, 1)
+        self.log('got: %s'% " ".join(recog), 1)
+        testGram.unload()
+
+        ## test second example:
+        gramSpec = "<hello> exported = hello | world;"
+        self.log("loading gramSpec: %s"% gramSpec, 1)
+        testGram.loadAndActivate(gramSpec)
+        testRecognition(["hello", "world"], 0, log=1)
+        testRecognition(["hello"], 1, log=1)
+        testRecognition(["world"], 1, log=1)
+        self.log('got: hello and world apart', 1)
+        testGram.unload()
+        
+        ## test problematic line from _repeat grammar:
+        gramSpec = "<endRepeating> exported = stop [herhaal|herhalen] | OK;"
+        self.log("loading gramSpec: %s"% gramSpec, 1)
+        testGram.loadAndActivate(gramSpec)
+        testRecognition(["stop"], 1, log=1)
+        testRecognition(["stop", "herhaal"], 1, log=1)
+        testRecognition(["stop", "herhalen"], 1, log=1)
+        testRecognition(["OK"], 1, log=1)
+        self.log('got: all stop recognitions', 1)
+        # refuse:
+        testRecognition(["stop", "herhaal", "OK"], 0, log=1)
+        testRecognition(["stop", "OK"], 0, log=1)
+        testRecognition(["herhaal"], 0, log=1)
+        self.log('refused all forbidden recognitions', 1)
+        
+        testGram.unload()
+        
+
 
 
     def testDgndictationEtc(self):
@@ -2935,7 +3002,7 @@ def createMacroFile(filePath,fileName,word):
 def log(t):
     """log to print and file if present
 
-    note print depends on the state of natlink: where is goes or disappears...
+    note print depends on the state of natlink: where it goes or disappears...
     I have no complete insight is this, but checking the logfile afterwards
     always works (QH)
     """

@@ -34,7 +34,7 @@ DNSINIDir
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
 When NatLink is enabled natlink.dll is registered with
-      win32api.WinExec("regsrvr32 /s pathToNatlinkdll") (silent)
+      win32api.WinExec("regsvr32 /s pathToNatlinkdll") (silent)
 
 It can be unregistered through function unregisterNatlinkDll() see below.      
 
@@ -184,7 +184,15 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """checks if core directory is
 
         1. in the sys.path
-        2. in the registry keys of HKLM\SOFTWARE\Python\PythonCore\2.3\PythonPath\NatLink
+    ###    2. in the registry keys of HKLM\SOFTWARE\Python\PythonCore\2.3\PythonPath\NatLink
+
+        the latter part is removed, so the installation is NOT dependent on registry entries for
+        the python path (QH, 21/5/2012).
+        
+        ## now clear explicit the NatLink part of the registry section if there!
+        
+        Instead the status.checkSysPath() function checks the existence of the core, base and user
+        directories in the sys.path and sets then if necessary.
 
         If this last key is not there or empty
         ---set paths of coreDirectory
@@ -203,7 +211,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
-
+        # adding the relevant directories to the sys.path variable:
+        self.checkSysPath()
+        
         pathString = coreDir
 ##        if lmPythonPath:
 ##            print 'lmPythonPath: ', lmPythonPath.keys()
