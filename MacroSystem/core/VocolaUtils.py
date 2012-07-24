@@ -32,6 +32,7 @@ import re
 import sys
 
 
+
 #
 # Massage recognition results to make a single entry for each
 # <dgndictation> result.
@@ -192,6 +193,7 @@ def call_Unimacro(argumentString):
                 + '        Unimacro(' + argumentString + ')\n' \
                 + '    Unimacro reported the following error:\n' \
                 + '        ' + type(e).__name__ + ": " + str(e)
+            #traceback.print_exc()
             raise VocolaRuntimeError, m
     else:
         m = "Unimacro call failed because Unimacro is unavailable"
