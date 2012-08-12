@@ -29,8 +29,7 @@ import natlink
 from   types import *
 import string
 import re
-import sys, os, os.path
-
+import sys
 
 
 #
@@ -193,14 +192,7 @@ def call_Unimacro(argumentString):
                 + '        Unimacro(' + argumentString + ')\n' \
                 + '    Unimacro reported the following error:\n' \
                 + '        ' + type(e).__name__ + ": " + str(e)
-            tbfile = os.path.join(os.path.dirname(__file__), "vocola_traceback.txt")
-            m += '\ntraceback in %s'% tbfile
-            try:
-                tbsock = open(tbfile, 'w')
-                traceback.print_exc(file=tbsock)
-                tbsock.close()
-            finally:
-                raise VocolaRuntimeError, m
+            raise VocolaRuntimeError, m
     else:
         m = "Unimacro call failed because Unimacro is unavailable"
         raise VocolaRuntimeError(m)
