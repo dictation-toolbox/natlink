@@ -372,20 +372,20 @@ class GrammarBase(GramClassBase):
         self.validLists = []
         self.doOnlyGotResultsObject = None # can rarely be set (QH, dec 2009)
 
-    def load(self,gramSpec,allResults=0,hypothesis=0):
+    def load(self,gramSpec,allResults=0,hypothesis=0, grammarName=None):
         if type(gramSpec) == types.StringType:
             gramSpec = [gramSpec]
         elif type(gramSpec) != types.ListType:
-            raise GrammarError( "grammar definition must be a list of strings" )
+            raise TypeError( "grammar definition must be a list of strings" )
         elif type(gramSpec[0]) != types.StringType:
-            raise GrammarError( "grammar definition must be a list of strings" )
+            raise TypeError( "grammar definition must be a list of strings" )
 
         splitApartLines(gramSpec)
-        parser = GramParser(gramSpec)
+        parser = GramParser(gramSpec, grammarName=grammarName)
         parser.doParse()
         parser.checkForErrors()
         gramBin = packGrammar(parser)
-
+        self.scanObj = parser.scanObj  # for later error messages.
         GramClassBase.load(self,gramBin,allResults,hypothesis)
         
         # we want to keep a list of the rules which can be activated and the
@@ -410,10 +410,10 @@ class GrammarBase(GramClassBase):
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
         if ruleName not in self.validRules:
-            raise GrammarError( "rule %s was not exported in the grammar" % ruleName )
+            raise GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
         if ruleName in self.activeRules:
             if noError: return None
-            raise GrammarError( "rule %s is already active" )
+            raise GrammarError( "rule %s is already active" , self.scanObj)
         self.gramObj.activate(ruleName,window)
         self.activeRules.append(ruleName)
         if exclusive != None:
@@ -422,10 +422,10 @@ class GrammarBase(GramClassBase):
     def deactivate(self, ruleName, noError=0):
         if ruleName not in self.validRules:
             if noError: return
-            raise GrammarError( "rule %s was not exported in the grammar" % ruleName )
+            raise GrammarError( "rule %s was not exported in the grammar" % ruleName, self.scanObj)
         if ruleName not in self.activeRules:
             if noError: return
-            raise GrammarError( "rule %s is not active" )
+            raise GrammarError( "rule %s is not active", self.scanObj)
         self.gramObj.deactivate(ruleName)
         self.activeRules.remove(ruleName)
 
@@ -439,7 +439,7 @@ class GrammarBase(GramClassBase):
                 self.activeRules.remove(x)
         for x in ruleNames:
             if x not in self.validRules:
-                raise GrammarError( "rule %s was not exported in the grammar" % x )
+                raise GrammarError( "rule %s was not exported in the grammar" % x, self.scanObj )
             if not x in self.activeRules:
                 self.gramObj.activate(x,window)
                 self.activeRules.append(x)
@@ -476,12 +476,12 @@ class GrammarBase(GramClassBase):
 
     def emptyList(self, listName):
         if listName not in self.validLists:
-            raise GrammarError( "list %s was not defined in the grammar" % listName )
+            raise GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
         self.gramObj.emptyList(listName)
 
     def appendList(self, listName, words):
         if listName not in self.validLists:
-            raise GrammarError( "list %s was not defined in the grammar" % listName )
+            raise GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
         if type(words) == type(""):
             self.gramObj.appendList(listName,words)
         else:
