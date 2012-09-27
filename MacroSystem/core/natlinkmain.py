@@ -92,11 +92,11 @@ import traceback        # for printing exceptions
 ##import RegistryDict   # all in natlinkstatus now
 ##import win32api # win32api for getting ini file values
 from stat import *      # file statistics
-from natlink import *   
+import natlink
 import glob             # new way to collect the grammar files
 import pprint
 import natlinkstatus    # for extracting status info (QH)
-cmdLineStartup=0
+cmdLineStartup=1
 debugTiming=0
 #
 # This redirects stdout and stderr to a dialog box.
@@ -532,12 +532,12 @@ def setSearchImportDirs():
 prevModInfo = None
 def beginCallback(moduleInfo, checkAll=None):
     global loadedFiles, prevModInfo
-    cbd = getCallbackDepth()
+    cbd = natlink.getCallbackDepth()
     if debugCallback:
         print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
               (cbd, checkAll, checkForGrammarChanges)
     # maybe should be 1...
-    if getCallbackDepth() > 1:
+    if natlink.getCallbackDepth() > 1:
         return
     t0 = time.time()
     
@@ -590,7 +590,7 @@ def changeCallback(type,args):
         loadModSpecific(moduleInfo)
     if type == 'user' and userName != args[0]:
         userName, DNSuserDirectory = args
-        moduleInfo = getCurrentModule()
+        moduleInfo = natlink.getCurrentModule()
         if debugCallback:
             print "---------changeCallback, User changed to", userName
         elif changeCallbackUserFirst:
@@ -639,66 +639,91 @@ def changeCallbackLoadedModules(type,args):
 ##                print 'call changeCallback for: %s'% x
                 apply(func, [type,args])
 
+### try here a adapted recognitionMimic function
+def recognitionMimic(mimicList):
+    """for Dragon 12, try execScript HeardWord
+    """
+    if DNSversion >= 12:
+        natlink.execScript(mimicList)
+    else:
+        natlink.recognitionMimic(mimicList)
+
+def start_natlink():
+    """do the startup of the python macros system
+    """
+    global userDirectory, DNSversion, baseDirectory, WindowsVersion
+    try:
+        # compute the directory where this module came from
+        if not natlink.isNatSpeakRunning():
+            print 'start Dragon first, the rerun the script natlinkmain...'
+            time.sleep(10)
+            return
+
+        natlink.natConnect()
+
+        #print "\n".join(["%s=%s" % (k,v) for k, v in sys.modules ])
+        #print "\n".join(sys.modules.keys())
+        if cmdLineStartup:
+            modname='natlink'
+        else:
+            modname='natlinkmain'
+            
+        baseDirectory = os.path.split(
+           sys.modules[modname].__dict__['__file__'])[0]
+        
+        
+    
+        if debugLoad: print "NatLink dll dir " + baseDirectory
+        baseDirectory = os.path.normpath(os.path.abspath(os.path.join(baseDirectory,"..")))
+        if debugLoad: print "NatLink base dir" + baseDirectory
+        
+        # get the current user information from the NatLink module
+        userDirectory = status.getUserDirectory()
+        # for unimacro, in order to reach unimacro files to be imported:
+        if userDirectory and os.path.isdir(userDirectory) and not userDirectory in sys.path:
+            if debugLoad:
+                print 'insert userDirectory: %s to sys.path!'% userDirectory
+            sys.path.insert(0,userDirectory)
+            
+    
+        # setting searchImportDirs:
+        setSearchImportDirs()
+    
+        # get invariant variables:
+        DNSversion = status.getDNSVersion()
+        WindowsVersion = status.getWindowsVersion()
+        
+        # init things identical to when user changes:
+        changeCallback('user', natlink.getCurrentUser())
+    
+    ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
+        print 'Starting natlinkmain from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
+                  (status.getCoreDirectory(), status.getInstallVersion(),
+                   DNSversion, status.getPythonVersion(), WindowsVersion)
+            
+        # load all global files in user directory and current directory
+        findAndLoadFiles()
+    
+        # initialize our callbacks
+        natlink.setBeginCallback(beginCallback)
+        natlink.setChangeCallback(changeCallback)
+    
+    except:
+        sys.stderr.write( 'Error initializing natlinkmain\n' )
+        traceback.print_exc()
+    
+    if debugLoad:
+        print "userDirectory: %s\nbaseDirectory: %s"% (userDirectory, baseDirectory)
+        print "natlinkmain imported-----------------------------------"
+    elif natlinkmainPrintsAtEnd:
+        print 'natlinkmain started (imported)\n'
+    else:
+        natlinkLogMessage('natlinkmain started (imported)\n')    
+
+
 ############################################################################
 #
 # Here is the initialization code.
 #
-try:
-    # compute the directory where this module came from
-
-    #print "\n".join(["%s=%s" % (k,v) for k, v in sys.modules ])
-    #print "\n".join(sys.modules.keys())
-    if cmdLineStartup:
-        modname='natlink'
-    else:
-        modname='natlinkmain'
-        
-    baseDirectory = os.path.split(
-       sys.modules[modname].__dict__['__file__'])[0]
-    
-    
-
-    if debugLoad: print "NatLink dll dir " + baseDirectory
-    baseDirectory = os.path.normpath(os.path.abspath(os.path.join(baseDirectory,"..")))
-    if debugLoad: print "NatLink base dir" + baseDirectory
-    
-    # get the current user information from the NatLink module
-    userDirectory = status.getUserDirectory()
-    # for unimacro, in order to reach unimacro files to be imported:
-    if userDirectory and os.path.isdir(userDirectory) and not userDirectory in sys.path:
-        if debugLoad:
-            print 'insert userDirectory: %s to sys.path!'% userDirectory
-        sys.path.insert(0,userDirectory)
-        
-
-    # setting searchImportDirs:
-    setSearchImportDirs()
-
-    # get invariant variables:
-    DNSversion = status.getDNSVersion()
-    WindowsVersion = status.getWindowsVersion()
-    
-    # init things identical to when user changes:
-    changeCallback('user', getCurrentUser())
-
-##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
-    print 'Starting natlinkmain from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
-              (status.getCoreDirectory(), status.getInstallVersion(),
-               DNSversion, status.getPythonVersion(), WindowsVersion)
-        
-    # load all global files in user directory and current directory
-    findAndLoadFiles()
-
-    # initialize our callbacks
-    setBeginCallback(beginCallback)
-    setChangeCallback(changeCallback)
-
-except:
-    sys.stderr.write( 'Error initializing natlinkmain\n' )
-    traceback.print_exc()
-
-if debugLoad:
-    print "userDirectory: %s\nbaseDirectory: %s"% (userDirectory, baseDirectory)
-    print "natlinkmain imported-----------------------------------"
-elif natlinkmainPrintsAtEnd:
-    print 'natlinkmain started (imported)\n'
+if __name__ == '__main__':
+    start_natlink()

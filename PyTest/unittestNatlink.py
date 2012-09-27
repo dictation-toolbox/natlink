@@ -53,6 +53,7 @@ import traceback        # for printing exceptions
 from struct import pack
 
 import natlink
+import natlinkmain  # for Dragon 12, need recognitionMimic from natlinkmain
 import gramparser
 from natlinkutils import *
 import natlinkutils
@@ -180,7 +181,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        except natlink.NatError:
 ##            raise TestError,'The NatSpeak user interface is not running'
 ##         ??? Start instead of start ???
-        natlink.recognitionMimic(['Start', "DragonPad"])
+        natlinkmain.recognitionMimic(['Start', "DragonPad"])
         
         # This will make sure that the NatSpeak window is empty.  If the NatSpeak
         # window is not empty we raise an exception to avoid possibily screwing 
@@ -738,19 +739,19 @@ class UnittestNatlink(unittest.TestCase):
         dictObj.setChangeCallback(callTest.onTextChange)
 
         # remember during these tests that the dictation results are formatted
-        natlink.recognitionMimic(['hello'])
+        natlinkmain.recognitionMimic(['hello'])
 ##        self.wait() #!!
         testFuncReturn('Hello',"dictObj.getText(0)",locals())
         # if this fails (9) probably setChangeCallback does not work (broken??QH)
         callTest.doTestTextChange(moduleInfo,(0,0,'Hello',5,5))
-        natlink.recognitionMimic(['there'])
+        natlinkmain.recognitionMimic(['there'])
 ##        self.wait()
         ##              012345678901
         testFuncReturn('Hello there',"dictObj.getText(0)",locals())
         callTest.doTestTextChange(moduleInfo,(5,5,' there',11,11))
 
         dictObj.setTextSel(0,5)
-        natlink.recognitionMimic(['and'])
+        natlinkmain.recognitionMimic(['and'])
 ##        self.wait()  #!!!!QH
         testFuncReturn('And there',"dictObj.getText(0)",locals())
         #QH why does gotBegin not hit here, sometimes????
@@ -767,9 +768,9 @@ class UnittestNatlink(unittest.TestCase):
 
         dictObj.setTextSel(3,3)
         if DNSVersion < 11:
-            natlink.recognitionMimic([r',\comma'])
+            natlinkmain.recognitionMimic([r',\comma'])
         else:
-            natlink.recognitionMimic([r',\comma\comma'])
+            natlinkmain.recognitionMimic([r',\comma\comma'])
             
 ##        self.wait()
         testFuncReturn('And, there',"dictObj.getText(0)",locals())
@@ -781,7 +782,7 @@ class UnittestNatlink(unittest.TestCase):
 
 
         dictObj.setTextSel(5)
-        natlink.recognitionMimic(['another','phrase'])
+        natlinkmain.recognitionMimic(['another','phrase'])
 ##        self.wait()
         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
         # unimacro version stops here, no beginCallback:::
@@ -798,20 +799,20 @@ class UnittestNatlink(unittest.TestCase):
         callTest.doTestTextChange(moduleInfo,(4,10,' another phrase',19,19))
     #else        callTest.doTestTextChange(moduleInfo,(5,10,'another phrase',19,19))
 
-        natlink.recognitionMimic(['more'])
+        natlinkmain.recognitionMimic(['more'])
 ##        self.wait()
         testFuncReturn('And, another phrase more',"dictObj.getText(0)",locals())
         callTest.doTestTextChange(moduleInfo,(19,19,' more',24,24))
 
         # the scratch that command undoes one recognition
-        natlink.recognitionMimic(['scratch','that'])
+        natlinkmain.recognitionMimic(['scratch','that'])
 ##        self.wait()
         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
         callTest.doTestTextChange(moduleInfo,(19,24,'',19,19))
 
         # NatSpeak optimizes the changed block so we only change 'ther' not
         # 'there' -- the last e did not change.
-        natlink.recognitionMimic(['scratch','that'])
+        natlinkmain.recognitionMimic(['scratch','that'])
         self.wait()
         
         testFuncReturn('And, there',"dictObj.getText(0)",locals())
@@ -824,19 +825,19 @@ class UnittestNatlink(unittest.TestCase):
         dictObj.setVisibleText(0)
 
         # ok, test selection command
-        natlink.recognitionMimic(['select','block','of','text'])
+        natlinkmain.recognitionMimic(['select','block','of','text'])
 ##        self.wait()
         
         testFuncReturn((10,23),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,(10,10,'',10,23))
         
-        natlink.recognitionMimic(['select','one','through','three'])
+        natlinkmain.recognitionMimic(['select','one','through','three'])
 ##        self.wait()
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
 
         # text selection of non-existant text
-        testForException(natlink.MimicFailed,"natlink.recognitionMimic(['select','helloxxx'])")
+        testForException(natlink.MimicFailed,"natlinkmain.recognitionMimic(['select','helloxxx'])")
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,None)
 
@@ -845,18 +846,18 @@ class UnittestNatlink(unittest.TestCase):
         dictObj.setVisibleText(10,50)
         dictObj.setTextSel(0,0)
         
-        natlink.recognitionMimic(['select','one','through','three'])
+        natlinkmain.recognitionMimic(['select','one','through','three'])
 ##        self.wait()
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
 
         #This is a block of text.  Lets count one two three.  All done.
-        natlink.recognitionMimic(['select','this','is'])
+        natlinkmain.recognitionMimic(['select','this','is'])
 ##        self.wait()
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,None)
 
-        natlink.recognitionMimic(['select','all','done'])
+        natlinkmain.recognitionMimic(['select','all','done'])
 ##        self.wait()
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,None)
@@ -1271,11 +1272,11 @@ class UnittestNatlink(unittest.TestCase):
             self.clearTestFiles()
             toggleMicrophone()
      
-            self.log('create jMg1, 17', 17)
-            createMacroFile(baseDirectory,'__jMg1.py', '17')
+            self.log('create jMg1, seventeen', 'seventeen')
+            createMacroFile(baseDirectory,'__jMg1.py', 'seventeen')
             toggleMicrophone()
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
-            self.log('create jMg1, 1', 1)
+            self.log('create jMg1, one', 'one')
             
             createMacroFile(baseDirectory,'__jMg1.py','one')
             # here the recognition is already there, should not be though...
@@ -1294,7 +1295,7 @@ class UnittestNatlink(unittest.TestCase):
                 # Modify the macro file and make sure the modification takes effect
                 # even if the microphone is not toggled.
     
-                self.log('\nNow change grammar file jMg1 to 2, check for changes at each utterance', 1)
+                self.log('\nNow change grammar file jMg1 to "two", check for changes at each utterance', 1)
     
                 createMacroFile(baseDirectory,'__jMg1.py','two')
                 self.wait(2)
@@ -1305,7 +1306,7 @@ class UnittestNatlink(unittest.TestCase):
             else:
                 self.log('\nNow change grammar file jMg1 to 2, no recognise immediate, only after mic toggle', 1)
     
-                createMacroFile(baseDirectory,'__jMg1.py','two')
+                createMacroFile(baseDirectory,'_ _jMg1.py','two')
                 # If next line fails, the checking is immediate, in spite of checkForGrammarChanges being on:
                 testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','two'],recCmdDict, 0)
                 testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 1)
@@ -1316,82 +1317,82 @@ class UnittestNatlink(unittest.TestCase):
             # Make sure a user specific file also works
             # now with extended file names (glob.glob, request of Mark Lillibridge) (QH):
             self.log('now new grammar file: %s'% specialFilenameGlobal, 1)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','7'],recCmdDict, 0)
-            createMacroFile(userDirectory,specialFilenameGlobal+'.py','7')
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seven'],recCmdDict, 0)
+            createMacroFile(userDirectory,specialFilenameGlobal+'.py','seven')
             toggleMicrophone()
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','7'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seven'],recCmdDict, 1)
     
             self.log('now new grammar file: %s'% spacesFilenameGlobal, 1)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','21'],recCmdDict, 0)
-            createMacroFile(userDirectory,spacesFilenameGlobal+'.py','21')
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 0)
+            createMacroFile(userDirectory,spacesFilenameGlobal+'.py','thirty')
             toggleMicrophone()
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','21'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 1)
     
     
             self.log('now new grammar file (should not be recognised)... %s'% "_.py", 1)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','8'],recCmdDict, 0)
-            createMacroFile(userDirectory,"_.py",'8')
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','eight'],recCmdDict, 0)
+            createMacroFile(userDirectory,"_.py",'eight')
             toggleMicrophone()
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','8'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','eight'],recCmdDict, 0)
     
             # Make sure user specific files have precidence over global files
-            self.log('now new grammar file: jMg2, 4', 1)
+            self.log('now new grammar file: jMg2, four', 1)
     
-            createMacroFile(baseDirectory,'__jMg2.py','4')
-            createMacroFile(userDirectory,'__jMg2.py','3')
+            createMacroFile(baseDirectory,'__jMg2.py','four')
+            createMacroFile(userDirectory,'__jMg2.py','three')
             toggleMicrophone()
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','3'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','three'],recCmdDict, 1)
     
             # Make sure that we do the right thing with application specific
             # files.  They get loaded when the application is activated.
-            self.log('now new grammar file: calc_jMg1, 5', 1)
+            self.log('now new grammar file: calc_jMg1, five', 1)
     
-            createMacroFile(baseDirectory,'calc__jMg1.py','5')
-            createMacroFile(userDirectory,'calc__jMg1.py','6')
+            createMacroFile(baseDirectory,'calc__jMg1.py','five')
+            createMacroFile(userDirectory,'calc__jMg1.py','six')
             toggleMicrophone()
             
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','5'],recCmdDict, 0)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','6'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','five'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 0)
             self.lookForCalc()
     ##        natlink.execScript('AppBringUp "calc"')
             # priority for user macro file:
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','6'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 1)
             # 5 (base dir never recognised):
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','5'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','five'],recCmdDict, 0)
     
     
     
     
             # more intricate filename:
-            createMacroFile(baseDirectory,specialFilenameCalc+'.py','8')
+            createMacroFile(baseDirectory,specialFilenameCalc+'.py','eight')
             toggleMicrophone()
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','8'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','eight'],recCmdDict, 1)
     
             # filenames with spaces (not valid)
-            createMacroFile(baseDirectory,spacesFilenameCalcInvalid+'.py','22')
+            createMacroFile(baseDirectory,spacesFilenameCalcInvalid+'.py','fourty')
             toggleMicrophone()
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','22'], recCmdDict,  0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','fourty'], recCmdDict,  0)
             # filenames with spaces (valid)
-            createMacroFile(baseDirectory,spacesFilenameCalcValid+'.py','23')
+            createMacroFile(baseDirectory,spacesFilenameCalcValid+'.py','fifty')
             toggleMicrophone()
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','23'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','fifty'],recCmdDict, 1)
             
             #other filenames:
     ##        createMacroFile(baseDirectory,'calc.py', '9')  # chances are calc is already there, so skip now...
-            createMacroFile(baseDirectory,'calc_.py', '10')
+            createMacroFile(baseDirectory,'calc_.py', 'ten')
             # this name should be invalid:
-            createMacroFile(baseDirectory,'calculator.py', '11')
+            createMacroFile(baseDirectory,'calculator.py', 'eleven')
             toggleMicrophone()
     ##        testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','9'],1)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','10'],recCmdDict, 1)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','11'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','ten'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','eleven'],recCmdDict, 0)
     
     
     
             
             self.killCalc()
             # OOPS, rule 6 remains valid, must be deactivated in gotBegin, user responsibility:
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','6'],recCmdDict, 1)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 1)
             
         ##        natlink.playString('{Alt+F4}')
     #-----------------------------------------------------------
@@ -1539,11 +1540,11 @@ class UnittestNatlink(unittest.TestCase):
 
     def doTestRecognition(self, words,shouldWork=1, log=None):
         if shouldWork:
-            natlink.recognitionMimic(words)
+            natlinkmain.recognitionMimic(words)
             if log:
                 self.log("recognised: %s"% words)
         else:
-            self.doTestForException(natlink.MimicFailed,"natlink.recognitionMimic(words)",locals())
+            self.doTestForException(natlink.MimicFailed,"natlinkmain.recognitionMimic(words)",locals())
             if log:
                 self.log("did not recognise (as expected): %s"% words)
 
@@ -1552,7 +1553,7 @@ class UnittestNatlink(unittest.TestCase):
         """test the mimic of words (a list) and check the expected window contents
         """
         try:
-            natlink.recognitionMimic(words)
+            natlinkmain.recognitionMimic(words)
         except natlink.MimicFailed:
             self.fail('TestMimicResult, recognitionMimic failed for words: "%s"'% words)
             
@@ -1562,7 +1563,7 @@ class UnittestNatlink(unittest.TestCase):
     # for testNatlinkMain, recognition should be in the specified grammar:
     def doTestCommandRecognition(self, words, cmdgrammar, shouldWork=1):
         try:
-            natlink.recognitionMimic(words)
+            natlinkmain.recognitionMimic(words)
         except natlink.MimicFailed:
             if shouldWork:
                 raise TestError("mimic of %s should have worked"% words)
@@ -2646,7 +2647,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram = TestGrammar()
         testGram.initialize()
         testGram.testNum = 1
-        natlink.recognitionMimic(['test', 'very', 'big', 'blue', 'chair'])
+        natlinkmain.recognitionMimic(['test', 'very', 'big', 'blue', 'chair'])
         testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
         testEqualLists(['optional', 'run', 'extra', None], testGram.allNextRules, "first experiment, next rules")
         testEqualLists([[], ['test'], ['very', 'big'], ['blue']], testGram.allPrevWords, "first experiment, prev words")
@@ -2665,7 +2666,7 @@ class UnittestNatlink(unittest.TestCase):
 
 
         # more words, less rules
-        natlink.recognitionMimic(['test', 'red', 'green', 'blue', 'table'])
+        natlinkmain.recognitionMimic(['test', 'red', 'green', 'blue', 'table'])
         testEqualLists([None, 'run'], testGram.allPrevRules, "second experiment, prev rules")
         testEqualLists(['extra', None], testGram.allNextRules, "second experiment, next rules")
         testEqualLists([[], ['test', 'red', 'green', 'blue']], testGram.allPrevWords, "second experiment, prev words")
@@ -2685,7 +2686,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.checkExperiment(['test', 'red', 'green', 'blue', 'table'])
 
         # more words, optional at two places (see wordsByRule):
-        natlink.recognitionMimic(['test', 'very', 'green', 'table', 'small'])
+        natlinkmain.recognitionMimic(['test', 'very', 'green', 'table', 'small'])
         testEqualLists([None, 'run', 'optional', 'run', 'extra'], testGram.allPrevRules, "third experiment, prev rules")
         testEqualLists(['optional', 'run', 'extra', 'optional', None], testGram.allNextRules, "third experiment, next rules")
         testEqualLists([[], ['test'], ['very'], ['green'], ['table']], testGram.allPrevWords, "third experiment, prev words")
@@ -2766,14 +2767,14 @@ class UnittestNatlink(unittest.TestCase):
 
             def gotResults_run(self,words,fullResults):
                 self.results.append('run')
-                natlink.recognitionMimic(['test','test',words[3]])
+                natlinkmain.recognitionMimic(['test','test',words[3]])
 
             def gotResults_test1(self,words,fullResults):
                 self.results.append('1')
 
             def gotResults_test2(self,words,fullResults):
                 self.results.append('2')
-                natlink.recognitionMimic(['test','test','1'])
+                natlinkmain.recognitionMimic(['test','test','1'])
 
             def gotResults_test3(self,words,fullResults):
                 self.results.append('3')
@@ -2785,23 +2786,23 @@ class UnittestNatlink(unittest.TestCase):
 
             def gotResults_test5(self,words,fullResults):
                 self.results.append('5')
-                testForException(natlink.MimicFailed,"natlink.recognitionMimic(['*unknown-word*'])")
+                testForException(natlink.MimicFailed,"natlinkmain.recognitionMimic(['*unknown-word*'])")
 
         testGram = TestGrammar()
         testGram.initialize()
-        natlink.recognitionMimic(['test','test','run','1'])
+        natlinkmain.recognitionMimic(['test','test','run','1'])
         testGram.checkExperiment(['run','1'])
         
-        natlink.recognitionMimic(['test','test','run','2'])
+        natlinkmain.recognitionMimic(['test','test','run','2'])
         testGram.checkExperiment(['run','2','1'])
 
-        natlink.recognitionMimic(['test','test','run','3'])
+        natlinkmain.recognitionMimic(['test','test','run','3'])
         testGram.checkExperiment(['run','3','1'])
         
-        natlink.recognitionMimic(['test','test','run','4'])
+        natlinkmain.recognitionMimic(['test','test','run','4'])
         testGram.checkExperiment(['run','4','3','1'])
 
-        natlink.recognitionMimic(['test','test','run','5'])
+        natlinkmain.recognitionMimic(['test','test','run','5'])
         testGram.checkExperiment(['run','5'])
 
         testGram.unload()
