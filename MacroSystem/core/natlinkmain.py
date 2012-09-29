@@ -649,7 +649,7 @@ def recognitionMimic(mimicList):
     else:
         natlink.recognitionMimic(mimicList)
 
-def start_natlink():
+def start_natlink(connectOption=None):
     """do the startup of the python macros system
     """
     global userDirectory, DNSversion, baseDirectory, WindowsVersion
@@ -659,8 +659,8 @@ def start_natlink():
             print 'start Dragon first, the rerun the script natlinkmain...'
             time.sleep(10)
             return
-
-        natlink.natConnect()
+        if not connectOption is None:
+            natlink.natConnect(connectOption) # 0 or 1, should not be needed when automatic startup
 
         #print "\n".join(["%s=%s" % (k,v) for k, v in sys.modules ])
         #print "\n".join(sys.modules.keys())
