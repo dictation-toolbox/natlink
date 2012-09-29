@@ -644,7 +644,8 @@ def recognitionMimic(mimicList):
     """for Dragon 12, try execScript HeardWord
     """
     if DNSversion >= 12:
-        natlink.execScript(mimicList)
+        script = 'HeardWord "%s"'% '", "'.join(mimicList)
+        natlink.execScript(script)
     else:
         natlink.recognitionMimic(mimicList)
 
