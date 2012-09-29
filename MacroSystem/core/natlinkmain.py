@@ -649,7 +649,7 @@ def recognitionMimic(mimicList):
     else:
         natlink.recognitionMimic(mimicList)
 
-def start_natlink(connectOption=None):
+def start_natlink():
     """do the startup of the python macros system
     """
     global userDirectory, DNSversion, baseDirectory, WindowsVersion
@@ -659,8 +659,8 @@ def start_natlink(connectOption=None):
             print 'start Dragon first, the rerun the script natlinkmain...'
             time.sleep(10)
             return
-        if not connectOption is None:
-            natlink.natConnect(connectOption) # 0 or 1, should not be needed when automatic startup
+
+        natlink.natConnect(1) # 0 or 1, should not be needed when automatic startup
 
         #print "\n".join(["%s=%s" % (k,v) for k, v in sys.modules ])
         #print "\n".join(sys.modules.keys())
@@ -686,6 +686,7 @@ def start_natlink(connectOption=None):
                 print 'insert userDirectory: %s to sys.path!'% userDirectory
             sys.path.insert(0,userDirectory)
             
+    
     
         # setting searchImportDirs:
         setSearchImportDirs()
@@ -726,5 +727,5 @@ def start_natlink(connectOption=None):
 #
 # Here is the initialization code.
 #
-if __name__ == '__main__':
-    start_natlink()
+
+start_natlink()
