@@ -584,7 +584,7 @@ def changeCallback(type,args):
     if type == 'mic' and args == 'on':
         if debugCallback:
             print 'findAndLoadFiles...'
-        moduleInfo = getCurrentModule()
+        moduleInfo = natlink.getCurrentModule()
         findAndLoadFiles()
         beginCallback(moduleInfo, checkAll=1)
         loadModSpecific(moduleInfo)

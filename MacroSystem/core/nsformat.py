@@ -12,7 +12,7 @@ __version__ = "$Revision: 105 $, $Date: 2008-12-04 12:47:13 +0100 (do, 04 dec 20
 #
 
 import string, types, copy
-import natlink, natlinkmain
+import natlink
 
 flag_useradded = 0
 flag_varadded = 1
@@ -115,7 +115,7 @@ propDict['uppercase-letter'] = (flag_no_space_next,)
 
 def formatWords(wordList,state=None):
     global flags_like_period
-    language = natlinkmain.status.getLanguage()
+    language = 'enx'
     if language != 'enx':
         flags_like_period = (4, 21, 17) # one space after period.
         
