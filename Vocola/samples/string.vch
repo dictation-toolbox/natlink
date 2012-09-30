@@ -1,7 +1,7 @@
 ###
 ### Standard simple functions for manipulating strings
 ###
-###   Version 1.3
+###   Version 1.5
 ###
 ###   cf. http://en.wikipedia.org/wiki/String_functions_(programming)
 ### 
@@ -26,6 +26,26 @@ Left(string, count)  := EvalTemplate('%s[0:%i]', $string, $count);
   # returned.  Behavior for negative values of n is undefined.
   #
 Right(string, count)  := EvalTemplate('%s[-%i:]', $string, $count);
+
+
+  #
+  # Mid(string,start): Returns the substring of string starting at
+  # start.  (0 is the position of the first character.)  Returns "" if
+  # start equals or exceeds the length of string.  Behavior for
+  # negative values of start is undefined.
+  #
+Mid(string, start)  := EvalTemplate('%s[%i:]', $string, $start);
+
+
+  #
+  # Mid3(string,start,n): Returns the substring of string starting at
+  # start of length n.  (0 is the position of the first character.)
+  # The resulting string is truncated if there are fewer than n
+  # characters beyond the starting point.  Behavior for negative
+  # values of start or count is undefined.
+  #
+Mid3(string, start, count)  := EvalTemplate('%s[%i:%i+%i]', $string, 
+	     	                            $start, $start, $count);
 
 
   #
@@ -62,3 +82,15 @@ Replace(string, from, to) := EvalTemplate('%s.replace(%s, %s)',
   # 
 Split(string, separator, index) :=
     EvalTemplate('%s.split(%s)[%i]', $string, $separator, $index);
+
+
+  #
+  # Lower(string): Returns the string in lower case.
+  #
+Lower(string)  := EvalTemplate('%s.lower()', $string);
+
+
+  #
+  # Upper(string): Returns the string in upper case.
+  #
+Upper(string)  := EvalTemplate('%s.upper()', $string);

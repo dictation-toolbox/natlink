@@ -1,3 +1,18 @@
+New in 2.7.3:
+
+! new version of samples/string.vch, with Mid[3], Lower, and Upper functions.
+
+* Fixed bug where garbage at the end of a function definition was not noticed.
+
+* Minor fixes to unparse routines to work correctly (e.g., show
+  backslashes correctly).
+
+* Minor fixes of variable scoping: adding my, capitalizing global
+  variables.
+
+* Fixed so can run on Linux as well as Windows (mainly pathname separators).
+
+
 New in 2.7.2:
 
 ! Standard version of Vocola assumes English and turns on spoken forms

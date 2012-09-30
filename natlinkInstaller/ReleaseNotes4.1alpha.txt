@@ -2,6 +2,9 @@ Working on new test releases, 4.1alpha
 
 --- New in Vocola:
 
+  * now installs Vocola 2.7.3I; this is primarily a maintenance release
+    over 2.7.2I
+
 
 ---New in Unimacro:
   * tasks grammar improved and added "give name" option

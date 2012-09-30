@@ -8,6 +8,8 @@
 #
 # Copyright (c) 2002-2012 by Rick Mohr.
 # 
+# Portions Copyright (c) 2012 by Hewlett-Packard Development Company, L.P.
+#
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
 # (the "Software"), to deal in the Software without restriction,
@@ -195,7 +197,7 @@ Commands" and "Edit Global Commands" are activated.
             print "Vocola not active"
             return
         else:
-            print "Vocola version 2.7.2+I starting..."
+            print "Vocola version 2.7.3I starting..."
 
         self.mayHaveCompiled = 0  # has the compiler been called?
         self.compilerError   = 0  # has a compiler error occurred?

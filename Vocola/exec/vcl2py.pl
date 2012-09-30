@@ -14,8 +14,10 @@
 #   -f              -- force processing even if file(s) not out of date
 #
 #
-# Copyright (c) 2002-2011 by Rick Mohr.
-# 
+# Copyright (c) 2000-2003, 2005, 2007, 2009-2012 by Rick Mohr.
+#
+# Portions Copyright (c) 2012 by Hewlett-Packard Development Company, L.P.
+#
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
 # (the "Software"), to deal in the Software without restriction,
@@ -100,18 +102,19 @@
 use Text::ParseWords;    # for quotewords
 use File::Basename;      # for fileparse
 use File::stat;          # for mtime
+use File::Spec;          # for catfile
 
 # ---------------------------------------------------------------------------
 # Main control flow
 
 sub main
 {
-    $VocolaVersion = "2.7.2";
+    $VocolaVersion = "2.7.3";
     $Debug = 0;  # 0 = no info, 1 = show statements, 2 = detailed info
     $Error_encountered = 0;
     $| = 1;      # flush output after every print statement
 
-    $extensions_info = 0;
+    my $extensions_info = 0;
     if ($ARGV[0] eq "-extensions") {
         shift @ARGV;
         $extensions_info = $ARGV[0];
@@ -130,14 +133,14 @@ sub main
         shift @ARGV;
     }
 
-    $suffix = "_vcl";
+    my $suffix = "_vcl";
     if ($ARGV[0] eq "-suffix") {
         shift @ARGV;
         $suffix = $ARGV[0];
         shift @ARGV;
     }
 
-    $Process_all_files = 0;
+    $Force_processing = 0;
     if ($ARGV[0] eq "-f") {
         $Force_processing = 1;
         shift @ARGV;
@@ -157,6 +160,7 @@ sub main
         $In_folder = $ARGV[0];
     } elsif (-e $input) {
         # Input is a single file
+	my $extension;
         ($in_file, $In_folder, $extension) = fileparse($input, ".vcl");
         $extension eq ".vcl"
             or die "Input filename '$input' must end in '.vcl'\n";
@@ -164,19 +168,19 @@ sub main
         die "Unknown input filename '$input'\n";
     }
 
-    my $log_file = "$In_folder\\vcl2py_log.txt";
+    my $log_file = File::Spec->catfile($In_folder, "vcl2py_log.txt");
     open LOG, ">$log_file" or die "$@ $log_file\n";
 
-    $default_maximum_commands = 1;
+    $Default_maximum_commands = 1;
     read_ini_file($In_folder);
     read_extensions_file($extensions_info) if ($extensions_info);
-    print LOG ("default maximum commands per utterance = $default_maximum_commands\n") if ($Debug >= 1);
+    print LOG ("default maximum commands per utterance = $Default_maximum_commands\n") if ($Debug >= 1);
 
     convert_files($in_file, $out_folder, $suffix);
     close LOG;
 
     if ($Error_encountered == 0) {
-        system("del \"$log_file\"");
+	unlink($log_file);
     }
     exit($Error_encountered);
 }
@@ -184,7 +188,7 @@ sub main
 sub read_ini_file
 {
     my ($in_folder) = @_;
-    my $ini_file = "$in_folder\\Vocola.INI";
+    my $ini_file = File::Spec->catfile($in_folder, "Vocola.INI");
     print LOG "INI file is '$ini_file'\n" if ($Debug >= 1);
     open INI, "<$ini_file" or return;
     while (<INI>) {
@@ -192,7 +196,7 @@ sub read_ini_file
         my $keyword = $1;
         my $value = $2;
         if ($keyword eq "MaximumCommands") {
-            $default_maximum_commands = $value;
+            $Default_maximum_commands = $value;
         }
     }  
 }
@@ -220,7 +224,6 @@ sub convert_files
     my ($in_file, $out_folder, $suffix) = @_;
     if ($in_file ne "") {
         # Convert one file
-        print "Converting $in_file...\n";
         convert_file($in_file, $out_folder, $suffix);
     } else {
         # Convert each .vcl file in folder 
@@ -229,9 +232,9 @@ sub convert_files
         my $machine = lc($ENV{COMPUTERNAME});
         foreach (readdir FOLDER) {
             if (/^(.+)\.vcl$/) {
-                my $in_file = lc($1);
+                my $in_file = $1;
                 # skip machine-specific files for different machines
-                next if ($in_file =~ /\@(.+)/ and $1 ne $machine);
+                next if ($in_file =~ /\@(.+)/ and lc($1) ne $machine);
                 convert_file($in_file, $out_folder, $suffix);
             }
         }
@@ -253,10 +256,10 @@ sub convert_file
     $Should_emit_dictation_support = 0;
     $out_file = "$out_folder/$out_file" . $suffix . ".py";
 
-    $in_stats  = stat("$In_folder/$Input_name");
-    $out_stats = stat("$out_file");
-    $in_date   = $in_stats->mtime;
-    $out_date  = $out_stats ? $out_stats->mtime : 0;
+    my $in_stats  = stat("$In_folder/$Input_name");
+    my $out_stats = stat("$out_file");
+    my $in_date   = $in_stats->mtime;
+    my $out_date  = $out_stats ? $out_stats->mtime : 0;
     return unless $in_date > $out_date || $Force_processing;
 
     %Definitions          = ();
@@ -277,21 +280,26 @@ sub convert_file
 
     # Prepend a "global" context statement if necessary
     if ($statements[0]->{TYPE} ne "context") {
-        my $context = parse_context(": ");
+	my $context = {};
+	$context->{TYPE} = "context";
+	my @strings;
+	push (@strings, "");
+        $context->{STRINGS} = \@strings;
         unshift(@statements, $context);
     }
 
     #print LOG unparse_statements (@statements);
     transform_nodes(@statements);
     #print LOG unparse_statements (@statements);
+    #print STDOUT unparse_statements (@statements);
 
     # Handle $set directives:
-    $maximum_commands = $default_maximum_commands;
+    $Maximum_commands = $Default_maximum_commands;
     for my $statement (@statements) {
 	if ($statement->{TYPE} eq "set") {
 	    my $key = $statement->{KEY};
 	    if ($key eq "MaximumCommands") {
-		$maximum_commands = $statement->{TEXT};
+		$Maximum_commands = $statement->{TEXT};
 	    } elsif ($key eq "numbers") {
 		%Number_words = ();
 		my @numbers = split(/\s*,\s*/, $statement->{TEXT});
@@ -528,7 +536,7 @@ sub parse_file    # returns a list of statements
     my $in_file = shift;
     push(@Included_files, $in_file);
     push(@Include_stack, $in_file);
-    $in_file = "$In_folder\\$in_file";
+    $in_file = File::Spec->catfile("$In_folder", "$in_file");
     $Line_number = -1;
     my $text = read_file($in_file);   # strip comments, deal unbalanced quotes
 
@@ -730,6 +738,7 @@ sub parse_function_definition   # function = prototype ':=' action* ';'
         @Formals = @formals; # Used below in &parse_formal_reference
         &shift_clause;
         $statement->{ACTIONS} = &parse_actions;
+        &ensure_empty;
 	if ($functionName =~ /\./)
 	    {die "illegal user function name: $functionName\n"}
         defined ($Functions{$functionName})
@@ -1064,7 +1073,11 @@ sub parse_word
     {
 	my ($quote, $word) = ($1, $2);
 	$word =~ s/$quote$quote/$quote/g if $quote;
-        if ($Debug>=2) {print LOG "Found word:  '$word'\n"}
+        if ($Debug>=2) {
+	    my $text = $word;
+	    $text =~ s/\\\\/\\/g;
+	    print LOG "Found word:  '$text'\n"
+	}
         return create_word_node($word, 0);
     }
 }
@@ -1264,8 +1277,14 @@ sub unparse_directive
     my $type = $statement->{TYPE};
     if ($type eq "set") {
 	return "\$set '$statement->{KEY}' to '$statement->{TEXT}'\n";
+    } elsif ($type eq "context") {
+	my $result = join("|", @{ $statement->{STRINGS} }) .  ":\n";
+	$result =~ s/\\\\/\\/g;
+	return $result;
     } else {
-	return "$statement->{TYPE}:  '$statement->{TEXT}'\n";
+	my $result = "$statement->{TYPE}:  '$statement->{TEXT}'\n";
+	$result =~ s/\\\\/\\/g;
+	return $result;
     }
 }
 
@@ -1289,7 +1308,7 @@ sub unparse_command
     my ($command, $show_actions) = @_;
     my $result = unparse_terms ($show_actions, @{ $command->{TERMS} });
     if ($command->{ACTIONS} && $show_actions) {
-        my $result .= " = " . unparse_actions (@{ $command->{ACTIONS} });
+	$result .= " = " . unparse_actions (@{ $command->{ACTIONS} });
     }
     return $result;
 }
@@ -1309,8 +1328,11 @@ sub unparse_term
     my ($term, $show_actions) = @_;
     my $result = "";
     if ($term->{OPTIONAL}) {$result .=  "["}
-    if    ($term->{TYPE} eq "word")      {$result .= "$term->{TEXT}"}
-    elsif ($term->{TYPE} eq "variable")  {$result .= "<$term->{TEXT}>"}
+    if    ($term->{TYPE} eq "word")      {
+	my $text = $term->{TEXT};
+	$text =~ s/\\\\/\\/g;
+	$result .= "$text"
+    } elsif ($term->{TYPE} eq "variable")  {$result .= "<$term->{TEXT}>"}
     elsif ($term->{TYPE} eq "dictation") {$result .= "<_anything>"}
     elsif ($term->{TYPE} eq "menu")      {$result .= unparse_menu ($term, 
 								   $show_actions)}
@@ -1364,6 +1386,7 @@ sub unparse_word
     my $action = shift;
     my $word = $action->{TEXT}; 
     $word =~ s/\'/\'\'/g;
+    $word =~ s/\\\\/\\/g;
     return "'$word'" ;
 }
 
@@ -1606,7 +1629,7 @@ sub emit_sequence_rules
         my $rule_name = "sequence$suffix";
         $context->{RULENAMES} = [$rule_name];
 	emit(2, "<$rule_name> exported = " 
-	        . repeated_upto("<any$suffix>", $maximum_commands) . ";\n");
+	        . repeated_upto("<any$suffix>", $Maximum_commands) . ";\n");
     }
 }
 
@@ -1837,6 +1860,7 @@ sub emit_top_command_actions
     @Variable_terms = get_variable_terms($command); # used in emit_reference
 
     my $command_specification = unparse_terms(0, @terms);
+    $command_specification =~ s/\\/\\\\/g;
 
     emit(1, "\# ");
     print OUT unparse_terms (0, @terms);
@@ -2272,7 +2296,7 @@ sub make_safe_python_string
 
 sub emit_file_header
 {
-    $now = localtime;
+    my $now = localtime;
     print OUT "\# NatLink macro definitions for NaturallySpeaking\n"; 
     print OUT "\# coding: latin-1\n";
     print OUT "\# Generated by vcl2py $VocolaVersion, $now\n";
