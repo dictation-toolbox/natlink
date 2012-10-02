@@ -50,7 +50,7 @@ def call_got_begin(module_info):
 
 class Application(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, 'NatLink heartbeat window', size=(550, 450))
+        wx.Frame.__init__(self, parent, -1, 'NatLink (Dragon 12) Window', size=(550, 450))
         panel = wx.Panel(self)
         sizer = wx.BoxSizer(wx.VERTICAL)
         panel.SetSizer(sizer)
