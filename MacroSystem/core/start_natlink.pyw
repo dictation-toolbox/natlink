@@ -60,7 +60,7 @@ class Application(wx.Frame):
         sizer.Add(self.log, 0, wx.TOP|wx.LEFT|wx.EXPAND)        
         redir=RedirectText(self.log)
         sys.stdout=redir
-        print 'test'
+        #print 'test'
         
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.update, self.timer)
