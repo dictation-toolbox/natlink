@@ -79,10 +79,20 @@ usePerl = 0
 # window and waits for completion. Since such modules need to be compiled
 # separately for each python version we need this careful import:
 
-NatLinkFolder = os.path.split(
-    sys.modules['natlinkmain'].__dict__['__file__'])[0]
+# try both for getting the coreDirectory (QH):
+for modname in ['natlink', 'natlinkmain']:
+    try:
+        coreDirectory = os.path.split(
+           sys.modules[modname].__dict__['__file__'])[0]
+    except KeyError:
+        pass
+    else:
+        break
+if not coreDirectory:
+    raise ValueError("natlink core directory could not be established")
 
-NatLinkFolder = re.sub(r'\core$', "", NatLinkFolder)
+
+NatLinkFolder = os.path.normpath(os.path.join(coreDirectory, '..'))  #MacroSystem folder
 
 pydFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'exec', sys.version[0:3]))
 sys.path.append(pydFolder)

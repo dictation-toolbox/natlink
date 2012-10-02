@@ -15,5 +15,5 @@ def run_waitForSpeechLoop():
         natlink.natDisconnect()
 
 if __name__ == '__main__':
-    natlinkmain.start_natlink()
+    natlinkmain.start_natlink(doNatConnect=1)
     run_waitForSpeechLoop()
