@@ -21,32 +21,8 @@ class RedirectText:
     def __init__(self,aWxTextCtrl):
         self.out=aWxTextCtrl
 
-    def write(self,string):
-        self.out.WriteText(string)
-
-
-last_module = []
-def heartbeat():
-    global last_module
-    pass
-    #print 'heartbeat!'
-    #try:
-    #    current_module = natlink.getCurrentModule()
-    #    if current_module != last_module:
-    #        last_module = current_module
-    #        print "virtually toggling microphone..."
-    #        natlinkmain.changeCallback("mic", "on")
-    #        call_got_begin(current_module)
-    #except:
-    #    traceback.print_exc()
-
-def call_got_begin(module_info):
-    for module in sys.modules.keys():
-        try:
-            sys.modules[module].thisGrammar.beginCallback(module_info)
-            print " called gotBegin for " + module
-        except:
-            pass
+    def write(self,text):
+        self.out.WriteText(text)
 
 class Application(wx.Frame):
     def __init__(self, parent):
@@ -62,16 +38,9 @@ class Application(wx.Frame):
         sys.stdout=redir
         #print 'test'
         
-        self.timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.update, self.timer)
         self.Bind(wx.EVT_CLOSE, close)        
         self.Centre()
         self.Show(True)
-        #self.timer.Start(250)        
-
-    def update(self, event):
-        pass
-        #heartbeat()
 
 Application(None)
 if not natlink.isNatSpeakRunning():
