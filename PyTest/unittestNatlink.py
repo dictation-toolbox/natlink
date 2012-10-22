@@ -1412,12 +1412,12 @@ class UnittestNatlink(unittest.TestCase):
             # from them
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','two'],recCmdDict, 0)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','3'],recCmdDict, 0)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','4'],recCmdDict, 0)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','5'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','three'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','four'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','five'],recCmdDict, 0)
             # some of the specialFilename cases:
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','7'],recCmdDict, 0)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','8'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seven'],recCmdDict, 0)
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','eight'],recCmdDict, 0)
     
     ## is done in tearDown:
     ##        # make sure no .pyc files are lying around
