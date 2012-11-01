@@ -96,7 +96,6 @@ import natlink
 import glob             # new way to collect the grammar files
 import pprint
 import natlinkstatus    # for extracting status info (QH)
-cmdLineStartup=[0]
 debugTiming=0
 #
 # This redirects stdout and stderr to a dialog box.
@@ -129,8 +128,17 @@ status = natlinkstatus.NatlinkStatus()
 status.checkSysPath()
 debugLoad = status.getDebugLoad()
 debugCallback = status.getDebugCallback()
+
+# changed strategy for Dragon 12:
+if not 'cmdLineStartup' in globals():
+    if status.getDNSVersion() >= 12:
+        cmdLineStartup=[1]     # testing this, [1] for Dragon 12
+    else:
+        cmdLineStartup=[0]     # testing this, [0] for previous versions (automatic loading)
+
 if debugLoad:
     print 'do extra output at (re)loading time: %s'% debugLoad
+    print 'cmdLineStartup: %s'% repr(cmdLineStartup)
 if debugCallback:
     print 'do extra output at callback time: %s'% debugCallback
 
@@ -731,7 +739,8 @@ def natDisconnect():
     natlink.natDisconnect()
     if cmdLineStartup[0]:
         cmdLineStartup[0] -= 1
-    print 'at natDisconnect, cmdLineStartup: %s'% cmdLineStartup[0]
+    if debugLoad:
+        print 'at natDisconnect, cmdLineStartup: %s'% cmdLineStartup[0]
 
 ############################################################################
 #
@@ -748,6 +757,6 @@ if not cmdLineStartup[0]:
     sys.stdout = NewStdout()
     sys.stderr = NewStderr()
     start_natlink()
-    cmdLineStartup[0] += 1
+    #cmdLineStartup[0] += 1
 else:
     print 'imported natlinkmain, but no start of natlink'
