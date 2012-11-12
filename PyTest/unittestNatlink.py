@@ -62,7 +62,7 @@ import win32gui
 # make different versions testing possible:
 import natlinkstatus
 nlstatus = natlinkstatus.NatlinkStatus()
-DNSVersion = nlstatus.getDNSVersion()
+DNSversion = nlstatus.getDNSVersion()
 
 class TestError(Exception):
     pass
@@ -759,7 +759,7 @@ class UnittestNatlink(unittest.TestCase):
     #v5/9
     # version 9 gived (???)) (0, 6, 'And ', 3, 3) here:
     # version 10 gives (0, 6, 'And ', 4, 4) here:
-        if DNSVersion <= 9:
+        if DNSversion <= 9:
             callTest.doTestTextChange(moduleInfo,(0,6,'And ',3, 3))
         else:
             callTest.doTestTextChange(moduleInfo,(0,6,'And ',4, 4))
@@ -767,7 +767,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        callTest.doTestTextChange(moduleInfo,(0,5,'And',3,3))
 
         dictObj.setTextSel(3,3)
-        if DNSVersion < 11:
+        if DNSversion < 11:
             natlinkmain.recognitionMimic([r',\comma'])
         else:
             natlinkmain.recognitionMimic([r',\comma\comma'])
@@ -880,12 +880,12 @@ class UnittestNatlink(unittest.TestCase):
         
         If DragonPad does not come up, close down Dragon (all instances) and retry.
         """
-        self.log("testWordFuncs, version: %s"% DNSVersion, 1)
+        self.log("testWordFuncs, version: %s"% DNSversion, 1)
         self.clearDragonPad()
         testMimicResult = self.doTestMimicResult
         self.doTestWindowContents("")
 
-        if DNSVersion >= 11:
+        if DNSversion >= 11:
             # spelling letters (also see voicecode/sr_interface)
             total = []
             for word, expected in [(r'a\determiner', 'A'),
@@ -1034,7 +1034,7 @@ class UnittestNatlink(unittest.TestCase):
         
         
         with Dragon 11:
-            DNSVersion is used to separate tests, eg in Dragon 11
+            DNSversion is used to separate tests, eg in Dragon 11
             letters have become A\\letter or A\\letter\\alpha etc
             AND existing words seem to return only 8, so only testing word existence
             
@@ -1079,7 +1079,7 @@ class UnittestNatlink(unittest.TestCase):
         testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('heLLo',6)")
         testFuncReturnAlt(normalWordInfo,"natlink.getWordInfo('hello',7)")
 
-        if DNSVersion >= 11:
+        if DNSversion >= 11:
             commaWord = r',\comma\comma'
             hyphenWord = r'-\hyphen\hyphen'
         else:
@@ -1087,7 +1087,7 @@ class UnittestNatlink(unittest.TestCase):
             hyphenWord = r'-\hyphen'
             
         
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_no_space_before + dgnwordflag_no_space_next,
                        "natlink.getWordInfo(r'%s')"% hyphenWord)
             testFuncReturnWordFlag(dgnwordflag_nodelete+dgnwordflag_no_space_before,
@@ -1097,7 +1097,7 @@ class UnittestNatlink(unittest.TestCase):
             testFuncReturn(8, "natlink.getWordInfo('%s')"% commaWord)
             
         # extra words:
-        if DNSVersion >= 11:
+        if DNSversion >= 11:
             # spelling letters (also see voicecode/sr_interface)
             for word in [r'a\determiner', r'A\letter', r'A\letter\alpha',
                          r'a\lowercase-letter\lowercase A',
@@ -1166,7 +1166,7 @@ class UnittestNatlink(unittest.TestCase):
         testFuncReturnAlt(normalWordInfo, "natlink.getWordInfo('HeLLo',4)")  # case insensitive search
         
         # setWordInfo
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testForException(TypeError,"natlink.setWordInfo()")
             testForException(TypeError,"natlink.setWordInfo(1)")
             testForException(TypeError,"natlink.setWordInfo('hello')")
@@ -1214,16 +1214,16 @@ class UnittestNatlink(unittest.TestCase):
         # deleteWord #
         testForException(TypeError,"natlink.deleteWord()")
         testForException(TypeError,"natlink.deleteWord(1)")
-        if DNSVersion < 11: 
+        if DNSversion < 11: 
             testFuncReturn(dgnwordflag_is_period+dgnwordflag_DNS8newwrdProp,"natlink.getWordInfo('Szymanskii')")
         natlink.deleteWord('Szymanskii')
         testFuncReturn(None, "natlink.getWordInfo('Szymanskii',0)")
         
-        if DNSVersion < 11:
+        if DNSversion < 11:
             # word not in active or backup dict:
             testFuncReturn(None, "natlink.getWordInfo('Szymanskii',1)")  # looking in backup dictionary broken in Dragon 11
         
-        if DNSVersion < 11:
+        if DNSversion < 11:
             # word FrotzBlatz never added, so is not there (???) in the past
             # was the word added or activated when setting the word info??
             #testFuncReturn(dgnwordflag_useradded,"natlink.getWordInfo('FrotzBlatz')&~0x20000000")
@@ -1450,7 +1450,7 @@ class UnittestNatlink(unittest.TestCase):
         
         self.log("testWordProns", 1)
 
-        if DNSVersion >= 11:
+        if DNSversion >= 11:
             natlink.playString('Dragon 11 getWordProns seems not valid any more...')
             print 'Dragon 11 getWordProns seems not valid any more...'
             time.sleep(1)
@@ -2012,7 +2012,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.load("""<dgnletters> imported;
                       <Start> exported = DICTATE letters <dgnletters>;""")
         testGram.activateAll(window=0)
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testRecognition(['DICTATE','letters','b',])
             testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\\\l'],
                                      [('DICTATE', 'Start'), ('letters', 'Start'),
@@ -2051,7 +2051,7 @@ class UnittestNatlink(unittest.TestCase):
       
     # try combinations of the three:
         self.log("testing dgndictation etc combinations")
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testGram.load("""<dgndictation> imported;
                             <dgnletters> imported;
                             <dgnwords> imported;
@@ -2072,7 +2072,7 @@ class UnittestNatlink(unittest.TestCase):
         testRecognition(['DICTATE','hello','there'])
         testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
                                  [('DICTATE', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testRecognition(['DICTATE','letters','b\\bravo', 'k\\kilo'])
             testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
                                      [('DICTATE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
@@ -2083,7 +2083,7 @@ class UnittestNatlink(unittest.TestCase):
                                         ('k\\spelling-letter\\K', 'dgnletters')])
 
         testRecognition(['DICTATE','word','hello'])
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testGram.checkExperiment(1,'self',['DICTATE', 'word', 'hello'],
                                      [('DICTATE', 'Start3'), ('word', 'Start3'), ('hello', 'dgnwords')])
         else:
@@ -2106,7 +2106,7 @@ class UnittestNatlink(unittest.TestCase):
         testRecognition(['DICTATE','hello','there'])
         testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
                                  [('DICTATE', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testRecognition(['DICTATE','b\\bravo', 'k\\kilo'])
             testGram.checkExperiment(1,'self',['DICTATE', 'b\\bravo\\h', 'k\\kilo\\h'],
                                      [('DICTATE', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
@@ -2140,7 +2140,7 @@ class UnittestNatlink(unittest.TestCase):
         testRecognition(['DICTATE','hello','there'])
         testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
                                  [('DICTATE', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testRecognition(['DICTATE','letters','b\\bravo', 'k\\kilo'])
             testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
                                      [('DICTATE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
@@ -2317,13 +2317,13 @@ class UnittestNatlink(unittest.TestCase):
         testGram.activate(window=calcWindow)
         self.wait()
         
-        if DNSVersion < 11:
+        if DNSversion < 11:
             period = r'.\period'
         else:
             period = r'.\period\period'
         
         testRecognition(['this','is','a','test',period])
-        if DNSVersion < 11:
+        if DNSversion < 11:
             testGram.checkExperiment(1,'self',['this','is','a','test', period])
         else:
             testGram.checkExperiment(1,'self', ['this', 'is', 'a\\determiner', 'test', '.\\period\\period'])
@@ -2502,7 +2502,7 @@ class UnittestNatlink(unittest.TestCase):
         
         testRecognition(['Correct','a','Through','of'])
         
-        if DNSVersion < 11:
+        if DNSversion < 11:
             aResult = 'a'
         else:
             aResult = 'a\\determiner'
@@ -2525,7 +2525,7 @@ class UnittestNatlink(unittest.TestCase):
         recog = ['Select','more', 'Through', 'of']
         testRecognition(recog)
         testGram.checkExperiment(1,'self',recog,2,28)
-        if DNSVersion < 11:
+        if DNSversion < 11:
             aResult = 'a'
         else:
             aResult = 'a\\determiner'

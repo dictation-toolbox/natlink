@@ -42,7 +42,7 @@ logFileName = r"D:\natlink\natlink\PyTest\testresult.txt"
 # make different versions testing possible:
 import natlinkstatus
 nlstatus = natlinkstatus.NatlinkStatus()
-DNSVersion = nlstatus.getDNSVersion()
+DNSversion = nlstatus.getDNSVersion()
 
 #---------------------------------------------------------------------------
 # These tests should be run after we call natConnect
@@ -144,7 +144,7 @@ class UnittestNsformat(unittest.TestCase):
         
         .\point results in ' .'
         """
-        if DNSVersion <= 10:
+        if DNSversion <= 10:
             words =             ['.', r'.\period', r'.\point', r',\comma', r':\colon', r'-\hyphen', 'normal']
         else:
             words =             ['.', r'.\period\period', r'.\dot\dot', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
@@ -167,7 +167,7 @@ class UnittestNsformat(unittest.TestCase):
         .\point results in ' .'
         """
         testFunc = self.doTestFormatLetters
-        if DNSVersion <= 10:
+        if DNSversion <= 10:
             words = r'x\xray\h y\yankee\h !\exclamation-mark'
         else:
             words =   r'x\spelling-letter\X_ray y\spelling-letter\Yankee !\spelling-exclamation-mark\exclamation_mark'
@@ -175,7 +175,7 @@ class UnittestNsformat(unittest.TestCase):
        
     def testFlagsLike(self):
         """tests the different predefined flags in nsformat"""
-        if DNSVersion <= 10:
+        if DNSversion <= 10:
             gwi = getWordInfo10
             wfList = [(r'.\period', 'period'),
                     (r',\comma', 'comma'),
@@ -234,7 +234,7 @@ class UnittestNsformat(unittest.TestCase):
         needs testing again, oct 2010 QH
         
         """
-        if DNSVersion < 10:
+        if DNSversion < 10:
             words =             [r'3\three', r'.\point', r'5\five', r'by', r'4\four', 'centimeter',
                                  r',\comma', 'proceeding']
         else:
@@ -315,7 +315,7 @@ class UnittestNsformat(unittest.TestCase):
         """
         testSubroutine = self.doTestFormatting
         
-        if DNSVersion <= 10:
+        if DNSversion <= 10:
             state = -1
             state=testSubroutine(state,
                 r'\space-bar',
@@ -387,7 +387,7 @@ class UnittestNsformat(unittest.TestCase):
         study the words tested below!
         """
 
-        if DNSVersion >= 11:
+        if DNSversion >= 11:
             return # for Dragon 11 and beyond
     
         state = None
@@ -468,7 +468,7 @@ class UnittestNsformat(unittest.TestCase):
         
         study the words tested below!
         """
-        if DNSVersion <= 10:
+        if DNSversion <= 10:
             return # for Dragon 11 and beyond
         testSubroutine = self.doTestFormatting
     

@@ -865,7 +865,7 @@ class NatlinkStatus(object):
         """return actual status in a dict"""
         D = {}
         for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
-                    'DNSIniDir', 'WindowsVersion', 'DNSVersion',
+                    'DNSIniDir', 'WindowsVersion', 'DNSversion',
                     'DNSFullVersion', 
                     'PythonVersion',
                     
@@ -954,7 +954,7 @@ class NatlinkStatus(object):
         # system:
         L.append('system information:')
         for key in ['DNSInstallDir',
-                    'DNSIniDir', 'DNSVersion',
+                    'DNSIniDir', 'DNSversion',
                     'WindowsVersion', 'PythonVersion']:
             self.appendAndRemove(L, D, key)
 
