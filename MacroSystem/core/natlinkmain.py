@@ -179,7 +179,7 @@ userDirectory = ''
 searchImportDirs = []
 
 DNSdirectory = ''
-DNSversion = -1
+DNSversion = status.getDNSVersion()
 WindowsVersion = ''
 DNSmode = 0  # can be changed in grammarX by the setMode command to
              # 1 dictate, 2 command, 3 numbers, 4 spell

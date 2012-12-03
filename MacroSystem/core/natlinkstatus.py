@@ -122,9 +122,10 @@ NSExt8Path  = "ScanSoft\NaturallySpeaking8"
 NSExt9Path  = "Nuance\NaturallySpeaking9"
 NSExt10Path  = "Nuance\NaturallySpeaking10"
 NSExt11Path  = "Nuance\NaturallySpeaking11"
+NSExt12Path  = "Nuance\NaturallySpeaking12"
 DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
-DNSPaths = [NSExt11Path, NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
-DNSVersions = [11,10,9,8,7]
+DNSPaths = [NSExt12Path, NSExt11Path, NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
+DNSVersions = [12,11,10,9,8,7]
 # augment above when a new version is there!
 
 # utility functions: 
@@ -380,7 +381,9 @@ class NatlinkStatus(object):
 
         return DNSversion
 
-
+    def getDNSversion(self):
+        return self.getDNSVersion()
+		
     def getDNSInstallDir(self):
         """get the folder where natspeak is installed
 
