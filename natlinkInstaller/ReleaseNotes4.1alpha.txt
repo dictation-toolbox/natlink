@@ -15,4 +15,6 @@ Working on new test releases, 4.1alpha
 
 ---Changed in NatLink (for programmers only):
   * at callback time the wordsByRule dict is now also provided (see website)
- 
+
+---Changes in order to get NatLink working in Dragon 12: 
+
