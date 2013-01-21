@@ -11,7 +11,7 @@ def close(frame = None, event = None):
     try:
         natlinkmain.natDisconnect()
         print 'natlink disconnected'
-        time.sleep(10)
+        time.sleep(1)
     except:
         pass
     sys.exit()
@@ -48,12 +48,14 @@ if not natlink.isNatSpeakRunning():
 else:
     import natlinkmain # now the import does not start the macro system, if cmdLineStartup=1 (line 99 of natlinkmain.py)
     natlinkmain.start_natlink(doNatConnect=1)
-
-try:
-    app.MainLoop()    
-except:
-    pass
-finally:
-    close()
+while 1:
+    try:
+        app.MainLoop()    
+    except:
+        print 'error:'
+        traceback.print_exc()
+        pass
+    finally:
+        close()
 
 

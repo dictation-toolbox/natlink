@@ -228,8 +228,8 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     
     return item0
 
-ID_TEXTDNSversion = 10028
-ID_TEXTCTRLDNSversion = 10029
+ID_TEXTDNSVersion = 10028
+ID_TEXTCTRLDNSVersion = 10029
 ID_TEXTCTRLWindowsVersion = 10030
 ID_TEXTCTRLpythonversion = 10031
 ID_TEXTdnsinstallpath = 10032
@@ -254,12 +254,12 @@ def InfoWindow( parent, call_fit = True, set_sizer = True ):
     item3 = wx.FlexGridSizer( 0, 4, 0, 0 )
     item3.AddGrowableCol( 1 )
     
-    item4 = wx.StaticText( parent, ID_TEXTDNSversion, "DNS version", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item4 = wx.StaticText( parent, ID_TEXTDNSVersion, "DNS version", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item5 = wx.BoxSizer( wx.HORIZONTAL )
     
-    item6 = wx.TextCtrl( parent, ID_TEXTCTRLDNSversion, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+    item6 = wx.TextCtrl( parent, ID_TEXTCTRLDNSVersion, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
     item6.SetBackgroundColour( wx.LIGHT_GREY )
     item5.Add( item6, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 

@@ -1318,7 +1318,7 @@ the commands r/R to register/unregister natlink.dll explicitly.
 
 When you disable NatLink, the necessary settings in nssystem.ini and nsapps.ini
 are cleared. 
-
+i
 After you restart NatSpeak, NatLink should NOT START ANY MORE
 so the window 'Messages from Python Macros' is NOT OPENED.
 

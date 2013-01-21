@@ -371,19 +371,17 @@ class NatlinkStatus(object):
             # try falling back on registry:
             r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
             if "NaturallySpeaking8" in r:
-                DNSversion = 8
+                DNSVersion = 8
             elif "NaturallySpeaking 7.1" in r or "NaturallySpeaking 7.3":
-                DNSversion = 7
+                DNSVersion = 7
             else:
-                DNSversion = 5
+                DNSVersion = 5
         except:
-            DNSversion = 10
+            DNSVersion = 10
 
-        return DNSversion
+        return DNSVersion
 
-    def getDNSversion(self):
-        return self.getDNSVersion()
-		
+                
     def getDNSInstallDir(self):
         """get the folder where natspeak is installed
 
@@ -868,7 +866,7 @@ class NatlinkStatus(object):
         """return actual status in a dict"""
         D = {}
         for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
-                    'DNSIniDir', 'WindowsVersion', 'DNSversion',
+                    'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'DNSFullVersion', 
                     'PythonVersion',
                     
@@ -957,7 +955,7 @@ class NatlinkStatus(object):
         # system:
         L.append('system information:')
         for key in ['DNSInstallDir',
-                    'DNSIniDir', 'DNSversion',
+                    'DNSIniDir', 'DNSVersion',
                     'WindowsVersion', 'PythonVersion']:
             self.appendAndRemove(L, D, key)
 

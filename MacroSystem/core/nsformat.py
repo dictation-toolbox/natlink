@@ -120,8 +120,8 @@ def formatWords(wordList,state=None):
         flags_like_period = (4, 21, 17) # one space after period.
         
     # get the getWordsInfo function, now returning a tuple of properties
-    DNSversion = natlinkmain.DNSversion
-    if DNSversion >= 11:
+    DNSVersion = natlinkmain.DNSVersion
+    if DNSVersion >= 11:
         gwi = getWordInfo11
     else:
         gwi = getWordInfo10
@@ -187,8 +187,8 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     emptySet = set()
     if gwi is None:
         # get the proper getWordInfo function
-        DNSversion = natlinkmain.DNSversion
-        if DNSversion >= 11:
+        DNSVersion = natlinkmain.DNSVersion
+        if DNSVersion >= 11:
             gwi = getWordInfo11
         else:
             gwi = getWordInfo10
@@ -492,7 +492,7 @@ def testFormatting11():
 if __name__=='__main__':
     natlink.natConnect()
     try:
-        if natlinkmain.DNSversion >= 11:
+        if natlinkmain.DNSVersion >= 11:
             testFormatting11()
         else:
             testFormatting10()

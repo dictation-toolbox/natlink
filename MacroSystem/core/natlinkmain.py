@@ -129,16 +129,8 @@ status.checkSysPath()
 debugLoad = status.getDebugLoad()
 debugCallback = status.getDebugCallback()
 
-# changed strategy for Dragon 12:
-if not 'cmdLineStartup' in globals():
-    if status.getDNSVersion() >= 12:
-        cmdLineStartup=[1]     # testing this, [1] for Dragon 12
-    else:
-        cmdLineStartup=[0]     # testing this, [0] for previous versions (automatic loading)
-
 if debugLoad:
     print 'do extra output at (re)loading time: %s'% debugLoad
-    print 'cmdLineStartup: %s'% repr(cmdLineStartup)
 if debugCallback:
     print 'do extra output at callback time: %s'% debugCallback
 
@@ -179,7 +171,7 @@ userDirectory = ''
 searchImportDirs = []
 
 DNSdirectory = ''
-DNSversion = status.getDNSVersion()
+DNSVersion = status.getDNSVersion()
 WindowsVersion = ''
 DNSmode = 0  # can be changed in grammarX by the setMode command to
              # 1 dictate, 2 command, 3 numbers, 4 spell
@@ -647,7 +639,7 @@ def changeCallbackLoadedModules(type,args):
 def recognitionMimic(mimicList):
     """for Dragon 12, try execScript HeardWord
     """
-    if DNSversion >= 12:
+    if DNSVersion >= 12:
         script = 'HeardWord "%s"'% '", "'.join(mimicList)
         natlink.execScript(script)
     else:
@@ -656,7 +648,7 @@ def recognitionMimic(mimicList):
 def start_natlink(doNatConnect=None):
     """do the startup of the python macros system
     """
-    global userDirectory, DNSversion, baseDirectory, WindowsVersion, cmdLineStartup
+    global userDirectory, DNSVersion, baseDirectory, WindowsVersion
     try:
         # compute the directory where this module came from
         if not natlink.isNatSpeakRunning():
@@ -664,18 +656,11 @@ def start_natlink(doNatConnect=None):
             time.sleep(10)
             return
 
-        if doNatConnect and cmdLineStartup[0] == 1:
-            # not for automatic startup (Dragon up to version 11)
-            print 'connecting NatLink to Dragon (cmdLineStartup: %s)'% cmdLineStartup
+        if doNatConnect:
             natlink.natConnect(1) # 0 or 1, should not be needed when automatic startup
-            cmdLineStartup[0] += cmdLineStartup[0] + 1
 
         #print "\n".join(["%s=%s" % (k,v) for k, v in sys.modules ])
         #print "\n".join(sys.modules.keys())
-        #if cmdLineStartup:
-        #    modname='natlink'
-        #else:
-        #    modname='natlinkmain'
         for modname in ['natlink', 'natlinkmain']:
             try:
                 coreDirectory = os.path.split(
@@ -703,7 +688,7 @@ def start_natlink(doNatConnect=None):
         setSearchImportDirs()
     
         # get invariant variables:
-        DNSversion = status.getDNSVersion()
+        DNSVersion = status.getDNSVersion()
         WindowsVersion = status.getWindowsVersion()
         
         # init things identical to when user changes:
@@ -712,7 +697,7 @@ def start_natlink(doNatConnect=None):
     ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
         print 'Starting natlinkmain from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
                   (status.getCoreDirectory(), status.getInstallVersion(),
-                   DNSversion, status.getPythonVersion(), WindowsVersion)
+                   DNSVersion, status.getPythonVersion(), WindowsVersion)
             
         # load all global files in user directory and current directory
         findAndLoadFiles()
@@ -735,28 +720,20 @@ def start_natlink(doNatConnect=None):
 
 # try to establish here only one automatic startup of start_natlink:
 def natDisconnect():
-    global cmdLineStartup
     natlink.natDisconnect()
-    if cmdLineStartup[0]:
-        cmdLineStartup[0] -= 1
     if debugLoad:
-        print 'at natDisconnect, cmdLineStartup: %s'% cmdLineStartup[0]
+        print 'after natDisconnect'
 
 ############################################################################
 #
 # Here is the initialization code.
 #
-#print "__name__: %s"% __name__
-#print "__file__: %s"% __file__
-if not natlink.isNatSpeakRunning():
-    print 'For not automatic start of NatLink: start Dragon first, the rerun your starting up script'
-    sys.exit()
-if not cmdLineStartup[0]:
-    #print "redirect stdout and stderr"
+if __name__ == 'natlinkmain':
+
+    # redirect stdout and stderr
     # automatic start of python macro system:
     sys.stdout = NewStdout()
     sys.stderr = NewStderr()
     start_natlink()
-    #cmdLineStartup[0] += 1
 else:
-    print 'imported natlinkmain, but no start of natlink'
+    print 'natlinkmain imported only'
