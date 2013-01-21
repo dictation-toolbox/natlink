@@ -13,6 +13,7 @@ __version__ = "$Revision: 105 $, $Date: 2008-12-04 12:47:13 +0100 (do, 04 dec 20
 
 import string, types, copy
 import natlink
+import natlinkmain
 
 flag_useradded = 0
 flag_varadded = 1
