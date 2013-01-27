@@ -91,7 +91,7 @@ import re               # regular expression parsing
 import traceback        # for printing exceptions
 ##import RegistryDict   # all in natlinkstatus now
 ##import win32api # win32api for getting ini file values
-from stat import *      # file statistics
+from stat import ST_MTIME      # file statistics
 import natlink
 import glob             # new way to collect the grammar files
 import pprint

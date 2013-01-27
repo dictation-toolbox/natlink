@@ -1,4 +1,4 @@
-__version__ = "4.0"
+__version__ = "4.1beta"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,11 @@ __version__ = "4.0"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# version 4.1beta: with first version of natlink26_12.pyd for Dragon 12 (thanks to Rudiger)
+#                  drastic changes in old registry settings, removing the PythonPath variable
+#                  also change key for previous installed pyd from NatlinkDllRegistered=25 to NatlinkPydRegistered=25;11
+#                  so, include the Dragon version in this string too.
+#   
 # version 4.0 at last, Quintijn, oct 2011
 # version 3.9sierraArnoud: a private intermediate release for Arnoud van den Eerenbeemt
 #                          making search macro's across applications
@@ -68,6 +73,8 @@ getLanguage:
     is open (only possible when NatSpeak/NatLink is running)
 
 getPythonVersion:
+    changed jan 2013, return two character version, so without the dot! eg '26'
+    
     new nov 2009: return first three characters of python full version ('2.5')
 #    returns, as a string, the python version. Eg. "2.3"
 #    If it cannot find it in the registry it returns an empty string
@@ -109,7 +116,7 @@ getVocolaTakesLanguages: additional settings for Vocola
 """
 
 
-import os, re, win32api, win32con, sys, pprint
+import os, re, win32api, win32con, sys, pprint, stat
 import RegistryDict, natlinkcorefunctions
 # for getting generalised env variables:
 
@@ -175,7 +182,7 @@ class NatlinkStatus(object):
     """
     usergroup = "SOFTWARE\\Natlink"
 ##    lmgroup = "SOFTWARE\Natlink"
-    userregnlOld = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup)
+    userregnlOld = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup, flags=win32con.KEY_READ)
 ##    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)
 
     userregnl = natlinkcorefunctions.NatlinkstatusInifileSection()
@@ -213,7 +220,8 @@ class NatlinkStatus(object):
                 self.copyRegSettingsToInifile(self.userregnlOld, self.userregnl)
             else:
                 print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
-   
+        self.correctIniSettings() # change to newer conventions
+        self.checkNatlinkObsoletePathSettings()
    
     def checkSysPath(self):
         """add base and user directory to sys.path
@@ -252,6 +260,32 @@ class NatlinkStatus(object):
                 print 'no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
                     unimacroDir
 
+    def checkNatlinkObsoletePathSettings(self):
+        """check if the register pythonpath variable is now removed
+        
+        """
+        regDict, sectionName = self.getHKLMPythonPathDict()
+        if 'NatLink' in regDict:
+            print 'run config program (with administration rights) in order to clear obsolete pythonpath setting in registry'
+
+    def getHKLMPythonPathDict(self):
+        """returns the dict that contains the PythonPath section of HKLM
+        """
+        version = self.getPythonVersion()
+        if not version:
+            fatal_error("no valid Python version available")
+        dottedVersion = version[0] + "." + version[1]
+        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
+        # key MUST already exist (ensure by passing flags=...:
+        try:
+            lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=win32con.KEY_READ)
+        except:
+            fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
+                             (pythonPathSectionName, version))
+            
+        return lmPythonPathDict, pythonPathSectionName
+
+
     def InsertToSysPath(self, newdir):
         """leave "." in the first place if it is there"""
         if not newdir: return
@@ -272,6 +306,24 @@ class NatlinkStatus(object):
         #except:
         #    print 'could not copy settings from registry into inifile. Run natlinkconfigfunctions...'
 
+    def correctIniSettings(self):
+        """change NatlinkDllRegistered to NatlinkPydRegistered
+        
+        the new value should have 25;12 (so python version and dragon version)
+        """
+        ini = self.userregnl
+        oldSetting = ini.get('NatlinkDllRegistered')
+        newSetting = ini.get('NatlinkPydRegistered')
+        if oldSetting and not newSetting:
+            if len(oldSetting) <= 2:
+                dragonVersion = self.getDNSVersion()
+                if dragonVersion <= 11:
+                    # silently go over to new settings:
+                    oldSetting = "%s;%s"% (oldSetting, dragonVersion)
+            print 'correct setting from "NatlinkDllRegistered" to "NatlinkPydRegistered"'      
+            ini.set('NatlinkPydRegistered', oldSetting)
+            ini.delete('NatlinkDllRegistered')
+            
     def setUserInfo(self, args):
         """set username and userdirectory at change callback user
         """
@@ -287,8 +339,44 @@ class NatlinkStatus(object):
         return self.userArgs[0]
     def getDNSuserDirectory(self):
         return self.userArgs[1]
+
+    def getOriginalNatlinkPydFile(self):
+        """return the path of the original dll/pyd file
         
- 
+        "" if not registered before
+        """
+        setting = self.userregnl.get("NatlinkPydRegistered")
+        if not setting:
+            return ""
+        if ";" in setting:
+            pyth, drag = setting.split(";")
+            pyth, drag = int(pyth), int(drag)
+        else:
+            pyth, drag = int(setting), 11
+            
+
+        if drag <= 11:
+            pydFilename = 'natlink%s.pyd'% pyth
+        else:
+            # from Dragon 12:
+            pydFilename = 'natlink%s_12.pyd'% pyth
+        return pydFilename    
+
+    def getWantedNatlinkPydFile(self):
+        """return the path pyd file with correct python and Dragon version
+        
+        with Dragon 12 insert _12 in the original name.
+        .dll is dropped.
+        
+        """
+        pyth = self.getPythonVersion()
+        drag = self.getDNSVersion()
+        if drag <= 11:
+            pydFilename = 'natlink%s.pyd'% pyth
+        else:
+            pydFilename = 'natlink%s_12.pyd'% pyth
+        return pydFilename    
+        
     def getWindowsVersion(self):
         """extract the windows version
 
@@ -415,8 +503,15 @@ class NatlinkStatus(object):
     
     def getPythonVersion(self):
         """get the version of python from the registry
+        
+        length 2, without ".", so "26" etc.
         """
         version = sys.version[:3]
+        version = version.replace(".", "")
+        if len(version) != 2:
+            raise Valueerror('getPythonVersion, length of python version should be 2, not: %s ("%s")'% (len(version), version))
+        if int(version) < 25:
+            raise ValueError('getPythonVersion, version is: "%s" versions before "25" (Python 2.5) are not any more supported by NatLink'% version)
         return version
         #regSection = "SOFTWARE\Python\PythonCore"
         #try:
@@ -858,7 +953,7 @@ class NatlinkStatus(object):
     def getInstallVersion(self):
         return __version__
 
-    def getNatlinkDllRegistered(self):
+    def getNatlinkPydRegistered(self):
         value = self.userregnl.get('NatlinkDllRegistered', None)
         return value
 
@@ -873,7 +968,7 @@ class NatlinkStatus(object):
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'UnimacroIniFilesEditor',
-                    'NatlinkDebug', 'InstallVersion', 'NatlinkDllRegistered',
+                    'NatlinkDebug', 'InstallVersion', 'NatlinkPydRegistered',
                     'IncludeUnimacroInPythonPath']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
@@ -977,6 +1072,12 @@ class NatlinkStatus(object):
                 value = '-'
             List.append("\t%s\t%s"% (Key,value))
         del Dict[Key]
+
+def getFileDate(modName):
+    try: return os.stat(modName)[stat.ST_MTIME]
+    except OSError: return 0        # file not found
+
+
 
 if __name__ == "__main__":
     status = NatlinkStatus()

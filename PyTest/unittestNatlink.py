@@ -213,6 +213,7 @@ class UnittestNatlink(unittest.TestCase):
         finally:
             self.disconnect()
 
+        
     def connect(self):
         # start with 1 for thread safety when run from pythonwin:
         natlink.natConnect(natconnectOption)
@@ -944,7 +945,7 @@ class UnittestNatlink(unittest.TestCase):
         self.doTestWindowContents("")
 
         if DNSVersion == 12:
-            words = ['test']
+            words = 'test'
             expected = 'Test'
             testMimicResult(words, expected)
 

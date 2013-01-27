@@ -366,7 +366,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.urgentMessage = None
         if self.cli.checkedConfig:
             # changed installation, message from natlinkconfigfunctions
-            self.urgentMessage = "REREGISTER Natlink.dll and Close (restart) or Close right away to cancel"
+            self.urgentMessage = "REREGISTER natlink.pyd and Close (restart) or Close right away to cancel"
             self.cli.checkedConfig = None
         self.setInfo()
 
@@ -478,7 +478,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                             # natspeak help window
                             label = '%s'% D[key]
                         elif key == 'PythonVersion':
-                            # internal version (for dll, I believe) is  eg
+                            # internal version (for pyd, I believe) is  eg
                             # take first word of Fullversion as well.
                             #fullPart = D['PythonFullVersion']
                             #label = '%s (%s)'% (D[key], fullPart.split()[0])
@@ -836,12 +836,12 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.warning("See log panel")
 
     def OnButtonHelp5(self, event):
-        print '---help on re(register) natlink.dll'
+        print '---help on re(register) natlink.pyd'
         print 'note the letters correspond to the commands in the self.cli (command line interface)'
         self.cli.help_r()
         text = \
 """
-Help about re(register) natlink.dll you will find in the log panel
+Help about re(register) natlink.pyd you will find in the log panel
 
 About this configure program window:
 

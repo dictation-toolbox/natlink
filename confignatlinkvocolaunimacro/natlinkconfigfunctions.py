@@ -36,7 +36,7 @@ DNSINIDir
 When NatLink is enabled natlink.dll is registered with
       win32api.WinExec("regsvr32 /s pathToNatlinkdll") (silent)
 
-It can be unregistered through function unregisterNatlinkDll() see below.      
+It can be unregistered through function unregisterNatlinkPyd() see below.      
 
 Other functions inside this module, with calls from CLI or command line:
 
@@ -129,52 +129,78 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
     userregnl got from natlinkstatus, as a Class (not instance) variable, so
     should be the same among instances of this class...
+    
+    the checkCoreDirectory function is automatically performed at start, to see if the initialisation does not
+    take place from another place as the registered natlink.pyd...
+    
+    
     """
     def __init__(self):
         natlinkstatus.NatlinkStatus.__init__(self)
     
-    def checkNatlinkDllFile(self):
-        """see if natlink.dll is in core directory, if not copy from correct version
+    
+    def checkCoreDirectory(self):
+        """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
         """
-        isRegistered = self.userregnl.get("NatlinkDllRegistered")
         coreDir2 = self.getCoreDirectory()
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
-        pythonVersion = self.getPythonVersion().replace(".", "")
-        if int(pythonVersion) >= 25:
-            dllFile = os.path.join(coreDir, 'natlink.pyd')
-        else:
-            dllFile = os.path.join(coreDir, 'natlink.dll')
-        if not (os.path.isfile(dllFile) and isRegistered == pythonVersion):
-            self.copyNatlinkDllPythonVersion()
-            self.registerNatlinkDll()
-            self.checkPythonPathAndRegistry()            
+    
+    def checkNatlinkPydFile(self):
+        """see if natlink.dll is in core directory, if not copy from correct version
+        """
+        coreDir2 = self.getCoreDirectory()
+        if coreDir2.lower() != coreDir.lower():
+            fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
+                                              (coreDir, coreDir2))
 
-    def copyNatlinkDllPythonVersion(self):
-        """copy the natlink.dll from the correct version"""
-        pythonVersion = self.getPythonVersion().replace(".", "")
-        if int(pythonVersion) >= 25:
-            dllFile = os.path.join(coreDir, 'natlink.pyd')
-            dllVersionFile = os.path.join(coreDir, 'natlink%s.pyd'% pythonVersion)
-        else:
-            dllFile = os.path.join(coreDir, 'natlink.dll')
-            dllVersionFile = os.path.join(coreDir, 'natlink%s.dll'% pythonVersion)
-        if os.path.isfile(dllFile):
-            self.unregisterNatlinkDll()
-            try:
-                os.remove(dllFile)
-            except WindowsError:
-                fatal_error('cannot remove dllFile "%s", probably you must exit NatSpeak first'% dllFile)
+        originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
+        wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
+        wantedPydPath = os.path.join(coreDir, wantedPyd)
+        currentPydPath = os.path.join(coreDir, 'natlink.pyd')
+                      
+        if originalPyd:    
+            if originalPyd != wantedPyd:
+                print 'changed python version or changed Dragon version, now want %s as original for "natlink.pyd"'% wantedPyd
+                self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
+                self.registerNatlinkPyd()
+                return
             
-        if os.path.isfile(dllVersionFile):
-            try:
-                shutil.copyfile(dllVersionFile, dllFile)
-                print 'copied dll/pyd file %s to %s'% (dllVersionFile, dllFile)
-            except:
-                fatal_error("could not copy %s to %s"% (dllVersionFile, dllFile))
+            # now check for updates:
+            originalPydPath = os.path.join(coreDir, originalPyd)
+            timeOriginalPyd = natlinkstatus.getFileDate(originalPydPath)
+            timeCurrentPyd = natlinkstatus.getFileDate(currentPydPath)
+            if timeCurrentPyd or timeOriginalPyd:
+                if timeOriginalPyd > timeCurrentPyd:
+                    print 'need to update original pyd to current\n%s\n%s.'% (originalPydPath, currentPydPath)
+                    self.copyNatlinkPydPythonVersion(originalPydPath, currentPydPath)
+                    self.registerNatlinkPyd()
         else:
-            fatal_error("dllVersionFile %s is missing! Cannot copy to natlink.dll/natlink.pyd"% dllVersionFile)
+            # must be registered new:
+            print 'new install, copy original pyd to current\n%s\n%s.'% (wantedPydPath, currentPydPath)
+            self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
+            self.registerNatlinkPyd()
+
+
+
+    def copyNatlinkPydPythonVersion(self, wantedPydFile, currentPydFile):
+        """copy the natlink.dll from the correct version"""
+        if os.path.isfile(currentPydFile):
+            self.unregisterNatlinkPyd()
+            try:
+                os.remove(currentPydFile)
+            except WindowsError:
+                fatal_error('cannot remove currentPydFile "%s", probably you must exit Dragon first'% currentPydFile)
+            
+        if os.path.isfile(wantedPydFile):
+            try:
+                shutil.copyfile(wantedPydFile, currentPydFile)
+                print 'copied dll/pyd file %s to %s'% (wantedPydFile, currentPydFile)
+            except:
+                fatal_error("could not copy %s to %s"% (wantedPydFile, currentPydFile))
+        else:
+            fatal_error("wantedPydFile %s is missing! Cannot copy to natlink.dll/natlink.pyd"% wantedPydFile)
             
         
                         
@@ -206,54 +232,57 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         self.checkedUrgent = None
         print "checking PythonPathAndRegistry"
-        lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict()
-        coreDir2 = self.getCoreDirectory()
-        if coreDir2.lower() != coreDir.lower():
-            fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
-                                              (coreDir, coreDir2))
-        # adding the relevant directories to the sys.path variable:
-        self.checkSysPath()
-        
-        pathString = coreDir
-##        if lmPythonPath:
-##            print 'lmPythonPath: ', lmPythonPath.keys()
-        if not 'NatLink' in lmPythonPathDict:
-            # first time install, silently register
-            self.registerNatlinkDll(silent=1)
-            self.setNatlinkInPythonPathRegistry()
-            return 1
-        
-        lmNatlinkPathDict = lmPythonPathDict['NatLink']
-        Keys = lmNatlinkPathDict.keys()
-        if not Keys:
-            # first time install Section is there, but apparently empty
-            self.registerNatlinkDll(silent=1)
-            self.setNatlinkInPythonPathRegistry()
-            return 1
-        if Keys != [""]:
-            if '' in Keys:
-                Keys.remove("")
-            fatal_error("The registry section of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\%s\ncontains invalid keys: %s, remove them with the registry editor (regedit)\nAnd rerun this program"%
-                        (PythonPathSectionName+r'\NatLink', Keys))
-            
-
-        # now section has default "" key, proceed:            
-        oldPathString = lmNatlinkPathDict[""]
-        if oldPathString.find(';') > 0:
-            print 'remove double entry, go back to single entry'
-            self.setNatlinkInPythonPathRegistry()
-
-        oldPathString = lmNatlinkPathDict[""]
-        if oldPathString.find(';') > 0:
-            fatal_error("did not fix double entry in registry setting  of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\%s\ncontains more entries separated by ';'. Remove with the registry editor (regedit)\nAnd rerun this program"%PythonPathSectionName+r'\NatLink')
-        if not oldPathString:
-            # empty setting, silently register
-            self.registerNatlinkDll(silent=1)
-            self.setNatlinkInPythonPathRegistry()
-            return 1
-            
-        if oldPathString.lower() == pathString.lower():
-            return 1 # OK
+        self.checkNatlinkObsoletePathSettings()
+        return
+#    
+#        lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict()
+#        coreDir2 = self.getCoreDirectory()
+#        if coreDir2.lower() != coreDir.lower():
+#            fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
+#                                              (coreDir, coreDir2))
+#        # adding the relevant directories to the sys.path variable:
+#        self.checkSysPath()
+#        
+#        pathString = coreDir
+###        if lmPythonPath:
+###            print 'lmPythonPath: ', lmPythonPath.keys()
+#        if not 'NatLink' in lmPythonPathDict:
+#            # first time install, silently register
+#            self.registerNatlinkPyd(silent=1)
+#            self.setNatlinkInPythonPathRegistry()
+#            return 1
+#        
+#        lmNatlinkPathDict = lmPythonPathDict['NatLink']
+#        Keys = lmNatlinkPathDict.keys()
+#        if not Keys:
+#            # first time install Section is there, but apparently empty
+#            self.registerNatlinkPyd(silent=1)
+#            self.setNatlinkInPythonPathRegistry()
+#            return 1
+#        if Keys != [""]:
+#            if '' in Keys:
+#                Keys.remove("")
+#            fatal_error("The registry section of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\%s\ncontains invalid keys: %s, remove them with the registry editor (regedit)\nAnd rerun this program"%
+#                        (PythonPathSectionName+r'\NatLink', Keys))
+#            
+#
+#        # now section has default "" key, proceed:            
+#        oldPathString = lmNatlinkPathDict[""]
+#        if oldPathString.find(';') > 0:
+#            print 'remove double entry, go back to single entry'
+#            self.setNatlinkInPythonPathRegistry()
+#
+#        oldPathString = lmNatlinkPathDict[""]
+#        if oldPathString.find(';') > 0:
+#            fatal_error("did not fix double entry in registry setting  of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\%s\ncontains more entries separated by ';'. Remove with the registry editor (regedit)\nAnd rerun this program"%PythonPathSectionName+r'\NatLink')
+#        if not oldPathString:
+#            # empty setting, silently register
+#            self.registerNatlinkPyd(silent=1)
+#            self.setNatlinkInPythonPathRegistry()
+#            return 1
+#            
+#        if oldPathString.lower() == pathString.lower():
+#            return 1 # OK
         ## now for something more serious:::
         text = \
 """
@@ -333,21 +362,6 @@ NatLink is now disabled.
         print T
         print '='*60
 
-    def getHKLMPythonPathDict(self):
-        """returns the dict that contains the PythonPath section of HKLM
-        """
-        version = self.getPythonVersion()
-        if not version:
-            fatal_error("no valid Python version available")
-        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% version
-        # key MUST already exist (ensure by passing flags=...:
-        try:
-            lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=win32con.KEY_ALL_ACCESS)
-        except:
-            fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
-                             (pythonPathSectionName, version))
-            
-        return lmPythonPathDict, pythonPathSectionName
         
     def setNatlinkInPythonPathRegistry(self):
         """sets the HKLM setting of the Python registry
@@ -368,6 +382,21 @@ NatLink is now disabled.
             except:
                 self.warning("cannot set PythonPath for NatLink in registry, probably you have insufficient rights to do this")
 
+
+    def checkNatlinkObsoletePathSettings(self):
+        """check if the register pythonpath variable is now removed
+        
+        """
+        regDict, sectionName = self.getHKLMPythonPathDict()
+        if 'NatLink' in regDict.keys():
+            try:
+                del regDict['NatLink']
+            except:
+                self.warning("cannot clear Python path for NatLink in registry (HKLM section), probably you have insufficient rights to do this")
+        if 'NatLink' in regDict.keys():
+            raise ValueError("cannot clear Python path for NatLink in registry (HKLM section), probably you have insufficient rights to do this")
+        
+            
         
     def clearNatlinkFromPythonPathRegistry(self):
         """clears the HKLM setting of the Python registry"""
@@ -499,7 +528,7 @@ NatLink is now disabled.
         """register natlink.dll and set settings in nssystem.INI and nsapps.ini
 
         """
-        self.registerNatlinkDll(silent=1)
+        self.registerNatlinkPyd(silent=1)
         nssystemini = self.getNSSYSTEMIni()
         section1 = self.section1
         key1 = self.key1
@@ -604,8 +633,8 @@ Possibly you need administrator rights to do this
     def clearUnimacroIniFilesEditor(self):
         key = "UnimacroIniFilesEditor"
         self.userregnl.delete(key)
-            
-    def registerNatlinkDll(self, silent=None):
+                
+    def registerNatlinkPyd(self, silent=None):
         """register natlink.dll
 
         if silent, do through win32api, and not report. This is done whenever NatLink is enabled.
@@ -616,23 +645,23 @@ Possibly you need administrator rights to do this
         """
         # give fatal error if Python is not OK...
         dummy, dummy = self.getHKLMPythonPathDict()        
-        pythonVersion = self.getPythonVersion().replace(".", "")
+        pythonVersion = self.getPythonVersion()
+        dragonVersion = self.getDNSVersion()
         if not (pythonVersion and len(pythonVersion) == 2):
             fatal_error('not a valid python version found: |%s|'% pythonVersion)
             
         # for safety unregister always:
         print 'first unregister, just to be sure...'
-        self.unregisterNatlinkDll(silent=1)    
+        self.unregisterNatlinkPyd(silent=1)    
             
-        if int(pythonVersion) >= 25:
-            DllPath = os.path.join(coreDir, 'natlink.pyd')
-        else:
-            DllPath = os.path.join(coreDir, 'natlink.dll')
-        if not os.path.isfile(DllPath):
-            fatal_error("Dll file not found in core folder: %s"% DllPath)
-
+        PydPath = os.path.join(coreDir, 'natlink.pyd')
+        if not os.path.isfile(PydPath):
+            fatal_error("Pyd file not found in core folder: %s"% PydPath)
+    
         baseDir = os.path.join(coreDir, '..')
-
+    
+        newIniSetting = "%s;%s"% (pythonVersion, dragonVersion)
+    
         if silent:
             try:
                 import win32api
@@ -643,31 +672,31 @@ Possibly you need administrator rights to do this
                 result = win32api.WinExec('regsvr32 /s "%s"'% DllPath)
                 if result:
                     print 'failed to register %s (result: %s)'% (DllPath, result)
-                    self.config.set('NatlinkDllRegistered', 0)
+                    self.config.set('NatlinkPydRegistered', 0)
                 else:
-                    self.userregnl.set('NatlinkDllRegistered', pythonVersion)
-#                    print 'registered %s '% DllPath
+                    self.userregnl.set('NatlinkPydRegistered', newIniSetting)
+    #                    print 'registered %s '% DllPath
                     
             except:
-                self.userregnl.set('NatlinkDllRegistered', 0)
-                fatal_error("cannot register |%s|"% DllPath)                    
+                self.userregnl.set('NatlinkPydRegistered', 0)
+                fatal_error("cannot register |%s|"% PydPath)                    
         else:
             # os.system:
-            result = os.system('regsvr32 "%s"'% DllPath)
+            result = os.system('regsvr32 "%s"'% PydPath)
             if result:
-                print 'failed to register %s (result: %s)'% (DllPath, result)
-                self.userregnl.set('NatlinkDllRegistered', 0)
+                print 'failed to register %s (result: %s)'% (PydPath, result)
+                self.userregnl.set('NatlinkPydRegistered', 0)
             else:
-                print 'registered %s'% DllPath
-                self.userregnl.set('NatlinkDllRegistered', pythonVersion)
+                print 'registered %s'% PydPath
+                self.userregnl.set('NatlinkPydRegistered', newIniSetting)
                 
-        self.setNatlinkInPythonPathRegistry()
+        #self.setNatlinkInPythonPathRegistry()
 
-    def unregisterNatlinkDll(self, silent=None):
+    def unregisterNatlinkPyd(self, silent=None):
         """unregister explicit, should not be done normally
         """
         dummy, dummy = self.getHKLMPythonPathDict()        
-        pythonVersion = self.getPythonVersion().replace(".", "")
+        pythonVersion = self.getPythonVersion()
         if int(pythonVersion) >= 25:
             DllPath = os.path.join(coreDir, 'natlink.pyd')
         else:
@@ -687,13 +716,13 @@ Possibly you need administrator rights to do this
                     pass
                 else:
                     #print 'failed to unregister %s, result %s'% (DllPath, result)
-                    self.userregnl.set('NatlinkDllRegistered', 0)
+                    self.userregnl.set('NatlinkPydRegistered', 0)
             except:
                 pass
         else:
             # os.system:
             os.system('regsvr32 /u "%s"'% DllPath)
-            self.userregnl.set('NatlinkDllRegistered', 0)
+            self.userregnl.set('NatlinkPydRegistered', 0)
 
         #self.clearNatlinkFromPythonPathRegistry()
         # and remove the natlink.dll (there remain pythonversion ones 23, 24 and 25)
@@ -989,7 +1018,9 @@ class CLI(cmd.Cmd):
             self.config = Config   # initialized instance of NatlinkConfig
         else:
             self.config = NatlinkConfig()
-        self.config.checkNatlinkDllFile()
+        self.config.checkCoreDirectory()
+        self.config.correctIniSettings()
+        self.config.checkNatlinkPydFile()
         self.config.checkPythonPathAndRegistry()
         self.config.checkIniFiles()
         self.checkedConfig = self.config.checkedUrgent
@@ -1454,7 +1485,7 @@ of NatLink, so keep off (X and Y) most of the time.
     # register natlink.dll
     def do_r(self, arg):
         print "(Re) register natlink.dll"
-        isRegistered = self.config.userregnl.get("NatlinkDllRegistered")
+        isRegistered = self.config.userregnl.get("NatlinkPydRegistered")
         if isRegistered:
             print "If you have problems re-registering natlink.pyd, please try the following:"
             print "Un-register natlink.pyd first, then"
@@ -1464,20 +1495,20 @@ of NatLink, so keep off (X and Y) most of the time.
             print "The correct python version of natlink.dll will be copied to natlink.pyd"
             print "and it will be registered again."
             return
-        self.config.registerNatlinkDll()
+        self.config.registerNatlinkPyd()
     def do_R(self, arg):
         print "Unregister natlink.dll and disable NatLink"
         self.config.disableNatlink(silent=1)
-        self.config.unregisterNatlinkDll()
+        self.config.unregisterNatlinkPyd()
     def do_z(self, arg):
         """register silent and enable NatLink"""
-        self.config.registerNatlinkDll(silent=1)
+        self.config.registerNatlinkPyd(silent=1)
         self.config.enableNatlink(silent=1)
         
     def do_Z(self, arg):
         """(SILENT) Unregister natlink.dll and disable NatLink"""
         self.config.disableNatlink(silent=1)
-        self.config.unregisterNatlinkDll(silent=1)
+        self.config.unregisterNatlinkPyd(silent=1)
 
     def help_r(self):
         print '-'*60
