@@ -83,10 +83,10 @@ def getCoreDir(thisDir):
     if not os.path.isdir(coreFolder):
         print 'not a directory: %s'% coreFolder
         return thisDir
-##    dllPath = os.path.join(coreFolder, 'natlink.dll')
+##    PydPath = os.path.join(coreFolder, 'natlink.dll')
     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
     statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-##    if not os.path.isfile(dllPath):
+##    if not os.path.isfile(PydPath):
 ##        print 'natlink.dll not found in core directory: %s'% coreFolder
 ##        return thisDir
     if not os.path.isfile(mainPath):
@@ -742,10 +742,10 @@ Possibly you need administrator rights to do this
         dummy, dummy = self.getHKLMPythonPathDict()        
         pythonVersion = self.getPythonVersion()
         if int(pythonVersion) >= 25:
-            DllPath = os.path.join(coreDir, 'natlink.pyd')
+            PydPath = os.path.join(coreDir, 'natlink.pyd')
         else:
-            DllPath = os.path.join(coreDir, 'natlink.dll')
-        if not os.path.isfile(DllPath):
+            PydPath = os.path.join(coreDir, 'natlink.dll')
+        if not os.path.isfile(PydPath):
             return
 
         if silent:
@@ -755,22 +755,22 @@ Possibly you need administrator rights to do this
                 fatal_error("cannot import win32api, please see if win32all of Python is properly installed")
             
             try:
-                result = win32api.WinExec('regsvr32 /s /u "%s"'% DllPath)
+                result = win32api.WinExec('regsvr32 /s /u "%s"'% PydPath)
                 if not result:
                     pass
                 else:
-                    #print 'failed to unregister %s, result %s'% (DllPath, result)
+                    #print 'failed to unregister %s, result %s'% (PydPath, result)
                     self.userregnl.set('NatlinkPydRegistered', 0)
             except:
                 pass
         else:
             # os.system:
-            os.system('regsvr32 /u "%s"'% DllPath)
+            os.system('regsvr32 /u "%s"'% PydPath)
             self.userregnl.set('NatlinkPydRegistered', 0)
 
         #self.clearNatlinkFromPythonPathRegistry()
         # and remove the natlink.dll (there remain pythonversion ones 23, 24 and 25)
-        #os.remove(DllPath)
+        #os.remove(PydPath)
         
     def enableDebugLoadOutput(self):
         """setting registry key so debug output of loading of natlinkmain is given
