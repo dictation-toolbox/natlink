@@ -221,7 +221,7 @@ class NatlinkStatus(object):
             else:
                 print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
         self.correctIniSettings() # change to newer conventions
-        self.checkNatlinkObsoletePathSettings()
+        #self.checkNatlinkObsoletePathSettings()
    
     def checkSysPath(self):
         """add base and user directory to sys.path
@@ -234,13 +234,27 @@ class NatlinkStatus(object):
         """
         coreDir = natlinkcorefunctions.getBaseFolder()
         if coreDir.lower().endswith('core'):
-
-            baseDir = os.path.normpath(os.path.join(coreDir, ".."))
-            self.InsertToSysPath(coreDir)
-            self.InsertToSysPath(baseDir)
+            # check the registry setting:
+            regDict, sectionName = self.getHKLMPythonPathDict()
+            try:
+                setting = regDict['NatLink'][""]
+            except:
+                print """PythonPath/Natlink setting not found inregistry\n
+Please try to correct this by running the NatLink Config Program (with administration rights)"""
+                return
+                
+            if setting == coreDir:
+                baseDir = os.path.normpath(os.path.join(coreDir, ".."))
+                self.InsertToSysPath(coreDir)
+                self.InsertToSysPath(baseDir)
+            else:
+                print """PythonPath/Natlink setting in registry does not match this core directory\n
+registry: %s\ncoreDir: %s\n
+Please try to correct this by running the NatLink Config Program (with administration rights)"""% (
+                setting, coreDir)
         else:
             baseDir = None
-            print 'non expected core directory %s, cannot find baseDirectory'% coreDir
+            print 'non expected core directory %s, cannot find baseDirectory\nTry to run the Config Program with administrator rights'% coreDir
         userDir = self.getUserDirectory()
         # special for other user directories, insert also unimacro for actions etc.
         if userDir: 
@@ -260,13 +274,14 @@ class NatlinkStatus(object):
                 print 'no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
                     unimacroDir
 
-    def checkNatlinkObsoletePathSettings(self):
-        """check if the register pythonpath variable is now removed
-        
-        """
-        regDict, sectionName = self.getHKLMPythonPathDict()
-        if 'NatLink' in regDict:
-            print 'run config program (with administration rights) in order to clear obsolete pythonpath setting in registry'
+    #def checkNatlinkObsoletePathSettings(self):
+    #    """check if the register pythonpath variable is now removed
+    #    
+    #    """
+    #    regDict, sectionName = self.getHKLMPythonPathDict()
+    #    if 'NatLink' in regDict:
+    #        
+    #        print 'run config program (with administration rights) in order to clear obsolete pythonpath setting in registry'
 
     def getHKLMPythonPathDict(self):
         """returns the dict that contains the PythonPath section of HKLM

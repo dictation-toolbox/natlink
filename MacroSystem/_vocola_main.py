@@ -524,6 +524,8 @@ Commands" and "Edit Global Commands" are activated.
         output.close()                
 
     def updateUnimacroHeaderIfNeeded(self):
+        if not VocolaEnabled:
+            return
         if not status.getVocolaTakesUnimacroActions(): 
             return
         
