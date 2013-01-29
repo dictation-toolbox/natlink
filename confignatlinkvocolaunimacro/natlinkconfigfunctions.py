@@ -101,7 +101,7 @@ def fatal_error(message, new_raise=None):
     print 'natlinkconfigfunctions fails because of fatal error:'
     print message
     print
-    print 'This can (hopefully) be solved by (re)installing NatLink'
+    print 'Try to close Dragon and then rerun this program. Otherwise try to reinstall NatLink'
     print 
     if new_raise:
         raise new_raise
@@ -136,7 +136,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     
     """
     def __init__(self):
-        natlinkstatus.NatlinkStatus.__init__(self)
+        natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
     
     
     def checkCoreDirectory(self):
@@ -147,7 +147,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
     
-    def checkNatlinkPydFile(self):
+    def configCheckNatlinkPydFile(self):
         """see if natlink.dll is in core directory, if not copy from correct version
         """
         coreDir2 = self.getCoreDirectory()
@@ -1064,7 +1064,7 @@ class CLI(cmd.Cmd):
             self.config = NatlinkConfig()
         self.config.checkCoreDirectory()
         self.config.correctIniSettings()
-        self.config.checkNatlinkPydFile()
+        self.config.configCheckNatlinkPydFile()
         self.config.checkPythonPathAndRegistry()
         self.config.checkIniFiles()
         self.checkedConfig = self.config.checkedUrgent

@@ -1316,6 +1316,8 @@ class UnittestNatlink(unittest.TestCase):
     # and were therefore recognised while not expected.
     # note with these dictate recognitions, the results box and the screen show quite different texts
     # (to be studied!, eg why is PYTHON in the results box and python (as dictate) appears in the screen??
+    # in Dragon 12 it appears you should turn off the option: "Use Dictation Box for unsupported applications"!!
+    # otherwise the Dictation Box opens when doing invalid commands in the Calc program...
 
     def testNatLinkMain(self):
 
@@ -1462,8 +1464,11 @@ class UnittestNatlink(unittest.TestCase):
     
             
             self.killCalc()
-            # OOPS, rule 6 remains valid, must be deactivated in gotBegin, user responsibility:
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 1)
+            ### seems to go correct, no calc window any more, so rule six (specific for calc) should NOT respond
+            #was a problem: OOPS, rule 6 remains valid, must be deactivated in gotBegin, user responsibility:
+            #was a problem: testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 1)
+            # no recognition because calc is not there any more:
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 0)
             
         ##        natlink.playString('{Alt+F4}')
     #-----------------------------------------------------------
@@ -1687,7 +1692,6 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of command grammars using GrammarBase    
 
-    def testGrammar(self):
         self.log("testGrammar", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results

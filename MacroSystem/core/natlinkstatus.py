@@ -212,17 +212,19 @@ class NatlinkStatus(object):
     VocolaUserDirectory = None
 
 
-    def __init__(self):
+    def __init__(self, skipSpecialWarning=None):
 
         # for the migration from registry to ini files:
         if self.userregnl.firstUse:
             if self.userregnlOld:
                 self.copyRegSettingsToInifile(self.userregnlOld, self.userregnl)
             else:
-                print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
+                if not skipSpecialWarning:
+                    print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
         self.correctIniSettings() # change to newer conventions
         if self.checkNatlinkPydFile() is None:
-            print '\n=============\nWARNING: invalid version of natlink.pyd found, run the configuration program "configurenatlink.pyw" (via "start_configurenatlink.py")\n===============\n'
+            if not skipSpecialWarning:
+                print '\n=============\nWARNING: invalid version of natlink.pyd found\nClose Dragon and then run the configuration program "configurenatlink.pyw" (via "start_configurenatlink.py")\n===============\n'
    
     def checkSysPath(self):
         """add base and user directory to sys.path
@@ -289,7 +291,10 @@ Please try to correct this by running the NatLink Config Program (with administr
         wantedPydPath = os.path.join(coreDir, wantedPyd)
         currentPydPath = os.path.join(coreDir, 'natlink.pyd')
         if wantedPyd != originalPyd:
-            print 'incorrect originalPyd: %s, wanted: %s'% (originalPyd, wantedPyd)
+            if not originalPyd:
+                print 'originalPyd setting is missing in natlinkstatus.ini'
+            else:
+                print 'incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd)
             return
             
         # now check for updates:
@@ -298,7 +303,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         timeCurrentPyd = getFileDate(currentPydPath)
         if timeCurrentPyd or timeOriginalPyd:
             if timeOriginalPyd > timeCurrentPyd:
-                print 'Current pyd file (%s) out of date, with %s'% (currentPydPath, originalPydPath)
+                print 'Current pyd file (%s) out of date, compared with %s'% (currentPydPath, originalPydPath)
                 return
         
         # all well

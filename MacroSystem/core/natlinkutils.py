@@ -413,7 +413,7 @@ class GrammarBase(GramClassBase):
             raise GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
         if ruleName in self.activeRules:
             if noError: return None
-            raise GrammarError( "rule %s is already active" , self.scanObj)
+            raise GrammarError( "rule %s is already active"% ruleName, self.scanObj)
         self.gramObj.activate(ruleName,window)
         self.activeRules.append(ruleName)
         if exclusive != None:

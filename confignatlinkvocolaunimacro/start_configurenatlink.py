@@ -4,7 +4,7 @@ from win32api import ShellExecute, GetVersionEx
 # see natlinkstatus.py for windows versions (getWindowsVersion)
 wversion = GetVersionEx()
 if wversion[3] == 2 and wversion[0] >= 6:
-    # Vista and later
+    # Vista and later, run as administrator, so elevated mode:
     openpar = "runas"
 else:
     openpar = "open"
