@@ -587,7 +587,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def testPlayString(self):
+    def tttestPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -643,7 +643,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testExecScript(self):
+    def tttestExecScript(self):
         self.log("testExecScript", 1)
 
         testForException = self.doTestForException
@@ -653,7 +653,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testDictObj(self):
+    def tttestDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = DictObj()
@@ -927,7 +927,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
         
-    def testRecognitionMimic(self):
+    def tttestRecognitionMimic(self):
         """test different phrases with spoken forms,
         
         since Dragon 11, lots of things have changed here, so it seems good to make a special
@@ -1078,7 +1078,7 @@ class UnittestNatlink(unittest.TestCase):
             # end of testing recognitionMimic for NatSpeak <= 10    
 
         
-    def testWordFuncs(self):
+    def tttestWordFuncs(self):
         """tests the different vocabulary word functions.
 
         These tests are a bit vulnerable and seem to have changed in more recent
@@ -1319,7 +1319,7 @@ class UnittestNatlink(unittest.TestCase):
     # in Dragon 12 it appears you should turn off the option: "Use Dictation Box for unsupported applications"!!
     # otherwise the Dictation Box opens when doing invalid commands in the Calc program...
 
-    def testNatLinkMain(self):
+    def tttestNatLinkMain(self):
 
         # through this grammar we get the recogtype:
         recCmdDict = RecordCommandOrDictation()
@@ -1507,7 +1507,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testWordProns(self):
+    def tttestWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
@@ -1657,10 +1657,10 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
-    def testParser(self):
+    def tttestParser(self):
         self.log("testParser", 1)
 
-        def testGrammarError(exceptionType,gramSpec):
+        def tttestGrammarError(exceptionType,gramSpec):
             try:
                 parser = GramParser([gramSpec])
                 parser.doParse()
@@ -1947,7 +1947,7 @@ class UnittestNatlink(unittest.TestCase):
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
 
-    def testGrammarRecognitions(self):
+    def tttestGrammarRecognitions(self):
         self.log("testGrammarRecognitions", 1)
 
         # Create a lot of grammars to test the actual recognition results
@@ -2008,7 +2008,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         
 
-    def testDgndictationEtc(self):
+    def tttestDgndictationEtc(self):
         self.log("testDgndictationEtc", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -2236,7 +2236,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         testGram.resetExperiment()
 
-    def testRecognitionChangingRulesExclusive(self):
+    def tttestRecognitionChangingRulesExclusive(self):
         self.log("testRecognitionChangingRulesExclusive", 1)
 
         # Create a simple command grammar.
@@ -2334,7 +2334,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase
 
-    def testDictGram(self):
+    def tttestDictGram(self):
         self.log("testDictGram")
 
         # Create a dictation grammar.  This grammar simply gets the results of
@@ -2487,7 +2487,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
 
-    def testSelectGram(self):
+    def tttestSelectGram(self):
         self.log("testSelectGram")
 
         # Create a selection grammar.  This grammar simply gets the results of
@@ -2626,7 +2626,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def testTrayIcon(self):
+    def tttestTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -2717,12 +2717,12 @@ class UnittestNatlink(unittest.TestCase):
                 self.allNextWords.append(self.nextWords)
                 self.allPrevWords.append(self.prevWords)
 
-
+                
         testEqualLists = self.doTestEqualLists
         testGram = TestGrammar()
         testGram.initialize()
         testGram.testNum = 1
-        natlink.recognitionMimic(['test', 'very', 'big', 'blue', 'chair'])
+        natlink.recognitionMimic(['test', 'very', 'blue', 'chair'])
         testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
         testEqualLists(['optional', 'run', 'extra', None], testGram.allNextRules, "first experiment, next rules")
         testEqualLists([[], ['test'], ['very', 'big'], ['blue']], testGram.allPrevWords, "first experiment, prev words")
@@ -2809,7 +2809,7 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched to "%s" mic'% micState)
             time.sleep(w)
 
-    def testNestedMimics(self):
+    def tttestNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -2926,6 +2926,7 @@ class CallbackTester:
         # because of the bug in NatSpeak where we can get two change
         # callbacks in a row, especially when dealing with scratch that, we
         # ignore all but the first callback
+        self.log("hit callbacktester")
         if self.sawTextChange == None:
             self.sawTextChange = (delStart,delEnd,newText,selStart,selEnd)
         elif self.sawTextChange != (delStart,delEnd,newText,selStart,selEnd):
@@ -3132,7 +3133,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def test....
+    # the test names to her example def tttest....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')
