@@ -240,7 +240,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        except natlink.NatError:
 ##            raise TestError,'The NatSpeak user interface is not running'
 ##         ??? Start instead of start ???
-        natlinkmain.recognitionMimic(['Start', "DragonPad"])
+        natlink.recognitionMimic(['Start', "DragonPad"])
         
         # This will make sure that the NatSpeak window is empty.  If the NatSpeak
         # window is not empty we raise an exception to avoid possibily screwing 
@@ -798,19 +798,19 @@ class UnittestNatlink(unittest.TestCase):
         dictObj.setChangeCallback(callTest.onTextChange)
 
         # remember during these tests that the dictation results are formatted
-        natlinkmain.recognitionMimic(['hello'])
+        natlink.recognitionMimic(['hello'])
 ##        self.wait() #!!
         testFuncReturn('Hello',"dictObj.getText(0)",locals())
         # if this fails (9) probably setChangeCallback does not work (broken??QH)
         callTest.doTestTextChange(moduleInfo,(0,0,'Hello',5,5))
-        natlinkmain.recognitionMimic(['there'])
+        natlink.recognitionMimic(['there'])
 ##        self.wait()
         ##              012345678901
         testFuncReturn('Hello there',"dictObj.getText(0)",locals())
         callTest.doTestTextChange(moduleInfo,(5,5,' there',11,11))
 
         dictObj.setTextSel(0,5)
-        natlinkmain.recognitionMimic(['and'])
+        natlink.recognitionMimic(['and'])
 ##        self.wait()  #!!!!QH
         testFuncReturn('And there',"dictObj.getText(0)",locals())
         #QH why does gotBegin not hit here, sometimes????
@@ -827,9 +827,9 @@ class UnittestNatlink(unittest.TestCase):
 
         dictObj.setTextSel(3,3)
         if DNSVersion < 11:
-            natlinkmain.recognitionMimic([r',\comma'])
+            natlink.recognitionMimic([r',\comma'])
         else:
-            natlinkmain.recognitionMimic([r',\comma\comma'])
+            natlink.recognitionMimic([r',\comma\comma'])
             
 ##        self.wait()
         testFuncReturn('And, there',"dictObj.getText(0)",locals())
@@ -841,7 +841,7 @@ class UnittestNatlink(unittest.TestCase):
 
 
         dictObj.setTextSel(5)
-        natlinkmain.recognitionMimic(['another','phrase'])
+        natlink.recognitionMimic(['another','phrase'])
 ##        self.wait()
         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
         # unimacro version stops here, no beginCallback:::
@@ -858,20 +858,20 @@ class UnittestNatlink(unittest.TestCase):
         callTest.doTestTextChange(moduleInfo,(4,10,' another phrase',19,19))
     #else        callTest.doTestTextChange(moduleInfo,(5,10,'another phrase',19,19))
 
-        natlinkmain.recognitionMimic(['more'])
+        natlink.recognitionMimic(['more'])
 ##        self.wait()
         testFuncReturn('And, another phrase more',"dictObj.getText(0)",locals())
         callTest.doTestTextChange(moduleInfo,(19,19,' more',24,24))
 
         # the scratch that command undoes one recognition
-        natlinkmain.recognitionMimic(['scratch','that'])
+        natlink.recognitionMimic(['scratch','that'])
 ##        self.wait()
         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
         callTest.doTestTextChange(moduleInfo,(19,24,'',19,19))
 
         # NatSpeak optimizes the changed block so we only change 'ther' not
         # 'there' -- the last e did not change.
-        natlinkmain.recognitionMimic(['scratch','that'])
+        natlink.recognitionMimic(['scratch','that'])
         self.wait()
         
         testFuncReturn('And, there',"dictObj.getText(0)",locals())
@@ -884,19 +884,19 @@ class UnittestNatlink(unittest.TestCase):
         dictObj.setVisibleText(0)
 
         # ok, test selection command
-        natlinkmain.recognitionMimic(['select','block','of','text'])
+        natlink.recognitionMimic(['select','block','of','text'])
 ##        self.wait()
         
         testFuncReturn((10,23),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,(10,10,'',10,23))
         
-        natlinkmain.recognitionMimic(['select','one','through','three'])
+        natlink.recognitionMimic(['select','one','through','three'])
 ##        self.wait()
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
 
         # text selection of non-existant text
-        testForException(natlink.MimicFailed,"natlinkmain.recognitionMimic(['select','helloxxx'])")
+        testForException(natlink.MimicFailed,"natlink.recognitionMimic(['select','helloxxx'])")
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,None)
 
@@ -905,18 +905,18 @@ class UnittestNatlink(unittest.TestCase):
         dictObj.setVisibleText(10,50)
         dictObj.setTextSel(0,0)
         
-        natlinkmain.recognitionMimic(['select','one','through','three'])
+        natlink.recognitionMimic(['select','one','through','three'])
 ##        self.wait()
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
 
         #This is a block of text.  Lets count one two three.  All done.
-        natlinkmain.recognitionMimic(['select','this','is'])
+        natlink.recognitionMimic(['select','this','is'])
 ##        self.wait()
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,None)
 
-        natlinkmain.recognitionMimic(['select','all','done'])
+        natlink.recognitionMimic(['select','all','done'])
 ##        self.wait()
         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
         callTest.doTestTextChange(moduleInfo,None)
@@ -1611,11 +1611,11 @@ class UnittestNatlink(unittest.TestCase):
 
     def doTestRecognition(self, words,shouldWork=1, log=None):
         if shouldWork:
-            natlinkmain.recognitionMimic(words)
+            natlink.recognitionMimic(words)
             if log:
                 self.log("recognised: %s"% words)
         else:
-            self.doTestForException(natlink.MimicFailed,"natlinkmain.recognitionMimic(words)",locals())
+            self.doTestForException(natlink.MimicFailed,"natlink.recognitionMimic(words)",locals())
             if log:
                 self.log("did not recognise (as expected): %s"% words)
 
@@ -1634,7 +1634,7 @@ class UnittestNatlink(unittest.TestCase):
     # for testNatlinkMain, recognition should be in the specified grammar:
     def doTestCommandRecognition(self, words, cmdgrammar, shouldWork=1):
         try:
-            natlinkmain.recognitionMimic(words)
+            natlink.recognitionMimic(words)
         except natlink.MimicFailed:
             if shouldWork:
                 raise TestError("mimic of %s should have worked"% words)
@@ -2718,7 +2718,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram = TestGrammar()
         testGram.initialize()
         testGram.testNum = 1
-        natlinkmain.recognitionMimic(['test', 'very', 'big', 'blue', 'chair'])
+        natlink.recognitionMimic(['test', 'very', 'big', 'blue', 'chair'])
         testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
         testEqualLists(['optional', 'run', 'extra', None], testGram.allNextRules, "first experiment, next rules")
         testEqualLists([[], ['test'], ['very', 'big'], ['blue']], testGram.allPrevWords, "first experiment, prev words")
@@ -2737,7 +2737,7 @@ class UnittestNatlink(unittest.TestCase):
 
 
         # more words, less rules
-        natlinkmain.recognitionMimic(['test', 'red', 'green', 'blue', 'table'])
+        natlink.recognitionMimic(['test', 'red', 'green', 'blue', 'table'])
         testEqualLists([None, 'run'], testGram.allPrevRules, "second experiment, prev rules")
         testEqualLists(['extra', None], testGram.allNextRules, "second experiment, next rules")
         testEqualLists([[], ['test', 'red', 'green', 'blue']], testGram.allPrevWords, "second experiment, prev words")
@@ -2757,7 +2757,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.checkExperiment(['test', 'red', 'green', 'blue', 'table'])
 
         # more words, optional at two places (see wordsByRule):
-        natlinkmain.recognitionMimic(['test', 'very', 'green', 'table', 'small'])
+        natlink.recognitionMimic(['test', 'very', 'green', 'table', 'small'])
         testEqualLists([None, 'run', 'optional', 'run', 'extra'], testGram.allPrevRules, "third experiment, prev rules")
         testEqualLists(['optional', 'run', 'extra', 'optional', None], testGram.allNextRules, "third experiment, next rules")
         testEqualLists([[], ['test'], ['very'], ['green'], ['table']], testGram.allPrevWords, "third experiment, prev words")
@@ -2838,14 +2838,14 @@ class UnittestNatlink(unittest.TestCase):
 
             def gotResults_run(self,words,fullResults):
                 self.results.append('run')
-                natlinkmain.recognitionMimic(['test','test',words[3]])
+                natlink.recognitionMimic(['test','test',words[3]])
 
             def gotResults_test1(self,words,fullResults):
                 self.results.append('1')
 
             def gotResults_test2(self,words,fullResults):
                 self.results.append('2')
-                natlinkmain.recognitionMimic(['test','test','1'])
+                natlink.recognitionMimic(['test','test','1'])
 
             def gotResults_test3(self,words,fullResults):
                 self.results.append('3')
@@ -2857,24 +2857,24 @@ class UnittestNatlink(unittest.TestCase):
 
             def gotResults_test5(self,words,fullResults):
                 self.results.append('5')
-                testForException(natlink.MimicFailed,"natlinkmain.recognitionMimic(['*unknown-word*'])")
+                testForException(natlink.MimicFailed,"natlink.recognitionMimic(['*unknown-word*'])")
 
         testGram = TestGrammar()
         testGram.initialize()
-        natlinkmain.recognitionMimic(['test','test','run','1'])
+        natlink.recognitionMimic(['test','test','run','1'])
         testGram.checkExperiment(['run','1'])
         
-        natlinkmain.recognitionMimic(['test','test','run','2'])
+        natlink.recognitionMimic(['test','test','run','2'])
         testGram.checkExperiment(['run','2','1'])
 
-        natlinkmain.recognitionMimic(['test','test','run','3'])
+        natlink.recognitionMimic(['test','test','run','3'])
         testGram.checkExperiment(['run','3','1'])
         
-        natlinkmain.recognitionMimic(['test','test','run','4'])
+        natlink.recognitionMimic(['test','test','run','4'])
         testGram.checkExperiment(['run','4','3','1'])
         
         if DNSVersion < 12:
-            natlinkmain.recognitionMimic(['test','test','run','5'])
+            natlink.recognitionMimic(['test','test','run','5'])
             testGram.checkExperiment(['run','5'])
 
         testGram.unload()

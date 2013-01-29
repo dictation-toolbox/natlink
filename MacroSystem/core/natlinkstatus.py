@@ -221,7 +221,8 @@ class NatlinkStatus(object):
             else:
                 print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
         self.correctIniSettings() # change to newer conventions
-        #self.checkNatlinkObsoletePathSettings()
+        if self.checkNatlinkPydFile() is None:
+            print '\n=============\nWARNING: invalid version of natlink.pyd found, run the configuration program "configurenatlink.pyw" (via "start_configurenatlink.py")\n===============\n'
    
     def checkSysPath(self):
         """add base and user directory to sys.path
@@ -273,15 +274,35 @@ Please try to correct this by running the NatLink Config Program (with administr
             else:
                 print 'no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
                     unimacroDir
-
-    #def checkNatlinkObsoletePathSettings(self):
-    #    """check if the register pythonpath variable is now removed
-    #    
-    #    """
-    #    regDict, sectionName = self.getHKLMPythonPathDict()
-    #    if 'NatLink' in regDict:
-    #        
-    #        print 'run config program (with administration rights) in order to clear obsolete pythonpath setting in registry'
+    def checkNatlinkPydFile(self):
+        """see if natlink.dll is in core directory, and uptodate, if not stop and point to the configurenatlink program
+        
+        if natlink.pyd is missing, or
+        if NatlinkPydRegistered is absent or not correct, or
+        if the original natlink26_12.pyd (for example) is newer than natlink.pyd
+        
+        the config program should be run.
+        """
+        coreDir = natlinkcorefunctions.getBaseFolder()
+        originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
+        wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
+        wantedPydPath = os.path.join(coreDir, wantedPyd)
+        currentPydPath = os.path.join(coreDir, 'natlink.pyd')
+        if wantedPyd != originalPyd:
+            print 'incorrect originalPyd: %s, wanted: %s'% (originalPyd, wantedPyd)
+            return
+            
+        # now check for updates:
+        originalPydPath = os.path.join(coreDir, originalPyd)
+        timeOriginalPyd = getFileDate(originalPydPath)
+        timeCurrentPyd = getFileDate(currentPydPath)
+        if timeCurrentPyd or timeOriginalPyd:
+            if timeOriginalPyd > timeCurrentPyd:
+                print 'Current pyd file (%s) out of date, with %s'% (currentPydPath, originalPydPath)
+                return
+        
+        # all well
+        return 1
 
     def getHKLMPythonPathDict(self):
         """returns the dict that contains the PythonPath section of HKLM
