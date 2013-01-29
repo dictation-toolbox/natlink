@@ -1,0 +1,49 @@
+(...)
+--------------- errors -----------------
+
+---------- testSelectGram (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2569, in testSelectGram
+    testRecognition(['Correct','simple','Through','of'])
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 1619, in doTestRecognition
+    natlink.recognitionMimic(words)
+MimicFailed: recognitionMimic call failed (T)
+
+---------- testTrayIcon (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2633, in testTrayIcon
+    testForException(TypeError,"natlink.setTrayIcon(1)")
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 425, in doTestForException
+    exec(command,globals(),localVars)
+  File "<string>", line 1, in <module>
+AttributeError: 'module' object has no attribute 'setTrayIcon'
+
+---------- testWordFuncs (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 1122, in testWordFuncs
+    testForException(TypeError,"natlink.getWordInfo()")
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 425, in doTestForException
+    exec(command,globals(),localVars)
+  File "<string>", line 1, in <module>
+AttributeError: 'module' object has no attribute 'getWordInfo'
+
+--------------- failures -----------------
+
+---------- testDictObj (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 803, in testDictObj
+    testFuncReturn('Hello',"dictObj.getText(0)",locals())
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 502, in doTestFuncReturn
+    (command, expected, actual))
+AssertionError: Function call "dictObj.getText(0)" returned unexpected result
+Expected: Hello, got: 
+
+---------- testNextPrevRulesAndWords (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2726, in testNextPrevRulesAndWords
+    testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 549, in doTestEqualLists
+    self.fail("Fail in doTestEqualLists: %s\nexpected: %s\ngot: %s"% (message, expected, got))
+AssertionError: Fail in doTestEqualLists: first experiment, prev rules
+expected: [None, 'run', 'optional', 'run']
+got: []
