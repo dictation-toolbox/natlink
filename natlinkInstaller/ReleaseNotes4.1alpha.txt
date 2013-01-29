@@ -1,3 +1,7 @@
+Release 4.1beta:
+
+--- adaptations for Dragon 12. Numerous.
+
 Working on new test releases, 4.1alpha
 
 --- New in Vocola:
