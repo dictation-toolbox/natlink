@@ -255,6 +255,7 @@ Please try to correct this by running the NatLink Config Program (with administr
 registry: %s\ncoreDir: %s\n
 Please try to correct this by running the NatLink Config Program (with administration rights)"""% (
                 setting, coreDir)
+                return
         else:
             baseDir = None
             print 'non expected core directory %s, cannot find baseDirectory\nTry to run the Config Program with administrator rights'% coreDir
