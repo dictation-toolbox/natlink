@@ -116,8 +116,9 @@ if thisDir == coreDir:
     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(thisDir) in sys.path:
-    print 'inserting %s to pythonpath...'% coreDir
+    print 'inserting %s to pythonpath...'% thisDir
     sys.path.insert(0, thisDir)
+    
 if not os.path.normpath(coreDir) in sys.path:
     print 'inserting %s to pythonpath...'% coreDir
     sys.path.insert(0, coreDir)
