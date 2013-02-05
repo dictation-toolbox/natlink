@@ -1396,9 +1396,13 @@ class UnittestNatlink(unittest.TestCase):
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seven'],recCmdDict, 1)
     
             self.log('now new grammar file: %s'% spacesFilenameGlobal, 1)
+            # should be unknown command:
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 0)
             createMacroFile(userDirectory,spacesFilenameGlobal+'.py','thirty')
+            # no automatic update of commands:
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 0)
             toggleMicrophone()
+            # only after mic toggle should the grammar be recognised:
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 1)
     
     
