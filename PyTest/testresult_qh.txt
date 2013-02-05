@@ -31,29 +31,66 @@ switching on mic
 switching to "off" mic
 switched to "off" mic
 create jMg1, seventeen
-time of change of D:\natlink\natlink\MacroSystem\__jMg1.py: 1360081295
+time of change of D:\natlink\natlink\MacroSystem\__jMg1.py: 1360084715
 switching on mic
 switching to "off" mic
 switched to "off" mic
 create jMg1, one
-time of change of D:\natlink\natlink\MacroSystem\__jMg1.py: 1360081299
+time of change of D:\natlink\natlink\MacroSystem\__jMg1.py: 1360084719
 toggle mic, to get jMg1 in loadedGrammars
 switching on mic
 switching to "off" mic
 switched to "off" mic
 
 Now change grammar file jMg1 to 2, no recognise immediate, only after mic toggle
-time of change of D:\natlink\natlink\MacroSystem\_ _jMg1.py: 1360081304
+time of change of D:\natlink\natlink\MacroSystem\_ _jMg1.py: 1360084724
 switching on mic
 switching to "off" mic
 switched to "off" mic
 now new grammar file: __jMg_$&^_abc
-time of change of D:\natlink\unimacro\__jMg_$&^_abc.py: 1360081309
+time of change of D:\natlink\unimacro\__jMg_$&^_abc.py: 1360084729
 switching on mic
 switching to "off" mic
 switched to "off" mic
 now new grammar file: _with spaces
-time of change of D:\natlink\unimacro\_with spaces.py: 1360081313
+time of change of D:\natlink\unimacro\_with spaces.py: 1360084732
+switching on mic
+switching to "off" mic
+switched to "off" mic
+now new grammar file (should not be recognised)... _.py
+time of change of D:\natlink\unimacro\_.py: 1360084736
+switching on mic
+switching to "off" mic
+switched to "off" mic
+now new grammar file: jMg2, four
+time of change of D:\natlink\natlink\MacroSystem\__jMg2.py: 1360084740
+time of change of D:\natlink\unimacro\__jMg2.py: 1360084740
+switching on mic
+switching to "off" mic
+switched to "off" mic
+now new grammar file: calc_jMg1, five
+time of change of D:\natlink\natlink\MacroSystem\calc__jMg1.py: 1360084744
+time of change of D:\natlink\unimacro\calc__jMg1.py: 1360084744
+switching on mic
+switching to "off" mic
+switched to "off" mic
+time of change of D:\natlink\natlink\MacroSystem\calc_JMg+++&_.py: 1360084748
+switching on mic
+switching to "off" mic
+switched to "off" mic
+time of change of D:\natlink\natlink\MacroSystem\calc with spaces.py: 1360084752
+switching on mic
+switching to "off" mic
+switched to "off" mic
+time of change of D:\natlink\natlink\MacroSystem\calc_with spaces.py: 1360084755
+switching on mic
+switching to "off" mic
+switched to "off" mic
+time of change of D:\natlink\natlink\MacroSystem\calc_.py: 1360084758
+time of change of D:\natlink\natlink\MacroSystem\calculator.py: 1360084758
+switching on mic
+switching to "off" mic
+switched to "off" mic
 switching on mic
 switching to "off" mic
 switched to "off" mic
@@ -74,36 +111,28 @@ testWordProns
 
 ---------- testDgndictationEtc (__main__.UnittestNatlink) --------
 Traceback (most recent call last):
-  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2125, in testDgndictationEtc
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2129, in testDgndictationEtc
     [('DICTATE', 'Start'), ('hello', 'dgndictation'), ('testing', 'dgndictation')])
-  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2056, in checkExperiment
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2060, in checkExperiment
     raise TestError,'Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
 TestError: Unexpected result for GrammarBase.recogType
   Expected self
   Saw None
 
----------- testNatLinkMain (__main__.UnittestNatlink) --------
-Traceback (most recent call last):
-  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 1402, in testNatLinkMain
-    testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 1)
-  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 1645, in doTestCommandRecognition
-    raise TestError("mimic of %s should have worked"% words)
-TestError: mimic of ['this', 'is', 'automated', 'testing', 'from', 'python', 'thirty'] should have worked
-
 --------------- failures -----------------
 
 ---------- testDictObj (__main__.UnittestNatlink) --------
 Traceback (most recent call last):
-  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 809, in testDictObj
-    testFuncReturn('Hello there',"dictObj.getText(0)",locals())
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 833, in testDictObj
+    testFuncReturn('And, there',"dictObj.getText(0)",locals())
   File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 502, in doTestFuncReturn
     (command, expected, actual))
 AssertionError: Function call "dictObj.getText(0)" returned unexpected result
-Expected: Hello there, got: Hello
+Expected: And, there, got: And there
 
 ---------- testNextPrevRulesAndWords (__main__.UnittestNatlink) --------
 Traceback (most recent call last):
-  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2726, in testNextPrevRulesAndWords
+  File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 2730, in testNextPrevRulesAndWords
     testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
   File "D:\natlink\natlink\PyTest\unittestNatlink.py", line 549, in doTestEqualLists
     self.fail("Fail in doTestEqualLists: %s\nexpected: %s\ngot: %s"% (message, expected, got))
