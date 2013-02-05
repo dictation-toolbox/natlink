@@ -811,9 +811,7 @@ class UnittestNatlink(unittest.TestCase):
 
         dictObj.setTextSel(0,5)
         natlink.recognitionMimic(['and'])
-##        self.wait()  #!!!!QH
         testFuncReturn('And there',"dictObj.getText(0)",locals())
-        #QH why does gotBegin not hit here, sometimes????
         
     #v5/9
     # version 9 gived (???)) (0, 6, 'And ', 3, 3) here:
@@ -1125,7 +1123,9 @@ class UnittestNatlink(unittest.TestCase):
         testForException(natlink.ValueError,"natlink.getWordInfo('hello',-1)")
         testForException(natlink.ValueError,"natlink.getWordInfo('hello',8)")
         testForException(natlink.InvalidWord,"natlink.getWordInfo('a\\b\\c\\d\\f')")
-        testForException(natlink.InvalidWord,"natlink.getWordInfo('a'*200)")
+        if DNSVersion <= 11:
+            # unclear why 'bbbbbbbbbbbbbbbbbbbbbbbbbbbb' is accepted by Dragon 12 QH/Rudiger febr 2013
+            testForException(natlink.InvalidWord,"natlink.getWordInfo('b'*200)")
 
         # Assumptions:
         #
@@ -1170,12 +1170,12 @@ class UnittestNatlink(unittest.TestCase):
         # extra words:
         if DNSVersion >= 11:
             # spelling letters (also see voicecode/sr_interface)
-            for word in [r'a\determiner', r'A\letter', r'A\letter\alpha',
+            for word in [r'a\determiner', r'A\letter', r'A\letter\letter A',
                          r'a\lowercase-letter\lowercase A',
-                         r'a\lowercase-letter\lowercase alpha',
+                         #r'a\lowercase-letter\lowercase alpha',
                          r'A\uppercase-letter\uppercase A',
-                         r'A\uppercase-letter\uppercase alpha',
-                         r'I\letter', r'I\pronoun', r'I\letter\India',
+                         #r'A\uppercase-letter\uppercase alpha',
+                         r'I\letter', r'I\pronoun', r'I\letter\letter I',
                          ]:
                 cmdLine = "natlink.getWordInfo(r'%s')"% word
                 testFuncReturn(8, cmdLine)
@@ -2926,7 +2926,7 @@ class CallbackTester:
         # because of the bug in NatSpeak where we can get two change
         # callbacks in a row, especially when dealing with scratch that, we
         # ignore all but the first callback
-        self.log("hit callbacktester")
+        #self.log("hit callbacktester")
         if self.sawTextChange == None:
             self.sawTextChange = (delStart,delEnd,newText,selStart,selEnd)
         elif self.sawTextChange != (delStart,delEnd,newText,selStart,selEnd):
