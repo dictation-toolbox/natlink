@@ -219,7 +219,7 @@ class RegistryDict(object):
             self.close()
         if type(keypath) is str:
             keypath = keypath.split('\\')
-        if flags is None:
+        if flags in (None, win32con.KEY_ALL_ACCESS):
             for subkey in keypath:
                 keyhandle = win32api.RegCreateKey(keyhandle, subkey)
         else:

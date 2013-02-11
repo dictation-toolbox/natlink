@@ -105,11 +105,9 @@ def fatal_error(message, new_raise=None):
     print 
     if new_raise:
         raise new_raise
-    else:
-        raise
 #-----------------------------------------------------
 
-import os, sys, win32api, shutil, re
+import os, sys, win32api, shutil, re, pywintypes 
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
 if thisDir == coreDir:
@@ -207,8 +205,40 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             fatal_error("wantedPydFile %s is missing! Cannot copy to natlink.dll/natlink.pyd"% wantedPydFile)
             
         
-                        
-
+    def getHKLMPythonPathDict(self, flags=win32con.KEY_ALL_ACCESS, recursive=False):
+        """returns the dict that contains the PythonPath section of HKLM
+        
+        Overload for config program, automatically set or repair the pythonpath variable if the format is not ok
+        """
+        version = self.getPythonVersion()
+        if not version:
+            fatal_error("no valid Python version available")
+            return None, None
+        dottedVersion = version[0] + "." + version[1]
+        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
+        # key MUST already exist (ensure by passing flags=...:
+        try:
+            lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
+        except:
+            fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
+                             (pythonPathSectionName, version))
+            return None, None
+        if 'NatLink' in lmPythonPathDict.keys():
+            subDict = lmPythonPathDict['NatLink']
+            if isinstance(subDict, RegistryDict.RegistryDict):
+                if '' in subDict.keys():
+                    value = subDict['']
+                    if value and type(value) in (str, unicode):
+                        # all well (only the value is not tested yet):
+                        return lmPythonPathDict, pythonPathSectionName                        
+        # not ok, repair the setting, admin rights needed:
+        if recursive:
+            fatal_error("Registry entry NatLink in pythonpath cannot be set correct, This can (hopefully) be solved by closing Dragon and then running the NatLink/Unimacro/Vocola Config program with administrator rights.run this program")
+            return None, None
+        print '==== Set NatLink setting in PythonPath section of registry to "%s"'% coreDir
+        lmPythonPathDict['NatLink'] = {'': coreDir}
+        return self.getHKLMPythonPathDict(recursive=True)
+                                 
  
     def checkPythonPathAndRegistry(self):
         """checks if core directory is
@@ -234,14 +264,19 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         self.checkedUrgent = None
         print "checking PythonPathAndRegistry"
-    
-        lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict()
+        try:
+            lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        except pywintypes.error:
+            mess =  'The section "NatLink" does not exist and cannot be created in the registry. You probably should run this program with administrator rights'
+            self.warning(mess)
+            self.checkedUrgent = 1
+            return None, None
         coreDir2 = self.getCoreDirectory()
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
         # adding the relevant directories to the sys.path variable:
-        self.checkSysPath()
+        #self.checkSysPath() ## not needed in config program
         
         pathString = coreDir
 ##        if lmPythonPath:
@@ -393,7 +428,7 @@ NatLink is now disabled.
         do this only when needed...
 
         """
-        lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
+        lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         pathString = os.path.normpath(os.path.abspath(coreDir))
         NatlinkSection = lmPythonPathDict.get('NatLink', None)
         if NatlinkSection:
@@ -412,7 +447,7 @@ NatLink is now disabled.
         """check if the register pythonpath variable present and matches with the previous path
         
         """
-        regDict, sectionName = self.getHKLMPythonPathDict()
+        regDict, sectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         try:
             value = regDict['NatLink']
         except:
@@ -443,16 +478,16 @@ NatLink is now disabled.
         
             
         
-    def clearNatlinkFromPythonPathRegistry(self):
-        """clears the HKLM setting of the Python registry"""
-        lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
-        baseDir = os.path.join(coreDir, '..')
-        pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
-        if 'NatLink' in lmPythonPathDict.keys():
-            try:
-                del lmPythonPathDict['NatLink']
-            except:
-                self.warning("cannot clear Python path for NatLink in registry (HKLM section), probably you have insufficient rights to do this")
+    #def clearNatlinkFromPythonPathRegistry(self):
+    #    """clears the HKLM setting of the Python registry"""
+    #    lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
+    #    baseDir = os.path.join(coreDir, '..')
+    #    pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))                                            
+    #    if 'NatLink' in lmPythonPathDict.keys():
+    #        try:
+    #            del lmPythonPathDict['NatLink']
+    #        except:
+    #            self.warning("cannot clear Python path for NatLink in registry (HKLM section), probably you have insufficient rights to do this")
 
     def printInifileSettings(self):
         print 'Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getCoreDirectory()
@@ -689,7 +724,7 @@ Possibly you need administrator rights to do this
         Also sets the pythonpath in the HKLM pythonpath section        
         """
         # give fatal error if Python is not OK...
-        dummy, dummy = self.getHKLMPythonPathDict()        
+        dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)        
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
         if not (pythonVersion and len(pythonVersion) == 2):
@@ -743,7 +778,7 @@ Possibly you need administrator rights to do this
     def unregisterNatlinkPyd(self, silent=None):
         """unregister explicit, should not be done normally
         """
-        dummy, dummy = self.getHKLMPythonPathDict()        
+        dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)        
         pythonVersion = self.getPythonVersion()
         if int(pythonVersion) >= 25:
             PydPath = os.path.join(coreDir, 'natlink.pyd')
@@ -1073,8 +1108,9 @@ class CLI(cmd.Cmd):
         self.config.checkIniFiles()
         self.checkedConfig = self.config.checkedUrgent
         for key in ObsoleteStatusKeys:
-            # see at top of this file!            
-            self.config.userregnl.delete(key)
+            # see at top of this file!
+            if key in self.config.userregnl.keys():
+                self.config.userregnl.delete(key)
         print "Type 'u' for a usage message"
 
     def usage(self):

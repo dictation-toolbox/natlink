@@ -342,7 +342,7 @@ class InifileSection(object):
     def keys(self):
         Keys =  win32api.GetProfileSection( self.section, self.filename)
         Keys = [k.split('=')[0].strip() for k in Keys]
-        print 'return Keys: %s'% Keys
+        #print 'return Keys: %s'% Keys
         return Keys
 
 defaultFilename = "natlinkstatus.ini"

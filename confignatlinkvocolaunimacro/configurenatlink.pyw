@@ -126,7 +126,7 @@ class InfoPanel(wx.Panel):
         return self.FindWindowById( ID_TEXTCTRLDNSinstallpath )
 
     def GetTextctrldnsversion(self):
-        return self.FindWindowById( ID_TEXTCTRLDNSversion )
+        return self.FindWindowById( ID_TEXTCTRLDNSVersion )
 
     def GetTextctrlpythonversion(self):
         return self.FindWindowById( ID_TEXTCTRLpythonversion )
@@ -390,7 +390,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         # checkboxes should have a getter, an event (OnCB...) and
         # be included in self.checkboxes list.
         
-        D['DNSversion'] = self.frame.infopanel.GetTextctrldnsversion
+        D['DNSVersion'] = self.frame.infopanel.GetTextctrldnsversion
         D['DNSInstallDir'] = self.frame.infopanel.GetTextctrldnsinstallpath
         D['PythonVersion'] = self.frame.infopanel.GetTextctrlpythonversion
         D['CoreDirectory'] = self.frame.infopanel.GetTextctrlnatlinkcorepath
@@ -473,7 +473,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                     else:
                         # no checkbox:
                         label = str(value)
-                        if key == 'DNSversion':
+                        if key == 'DNSVersion':
                             # DNSFullVersion gives different information as 
                             # natspeak help window
                             label = '%s'% D[key]
