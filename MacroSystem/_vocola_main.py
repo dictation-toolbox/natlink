@@ -8,7 +8,7 @@
 #
 # Copyright (c) 2002-2012 by Rick Mohr.
 # 
-# Portions Copyright (c) 2012 by Hewlett-Packard Development Company, L.P.
+# Portions Copyright (c) 2012-2013 by Hewlett-Packard Development Company, L.P.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -103,7 +103,33 @@ sys.path.append(ExtensionsFolder)
 NatLinkFolder = os.path.abspath(NatLinkFolder)
 
 
-import simpscrp
+# 
+# Run program with path executable and arguments arguments.  Waits for
+# the program to finish.  Runs the program in a hidden window.
+# 
+def hidden_call(executable, arguments):
+    args = [executable] + arguments
+    try:
+        import simpscrp
+        args = ['"' + str(x) + '"' for x in args]
+        call = ' '.join(args)
+        print "simpscrp: " + call
+        simpscrp.Exec(call, 1)
+    except ImportError:
+        try:
+            import subprocess
+            si             = subprocess.STARTUPINFO()
+            si.dwFlags     = subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+            print "subprocess: " + repr(args)
+            return subprocess.call(args, startupinfo=si)
+        except ImportError:
+            print "spawnv: " + repr(args)
+            pid = os.spawnv(os.P_NOWAIT, executable, args)
+            pid, exit_code = os.waitpid(pid, 0)
+            exit_code = exit_code >> 8
+            return exit_code
+
 
 class ThisGrammar(GrammarBase):
 
@@ -384,14 +410,22 @@ Commands" and "Edit Global Commands" are activated.
     def runVocolaTranslator(self, inputFileOrFolder, options):
         self.mayHaveCompiled = 1
 
-        if usePerl: call = 'perl "' + self.VocolaFolder + r'\exec\vcl2py.pl" '
-        else:       call = '"'      + self.VocolaFolder + r'\exec\vcl2py.exe" '
-        call += '-extensions "' + ExtensionsFolder + r'\extensions.csv" '
+        if usePerl:
+            executable = "perl"
+            arguments  = [self.VocolaFolder + r'\exec\vcl2py.pl']
+        else:
+            executable = self.VocolaFolder + r'\exec\vcl2py.exe'
+            arguments  = []
+
+        arguments += ['-extensions', ExtensionsFolder + r'\extensions.csv']
         if language == "enx":
-            call += '-numbers zero,one,two,three,four,five,six,seven,eight,nine '
-        call += options
-        call += ' "' + inputFileOrFolder + '" "' + NatLinkFolder + '"'
-        simpscrp.Exec(call, 1)
+            arguments += ['-numbers', 
+                          'zero,one,two,three,four,five,six,seven,eight,nine']
+
+        arguments += options.strip().split(" ")
+
+        arguments += [inputFileOrFolder, NatLinkFolder]
+        hidden_call(executable, arguments)
 
         logName = self.commandFolder + r'\vcl2py_log.txt'
         if os.path.isfile(logName):
