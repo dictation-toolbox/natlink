@@ -152,14 +152,14 @@ thisDir = getBaseFolder(globals())
 # try some experiments more times, because gotBegin sometimes seems
 # not to hit
 nTries = 10
-natconnectOption = 1 # or 1 for threading, 0 for not. Seems to make difference
+natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # with spurious error (if set to 1), missing gotBegin and all that...
 logFileName = os.path.join(thisDir, "testresult.txt")
 
 ## try more special file names, test in testNatlinkMain:
 spacesFilenameGlobal = '_with spaces'
 spacesFilenameCalcInvalid = 'calc with spaces' # must be only "calc" or "calc_ ajajajaja"
-spacesFilenameCalcValid = 'calc_with spaces'   
+spacesFilenameCalcValid = 'calc_with underscore'   
 specialFilenameCalc = 'calc_JMg+++&_'
 specialFilenameGlobal = '__jMg_$&^_abc'
 #---------------------------------------------------------------------------
@@ -184,6 +184,7 @@ class UnittestNatlink(unittest.TestCase):
 ##      switchToNatSpeak()
 ##      natlink.playString('{Alt+space}n')
     def setUp(self):
+        self.clearTestFiles()
         if not natlink.isNatSpeakRunning():
             raise TestError,'NatSpeak is not currently running'
         self.connect()
@@ -1347,13 +1348,18 @@ class UnittestNatlink(unittest.TestCase):
      
             self.log('create jMg1, seventeen', 'seventeen')
             createMacroFile(baseDirectory,'__jMg1.py', 'seventeen')
+            # direct after create no recognition yet
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seventeen'],recCmdDict, 0)
+            
             toggleMicrophone()
+            # after toggle it should be in:
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'PYTHON','seventeen'],recCmdDict, 1)
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
             self.log('create jMg1, one', 'one')
             
             createMacroFile(baseDirectory,'__jMg1.py','one')
-            # here the recognition is already there, should not be though...
-            #testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],0)
+             #here the recognition is already there, should not be though...
+            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
     
             self.log('toggle mic, to get jMg1 in loadedGrammars', 1)
             toggleMicrophone()
@@ -1367,19 +1373,15 @@ class UnittestNatlink(unittest.TestCase):
             if natlinkmain.checkForGrammarChanges:
                 # Modify the macro file and make sure the modification takes effect
                 # even if the microphone is not toggled.
-    
                 self.log('\nNow change grammar file jMg1 to "two", check for changes at each utterance', 1)
-    
                 createMacroFile(baseDirectory,'__jMg1.py','two')
                 self.wait(2)
                 ## with checking at each utterance next two lines should pass
                 testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','two'],recCmdDict, 1)
                 testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 0)
-    
             else:
                 self.log('\nNow change grammar file jMg1 to 2, no recognise immediate, only after mic toggle', 1)
-    
-                createMacroFile(baseDirectory,'_ _jMg1.py','two')
+                createMacroFile(baseDirectory,'__jMg1.py','two')
                 # If next line fails, the checking is immediate, in spite of checkForGrammarChanges being on:
                 testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','two'],recCmdDict, 0)
                 testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','one'],recCmdDict, 1)
@@ -1393,7 +1395,11 @@ class UnittestNatlink(unittest.TestCase):
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seven'],recCmdDict, 0)
             createMacroFile(userDirectory,specialFilenameGlobal+'.py','seven')
             toggleMicrophone()
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seven'],recCmdDict, 1)
+            if userDirectory:
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seven'],recCmdDict, 1)
+            else:
+                # no userDirectory, so this can be no recognition
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seven'],recCmdDict, 0)
     
             self.log('now new grammar file: %s'% spacesFilenameGlobal, 1)
             # should be unknown command:
@@ -1402,9 +1408,11 @@ class UnittestNatlink(unittest.TestCase):
             # no automatic update of commands:
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 0)
             toggleMicrophone()
-            # only after mic toggle should the grammar be recognised:
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 1)
-    
+            if userDirectory:
+                # only after mic toggle should the grammar be recognised:
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','thirty'],recCmdDict, 1)
+            else:
+                self.log('this test cannot been done if there is no userDirectory')
     
             self.log('now new grammar file (should not be recognised)... %s'% "_.py", 1)
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','eight'],recCmdDict, 0)
@@ -1427,18 +1435,19 @@ class UnittestNatlink(unittest.TestCase):
             createMacroFile(baseDirectory,'calc__jMg1.py','five')
             createMacroFile(userDirectory,'calc__jMg1.py','six')
             toggleMicrophone()
-            
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','five'],recCmdDict, 0)
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 0)
+            if userDirectory:
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','five'],recCmdDict, 0)
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 0)
+            else:
+                # userDirectory not there, so 'six' never recognised
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 0)
+                # 5 (base dir recognised because userdirectory is not there):
+                testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','five'],recCmdDict, 1)
+                self.log("without a userDirectory (Unimacro) switched on, this test is useless")
+
             self.lookForCalc()
     ##        natlink.execScript('AppBringUp "calc"')
             # priority for user macro file:
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','six'],recCmdDict, 1)
-            # 5 (base dir never recognised):
-            testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','five'],recCmdDict, 0)
-    
-    
-    
     
             # more intricate filename:
             createMacroFile(baseDirectory,specialFilenameCalc+'.py','eight')
@@ -2073,45 +2082,45 @@ class UnittestNatlink(unittest.TestCase):
         testGram.resetExperiment()
 
     # test working of dgnwords:
-    # because of a clash with one of the Unimacro grammars 'dictate' in now made 'DICTATE'
+    # because of a clash with one of the Unimacro grammars 'dictate' in now made 'DICTOOOTE'
         if DNSVersion <= 10:
             # broken with Dragon 11
             self.log("testing dgnwords")
             testGram.load("""<dgnwords> imported;
-                          <Start> exported = DICTATE word <dgnwords>;""")
+                          <Start> exported = DICTOOOTE word <dgnwords>;""")
             testGram.activateAll(window=0)
-            testRecognition(['DICTATE','word','hello'])
-            testGram.checkExperiment(1,'self',['DICTATE', 'word', 'hello'],
-                                     [('DICTATE', 'Start'), ('word', 'Start'), ('hello', 'dgnwords')])
+            testRecognition(['DICTOOOTE','word','hello'])
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'word', 'hello'],
+                                     [('DICTOOOTE', 'Start'), ('word', 'Start'), ('hello', 'dgnwords')])
             testGram.unload()
             testGram.resetExperiment()
       
     # test working of dgnletters:
     # dgnletters stp[
         testGram.load("""<dgnletters> imported;
-                      <Start> exported = DICTATE letters <dgnletters>;""")
+                      <Start> exported = DICTOOOTE letters <dgnletters>;""")
         testGram.activateAll(window=0)
         if DNSVersion < 11:
-            testRecognition(['DICTATE','letters','b',])
-            testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\\\l'],
-                                     [('DICTATE', 'Start'), ('letters', 'Start'),
+            testRecognition(['DICTOOOTE','letters','b',])
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', 'b\\\\l'],
+                                     [('DICTOOOTE', 'Start'), ('letters', 'Start'),
                                         ('b\\\\l', 'dgnletters')])
 
-        elif DNSVersion == 11:
-            # Dragon 11
-            testRecognition(['DICTATE','letters', r'b\spelling-letter\B'])
-            testGram.checkExperiment(1, 'self', ['DICTATE','letters', r'b\spelling-letter\B'],
-                                    [('DICTATE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
+        elif DNSVersion >= 11:
+            # Dragon 11, 12
+            testRecognition(['DICTOOOTE','letters', r'b\spelling-letter\B'])
+            testGram.checkExperiment(1, 'self', ['DICTOOOTE','letters', r'b\spelling-letter\B'],
+                                    [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
 
-            testRecognition(['DICTATE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'])
-            testGram.checkExperiment(1, 'self', ['DICTATE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'],
-                                    [('DICTATE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
+            testRecognition(['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'])
+            testGram.checkExperiment(1, 'self', ['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'],
+                                    [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
                                      ('!\\spelling-exclamation-mark\\exclamation mark', 'dgnletters')])
             
             
-            testRecognition(['DICTATE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', ',\spelling-comma\comma'])
-            testGram.checkExperiment(1,'self',['DICTATE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', ',\spelling-comma\comma'],
-                                    [('DICTATE', 'Start'), ('letters', 'Start'), ('c\\spelling-letter\\C', 'dgnletters'),
+            testRecognition(['DICTOOOTE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', ',\spelling-comma\comma'])
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', ',\spelling-comma\comma'],
+                                    [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('c\\spelling-letter\\C', 'dgnletters'),
                                         ('d\\spelling-letter\\delta', 'dgnletters'), (',\\spelling-comma\\comma', 'dgnletters')])
             
         else:
@@ -2122,55 +2131,61 @@ class UnittestNatlink(unittest.TestCase):
     # test working of dgndictation:
         self.log("testing dgndictation")
         testGram.load("""<dgndictation> imported;
-                      <Start> exported = DICTATE <dgndictation>;""")
+                      <Start> exported = DICTOOOTE <dgndictation>;""")
         testGram.activateAll(window=0)
-        testRecognition(['DICTATE','hello','testing'])
-        testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'testing'],
-                                 [('DICTATE', 'Start'), ('hello', 'dgndictation'), ('testing', 'dgndictation')])
+        
+        ## take a strange "trigger" word, because otherwise there is a conflict with some
+        ## Unimacro grammar:
+        testRecognition(['DICTOOOTE','hello'])
+        testGram.checkExperiment(1,'self',['DICTOOOTE', 'hello'],
+                                 [('DICTOOOTE', 'Start'), ('hello', 'dgndictation')])
+        testRecognition(['DICTOOOTE','hello', 'there'])
+        testGram.checkExperiment(1,'self',['DICTOOOTE', 'hello', 'there'],
+                                 [('DICTOOOTE', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
         testGram.unload()
         testGram.resetExperiment()
       
     # try combinations of the three:
         self.log("testing dgndictation etc combinations")
-        if DNSVersion < 11:
+        if DNSVersion != 11:
             testGram.load("""<dgndictation> imported;
                             <dgnletters> imported;
                             <dgnwords> imported;
-                           <Start1> exported = DICTATE <dgndictation>;
-                           <Start2> exported = DICTATE letters <dgnletters>;
-                           <Start3> exported = DICTATE word <dgnwords>;
+                           <Start1> exported = DICTOOOTE <dgndictation>;
+                           <Start2> exported = DICTOOOTE letters <dgnletters>;
+                           <Start3> exported = DICTOOOTE word <dgnwords>;
                           """)
         else:
             # Dragon 11 seems to have lost <dgnwords>:
             testGram.load("""<dgndictation> imported;
                             <dgnletters> imported;
                             <dgnwords> imported;
-                           <Start1> exported = DICTATE <dgndictation>;
-                           <Start2> exported = DICTATE letters <dgnletters>;
+                           <Start1> exported = DICTOOOTE <dgndictation>;
+                           <Start2> exported = DICTOOOTE letters <dgnletters>;
                           """)
             
         testGram.activateAll(window=0)
-        testRecognition(['DICTATE','hello','there'])
-        testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
-                                 [('DICTATE', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        testRecognition(['DICTOOOTE','hello','there'])
+        testGram.checkExperiment(1,'self',['DICTOOOTE', 'hello', 'there'],
+                                 [('DICTOOOTE', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
         if DNSVersion < 11:
-            testRecognition(['DICTATE','letters','b\\bravo', 'k\\kilo'])
-            testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
-                                     [('DICTATE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+            testRecognition(['DICTOOOTE','letters','b\\bravo', 'k\\kilo'])
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                     [('DICTOOOTE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
         else:
-            testRecognition(['DICTATE','letters',r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
-            testGram.checkExperiment(1,'self',['DICTATE', 'letters', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
-                                     [('DICTATE', 'Start2'), ('letters', 'Start2'), ('b\\spelling-letter\\bravo', 'dgnletters'),
+            testRecognition(['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
+                                     [('DICTOOOTE', 'Start2'), ('letters', 'Start2'), ('b\\spelling-letter\\bravo', 'dgnletters'),
                                         ('k\\spelling-letter\\K', 'dgnletters')])
 
-        testRecognition(['DICTATE','word','hello'])
-        if DNSVersion < 11:
-            testGram.checkExperiment(1,'self',['DICTATE', 'word', 'hello'],
-                                     [('DICTATE', 'Start3'), ('word', 'Start3'), ('hello', 'dgnwords')])
+        testRecognition(['DICTOOOTE','word','hello'])
+        if DNSVersion != 11:
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'word', 'hello'],
+                                     [('DICTOOOTE', 'Start3'), ('word', 'Start3'), ('hello', 'dgnwords')])
         else:
             # Dragon 11, <dgnwords> no longer works:
-            testGram.checkExperiment(1,'self',['DICTATE', 'word', 'hello'],
-                                    [('DICTATE', 'Start1'), ('word', 'dgndictation'), ('hello', 'dgndictation')])
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'word', 'hello'],
+                                    [('DICTOOOTE', 'Start1'), ('word', 'dgndictation'), ('hello', 'dgndictation')])
 
         testGram.unload()
         testGram.resetExperiment()
@@ -2181,29 +2196,29 @@ class UnittestNatlink(unittest.TestCase):
         testGram.load("""<dgndictation> imported;
                         <dgnletters> imported;
                         <dgnwords> imported;
-                       <Start> exported = DICTATE (<dgndictation>|<dgnletters>|<dgnwords>);
+                       <Start> exported = DICTOOOTE (<dgndictation>|<dgnletters>|<dgnwords>);
                       """)
         testGram.activateAll(window=0)
-        testRecognition(['DICTATE','hello','there'])
-        testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
-                                 [('DICTATE', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        testRecognition(['DICTOOOTE','hello','there'])
+        testGram.checkExperiment(1,'self',['DICTOOOTE', 'hello', 'there'],
+                                 [('DICTOOOTE', 'Start'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
         if DNSVersion < 11:
-            testRecognition(['DICTATE','b\\bravo', 'k\\kilo'])
-            testGram.checkExperiment(1,'self',['DICTATE', 'b\\bravo\\h', 'k\\kilo\\h'],
-                                     [('DICTATE', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+            testRecognition(['DICTOOOTE','b\\bravo', 'k\\kilo'])
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                     [('DICTOOOTE', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
         else:
             # also see above for dgnletters!
-            testRecognition(['DICTATE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
-            testGram.checkExperiment(1,'self', ['DICTATE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
-                                     [('DICTATE', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
+            testRecognition(['DICTOOOTE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
+            testGram.checkExperiment(1,'self', ['DICTOOOTE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
+                                     [('DICTOOOTE', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
                                       ('k\\spelling-letter\\K', 'dgnletters')])
 
 ## this experiment sometimes shows the rule dgndictation and sometimes dgnwords
 ## so, better not test here!!
 ## not mix them!!
-##        testRecognition(['DICTATE','hello'])
-##        testGram.checkExperiment(1,'self',['DICTATE', 'hello'],
-##                                 [('DICTATE', 'Start'), ('hello', 'dgndictation')])
+##        testRecognition(['DICTOOOTE','hello'])
+##        testGram.checkExperiment(1,'self',['DICTOOOTE', 'hello'],
+##                                 [('DICTOOOTE', 'Start'), ('hello', 'dgndictation')])
 
         testGram.unload()
         testGram.resetExperiment()
@@ -2212,19 +2227,19 @@ class UnittestNatlink(unittest.TestCase):
         self.log("testing dgndictation mixing of rules")
         testGram.load("""<Start> exported = <Start1>|<Start2>| hello | <dummyrule>;
                     <dummyrule> = dummy rule;
-                       <Start1> exported = DICTATE <dgndictation>;
+                       <Start1> exported = DICTOOOTE <dgndictation>;
                         <dgndictation> imported;
                         <dgnletters> imported;
-                       <Start2> exported = DICTATE letters <dgnletters>;
+                       <Start2> exported = DICTOOOTE letters <dgnletters>;
                       """)
         testGram.activateAll(window=0)
-        testRecognition(['DICTATE','hello','there'])
-        testGram.checkExperiment(1,'self',['DICTATE', 'hello', 'there'],
-                                 [('DICTATE', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
+        testRecognition(['DICTOOOTE','hello','there'])
+        testGram.checkExperiment(1,'self',['DICTOOOTE', 'hello', 'there'],
+                                 [('DICTOOOTE', 'Start1'), ('hello', 'dgndictation'), ('there', 'dgndictation')])
         if DNSVersion < 11:
-            testRecognition(['DICTATE','letters','b\\bravo', 'k\\kilo'])
-            testGram.checkExperiment(1,'self',['DICTATE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
-                                     [('DICTATE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
+            testRecognition(['DICTOOOTE','letters','b\\bravo', 'k\\kilo'])
+            testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
+                                     [('DICTOOOTE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
         else:
             pass
             # we believe this test will pass with correct letters!
