@@ -344,7 +344,7 @@ Commands" and "Edit Global Commands" are activated.
     def loadAllFiles(self, options):
         if self.commandFolder:
             options = ["-suffix", "_vcl" ] + options
-            self.runVocolaTranslator(self.commandFolder, options)
+            compile(self.commandFolder, options)
 
     # Load command files for specific application
     def loadSpecificFiles(self, module):
@@ -373,7 +373,7 @@ Commands" and "Edit Global Commands" are activated.
     def loadFile(self, file, options):
         try:
             os.stat(file)
-            self.runVocolaTranslator(file, options + ['-f'])
+            compile(file, options + ['-f'])
             return 1
         except OSError:
             return 0   # file not found
@@ -578,6 +578,46 @@ Dragon, if you want to use the updated version of this file."""% (destDir, sourc
 #                                                                         #
 ###########################################################################
 
+may_have_compiled = False  # has the compiler been called?
+compile_error     = False  # has a compiler error occurred?
+
+# Run Vocola compiler, converting command files from "inputFileOrFolder"
+# and writing output to NatLink/MacroSystem
+def compile(inputFileOrFolder, options):
+    global may_have_compiled, compiler_error
+
+    may_have_compiled = True
+
+    VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, 
+                                                 '..', 'Vocola'))
+    if usePerl:
+        executable = "perl"
+        arguments  = [VocolaFolder + r'\exec\vcl2py.pl']
+    else:
+        executable = VocolaFolder + r'\exec\vcl2py.exe'
+        arguments  = []
+
+    arguments += ['-extensions', ExtensionsFolder + r'\extensions.csv']
+    if language == "enx":
+        arguments += ['-numbers', 
+                      'zero,one,two,three,four,five,six,seven,eight,nine']
+
+    arguments += options
+
+    arguments += [inputFileOrFolder, NatLinkFolder]
+    hidden_call(executable, arguments)
+
+    logName = thisGrammar.commandFolder + r'\vcl2py_log.txt'
+    if os.path.isfile(logName):
+        try:
+            log = open(logName, 'r')
+            compiler_error = True
+            print  >> sys.stderr, log.read()
+            log.close()
+            os.remove(logName)
+        except IOError:  # no log file means no Vocola errors
+            pass
+
 # 
 # Run program with path executable and arguments arguments.  Waits for
 # the program to finish.  Runs the program in a hidden window.
@@ -641,15 +681,16 @@ lastVocolaFileTime    = 0
 
 def vocolaBeginCallback(moduleInfo):
     global lastNatLinkModTime, lastCommandFolderTime, lastVocolaFileTime
+    global may_have_compiled, compiler_error
 
     if not VocolaEnabled:
         return 0
 
     current = getLastVocolaFileModTime()
     if current > lastVocolaFileTime:
-        thisGrammar.compilerError = 0	   
+        compiler_error = False
         thisGrammar.loadAllFiles([])
-        if not thisGrammar.compilerError:
+        if not compiler_error:
             lastVocolaFileTime =  current
 
 #    source_changed = 0
@@ -660,8 +701,9 @@ def vocolaBeginCallback(moduleInfo):
 #    if source_changed:
 #        thisGrammar.deleteOrphanFiles()
 
-    compiled = thisGrammar.mayHaveCompiled
-    thisGrammar.mayHaveCompiled = 0
+    compiled = 0
+    if may_have_compiled: compiled = 1
+    may_have_compiled = False
     current = vocolaGetModTime(NatLinkFolder)
     if current > lastNatLinkModTime:
         lastNatLinkModTime = current
