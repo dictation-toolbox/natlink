@@ -42,14 +42,6 @@
 # August 24, 2011, QH:
 #   added checkUnimacroCompatibility, for automatic copying the
 #   Unimacro.vch file into the VocolaUserDirectory.
-# 
-# February 4, 2008, QH:
-#   adapted to natlinkmain, which loads _vocola_main before other
-#   modules, and calls back also at begin Callback time before other
-#   modules to vocolaBeginCallback.
-#   If something changed within Vocola, report back to natlinkmain with
-#     1 (change py file)
-#     2 (new py file)
 
 import string
 import sys
@@ -608,14 +600,27 @@ def hidden_call(executable, arguments):
             return exit_code
 
 
+lastVocolaFileTime    = 0
+lastCommandFolderTime = 0
 
+def compile_changed():
+    global lastVocolaFileTime, lastCommandFolderTime
+    global compiler_error
 
+    current = getLastVocolaFileModTime()
+    if current > lastVocolaFileTime:
+        compiler_error = False
+        thisGrammar.loadAllFiles(False)
+        if not compiler_error:
+            lastVocolaFileTime =  current
 
-
-# Returns the modification time of a file or 0 if the file does not exist
-def vocolaGetModTime(file):
-    try: return os.stat(file)[ST_MTIME]
-    except OSError: return 0        # file not found
+    #source_changed = False
+    #if thisGrammar.commandFolder:
+    #    if vocolaGetModTime(thisGrammar.commandFolder) > lastCommandFolderTime:
+    #        lastCommandFolderTime = vocolaGetModTime(thisGrammar.commandFolder)
+    #        source_changed = True
+    #if source_changed:
+    #    thisGrammar.deleteOrphanFiles()
 
 # Returns the newest modified time of any Vocola command folder file or
 # 0 if none:
@@ -627,51 +632,56 @@ def getLastVocolaFileModTime():
                     for f in os.listdir(thisGrammar.commandFolder)])
     return last
 
+# Returns the modification time of a file or 0 if the file does not exist:
+def vocolaGetModTime(file):
+    try: return os.stat(file)[ST_MTIME]
+    except OSError: return 0        # file not found
 
-# When speech is heard this function will be called before any others.
-#   - Compile any changed Vocola command files
-##   - Remove any vocola output files without corresponding source files
-#   - Make sure NatLink sees any new output files
-#
-# now this callback is called from natlinkmain before other grammars are called
-# also, natlinkmain now guarantees we are not called with CallbackDepth>1
-#
 
-lastNatLinkModTime    = 0
-lastCommandFolderTime = 0
-lastVocolaFileTime    = 0
+lastNatLinkModTime = 0
 
-def vocolaBeginCallback(moduleInfo):
-    global lastNatLinkModTime, lastCommandFolderTime, lastVocolaFileTime
-    global may_have_compiled, compiler_error
+# Check for changes to our output .py files and report status relative
+# to last time this routine was called; return code means:
+#   0: no changes
+#   1: 1 or more existing .py files were modified, but no new .py files created
+#   2: one or more new .py files may have been created, plus maybe existing changed
+def output_changes():
+    global lastNatLinkModTime, may_have_compiled
 
-    if not VocolaEnabled:
-        return 0
-
-    current = getLastVocolaFileModTime()
-    if current > lastVocolaFileTime:
-        compiler_error = False
-        thisGrammar.loadAllFiles(False)
-        if not compiler_error:
-            lastVocolaFileTime =  current
-
-#    source_changed = 0
-#    if thisGrammar.commandFolder:
-#        if vocolaGetModTime(thisGrammar.commandFolder) > lastCommandFolderTime:
-#            lastCommandFolderTime = vocolaGetModTime(thisGrammar.commandFolder)
-#            source_changed = 1
-#    if source_changed:
-#        thisGrammar.deleteOrphanFiles()
-
-    compiled = 0
-    if may_have_compiled: compiled = 1
+    old_may_have_compiled = may_have_compiled
     may_have_compiled = False
+
     current = vocolaGetModTime(NatLinkFolder)
     if current > lastNatLinkModTime:
         lastNatLinkModTime = current
-        # make sure NatLink sees any new .py files:
         return 2
-    return compiled
+
+    if old_may_have_compiled:
+        return 1
+    else:
+        return 0
+
+
+# When speech is heard this function will be called before any others.
+# 
+# With Quintijn's installer as of February 4, 2008:
+# 
+#   _vocola_main is loaded before any other NatLink modules
+#   our callback is called before any other NatLink module's
+#   natlinkmain now guarantees we are not called with CallbackDepth>1
+#   we return the result of output_changes() directly rather than
+#     massaging NatLink to deal with new .py files
+#
+def vocolaBeginCallback(moduleInfo):
+    if not VocolaEnabled:
+        return 0
+
+    compile_changed()
+    return output_changes()
+
+
+
+
 
 
 
