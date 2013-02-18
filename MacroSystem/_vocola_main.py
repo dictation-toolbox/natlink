@@ -188,17 +188,6 @@ Commands" and "Edit Global Commands" are activated.
     def initialize(self):
         self.updateUnimacroHeaderIfNeeded()
 
-        # remove previous Vocola/Python compilation output as it may be out
-        # of date (e.g., new compiler, source file deleted, partially
-        # written due to crash, new machine name, etc.):
-        purgeOutput()
-
-        if not VocolaEnabled:
-            print "Vocola not active"
-            return
-        else:
-            print "Vocola version 2.7.3+I starting..."
-
         self.setNames()
 
         self.load_extensions()
@@ -479,8 +468,6 @@ Commands" and "Edit Global Commands" are activated.
         output.close()                
 
     def updateUnimacroHeaderIfNeeded(self):
-        if not VocolaEnabled:
-            return
         if not status.getVocolaTakesUnimacroActions(): 
             return
         
@@ -681,12 +668,25 @@ def vocolaBeginCallback(moduleInfo):
 
 
 
+###########################################################################
+#                                                                         #
+# Startup/shutdown                                                        #
+#                                                                         #
+###########################################################################
 
+thisGrammar = None
 
+# remove previous Vocola/Python compilation output as it may be out of
+# date (e.g., new compiler, source file deleted, partially written due
+# to crash, new machine name, etc.):
+purgeOutput()
 
-
-thisGrammar = ThisGrammar()
-thisGrammar.initialize()
+if not VocolaEnabled:
+    print "Vocola not active"
+else:
+    print "Vocola version 2.7.3+I starting..."
+    thisGrammar = ThisGrammar()
+    thisGrammar.initialize()
 
 
 def unload():
