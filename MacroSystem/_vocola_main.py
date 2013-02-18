@@ -210,7 +210,7 @@ Commands" and "Edit Global Commands" are activated.
         self.setNames()
 
         self.load_extensions()
-        self.loadAllFiles([])
+        self.loadAllFiles(False)
 
         self.load(self.gramSpec)
         self.activateAll()
@@ -316,7 +316,7 @@ Commands" and "Edit Global Commands" are activated.
 
     # "Load All Commands" -- translate all Vocola files
     def gotResults_loadAll(self, words, fullResults):
-        self.loadAllFiles(['-f'])
+        self.loadAllFiles(True)
 
     # "Load Commands" -- translate Vocola files for current application
     def gotResults_loadCurrent(self, words, fullResults):
@@ -329,13 +329,12 @@ Commands" and "Edit Global Commands" are activated.
     # "Discard Old [Voice] Commands" -- purge output then translate all files
     def gotResults_discardOld(self, words, fullResults):
         purgeOutput()
-        self.loadAllFiles(['-f'])
+        self.loadAllFiles(True)
 
     # Load all command files
-    def loadAllFiles(self, options):
+    def loadAllFiles(self, force):
         if self.commandFolder:
-            options = ["-suffix", "_vcl" ] + options
-            compile(self.commandFolder, options)
+            compile_Vocola(self.commandFolder, force)
 
     # Load command files for specific application
     def loadSpecificFiles(self, module):
@@ -349,25 +348,24 @@ Commands" and "Edit Global Commands" are activated.
         if self.commandFolder:
             targets += [os.path.join(self.commandFolder,f)
                         for f in os.listdir(self.commandFolder) if p.search(f)]
-        options = ["-suffix", "_vcl" ]
         if len(targets) > 0:
             for target in targets:
-                self.loadFile(target, options)
+                self.loadFile(target)
         else:
             print >> sys.stderr
             if module == "":
-                print >> sys.stderr, "Found no Vocola global command files (for machine '" + self.machine + "')"
+                print >> sys.stderr, "Found no Vocola global command files [for machine '" + self.machine + "']"
             else:
-                print >> sys.stderr, "Found no Vocola command files for application '" + module + "' (for machine '" + self.machine + "')"
+                print >> sys.stderr, "Found no Vocola command files for application '" + module + "' [for machine '" + self.machine + "']"
 
     # Load a specific command file, returning false if not present
-    def loadFile(self, file, options):
+    def loadFile(self, file):
         try:
             os.stat(file)
-            compile(file, options + ['-f'])
-            return 1
+            compile_Vocola(file, False)
+            return True
         except OSError:
-            return 0   # file not found
+            return False   # file not found
 
 ### Editing Vocola Command Files
 
@@ -541,13 +539,12 @@ compile_error     = False  # has a compiler error occurred?
 
 # Run Vocola compiler, converting command files from "inputFileOrFolder"
 # and writing output to NatLink/MacroSystem
-def compile(inputFileOrFolder, options):
+def compile_Vocola(inputFileOrFolder, force):
     global may_have_compiled, compiler_error
 
     may_have_compiled = True
 
-    VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, 
-                                                 '..', 'Vocola'))
+    VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
     if usePerl:
         executable = "perl"
         arguments  = [VocolaFolder + r'\exec\vcl2py.pl']
@@ -560,7 +557,8 @@ def compile(inputFileOrFolder, options):
         arguments += ['-numbers', 
                       'zero,one,two,three,four,five,six,seven,eight,nine']
 
-    arguments += options
+    arguments += ["-suffix", "_vcl" ]
+    if force: arguments += ["-f"]
 
     arguments += [inputFileOrFolder, NatLinkFolder]
     hidden_call(executable, arguments)
@@ -653,7 +651,7 @@ def vocolaBeginCallback(moduleInfo):
     current = getLastVocolaFileModTime()
     if current > lastVocolaFileTime:
         compiler_error = False
-        thisGrammar.loadAllFiles([])
+        thisGrammar.loadAllFiles(False)
         if not compiler_error:
             lastVocolaFileTime =  current
 
