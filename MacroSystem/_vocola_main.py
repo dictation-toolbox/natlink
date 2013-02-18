@@ -233,7 +233,7 @@ Commands" and "Edit Global Commands" are activated.
             print "Vocola not active"
             return
         else:
-            print "Vocola version 2.7.3I starting..."
+            print "Vocola version 2.7.3+I starting..."
 
         self.mayHaveCompiled = 0  # has the compiler been called?
         self.compilerError   = 0  # has a compiler error occurred?
