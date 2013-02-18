@@ -103,34 +103,6 @@ sys.path.append(ExtensionsFolder)
 NatLinkFolder = os.path.abspath(NatLinkFolder)
 
 
-# 
-# Run program with path executable and arguments arguments.  Waits for
-# the program to finish.  Runs the program in a hidden window.
-# 
-def hidden_call(executable, arguments):
-    args = [executable] + arguments
-    try:
-        import simpscrp
-        args = ['"' + str(x) + '"' for x in args]
-        call = ' '.join(args)
-        print "simpscrp: " + call
-        simpscrp.Exec(call, 1)
-    except ImportError:
-        try:
-            import subprocess
-            si             = subprocess.STARTUPINFO()
-            si.dwFlags     = subprocess.STARTF_USESHOWWINDOW
-            si.wShowWindow = subprocess.SW_HIDE
-            print "subprocess: " + repr(args)
-            return subprocess.call(args, startupinfo=si)
-        except ImportError:
-            print "spawnv: " + repr(args)
-            pid = os.spawnv(os.P_NOWAIT, executable, args)
-            pid, exit_code = os.waitpid(pid, 0)
-            exit_code = exit_code >> 8
-            return exit_code
-
-
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
@@ -216,7 +188,7 @@ class ThisGrammar(GrammarBase):
 Vocola Warning: no language "%s" translations for the built-in Vocola
 commands (e.g., commands to load voice commands) are currently
 available; consider helping translate them -- inquire on
-http://www.speechcomputing.com.  For now the English names, like "Edit
+http://www.speechcomputing.com.  For now the English versions, like "Edit
 Commands" and "Edit Global Commands" are activated.
 """ % language
         
@@ -423,7 +395,7 @@ Commands" and "Edit Global Commands" are activated.
             arguments += ['-numbers', 
                           'zero,one,two,three,four,five,six,seven,eight,nine']
 
-        arguments += options.strip().split(" ")
+        arguments += options
 
         arguments += [inputFileOrFolder, NatLinkFolder]
         hidden_call(executable, arguments)
@@ -597,6 +569,44 @@ Please fix the configuration of NatLink/Vocola/Unimacro and restart
 Dragon, if you want to use the updated version of this file."""% (destDir, sourceDir)
             else:
                 print 'Succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s".'% (sourceDir, destDir)
+
+
+
+###########################################################################
+#                                                                         #
+# Compiling Vocola files                                                  #
+#                                                                         #
+###########################################################################
+
+# 
+# Run program with path executable and arguments arguments.  Waits for
+# the program to finish.  Runs the program in a hidden window.
+# 
+def hidden_call(executable, arguments):
+    args = [executable] + arguments
+    try:
+        import simpscrp
+        args = ['"' + str(x) + '"' for x in args]
+        call = ' '.join(args)
+        print "simpscrp: " + call
+        simpscrp.Exec(call, 1)
+    except ImportError:
+        try:
+            import subprocess
+            si             = subprocess.STARTUPINFO()
+            si.dwFlags     = subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+            print "subprocess: " + repr(args)
+            return subprocess.call(args, startupinfo=si)
+        except ImportError:
+            print "spawnv: " + repr(args)
+            pid = os.spawnv(os.P_NOWAIT, executable, args)
+            pid, exit_code = os.waitpid(pid, 0)
+            exit_code = exit_code >> 8
+            return exit_code
+
+
+
 
 
 
