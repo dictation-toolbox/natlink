@@ -39,19 +39,28 @@
 #          version.
 #
 
-# August 24, 2011, QH:
-#   added checkUnimacroCompatibility, for automatic copying the
-#   Unimacro.vch file into the VocolaUserDirectory.
-
 import string
 import sys
 import os               # access to file information
 import os.path          # to parse filenames
 import time             # print time in messages
-from stat import *      # file statistics
+from   stat import *    # file statistics
 import re
 import natlink
-from natlinkutils import *
+from   natlinkutils import *
+
+
+
+###########################################################################
+#                                                                         #
+# Configuration                                                           #
+#                                                                         #
+###########################################################################
+
+# The Vocola translator is a perl program. By default we use the precompiled
+# executable vcl2py.exe, which doesn't require installing perl.
+# To instead use perl and vcl2py.pl, set the following variable to 1:
+usePerl = 0
 
 
 import natlinkstatus
@@ -62,38 +71,106 @@ VocolaEnabled = not not status.getVocolaUserDirectory()
 language      = status.getLanguage()
 
 
-# The Vocola translator is a perl program. By default we use the precompiled
-# executable vcl2py.exe, which doesn't require installing perl.
-# To instead use perl and vcl2py.pl, set the following variable to 1:
-usePerl = 0
+# get location of MacroSystem folder:
+NatLinkFolder = os.path.split(
+    sys.modules['natlinkmain'].__dict__['__file__'])[0]
+# (originally, natlinkmain lived in MacroSystem, not MacroSystem\core)
+NatLinkFolder = re.sub(r'\core$', "", NatLinkFolder)
 
+
+VocolaFolder     = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
+ExecFolder       = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'exec'))
 # C module "simpscrp" defines Exec(), which runs a program in a minimized
 # window and waits for completion. Since such modules need to be compiled
 # separately for each python version we need this careful import:
-
-# try both for getting the coreDirectory (QH):
-for modname in ['natlink', 'natlinkmain']:
-    try:
-        coreDirectory = os.path.split(
-           sys.modules[modname].__dict__['__file__'])[0]
-    except KeyError:
-        pass
-    else:
-        break
-if not coreDirectory:
-    raise ValueError("natlink core directory could not be established")
-
-
-NatLinkFolder = os.path.normpath(os.path.join(coreDirectory, '..'))  #MacroSystem folder
-
-pydFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'exec', sys.version[0:3]))
-sys.path.append(pydFolder)
-ExecFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola','exec'))
-sys.path.append(ExecFolder)
+pydFolder        = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'exec', sys.version[0:3]))
 ExtensionsFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'extensions'))
-sys.path.append(ExtensionsFolder)
-NatLinkFolder = os.path.abspath(NatLinkFolder)
 
+NatLinkFolder    = os.path.abspath(NatLinkFolder)
+
+if VocolaEnabled:
+    sys.path.append(pydFolder)
+    sys.path.append(ExecFolder)
+    sys.path.append(ExtensionsFolder)
+
+
+def get_command_folder():
+    configured = None
+    try:
+        import natlinkstatus
+        # Quintijn's's installer:
+        configured = natlinkstatus.NatlinkStatus().getVocolaUserDirectory()
+    except ImportError:
+        try:
+            import RegistryDict
+            import win32con
+            # Scott's installer:
+            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,
+                                          "Software\NatLink")             
+            if r:                                                         
+                configured = r["VocolaUserDirectory"]              
+        except ImportError:
+            pass
+    if os.path.isdir(configured):                      
+        return configured
+
+    systemCommandFolder = os.path.join(VocolaFolder, 'Commands')
+    if os.path.isdir(systemCommandFolder):
+        return systemCommandFolder
+
+    return None
+    
+commandFolder = get_command_folder()
+if VocolaEnabled and not commandFolder:
+    print >> sys.stderr, "Warning: no Vocola command folder found!"
+
+
+## 
+## Quintijn's unofficial multiple language kludge:
+## 
+
+def copyVclFileLanguageVersion(Input, Output):
+    """copy to another location, keeping the include files one directory above
+    """
+    # let include lines to relative paths point to the folder above ..\
+    # so you can take the same include file for the alternate language.
+    reInclude = re.compile(r'(include\s+)\w')
+    Input     = os.path.normpath(Input)
+    Output    = os.path.normpath(Output)
+    input     = open(Input, 'r').read()
+    output    = open(Output, 'w')
+    output.write("# vocola file for alternate language: %s\n"% language)
+    lines = map(string.strip, str(input).split('\n'))
+    for line in lines:
+        if reInclude.match(line):
+            line = 'include ..\\' + line[8:]
+        output.write(line + '\n')
+    output.close()                
+
+def copyToNewSubDirectory(trunk, subdirectory):
+    for f in os.listdir(trunk):
+        if f.endswith('.vcl'):
+            copyVclFileLanguageVersion(os.path.join(trunk, f),
+                                       os.path.join(subdirectory, f))
+
+if VocolaEnabled and status.getVocolaTakesLanguages():
+    print '_vocola_main started with language: %s' % language
+    if language != 'enx' and commandFolder:
+        uDir  = commandFolder
+        uDir2 = os.path.join(uDir, language)
+        if not os.path.isdir(uDir2):
+            print 'creating userCommandFolder for language %s' % language
+            os.mkdir(uDir2)
+            copyToNewSubDirectory(uDir, uDir2)
+        commandFolder = uDir2
+
+
+
+###########################################################################
+#                                                                         #
+# The built-in commands                                                   #
+#                                                                         #
+###########################################################################
 
 class ThisGrammar(GrammarBase):
 
@@ -188,7 +265,9 @@ Commands" and "Edit Global Commands" are activated.
     def initialize(self):
         self.updateUnimacroHeaderIfNeeded()
 
-        self.setNames()
+        if os.environ.has_key('COMPUTERNAME'):
+            self.machine = string.lower(os.environ['COMPUTERNAME'])
+        else: self.machine = 'local'
 
         self.load_extensions()
         self.loadAllFiles(False)
@@ -203,75 +282,9 @@ Commands" and "Edit Global Commands" are activated.
         enable_callback() 
 
                                       
-    # Set member variables -- important folders and computer name
-    def setNames(self):
-        if os.environ.has_key('COMPUTERNAME'):
-            self.machine = string.lower(os.environ['COMPUTERNAME'])
-        else: self.machine = 'local'
-
-        self.commandFolder = None
-        userCommandFolder = status.getVocolaUserDirectory()
-        if os.path.isdir(userCommandFolder):                      
-            self.commandFolder = userCommandFolder
-        if not self.commandFolder:
-            print >> sys.stderr, "Warning: no Vocola command folder found!"
-
-        if status.getVocolaTakesLanguages():
-            language = status.getLanguage()
-            print '_vocola_main started with language: %s'% language
-            if language != 'enx'and self.commandFolder:
-                uDir = self.commandFolder
-                uDir2 = os.path.join(uDir, language)
-                if not os.path.isdir(uDir2):
-                    print 'creating userCommandFolder for language %s'% language
-                    self.createNewSubDirectory(uDir2)
-                    self.copyToNewSubDirectory(uDir, uDir2)
-                self.commandFolder = uDir2
-
-    def createNewSubDirectory(self, subdirectory):
-        os.mkdir(subdirectory)
-
-    def copyToNewSubDirectory(self, trunk, subdirectory):
-        for f in os.listdir(trunk):
-            if f.endswith('.vcl'):
-                self.copyVclFileLanguageVersion(os.path.join(trunk, f),
-                                                os.path.join(subdirectory, f))
-                                
-
     # Get app name by stripping folder and extension from currentModule name
     def getCurrentApplicationName(self):
         return string.lower(os.path.splitext(os.path.split(self.currentModule[0]) [1]) [0])
-
-    def getSourceFilename(self, output_filename):
-        m = re.match("^(.*)_vcl.pyc?$", output_filename)
-        if not m: return None                    # Not a Vocola file
-        name = m.group(1)
-        if not self.commandFolder: return None
-
-        marker = "e_s_c_a_p_e_d__"
-        m = re.match("^(.*)" + marker + "(.*)$", name)  # rightmost marker!
-        if m:
-            name = m.group(1)
-            tail = m.group(2)
-            tail = re.sub("__a_t__", "@", tail)
-            tail = re.sub("___", "_", tail)
-            name += tail
-
-        name = re.sub("_@", "@", name)
-        return self.commandFolder + "\\" + name + ".vcl"
-
-    def deleteOrphanFiles(self):
-        print "checking for orphans..."
-        for f in os.listdir(NatLinkFolder):
-            if not re.search("_vcl.pyc?$", f): continue
-
-            s = self.getSourceFilename(f)
-            if s:
-                if vocolaGetModTime(s)>0: continue
-
-            f = os.path.join(NatLinkFolder, f)
-            print "Deleting: " + f
-            os.remove(f)
 
 ### Miscellaneous commands
 
@@ -316,8 +329,8 @@ Commands" and "Edit Global Commands" are activated.
 
     # Load all command files
     def loadAllFiles(self, force):
-        if self.commandFolder:
-            compile_Vocola(self.commandFolder, force)
+        if commandFolder:
+            compile_Vocola(commandFolder, force)
 
     # Load command files for specific application
     def loadSpecificFiles(self, module):
@@ -328,9 +341,9 @@ Commands" and "Edit Global Commands" are activated.
         p = re.compile(pattern)
 
         targets = []
-        if self.commandFolder:
-            targets += [os.path.join(self.commandFolder,f)
-                        for f in os.listdir(self.commandFolder) if p.search(f)]
+        if commandFolder:
+            targets += [os.path.join(commandFolder,f)
+                        for f in os.listdir(commandFolder) if p.search(f)]
         if len(targets) > 0:
             for target in targets:
                 self.loadFile(target)
@@ -380,21 +393,21 @@ Commands" and "Edit Global Commands" are activated.
 
 
     def FindExistingCommandFile(self, file):
-        if self.commandFolder:
-            f = self.commandFolder + '\\' + file
+        if commandFolder:
+            f = commandFolder + '\\' + file
             if os.path.isfile(f): return f
 
         return ""
     
     # Open a Vocola command file (using the application associated with ".vcl")
     def openCommandFile(self, file, comment):
-        if not self.commandFolder:
+        if not commandFolder:
             print >> sys.stderr, "Error: Unable to create command file because no Vocola command folder found."
             return
 
         path = self.FindExistingCommandFile(file)
         if not path:
-            path = self.commandFolder + '\\' + file
+            path = commandFolder + '\\' + file
 
             new = open(path, 'w')
             new.write('# ' + comment + '\n\n')
@@ -407,12 +420,12 @@ Commands" and "Edit Global Commands" are activated.
                 new.write(includeLine)                    
             new.close()
 
-        wantedPath = os.path.join(self.commandFolder, file)
+        wantedPath = os.path.join(commandFolder, file)
         if path and path != wantedPath:
             # copy from other location
             if wantedPath.startswith(path) and len(wantedPath) - len(path) == 3:
                 print 'copying enx version to language version %s'% language
-                self.copyVclFileLanguageVersion(path, wantedPath)
+                copyVclFileLanguageVersion(path, wantedPath)
             else:
                 print 'copying from other location'
                 self.copyVclFile(path, wantedPath)
@@ -434,25 +447,6 @@ Commands" and "Edit Global Commands" are activated.
         #    prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
         #    os.spawnv(os.P_NOWAIT, prog, [prog, path])
         natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
-
-    def copyVclFileLanguageVersion(self, Input, Output):
-        """copy to another location, keeping the include files one directory above
-        """
-        # QH, febr, 5, 2008
-        # let include lines to relative paths point to the folder above ..\
-        # so you can take the same include file for the alternate language.
-        reInclude = re.compile(r'(include\s+)\w')
-        Input     = os.path.normpath(Input)
-        Output    = os.path.normpath(Output)
-        input     = open(Input, 'r').read()
-        output    = open(Output, 'w')
-        output.write("# vocola file for alternate language: %s\n"% language)
-        lines = map(string.strip, str(input).split('\n'))
-        for line in lines:
-            if reInclude.match(line):
-                line = 'include ..\\' + line[8:]
-            output.write(line + '\n')
-        output.close()                
 
     def copyVclFile(self, Input, Output):
         """copy to another location
@@ -509,6 +503,7 @@ Dragon, if you want to use the updated version of this file."""% (destDir, sourc
 
 
 
+
 ###########################################################################
 #                                                                         #
 # Compiling Vocola files                                                  #
@@ -544,7 +539,7 @@ def compile_Vocola(inputFileOrFolder, force):
     arguments += [inputFileOrFolder, NatLinkFolder]
     hidden_call(executable, arguments)
 
-    logName = thisGrammar.commandFolder + r'\vcl2py_log.txt'
+    logName = commandFolder + r'\vcl2py_log.txt'
     if os.path.isfile(logName):
         try:
             log = open(logName, 'r')
@@ -604,27 +599,59 @@ def compile_changed():
             lastVocolaFileTime =  current
 
     #source_changed = False
-    #if thisGrammar.commandFolder:
-    #    if vocolaGetModTime(thisGrammar.commandFolder) > lastCommandFolderTime:
-    #        lastCommandFolderTime = vocolaGetModTime(thisGrammar.commandFolder)
+    #if commandFolder:
+    #    if vocolaGetModTime(commandFolder) > lastCommandFolderTime:
+    #        lastCommandFolderTime = vocolaGetModTime(commandFolder)
     #        source_changed = True
     #if source_changed:
-    #    thisGrammar.deleteOrphanFiles()
+    #    deleteOrphanFiles()
 
 # Returns the newest modified time of any Vocola command folder file or
 # 0 if none:
 def getLastVocolaFileModTime():
     last = 0
-    if thisGrammar.commandFolder:
+    if commandFolder:
         last = max([last] +
-                   [vocolaGetModTime(os.path.join(thisGrammar.commandFolder,f))
-                    for f in os.listdir(thisGrammar.commandFolder)])
+                   [vocolaGetModTime(os.path.join(commandFolder,f))
+                    for f in os.listdir(commandFolder)])
     return last
 
 # Returns the modification time of a file or 0 if the file does not exist:
 def vocolaGetModTime(file):
     try: return os.stat(file)[ST_MTIME]
     except OSError: return 0        # file not found
+
+
+def deleteOrphanFiles():
+    print "checking for orphans..."
+    for f in os.listdir(NatLinkFolder):
+        if not re.search("_vcl.pyc?$", f): continue
+
+        s = getSourceFilename(f)
+        if s:
+            if vocolaGetModTime(s)>0: continue
+
+        f = os.path.join(NatLinkFolder, f)
+        print "Deleting: " + f
+        os.remove(f)
+
+def getSourceFilename(output_filename):
+    m = re.match("^(.*)_vcl.pyc?$", output_filename)
+    if not m: return None                    # Not a Vocola file
+    name = m.group(1)
+    if not commandFolder: return None
+
+    marker = "e_s_c_a_p_e_d__"
+    m = re.match("^(.*)" + marker + "(.*)$", name)  # rightmost marker!
+    if m:
+        name = m.group(1)
+        tail = m.group(2)
+        tail = re.sub("__a_t__", "@", tail)
+        tail = re.sub("___", "_", tail)
+        name += tail
+
+    name = re.sub("_@", "@", name)
+    return commandFolder + "\\" + name + ".vcl"
 
 
 lastNatLinkModTime = 0
@@ -658,6 +685,7 @@ def output_changes():
 def utterance_start_callback(moduleInfo):
     compile_changed()
     return output_changes()
+
 
 
 ###########################################################################
@@ -694,6 +722,7 @@ def vocolaBeginCallback(moduleInfo):
     if not callback_enabled or not VocolaEnabled:
         return 0
     return utterance_start_callback(moduleInfo)
+
 
 
 ###########################################################################
