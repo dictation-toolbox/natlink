@@ -199,6 +199,8 @@ Commands" and "Edit Global Commands" are activated.
 
     def gotBegin(self,moduleInfo):
         self.currentModule = moduleInfo
+        # delay enabling until now to avoid NatLink clobbering our callback:
+        enable_callback() 
 
                                       
     # Set member variables -- important folders and computer name
@@ -650,22 +652,48 @@ def output_changes():
 
 
 # When speech is heard this function will be called before any others.
+#
+# Must return result of output_changes() so we can tell NatLink when
+# files need to be loaded.
+def utterance_start_callback(moduleInfo):
+    compile_changed()
+    return output_changes()
+
+
+###########################################################################
+#                                                                         #
+# Callback handling                                                       #
+#                                                                         #
+###########################################################################
+
 # 
 # With Quintijn's installer as of February 4, 2008:
 # 
 #   _vocola_main is loaded before any other NatLink modules
-#   our callback is called before any other NatLink module's
+#   vocolaBeginCallback is called directly by natlinkmain before any
+#     other grammer's gotBegin method
 #   natlinkmain now guarantees we are not called with CallbackDepth>1
 #   we return the result of output_changes() directly rather than
 #     massaging NatLink to deal with new .py files
 #
+
+
+callback_enabled = False
+
+def enable_callback():
+    global callback_enabled
+    if not callback_enabled:
+        callback_enabled = True
+
+def disable_callback():
+    global callback_enabled
+    callback_enabled = False
+
+
 def vocolaBeginCallback(moduleInfo):
-    if not VocolaEnabled:
+    if not callback_enabled or not VocolaEnabled:
         return 0
-
-    compile_changed()
-    return output_changes()
-
+    return utterance_start_callback(moduleInfo)
 
 
 ###########################################################################
@@ -691,5 +719,6 @@ else:
 
 def unload():
     global thisGrammar
+    disable_callback()
     if thisGrammar: thisGrammar.unload()
     thisGrammar = None
