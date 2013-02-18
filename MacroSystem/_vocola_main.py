@@ -240,7 +240,7 @@ Commands" and "Edit Global Commands" are activated.
         self.setNames()
 
         self.load_extensions()
-        self.loadAllFiles('')
+        self.loadAllFiles([])
 
         self.load(self.gramSpec)
         self.activateAll()
@@ -348,7 +348,7 @@ Commands" and "Edit Global Commands" are activated.
 
     # "Load All Commands" -- translate all Vocola files
     def gotResults_loadAll(self, words, fullResults):
-        self.loadAllFiles('-f')
+        self.loadAllFiles(['-f'])
 
     # "Load Commands" -- translate Vocola files for current application
     def gotResults_loadCurrent(self, words, fullResults):
@@ -361,7 +361,7 @@ Commands" and "Edit Global Commands" are activated.
     # "Discard Old [Voice] Commands" -- purge output then translate all files
     def gotResults_discardOld(self, words, fullResults):
         self.purgeOutput()
-        self.loadAllFiles('-f')
+        self.loadAllFiles(['-f'])
 
     # Unload all commands, including those of files no longer existing
     def purgeOutput(self):
@@ -371,8 +371,8 @@ Commands" and "Edit Global Commands" are activated.
     # Load all command files
     def loadAllFiles(self, options):
         if self.commandFolder:
-            suffix = "-suffix _vcl " 
-            self.runVocolaTranslator(self.commandFolder, suffix + options)
+            options = ["-suffix", "_vcl" ] + options
+            self.runVocolaTranslator(self.commandFolder, options)
 
     # Load command files for specific application
     def loadSpecificFiles(self, module):
@@ -386,9 +386,10 @@ Commands" and "Edit Global Commands" are activated.
         if self.commandFolder:
             targets += [os.path.join(self.commandFolder,f)
                         for f in os.listdir(self.commandFolder) if p.search(f)]
-        suffix = "-suffix _vcl" 
+        options = ["-suffix", "_vcl" ]
         if len(targets) > 0:
-            self.loadFile(targets[0], suffix)
+            for target in targets:
+                self.loadFile(target, options)
         else:
             print >> sys.stderr
             if module == "":
@@ -400,7 +401,7 @@ Commands" and "Edit Global Commands" are activated.
     def loadFile(self, file, options):
         try:
             os.stat(file)
-            self.runVocolaTranslator(file, options + ' -f')
+            self.runVocolaTranslator(file, options + ['-f'])
             return 1
         except OSError:
             return 0   # file not found
@@ -637,7 +638,7 @@ def vocolaBeginCallback(moduleInfo):
     current = getLastVocolaFileModTime()
     if current > lastVocolaFileTime:
         thisGrammar.compilerError = 0	   
-        thisGrammar.loadAllFiles('')
+        thisGrammar.loadAllFiles([])
         if not thisGrammar.compilerError:
             lastVocolaFileTime =  current
 
