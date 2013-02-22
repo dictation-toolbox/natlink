@@ -63,12 +63,15 @@ from   natlinkutils import *
 usePerl = 0
 
 
-import natlinkstatus
-import natlinkcorefunctions
-import shutil
-status        = natlinkstatus.NatlinkStatus()
-VocolaEnabled = not not status.getVocolaUserDirectory()
-language      = status.getLanguage()
+try:
+    import natlinkstatus
+    # Quintijn's's installer
+    status        = natlinkstatus.NatlinkStatus()
+    VocolaEnabled = not not status.getVocolaUserDirectory()
+    language      = status.getLanguage()
+except ImportError:
+    VocolaEnabled = True
+    language      = 'enx'
 
 
 # get location of MacroSystem folder:
@@ -464,6 +467,7 @@ Commands" and "Edit Global Commands" are activated.
         output.close()                
 
     def updateUnimacroHeaderIfNeeded(self):
+        import shutil
         if not status.getVocolaTakesUnimacroActions(): 
             return
         
