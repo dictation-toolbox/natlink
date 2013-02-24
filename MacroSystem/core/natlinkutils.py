@@ -577,18 +577,22 @@ class GrammarBase(GramClassBase):
         so the result of the adjacent rules are known
         """
         ruleName, ruleWords = None, None
+        lenSeqsAndRules = len(seqsAndRules)
         for i, x in enumerate(seqsAndRules):
             if i == 0:
-                ruleName, self.nextRule = None, x[1]
-                ruleWords, self.nextWords = [], x[0]
+                self.prevRule, self.prevWords = None, []
             else:
-                self.prevRule, ruleName, self.nextRule = ruleName, self.nextRule, x[1]
-                self.prevWords, ruleWords, self.nextWords = ruleWords, self.nextWords, x[0]
-                self.callIfExists( 'gotResults_'+ruleName, (ruleWords, fullResults) )
-
-        self.prevRule, ruleName, self.nextRule = ruleName, self.nextRule, None
-        self.prevWords, ruleWords, self.nextWords = ruleWords, self.nextWords, []
-        self.callIfExists( 'gotResults_'+ruleName, (ruleWords, fullResults) )
+                Prev = copy.copy(seqsAndRules[i-1])
+                self.prevRule, self.prevWords = Prev[1], Prev[0]
+            
+            if i == lenSeqsAndRules - 1:
+                self.nextRule, self.nextWords = None, []
+            else:                
+                Next = copy.copy(seqsAndRules[i+1])
+                self.nextRule, self.nextWords = Next[1], Next[0]
+            
+            ruleName, ruleWords = x[1], copy.copy(x[0])    
+            self.callIfExists( 'gotResults_'+ruleName, (ruleWords, fullResults) )
 
 
 #---------------------------------------------------------------------------

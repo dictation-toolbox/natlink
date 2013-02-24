@@ -217,12 +217,12 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         dottedVersion = version[0] + "." + version[1]
         pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
         # key MUST already exist (ensure by passing flags=...:
-        try:
-            lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
-        except:
-            fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
-                             (pythonPathSectionName, version))
-            return None, None
+        #try:
+        lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
+        #except:
+        #    fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
+        #                     (pythonPathSectionName, version))
+        #    return None, None
         if 'NatLink' in lmPythonPathDict.keys():
             subDict = lmPythonPathDict['NatLink']
             if isinstance(subDict, RegistryDict.RegistryDict):

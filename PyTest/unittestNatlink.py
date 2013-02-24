@@ -186,7 +186,7 @@ class UnittestNatlink(unittest.TestCase):
     def setUp(self):
         self.clearTestFiles()
         if not natlink.isNatSpeakRunning():
-            raise TestError,'NatSpeak is not currently running'
+            raise TestError('NatSpeak is not currently running')
         self.connect()
         # remember user and get DragonPad in front:
         self.user = natlink.getCurrentUser()[0]
@@ -2721,7 +2721,7 @@ class UnittestNatlink(unittest.TestCase):
                 self.allPrevRules.append(self.prevRule)
                 self.allNextWords.append(self.nextWords)
                 self.allPrevWords.append(self.prevWords)
-                    
+       
             def gotResults_optional(self,words,fullResults):
                 self.results.extend(words)
                 self.allNextRules.append(self.nextRule)
@@ -2741,8 +2741,9 @@ class UnittestNatlink(unittest.TestCase):
         testGram = TestGrammar()
         testGram.initialize()
         testGram.testNum = 1
-        natlink.recognitionMimic(['test', 'very', 'blue', 'chair'])
+        natlink.recognitionMimic(['test', 'very', 'big', 'blue', 'chair'])
         testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
+      
         testEqualLists(['optional', 'run', 'extra', None], testGram.allNextRules, "first experiment, next rules")
         testEqualLists([[], ['test'], ['very', 'big'], ['blue']], testGram.allPrevWords, "first experiment, prev words")
         testEqualLists([['very', 'big'], ['blue'], ['chair'], []], testGram.allNextWords, "first experiment, next words")
@@ -2802,6 +2803,126 @@ class UnittestNatlink(unittest.TestCase):
 
         testGram.unload()
 
+    ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
+    ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
+
+    def testNextPrevRulesAndWordsRecursive(self):
+        self.log("testNextPrevRulesAndWordsRecursive", 1)
+        testForException = self.doTestForException
+        testwordsByRule = self.doTestEqualDicts
+        class TestGrammar(GrammarBase):
+
+            gramSpec = """
+                <run> exported = recursive {colors} [<recursive>] <extra>;
+                <recursive> = continue;
+                <extra> = extra;
+            """
+
+            def resetExperiment(self):
+                self.results = []
+                self.allNextRules = []
+                self.allPrevRules = []
+                self.allNextWords = []
+                self.allPrevWords = []
+                self.cbdList = []  # record also the callbackDepths
+
+            def checkExperiment(self,expected):
+                if self.results != expected:
+                    raise TestError, "Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) )
+                self.resetExperiment()
+        
+            def initialize(self):
+                self.load(self.gramSpec)
+                self.activateAll()
+                self.resetExperiment()
+                self.setList('colors', ['red', 'green', 'blue'])
+                self.testNum = 0
+                
+            def gotResults_run(self,words,fullResults):
+                self.results.extend(words)
+                cbd = natlink.getCallbackDepth()
+                self.cbdList.append('%s: %s'% ('run', cbd))
+                if cbd == 1:
+                    self.allNextRules.append(self.nextRule)
+                    self.allPrevRules.append(self.prevRule)
+                    self.allNextWords.append(self.nextWords)
+                    self.allPrevWords.append(self.prevWords)
+            
+            def gotResults_extra(self,words,fullResults):
+                self.results.extend(words)
+                cbd = natlink.getCallbackDepth()
+                self.cbdList.append('%s: %s'% ('extra', cbd))
+                if cbd == 1:
+                    self.allNextRules.append(self.nextRule)
+                    self.allPrevRules.append(self.prevRule)
+                    self.allNextWords.append(self.nextWords)
+                    self.allPrevWords.append(self.prevWords)
+                    
+            def gotResults_recursive(self,words,fullResults):
+                self.results.extend(words)
+                cbd = natlink.getCallbackDepth()
+                self.cbdList.append('%s: %s'% ('recursive', cbd))
+                if cbd == 1:
+                    self.allNextRules.append(self.nextRule)
+                    self.allPrevRules.append(self.prevRule)
+                    self.allNextWords.append(self.nextWords)
+                    self.allPrevWords.append(self.prevWords)
+                    natlink.recognitionMimic('recursive', 'green', 'extra')
+
+        testEqualLists = self.doTestEqualLists
+        testGram = TestGrammar()
+        testGram.initialize()
+        testGram.testNum = 1
+        natlink.recognitionMimic(['recursive', 'green', 'extra'])
+        testEqualLists([None, 'run'], testGram.allPrevRules, "first experiment, prev rules, not yet recursive")
+        testEqualLists(['extra', None], testGram.allNextRules, "first experiment, next rules, not yet recursive")
+        testEqualLists([[], ['recursive', 'green']], testGram.allPrevWords, "first experiment, prev words, not yet recursive")
+        testEqualLists([['extra'], []], testGram.allNextWords, "first experiment, next words, not yet recursive")
+        testEqualLists(['run: 1', 'extra: 1'], testGram.cbdList, "first experiment, callback depth, not yet recursive")
+        
+        # test fullResults and seqsAndRules:
+        testEqualLists([('recursive', 'run'), ('green', 'run'), ('extra', 'extra')],
+                        testGram.fullResults, "first experiment, fullResults")
+        testEqualLists( [(['recursive', 'green'], 'run'), (['extra'], 'extra')],
+                        testGram.seqsAndRules, "first experiment, seqsAndRules")
+        # check total and reset:
+        
+        # check dict wordsByRule (new jan 2012)
+        expDict =  {'run': ['recursive', 'green'], 'extra': ['extra']}
+
+        testwordsByRule(expDict, testGram.wordsByRule, 'RulesByName not as expected, recursive')
+        testGram.checkExperiment(['recursive', 'green', 'extra'])   ## all words recognised
+
+
+        # now also call the recursive rule:
+        natlink.recognitionMimic(['recursive', 'red', 'continue', 'extra'])
+        testEqualLists(['run: 1', 'recursive: 1', 'run: 2', 'extra: 2', 'extra: 1'],
+                        testGram.cbdList, "second experiment, callback depth, recursive")
+        
+        ### the following four are only take for callbackDepth == 1
+        testEqualLists([None, 'run', 'recursive'], testGram.allPrevRules, "second experiment, prev rules, recursive")
+        testEqualLists(['recursive', 'extra', None],
+                      testGram.allNextRules, "second experiment, next rules, recursive")
+        testEqualLists([[], ['recursive', 'red'], ['continue']],
+            testGram.allPrevWords, "second experiment, prev words, recursive")
+        testEqualLists([['continue'], ['extra'], []],
+            testGram.allNextWords, "second experiment, next words, recursive")
+        # test fullResults and seqsAndRules:
+        testEqualLists([('recursive', 'run'), ('green', 'run'), ('extra', 'extra')],
+                         testGram.fullResults, "first experiment, fullResults")
+        testEqualLists([(['recursive', 'green'], 'run'), (['extra'], 'extra')],
+                         testGram.seqsAndRules, "first experiment, seqsAndRules")
+
+        # check dict wordsByRule (new jan 2012)
+        expDict = {'run': ['recursive', 'green'], 'extra': ['extra']}
+        testwordsByRule(expDict, testGram.wordsByRule, 'RulesByName not as expected, recursive')
+
+        # check total and reset:
+        # here both recognitions are recorded (first and second recursive recognitionMimic):
+        testGram.checkExperiment(['recursive', 'red', 'continue', 'recursive', 'green', 'extra', 'extra'])
+
+        testGram.unload()
+
     ##def toggleMicrophone(wait=0):
     ##    natlink.setMicState('on')
     ##    natlink.setMicState('off')
@@ -2851,7 +2972,7 @@ class UnittestNatlink(unittest.TestCase):
 
             def checkExperiment(self,expected):
                 if self.results != expected:
-                    raise TestError, "Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) )
+                    raise TestError("Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) ))
                 self.resetExperiment()
         
             def initialize(self):
@@ -2982,20 +3103,20 @@ class CallbackTester:
     # values
     def doTestTextChange(self,moduleInfo,textChange):
         if self.sawBegin != moduleInfo:
-            raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
+            raise TestError("Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo)))
         if self.sawTextChange != textChange:
-            raise TestError,"Wrong results from change callback\n  saw: %s\n  expecting: %s"%(repr(self.sawTextChange),repr(textChange))
+            raise TestError("Wrong results from change callback\n  saw: %s\n  expecting: %s"%(repr(self.sawTextChange),repr(textChange)))
         self.reset()
     
     # Tests the contents of the object.  For this test we assume that we saw
     # both a begin callback and a results callback with the indicated values
     def doTestResults(self,moduleInfo,results):
         if self.sawBegin != moduleInfo:
-            raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
+            raise TestError("Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo)))
         if self.sawResults == None and results != None:
-            raise TestError,"Did not see results callback"
+            raise TestError("Did not see results callback")
         if self.sawResults != None and self.sawResults[0] != results:
-            raise TestError,"Wrong results from results callback\n  saw: %s\n  expecting: %s "%(repr(self.sawResults[0]),repr(results))
+            raise TestError("Wrong results from results callback\n  saw: %s\n  expecting: %s "%(repr(self.sawResults[0]),repr(results)))
         self.reset()
 
 class RecordCommandOrDictation(GrammarBase):
