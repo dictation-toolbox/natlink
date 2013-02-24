@@ -334,7 +334,8 @@ def safelyCall(modName,funcName):
 
 def findAndLoadFiles(curModule=None):
     global loadedFiles, vocolaIsLoaded, vocolaModule, vocolaEnabled
-
+    if curModule == 'calc':
+        pass
     moduleHasDot = None
     if curModule:
         # special case, encountered with Vocola modules with . in name:
