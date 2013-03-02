@@ -570,7 +570,8 @@ def purgeOutput():
 def hidden_call(executable, arguments):
     args = [executable] + arguments
     try:
-        import simpscrp
+        # Using simpscrp is depreciated; remove '_disabled' below to use:
+        import simpscrp_disabled
         args = ['"' + str(x) + '"' for x in args]
         call = ' '.join(args)
         print "simpscrp: " + call
@@ -581,10 +582,10 @@ def hidden_call(executable, arguments):
             si             = subprocess.STARTUPINFO()
             si.dwFlags     = subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
-            print "subprocess: " + repr(args)
+            #print "subprocess: " + repr(args)
             return subprocess.call(args, startupinfo=si)
         except ImportError:
-            print "spawnv: " + repr(args)
+            #print "spawnv: " + repr(args)
             pid = os.spawnv(os.P_NOWAIT, executable, args)
             pid, exit_code = os.waitpid(pid, 0)
             exit_code = exit_code >> 8
