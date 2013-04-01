@@ -3,7 +3,7 @@
 ###                      present vocola_ext_*.py files.
 ###
 ###
-### Copyright (c) 2011 by Rick Mohr.
+### Copyright (c) 2011 by Hewlett-Packard Development Company, L.P.
 ### 
 ### Permission is hereby granted, free of charge, to any person
 ### obtaining a copy of this software and associated documentation

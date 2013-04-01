@@ -1,0 +1,23 @@
+New in 2.8:
+
+* The Vocola 2 compiler has been ported from Perl to Python, mostly line
+  by line except for the parser.
+
+! The parser has been replaced with a new one that produces better error
+  messages, describing what was found versus what was expected and
+  visually pointing to the error.
+
+* Non-backward compatible parsing changes: 
+  * unquoted words may no longer end with ':' if they are not followed
+    by whitespace.
+  * whitespace may no longer be omitted between variables (e.g.,
+    <list><list>); the fact that this ever worked was a bug.
+
+* Some new command line arguments are available for the compiler; see
+  the comments at the start of vcl2py.py for details.
+
+* Fixed a bug whereby "load [global] commands" loaded only the first
+  relevant command file.
+
+* Versions of Python earlier than 2.5 are no longer supported.
+

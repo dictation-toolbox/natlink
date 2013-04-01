@@ -527,6 +527,7 @@ def compile_Vocola(inputFileOrFolder, force):
 
     may_have_compiled = True
 
+    # below line currently needed because kludge changes the the folder:
     VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
     if usePerl:
         executable = "perl"
@@ -534,6 +535,8 @@ def compile_Vocola(inputFileOrFolder, force):
     else:
         executable = VocolaFolder + r'\exec\vcl2py.exe'
         arguments  = []
+    executable = sys.prefix + r'\python.exe'
+    arguments  = [VocolaFolder + r'\exec\vcl2py.py']
 
     arguments += ['-extensions', ExtensionsFolder + r'\extensions.csv']
     if language == "enx":
@@ -574,7 +577,6 @@ def hidden_call(executable, arguments):
         import simpscrp_disabled
         args = ['"' + str(x) + '"' for x in args]
         call = ' '.join(args)
-        print "simpscrp: " + call
         simpscrp.Exec(call, 1)
     except ImportError:
         try:
@@ -582,10 +584,8 @@ def hidden_call(executable, arguments):
             si             = subprocess.STARTUPINFO()
             si.dwFlags     = subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
-            #print "subprocess: " + repr(args)
             return subprocess.call(args, startupinfo=si)
         except ImportError:
-            #print "spawnv: " + repr(args)
             pid = os.spawnv(os.P_NOWAIT, executable, args)
             pid, exit_code = os.waitpid(pid, 0)
             exit_code = exit_code >> 8
@@ -766,7 +766,7 @@ purgeOutput()
 if not VocolaEnabled:
     print "Vocola not active"
 else:
-    print "Vocola version 2.7.3+I starting..."
+    print "Vocola version 2.8I starting..."
     thisGrammar = ThisGrammar()
     thisGrammar.initialize()
 
