@@ -679,7 +679,7 @@ def point_to_position(position):
     line   = make_visible(line)
     before = make_visible(before)
 
-    limit = 70
+    limit = 65
     post  = 15
     if len(line) > limit:
         fringe = "..."
