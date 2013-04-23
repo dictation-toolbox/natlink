@@ -342,6 +342,10 @@ class UnittestNsformat(unittest.TestCase):
             state=testSubroutine(state,
                 r'hello \space-bar\space-bar',
                 'hello ')
+            state = -1
+            state=testSubroutine(state,
+                r'space hello space',
+                ' hello ')
         
 
 

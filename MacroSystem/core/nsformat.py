@@ -130,7 +130,8 @@ def formatWords(wordList,state=None):
     output = ''
     emptySet = set( () )
     for entry in wordList:
-
+        if DNSVersion >= 11 and entry == 'space':
+            entry = r'\space-bar\space-bar'
         if type(entry)==type(()):
             assert( len(entry)==2 )
             wordName = entry[0]
