@@ -2333,6 +2333,7 @@ def emit_menu_actions(buffer, functional, menu, indent):
         if_keyword = "if"
         for command in commands: 
             text = command["TERMS"][0]["TEXT"]
+            text = text.replace("\\", "\\\\")
             text = text.replace("'", "\\'")
             emit(indent, if_keyword + " word == '" + text + "':\n")
             if command.has_key("ACTIONS"): 
