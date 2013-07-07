@@ -2646,7 +2646,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def testTrayIcon(self):
+    def tttestTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -2684,7 +2684,7 @@ class UnittestNatlink(unittest.TestCase):
     # QH, april 2010:
     # Added test for self.rulesByName dict...
 
-    def tttestNextPrevRulesAndWords(self):
+    def testNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -2807,7 +2807,7 @@ class UnittestNatlink(unittest.TestCase):
     ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
     ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
 
-    def testNextPrevRulesAndWordsRecursive(self):
+    def tttestNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
