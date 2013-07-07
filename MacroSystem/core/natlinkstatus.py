@@ -1,4 +1,4 @@
-__version__ = "4.1beta"
+__version__ = "4.1charlie"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,10 @@ __version__ = "4.1beta"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# version 4.1charlie some experimental pyd's for dragon 12, python2.6 and python 2.7
+#                    new vocola compiler all python
+#                    several bugfixes in setting correct python version and pyd
+#                    got rid of .bat files in config directory
 # version 4.1beta: with first version of natlink26_12.pyd for Dragon 12 (thanks to Rudiger)
 #                  drastic changes in old registry settings, removing the PythonPath variable
 #                  also change key for previous installed pyd from NatlinkDllRegistered=25 to NatlinkPydRegistered=25;11
