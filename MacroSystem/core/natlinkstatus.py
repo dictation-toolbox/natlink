@@ -322,13 +322,15 @@ Please try to correct this by running the NatLink Config Program (with administr
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
         wantedPydPath = os.path.join(coreDir, wantedPyd)
         currentPydPath = os.path.join(coreDir, 'natlink.pyd')
+        if not os.path.isfile(currentPydPath):
+            print '%s does not exist, (re)run the configuration program of NatLink'% currentPydPath
+            return
         if wantedPyd != originalPyd:
             if not originalPyd:
                 print 'originalPyd setting is missing in natlinkstatus.ini'
             else:
                 print 'incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd)
             return
-            
         # now check for updates:
         originalPydPath = os.path.join(coreDir, originalPyd)
         timeOriginalPyd = getFileDate(originalPydPath)

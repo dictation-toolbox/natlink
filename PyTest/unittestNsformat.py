@@ -345,7 +345,7 @@ class UnittestNsformat(unittest.TestCase):
             state = -1
             state=testSubroutine(state,
                 r'space hello space',
-                ' hello ')
+                '  hello ')
         
 
 
