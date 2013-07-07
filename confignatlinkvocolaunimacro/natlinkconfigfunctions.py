@@ -156,11 +156,17 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
-
-        originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
+        currentPydPath = os.path.join(coreDir, 'natlink.pyd')
+        
+        if not os.path.isfile(currentPydPath):
+            key = 'NatlinkPydRegistered'
+            print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
+            self.userregnl.delete(key)
+            originalPyd = None
+        else:
+            originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
         wantedPydPath = os.path.join(coreDir, wantedPyd)
-        currentPydPath = os.path.join(coreDir, 'natlink.pyd')
                       
         if originalPyd:    
             if originalPyd != wantedPyd:

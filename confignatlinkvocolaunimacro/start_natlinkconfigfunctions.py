@@ -8,6 +8,6 @@ if wversion[3] == 2 and wversion[0] >= 6:
     openpar = "runas"
 else:
     openpar = "open"
-path = os.path.join(os.path.dirname(__file__), "start_natlinkconfigfunctions.bat")
-print 'run with "%s": %s'% (openpar, path)
-ShellExecute(0, openpar, path, None, "", 1)
+configFunctionsPath = os.path.join(os.path.dirname(__file__), "natlinkconfigfunctions.py")
+print 'run with "%s": %s'% (openpar, configFunctionsPath)
+ShellExecute(0, openpar, "python.exe", configFunctionsPath, "", 1)
