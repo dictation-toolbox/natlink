@@ -8,6 +8,12 @@ if wversion[3] == 2 and wversion[0] >= 6:
     openpar = "runas"
 else:
     openpar = "open"
+    
+pathToPythonW = os.path.join(sys.prefix, "pythonw.exe")
+if not os.path.isfile(pathToPythonW):
+    raise IOError("cannot find the pythonw executable")
+
+    
 configPath = os.path.join(os.path.dirname(__file__), "configurenatlink.pyw")
 #print 'run with "%s": %s'% (openpar, configPath)
-ShellExecute(0, openpar, "pythonw.exe", configPath, "", 1)
+ShellExecute(0, openpar, pathToPythonW, configPath, "", 1)
