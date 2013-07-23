@@ -166,7 +166,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         else:
             originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
-        wantedPydPath = os.path.join(coreDir, wantedPyd)
+        wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
                       
         if originalPyd:    
             if originalPyd != wantedPyd:
@@ -189,8 +189,6 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             print 'new install, copy original pyd to current\n%s\n%s.'% (wantedPydPath, currentPydPath)
             self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
             self.registerNatlinkPyd()
-
-
 
     def copyNatlinkPydPythonVersion(self, wantedPydFile, currentPydFile):
         """copy the natlink.dll from the correct version"""
