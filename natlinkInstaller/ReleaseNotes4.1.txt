@@ -1,3 +1,7 @@
+Release 4.1charlie:
+- natlink.pyd now for python 2.7, experimental version, which seems to be stable
+- Vocola now runs 2.8I, which is implemented all in python
+
 Release 4.1beta:
 
 --- adaptations for Dragon 12. Numerous.
