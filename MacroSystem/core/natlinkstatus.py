@@ -115,7 +115,6 @@ getDebugCallback:
 getDebugOutput:
     get value from registry, output in log file of DNS, should be kept at 0
     
-
 getVocolaTakesLanguages: additional settings for Vocola
 """
 
@@ -319,16 +318,29 @@ Please try to correct this by running the NatLink Config Program (with administr
         if NatlinkPydRegistered is absent or not correct, or
         if the original natlink26_12.pyd (for example) is newer than natlink.pyd
         
+        # july 2013:
+        now conform to the new naming conventions of Rudiger, PYD subdirectory and natlink_2.7_UNICODE.pyd etc.
+        the natlink25.pyd has been moved to the PYD directory too and also is named according to the new conventions.
+        
         the config program should be run.
         """
         coreDir = natlinkcorefunctions.getBaseFolder()
         originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
-        wantedPydPath = os.path.join(coreDir, wantedPyd)
+        wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
         currentPydPath = os.path.join(coreDir, 'natlink.pyd')
+        
+        if not os.path.isfile(wantedPydPath):
+            print 'The wanted pyd does not exist, Dragon/python combination not valid: %s'% wantedPydPath
+            return
+        
+        # first check existence of natlink.pyd (probably never comes here)
         if not os.path.isfile(currentPydPath):
+
             print '%s does not exist, (re)run the configuration program of NatLink'% currentPydPath
             return
+        
+        # check correct pyd version, with python version and Dragon version:
         if wantedPyd != originalPyd:
             if not originalPyd:
                 print 'originalPyd setting is missing in natlinkstatus.ini'
@@ -336,12 +348,13 @@ Please try to correct this by running the NatLink Config Program (with administr
                 print 'incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd)
             return
         # now check for updates:
-        originalPydPath = os.path.join(coreDir, originalPyd)
-        timeOriginalPyd = getFileDate(originalPydPath)
+        timeWantedPyd = getFileDate(wantedPydPath)
         timeCurrentPyd = getFileDate(currentPydPath)
-        if timeCurrentPyd or timeOriginalPyd:
-            if timeOriginalPyd > timeCurrentPyd:
-                print 'Current pyd file (%s) out of date, compared with %s'% (currentPydPath, originalPydPath)
+        
+        # check for newer (changed version) of original pyd:
+        if timeCurrentPyd or timeWantedPyd:
+            if timeWantedPyd > timeCurrentPyd:
+                print 'Current pyd file (%s) out of date, compared with %s'% (currentPydPath, wantedPydPath)
                 return
         
         # all well
@@ -449,16 +462,18 @@ Please try to correct this by running the NatLink Config Program (with administr
             return ""
         if ";" in setting:
             pyth, drag = setting.split(";")
+            pythonInFileName = pyth[0] + '.' + pyth[-1]
             pyth, drag = int(pyth), int(drag)
         else:
-            pyth, drag = int(setting), 11
+            pythonInFileName = setting[0] + '.' + setting[-1]
+            pyth, drag = int(setting), 11  # which can also mean pre 11...
             
-
         if drag <= 11:
-            pydFilename = 'natlink%s.pyd'% pyth
+            ansiUnicode = 'ANSI'
         else:
-            # from Dragon 12:
-            pydFilename = 'natlink%s_12.pyd'% pyth
+            ansiUnicode = 'UNICODE'
+
+        pydFilename = 'natlink_%s_%s.pyd'% (pythonInFileName, ansiUnicode)
         return pydFilename    
 
     def getWantedNatlinkPydFile(self):
@@ -470,10 +485,14 @@ Please try to correct this by running the NatLink Config Program (with administr
         """
         pyth = self.getPythonVersion()
         drag = self.getDNSVersion()
+        pythonInFileName = pyth[0] + '.' + pyth[-1]
+
         if drag <= 11:
-            pydFilename = 'natlink%s.pyd'% pyth
+            ansiUnicode = 'ANSI'
         else:
-            pydFilename = 'natlink%s_12.pyd'% pyth
+            ansiUnicode = 'UNICODE'
+
+        pydFilename = 'natlink_%s_%s.pyd'% (pythonInFileName, ansiUnicode)
         return pydFilename    
         
     def getWindowsVersion(self):
