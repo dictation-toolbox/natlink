@@ -311,8 +311,10 @@ Please try to correct this by running the NatLink Config Program (with administr
         return 1 
          
                 
-    def checkNatlinkPydFile(self):
+    def checkNatlinkPydFile(self, fromConfig=None):
         """see if natlink.dll is in core directory, and uptodate, if not stop and point to the configurenatlink program
+        
+        if fromConfig, print less messages...
         
         if natlink.pyd is missing, or
         if NatlinkPydRegistered is absent or not correct, or
@@ -331,21 +333,23 @@ Please try to correct this by running the NatLink Config Program (with administr
         currentPydPath = os.path.join(coreDir, 'natlink.pyd')
         
         if not os.path.isfile(wantedPydPath):
-            print 'The wanted pyd does not exist, Dragon/python combination not valid: %s'% wantedPydPath
+            if not fromConfig:
+                print 'The wanted pyd does not exist, Dragon/python combination not valid: %s'% wantedPydPath
             return
         
         # first check existence of natlink.pyd (probably never comes here)
         if not os.path.isfile(currentPydPath):
-
-            print '%s does not exist, (re)run the configuration program of NatLink'% currentPydPath
+            if not fromConfig:
+                print '%s does not exist, (re)run the configuration program of NatLink'% currentPydPath
             return
         
         # check correct pyd version, with python version and Dragon version:
         if wantedPyd != originalPyd:
-            if not originalPyd:
-                print 'originalPyd setting is missing in natlinkstatus.ini'
-            else:
-                print 'incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd)
+            if not fromConfig:
+                if not originalPyd:
+                    print 'originalPyd setting is missing in natlinkstatus.ini'
+                else:
+                    print 'incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd)
             return
         # now check for updates:
         timeWantedPyd = getFileDate(wantedPydPath)
@@ -354,7 +358,8 @@ Please try to correct this by running the NatLink Config Program (with administr
         # check for newer (changed version) of original pyd:
         if timeCurrentPyd or timeWantedPyd:
             if timeWantedPyd > timeCurrentPyd:
-                print 'Current pyd file (%s) out of date, compared with %s'% (currentPydPath, wantedPydPath)
+                if not fromConfig:
+                    print 'Current pyd file (%s) out of date, compared with %s'% (currentPydPath, wantedPydPath)
                 return
         
         # all well

@@ -96,13 +96,15 @@ def getCoreDir(thisDir):
         print 'natlinkstatus.py not found in core directory: %s'% coreFolder
         return thisDir
     return coreFolder
+hadFatalErrors = []
 def fatal_error(message, new_raise=None):
     """prints a fatal error when running this module"""
     print 'natlinkconfigfunctions fails because of fatal error:'
     print message
     print
     print 'Try to close Dragon and then rerun this program. Otherwise try to reinstall NatLink'
-    print 
+    print
+    hadFatalErrors.append(message)
     if new_raise:
         raise new_raise
 #-----------------------------------------------------
@@ -162,33 +164,26 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             key = 'NatlinkPydRegistered'
             print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
             self.userregnl.delete(key)
-            originalPyd = None
+            natlinkDllWasAlreadyThere = 0
         else:
-            originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
+            natlinkDllWasAlreadyThere = 1
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
+        if self.checkNatlinkPydFile(fromConfig=1) == 1:  # check the need for replacing natlink.pyd without messages...
+            return 1 # all is well
+
+        # for message:
+        #fatal_error("The current file natlink.pyd is not available, the correct version or outdated, try to replace it by the proper (newer) version...")
+        ## now go on with trying to replace natlink.pyd with the correct version and register it...
         wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
-                      
-        if originalPyd:    
-            if originalPyd != wantedPyd:
-                print 'changed python version or changed Dragon version, now want %s as original for "natlink.pyd"'% wantedPyd
-                self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
-                self.registerNatlinkPyd()
-                return
-            
-            # now check for updates:
-            originalPydPath = os.path.join(coreDir, originalPyd)
-            timeOriginalPyd = natlinkstatus.getFileDate(originalPydPath)
-            timeCurrentPyd = natlinkstatus.getFileDate(currentPydPath)
-            if timeCurrentPyd or timeOriginalPyd:
-                if timeOriginalPyd > timeCurrentPyd:
-                    print 'need to update original pyd to current\n%s\n%s.'% (originalPydPath, currentPydPath)
-                    self.copyNatlinkPydPythonVersion(originalPydPath, currentPydPath)
-                    self.registerNatlinkPyd()
-        else:
-            # must be registered new:
-            print 'new install, copy original pyd to current\n%s\n%s.'% (wantedPydPath, currentPydPath)
+        if natlinkDllWasAlreadyThere:
             self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
             self.registerNatlinkPyd()
+        else:
+            self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
+            self.registerNatlinkPyd(silent=1)
+            
+
+
 
     def copyNatlinkPydPythonVersion(self, wantedPydFile, currentPydFile):
         """copy the natlink.dll from the correct version"""
@@ -1116,6 +1111,15 @@ class CLI(cmd.Cmd):
             if key in self.config.userregnl.keys():
                 self.config.userregnl.delete(key)
         print "Type 'u' for a usage message"
+
+    def getFatalErrors(self):
+        """get the fatal errors from this module and clear them automatically
+        """
+        global hadFatalErrors
+        if hadFatalErrors:
+            text = '\n'.join(hadFatalErrors)
+            hadFatalErrors = []
+            return text
 
     def usage(self):
         """gives the usage of the command line options or options when

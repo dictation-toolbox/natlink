@@ -369,6 +369,9 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.urgentMessage = "REREGISTER natlink.pyd and Close (restart) or Close right away to cancel"
             self.cli.checkedConfig = None
         self.setInfo()
+        if self.cli.getFatalErrors():
+            self.urgentMessage = "See the log panel for urgent startup information!!"
+        
 
     def warning(self, text, title='Message from Configure NatLink GUI'):
         if isinstance(text, basestring):
@@ -765,9 +768,6 @@ class ConfigureNatlinkPanel(wx.Panel):
         else:
             print 'nothing chosen'
             
-
-        
-
     def OnButtonUnimacroEditor(self, event):
         D = self.config.getNatlinkStatusDict()
         
