@@ -582,8 +582,13 @@ def hidden_call(executable, arguments):
         try:
             import subprocess
             si             = subprocess.STARTUPINFO()
-            si.dwFlags     = subprocess.STARTF_USESHOWWINDOW
-            si.wShowWindow = subprocess.SW_HIDE
+            try:
+                si.dwFlags     = subprocess.STARTF_USESHOWWINDOW
+                si.wShowWindow = subprocess.SW_HIDE
+            except AttributeError:
+                si.dwFlags     = subprocess._subprocess.STARTF_USESHOWWINDOW
+                si.wShowWindow = subprocess._subprocess.SW_HIDE
+                
             return subprocess.call(args, startupinfo=si)
         except ImportError:
             pid = os.spawnv(os.P_NOWAIT, executable, args)
