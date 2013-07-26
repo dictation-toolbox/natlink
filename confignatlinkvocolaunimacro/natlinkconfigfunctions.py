@@ -98,13 +98,20 @@ def getCoreDir(thisDir):
     return coreFolder
 hadFatalErrors = []
 def fatal_error(message, new_raise=None):
-    """prints a fatal error when running this module"""
-    print 'natlinkconfigfunctions fails because of fatal error:'
-    print message
-    print
-    print 'Try to close Dragon and then rerun this program. Otherwise try to reinstall NatLink'
-    print
-    hadFatalErrors.append(message)
+    """prints a fatal error when running this module
+    
+    print only the first!
+    """
+    if not hadFatalErrors:
+        print '\nnatlinkconfigfunctions failed because of fatal error:'
+        print
+        print message
+        print
+        print 'Try to close Dragon and then rerun this program (in elevated mode).'
+        print 'If this does not work, try to reinstall NatLink.'
+        print
+    if message not in hadFatalErrors:
+        hadFatalErrors.append(message)
     if new_raise:
         raise new_raise
 #-----------------------------------------------------
@@ -141,6 +148,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     """
     def __init__(self):
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
+        self.changesInInitPhase = 0
     
     
     def checkCoreDirectory(self):
@@ -154,6 +162,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     def configCheckNatlinkPydFile(self):
         """see if natlink.dll is in core directory, if not copy from correct version
         """
+        self.checkedUrgent = 1
         coreDir2 = self.getCoreDirectory()
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
@@ -169,6 +178,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             natlinkDllWasAlreadyThere = 1
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
         if self.checkNatlinkPydFile(fromConfig=1) == 1:  # check the need for replacing natlink.pyd without messages...
+            self.checkedUrgent = None
             return 1 # all is well
 
         # for message:
@@ -176,12 +186,14 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         ## now go on with trying to replace natlink.pyd with the correct version and register it...
         wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
         if natlinkDllWasAlreadyThere:
-            self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
+            self.changesInInitPhase = 1
+            result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
             self.registerNatlinkPyd()
         else:
-            self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
+            result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
             self.registerNatlinkPyd(silent=1)
-            
+        
+        return result  # None if something went wrong 1 if all OK      
 
 
 
@@ -192,17 +204,20 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             try:
                 os.remove(currentPydFile)
             except WindowsError:
-                fatal_error('cannot remove currentPydFile "%s", probably you must exit Dragon first'% currentPydFile)
+                fatal_error('cannot remove currentPydFile "%s",\nProbably you must exit Dragon first'% currentPydFile)
+                return
             
         if os.path.isfile(wantedPydFile):
             try:
                 shutil.copyfile(wantedPydFile, currentPydFile)
-                print 'copied dll/pyd file %s to %s'% (wantedPydFile, currentPydFile)
+                print 'copied pyd (=dll) file %s to %s'% (wantedPydFile, currentPydFile)
             except:
-                fatal_error("could not copy %s to %s"% (wantedPydFile, currentPydFile))
+                fatal_error("Could not copy %s to %s\nProbably you need to exit Dragon first."% (wantedPydFile, currentPydFile))
+                return
         else:
             fatal_error("wantedPydFile %s is missing! Cannot copy to natlink.dll/natlink.pyd"% wantedPydFile)
-            
+            return            
+        return 1
         
     def getHKLMPythonPathDict(self, flags=win32con.KEY_ALL_ACCESS, recursive=False):
         """returns the dict that contains the PythonPath section of HKLM
@@ -750,7 +765,7 @@ Possibly you need administrator rights to do this
             try:
                 result = win32api.WinExec('regsvr32 /s "%s"'% PydPath)
                 if result:
-                    print 'failed to register %s (result: %s)'% (PydPath, result)
+                    fatal_error('failed to register %s (result: %s)\nPossibly exit Dragon and run this program in Elevated (admin) mode'% (PydPath, result))
                     self.config.set('NatlinkPydRegistered', 0)
                     return
                 else:
@@ -1102,7 +1117,11 @@ class CLI(cmd.Cmd):
             self.config = NatlinkConfig()
         self.config.checkCoreDirectory()
         self.config.correctIniSettings()
-        self.config.configCheckNatlinkPydFile()
+        if self.config.configCheckNatlinkPydFile() is None:
+            print "Error starting NatlinkConfig, Type 'u' for a usage message"
+            self.checkedConfig = self.config.checkedUrgent
+            return
+
         self.config.checkPythonPathAndRegistry()
         self.config.checkIniFiles()
         self.checkedConfig = self.config.checkedUrgent
@@ -1619,7 +1638,7 @@ When you want to try a new version of natlink.pyd, take the following steps:
 -remove natlink.pyd (in the MacroSystem/core directory of NatLink)
 -rerun this program or the configure program in elevated mode.
 
-The correct version of natlink.pyd (corresponding with your python version 2.5, 2.6)
+The correct version of natlink.pyd (corresponding with your python version 2.6, 2.7 (2.5 for pre Dragon 12)
 will be copied to this name and registered.
 
 -finally Enable NatLink again.

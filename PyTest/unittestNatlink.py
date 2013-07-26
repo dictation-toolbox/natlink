@@ -1427,6 +1427,8 @@ class UnittestNatlink(unittest.TestCase):
             createMacroFile(baseDirectory,'__jMg2.py','four')
             createMacroFile(userDirectory,'__jMg2.py','three')
             toggleMicrophone()
+            # this one seems to go wrong if the dictation box is automatically loaded for non-standard applications, switch
+            # this option off for the test-speech profile:
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','three'],recCmdDict, 1)
     
             # Make sure that we do the right thing with application specific

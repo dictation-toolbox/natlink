@@ -56,9 +56,10 @@ def getBaseFolder(globalsDict=None):
 def fatal_error(message, new_raise=None):
     """prints a fatal error when running this module"""
     print 'natlinkconfigfunctions fails because of fatal error:'
+    print
     print message
     print
-    print 'This can (hopefully) be solved by (re)installing natlink'
+    print 'Exit Dragon and run the configurenatlink program (via start_configurenatlink.py)'
     print 
     if new_raise:
         raise new_raise

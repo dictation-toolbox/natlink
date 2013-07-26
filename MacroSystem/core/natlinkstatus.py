@@ -1,4 +1,4 @@
-__version__ = "4.1charlie"
+__version__ = "4.1delta"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,10 @@ __version__ = "4.1charlie"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# version 4.2delta  more stable pyd's, 2.7/dragon 12 cannot reload. All pyd versions in separate subdirectory (PYD),
+#                   following Rudigers naming convention
+#                   more testing on changed  (out of date) natlink.pyd file and nicer messages in config program
+#                   and natlink start (Messages window)
 # version 4.1charlie some experimental pyd's for dragon 12, python2.6 and python 2.7
 #                    new vocola compiler all python
 #                    several bugfixes in setting correct python version and pyd
@@ -140,16 +144,18 @@ DNSVersions = [12,11,10,9,8,7]
 # augment above when a new version is there!
 
 # utility functions: 
-# report function:
-def fatal_error(message, new_raise=None):
-    """prints a fatal error when running this module"""
-    print 'natlinkconfigfunctions fails because of fatal error:'
-    print message
-    print
-    print 'This can (hopefully) be solved by closing Dragon and then running the NatLink/Unimacro/Vocola Config program with administrator rights.'
-    print 
-    if new_raise:
-        raise
+## report function:
+#def fatal_error(message, new_raise=None):
+#    """prints a fatal error when running this module"""
+#    print
+#    print 'natlinkconfigfunctions fails because of fatal error:'
+#    print
+#    print message
+#    print
+#    print 'This can (hopefully) be solved by closing Dragon and then running the NatLink/Unimacro/Vocola Config program with administrator rights.'
+#    print 
+#    if new_raise:
+#        raise
 
 # of course for extracting the windows version:
 Wversions = {'1/4/10': '98',
@@ -227,7 +233,7 @@ class NatlinkStatus(object):
     UserDirectory = None
     UnimacroUserDirectory = None
     VocolaUserDirectory = None
-
+    hadWarning = []
 
     def __init__(self, skipSpecialWarning=None):
 
@@ -241,7 +247,23 @@ class NatlinkStatus(object):
         self.correctIniSettings() # change to newer conventions
         if self.checkNatlinkPydFile() is None:
             if not skipSpecialWarning:
-                print '\n=============\nWARNING: invalid version of natlink.pyd found\nClose Dragon and then run the configuration program "configurenatlink.pyw" (via "start_configurenatlink.py")\n===============\n'
+                self.warning('WARNING: invalid version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
+            
+    def getWarningText(self):
+        """return a printable text if there were warnings
+        """
+        if self.hadWarning:
+            t = 'natlinkstatus reported the following warnings:\n\n'
+            t += '\n\n'.join(self.hadWarning)
+            return t
+        return ""
+
+    def emptyWarning(self):
+        """clear the list of warning messages
+        """
+        while self.hadWarning:
+            self.hadWarning.pop()
+                
    
     def checkSysPath(self):
         """add base and user directory to sys.path
@@ -277,7 +299,7 @@ Please try to correct this by running the NatLink Config Program (with administr
 Please try to correct this by running the NatLink Config Program (with administration rights)"""
                 return
             setting = section['']
-            if setting == coreDir:
+            if setting.lower() == coreDir.lower():
                 baseDir = os.path.normpath(os.path.join(coreDir, ".."))
                 self.InsertToSysPath(coreDir)
                 self.InsertToSysPath(baseDir)
@@ -347,9 +369,9 @@ Please try to correct this by running the NatLink Config Program (with administr
         if wantedPyd != originalPyd:
             if not fromConfig:
                 if not originalPyd:
-                    print 'originalPyd setting is missing in natlinkstatus.ini'
+                    self.warning('originalPyd setting is missing in natlinkstatus.ini')
                 else:
-                    print 'incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd)
+                    self.warning('incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd))
             return
         # now check for updates:
         timeWantedPyd = getFileDate(wantedPydPath)
@@ -359,7 +381,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         if timeCurrentPyd or timeWantedPyd:
             if timeWantedPyd > timeCurrentPyd:
                 if not fromConfig:
-                    print 'Current pyd file (%s) out of date, compared with %s'% (currentPydPath, wantedPydPath)
+                    self.warning('Current pyd file (%s) out of date, compared with\n%s'% (currentPydPath, wantedPydPath))
                 return
         
         # all well
@@ -751,12 +773,13 @@ Please try to correct this by running the NatLink Config Program (with administr
 
     def warning(self, text):
         "to be overloaded in natlinkconfigfunctions and configurenatlink"
-        if isinstance(text, basestring):
-            print text
+        if text in self.hadWarning:
+            pass
         else:
-            # probably list:
-            print '\n'.join(text)
-
+            print 'Warning:'
+            print text
+            print
+            self.hadWarning.append(text)
 
     def VocolaIsEnabled(self):
         vocDir = self.getVocolaUserDirectory()

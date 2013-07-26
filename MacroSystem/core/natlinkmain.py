@@ -603,11 +603,19 @@ def changeCallback(type,args):
         language = status.getLanguage()
         if debugCallback:
             print 'usercallback, language: %s'% language
-        BaseModel, BaseTopic = status.getBaseModelBaseTopic()
         # changed next two lines QH:
         findAndLoadFiles()        
         beginCallback(moduleInfo, checkAll=1)
         loadModSpecific(moduleInfo)
+        # give a warning for BestMatch V 
+        BaseModel, BaseTopic = status.getBaseModelBaseTopic()
+        if BaseModel.find("BestMatch V") > 0:
+            print '\n--- WARNING: Speech Model BestMatch V is used for this User Profile'
+            print 'The performance of many NatLink grammars is not good with this model.'
+            print 'Please choose another User Profile with for example Speech Model BestMatch IV.'
+            print 'See http://unimacro.antenna.nl/installation/speechmodel.html\n----'
+
+
     #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself
     # the grammar should include a function like:
     #def changeCallback():
@@ -671,7 +679,7 @@ def start_natlink(doNatConnect=None):
             else:
                 break
 
-        if debugLoad: print "NatLink dll dir " + coreDirectory
+        if debugLoad: print "NatLink pyd dir " + coreDirectory
         baseDirectory = os.path.normpath(os.path.abspath(os.path.join(coreDirectory,"..")))
         if debugLoad: print "NatLink base dir" + baseDirectory
         
@@ -682,8 +690,6 @@ def start_natlink(doNatConnect=None):
             if debugLoad:
                 print 'insert userDirectory: %s to sys.path!'% userDirectory
             sys.path.insert(0,userDirectory)
-            
-    
     
         # setting searchImportDirs:
         setSearchImportDirs()
@@ -717,7 +723,12 @@ def start_natlink(doNatConnect=None):
     elif natlinkmainPrintsAtEnd:
         print 'natlinkmain started (imported)\n'
     else:
-        natlinkLogMessage('natlinkmain started (imported)\n')    
+        natlinkLogMessage('natlinkmain started (imported)\n')
+    if status.hadWarning:
+        print '='*30
+        print status.getWarningText()
+        print '='*30
+        status.emptyWarning()
 
 # try to establish here only one automatic startup of start_natlink:
 def natDisconnect():

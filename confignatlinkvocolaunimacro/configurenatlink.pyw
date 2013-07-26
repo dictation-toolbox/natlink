@@ -368,9 +368,13 @@ class ConfigureNatlinkPanel(wx.Panel):
             # changed installation, message from natlinkconfigfunctions
             self.urgentMessage = "REREGISTER natlink.pyd and Close (restart) or Close right away to cancel"
             self.cli.checkedConfig = None
+        if self.config.changesInInitPhase:
+            if self.cli.getFatalErrors():
+                self.urgentMessage = "See the log panel for urgent startup information!!"
+            else:
+                self.urgentMessage = "See the log panel for startup information, the init phase was succesful"
+                
         self.setInfo()
-        if self.cli.getFatalErrors():
-            self.urgentMessage = "See the log panel for urgent startup information!!"
         
 
     def warning(self, text, title='Message from Configure NatLink GUI'):
