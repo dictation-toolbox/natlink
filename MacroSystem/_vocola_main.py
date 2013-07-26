@@ -92,10 +92,21 @@ ExtensionsFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 
 
 NatLinkFolder    = os.path.abspath(NatLinkFolder)
 
+def appendToSysPathIfNeeded(folderName):
+    """append to sys.path, but prevent double entries
+    """
+    f = os.path.normpath(folderName)
+    if f in sys.path:
+        return
+    sys.path.append(f)
+
 if VocolaEnabled:
-    sys.path.append(pydFolder)
-    sys.path.append(ExecFolder)
-    sys.path.append(ExtensionsFolder)
+    appendToSysPathIfNeeded(pydFolder)
+    appendToSysPathIfNeeded(ExecFolder)
+    appendToSysPathIfNeeded(ExtensionsFolder)
+    #sys.path.append(pydFolder)
+    #sys.path.append(ExecFolder)
+    #sys.path.append(ExtensionsFolder)
 
 
 def get_command_folder():
