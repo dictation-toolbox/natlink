@@ -92,21 +92,10 @@ ExtensionsFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 
 
 NatLinkFolder    = os.path.abspath(NatLinkFolder)
 
-def appendToSysPathIfNeeded(folderName):
-    """append to sys.path, but prevent double entries
-    """
-    f = os.path.normpath(folderName)
-    if f in sys.path:
-        return
-    sys.path.append(f)
-
 if VocolaEnabled:
-    appendToSysPathIfNeeded(pydFolder)
-    appendToSysPathIfNeeded(ExecFolder)
-    appendToSysPathIfNeeded(ExtensionsFolder)
-    #sys.path.append(pydFolder)
-    #sys.path.append(ExecFolder)
-    #sys.path.append(ExtensionsFolder)
+    sys.path.append(pydFolder)
+    sys.path.append(ExecFolder)
+    sys.path.append(ExtensionsFolder)
 
 
 def get_command_folder():
@@ -593,13 +582,10 @@ def hidden_call(executable, arguments):
         try:
             import subprocess
             si             = subprocess.STARTUPINFO()
-            try:
-                si.dwFlags     = subprocess.STARTF_USESHOWWINDOW
-                si.wShowWindow = subprocess.SW_HIDE
-            except AttributeError:
-                si.dwFlags     = subprocess._subprocess.STARTF_USESHOWWINDOW
-                si.wShowWindow = subprocess._subprocess.SW_HIDE
-                
+            # Location of below constants seems to vary from Python
+            # version to version so hardcode them:
+            si.dwFlags     = 1 # subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = 0 # subprocess.SW_HIDE
             return subprocess.call(args, startupinfo=si)
         except ImportError:
             pid = os.spawnv(os.P_NOWAIT, executable, args)
