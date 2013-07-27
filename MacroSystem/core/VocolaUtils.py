@@ -95,7 +95,7 @@ def handle_error(filename, line, command, exception):
     print >> sys.stderr, "the following error occurred:"
     print >> sys.stderr, "    " + exception.__class__.__name__ + ": " \
         + str(exception)
-    traceback.print_exc()
+    #traceback.print_exc()
     #raise exception
 
 
