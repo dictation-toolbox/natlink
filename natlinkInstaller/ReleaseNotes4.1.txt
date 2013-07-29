@@ -1,3 +1,7 @@
+Release 4.1delta:
+- natlink.pyd now for python 2.7, experimental version, which seems to be stable
+- more testing and messages when starting NatLink and when running the config program
+
 Release 4.1charlie:
 - natlink.pyd now for python 2.7, experimental version, which seems to be stable
 - Vocola now runs 2.8I, which is implemented all in python

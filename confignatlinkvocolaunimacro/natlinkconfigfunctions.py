@@ -189,6 +189,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.changesInInitPhase = 1
             result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
             self.registerNatlinkPyd()
+            if result:
+                print '-'*30
+                print 'Copying and registering the latest natlink.pyd was succesful.'
+                print 'You can now close this program and restart Dragon.'
+                print '-'*30
         else:
             result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
             self.registerNatlinkPyd(silent=1)
@@ -216,7 +221,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                 return
         else:
             fatal_error("wantedPydFile %s is missing! Cannot copy to natlink.dll/natlink.pyd"% wantedPydFile)
-            return            
+            return
         return 1
         
     def getHKLMPythonPathDict(self, flags=win32con.KEY_ALL_ACCESS, recursive=False):
@@ -277,7 +282,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         """
         self.checkedUrgent = None
-        print "checking PythonPathAndRegistry"
+        if __name__ == '__main__':
+            print "checking PythonPathAndRegistry"
         try:
             lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         except pywintypes.error:
@@ -728,7 +734,7 @@ Possibly you need administrator rights to do this
         key = "UnimacroIniFilesEditor"
         self.userregnl.delete(key)
                 
-    def registerNatlinkPyd(self, silent=None):
+    def registerNatlinkPyd(self, silent=1):
         """register natlink.dll
 
         if silent, do through win32api, and not report. This is done whenever NatLink is enabled.
@@ -763,6 +769,7 @@ Possibly you need administrator rights to do this
                 fatal_error("cannot import win32api, please see if win32all of python is properly installed")
             
             try:
+
                 result = win32api.WinExec('regsvr32 /s "%s"'% PydPath)
                 if result:
                     fatal_error('failed to register %s (result: %s)\nPossibly exit Dragon and run this program in Elevated (admin) mode'% (PydPath, result))
@@ -770,6 +777,8 @@ Possibly you need administrator rights to do this
                     return
                 else:
                     self.userregnl.set('NatlinkPydRegistered', newIniSetting)
+                    print 'Registring pyd file succesful: %s'% PydPath
+
     #                    print 'registered %s '% PydPath
                     
             except:
@@ -784,12 +793,12 @@ Possibly you need administrator rights to do this
                 self.userregnl.set('NatlinkPydRegistered', 0)
                 return
             else:
-                print 'registered %s'% PydPath
                 self.userregnl.set('NatlinkPydRegistered', newIniSetting)
+                print 'Registring pyd file succesful: %s'% PydPath
                 
         self.setNatlinkInPythonPathRegistry()
 
-    def unregisterNatlinkPyd(self, silent=None):
+    def unregisterNatlinkPyd(self, silent=1):
         """unregister explicit, should not be done normally
         """
         dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)        
@@ -1118,7 +1127,9 @@ class CLI(cmd.Cmd):
         self.config.checkCoreDirectory()
         self.config.correctIniSettings()
         if self.config.configCheckNatlinkPydFile() is None:
-            print "Error starting NatlinkConfig, Type 'u' for a usage message"
+            if __name__ == "__main__":
+                print "Error starting NatlinkConfig, Type 'u' for a usage message"
+
             self.checkedConfig = self.config.checkedUrgent
             return
 
@@ -1129,7 +1140,8 @@ class CLI(cmd.Cmd):
             # see at top of this file!
             if key in self.config.userregnl.keys():
                 self.config.userregnl.delete(key)
-        print "Type 'u' for a usage message"
+        if __name__ == "__main__":
+            print "Type 'u' for a usage message"
 
     def getFatalErrors(self):
         """get the fatal errors from this module and clear them automatically
@@ -1606,11 +1618,11 @@ of NatLink, so keep off (X and Y) most of the time.
         #    print "The correct python version of natlink.dll will be copied to natlink.pyd"
         #    print "and it will be registered again."
         #    return
-        self.config.registerNatlinkPyd()
+        self.config.registerNatlinkPyd(silent=None)
     def do_R(self, arg):
         print "Unregister natlink.dll and disable NatLink"
         self.config.disableNatlink(silent=1)
-        self.config.unregisterNatlinkPyd()
+        self.config.unregisterNatlinkPyd(silent=None)
     def do_z(self, arg):
         """register silent and enable NatLink"""
         self.config.registerNatlinkPyd(silent=1)

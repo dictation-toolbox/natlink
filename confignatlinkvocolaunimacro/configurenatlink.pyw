@@ -340,7 +340,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             def warning(self, text):
                 """overload, to make it also in GUI visible"""
                 super(NatlinkConfigGUI, self).warning(text)
-                self.parent.warning(text)
+                #self.parent.warning(text)
         self.GUI = NatlinkConfigGUI(parent=self)
         try:
             self.cli = nf.CLI(self.GUI)
@@ -377,15 +377,15 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.setInfo()
         
 
-    def warning(self, text, title='Message from Configure NatLink GUI'):
-        if isinstance(text, basestring):
-            Text = text
-        else:
-            Text = '\n'.join(text)
-        dlg = wx.MessageDialog(self, Text, title,
-                               wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()               
+    #def warning(self, text, title='Message from Configure NatLink GUI'):
+    #    if isinstance(text, basestring):
+    #        Text = text
+    #    else:
+    #        Text = '\n'.join(text)
+    #    dlg = wx.MessageDialog(self, Text, title,
+    #                           wx.OK | wx.ICON_INFORMATION)
+    #    dlg.ShowModal()
+    #    dlg.Destroy()               
 
     def getGetterFunctions(self):
         D = {}

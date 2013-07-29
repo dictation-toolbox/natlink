@@ -1,12 +1,14 @@
-This release 4.0 can be considered as stable:
+We are well underway to make a new stable release for Dragon 12 and NatLink too. (July 26, 2013)
 
-  - Dragon 11 issues are tackled.
-  - Vocola 2.7.2+I is stable.
-  - Unimacro grammars mostly work, but some need improvements.
-  - Installer runs in elevated mode automatically.
-  - Python 2.7 now probably supported.
-  - etc. See http://qh.antenna.nl/unimacro for a lot more...
+-This includes a new stable Vocola release which is complete implemented in python
 
-    Please consider making a donation to Quintijn for all the hard work
-to get this release working...
-    (see http://qh.antenna.nl/unimacro/aboutunimacro.html).
+-NatLink can be used with python 2.6 and python 2.7.
+
+-Note that with Dragon 12, you should NOT use the speech model BestMatch V, which is used by default on most computers when create a new User Profile.
+
+-Python 2.5 still can be used, but only for Dragon <= 11.
+
+Consider to make a small donation to the 3 people who do most work for this development:
+-Rudiger Wilke, working on the heart of the program, the NatLink core
+-Mark Lillibridge, maintaining and improving Vocola 2
+-Quintijn Hoogenboom, working at Unimacro and the installer stuff 
