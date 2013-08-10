@@ -1,5 +1,8 @@
 We are well underway to make a new stable release for Dragon 12 and NatLink too. (July 26, 2013)
 
+In this 4.1echo release the natlink.pyd file from 4.1charlie is restored, as there were problems with the 4.1delta version.
+See the discussion on http://www.speechcomputing.com/node/7661
+
 -This includes a new stable Vocola release which is complete implemented in python
 
 -NatLink can be used with python 2.6 and python 2.7.

@@ -1,4 +1,4 @@
-__version__ = "4.1delta"
+__version__ = "4.1echo"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,9 @@ __version__ = "4.1delta"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1echo:
+# reverted the 2.7 UNICODE pyd to the charlie version because of trouble with the delta version
+#
 # version 4.2delta  more stable pyd's, 2.7/dragon 12 cannot reload. All pyd versions in separate subdirectory (PYD),
 #                   following Rudigers naming convention
 #                   more testing on changed  (out of date) natlink.pyd file and nicer messages in config program
