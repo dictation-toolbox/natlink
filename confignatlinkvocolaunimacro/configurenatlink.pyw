@@ -311,7 +311,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         wx.EVT_BUTTON(self, ID_BUTTONHelp5, self.OnButtonHelp5)
         wx.EVT_BUTTON(self, ID_BUTTONHelp1, self.OnButtonHelp1)
         wx.EVT_BUTTON(self, ID_BUTTONHelp4, self.OnButtonHelp4)
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXNatlinkDebug, self.OnCBNatlinkDebug)
+        #wx.EVT_CHECKBOX(self, ID_CHECKBOXNatlinkDebug, self.OnCBNatlinkDebug)
         wx.EVT_BUTTON(self, ID_BUTTONClose, self.OnButtonClose)
         wx.EVT_BUTTON(self, ID_BUTTONUndo, self.OnButtonUndo)
         wx.EVT_BUTTON(self, ID_BUTTONNatlinkUserDirectory, self.OnButtonUnimacroEnableDisable)
@@ -377,15 +377,15 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.setInfo()
         
 
-    #def warning(self, text, title='Message from Configure NatLink GUI'):
-    #    if isinstance(text, basestring):
-    #        Text = text
-    #    else:
-    #        Text = '\n'.join(text)
-    #    dlg = wx.MessageDialog(self, Text, title,
-    #                           wx.OK | wx.ICON_INFORMATION)
-    #    dlg.ShowModal()
-    #    dlg.Destroy()               
+    def warning(self, text, title='Message from Configure NatLink GUI'):
+        if isinstance(text, basestring):
+            Text = text
+        else:
+            Text = '\n'.join(text)
+        dlg = wx.MessageDialog(self, Text, title,
+                               wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()               
 
     def getGetterFunctions(self):
         D = {}
@@ -409,7 +409,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 ##        D['VocolaCommandFilesEditor'] = self.GetTextctrlvocolaeditor
         D['DebugCallback'] = self.GetCheckboxdebugcallbackoutput
         D['DebugLoad'] = self.GetCheckboxdebugload
-        D['NatlinkDebug'] = self.GetCheckboxnatlinkdebug
+        #D['NatlinkDebug'] = self.GetCheckboxnatlinkdebug
         D['DNSIniDir'] = self.frame.infopanel.GetTextctrldnsinifilepath
         D['natlinkIsEnabled'] = self.GetButtonnatlinkenable
         D['vocolaIsEnabled'] = self.GetButtonvocolaenable
@@ -421,7 +421,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.checkboxes = ['VocolaTakesLanguages',
                            'VocolaTakesUnimacroActions',
                            'DebugCallback', 'DebugLoad',
-                           'NatlinkDebug',
+                           #'NatlinkDebug',
                            'IncludeUnimacroInPythonPath'
                            ]
         return D
@@ -681,8 +681,8 @@ class ConfigureNatlinkPanel(wx.Panel):
     def GetTextctrluserdirectory(self):
         return self.FindWindowById( ID_TEXTCTRLuserDirectory )
 
-    def GetCheckboxnatlinkdebug(self):
-        return self.FindWindowById( ID_CHECKBOXNatlinkDebug )
+    #def GetCheckboxnatlinkdebug(self):
+    #    return self.FindWindowById( ID_CHECKBOXNatlinkDebug )
 
     def GetButtonundo(self):
         return self.FindWindowById( ID_BUTTONUndo )
@@ -1087,10 +1087,10 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         self.setstatus(statustext)
 
         
-    def OnCBNatlinkDebug(self, event):
-        letter = 'g'
-        control = self.GetCheckboxnatlinkdebug()
-        self.do_checkboxcommand(letter, control)
+    #def OnCBNatlinkDebug(self, event):   ## obsolete, QH 26-08-2013
+    #    letter = 'g'
+    #    control = self.GetCheckboxnatlinkdebug()
+    #    self.do_checkboxcommand(letter, control)
         
 
     def OnCBVocolaTakesLanguages(self, event):

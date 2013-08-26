@@ -16,31 +16,30 @@ ID_TEXTCTRLstatus = 10000
 ID_TEXT = 10001
 ID_BUTTONHelp1 = 10002
 ID_BUTTONNatlinkEnable = 10003
-ID_CHECKBOXNatlinkDebug = 10004
-ID_BUTTONHelp2 = 10005
-ID_CHECKBOXDebugCallbackOutput = 10006
-ID_CHECKBOXDebugLoad = 10007
-ID_BUTTONVocolaEnable = 10008
-ID_TEXTvocolauserdir = 10009
-ID_TEXTCTRLvocolauserdir = 10010
-ID_CHECKBOXVocolaTakesLanguages = 10011
-ID_CHECKBOXVocolaTakesUnimacroActions = 10012
-ID_BUTTONHelp3 = 10013
-ID_BUTTONNatlinkUserDirectory = 10014
-ID_TEXTnatlinkuserdir = 10015
-ID_TEXTCTRLuserDirectory = 10016
-ID_BUTTONUnimacroInifilesDirectory = 10017
-ID_TEXTCTRLunimacroinifilesDirectory = 10018
-ID_BUTTONUnimacroEditor = 10019
-ID_TEXTCTRLunimacroeditor = 10020
-ID_BUTTONVocolaCompatibiliy = 10021
-ID_IncludeUnimacroInPythonPath = 10022
-ID_BUTTONHelp4 = 10023
-ID_BUTTONregister = 10024
-ID_BUTTONunregister = 10025
+ID_CHECKBOXDebugCallbackOutput = 10004
+ID_CHECKBOXDebugLoad = 10005
+ID_BUTTONHelp2 = 10006
+ID_BUTTONVocolaEnable = 10007
+ID_TEXTvocolauserdir = 10008
+ID_TEXTCTRLvocolauserdir = 10009
+ID_CHECKBOXVocolaTakesLanguages = 10010
+ID_CHECKBOXVocolaTakesUnimacroActions = 10011
+ID_BUTTONHelp3 = 10012
+ID_BUTTONNatlinkUserDirectory = 10013
+ID_TEXTnatlinkuserdir = 10014
+ID_TEXTCTRLuserDirectory = 10015
+ID_BUTTONUnimacroInifilesDirectory = 10016
+ID_TEXTCTRLunimacroinifilesDirectory = 10017
+ID_BUTTONUnimacroEditor = 10018
+ID_TEXTCTRLunimacroeditor = 10019
+ID_BUTTONVocolaCompatibiliy = 10020
+ID_IncludeUnimacroInPythonPath = 10021
+ID_BUTTONHelp4 = 10022
+ID_BUTTONregister = 10023
+ID_BUTTONunregister = 10024
 ID_BUTTONUndo = 5100
-ID_BUTTONClose = 10026
-ID_BUTTONHelp5 = 10027
+ID_BUTTONClose = 10025
+ID_BUTTONHelp5 = 10026
 
 def MainWindow( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
@@ -76,24 +75,18 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item10 = wx.Button( parent, ID_BUTTONNatlinkEnable, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
     item9.Add( item10, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item11 = wx.CheckBox( parent, ID_CHECKBOXNatlinkDebug, "Send Debug output to DNS logfile", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item9.Add( item11, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 10 )
-
-    item12 = wx.Button( parent, ID_BUTTONHelp2, "Help-&2", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item9.Add( item12, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
-
-    item13 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item9.Add( item13, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
-
-    item14 = wx.BoxSizer( wx.HORIZONTAL )
+    item11 = wx.BoxSizer( wx.HORIZONTAL )
     
-    item15 = wx.CheckBox( parent, ID_CHECKBOXDebugCallbackOutput, "Debug Callback", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item14.Add( item15, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item12 = wx.CheckBox( parent, ID_CHECKBOXDebugCallbackOutput, "Debug Callback", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item11.Add( item12, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item16 = wx.CheckBox( parent, ID_CHECKBOXDebugLoad, "Debug load output", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item14.Add( item16, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item13 = wx.CheckBox( parent, ID_CHECKBOXDebugLoad, "Debug load output", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item11.Add( item13, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item9.Add( item14, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item9.Add( item11, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+    item14 = wx.Button( parent, ID_BUTTONHelp2, "Help-&2", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item9.Add( item14, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
     item9.AddGrowableCol( 1 )
 
@@ -101,131 +94,131 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
 
     item0.Add( item7, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item18 = wx.StaticBox( parent, -1, "Vocola" )
-    item18.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
-    item17 = wx.StaticBoxSizer( item18, wx.VERTICAL )
+    item16 = wx.StaticBox( parent, -1, "Vocola" )
+    item16.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
+    item15 = wx.StaticBoxSizer( item16, wx.VERTICAL )
     
-    item19 = wx.FlexGridSizer( 0, 3, 0, 0 )
+    item17 = wx.FlexGridSizer( 0, 3, 0, 0 )
     
-    item20 = wx.Button( parent, ID_BUTTONVocolaEnable, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item19.Add( item20, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item18 = wx.Button( parent, ID_BUTTONVocolaEnable, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item17.Add( item18, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item21 = wx.StaticText( parent, ID_TEXTvocolauserdir, "Vocola User Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item19.Add( item21, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item19 = wx.StaticText( parent, ID_TEXTvocolauserdir, "Vocola User Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item17.Add( item19, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item22 = wx.TextCtrl( parent, ID_TEXTCTRLvocolauserdir, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
-    item22.SetBackgroundColour( wx.LIGHT_GREY )
-    item19.Add( item22, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item20 = wx.TextCtrl( parent, ID_TEXTCTRLvocolauserdir, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+    item20.SetBackgroundColour( wx.LIGHT_GREY )
+    item17.Add( item20, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item23 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item19.Add( item23, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item21 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item17.Add( item21, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item24 = wx.CheckBox( parent, ID_CHECKBOXVocolaTakesLanguages, "Vocola Multi languages", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item19.Add( item24, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item22 = wx.CheckBox( parent, ID_CHECKBOXVocolaTakesLanguages, "Vocola Multi languages", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item17.Add( item22, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item25 = wx.BoxSizer( wx.HORIZONTAL )
+    item23 = wx.BoxSizer( wx.HORIZONTAL )
     
-    item26 = wx.CheckBox( parent, ID_CHECKBOXVocolaTakesUnimacroActions, "Vocola takes Unimacro Actions", wx.DefaultPosition, [280,-1], 0 )
-    item25.Add( item26, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item24 = wx.CheckBox( parent, ID_CHECKBOXVocolaTakesUnimacroActions, "Vocola takes Unimacro Actions", wx.DefaultPosition, [280,-1], 0 )
+    item23.Add( item24, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item27 = wx.Button( parent, ID_BUTTONHelp3, "Help-&3", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item25.Add( item27, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item25 = wx.Button( parent, ID_BUTTONHelp3, "Help-&3", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item23.Add( item25, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item19.Add( item25, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item17.Add( item23, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item19.AddGrowableCol( 2 )
+    item17.AddGrowableCol( 2 )
 
-    item17.Add( item19, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
+    item15.Add( item17, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item0.Add( item17, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
+    item0.Add( item15, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item29 = wx.StaticBox( parent, -1, "Unimacro" )
-    item29.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
-    item28 = wx.StaticBoxSizer( item29, wx.VERTICAL )
+    item27 = wx.StaticBox( parent, -1, "Unimacro" )
+    item27.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
+    item26 = wx.StaticBoxSizer( item27, wx.VERTICAL )
     
-    item30 = wx.FlexGridSizer( 0, 3, 0, 0 )
+    item28 = wx.FlexGridSizer( 0, 3, 0, 0 )
     
-    item31 = wx.Button( parent, ID_BUTTONNatlinkUserDirectory, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item30.Add( item31, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item29 = wx.Button( parent, ID_BUTTONNatlinkUserDirectory, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item28.Add( item29, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item32 = wx.StaticText( parent, ID_TEXTnatlinkuserdir, "NatLink User Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item30.Add( item32, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item30 = wx.StaticText( parent, ID_TEXTnatlinkuserdir, "NatLink User Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item28.Add( item30, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item33 = wx.TextCtrl( parent, ID_TEXTCTRLuserDirectory, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
-    item33.SetBackgroundColour( wx.LIGHT_GREY )
-    item30.Add( item33, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item31 = wx.TextCtrl( parent, ID_TEXTCTRLuserDirectory, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+    item31.SetBackgroundColour( wx.LIGHT_GREY )
+    item28.Add( item31, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item34 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item30.Add( item34, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item32 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item28.Add( item32, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item35 = wx.Button( parent, ID_BUTTONUnimacroInifilesDirectory, "Unimacro User Directory", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item30.Add( item35, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item33 = wx.Button( parent, ID_BUTTONUnimacroInifilesDirectory, "Unimacro User Directory", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item28.Add( item33, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item36 = wx.TextCtrl( parent, ID_TEXTCTRLunimacroinifilesDirectory, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
-    item36.SetBackgroundColour( wx.LIGHT_GREY )
-    item30.Add( item36, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item34 = wx.TextCtrl( parent, ID_TEXTCTRLunimacroinifilesDirectory, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+    item34.SetBackgroundColour( wx.LIGHT_GREY )
+    item28.Add( item34, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item37 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item30.Add( item37, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item35 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item28.Add( item35, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item38 = wx.Button( parent, ID_BUTTONUnimacroEditor, "Unimacro Editor", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item30.Add( item38, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item36 = wx.Button( parent, ID_BUTTONUnimacroEditor, "Unimacro Editor", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item28.Add( item36, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item39 = wx.TextCtrl( parent, ID_TEXTCTRLunimacroeditor, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
-    item39.SetBackgroundColour( wx.LIGHT_GREY )
-    item30.Add( item39, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item37 = wx.TextCtrl( parent, ID_TEXTCTRLunimacroeditor, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+    item37.SetBackgroundColour( wx.LIGHT_GREY )
+    item28.Add( item37, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item40 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item30.Add( item40, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item38 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item28.Add( item38, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item41 = wx.Button( parent, ID_BUTTONVocolaCompatibiliy, "Vocola compatibility", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item30.Add( item41, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item39 = wx.Button( parent, ID_BUTTONVocolaCompatibiliy, "Vocola compatibility", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item28.Add( item39, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item42 = wx.BoxSizer( wx.HORIZONTAL )
+    item40 = wx.BoxSizer( wx.HORIZONTAL )
     
-    item43 = wx.CheckBox( parent, ID_IncludeUnimacroInPythonPath, "Include Unimacro directory in PythonPath", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item42.Add( item43, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item41 = wx.CheckBox( parent, ID_IncludeUnimacroInPythonPath, "Include Unimacro directory in PythonPath", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item40.Add( item41, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item44 = wx.Button( parent, ID_BUTTONHelp4, "Help-&4", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item42.Add( item44, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item42 = wx.Button( parent, ID_BUTTONHelp4, "Help-&4", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item40.Add( item42, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item30.Add( item42, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item28.Add( item40, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item30.AddGrowableCol( 2 )
+    item28.AddGrowableCol( 2 )
 
-    item28.Add( item30, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
+    item26.Add( item28, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item0.Add( item28, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
+    item0.Add( item26, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
-    item46 = wx.StaticBox( parent, -1, "Repair" )
-    item46.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
-    item45 = wx.StaticBoxSizer( item46, wx.VERTICAL )
+    item44 = wx.StaticBox( parent, -1, "Repair" )
+    item44.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
+    item43 = wx.StaticBoxSizer( item44, wx.VERTICAL )
     
-    item47 = wx.FlexGridSizer( 0, 6, 0, 0 )
+    item45 = wx.FlexGridSizer( 0, 6, 0, 0 )
     
-    item48 = wx.Button( parent, ID_BUTTONregister, "(re)Register NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item47.Add( item48, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item46 = wx.Button( parent, ID_BUTTONregister, "(re)Register NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item45.Add( item46, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item49 = wx.Button( parent, ID_BUTTONunregister, "unRegister NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item47.Add( item49, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item47 = wx.Button( parent, ID_BUTTONunregister, "unRegister NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item45.Add( item47, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item50 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item47.Add( item50, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item48 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item45.Add( item48, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item51 = wx.Button( parent, ID_BUTTONUndo, "Undo", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item47.Add( item51, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item49 = wx.Button( parent, ID_BUTTONUndo, "Undo", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item45.Add( item49, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item52 = wx.Button( parent, ID_BUTTONClose, "Close", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item47.Add( item52, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item50 = wx.Button( parent, ID_BUTTONClose, "Close", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item45.Add( item50, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item53 = wx.Button( parent, ID_BUTTONHelp5, "Help-5", wx.DefaultPosition, wx.DefaultSize, 0 )
-    item47.Add( item53, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
+    item51 = wx.Button( parent, ID_BUTTONHelp5, "Help-5", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item45.Add( item51, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item47.AddGrowableCol( 2 )
+    item45.AddGrowableCol( 2 )
 
-    item45.Add( item47, 0, wx.FIXED_MINSIZE|wx.ALIGN_CENTER|wx.ALL|wx.SHAPED, 0 )
+    item43.Add( item45, 0, wx.FIXED_MINSIZE|wx.ALIGN_CENTER|wx.ALL|wx.SHAPED, 0 )
 
-    item0.Add( item45, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
+    item0.Add( item43, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0 )
 
     if set_sizer == True:
         parent.SetSizer( item0 )
@@ -234,22 +227,22 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     
     return item0
 
-ID_TEXTDNSversion = 10028
-ID_TEXTCTRLDNSVersion = 10029
-ID_TEXTCTRLWindowsVersion = 10030
-ID_TEXTCTRLpythonversion = 10031
-ID_TEXTdnsinstallpath = 10032
-ID_TEXTCTRLDNSinstallpath = 10033
-ID_BUTTONchangednsinstallpath = 10034
-ID_BUTTONClearDNSInstallPath = 10035
-ID_TEXTdnsinifilepath = 10036
-ID_TEXTCTRLdnsinifilepath = 10037
-ID_BUTTONchangednsinifilepath = 10038
-ID_BUTTONClearDNSInifilePath = 10039
-ID_TEXTNatlinkCorePath = 10040
-ID_TEXTCTRLnatlinkcorepath = 10041
-ID_BUTTONLogInfo = 10042
-ID_BUTTONHelpInfo = 10043
+ID_TEXTDNSversion = 10027
+ID_TEXTCTRLDNSVersion = 10028
+ID_TEXTCTRLWindowsVersion = 10029
+ID_TEXTCTRLpythonversion = 10030
+ID_TEXTdnsinstallpath = 10031
+ID_TEXTCTRLDNSinstallpath = 10032
+ID_BUTTONchangednsinstallpath = 10033
+ID_BUTTONClearDNSInstallPath = 10034
+ID_TEXTdnsinifilepath = 10035
+ID_TEXTCTRLdnsinifilepath = 10036
+ID_BUTTONchangednsinifilepath = 10037
+ID_BUTTONClearDNSInifilePath = 10038
+ID_TEXTNatlinkCorePath = 10039
+ID_TEXTCTRLnatlinkcorepath = 10040
+ID_BUTTONLogInfo = 10041
+ID_BUTTONHelpInfo = 10042
 
 def InfoWindow( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
@@ -348,11 +341,11 @@ def InfoWindow( parent, call_fit = True, set_sizer = True ):
     
     return item0
 
-ID_CHECKBOXRefreshUnimacroVch = 10044
-ID_CHECKBOXMakeUnimacroIncludeLines = 10045
-ID_CHECKBOXRemoveUnimacroIncludeLines = 10046
-ID_BUTTONOK = 10047
-ID_BUTTONCancel = 10048
+ID_CHECKBOXRefreshUnimacroVch = 10043
+ID_CHECKBOXMakeUnimacroIncludeLines = 10044
+ID_CHECKBOXRemoveUnimacroIncludeLines = 10045
+ID_BUTTONOK = 10046
+ID_BUTTONCancel = 10047
 
 def DialogVocolaCombatibility( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
@@ -400,9 +393,9 @@ def DialogVocolaCombatibility( parent, call_fit = True, set_sizer = True ):
 
 # Menubar functions
 
-ID_MENUClose = 10049
-ID_MENUFile = 10050
-ID_MENUhelp = 10051
+ID_MENUClose = 10048
+ID_MENUFile = 10049
+ID_MENUhelp = 10050
 
 def MyMenuBarFunc():
     item0 = wx.MenuBar()
