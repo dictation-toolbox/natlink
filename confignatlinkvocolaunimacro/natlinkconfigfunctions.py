@@ -871,8 +871,8 @@ Possibly you need administrator rights to do this
         key = "NatlinkDebug"
         self.userregnl.set(key, 1)
         # double in registry, natlink.pyd takes this one:
-        print 'Enable NatlinkDebug, also set key %s to 1 in registry, current user (need elevated mode)'% key
-        self.userregnlOld[key] = 1
+        print 'Enable NatlinkDebug, this setting is obsolete)'% key
+        #self.userregnlOld[key] = 1
 
     def disableDebugOutput(self):
         """disables the NatLink lengthy debug output to NatSpeak logfile
@@ -880,8 +880,8 @@ Possibly you need administrator rights to do this
         key = "NatlinkDebug"
         self.userregnl.delete(key)
         # double in registry, natlink.pyd takes this one:
-        print 'Disable NatlinkDebug, also set key %s to 0 in registry, current user (need elevated mode)'% key
-        self.userregnlOld[key] = 0
+        print 'Disable NatlinkDebug, this setting is obsolete'% key
+        #self.userregnlOld[key] = 0
 
     def copyUnimacroIncludeFile(self):
         """copy Unimacro include file into Vocola user directory
