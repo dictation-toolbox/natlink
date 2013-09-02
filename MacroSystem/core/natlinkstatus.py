@@ -1,4 +1,4 @@
-__version__ = "4.1echo"
+__version__ = "4.1foxtrot"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,8 @@ __version__ = "4.1echo"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1foxtrot: some changes in config program
+#
 # 4.1echo:
 # reverted the 2.7 UNICODE pyd to the charlie version because of trouble with the delta version
 #

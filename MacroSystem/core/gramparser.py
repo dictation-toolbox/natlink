@@ -558,10 +558,19 @@ class GramParser(object):
             self.scanObj.getAnotherToken()
             definition = self.parseExpr()
             self.scanObj.testAndEatToken(']')
+            #self.reportOptionalRule(definition)
             return [ ('start', OptCode) ] + definition + [ ('end', OptCode) ]
 
         else:
             raise SyntaxError( "expecting expression (word, rule, etc.)", self.scanObj)
+
+    def reportOptionalRule(self, definition):
+        """print the words that are optional, for testing BestMatch V"""
+        wordsRev = dict([(v,k) for k,v in self.knownWords.items()])
+
+        for w, number in definition:
+            if w == 'word':
+                print 'optional word: %s'% wordsRev[number]
 
     def checkForErrors(self):
         if not len(self.exportRules):
