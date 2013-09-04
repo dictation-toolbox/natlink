@@ -173,6 +173,18 @@ def buttonClick(btnName='left',count=1):
     elif count == 2: playEvents( single + double )
     else: raise ValueError( "invalid count" )
 
+# temporary hopefully, QH, 4-9-2013:
+def playString(keys, hooks=None):
+    """insert {shift} as workaround for losing keystrokes
+    """
+    if not keys:
+        keys = "{shift}"
+    elif not keys.startswith("{shift}"):
+        keys = "{shift}" + keys
+    if hooks is None:
+        natlink.playString(keys)
+    else:
+        natlink.playString(keys, hooks)
 #---------------------------------------------------------------------------
 # (internal use) shared base class for all Grammar base classes.  Do not use
 # this class directly.  See GrammarBase, DictGramBase or SelectGramBase.
