@@ -1,7 +1,9 @@
 We are well underway to make a new stable release for Dragon 12 and NatLink too. (September, 2 2013)
 
-In this 4.1foxtrot release some changes were made in the config program 
 
+In the 4.1golf release the config program has been improved: the (Re) Register NatLink function now works better and also copies the correct pyd file from the PYD subdirectory. Also a workaround for the sendkeys bug in Dragon is tried: use the S Unimacro Shorthand Command in Vocola command files. In Unimacro each doKeystroke call is started with an extra {shift}.
+
+In this 4.1foxtrot release some changes were made in the config program 
 In the 4.1echo release the natlink.pyd file from 4.1charlie is restored, as there were problems with the 4.1delta version.
 See the discussion on http://www.speechcomputing.com/node/7661
 

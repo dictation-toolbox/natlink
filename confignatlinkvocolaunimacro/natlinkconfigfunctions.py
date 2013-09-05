@@ -33,8 +33,8 @@ DNSINIDir
       where they are expected, this one can be set in HKCU\Software\Natlink.
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
-When NatLink is enabled natlink.dll is registered with
-      win32api.WinExec("regsvr32 /s pathToNatlinkdll") (silent)
+When NatLink is enabled natlink.pyd is registered with
+      win32api.WinExec("regsvr32 /s pathToNatlinkPyd") (silent)
 
 It can be unregistered through function unregisterNatlinkPyd() see below.      
 
@@ -74,7 +74,7 @@ def getCoreDir(thisDir):
     """get the NatLink core folder, relative from the current folder
 
     This folder should be relative to this with ../MacroSystem/core and should
-    contain natlinkmain.p, natlink.dll, and natlinkstatus.py
+    contain natlinkmain.p, natlink.pyd, and natlinkstatus.py
 
     If not found like this, prints a line and returns thisDir
     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
@@ -83,11 +83,11 @@ def getCoreDir(thisDir):
     if not os.path.isdir(coreFolder):
         print 'not a directory: %s'% coreFolder
         return thisDir
-##    PydPath = os.path.join(coreFolder, 'natlink.dll')
+##    PydPath = os.path.join(coreFolder, 'natlink.pyd')
     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
     statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
 ##    if not os.path.isfile(PydPath):
-##        print 'natlink.dll not found in core directory: %s'% coreFolder
+##        print 'natlink.pyd not found in core directory: %s'% coreFolder
 ##        return thisDir
     if not os.path.isfile(mainPath):
         print 'natlinkmain.py not found in core directory: %s'% coreFolder
@@ -160,7 +160,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                                               (coreDir, coreDir2))
     
     def configCheckNatlinkPydFile(self):
-        """see if natlink.dll is in core directory, if not copy from correct version
+        """see if natlink.pyd is in core directory, if not copy from correct version
         """
         self.checkedUrgent = 1
         coreDir2 = self.getCoreDirectory()
@@ -173,9 +173,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             key = 'NatlinkPydRegistered'
             print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
             self.userregnl.delete(key)
-            natlinkDllWasAlreadyThere = 0
+            natlinkPydWasAlreadyThere = 0
         else:
-            natlinkDllWasAlreadyThere = 1
+            natlinkPydWasAlreadyThere = 1
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
         if self.checkNatlinkPydFile(fromConfig=1) == 1:  # check the need for replacing natlink.pyd without messages...
             self.checkedUrgent = None
@@ -185,7 +185,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         #fatal_error("The current file natlink.pyd is not available, the correct version or outdated, try to replace it by the proper (newer) version...")
         ## now go on with trying to replace natlink.pyd with the correct version and register it...
         wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
-        if natlinkDllWasAlreadyThere:
+        if natlinkPydWasAlreadyThere:
             self.changesInInitPhase = 1
             result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
             self.registerNatlinkPyd()
@@ -200,10 +200,27 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         
         return result  # None if something went wrong 1 if all OK      
 
-
+    def removeNatlinkPyd(self):
+        """remove the natlink.pyd file (Dragon should be switched off)
+        
+        in order to redo the copyNatlinkPydPythonVersion again
+        """
+        coreDir = self.getCoreDirectory()
+        currentPydFile = os.path.join(coreDir, 'natlink.pyd')
+        if os.path.isfile(currentPydFile):
+            try:
+                os.remove(currentPydFile)
+            except (WindowsError, IOError):
+                fatal_error('cannot remove natlink.pyd from the core directory: %s'% coreDir)
+                return
+        if os.path.isfile(currentPydFile):
+            fatal_error('strange, could not remove "natlink.pyd" from the core directory: "%s"'% coreDir)
+            return
+        # ok:
+        return 1  # 
 
     def copyNatlinkPydPythonVersion(self, wantedPydFile, currentPydFile):
-        """copy the natlink.dll from the correct version"""
+        """copy the natlink.pyd from the correct version"""
         if os.path.isfile(currentPydFile):
             self.unregisterNatlinkPyd()
             try:
@@ -220,7 +237,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                 fatal_error("Could not copy %s to %s\nProbably you need to exit Dragon first."% (wantedPydFile, currentPydFile))
                 return
         else:
-            fatal_error("wantedPydFile %s is missing! Cannot copy to natlink.dll/natlink.pyd"% wantedPydFile)
+            fatal_error("wantedPydFile %s is missing! Cannot copy to natlink.pyd/natlink.pyd"% wantedPydFile)
             return
         return 1
         
@@ -273,7 +290,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         If this last key is not there or empty
         ---set paths of coreDirectory
-        ---register natlink.dll
+        ---register natlink.pyd
         It is probably the first time to run this program.
 
         If the settings are conflicting, either
@@ -350,7 +367,7 @@ expects
 You probably just installed NatLink in a new location
 and you ran the config program for the first time.
 
-If you want the new settings, (re)register natlink.dll (r)
+If you want the new settings, (re)register natlink.pyd (r)
 
 And rerun this program...
 
@@ -625,7 +642,7 @@ NatLink is now disabled.
         
       
     def enableNatlink(self, silent=None):
-        """register natlink.dll and set settings in nssystem.INI and nsapps.ini
+        """register natlink.pyd and set settings in nssystem.INI and nsapps.ini
 
         """
         self.registerNatlinkPyd(silent=1)
@@ -677,7 +694,7 @@ Possibly you need administrator rights to do this
         else:
             if not silent:
                 print 'NatLink disabled, restart NatSpeak'
-                print 'Note natlink.dll is NOT UNREGISTERED, but this is not necessary either'
+                print 'Note natlink.pyd is NOT UNREGISTERED, but this is not necessary either'
         
     def getVocolaUserDir(self):
         key = 'VocolaUserDirectory'
@@ -735,7 +752,7 @@ Possibly you need administrator rights to do this
         self.userregnl.delete(key)
                 
     def registerNatlinkPyd(self, silent=1):
-        """register natlink.dll
+        """register natlink.pyd
 
         if silent, do through win32api, and not report. This is done whenever NatLink is enabled.
 
@@ -806,7 +823,7 @@ Possibly you need administrator rights to do this
         if int(pythonVersion) >= 25:
             PydPath = os.path.join(coreDir, 'natlink.pyd')
         else:
-            PydPath = os.path.join(coreDir, 'natlink.dll')
+            PydPath = os.path.join(coreDir, 'natlink.pyd')
         if not os.path.isfile(PydPath):
             return
 
@@ -831,7 +848,7 @@ Possibly you need administrator rights to do this
             self.userregnl.set('NatlinkPydRegistered', 0)
 
         #self.clearNatlinkFromPythonPathRegistry()
-        # and remove the natlink.dll (there remain pythonversion ones 23, 24 and 25)
+        # and remove the natlink.pyd (there remain pythonversion ones 23, 24 and 25)
         #os.remove(PydPath)
         
     def enableDebugLoadOutput(self):
@@ -865,7 +882,7 @@ Possibly you need administrator rights to do this
     def enableDebugOutput(self):
         """setting registry key so debug output is in NatSpeak logfile
 
-        not included in configure GUI, as NatSpeak/Natlink.dll seems not to respond
+        not included in configure GUI, as NatSpeak/natlink.pyd seems not to respond
         to this option...
         """
         key = "NatlinkDebug"
@@ -1202,11 +1219,11 @@ m/M     - insert/remove an include line for Unimacro.vch in all Vocola
 
 [Repair]
 
-r/R     - register/unregister NatLink, the natlink.dll (natlink.pyd) file
+r/R     - register/unregister NatLink, the natlink.pyd (natlink.pyd) file
           (should not be needed)
 
-z/Z     - silently enables NatLink and registers natlink.dll / disables NatLink
-          and unregisters natlink.dll.
+z/Z     - silently enables NatLink and registers natlink.pyd / disables NatLink
+          and unregisters natlink.pyd.
       
 [Other]
 
@@ -1466,8 +1483,8 @@ are done.
 After you restart NatSpeak, NatLink should start, opening a window entitled
 'Messages from Python Macros'.
 
-When you enable NatLink, the file natlink.dll is (re)registered silently.  Use
-the commands r/R to register/unregister natlink.dll explicitly.
+When you enable NatLink, the file natlink.pyd is (re)registered silently.  Use
+the commands r/R to register/unregister natlink.pyd explicitly.
 (see help r, but most often not needed)
 
 When you disable NatLink, the necessary settings in nssystem.ini and nsapps.ini
@@ -1476,7 +1493,7 @@ i
 After you restart NatSpeak, NatLink should NOT START ANY MORE
 so the window 'Messages from Python Macros' is NOT OPENED.
 
-Note: when you disable NatLink, the natlink.dll file is NOT unregistered.
+Note: when you disable NatLink, the natlink.pyd file is NOT unregistered.
 It is not called any more by NatSpeak, as its declaration is removed from
 the Global Clients section of nssystem.ini.
 """
@@ -1605,9 +1622,9 @@ of NatLink, so keep off (X and Y) most of the time.
     help_X = help_x
     help_Y = help_x
     
-    # register natlink.dll
+    # register natlink.pyd
     def do_r(self, arg):
-        print "(Re) register natlink.dll"
+        print "(Re) register and enable natlink.pyd"
         isRegistered = self.config.userregnl.get("NatlinkPydRegistered")
         #if isRegistered:
         #    print "If you have problems re-registering natlink.pyd, please try the following:"
@@ -1615,28 +1632,40 @@ of NatLink, so keep off (X and Y) most of the time.
         #    print "If you want to try a new natlink.pyd, first exit this program,"
         #    print "Remove %s\\natlink.pyd"% coreDir
         #    print "and restart (in elevated mode) this program."
-        #    print "The correct python version of natlink.dll will be copied to natlink.pyd"
+        #    print "The correct python version of natlink.pyd will be copied to natlink.pyd"
         #    print "and it will be registered again."
         #    return
-        self.config.registerNatlinkPyd(silent=None)
+        if not self.config.removeNatlinkPyd():
+            return
+        self.config.configCheckNatlinkPydFile()
+
+        self.config.enableNatlink()
+        
+        #
+        #
+        #self.config.registerNatlinkPyd(silent=None)
+
     def do_R(self, arg):
-        print "Unregister natlink.dll and disable NatLink"
+        print "Unregister natlink.pyd and disable NatLink"
         self.config.disableNatlink(silent=1)
         self.config.unregisterNatlinkPyd(silent=None)
+        
     def do_z(self, arg):
         """register silent and enable NatLink"""
-        self.config.registerNatlinkPyd(silent=1)
-        self.config.enableNatlink(silent=1)
+        if not self.config.removeNatlinkPyd():
+            return
+        self.config.configCheckNatlinkPydFile()
+        self.config.enableNatlink()
         
     def do_Z(self, arg):
-        """(SILENT) Unregister natlink.dll and disable NatLink"""
+        """(SILENT) Unregister natlink.pyd and disable NatLink"""
         self.config.disableNatlink(silent=1)
         self.config.unregisterNatlinkPyd(silent=1)
 
     def help_r(self):
         print '-'*60
         print \
-"""Registers (r) / unregisters (R) natlink.dll explicitly.
+"""Registers (r) / unregisters (R) natlink.pyd explicitly.
 
 (Registering is also done (silently) when you start this program or the
 configuration GUI, so is mostly NOT NEEDED!)
