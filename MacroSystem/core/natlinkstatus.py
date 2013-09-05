@@ -7,6 +7,10 @@ __version__ = "4.1golf"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1golf: some improvements in config program
+#          new build of previous version of natlink.pyd (which was already in 4.1delta version)
+#          natlinkutils.playString tries to workaround the sendkeys problem sometimes experienced.
+#
 # 4.1foxtrot: some changes in config program
 #
 # 4.1echo:
