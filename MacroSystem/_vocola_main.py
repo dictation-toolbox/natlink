@@ -194,8 +194,7 @@ class ThisGrammar(GrammarBase):
     if language == 'nld':
         gramSpec = """
 <NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
-<edit>              exported = (Eddit|Bewerk|Sjoo|Toon)(Commandoos|Commands) |
-                               (Eddit|Bewerk|Sjoo|Toon)(stem|vojs)(Commandoos|Commands);
+<edit>              exported = (Eddit|Bewerk|Sjoo|Toon) [stem|vojs] (Commandoos|Commands);
 <editGlobal>        exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) [stem|vojs] (Commandoos|Commands);
 <editMachine>       exported = (Eddit|Bewerk|Sjoo|Toon) Machine [stem|vojs] (Commandoos|Commands);
 <editGlobalMachine> exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) Machine [stem|vojs] (Commandoos|Commands);
