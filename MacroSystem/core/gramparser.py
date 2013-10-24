@@ -443,7 +443,7 @@ class GramParser(object):
 
     def parseRule(self):
         if self.scanObj.token != 'rule':
-            raise SyntaxError( "expecting rule name to start rule definition", self.scanObj)
+            raise SyntaxError("expecting rule name to start rule definition", self.scanObj)
         ruleName = self.scanObj.value
         if not isValidListOrRulename(ruleName):
             raise SyntaxError('rulename may may only contain ascii letters, digits or - or _: "%s"'% ruleName, self.scanObj)
@@ -773,7 +773,7 @@ def parseGrammarAndSave(inName,outName):
     parseObj = GramParser()
     parseObj.doParse( inFile.readlines() )
     inFile.close()
-    binary = packGrammar(parseObj)
+    binary = gramparser.packGrammar(parseObj)
     outFile = open(outName,'wb')
     outFile.write( binary )
     outFile.write( "hello" )

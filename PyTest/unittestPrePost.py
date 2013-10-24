@@ -32,7 +32,8 @@ import natlink
 import gramparser
 from natlinkutils import *
 import win32gui
-TestError = 'TestError'
+class TestError(Exception):
+    pass
 ExitQuietly = 'ExitQuietly'
 
 # for test trick (wordFuncs, wordProns):
@@ -62,7 +63,7 @@ class UnittestNatlink(unittest.TestCase):
 ##      natlink.playString('{Alt+space}n')
     def setUp(self):
         if not natlink.isNatSpeakRunning():
-            raise TestError,'NatSpeak is not currently running'
+            raise TestError('NatSpeak is not currently running')
 ##        self.connect()
 ##        self.user = natlink.getCurrentUser()[0]
 ##        self.lookForDragonPad()

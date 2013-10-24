@@ -6,6 +6,8 @@
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
 #
+# September 2013 (QH):
+# use import natlink instead of from natlink import *, forcing qualifying all calls to natlink functions from this module.
 # March 2010 (QH):
 #   - added deactivateSet() function in GrammarBase
 #   - added exceptlist optional variable to activateAll method of GrammarBase
@@ -55,8 +57,10 @@
 
 import os, os.path, copy, types
 import struct
-from natlink import *
-from gramparser import *
+#from natlink import *
+import natlink
+#from gramparser import *
+import gramparser
 
 # The following constants define the common windows message codes which
 # are passed to playEvents.
@@ -156,7 +160,7 @@ def matchWindow(moduleInfo, modName, wndText):
 # button name ('left','right' or 'middle') and the count (1 or 2)
 
 def buttonClick(btnName='left',count=1):
-    x, y = getCursorPos()
+    x, y = natlink.getCursorPos()
     singleLookup = { 
         'left':  [(wm_lbuttondown,x,y),(wm_lbuttonup,x,y)],
         'right': [(wm_rbuttondown,x,y),(wm_rbuttonup,x,y)],
@@ -169,19 +173,25 @@ def buttonClick(btnName='left',count=1):
     single = singleLookup[btnName]  # KeyError means invalid button name
     double = doubleLookup[btnName]
 
-    if count == 1: playEvents( single )
-    elif count == 2: playEvents( single + double )
+    if count == 1: natlink.playEvents( single )
+    elif count == 2: natlink.playEvents( single + double )
     else: raise ValueError( "invalid count" )
 
-# temporary hopefully, QH, 4-9-2013:
+# temporary hopefully, QH, 4-9-2013  now 22-10-2013:
 def playString(keys, hooks=None):
     """insert {shift} as workaround for losing keystrokes
+    
+    not if hooks (like systemkeys) are used...
     """
     if not keys:
         keys = "{shift}"
-    elif not keys.startswith("{shift}"):
+    elif hooks or keys.startswith("{shift}"):
+        pass
+    else:
         keys = "{shift}" + keys
+        
     if hooks is None:
+        print 'playString with shift: %s %s'% (keys[0], keys[1:])
         natlink.playString(keys)
     else:
         natlink.playString(keys, hooks)
@@ -192,7 +202,7 @@ def playString(keys, hooks=None):
 class GramClassBase:
 
     def __init__(self):
-        self.gramObj = GramObj()
+        self.gramObj = natlink.GramObj()
 
     def __del__(self):
         self.gramObj.unload()
@@ -392,11 +402,11 @@ class GrammarBase(GramClassBase):
         elif type(gramSpec[0]) != types.StringType:
             raise TypeError( "grammar definition must be a list of strings" )
 
-        splitApartLines(gramSpec)
-        parser = GramParser(gramSpec, grammarName=grammarName)
+        gramparser.splitApartLines(gramSpec)
+        parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
         parser.doParse()
         parser.checkForErrors()
-        gramBin = packGrammar(parser)
+        gramBin = gramparser.packGrammar(parser)
         self.scanObj = parser.scanObj  # for later error messages.
         GramClassBase.load(self,gramBin,allResults,hypothesis)
         
@@ -422,10 +432,10 @@ class GrammarBase(GramClassBase):
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
         if ruleName not in self.validRules:
-            raise GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
+            raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
         if ruleName in self.activeRules:
             if noError: return None
-            raise GrammarError( "rule %s is already active"% ruleName, self.scanObj)
+            raise gramparser.GrammarError( "rule %s is already active"% ruleName, self.scanObj)
         self.gramObj.activate(ruleName,window)
         self.activeRules.append(ruleName)
         if exclusive != None:
@@ -434,10 +444,10 @@ class GrammarBase(GramClassBase):
     def deactivate(self, ruleName, noError=0):
         if ruleName not in self.validRules:
             if noError: return
-            raise GrammarError( "rule %s was not exported in the grammar" % ruleName, self.scanObj)
+            raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName, self.scanObj)
         if ruleName not in self.activeRules:
             if noError: return
-            raise GrammarError( "rule %s is not active", self.scanObj)
+            raise gramparser.GrammarError( "rule %s is not active", self.scanObj)
         self.gramObj.deactivate(ruleName)
         self.activeRules.remove(ruleName)
 
@@ -451,7 +461,7 @@ class GrammarBase(GramClassBase):
                 self.activeRules.remove(x)
         for x in ruleNames:
             if x not in self.validRules:
-                raise GrammarError( "rule %s was not exported in the grammar" % x, self.scanObj )
+                raise gramparser.GrammarError( "rule %s was not exported in the grammar" % x, self.scanObj )
             if not x in self.activeRules:
                 self.gramObj.activate(x,window)
                 self.activeRules.append(x)
@@ -488,12 +498,12 @@ class GrammarBase(GramClassBase):
 
     def emptyList(self, listName):
         if listName not in self.validLists:
-            raise GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
+            raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
         self.gramObj.emptyList(listName)
 
     def appendList(self, listName, words):
         if listName not in self.validLists:
-            raise GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
+            raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
         if type(words) == type(""):
             self.gramObj.appendList(listName,words)
         else:
@@ -859,13 +869,13 @@ class SelectGramBase(GramClassBase):
             wordDict = {}
             for word in selectWords:
                 wordDict[word] = 0
-            output = output + packGrammarChunk(0x1017,wordDict)
+            output = output + gramparser.packGrammarChunk(0x1017,wordDict)
         # throughWords maybe more words now:
         if throughWords:
             wordDict = {}
             for word in throughWords:
                 wordDict[word] = 0
-            output = output + packGrammarChunk(0x1018,wordDict)
+            output = output + gramparser.packGrammarChunk(0x1018,wordDict)
         return output            
         
 #---------------------------------------------------------------------------        

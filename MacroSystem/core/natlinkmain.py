@@ -153,27 +153,54 @@ natlinkmainPrintsAtEnd = 1
 
 # the base directory is one level above the core directory.
 # Vocola grammar files are located here.
-coreDirectory = ''
-baseDirectory = ''
-DNSuserDirectory = ''   # folder of the current user speech profiles...
+try:
+    coreDirectory
+except NameError:
+    coreDirectory = ''
+try:
+    baseDirectory
+except NameError:
+    baseDirectory = ''
+
+try:
+    DNSuserDirectory
+except NameError:
+    DNSuserDirectory = ''   # folder of the current user speech profiles...
 #
 # This is the current user directory. (of natspeak, the user files are located there...
 #
-
-userName = ''
+try:
+    userName 
+except NameError:
+    userName = ''
+    
 # this is now the NatLink user directory, which can be configured
 # this folder may be empty, or points to the folder where user-defined grammars
 # are, for example the unimacro grammars.
-userDirectory = ''  
+try:
+    userDirectory
+except NameError:
+    userDirectory = ''  
 
 # if userDirectory is NOT set, searchImportDirs only contains the base directory.
 # set in findAndLoadFiles:
-searchImportDirs = []
-
-DNSdirectory = ''
+try:
+    searchImportDirs
+except NameError:
+    searchImportDirs = []
+try:
+    DNSdirectory
+except NameError:
+    DNSdirectory = ''
 DNSVersion = status.getDNSVersion()
-WindowsVersion = ''
-DNSmode = 0  # can be changed in grammarX by the setMode command to
+try:
+    WindowsVersion
+except NameError:
+    WindowsVersion = ''
+try:
+    DNSmode
+except NameError:
+    DNSmode = 0  # can be changed in grammarX by the setMode command to
              # 1 dictate, 2 command, 3 numbers, 4 spell
              # commands currently from _general7,
              # is reset temporarily in DisplayMessage function.
@@ -184,8 +211,14 @@ DNSmode = 0  # can be changed in grammarX by the setMode command to
 language = ''
 
 # service to trainuser.py:
-BaseModel = ''
-BaseTopic = ''
+try:
+    BaseModel
+except NameError:
+    BaseModel = ''
+try:
+    BaseTopic
+except NameError:
+    BaseTopic = ''
 #<<QH
 
 #
@@ -193,18 +226,27 @@ BaseTopic = ''
 # is the Python module name.  The value is the complete path to the loaded
 # module.
 #
-
-loadedFiles = {}
-
-wrongFiles = {} # timestamp of files with an error in it...
+try:
+    loadedFiles
+except NameError:
+    loadedFiles = {}
+try:
+    wrongFiles
+except NameError:
+    wrongFiles = {} # timestamp of files with an error in it...
 #
 # Module which was active last time we looked for module specific files
 #
-
-lastModule = ''
+try:
+    lastModule
+except NameError:
+    lastModule = ''
 
 # for information printing only
-changeCallbackUserFirst = 1
+try:
+    changeCallbackUserFirst
+except NameError:
+    changeCallbackUserFirst = 1
 
 def unloadModule(modName):
     """calls the 'unload' function of the module.
@@ -237,7 +279,6 @@ def loadModule(modName):
         loadedFiles[modName] = result
     else:
         print 'loading module %s failed, put in "wrongFiles"'% modName
-
 
 def loadFile(modName, origName=None):
     global wrongFiles  # keep track of non edited files with errors
@@ -361,8 +402,11 @@ def findAndLoadFiles(curModule=None):
         for x in userDirFiles:
             res = pat.match(x)
             if res: addToFilesToLoad( filesToLoad, res.group(1), userDirectory, moduleHasDot )
-    # baseDirectory:           
-    baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
+    # baseDirectory:
+    if baseDirectory:
+        baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
+    else:
+        baseDirFiles = []
 
     # if present, load _vocola_main first, it can generate grammar files
     # before proceeding:
@@ -740,12 +784,22 @@ def natDisconnect():
 #
 # Here is the initialization code.
 #
-if __name__ == 'natlinkmain':
+print 'natlinkmain, name: %s'% __name__
+# get caller name, if error, it is from natlink.pyd, otherwise from some other module:
+import inspect
+frame=inspect.currentframe()
+try:
+    frame=frame.f_back.f_back
+    caller_name = frame.f_code.co_filename
+except AttributeError:
+    caller_name = None
 
+if caller_name is None:
+    # apparently called from natlink.pyd:
     # redirect stdout and stderr
-    # automatic start of python macro system:
+    # automatic start of python macro system:toon alle grammatica's
     sys.stdout = NewStdout()
     sys.stderr = NewStderr()
     start_natlink()
 else:
-    print 'natlinkmain imported only'
+    print 'natlinkmain imported only, caller_name: %s'% caller_name

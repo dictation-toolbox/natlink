@@ -675,7 +675,7 @@ class UnittestNatlink(unittest.TestCase):
     def testDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
-        dictObj = DictObj()
+        dictObj = natlink.DictObj()
         self.log("testDictObj", 1)
 
         #-----
@@ -1696,7 +1696,7 @@ class UnittestNatlink(unittest.TestCase):
 
         def testGrammarError(exceptionType,gramSpec):
             try:
-                parser = GramParser([gramSpec])
+                parser = gramparser.GramParser([gramSpec])
                 parser.doParse()
                 parser.checkForErrors()
             except exceptionType:
@@ -1705,23 +1705,23 @@ class UnittestNatlink(unittest.TestCase):
 
         # here we try a few illegal grammars to make sure we catch the errors
         # 
-        testGrammarError(SyntaxError,'badrule;')
-        testGrammarError(SyntaxError,'badrule = hello;')
-        testGrammarError(SyntaxError,'= hello;')
-        testGrammarError(SyntaxError,'<rule> error = hello;')
-        testGrammarError(SyntaxError,'<rule> exported = hello')
-        testGrammarError(LexicalError,'<rule exported = hello;')
-        testGrammarError(SyntaxError,'<rule> exported = ;')
-        testGrammarError(SyntaxError,'<rule> exported = [] hello;')
-        testGrammarError(GrammarError,'<rule> = hello;')
-        testGrammarError(SyntaxError,'<rule> exported = hello ];')
-        testGrammarError(SyntaxError,'<rule> exported = hello {};')
-        testGrammarError(SyntaxError,'<rule> exported = hello <>;')
-        testGrammarError(GrammarError,'<rule> exported = <other>;')
-        testGrammarError(SymbolError,'<rule> exported = one; <rule> exported = two;')
-        testGrammarError(SyntaxError,'<rule> exported = hello | | goodbye;')
-        testGrammarError(SyntaxError,'<rule> exported = hello ( ) goodbye;')
-        testGrammarError(SyntaxError,'<rule> exported = hello "" goodbye;')
+        testGrammarError(gramparser.SyntaxError,'badrule;')
+        testGrammarError(gramparser.SyntaxError,'badrule = hello;')
+        testGrammarError(gramparser.SyntaxError,'= hello;')
+        testGrammarError(gramparser.SyntaxError,'<rule> error = hello;')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = hello')
+        testGrammarError(gramparser.LexicalError,'<rule exported = hello;')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = ;')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = [] hello;')
+        testGrammarError(gramparser.GrammarError,'<rule> = hello;')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = hello ];')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = hello {};')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = hello <>;')
+        testGrammarError(gramparser.GrammarError,'<rule> exported = <other>;')
+        testGrammarError(gramparser.SymbolError,'<rule> exported = one; <rule> exported = two;')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = hello | | goodbye;')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = hello ( ) goodbye;')
+        testGrammarError(gramparser.SyntaxError,'<rule> exported = hello "" goodbye;')
         
     #---------------------------------------------------------------------------
     # Here we test recognition of command grammars using GrammarBase    
@@ -1843,8 +1843,8 @@ class UnittestNatlink(unittest.TestCase):
         # already tested the grammar parser so this does not have to be
         # exhaustive)
         testGram.unload()
-        testForException(SyntaxError,"testGram.load('badrule;')",locals())
-        testForException(GrammarError,"testGram.load('<rule> = hello;')",locals())
+        testForException(gramparser.SyntaxError,"testGram.load('badrule;')",locals())
+        testForException(gramparser.GrammarError,"testGram.load('<rule> = hello;')",locals())
 
         # most calls are not legal before load is called (successfully)
         testForException(natlink.NatError,"testGram.gramObj.activate('start',0)",locals())
@@ -1907,7 +1907,7 @@ class UnittestNatlink(unittest.TestCase):
             testActiveRules(testGram, expList)
             # activate after all active:
             testGram.activateAll()
-            testForException(GrammarError, "testGram.activate('%s')"% rule, locals())
+            testForException(gramparser.GrammarError, "testGram.activate('%s')"% rule, locals())
             # activate after all unactive:
             testGram.deactivateAll()
             testGram.activate(rule)
@@ -1916,7 +1916,7 @@ class UnittestNatlink(unittest.TestCase):
 
         rule = 'one'
         testGram.activate(rule)
-        testForException(GrammarError, "testGram.activate('%s')"% rule, locals())
+        testForException(gramparser.GrammarError, "testGram.activate('%s')"% rule, locals())
         testGram.deactivateAll()
         testActiveRules(testGram, [])
 
@@ -1966,8 +1966,8 @@ class UnittestNatlink(unittest.TestCase):
         testForException(TypeError,"testGram.activateSet('four')",locals())
 
         testGram.unload()
-        testForException(SyntaxError,"testGram.load('badrule;')",locals())
-        testForException(GrammarError,"testGram.load('<rule> = hello;')",locals())
+        testForException(gramparser.SyntaxError,"testGram.load('badrule;')",locals())
+        testForException(gramparser.GrammarError,"testGram.load('<rule> = hello;')",locals())
 
         # most calls are not legal before load is called (successfully)
         testForException(natlink.NatError,"testGram.gramObj.activate('start',0)",locals())
@@ -2604,12 +2604,19 @@ class UnittestNatlink(unittest.TestCase):
         buffer = 'a simple string of text.'
         testGram.load(['Select','Correct','Insert Before'],'Through')
         testGram.setSelectText(buffer)
+        gotBuffer = testGram.getSelectText()
+        self.assertEqual(buffer, gotBuffer, 
+                         'getSelectText should receive the same as set by setSelectText, not:\n'
+                         'expected: %s\n'
+                         'got: %s'%
+                         (buffer, gotBuffer))
         testGram.activate(window=calcWindow)
+
+        testRecognition(['Select','text'])
+        testGram.checkExperiment(1,'self',['Select','text'],19,23)
         
         testRecognition(['Correct','simple','Through','of'])
         testGram.checkExperiment(1,'self',['Correct','simple','Through','of'],2,18)
-        testRecognition(['Select','text'])
-        testGram.checkExperiment(1,'self',['Select','text'],19,23)
 
         testRecognition(['Insert Before','simple'])
         testGram.checkExperiment(1,'self',['Insert Before','simple'],2,8)
@@ -2711,7 +2718,8 @@ class UnittestNatlink(unittest.TestCase):
         class TestGrammar(GrammarBase):
 
             gramSpec = """
-                <run> exported = test [<optional>+] {colors}+ <extra> [<optional>];
+                #<run> exported = test [<optional>+] {colors}+ <extra> [<optional>];
+                <run> exported = test {colors}+ <extra>;
                 <optional>  = very | small | big;
                 <extra> = {furniture};
             """
