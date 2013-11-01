@@ -57,6 +57,7 @@
 
 import os, os.path, copy, types
 import struct
+import time
 #from natlink import *
 import natlink
 #from gramparser import *
@@ -181,17 +182,24 @@ def buttonClick(btnName='left',count=1):
 def playString(keys, hooks=None):
     """insert {shift} as workaround for losing keystrokes
     
+    does not work. revert to normal playString
+    
     not if hooks (like systemkeys) are used...
     """
     if not keys:
-        keys = "{shift}"
-    elif hooks or keys.startswith("{shift}"):
-        pass
-    else:
-        keys = "{shift}" + keys
+        return
+    #elif hooks not in (None, 0x100) or keys.startswith("{shift}"):
+    #    # special hooks or startig with {shift} already...
+    #    pass
+    #elif keys.startswith("{"):
+    #    print 'playString, do shift + pause'
+    #    natlink.playString("{shift}")
+    #    time.sleep(1)
+    #else:
+    #    print 'playString, insert shift before keys'
+    #    keys = "{shift}" + keys
         
     if hooks is None:
-        print 'playString with shift: %s %s'% (keys[0], keys[1:])
         natlink.playString(keys)
     else:
         natlink.playString(keys, hooks)
