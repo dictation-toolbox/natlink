@@ -200,7 +200,8 @@ def playString(keys, hooks=None):
     #    keys = "{shift}" + keys
         
     if hooks is None:
-        natlink.playString(keys)
+        print 'keystrokes no hooks: "%s"'% keys 
+        natlink.playString(keys, 0x100)
     else:
         natlink.playString(keys, hooks)
 #---------------------------------------------------------------------------
