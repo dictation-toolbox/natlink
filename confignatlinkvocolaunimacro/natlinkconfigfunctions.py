@@ -163,6 +163,16 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """see if natlink.pyd is in core directory, if not copy from correct version
         """
         self.checkedUrgent = 1
+        if sys.version.find("64 bit") >= 0:
+            print '============================================='
+            print 'You installed a 64 bit version of python.'
+            print 'NatLink cannot run with this version, please uninstall and'
+            print 'install a 32 bit version of python, see http://qh.antenna.nl/unimacro,,,'
+            print '============================================='
+            return
+        
+        
+        
         coreDir2 = self.getCoreDirectory()
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%

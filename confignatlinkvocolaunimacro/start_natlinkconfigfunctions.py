@@ -1,5 +1,19 @@
 import os, sys
+
+
+if sys.version.find("64 bit") >= 0:
+    print '============================================='
+    print 'You installed a 64 bit version of Python.'
+    print 'NatLink cannot run with this version, please uninstall and'
+    print 'install a 32 bit version of python, see http://qh.antenna.nl/unimacro,,,'
+    print '============================================='
+    time.sleep(30)
+    sys.exit()
+
+
 from win32api import ShellExecute, GetVersionEx
+
+
 
 # see natlinkstatus.py for windows versions (getWindowsVersion)
 wversion = GetVersionEx()
