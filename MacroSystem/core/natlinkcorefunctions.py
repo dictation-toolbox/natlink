@@ -145,6 +145,8 @@ def clearRecentEnv():
 
 def getAllFolderEnvironmentVariables(fillRecentEnv=None):
     """return, as a dict, all the environ AND all CSLID variables that result into a folder
+    
+    TODO:  Also include NATLINK, UNIMACRO, VOICECODE, DRAGONFLY, VOCOLAUSERDIR, UNIMACROUSERDIR
 
     Optionally put them in recentEnv, if you specify fillRecentEnv to 1 (True)
 
@@ -171,9 +173,21 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
             if k in D and D[k] != v:
                 print 'warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v)
             D[k] = v
+            
     if fillRecentEnv:
         recentEnv = copy.copy(D)
     return D
+
+#def setInRecentEnv(key, value):
+#    if key in recentEnv:
+#        if recentEnv[key] == value:
+#            print 'already set (the same): %s, %s'% (key, value)
+#        else:
+#            print 'already set (but different): %s, %s'% (key, value)
+#        return
+#    print 'setting in recentEnv: %s to %s'% (key, value)
+#    recentEnv[key] = value
+            
 
 def substituteEnvVariableAtStart(filepath, envDict=None): 
     """try to substitute back one of the (preused) environment variables back
