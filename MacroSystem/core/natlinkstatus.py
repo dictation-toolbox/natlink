@@ -1,4 +1,4 @@
-__version__ = "4.1golf"
+__version__ = "4.1hotel"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,12 @@ __version__ = "4.1golf"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1hotel:
+#      more stable pyd files (hopefully)
+#      installer checks for 64 bit python (forbidden)
+#      many Unimacro improvements, action classes for specific programs (lines module hundred)
+#      autohotkey support
+#
 # 4.1golf: some improvements in config program
 #          new build of previous version of natlink.pyd (which was already in 4.1delta version)
 #          natlinkutils.playString tries to workaround the sendkeys problem sometimes experienced.

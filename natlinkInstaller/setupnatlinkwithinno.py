@@ -20,13 +20,19 @@
 #GrammarsToEnable = ['_control.py', '_folders.py', '_lines.py',
 #                     '_numberstest.py', 'firefox_browsing.py',
 #                     'sol.py', 'freecell.py']
-GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py',
+GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_number simple.py', '_number extended.py',
+                     '_testtrayicon.py', 'testrecognitionmimic.py',  
                      '_keystrokes.py', '_oops.py', '_setpriority.py',
                      '_tags.py', '_unimacrotest.py', '_modes.py', '_shownumbersplus.py',
-                     '_latex.py']
+                     '_latex.py', 'excel.py', 'calc_test.py', 'solitaire.py', 'sol.py',
+                     'frescobaldi.py'
+                     ]
+
+GrammarsToEnable = ['_control.py', '_general.py', '_folders.py', '_lines.py','firefox_browsing.py',
+                    
+                    ]
 
 FoldersToIgnore = ['sample_global_dictation']
-
 ExtensionsToIgnore = [".wmv"]
 #--------- two utility functions:
 def getBaseFolder(globalsDict=None):
@@ -178,7 +184,10 @@ class InnoScript:
             
             if filter(None, [path == f for f in GrammarsToDisable]):
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+            elif filter(None, [path == f for f in GrammarsToEnable]):
+                print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
             else:
+                print 'neither disable or enable (include nevertheless): %s'% path
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         ## will only be included if directory is present:
         #for path in kaiser_files:
