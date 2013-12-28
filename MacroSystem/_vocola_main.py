@@ -343,7 +343,7 @@ Commands" and "Edit Global Commands" are activated.
         pattern = "^" + special.sub(r'\\\1', module)
         pattern += "(_[^@]*)?(@" + special.sub(r'\\\1', self.machine)
         pattern += ")?\.vcl$"
-        p = re.compile(pattern)
+        p = re.compile(pattern, re.IGNORECASE)
 
         targets = []
         if commandFolder:
@@ -768,7 +768,7 @@ purgeOutput()
 if not VocolaEnabled:
     print "Vocola not active"
 else:
-    print "Vocola version 2.8I starting..."
+    print "Vocola version 2.8.1I starting..."
     thisGrammar = ThisGrammar()
     thisGrammar.initialize()
 

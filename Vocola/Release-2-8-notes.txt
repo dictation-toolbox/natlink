@@ -1,3 +1,16 @@
+New in 2.8.1:
+
+! Any series of one or more terms at least one of which is not optional
+  or <_anything> can now be optional.
+
+* New built-ins, If and When.
+
+* Bug fix for list entries containing \'s with actions (produced invalid
+  Python code).
+
+* Bug fix for adjacent <_anything>'s in command sequences
+
+
 New in 2.8:
 
 * The Vocola 2 compiler has been ported from Perl to Python, mostly line
@@ -20,4 +33,3 @@ New in 2.8:
   relevant command file.
 
 * Versions of Python earlier than 2.5 are no longer supported.
-

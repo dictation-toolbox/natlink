@@ -49,10 +49,10 @@ def combineDictationWords(fullResults):
                 word = word[:backslashPosition]
             if inDictation:
                 fullResults[i-1] = [fullResults[i-1][0] + " " + word,
-                                    "dgndictation"]
+                                    "converted dgndictation"]
                 del fullResults[i]
             else:
-                fullResults[i] = [word, "dgndictation"]
+                fullResults[i] = [word, "converted dgndictation"]
                 i = i + 1
             inDictation = 1
         else:

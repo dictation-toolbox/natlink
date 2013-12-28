@@ -1,7 +1,7 @@
 # vcl2py:  Convert Vocola voice command files to NatLink Python "grammar"
 #          classes implementing those voice commands
 #
-# Usage: python vcl2py.pl [<option>...] <inputFileOrFolder> <outputFolder>
+# Usage: python vcl2py.py [<option>...] <inputFileOrFolder> <outputFolder>
 # Where <option> can be:
 #   -debug <n>             -- specify debugging level 
 #                               (0 = no info, 1 = show statements, 
@@ -46,6 +46,9 @@
 # SOFTWARE.
 #
 #
+# 12/26/2013  ml  Added new built-ins, If and When
+#  4/23/2013  ml  Any series of one or more terms at least one of which
+#                 is not optional or <_anything> can now be optional.
 #  5/01/2012  ml  Ported to Python line by line, parser replaced with 
 #                 lexer/traditional parser
 #  5/14/2011  ml  Selected numbers in ranges can now be spelled out
@@ -109,13 +112,14 @@
 #   Local variables are lowercase    (e.g. in_folder)
 
 import re
+import copy
 import os
 import sys
 
 # ---------------------------------------------------------------------------
 # Main control flow
 
-VocolaVersion = "2.8"
+VocolaVersion = "2.8.1"
 
 def main():
     global Debug, Default_maximum_commands, Error_encountered, Force_processing, In_folder, Number_words, LOG
@@ -358,10 +362,9 @@ def convert_file(in_file, out_folder, suffix):
         context["TYPE"]    = "context"
         context["STRINGS"] = [""]
         statements.insert(0, context)
-    #print >>LOG, unparse_statements (@statements),
-    transform_nodes(statements)
-    #print >>LOG, unparse_statements (@statements),
-    #print unparse_statements(statements),
+    #print >>LOG, unparse_statements(statements),
+    statements = transform_nodes(statements)
+    #print >>LOG, unparse_statements(statements),
     
     # Handle $set directives:
     Maximum_commands = Default_maximum_commands
@@ -861,8 +864,8 @@ def close_text():
 #    <top_command> ::= <terms>      '=' <action>*   ';'
 #      <directive> ::= bare_word [<word> [<word>]]  ';'
 #
-#          <terms> ::= (<term> | '[' <word> ']')+
-#           <term> ::= <word> | variable | range | <menu>
+#          <terms> ::= <term>+
+#           <term> ::= <word> | variable | range | <menu> | '[' <terms> ']'
 #           <word> ::= quoted_word | bare_word
 #
 #         <action> ::= <word> | <call>
@@ -931,19 +934,21 @@ def close_text():
 #       TEXT    - value to set the key to
 # 
 # term:
-#    TYPE   - word/variable/range/menu/dictation
+#    TYPE   - word/variable/range/menu/dictation/optionalterms
 #    NUMBER - sequence number of this term
 #    word:
 #       TEXT     - text defining the word(s)
-#       OPTIONAL - is this word optional
+#       OPTIONAL - are these words optional?
 #    variable:
 #       TEXT     - name of variable being referenced
-#       OPTIONAL - is this variable optional
+#       OPTIONAL - is this variable optional?
 #    range:
 #       FROM     - start number of range
 #       TO       - end number of range
 #    menu:
 #       COMMANDS - list of "command" structures defining the menu
+#    optionalterms:
+#       TERMS   - list of "term" structures
 #       
 # action:
 #    TYPE - word/reference/formalref/call
@@ -968,10 +973,12 @@ def close_text():
 # number of arguments):
 
 Vocola_functions = {
-                     "Eval"              : [1,1],
-                     "EvalTemplate"      : [1,-1],
-                     "Repeat"            : [2,2],
-                     "Unimacro"          : [1,1],
+                     "Eval"         : [1,1],
+                     "EvalTemplate" : [1,-1],
+                     "If"           : [2,3],
+                     "Repeat"       : [2,2],
+                     "Unimacro"     : [1,1],
+                     "When"         : [2,3],
                    }
 
 # Vocola extensions with (extension_name, minimum_arguments, maximum_arguments,
@@ -1240,6 +1247,8 @@ def parse_function_definition():   # function = prototype ':=' action* ';'
 
     if Functions.has_key(functionName):
         error("Redefinition of " + functionName + "()", position)
+    if Vocola_functions.has_key(functionName):
+        error("Attempted redefinition of built-in function: " + functionName, position)
     Functions[functionName] = len(formals)  # remember number of formals
     Function_definitions[functionName] = statement
     if Debug>=1: print >>LOG, unparse_function_definition (statement),
@@ -1321,7 +1330,7 @@ def parse_command(separators, needs_actions=False): # command = terms ['=' actio
     command["TERMS"] = terms
     
     # Count variable terms for range checking in parse_reference
-    Variable_terms = get_variable_terms(command)
+    Variable_terms = get_variable_terms(terms)
     
     if needs_actions or peek(TOKEN_EQUALS):
         eat(TOKEN_EQUALS)
@@ -1330,22 +1339,23 @@ def parse_command(separators, needs_actions=False): # command = terms ['=' actio
     command["LINE"] = get_line_number(get_current_position()) # line number is *last* line of command # <<<>>>
     return command
 
-def parse_terms(separators):    # <terms> ::= (<term> | '[' <word> ']')+
+def parse_terms(separators):    # <terms> ::= (<term> | '[' <terms> ']')+
     starting_position = get_current_position()
     terms = []
     seen_non_optional = False
     while True:
         if peek(TOKEN_LBRACKET):
             optional = True
+            optional_starting_position = get_current_position()
             eat(TOKEN_LBRACKET)
-            if not peek(TOKEN_WORD): eat(TOKEN_WORD)
-            term = parse_term()
+            optional_terms = parse_terms(TOKEN_RBRACKET)
             eat(TOKEN_RBRACKET)
-            type = term["TYPE"]
-            if type == "range":
-                error("Range terms may not be optional", term["POSITION"])
-            elif type == "variable" or type == "dictation":
-                error("Variable terms may not be optional", term["POSITION"])
+            term             = {}
+            term["TYPE"]     = "optionalterms"
+            term["TERMS"]    = optional_terms
+            term["POSITION"] = optional_starting_position
+            if Debug>=2: 
+                print >>LOG, "Found optional term group:  " + unparse_term(term, True)
         else:
             optional = False
             term = parse_term()
@@ -1395,7 +1405,7 @@ def parse_term():         # <term> ::= <word> | variable | range | <menu>
         term["POSITION"] = starting_position
         eat(TOKEN_RPAREN)
         if Debug>=2: 
-            print >>LOG, "Found menu:  " + unparse_menu (term, True)
+            print >>LOG, "Found menu:  " + unparse_menu(term, True)
         return term
     elif not peek(TOKEN_BARE_WORD):
         return parse_word()
@@ -1709,32 +1719,38 @@ def verify_referenced_menu(menu, parent_has_actions=False, parent_has_alternativ
                       menu["POSITION"])
 
         terms = command["TERMS"]
-        for term in terms:
-            type = term["TYPE"]
-            if   type == "word" and term["OPTIONAL"]:
-                error("Alternative cannot contain an optional word",
+        verify_menu_terms(terms, has_actions, has_alternatives, False)
+
+def verify_menu_terms(terms, has_actions, has_alternatives, other_terms):
+    if len(terms) != 1: other_terms = True
+    for term in terms:
+        type = term["TYPE"]
+        if   type == "word" and term["OPTIONAL"]:
+            #error("Alternative cannot contain an optional word",
+            #      term["POSITION"])
+            implementation_error("Alternative cannot contain an optional word")
+        elif type == "optionalterms": 
+            verify_menu_terms(term["TERMS"], has_actions, has_alternatives, 
+                              other_terms)
+        elif type == "variable" or type == "dictation": 
+            error("Alternative cannot contain a variable", term["POSITION"])
+        elif type == "menu": 
+            if other_terms:
+                error("An inline list cannot be combined with anything else to make up an alternative",
                       term["POSITION"])
-            elif type == "variable" or type == "dictation": 
-                error("Alternative cannot contain a variable", term["POSITION"])
-            elif type == "menu": 
-                if len(terms) != 1:
-                    error("An inline list cannot be combined with anything else to make up an alternative",
-                          term["POSITION"])
-                verify_referenced_menu(term, has_actions, has_alternatives)
-            elif type == "range": 
-                # allow a single range with no actions if it is the only
-                # alternative in the (nested) set:
-                if len(terms) != 1:
-                    error("A range cannot be combined with anything else to make up an alternative",
-                          term["POSITION"])
-                if has_actions:
-                    error("A range alternative may not have associated actions",
-                          term["POSITION"])
-                if has_alternatives:
-                    error("A range alternative must be the only alternative in an alternative set",
-                          term["POSITION"])
-        if len(terms) != 1:
-            implementation_error("Alternative too complicated")
+            verify_referenced_menu(term, has_actions, has_alternatives)
+        elif type == "range": 
+            # allow a single range with no actions if it is the only
+            # alternative in the (nested) set:
+            if other_terms:
+                error("A range cannot be combined with anything else to make up an alternative",
+                      term["POSITION"])
+            if has_actions:
+                error("A range alternative may not have associated actions",
+                      term["POSITION"])
+            if has_alternatives:
+                error("A range alternative must be the only alternative in an alternative set",
+                      term["POSITION"])
 
 def add_forward_reference(variable, position):
     global Forward_references, Include_stack_file, Include_stack_line
@@ -1811,10 +1827,14 @@ def unparse_terms(show_actions, terms):
     return result
 
 def unparse_term(term, show_actions):
+    if term["TYPE"] == "optionalterms":
+        return "[" + unparse_terms(show_actions, term["TERMS"]) + "]"
+
     result = ""
     if term.get("OPTIONAL"): result +=  "["
     
-    if   term["TYPE"] == "word":      result += term["TEXT"]
+#    if   term["TYPE"] == "word":      result += term["TEXT"]
+    if   term["TYPE"] == "word":      result += "'" + term["TEXT"] + "'"
     elif term["TYPE"] == "variable":  result += "<" + term["TEXT"] + ">"
     elif term["TYPE"] == "dictation": result += "<_anything>"
     elif term["TYPE"] == "menu":      
@@ -1864,24 +1884,82 @@ def unparse_argument(argument):
     return unparse_actions(argument)
 
 # ---------------------------------------------------------------------------
-# Transform Eval into EvalTemplate, unroll user functions
+# Transform Eval into EvalTemplate, unroll user functions, and remove
+# optional term groups by duplicating commands with and without the
+# optional terms.
 
   # takes a list of non-action nodes
-def transform_nodes(nodes):
+def transform_nodes(nodes):   # -> nodes
+    result = []
     for node in nodes: 
         transform_node(node)
+        if node["TYPE"] == "command":
+            result += transform_command(node)
+        else:
+            result.append(node)
+    return result
 
 def transform_node(node):
-    if node.has_key("COMMANDS"):   transform_nodes(node["COMMANDS"]) 
-    if node.has_key("TERMS"):      transform_nodes(node["TERMS"]) 
-    if node.has_key("MENU"):       transform_node( node["MENU"]) 
+    if node.has_key("COMMANDS"):   
+        node["COMMANDS"] = transform_nodes(node["COMMANDS"]) 
+    if node.has_key("TERMS"):      
+        node["TERMS"]    = transform_nodes(node["TERMS"]) 
+    if node.has_key("MENU"): transform_node(node["MENU"]) 
     
     if node.has_key("ACTIONS"):    
         substitution = {}
         node["ACTIONS"] = transform_actions(substitution, node["ACTIONS"]) 
 
-# transforms above are destructive, transforms below are functional
-# except transform_eval
+  # this is called after command's subnodes have been transformed:
+def transform_command(command):  # -> commands !
+    global Statement_count
+
+    terms = command["TERMS"]
+    i = offset_of_first_optional(terms)
+    if i < 0:
+        return [command]
+
+    without         = copy.deepcopy(command)
+    without["NAME"] = str(Statement_count)
+    Statement_count += 1
+
+    with_terms = command
+    with_terms["TERMS"] = combine_terms(terms[0:i] + terms[i]["TERMS"] + terms[i+1:])
+
+    without_terms    = without["TERMS"]
+    without["TERMS"] = combine_terms(without_terms[0:i] + without_terms[i+1:])
+    before    = len(get_variable_terms(without_terms[0:i]))
+    vanishing = len(get_variable_terms(terms[i]["TERMS"]))
+    after     = len(get_variable_terms(without_terms[i+1:]))
+    if without.has_key("ACTIONS"):
+        without["ACTIONS"] = nop_references(without["ACTIONS"], before, 
+                                            vanishing, after)
+    return transform_command(with_terms) + transform_command(without) 
+
+def offset_of_first_optional(terms):
+    i = 0
+    for term in terms:
+        if term["TYPE"] == "optionalterms":
+            return i
+        i += 1
+    return -1
+
+def nop_references(actions, before, vanishing, after):
+    nop = create_word_node("", "", -1)
+
+    substitution = {}
+    for j in xrange(1+before,1+before+vanishing):
+        substitution[str(j)] = [nop]
+    for j in xrange(1+before+vanishing, 1+before+vanishing+after):
+        reference         = {}
+        reference["TYPE"] = "reference"
+        reference["TEXT"] = str(j - vanishing)
+        substitution[str(j)] = [reference]
+
+    return transform_actions(substitution, actions)
+
+# transforms above are (partially) destructive, transforms below are
+# functional except transform_eval
 
 def transform_actions(substitution, actions):
     new_actions = []
@@ -1889,14 +1967,14 @@ def transform_actions(substitution, actions):
         new_actions.extend(transform_action(substitution, action))
     return new_actions
 
-def transform_arguments(substitution, arguments):          # lists of actions
+def transform_arguments(substitution, arguments): # -> lists of actions
     new_arguments = []
     for argument in arguments: 
         new_arguments.append(transform_actions(substitution, argument))
     return new_arguments
 
 def transform_action(substitution, action):  # -> actions
-    if action["TYPE"] == "formalref":  
+    if action["TYPE"] == "formalref" or action["TYPE"] == "reference":  
         name = action["TEXT"]
         if substitution.has_key(name):
             return substitution[name]
@@ -2225,7 +2303,7 @@ def emit_top_command_actions(command):
     terms = command["TERMS"]
     nterms = len(terms)
     function = "gotResults_" + command["NAME"]
-    Variable_terms = get_variable_terms(command) # used in emit_reference
+    Variable_terms = get_variable_terms(terms) # used in emit_reference
     
     command_specification = unparse_terms(0, terms)
     
@@ -2280,8 +2358,8 @@ def emit_optional_term_fixup(unnamed):
         elif term["TYPE"] == "dictation": 
             emit(2, "fullResults = combineDictationWords(fullResults)\n")
             emit(2, "opt = " + str(index) + " + self.firstWord\n")
-            emit(2, "if opt >= len(fullResults) or fullResults[opt][1] != 'dgndictation':\n")
-            emit(3, "fullResults.insert(opt, ['', 'dgndictation'])\n")
+            emit(2, "if opt >= len(fullResults) or fullResults[opt][1] != 'converted dgndictation':\n")
+            emit(3, "fullResults.insert(opt, ['', 'converted dgndictation'])\n")
 
 def emit_actions(buffer, functional, actions, indent):
     for action in actions: 
@@ -2298,12 +2376,14 @@ def emit_actions(buffer, functional, actions, indent):
         else: 
             implementation_error("Unknown action type: '" + type + "'")
 
-def get_variable_terms(command):
+def get_variable_terms(terms):
     variable_terms = []
-    for term in command["TERMS"]: 
+    for term in terms:
         type = term["TYPE"]
         if type == "menu" or type == "range" or type == "variable" or type == "dictation": 
             variable_terms.append(term)
+        elif type =="optionalterms":
+            variable_terms += get_variable_terms(term["TERMS"])
     return variable_terms
 
 def emit_reference(buffer, functional, action, indent):
@@ -2358,8 +2438,10 @@ def emit_call(buffer, functional, call, indent):
         if    callName == "Eval":         
             implementation_error("Eval not transformed away")
         elif callName == "EvalTemplate": emit_call_eval_template(buffer, functional, call, indent)
+        elif callName == "If":           emit_call_if(buffer, functional, call, indent)
         elif callName == "Repeat":       emit_call_repeat(buffer, functional, call, indent)
         elif callName == "Unimacro":     emit_call_Unimacro(buffer, functional, call, indent)
+        elif callName == "When":         emit_call_when(buffer, functional, call, indent)
         else: implementation_error("Unknown Vocola function: '" + callName + "'")
     else: implementation_error("Unknown function call type: '" + callType + "'")
     end_nested_call()
@@ -2387,6 +2469,30 @@ def emit_call_repeat(buffer, functional, call, indent):
     emit_actions(argument_buffer, "True", arguments[0], indent)
     emit(indent, "for i in range(to_long(" + argument_buffer + ")):\n")
     emit_actions(buffer, functional, arguments[1], indent+1)
+
+def emit_call_if(buffer, functional, call, indent):
+    arguments = call["ARGUMENTS"]
+    
+    argument_buffer = get_nested_buffer_name("conditional_value")
+    emit(indent, argument_buffer + " = ''\n")
+    emit_actions(argument_buffer, "True", arguments[0], indent)
+    emit(indent, "if " + argument_buffer + ".lower() == \"true\":\n")
+    emit_actions(buffer, functional, arguments[1], indent+1)
+    if len(arguments)>2:
+        emit(indent, "else:\n")
+        emit_actions(buffer, functional, arguments[2], indent+1)
+
+def emit_call_when(buffer, functional, call, indent):
+    arguments = call["ARGUMENTS"]
+    
+    argument_buffer = get_nested_buffer_name("when_value")
+    emit(indent, argument_buffer + " = ''\n")
+    emit_actions(argument_buffer, "True", arguments[0], indent)
+    emit(indent, "if " + argument_buffer + " != \"\":\n")
+    emit_actions(buffer, functional, arguments[1], indent+1)
+    if len(arguments)>2:
+        emit(indent, "else:\n")
+        emit_actions(buffer, functional, arguments[2], indent+1)
 
 def emit_arguments(call, name, indent):
     arguments = ""
