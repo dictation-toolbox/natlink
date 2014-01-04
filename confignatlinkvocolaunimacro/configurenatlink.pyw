@@ -375,8 +375,10 @@ class ConfigureNatlinkPanel(wx.Panel):
                 self.urgentMessage = "See the log panel for startup information, the init phase was succesful"
                 
         self.setInfo()
-        
-
+        # now self.DNSName is known (NatSpeak or Dragon)
+        self.DNSName = self.config.getDNSName()
+        pass
+    
     def warning(self, text, title='Message from Configure NatLink GUI'):
         if isinstance(text, basestring):
             Text = text
@@ -396,6 +398,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 ##        'VocolaUserDirectory'
         # checkboxes should have a getter, an event (OnCB...) and
         # be included in self.checkboxes list.
+        ##QH: should include DNSName maybe (2014)
         
         D['DNSVersion'] = self.frame.infopanel.GetTextctrldnsversion
         D['DNSInstallDir'] = self.frame.infopanel.GetTextctrldnsinstallpath
@@ -644,7 +647,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             undoLetter = letter.lower()                                       
         result = self.do_command(doLetter, undo=undoLetter)
         if not result:
-            self.setstatus("checkbox option changed, restart NatSpeak to take effect")
+            self.setstatus("checkbox option changed, restart %s to take effect"% self.DNSName)
 
        
     # WDR: methods for configurenatlink
@@ -777,7 +780,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         
         doLetter = 'p'
         undoLetter = 'P'
-        statustext = 'Unimacro Editor is specified, this will take effect after you restart NatSpeak'
+        statustext = 'Unimacro Editor is specified, this will take effect after you restart %s'% self.DNSName
 
         # ask for the correct directory:
         dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite Unimacro INI files editor please",
@@ -809,7 +812,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 #        
 #        doLetter = 'w'
 #        undoLetter = 'W'
-#        statustext = 'Vocola Editor is specified, this will take effect after you restart NatSpeak'
+#        statustext = 'Vocola Editor is specified, this will take effect after you restart %s'% self.DNSName
 #
 #        # ask for the correct directory:
 #        dlg = wx.FileDialog(self.frame, "Choose the filename of your favorite editor please",
@@ -923,7 +926,7 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
 
     def OnButtonClose(self, event):
         if self.undoList:
-            self.warning('Please restart NatSpeak\n\n(in order to let the changes take effect)')
+            self.warning('Please restart %s\n\n(in order to let the changes take effect)'% self.DNSName)
         self.parent.frame.Destroy()
 
     def OnButtonUndo(self, event):
@@ -939,7 +942,7 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         if D['unimacroIsEnabled']:
             doLetter = letter.upper()
             undoLetter = letter.lower()
-            statustext = 'Unimacro/user grammars is DISABLED, this will take effect after you restart NatSpeak'
+            statustext = 'Unimacro/user grammars is DISABLED, this will take effect after you restart %s'% self.DNSName
             prevPath = D['UserDirectory']
             undoCmd = (undoLetter, prevPath)
             self.do_command(doLetter, undo=undoCmd)
@@ -949,7 +952,7 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         # now go for enable:
         doLetter = letter.lower()
         undoLetter = letter.upper()
-        statustext = 'Unimacro/user grammars is ENABLED, this will take effect after you restart NatSpeak'
+        statustext = 'Unimacro/user grammars is ENABLED, this will take effect after you restart %s'% self.DNSName
 
         # ask for the correct directory:
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
@@ -987,7 +990,7 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         # now go for enable:
         doLetter = letter.lower()
         undoLetter = letter.upper()
-        statustext = 'Unimacro INI Files Directory is set, this will take effect after you restart NatSpeak'
+        statustext = 'Unimacro INI Files Directory is set, this will take effect after you restart %s'% self.DNSName
 
         # ask for the correct directory:
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
@@ -1034,7 +1037,7 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         if D['vocolaIsEnabled']:
             doLetter = letter.upper()
             undoLetter = letter.lower()
-            statustext = 'Vocola is DISABLED, this will take effect after you restart NatSpeak'
+            statustext = 'Vocola is DISABLED, this will take effect after you restart %s'% self.DNSName
             prevPath = D['VocolaUserDirectory']
             undoCmd = (undoLetter, prevPath)
             self.do_command(doLetter, undo=undoCmd)
@@ -1044,7 +1047,7 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         # now go for enable:
         doLetter = letter.lower()
         undoLetter = letter.upper()
-        statustext = 'Vocola is ENABLED, this will take effect after you restart NatSpeak'
+        statustext = 'Vocola is ENABLED, this will take effect after you restart %s'% self.DNSName
 
         # ask for the correct directory:
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
@@ -1078,11 +1081,11 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         if D['natlinkIsEnabled']:
             doLetter = letter.upper()
             undoLetter = letter.lower()
-            statustext = 'NatLink is DISABLED, this will take effect after you restart NatSpeak'
+            statustext = 'NatLink is DISABLED, this will take effect after you restart %s'% self.DNSName
         else:
             doLetter = letter.lower()
             undoLetter = letter.upper()
-            statustext = 'NatLink is ENABLED, this will take effect after you restart NatSpeak'
+            statustext = 'NatLink is ENABLED, this will take effect after you restart %s'% self.DNSName
         self.do_command(doLetter, undo=undoLetter)
         self.setstatus(statustext)
 
@@ -1144,14 +1147,14 @@ Consult the "log" panel for more information."""
 
     def OnButtonUnregister(self, event):
         self.do_command('R')
-        self.warning("Close this program, Natspeak, all Python applications and\n\npossibly restart your computer\n\nbefore you run this program again!")
-        self.urgentMessage = "Close this program, restart Natspeak, possibly computer"
+        self.warning("Close this program, %s, all Python applications and\n\npossibly restart your computer\n\nbefore you run this program again!"% self.DNSName)
+        self.urgentMessage = "Close this program, restart %s, possibly computer"% self.DNSName
         self.setInfo()
 
     def OnButtonRegister(self, event):
         self.do_command('r')
-        self.warning("Close this program, Natspeak, all Python applications and\n\npossibly restart your computer\n\nbefore you run this program again!")
-        self.urgentMessage = "Close this program, restart Natspeak, possibly computer"
+        self.warning("Close this program, %s, all Python applications and\n\npossibly restart your computer\n\nbefore you run this program again!"% self.DNSName)
+        self.urgentMessage = "Close this program, restart %s, possibly computer"% self.DNSName
         self.setInfo()
         
 

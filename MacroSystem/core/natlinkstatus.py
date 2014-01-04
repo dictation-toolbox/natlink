@@ -1118,6 +1118,14 @@ Please try to correct this by running the NatLink Config Program (with administr
         value = self.userregnl.get('NatlinkDllRegistered', None)
         return value
 
+    def getDNSName(self):
+        """return NatSpeak for versions <= 11, and Dragon for versions >= 12
+        """
+        if self.getDNSVersion() <= 11:
+            return 'NatSpeak'
+        else:
+            return "Dragon"
+
     def getNatlinkStatusDict(self):
         """return actual status in a dict"""
         D = {}
@@ -1125,6 +1133,7 @@ Please try to correct this by running the NatLink Config Program (with administr
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'DNSFullVersion', 
                     'PythonVersion',
+                    'DNSName',
                     
                     'DebugLoad', 'DebugCallback', 'CoreDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
@@ -1211,7 +1220,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         # system:
         L.append('system information:')
         for key in ['DNSInstallDir',
-                    'DNSIniDir', 'DNSVersion',
+                    'DNSIniDir', 'DNSVersion', 'DNSName',
                     'WindowsVersion', 'PythonVersion']:
             self.appendAndRemove(L, D, key)
 

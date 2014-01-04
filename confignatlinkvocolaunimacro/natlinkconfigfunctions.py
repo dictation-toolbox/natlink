@@ -149,7 +149,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     def __init__(self):
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
         self.changesInInitPhase = 0
-    
+        self.DNSName = self.getDNSName()
     
     def checkCoreDirectory(self):
         """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
@@ -381,12 +381,12 @@ If you want the new settings, (re)register natlink.pyd (r)
 
 And rerun this program...
 
-Close NatSpeak (including Quick Start Mode), and all other Python applications
+Close %s (including Quick Start Mode), and all other Python applications
 before rerunning this program.  Possibly you have to restart your computer.
 
 If you do NOT want these new settings, simply close this program and run
 from the correct place.
-"""% (oldPathString, pathString)
+"""% (oldPathString, pathString, self.DNSName)
         self.warning(text)
         self.checkedUrgent = 1
 
@@ -681,7 +681,7 @@ Possibly you need administrator rights to do this
         result = self.NatlinkIsEnabled(silent=1)
         if result:            
             if not silent:
-                print 'NatLink enabled, restart NatSpeak'
+                print 'NatLink enabled, restart %s'% self.DNSName
         else:
             if not silent:
                 self.warning("failed to enable NatLink")
@@ -703,7 +703,7 @@ Possibly you need administrator rights to do this
             self.warning(t)
         else:
             if not silent:
-                print 'NatLink disabled, restart NatSpeak'
+                print 'NatLink disabled, restart %s'% self.DNSName
                 print 'Note natlink.pyd is NOT UNREGISTERED, but this is not necessary either'
         
     def getVocolaUserDir(self):
@@ -1167,6 +1167,7 @@ class CLI(cmd.Cmd):
             # see at top of this file!
             if key in self.config.userregnl.keys():
                 self.config.userregnl.delete(key)
+        self.DNSName = self.config.getDNSName()
         if __name__ == "__main__":
             print "Type 'u' for a usage message"
 
@@ -1198,12 +1199,12 @@ j       - print PythonPath variable
 
 e/E     - enable/disable NatLink
 
-g/G     - enable/disable debug output, which is sent to the NatSpeak log file
+g/G     - enable/disable debug output, which is sent to the NatSpeak/Dragon log file
 y/Y     - enable/disable debug callback output of natlinkmain 
 x/X     - enable/disable debug load output     of natlinkmain
 
-d/D     - set/clear DNSInstallDir, the directory where NatSpeak is installed
-c/C     - set/clear DNSINIDir, where NatSpeak INI files are located
+d/D     - set/clear DNSInstallDir, the directory where NatSpeak/Dragon is installed
+c/C     - set/clear DNSINIDir, where NatSpeak/Dragon INI files are located
 
 [Vocola]
 
@@ -1247,7 +1248,7 @@ help <command>: give more explanation on <command>
     # info----------------------------------------------------------
     def do_i(self, arg):
         S = self.config.getNatlinkStatusString()
-        S = S + '\n\nIf you changed things, you must restart NatSpeak'
+        S = S + '\n\nIf you changed things, you must restart %s'% self.DNSName
         print S
     def do_I(self, arg):
         # inifile natlinkstatus.ini settings:
@@ -1271,8 +1272,8 @@ NatLink directories after the config GUI runs succesfully
 Settings are set by either the NatLink/Vocola/Unimacro installer
 or by functions that are called by the CLI (command line interface).
 
-After you change settings, restart NatSpeak.
-"""
+After you change settings, restart %s.
+"""% self.DNSName
         print '='*60
     help_j = help_I = help_i
 
@@ -1285,7 +1286,7 @@ After you change settings, restart NatSpeak.
         if os.path.isdir(arg):
 ##            if arg.find(' ') > 0:
 ##                arg = '"' + arg + '"'
-            print "Change NatSpeak directory to: %s"% arg
+            print "Change %s directory to: %s"% (self.DNSName, arg)
             return self.config.setDNSInstallDir(arg)
         else:
             print 'not a valid folder: %s'% arg
@@ -1298,16 +1299,16 @@ After you change settings, restart NatSpeak.
     def help_d(self):
         print '-'*60
         print \
-"""Set (d <path>) or clear (D) the directory where NatSpeak is installed.
+"""Set (d <path>) or clear (D) the directory where %s is installed.
 
-Setting is only needed when NatSpeak is not found at one of the "normal" places.
+Setting is only needed when %s is not found at one of the "normal" places.
 So setting is often not needed.
 
 When you have a pre-8 version of NatSpeak, setting this option might work.
 
 After you clear this setting, NatLink will, at starting time, again
-search for the NatSpeak install directory in the "normal" place(s).
-"""
+search for the %s install directory in the "normal" place(s).
+"""% (self.DNSName, self.DNSName, self.DNSName)
         print '='*60
     help_D = help_d
 
@@ -1320,7 +1321,7 @@ search for the NatSpeak install directory in the "normal" place(s).
         if os.path.isdir(arg):
 ##            if arg.find(' ') > 0:
 ##                arg = '"' + arg + '"'
-            print "Change NatSpeak INI files directory to: %s"% arg
+            print "Change %s INI files directory to: %s"% (self.DNSName, arg)
             return self.config.setDNSIniDir(arg)
         else:
             print 'not a valid folder: %s'% arg
@@ -1328,21 +1329,21 @@ search for the NatSpeak install directory in the "normal" place(s).
 
 
     def do_C(self, arg):
-            print "Clear NatSpeak INI files directory in registry"
+            print "Clear %s INI files directory in registry"% self.DNSName
             return self.config.clearDNSIniDir()
     def help_c(self):
         print '-'*60
         print \
-"""Set (c <path>) or clear (C) the directory where NatSpeak INI file locations
+"""Set (c <path>) or clear (C) the directory where %s INI file locations
 (nssystem.ini and nsapps.ini) are located.
 
 Only needed if these cannot be found in the normal place(s):
 -if you have an "alternative" place where you keep your speech profiles
 -if you have a pre-8 version of NatSpeak.
 
-After Clearing this registry entry NatLink will, when it is started by NatSpeak,
+After Clearing this registry entry NatLink will, when it is started by %s,
 again search for its INI files in the "default/normal" place(s).
-"""
+"""% (self.DNSName, self.DNSName)
         print '='*60
     help_C = help_c
     
@@ -1490,7 +1491,7 @@ Vocola command.
 When you enable NatLink, the necessary settings in nssystem.ini and nsapps.ini
 are done.
 
-After you restart NatSpeak, NatLink should start, opening a window entitled
+After you restart %s, NatLink should start, opening a window entitled
 'Messages from Python Macros'.
 
 When you enable NatLink, the file natlink.pyd is (re)registered silently.  Use
@@ -1500,13 +1501,13 @@ the commands r/R to register/unregister natlink.pyd explicitly.
 When you disable NatLink, the necessary settings in nssystem.ini and nsapps.ini
 are cleared. 
 i
-After you restart NatSpeak, NatLink should NOT START ANY MORE
+After you restart %s, NatLink should NOT START ANY MORE
 so the window 'Messages from Python Macros' is NOT OPENED.
 
 Note: when you disable NatLink, the natlink.pyd file is NOT unregistered.
-It is not called any more by NatSpeak, as its declaration is removed from
+It is not called any more by %s, as its declaration is removed from
 the Global Clients section of nssystem.ini.
-"""
+"""% (self.DNSName, self.DNSName, self.DNSName)
         print "="*60
         
         
@@ -1577,10 +1578,10 @@ You may have to manually create this folder first.
 
     # enable/disable NatLink debug output...
     def do_g(self, arg):
-        print "Enable NatLink debug output to NatSpeak logfile "
+        print "Enable NatLink debug output to %s logfile "% self.DNSName
         self.config.enableDebugOutput()
     def do_G(self, arg):
-        print "Disable NatLink debug output to NatSpeak logfile"
+        print "Disable NatLink debug output to %s logfile"% self.DNSName
         self.config.disableDebugOutput()
 
     def help_g(self):
