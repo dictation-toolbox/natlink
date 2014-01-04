@@ -1,5 +1,6 @@
 Release 4.1hotel:
 - more stable pyd files (hopefully)
+- Title changed to "Messages from NatLink - built 01/01/2014"
 - installer checks for 64 bit python (forbidden)
 - many Unimacro improvements, action classes for specific programs
   (lines module hundred)

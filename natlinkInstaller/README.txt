@@ -1,10 +1,24 @@
-We are well underway to make a new stable release for Dragon 12 and NatLink too. (September, 2 2013)
+We are slowly moving to a new stable release for Dragon 12 and NatLink too. (January 2014)
 
 4.1hotel:
 - more stable pyd files (hopefully)
+- Title changed to "Messages from NatLink - built 01/01/2014"
 - installer checks for 64 bit python (forbidden)
 - many Unimacro improvements, action classes for specific programs (lines module hundred)
 - autohotkey support
+- New release of Vocola 2, 2.8.1:
+    New in 2.8.1:
+    
+    ! Any series of one or more terms at least one of which is not optional
+      or <_anything> can now be optional.
+    
+    * New built-ins, If and When.
+    
+    * Bug fix for list entries containing \'s with actions (produced invalid
+      Python code).
+    
+    * Bug fix for adjacent <_anything>'s in command sequences
+
 
 
 From earlier "4.1" "beta" releases:

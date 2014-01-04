@@ -21,7 +21,7 @@
 #                     '_numberstest.py', 'firefox_browsing.py',
 #                     'sol.py', 'freecell.py']
 GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_number simple.py', '_number extended.py',
-                     '_testtrayicon.py', 'testrecognitionmimic.py',  
+                     '_testtrayicon.py', 'testrecognitionmimic.py',  '_repeat.py',
                      '_keystrokes.py', '_oops.py', '_setpriority.py',
                      '_tags.py', '_unimacrotest.py', '_modes.py', '_shownumbersplus.py',
                      '_latex.py', 'excel.py', 'calc_test.py', 'solitaire.py', 'sol.py',
