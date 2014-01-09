@@ -23,7 +23,7 @@
 #
 # Copyright (c) 2000-2003, 2005, 2007, 2009-2012 by Rick Mohr.
 # 
-# Portions Copyright (c) 2012-13 by Hewlett-Packard Development Company, L.P.
+# Portions Copyright (c) 2012-14 by Hewlett-Packard Development Company, L.P.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -119,7 +119,7 @@ import sys
 # ---------------------------------------------------------------------------
 # Main control flow
 
-VocolaVersion = "2.8.1"
+VocolaVersion = "2.8.1I+"
 
 def main():
     global Debug, Default_maximum_commands, Error_encountered, Force_processing, In_folder, Number_words, LOG
@@ -2193,7 +2193,7 @@ def emit_context_activations(contexts):
         else: 
             emit(4, "try:\n")
             emit(5, "self.activate(rule,window)\n")
-            emit(4, "except BadWindow:\n")
+            emit(4, "except natlink.BadWindow:\n")
             emit(5, "pass\n")
     emit(0, "\n")
 
