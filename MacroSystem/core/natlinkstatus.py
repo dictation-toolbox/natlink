@@ -1,4 +1,4 @@
-__version__ = "4.1hotel"
+__version__ = "4.1india"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "4.1hotel"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1india: bugfix Vocola
 # 4.1hotel:
 #      more stable pyd files (hopefully)
 #      installer checks for 64 bit python (forbidden)
@@ -135,6 +136,12 @@ getDebugOutput:
     get value from registry, output in log file of DNS, should be kept at 0
     
 getVocolaTakesLanguages: additional settings for Vocola
+
+new 2014:
+getDNSName: return "NatSpeak" for versions <= 11 and "Dragon" for 12 (on)
+getAhkExeDir: return the directory where AutoHotkey is found (only needed when not in default)
+getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.
+
 """
 
 
@@ -248,6 +255,8 @@ class NatlinkStatus(object):
     UserDirectory = None
     UnimacroUserDirectory = None
     VocolaUserDirectory = None
+    AhkUserDir = None
+    AhkExeDir = None
     hadWarning = []
 
     def __init__(self, skipSpecialWarning=None):
@@ -879,6 +888,65 @@ Please try to correct this by running the NatLink Config Program (with administr
         self.__class__.VocolaUserDirectory = ''
         return ''
 
+    def getAhkUserDir(self):
+        if not self.AhkUserDir is None: return self.AhkUserDir
+        return self.getAhkUserDirFromIni()
+
+    def getAhkUserDirFromIni(self):
+        key = 'AhkUserDir'
+        
+        value = self.userregnl.get(key, '')
+        if value:
+            if os.path.isdir(value):
+                value2 = os.path.normpath(value)
+                self.__class__.AhkUserDir = value2
+                return value2
+            else:
+                value2 = natlinkcorefunctions.expandEnvVariables(value)
+                ## can possibly take expandEnvVariable (which can also hold env variables in
+                ## the middle of the string )
+                if os.path.isdir(value2):
+                    value2 = os.path.normpath(value2)
+                    self.__class__.AhkUserDir = value2
+                    #print 'AhkUserDir (expanded): %s'% value2
+                    return value2
+                elif value2:
+                    print 'not a valid AhkUserDir: %s (ignore value)'% value2
+                else:
+                    print 'No AhkUserDir specified'
+        self.__class__.AhkUserDir = ''
+        return ''
+
+    def getAhkExeDir(self):
+        if not self.AhkExeDir is None: return self.AhkExeDir
+        return self.getAhkExeDirFromIni()
+
+    def getAhkExeDirFromIni(self):
+        key = 'AhkExeDir'
+        
+        value = self.userregnl.get(key, '')
+        if not value:
+            self.__class__.AhkExeDir = ''
+            return ''
+    
+        if os.path.isdir(value):
+            value2 = os.path.normpath(value)
+        else:
+            value2 = natlinkcorefunctions.expandEnvVariables(value)
+            ## can possibly take expandEnvVariable (which can also hold env variables in
+            ## the middle of the string )
+            if os.path.isdir(value2):
+                value2 = os.path.normpath(value2)
+        if value2 and os.path.isdir(value2):
+            ahkexe = os.path.join(value2, 'autohotkey.exe')
+            if os.path.isfile(ahkexe):
+                self.__class__.AhkExeDir = value2
+                return value2
+
+        print 'No valid AhkExeDir defined in inifile: %s'% value
+        self.__class__.AhkExeDir = ''
+        return ''
+
     def getOriginalUnimacroDirectory(self):
         """for use of finding sample_ini directories for example,
         
@@ -912,7 +980,6 @@ Please try to correct this by running the NatLink Config Program (with administr
                 ## the middle of the string )
                 if os.path.isdir(value2):
                     value2 = os.path.normpath(value2)
-                    print 'Take UnimacroUserDirectory (expanded): %s'% value2
                     self.__class__.UnimacroUserDirectory = value2
                     return value2
                 else:
@@ -1139,7 +1206,8 @@ Please try to correct this by running the NatLink Config Program (with administr
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'UnimacroIniFilesEditor',
                     'NatlinkDebug', 'InstallVersion', 'NatlinkPydRegistered',
-                    'IncludeUnimacroInPythonPath']:
+                    'IncludeUnimacroInPythonPath',
+                    'AhkExeDir', 'AhkUserDir']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
             execstring = "D['%s'] = self.get%s()"% (key, keyCap)

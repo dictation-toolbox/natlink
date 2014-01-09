@@ -1,16 +1,22 @@
 We are slowly moving to a new stable release for Dragon 12 and NatLink too. (January 2014)
 
-4.1hotel:
+4.1india:
+! MAJOR non-backward-compatible change to what names
+  natlinkutils provides.
+  - This was done because we are moving away from
+    "from ... import *" statements in favour of "import ..."
+    and qualify variables and functions.
+  - In particular, recognitionMimic, getCursorPos, and Badwindow among
+    others names now must be imported from natlink rather than from 
+    natlinkutils.
+  - See http://qh.antenna.nl/unimacro/installation/technicaldetails/natlinkutils.html for more details.
+- Vocola suffered from this change, this is now fixed in Vocola 2.8.1I+
+
 - more stable pyd files (hopefully)
 - Title changed to "Messages from NatLink - built 01/01/2014"
 - installer checks for 64 bit python (forbidden)
 - many Unimacro improvements, action classes for specific programs (lines module hundred)
 - autohotkey support
-! MAJOR non-backward-compatible change to what names natlinkutils
-  provides
-  - In particular, recognitionMimic, getCursorPos, and Badwindow among
-    others names now must be imported from natlink rather than
-    natlinkutils.
 - New release of Vocola 2, 2.8.1:
     New in 2.8.1:
     
@@ -24,7 +30,7 @@ We are slowly moving to a new stable release for Dragon 12 and NatLink too. (Jan
     
     * Bug fix for adjacent <_anything>'s in command sequences
 
-
+4.1hotel is removed.
 
 From earlier "4.1" "beta" releases:
 -This includes a new stable Vocola release which is complete implemented in python

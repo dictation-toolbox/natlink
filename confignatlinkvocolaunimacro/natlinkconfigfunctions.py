@@ -726,6 +726,52 @@ Possibly you need administrator rights to do this
         key = 'VocolaUserDirectory'
         self.userregnl.delete(key)
 
+    ## autohotkey (January 2014)
+    def getAhkExeDir(self):
+        key = 'AhkExeDir'
+        value = self.userregnl.get(key, None)
+        return value
+
+    def setAhkExeDir(self, v):
+        key = 'AhkExeDir'
+        if v.startswith("~") or v.find("%") >= 0:
+            v = natlinkcorefunctions.expandEnvVariables(v)
+            print "Setting AutoHotkey Exe expanded to %s"% v
+
+        if os.path.isdir(v):
+            exepath = os.path.join(v, 'autohotkey.exe')
+            if os.path.isfile(exepath):
+                print 'set AutoHotkey Exe dir to %s'% v
+                self.userregnl.set(key, v)
+            else:
+                print 'path does not contain "autohotkey.exe"H: %s'% v
+        else:
+            print 'not a valid directory: %s'% v
+
+    def clearAhkUserDir(self):
+        key = 'AhkUserDir'
+        self.userregnl.delete(key)
+
+    def getAhkUserDir(self):
+        key = 'AhkUserDir'
+        value = self.userregnl.get(key, None)
+        return value
+
+    def setAhkUserDir(self, v):
+        key = 'AhkUserDir'
+        if v.startswith("~") or v.find("%") >= 0:
+            print "Setting AutoHotkey User Directory to %s"% v
+            self.userregnl.set(key, v)
+        elif os.path.isdir(v):
+            print 'set AutoHotkey User Directory to %s'% v
+            self.userregnl.set(key, v)
+        else:
+            print 'not a valid directory: %s'% v
+
+    def clearAhkExeDir(self):
+        key = 'AhkExeDir'
+        self.userregnl.delete(key)
+
 
     def getUnimacroUserDir(self):
         key = 'UnimacroUserDirectory'
@@ -1229,13 +1275,13 @@ m/M     - insert/remove an include line for Unimacro.vch in all Vocola
           command files
 
 [Repair]
-
 r/R     - register/unregister NatLink, the natlink.pyd (natlink.pyd) file
           (should not be needed)
-
 z/Z     - silently enables NatLink and registers natlink.pyd / disables NatLink
           and unregisters natlink.pyd.
-      
+[AutoHotkey]
+h/H     - set/clear the AutoHotkey exe directory.
+k/K     - set/clear the User Directory for AutoHotkey scripts.
 [Other]
 
 u/usage - give this list
@@ -1754,8 +1800,37 @@ is made and all existing Vocola user files are copied into this folder.
     help_B = help_b
     help_A = help_a
 
-    # enable/disable NatLink debug output...
+    # autohotkey settings:
+    def do_h(self, arg):
+        print 'set directory of AutoHotkey.exe to: %s'% arg
+        self.config.setAhkExeDir(arg)
 
+    def do_H(self, arg):
+        print 'clear directory of AutoHotkey.exe, return to default'
+        self.config.clearAhkExeDir()
+
+    def do_k(self, arg):
+        print 'set user directory for AutoHotkey scripts to: %s'% arg
+        self.config.setAhkUserDir(arg)
+
+    def do_K(self, arg):
+        print 'clear user directory of AutoHotkey scripts, return to default'
+        self.config.clearAhkUserDir()
+            
+    def help_h(self):
+        print '-'*60
+        print \
+"""----Set (h)/clear (return to default) (H) the AutoHotkey exe directory.
+       Assume autohotkey.exe is found there (if not AutoHotkey support will not be there)
+       If set to a invalid directory, AutoHotkey support will be switched off.
+       
+       Set (k)/clear (return to default) (K) the User Directory for AutoHotkey scripts.
+"""
+        print '='*60
+
+    help_H = help_k = help_K = help_h
+
+    # enable/disable NatLink debug output...
 
     def default(self, line):
         print 'no valid entry: %s, type u or usage for list of commands'% line
