@@ -6,6 +6,11 @@ We are slowly moving to a new stable release for Dragon 12 and NatLink too. (Jan
 - installer checks for 64 bit python (forbidden)
 - many Unimacro improvements, action classes for specific programs (lines module hundred)
 - autohotkey support
+! MAJOR non-backward-compatible change to what names natlinkutils
+  provides
+  - In particular, recognitionMimic, getCursorPos, and Badwindow among
+    others names now must be imported from natlink rather than
+    natlinkutils.
 - New release of Vocola 2, 2.8.1:
     New in 2.8.1:
     
