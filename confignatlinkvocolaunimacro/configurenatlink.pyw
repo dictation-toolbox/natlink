@@ -257,7 +257,7 @@ See more help information in the log panel"""
 
     def setstatus(self, text):
         """put message on log panel and on status line"""
-        print text
+        #print text
         self.frame.SetStatusText(text)
 
     def do_command(self, *args, **kw):
@@ -377,8 +377,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.setInfo()
         # now self.DNSName is known (NatSpeak or Dragon)
         self.DNSName = self.config.getDNSName()
-        pass
-    
+
     def warning(self, text, title='Message from Configure NatLink GUI'):
         if isinstance(text, basestring):
             Text = text
@@ -864,8 +863,8 @@ If, for example, NatLink shows the button "Enable", it is currently disabled.
 In order to let the changes take effect, you have to restart NatSpeak.
 In some (rare) cases you have to restart the computer.
 
-Windows Vista and Windows 7 must run in "elevated mode". The startup script
-from the Windows Start menu ensures this.
+You must run this program in "elevated mode". The startup script 
+from the Windows Start menu ensures this (start_configurenatlink.py).
 """
         self.warning(text)
         
@@ -1079,16 +1078,25 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         D = self.config.getNatlinkStatusDict()
         letter = 'e'
         if D['natlinkIsEnabled']:
+            # disable:
             doLetter = letter.upper()
             undoLetter = letter.lower()
-            statustext = 'NatLink is DISABLED, this will take effect after you restart %s'% self.DNSName
+            self.do_command(doLetter, undo=undoLetter)
+            if self.config.NatlinkIsEnabled():
+                statustext = 'NatLink is NOT DISABLED, please run this program in "elevated mode"'
+            else:
+                statustext = 'NatLink is DISABLED, this will take effect after you restart %s'% self.DNSName
+                
         else:
+            # enable:
             doLetter = letter.lower()
             undoLetter = letter.upper()
-            statustext = 'NatLink is ENABLED, this will take effect after you restart %s'% self.DNSName
-        self.do_command(doLetter, undo=undoLetter)
+            self.do_command(doLetter, undo=undoLetter)
+            if self.config.NatlinkIsEnabled():
+                statustext = 'NatLink is ENABLED, this will take effect after you restart %s'% self.DNSName
+            else:
+                statustext = 'NatLink is NOT ENABLED, please run this program in "elevated mode"'
         self.setstatus(statustext)
-
         
     #def OnCBNatlinkDebug(self, event):   ## obsolete, QH 26-08-2013
     #    letter = 'g'

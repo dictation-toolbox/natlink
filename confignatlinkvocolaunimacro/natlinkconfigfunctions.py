@@ -660,23 +660,37 @@ NatLink is now disabled.
         section1 = self.section1
         key1 = self.key1
         value1 = self.value1
-        win32api.WriteProfileVal(section1, key1, value1, nssystemini)
+        try:
+            win32api.WriteProfileVal(section1, key1, value1, nssystemini)
+        except pywintypes.error, details:
+            if details[0] == 5:
+                print 'cannot enable NatLink (1), you probably need administrator rights'
+            else:
+                print 'unexpected error at enable NatLink (1)'
+                raise
+            
         result = self.NatlinkIsEnabled(silent=1)
         if result == None:
             nsappsini = self.getNSAPPSIni()
             section2 = self.section2
             key2 = self.key2
             value2 = self.value2
-            win32api.WriteProfileVal(section2, key2, value2, nsappsini)
+            try:
+                win32api.WriteProfileVal(section2, key2, value2, nsappsini)
+            except pywintypes.error, details:
+                if details[0] == 5:
+                    print 'cannot enable NatLink (2), you probably need administrator rights'
+                else:
+                    print 'unexpected error at enable NatLink (2)'
+                    raise
             result = self.NatlinkIsEnabled(silent=1)
             if result == None:
                 text = \
-"""cannot set the nsapps.ini setting in order to complete enableNatlink.
+"""Cannot set the nsapps.ini setting in order to complete enableNatlink.
 
-Possibly you need administrator rights to do this
+Probably you did not run this program in "elevated mode". Please try to do so.
 """
-                if not silent:
-                    self.warning(text)
+                self.warning(text)
                 return                
         result = self.NatlinkIsEnabled(silent=1)
         if result:            
@@ -695,10 +709,17 @@ Possibly you need administrator rights to do this
         key1 = self.key1
         # trick with None, see testConfigureFunctions...
         # this one disables NatLink:
-        win32api.WriteProfileVal(section1, key1, None, nssystemini)
+        try:
+            win32api.WriteProfileVal(section1, key1, None, nssystemini)
+        except pywintypes.error, details:
+            if details[0] == 5:
+                print 'cannot disable NatLink, you probably need administrator rights'
+            else:
+                print 'unexpected error at disable NatLink'
+                raise
         result = self.NatlinkIsEnabled(silent=1)
         if result:            
-            t = 'NatLink is NOT disabled, possibly you need administrator rights'
+            t = 'NatLink is NOT disabled, you probably need administrator rights, please restart the config program in "elevated mode"'
             print t
             self.warning(t)
         else:

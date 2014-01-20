@@ -12,7 +12,7 @@ import sys, unittest, win32api, os, win32con, copy, shutil
 import natlinkconfigfunctions, natlinkstatus
 reload(natlinkconfigfunctions)
 
-testinifile1 = os.path.join("C:\\", "testinifile.ini")
+testinifile1 = os.path.join("D:\\Documenten", "testinifile.ini")
 
 ##Accessories = 'Accessories'
 ## for Dutch windows system:
@@ -43,7 +43,7 @@ def getCoreDir(thisDir):
     """get the natlink core folder, relative from the current folder
 
     This folder should be relative to this with ../macrosystem/core and should contain
-    natlinkmain.py and natlink.dll and natlinkstatus.py
+    natlinkmain.py and natlink.pyd and natlinkstatus.py
 
     If not found like this, prints a line and returns thisDir
     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
@@ -52,11 +52,11 @@ def getCoreDir(thisDir):
     if not os.path.isdir(coreFolder):
         print 'not a directory: %s'% coreFolder
         return thisDir
-    dllPath = os.path.join(coreFolder, 'natlink.dll')
+    pydPath = os.path.join(coreFolder, 'natlink.pyd')
     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
     statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-    if not os.path.isfile(dllPath):
-        print 'natlink.dll not found in core directory: %s'% coreFolder
+    if not os.path.isfile(pydPath):
+        print 'natlink.pyd not found in core directory: %s'% coreFolder
         return thisDir
     if not os.path.isfile(mainPath):
         print 'natlinkmain.py not found in core directory: %s'% coreFolder
@@ -103,7 +103,7 @@ class TestConfigureFunctions(unittest.TestCase):
             correct working on the registry...
     (at each test the registry settings are recorded, and afterwards put back again)
 
-    Note enableNatlink is NOT tested here, as it does a register of a dll (which maybe should
+    Note enableNatlink is NOT tested here, as it does a register of a pyd (=dll) (which maybe should
     not be done too often) and works through INI files anyway, not through the registry.
 
     """

@@ -54,6 +54,13 @@
 #   See also the constants at the top of this file.
 
 ############################################################################
+# experiment Mark (Vocola Extension)
+useMarkSendInput = 1
+if useMarkSendInput:                                
+    from ExtendedSendDragonKeys import senddragonkeys_to_events
+    from SendInput import send_input
+
+
 
 import os, os.path, copy, types
 import struct
@@ -135,7 +142,6 @@ dgnwordflag_title_mode		= 0x02000000
 dgnwordflag_space_bar		= 0x08000000
 dgnwordflag_topicadded		= 0x40000000
 dgnwordflag_DNS8newwrdProp  = 0x20000000
-                                
  
 
 #---------------------------------------------------------------------------
@@ -199,9 +205,16 @@ def playString(keys, hooks=None):
     #    print 'playString, insert shift before keys'
     #    keys = "{shift}" + keys
         
-    if hooks is None:
-        print 'keystrokes no hooks: "%s"'% keys 
-        natlink.playString(keys, 0x100)
+    if hooks in [None, 0x100]:
+        if useMarkSendInput:
+            # the Vocola extension, code by Mark Lillibridge:
+            print 'send_input and senddragonkeys_to_events: %s'% keys
+            if keys.find('\n') > 0:
+                keys = keys.replace('\n', '{enter}')
+                print 'new keys: %s'% repr(keys)
+            send_input(senddragonkeys_to_events(keys))
+        else:
+            natlink.playString(keys, 0x100)
     else:
         natlink.playString(keys, hooks)
 #---------------------------------------------------------------------------
