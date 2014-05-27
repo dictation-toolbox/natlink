@@ -191,6 +191,10 @@ def playString(keys, hooks=None):
     does not work. revert to normal playString
     
     not if hooks (like systemkeys) are used...
+    
+    use send_input module from Mark Lillibridge.
+    Remove references to "ext" keyboard {ext..} and {ctrl+ext...}
+    
     """
     if not keys:
         return
@@ -207,6 +211,10 @@ def playString(keys, hooks=None):
         
     if hooks in [None, 0x100]:
         if useMarkSendInput:
+            if keys.find("{ext") >= 0:
+                keys = keys.replace("{ext", "{")
+            if keys.find("+ext") >= 0:
+                keys = keys.replace("+ext", "+")
             # the Vocola extension, code by Mark Lillibridge:
             print 'send_input and senddragonkeys_to_events: %s'% keys
             if keys.find('\n') > 0:
@@ -430,8 +438,11 @@ class GrammarBase(GramClassBase):
         parser.checkForErrors()
         gramBin = gramparser.packGrammar(parser)
         self.scanObj = parser.scanObj  # for later error messages.
-        GramClassBase.load(self,gramBin,allResults,hypothesis)
-        
+        try:
+            GramClassBase.load(self,gramBin,allResults,hypothesis)
+        except natlink.BadGrammar:
+            print 'GrammarBase, cannot load grammar, BadGrammar:\n%s\n'% gramSpec
+            raise
         # we want to keep a list of the rules which can be activated and the
         # known lists so we can catch errors earlier
         self.validRules = parser.exportRules.keys()
