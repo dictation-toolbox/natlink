@@ -216,10 +216,10 @@ def playString(keys, hooks=None):
             if keys.find("+ext") >= 0:
                 keys = keys.replace("+ext", "+")
             # the Vocola extension, code by Mark Lillibridge:
-            print 'send_input and senddragonkeys_to_events: %s'% keys
+            #print 'send_input and senddragonkeys_to_events: %s'% keys
             if keys.find('\n') > 0:
                 keys = keys.replace('\n', '{enter}')
-                print 'new keys: %s'% repr(keys)
+                print 'send_input, change keys to: %s'% repr(keys)
             send_input(senddragonkeys_to_events(keys))
         else:
             natlink.playString(keys, 0x100)

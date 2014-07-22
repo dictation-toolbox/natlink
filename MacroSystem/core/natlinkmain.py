@@ -822,4 +822,4 @@ except:
     print 'some error occurred'
     traceback.print_exc()
 else:
-    print 'load of natlinkmain succesful'
+    print 'load of natlinkmain succesfull'

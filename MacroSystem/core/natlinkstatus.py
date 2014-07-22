@@ -1,4 +1,4 @@
-__version__ = "4.1india"
+__version__ = "4.1juliet"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,8 @@ __version__ = "4.1india"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1juliet: adapted playString function (Mark Lillibridge) via natlinkutils.playString
+#            natlinkmain.py has nearly all code caught in a try except statement
 # 4.1india: bugfix Vocola
 # 4.1hotel:
 #      more stable pyd files (hopefully)

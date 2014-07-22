@@ -8,7 +8,7 @@
 ### 
 ### 
 ### Author:  Mark Lillibridge
-### Version: 0.6
+### Version: 0.7
 ### 
 
 import re
@@ -21,12 +21,26 @@ from SendInput import *
 debug = False
 
 
-def senddragonkeys_to_events(input):
+# ignore_unknown_names True means type out bad chords rather than
+# raising a KeyError; e.g., "{bad}" sends {, b, a, d, }.
+#
+def senddragonkeys_to_events(input, ignore_unknown_names=True):
     chords = parse_into_chords(input)
 
     events = []
     for c in chords:
-        events += chord_to_events(c)
+        try:
+            events += chord_to_events(c)
+        except LookupError, e:
+            if not ignore_unknown_names: 
+                raise
+            if not c[0] and not c[2] and len(c[1])==1:
+                raise  # already a single key chord
+            characters = c[3]
+            if debug:
+                print "typing out bad chord: " + characters + ": " + repr(e)
+            for char in characters:
+                events += chord_to_events([None, char, None, char])
 
     return events
 
@@ -40,6 +54,9 @@ def senddragonkeys_to_events(input):
 ### E.g., "a{shift+left_10} " -> [[None, "a", None], ["shift", "left",
 ###                               "10"], [None, "space", None]]
 ### 
+### Update: The chord's text is also stored for unparsing without information loss.
+###         E.g., "{{}" -> [None, "{", None, "{{}"]
+### 
 
 def parse_into_chords(specification):
     chords = []
@@ -49,13 +66,12 @@ def parse_into_chords(specification):
         if m:
             modifiers = m.group(1)
             if modifiers: modifiers = modifiers[:-1]  # remove final "+"
-            chords += [[modifiers, m.group(2), m.group(3)]]
+            chords += [[modifiers, m.group(2), m.group(3), m.group(0)]]
             specification = specification[m.end():]
         else:
-            char          = specification[0]
+            char = specification[0]
+            chords += [[None, char, None, char]]
             specification = specification[1:]
-            if char==" ": char = "space"
-            chords += [[None, char, None]]
     
     return chords
 
@@ -72,7 +88,9 @@ chord_pattern = re.compile(r"""\{ ( (?: [a-zA-Z0-9\x80-\xff]+ \+ )* )
 ### 
 
 def chord_to_events(chord):
-    modifiers, base, effect = chord
+    modifiers, base, effect, text = chord
+    if base == " ":
+        base = "space"
     if modifiers:
         modifiers = modifiers.split("+")
     else:
@@ -84,7 +102,12 @@ def chord_to_events(chord):
         elif effect == "release": hold_count    = 0
         else: 
             hold_count = int(effect)
-            if hold_count == 0: return []
+            if hold_count == 0:
+                # check for bad names even when no events:
+                for modifier in modifiers:
+                    single(modifier, False)
+                single(base, False)   
+                return []
 
     if len(base) == 1:
         try:
@@ -373,7 +396,7 @@ def get_mouse_button(button_name):
                     button = "left"
         return button
     except:
-        raise ValueError("unknown mouse button: " + key)
+        raise KeyError("unknown mouse button: " + key)
 
 
 ## 
@@ -393,7 +416,7 @@ def single(key, releasing):
         try:
             return [mouse_button_event(get_mouse_button(lower_key), releasing)]
         except:
-            raise ValueError("unknown key/button: " + key)
+            raise KeyError("unknown key/button: " + key)
 
 
 
@@ -454,7 +477,7 @@ def windows1252_to_events(code):
     return events
 
 def numpad(i):
-    return chord_to_events([None, "numkey" + str(i), None])
+    return chord_to_events([None, "numkey"+str(i), None, "{numkey"+str(i)+"}"])
 
 
 
