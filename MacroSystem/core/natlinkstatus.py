@@ -1,4 +1,4 @@
-__version__ = "4.1juliet"
+__version__ = "4.1kilo"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "4.1juliet"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1kilo: Dragon 13!
 # 4.1juliet: adapted playString function (Mark Lillibridge) via natlinkutils.playString
 #            natlinkmain.py has nearly all code caught in a try except statement
 # 4.1india: bugfix Vocola
@@ -162,9 +163,10 @@ NSExt9Path  = "Nuance\NaturallySpeaking9"
 NSExt10Path  = "Nuance\NaturallySpeaking10"
 NSExt11Path  = "Nuance\NaturallySpeaking11"
 NSExt12Path  = "Nuance\NaturallySpeaking12"
+NSExt13Path  = "Nuance\NaturallySpeaking13"
 DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
-DNSPaths = [NSExt12Path, NSExt11Path, NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
-DNSVersions = [12,11,10,9,8,7]
+DNSPaths = [NSExt13Path, NSExt12Path, NSExt11Path, NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
+DNSVersions = [13,12,11,10,9,8,7]
 # augment above when a new version is there!
 
 # utility functions: 

@@ -1,4 +1,11 @@
-We are slowly moving to a new stable release for Dragon 12 and NatLink too. (January 2014)
+We are slowly moving to a new stable release for Dragon 12 and NatLink too. (July 2014)
+
+4.1kilo:
+- adapt to Dragon13
+
+4.1juliet:
+- adapted playString function (Mark Lillibridge) via natlinkutils.playString (SendInput)
+- natlinkmain.py has nearly all code caught in a try except statement
 
 4.1india:
 ! MAJOR non-backward-compatible change to what names
