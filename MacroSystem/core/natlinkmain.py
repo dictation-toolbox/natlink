@@ -112,7 +112,7 @@ if caller_name is None:
     # automatic start of python macro system:toon alle grammatica's
     sys.stdout = NewStdout()
     sys.stderr = NewStderr()
-    print "at start of natlinkmain, after redirect stderr and stdout"
+    #print "at start of natlinkmain, after redirect stderr and stdout"
 
 # put all inside a try block, so we can isolate a problem when natlinkmain loads.
 
@@ -160,7 +160,7 @@ try:
         checkForGrammarChanges = value
     
     # start silent, set this to 0:
-    natlinkmainPrintsAtEnd = 1
+    natlinkmainPrintsAtEnd = 0
     ## << QH added
     
     #
@@ -666,9 +666,9 @@ try:
             findAndLoadFiles()        
             beginCallback(moduleInfo, checkAll=1)
             loadModSpecific(moduleInfo)
-            # give a warning for BestMatch V 
+            # give a warning for BestMatch V , only for Dragon 12:
             BaseModel, BaseTopic = status.getBaseModelBaseTopic()
-            if BaseModel.find("BestMatch V") > 0:
+            if DNSVersion == 12 and BaseModel.find("BestMatch V") > 0:
                 print '\n--- WARNING: Speech Model BestMatch V is used for this User Profile'
                 print 'The performance of many NatLink grammars is not good with this model.'
                 print 'Please choose another User Profile with for example Speech Model BestMatch IV.'
@@ -761,9 +761,6 @@ try:
             changeCallback('user', natlink.getCurrentUser())
         
         ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
-            print 'Starting natlinkmain from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
-                      (status.getCoreDirectory(), status.getInstallVersion(),
-                       DNSVersion, status.getPythonVersion(), WindowsVersion)
                 
             # load all global files in user directory and current directory
             findAndLoadFiles()
@@ -771,6 +768,11 @@ try:
             # initialize our callbacks
             natlink.setBeginCallback(beginCallback)
             natlink.setChangeCallback(changeCallback)
+
+            print 'natlinkmain started from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
+                      (status.getCoreDirectory(), status.getInstallVersion(),
+                       DNSVersion, status.getPythonVersion(), WindowsVersion)
+
         
         except:
             sys.stderr.write( 'Error initializing natlinkmain\n' )
@@ -781,8 +783,8 @@ try:
             print "natlinkmain imported-----------------------------------"
         elif natlinkmainPrintsAtEnd:
             print 'natlinkmain started (imported)\n'
-        else:
-            natlinkLogMessage('natlinkmain started (imported)\n')
+        #else:
+        #    natlinkLogMessage('natlinkmain started (imported)\n')
         if status.hadWarning:
             print '='*30
             print status.getWarningText()
@@ -799,7 +801,8 @@ try:
     #
     # Here is the initialization code.
     #
-    print 'natlinkmain, name: %s'% __name__
+    #if __name__ != 'natlinkmain':
+    #    print 'module natlinkmain is imported, name of application is %s'% __name__
     # get caller name, if error, it is from natlink.pyd, otherwise from some other module:
     #import inspect
     #frame=inspect.currentframe()
@@ -821,5 +824,5 @@ try:
 except:
     print 'some error occurred'
     traceback.print_exc()
-else:
-    print 'load of natlinkmain succesfull'
+#else:
+#    print 'load of natlinkmain succesfull'

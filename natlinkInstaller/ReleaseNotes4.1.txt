@@ -1,3 +1,7 @@
+Release 4.1lima:
+  - Dragon 13 beta exposes version 12.80. This is also returned in natlinkstatus as 13
+  - The warning about BestMatch V is printed only for Dragon 12
+
 Release 4.1kilo:
   - also recognise Dragon13 
 

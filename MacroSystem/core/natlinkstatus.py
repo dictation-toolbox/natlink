@@ -1,4 +1,4 @@
-__version__ = "4.1kilo"
+__version__ = "4.1lima"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,7 +7,7 @@ __version__ = "4.1kilo"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
-# 4.1kilo: Dragon 13!
+# 4.1kilo/lima: Dragon 13!
 # 4.1juliet: adapted playString function (Mark Lillibridge) via natlinkutils.playString
 #            natlinkmain.py has nearly all code caught in a try except statement
 # 4.1india: bugfix Vocola
@@ -462,7 +462,7 @@ Please try to correct this by running the NatLink Config Program (with administr
             sys.path.insert(1, newdir)
         else:
             sys.path.insert(0, newdir)
-        print 'inserted in sys.path: %s'% newdir
+        #print 'inserted in sys.path: %s'% newdir
             
    
     def copyRegSettingsToInifile(self, reg, ini):
@@ -612,6 +612,8 @@ Please try to correct this by running the NatLink Config Program (with administr
     def getDNSVersion(self):
         """find the correct DNS version number (integer)
 
+
+        note: 12.80 is also 13
         for versions 8 and 9 look in NSSystemIni, take from DNSFullVersion
         for 9 in Documents and Settings
         for 8 in Program Folder
@@ -622,7 +624,11 @@ Please try to correct this by running the NatLink Config Program (with administr
         version = self.getDNSFullVersion()
         if version:
             if version.find('.') > 0:
-                version = int(version.split('.')[0])
+                versionList = map(int, version.split('.'))
+                version = versionList[0]
+                if version == 12:
+                    if versionList[1] >= 80:
+                        version = 13
                 return version
             else:
                 return int(version[0])
