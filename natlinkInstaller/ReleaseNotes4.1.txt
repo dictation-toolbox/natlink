@@ -1,3 +1,8 @@
+
+Release 4.1mike:
+  - extra checks for missing modules in start_configurenatlink.py and in start_natlinkconfigfunctions.py
+  - Unimacro grammar folders, added recent files trick and xplorer2 support.
+
 Release 4.1lima:
   - Dragon 13 beta exposes version 12.80. This is also returned in natlinkstatus as 13
   - The warning about BestMatch V is printed only for Dragon 12

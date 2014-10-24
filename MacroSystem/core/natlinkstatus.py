@@ -1,4 +1,4 @@
-__version__ = "4.1lima"
+__version__ = "4.1mike"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,8 @@ __version__ = "4.1lima"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.2mike: extra checks in start_configurenatlink.py
+#          unimacro additions
 # 4.1kilo/lima: Dragon 13!
 # 4.1juliet: adapted playString function (Mark Lillibridge) via natlinkutils.playString
 #            natlinkmain.py has nearly all code caught in a try except statement

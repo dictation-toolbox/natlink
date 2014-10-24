@@ -1,7 +1,11 @@
 We are slowly moving to a new stable release for Dragon 12 and NatLink too. (July 2014)
 
-4.1kilo:
-- adapt to Dragon13
+4.1mike:
+- extra checks for missing modules in start_configurenatlink.py and in start_natlinkconfigfunctions.py
+- Unimacro grammar folders, added recent files trick and xplorer2 support.
+
+4.1kilo/lima:
+- adapt to Dragon13 also recognising 12.80 as 13.
 
 4.1juliet:
 - adapted playString function (Mark Lillibridge) via natlinkutils.playString (SendInput)
