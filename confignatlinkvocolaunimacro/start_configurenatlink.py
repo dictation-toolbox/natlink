@@ -6,7 +6,8 @@ try:
 except ImportError:
     print 'Unable to run the GUI configuration program of NatLink/Unimacro/Vocola'
     print 'because module wx was not found.  This probably'
-    print 'means that wxPython is not installed.'
+    print 'means that wxPython is not installed correct:'
+    print 'You should do this with "Run as administrator" (right click on executable)'
 
     print
     print 'Either install wxPython (recommended) or use the CLI (Command Line Interface)'
@@ -25,8 +26,8 @@ try:
 except ImportError:
     print 'Unable to start the configuration program of NatLink/Unimacro/Vocola'
     print 'because the module "win32api" is not found.  This probably'
-    print 'means that the windowns extensions package for python (32 bits) is not installed (properly).'
-
+    print 'means that the win32 extensions package for python (32 bits) is not installed (properly).'
+    print 'You should do this with "Run as administrator" (right click on executable)'
     print
     print 'A version of this package suitable for use with NatLink can be obtained from'
     print 'http://sourceforge.net/projects/natlink/files/pythonfornatlink/' 
