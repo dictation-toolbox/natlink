@@ -87,6 +87,9 @@ import natlink, sys, traceback
 class NewStdout(object):
     softspace=1
     def write(self,text):
+        if text.find('\x00') >= 0:
+            text = text.replace('\x00', '')
+            text = "===Warning, text contains null bytes==\n" + text
         natlink.displayText(text, 0)
     def flush(self):
         pass
@@ -94,6 +97,9 @@ class NewStdout(object):
 class NewStderr(object):
     softspace=1
     def write(self,text):
+        if text.find('\x00') >= 0:
+            text = text.replace('\x00', '')
+            text = "===Warning, text contains null bytes===\n" + text
         natlink.displayText(text, 1)
     def flush(self):
         pass

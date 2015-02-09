@@ -59,7 +59,10 @@ useMarkSendInput = 1
 if useMarkSendInput:                                
     from ExtendedSendDragonKeys import senddragonkeys_to_events
     from SendInput import send_input
-
+    print "======SendInput, a Vocola extension written by Mark Lillybridge,  is used for all normal playString calls!"
+    print "If you do not want this, change the variable useMarkSendInput to 0 in line 58 of natlinkutils.py"
+    print "This file is located in the directory NatLin\MacroSystem\Core."
+    print "Then restart Dragon...======"
 
 
 import os, os.path, copy, types
@@ -220,10 +223,13 @@ def playString(keys, hooks=None):
             if keys.find('\n') > 0:
                 keys = keys.replace('\n', '{enter}')
                 print 'send_input, change keys to: %s'% repr(keys)
+            #print 'do via sendinput: %s'% repr(keys)
             send_input(senddragonkeys_to_events(keys))
         else:
+            #print 'do via natlink.playString: %s'% repr(keys)
             natlink.playString(keys, 0x100)
     else:
+        #print 'do via natlink.playString: %s'% repr(keys)
         natlink.playString(keys, hooks)
 #---------------------------------------------------------------------------
 # (internal use) shared base class for all Grammar base classes.  Do not use
