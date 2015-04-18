@@ -1,3 +1,19 @@
+New in 2.8.2:
+
+* Fixed a bug where one command invoking another in the same grammar
+  (typically via HeardWord) caused errors.
+
+* Change to support non-backward-compatible NatLink interface change:
+  movement of some names from natlinkutils to natlink
+
+* Fixed handling of numbers option to allow missing numbers (e.g., $set
+  numbers "" or $set numbers ",one,,three") and handle leading or
+  trailing white space correctly.
+
+* Fixed handling of $set numbers so it applies to only the current
+  command file, not all files compiled afterwards.
+
+
 New in 2.8.1:
 
 ! Any series of one or more terms at least one of which is not optional
