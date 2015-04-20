@@ -330,7 +330,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             nf = __import__('natlinkconfigfunctions')
         except:
 
-            self.error('natlinkinstallfunctions import failed')
+            self.error('natlinkconfigfunctions import failed')
             return
 
         class NatlinkConfigGUI(nf.NatlinkConfig):

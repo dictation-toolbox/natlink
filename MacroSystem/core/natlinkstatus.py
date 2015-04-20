@@ -198,7 +198,7 @@ Wversions = {'1/4/10': '98',
 
 # the possible languages (for getLanguage)
 languages = {"Nederlands": "nld",
-             "Français": "fra",
+             "Fran\xe7ais": "fra",
              "Deutsch": "deu",
              "UK English": "enx",
              "US English": "enx",
@@ -206,7 +206,7 @@ languages = {"Nederlands": "nld",
              "Indian English": "enx",
              "SEAsian English": "enx",
              "Italiano": "ita",
-             "Español": "esp"}
+             "Espa\xf1ol": "esp"}
 
 class NatlinkStatus(object):
     """this class holds the NatLink status functions
