@@ -7,7 +7,8 @@ __version__ = "4.1november"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
-# 4.2mike: extra checks in start_configurenatlink.py
+# 4.1november: a few small bugs
+# 4.1mike: extra checks in start_configurenatlink.py
 #          unimacro additions
 # 4.1kilo/lima: Dragon 13!
 # 4.1juliet: adapted playString function (Mark Lillibridge) via natlinkutils.playString
