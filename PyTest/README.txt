@@ -28,3 +28,6 @@ Note
 
 Quintijn Hoogenboom,  May 1, 2007/February 2008
 q.hoogenboom@antenna.nl, http://qh.antenna.nl/unimacro
+
+Other things to test:
+Various things of Unimacro in Unimacro/unimacro_test.
