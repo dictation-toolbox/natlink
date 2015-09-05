@@ -366,7 +366,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.urgentMessage = None
         if self.cli.checkedConfig:
             # changed installation, message from natlinkconfigfunctions
-            self.urgentMessage = "REREGISTER natlink.pyd and Close (restart) or Close right away to cancel"
+            self.urgentMessage = "REREGISTER natlink.pyd and Close (restart) or Close right away to cancel (see log panel)"
             self.cli.checkedConfig = None
         if self.config.changesInInitPhase:
             if self.cli.getFatalErrors():
@@ -1254,9 +1254,9 @@ class Stderr:
 
 class MyApp(wx.App):
     def OnInit(self):
-        wx.InitAllImageHandlers()
+        # wx.InitAllImageHandlers()
         self.frame = MyFrame( None, -1, "Configure NatLink & Vocola & Unimacro",
-                              [110,80], [700,680] )
+                              [110,80], [775,715] )
         self.frame.Show(True)  
         return True
 

@@ -400,8 +400,9 @@ from the correct place.
             self.disableNatlink(silent=1)
             result = self.NatlinkIsEnabled(silent=1)
             if result == None:
+                
                 text = \
-"""NatLink INI file settings are inconsistently,
+"""NatLink INI file settings are inconsistent,
 and cannot automatically be disabled.
 
 Try to disable again, acquire administrator rights or report this issue
@@ -800,18 +801,20 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def setUnimacroUserDir(self, v):
         key = 'UnimacroUserDirectory'
-        oldDir = self.getUnimacroUserDir() or self.getUserDirectory()
+        oldDir = self.getUnimacroUserDir()
+        if os.path.isdir(v) or v.startswith("~") or v.find("%") >= 0:
+            print 'set Unimacro user dir to %s'% v
+            self.userregnl.set(key, v)
+        else:
+            print 'not a valid directory: %s'% v
+            return
+
         if oldDir and os.path.isdir(oldDir):
             if os.path.normpath(v) != os.path.normpath(oldDir):
                 print '\n-----------\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
                       'from old UnimacroUserDirectory (%s) to \n' \
                       'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, v)
             
-        if os.path.isdir(v) or v.startswith("~") or v.find("%") >= 0:
-            print 'set Unimacro user dir to %s'% v
-            self.userregnl.set(key, v)
-        else:
-            print 'not a valid directory: %s'% v
 
     def clearUnimacroUserDir(self):
         key = 'UnimacroUserDirectory'
