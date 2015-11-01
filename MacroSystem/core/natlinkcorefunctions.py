@@ -5,7 +5,7 @@
 #
 """natlinkcorefunctions.py
 
- Quintijn Hoogenboom, January 2008:
+ Quintijn Hoogenboom, January 2008/September 2015
 
 These functions are used by natlinkstatus.py,
 and can also used by all the modules,
@@ -16,7 +16,6 @@ The first function is also, hopefully identical, in
 natlinkconfigfunctions, in the configurenatlinkvocolaunimacro folder
 
 getBaseFolder: returns the folder from the calling module
-getCoreDir: returns the core folder of natlink, relative to the configure directory
 fatalError: raises error again, if new_raise is set, otherwise continues executing
 getExtendedEnv(env): gets from os.environ, or from window system calls (CSIDL_...) the
                      environment. Take PERSONAL for HOME and ~
@@ -24,7 +23,7 @@ getAllFolderEnvironmentVariables: get a dict of all possible HOME and CSIDL vari
            that result in a valid folder path
 substituteEnvVariableAtStart: substitute back into a file/folder path an environment variable
 
-
+Note: for extension with %NATLINK% etc. see natlinkutils.py.
 
 """ 
 import os, sys, re, copy
@@ -135,6 +134,7 @@ def getExtendedEnv(var, envDict=None, displayMessage=1):
     myEnvDict[var] = result
     # on some systems apparently:
     if var == 'SYSTEMROOT':
+
         myEnvDict['SYSTEM'] = result
     return result
 
@@ -274,6 +274,7 @@ def expandEnvVariables(filepath, envDict=None):
         #print 'parts: %s'% List
         List2 = []
         for part in List:
+            if not part: continue
             try:
                 folderpart = getExtendedEnv(part, envDict)
             except ValueError:
@@ -316,6 +317,13 @@ class InifileSection(object):
         self.filename = filename
         self.firstUse = (not os.path.isfile(self.filename))
         self.section =  section
+         
+    def __iter__(self):
+        for item in self.keys():
+            yield item         
+            
+    def __getitem__(self, key, defaultValue=None):
+        return self.get(key, defaultValue=defaultValue)
             
     def get(self, key, defaultValue=None):
         """get an item from a key
@@ -335,19 +343,26 @@ class InifileSection(object):
     def set(self, key, value):
         """set an item for akey
         
+        0 or empty deletes automatically
+        
         """
 ##        print 'set: %s, %s: %s'% (self.section, key, value)
-        win32api.WriteProfileVal( self.section, key, value, self.filename)
-        checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
-        if not (checkValue == value or \
-                          value in [0, 1] and checkValue == str(value)):
-            print 'set failed:  %s, %s: %s, got %s instead'% (self.section, key, value, checkValue)
+        if value in [0, "0"]:
+            self.delete(key)
+        elif not value:
+            self.delete(key)
+        else:
+            win32api.WriteProfileVal( self.section, key, str(value), self.filename)
+            checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
+            if not (checkValue == value or \
+                              value in [0, 1] and checkValue == str(value)):
+                print 'set failed:  %s, %s: %s, got %s instead'% (self.section, key, value, checkValue)
 
     def delete(self, key):
         """delete an item for a key (really set to "")
         
         """
-        print 'delete: %s, %s'% (self.section, key)
+        # print 'delete: %s, %s'% (self.section, key)
         value = win32api.WriteProfileVal( self.section, key, None,
                                        self.filename)
         checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
@@ -385,7 +400,8 @@ if __name__ == "__main__":
     for k,v in vars.items():
         print '%s: %s'% (k, v)
 
-    print 'testing       expandEnvVariableAtStart'  
+    print 'testing       expandEnvVariableAtStart'
+    print 'also see expandEnvVar in natlinkstatus!!'
     for p in ("D:\\natlink\\unimacro", "~/unimacroqh",
               "%HOME%/personal",
               "%WINDOWS%\\folder\\strange testfolder"):

@@ -59,10 +59,10 @@ useMarkSendInput = 1
 if useMarkSendInput:                                
     from ExtendedSendDragonKeys import senddragonkeys_to_events
     from SendInput import send_input
-    print "======SendInput, a Vocola extension written by Mark Lillybridge,  is used for all normal playString calls!"
+    print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is used for all normal playString calls!"
     print "If you do not want this, change the variable useMarkSendInput to 0 in line 58 of natlinkutils.py"
     print "This file is located in the directory NatLink\MacroSystem\Core."
-    print "Then restart Dragon...======"
+    print "Then restart Dragon...\n======"
 
 
 import os, os.path, copy, types

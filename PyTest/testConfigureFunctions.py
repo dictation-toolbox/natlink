@@ -9,9 +9,6 @@
 
 
 import sys, unittest, win32api, os, win32con, copy, shutil
-import natlinkconfigfunctions, natlinkstatus
-reload(natlinkconfigfunctions)
-from natlinkcorefunctions import InifileSection  # to test own inifile data
 
 ##Accessories = 'Accessories'
 ## for Dutch windows system:
@@ -72,9 +69,16 @@ if thisDir == coreDir:
     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(coreDir) in sys.path:
-    print 'appending %s to pythonpath...'% coreDir
     sys.path.append(coreDir)
 # now we can import:::
+configDir = os.path.normpath(os.path.join(thisDir, '..', 'confignatlinkvocolaunimacro'))
+if not os.path.normpath(configDir) in sys.path:
+    sys.path.append(configDir)
+import natlinkconfigfunctions, natlinkstatus
+from natlinkstatus import isValidPath ## used a lot in the test procedures!
+reload(natlinkconfigfunctions)
+from natlinkcorefunctions import InifileSection  # to test own inifile data
+
 import natlinkcorefunctions  # not RegistryDict any more
 reload(natlinkcorefunctions)
 
@@ -115,8 +119,9 @@ class TestConfigureFunctions(unittest.TestCase):
 
     second: testing the natlinkcorefunctions:
             getExtendedEnv etc.
+            also test isValidPath of paths which can be "extended" with ~ or %..%
 
-    third: test the settings/clearings of the inifiletestsection section of Software/Natlink
+    third: test the settings/clearings of the testinisection section of Software/Natlink
            the tests are all going through the CLI (command line interface) functions,
            like cli = CLI()
            and then cli.do_u(path/to/userdirectory) or cli.do_U("dummy") (to clear path) etc.
@@ -130,7 +135,10 @@ class TestConfigureFunctions(unittest.TestCase):
 
     """
     def setUp(self):
-
+        """define self.tmpTest (in TMP)
+            and vocolausertest and unimacrousertest in HOME directory
+            raise TestError if HOME is not existent, or one of these directories already exist
+        """
         ## testfolder:
         tmp = natlinkcorefunctions.getExtendedEnv("TMP")
         tmpTest = os.path.join(tmp, 'testconfig')
@@ -140,22 +148,44 @@ class TestConfigureFunctions(unittest.TestCase):
             shutil.rmtree(tmpTest)
         if os.path.exists(tmpTest):
             raise TestError('test error, test path should not be there: %s'% tmpTest)
+        
+        
         os.mkdir(tmpTest)
+        homeDir = isValidPath("~")
+        if homeDir:
+            vocolausertest = os.path.join(homeDir, "vocolausertest")
+            if not isValidPath(vocolausertest):
+                os.mkdir(vocolausertest)
+            self.vocolausertest = vocolausertest
+            unimacrousertest = os.path.join(homeDir, "unimacrousertest")
+            if not isValidPath(unimacrousertest):
+                os.mkdir(unimacrousertest)
+            self.unimacrousertest = unimacrousertest
+        else:
+            raise TestError("home directory not defined: %s")
+                
+            
         self.assert_(os.path.isdir(tmpTest), "Could not make test folder: %s"% tmpTest)
+        # self.tmpTest to test directory things safely:
         self.tmpTest = tmpTest
         self.cli = natlinkconfigfunctions.CLI()
         config = self.cli.config
         config.userregnl = NatlinkstatusTestInifileSection()
         config.userregnl.clear()
+        self.testinisection = config.userregnl
 
 
     def tearDown(self):
 
         #  for setting getting values test:        
-        # self.restoreRegistrySettings(self.backupinifiletestsection,
+        # self.restoreRegistrySettings(self.backuptestinisection,
         #         RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, self.usergroup))
-        shutil.rmtree(self.tmpTest)
+        # leave tmpTest en natlinkstatustest.ini (in this directory) for inspection, is refreshed at each setUp
+        shutil.rmtree(self.vocolausertest)
+        shutil.rmtree(self.unimacrousertest)
         pass
+    
+    
 
     def restoreRegistrySettings(self, backup, actual):
         for key in actual:
@@ -165,40 +195,109 @@ class TestConfigureFunctions(unittest.TestCase):
         pass      
 
     def checkusertestinifile(self, key, value, mess=""):
-        testinisection = self.cli.config.userregnl
-        if value or value != "0":
-            if key in testinisection:
-                actual = testinisection[key]
-                self.assert_(value == actual, "inifiletestsection has not expected result for key: %s, expected: %s, got %s\n%s"%
+        if value and value != "0":
+            if key in self.testinisection:
+                actual = self.testinisection[key]
+                self.assert_(value == actual, "testinisection has not expected result for key: %s, expected: %s, got %s\n%s"%
                              (key, value, actual, mess))
             else:
-                self.fail("inifiletestsection does not have expected key: %s\n%s"% (key, mess))
+                self.fail("testinisection does not have expected key: %s\n%s"% (key, mess))
         else:
-            if key in testinisection:
-                self.fail("inifiletestsection should not have this key: %s\n%s"% (key, mess))
+            if key in self.testinisection:
+                self.fail("testinisection shoujald not have this key: %s\n%s"% (key, mess))
             
+    def doTestOnOffOption(self, key, valueOn, valueOff, functionNameGet=None):
+        """sets on and off the required option and checks if the config (natlinkstatus) reacts correct
+        """
+        cli = self.cli
+        config = cli.config
+        expectedOn = 1
+        expectedOff = ''
+        if not functionNameGet:
+            functionNameGet = 'get' + key
+        functionNameSetOn = 'do_' + valueOn
+        functionNameSetOff = 'do_' + valueOff
+        functionOn = getattr(cli, functionNameSetOn)
+        functionOff = getattr(cli, functionNameSetOff)
+        functionGet = getattr(config, functionNameGet)
+        self.assert_(functionGet, "should be a function: %s"% functionNameGet)
+        self.assert_(functionOn, "should be a function: %s"%functionNameSetOn)
+        self.assert_(functionOff, "should be a function: %s"%functionNameSetOff)
+        functionOn('dummy')        
+        self.checkusertestinifile(key, 1, "setting option in inifile: %s"% key)
+        shouldBeOn = functionGet()
+        self.assert_(expectedOn == shouldBeOn, "should be on: getting option from config instance, method: %s (%s)"% (functionNameGet, key))
+        functionOff('dummy')        
+        self.checkusertestinifile(key, None, "clearing option in inifile: %s"% key)
+        shouldBeOff = functionGet()
+        self.assert_(expectedOff == shouldBeOff, "should be off, getting option from config instance, method: %s (%s)"% (functionNameGet, key))
+        pass
 
 
-    def test_setting_values(self):
+
+    def tttestIsValidPath(self):
+        """this tests the isValidPath function of natlinkstatus.py
+        
+        this function returns the (normalised) path if it exists, None if the input is invalid.
+        
+        """
+        testinifile = os.path.join(self.tmpTest, 'inifiletest.ini')
+        func = isValidPath
+        
+        result = func(self.tmpTest)
+        self.assert_( result == self.tmpTest, "should exist")
+        result = func(self.tmpTest, wantDirectory=1)
+        self.assert_( result == self.tmpTest, "should exist")
+        result = func(self.tmpTest, wantFile=1)
+        self.assert_( result == None, "should fail, exists but is not a file")
+        
+        result = func("notValid")
+        self.assert_( result == None, "should fail all the time")
+        
+        testinifile = os.path.join(self.tmpTest, 'nsapps.ini')
+        f1 = open(testinifile, 'w')
+        f1.close()
+    
+        result = func(testinifile)
+        self.assert_( result == testinifile, "should exist")
+        result = func(testinifile, wantDirectory=1)
+        self.assert_( result == None, "should fail, is not a directory")
+        result = func(testinifile, wantFile=1)
+        self.assert_( result == testinifile,  "should exist and should be a file")
+    
+        # now ~ (HOME)
+        homedirectory = "~"
+        result = func(homedirectory)
+        self.assert_( result != None, "should hold some value")
+        result = func(homedirectory, wantDirectory=1)
+        self.assert_( result != None,  "should hold some value")
+        
+        pass
+
+
+
+    def tttest_setting_values(self):
+        
         """this test is needed, because deleting a key from inifile is not trivial.
 
         See below, deleting a section I couldn't get to work
         """
-        f1 = open(testinifile1, 'w')
+        testinifile = os.path.join(self.tmpTest, 'inifiletest.ini')
+        f1 = open(testinifile, 'w')
         f1.close()
-        win32api.WriteProfileVal('s1', 'k1','v1', testinifile1)
-        win32api.WriteProfileVal('s1', 'k2','v2', testinifile1)
-        win32api.WriteProfileVal('s2', 'kk1','vv1', testinifile1)
-        section = win32api.GetProfileSection('s1', testinifile1)
+        win32api.WriteProfileVal('s1', 'k1','v1', testinifile)
+        win32api.WriteProfileVal('s1', 'k2','v2', testinifile)
+        win32api.WriteProfileVal('s2', 'kk1','vv1', testinifile)
+        section = win32api.GetProfileSection('s1', testinifile)
         expected = ['k1=v1', 'k2=v2']
         self.assert_(expected == section, "section |%s| not as expected: |%s|"% (section, expected))
 
         # this call deletes a key:::::    
-        win32api.WriteProfileVal('s1', 'k2',None, testinifile1)
-        section = win32api.GetProfileSection('s1', testinifile1)
+        win32api.WriteProfileVal('s1', 'k2',None, testinifile)
+        section = win32api.GetProfileSection('s1', testinifile)
         expected = ['k1=v1']
         self.assert_(expected == section, "section |%s| after deleted keys is not as expected: |%s|"% (section, expected))
-                
+        pass        
         
     def tttest_getExtendedEnv(self):
         """Test the different functions in natlinkcorefunctions that do environment variables
@@ -360,38 +459,17 @@ class TestConfigureFunctions(unittest.TestCase):
     # now for the real work, the install functions:
     def tttest_enableDisableNatlinkDebugOutput(self):
         """This option should set DebugOutput in the registry to 0 or 1
+        
+        obsolete, NatlinkDebug is disabled (2015, even earlier, by Rudiger)
         """
         key = "NatlinkDebug"
         cli = natlinkconfigfunctions.CLI()
         cli.do_g("dummy")
-        
-        self.checkusertestinifile(key, 1, "setting debug output natlink")
+        self.checkusertestinifile(key, 0, "key %s not set, obsolete option"% key)
         cli.do_G("dummy")
-        self.checkusertestinifile(key, 0, "clearing debug output natlink")
+        self.checkusertestinifile(key, 0, "key %s not set, obsolete option"% key)
         cli.do_g("dummy")
-        self.checkusertestinifile(key, 1, "setting debug output natlink")
-        
-    # now for the real work, the install functions:
-    def tttest_enableDisableNatlinkmainDebugLoadDebugCallback(self):
-        """This option should set DebugLoad and DebugCallback for natlinkmain on and off
-        """
-        key = "NatlinkmainDebugLoad"
-        cli = natlinkconfigfunctions.CLI()
-        cli.do_x("dummy")
-        
-        self.checkusertestinifile(key, 1, "setting natlinkmain debug load on")
-        cli.do_X("dummy")
-        self.checkusertestinifile(key, 0, "clearing natlinkmain debug load")
-
-        key = "NatlinkmainDebugCallback"
-        cli = natlinkconfigfunctions.CLI()
-        cli.do_y("dummy")
-        
-        self.checkusertestinifile(key, 1, "setting natlinkmain debug callback on")
-        cli.do_Y("dummy")
-        self.checkusertestinifile(key, 0, "clearing natlinkmain debug callback")
-
-
+        self.checkusertestinifile(key, 0, "key %s not set, obsolete option"% key)
         
         
     def tttest_setClearDNSInstallDir(self):
@@ -399,7 +477,7 @@ class TestConfigureFunctions(unittest.TestCase):
         """
         key = "DNSInstallDir"
         cli = natlinkconfigfunctions.CLI()
-        old = self.inifiletestsection.get(key, None)
+        old = self.testinisection.get(key, None)
         # not a valid folder:
         cli.do_d("notAValidFolder")
         self.checkusertestinifile(key, old, "DNSInstallDir, nothing should be changed yet")
@@ -418,56 +496,142 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_D("dummy")
         self.checkusertestinifile(key, None, "DNSInstallDir should be cleared now")
         
-
+    def tttest_setClearUnimacroIniFilesEditor(self):
+        """This option should set or clear the editor program for Unimacro ini files
         
-    def tttest_setClearDNSIniDir(self):
-        """This option should set or clear the natspeak INI files directory
+        default is Notepad. set to wordpad for test, which is in the "old" Program files directory.
+        
         """
-        key = "DNSIniDir"
-        cli = natlinkconfigfunctions.CLI()
-        old = self.inifiletestsection.get(key, None)
+        key = "UnimacroIniFilesEditor"
+        oldKey = "Old" + key
+        cli = self.cli
+        old = self.testinisection.get(key, None)
         # not a valid folder:
-        cli.do_c("notAValidFolder")
-        self.checkusertestinifile(key, old, "DNSIniDir, nothing should be changed yet")
+        cli.do_p("notAValidFolder")
+        self.checkusertestinifile(key, old, "UnimacroIniFilesEditor, nothing should be changed yet")
+        self.checkusertestinifile(oldKey, "", "OldUnimacroIniFilesEditor, should not be there yet")
 
-        # folder does not have INI files in yet:
-        cli.do_c(self.tmpTest)
-        self.checkusertestinifile(key, old, "DNSIniDir, empty directory should not change DNSIniDir")
+        wordpadExe = r"C:\Program files\Windows NT\Accessories\wordpad.exe"
+        if not os.path.isfile(wordpadExe):
+            raise TestError("wordpadExe should be a valid file, not: %s"% wordpadExe)
+        # setting the variable:
+        cli.do_p(wordpadExe)
+        self.checkusertestinifile(key, wordpadExe, "UnimacroIniFilesEditor, should be set now to: %s"% wordpadExe)
+        self.checkusertestinifile(oldKey, "", "OldUnimacroIniFilesEditor, should not be there yet")
 
-        # now change:
-        nssystemini = os.path.join(self.tmpTest, 'nssystem.ini')
-        win32api.WriteProfileVal("dummy", "dummy", "dummy", nssystemini)
-        cli.do_c(self.tmpTest)
-        self.checkusertestinifile(key, old, "DNSIniDir, should not be changed yet, nsapps still missing")
-        nsappsini = os.path.join(self.tmpTest, 'nsapps.ini')
-        win32api.WriteProfileVal("dummy", "dummy", "dummy", nsappsini)
-        cli.do_c(self.tmpTest)
-        self.checkusertestinifile(key, self.tmpTest, "DNSIniDir, should be changed now")
+        # repeated has no effect:
+        cli.do_p(wordpadExe)
+        self.checkusertestinifile(key, wordpadExe, "UnimacroIniFilesEditor, should be set now to: %s"% wordpadExe)
+        self.checkusertestinifile(oldKey, "", "OldUnimacroIniFilesEditor, should not be there yet")
 
-        # now clear:
-        cli.do_C("dummy")
-        self.checkusertestinifile(key, None, "DNSInstallDir should be cleared now")
+
+        # now remove again:
+        cli.do_P("dummy")
+        self.checkusertestinifile(key, "", "UnimacroIniFilesEditor, should be clear now")
+        self.checkusertestinifile(oldKey, wordpadExe, "OldUnimacroIniFilesEditor, should be set now to: %s"% wordpadExe)
+
+        # repeat has no effect:
+        cli.do_P("dummy")
+        self.checkusertestinifile(key, "", "UnimacroIniFilesEditor, should be still clear")
+        self.checkusertestinifile(oldKey, wordpadExe, "OldUnimacroIniFilesEditor, should still be set now to: %s"% wordpadExe)
         
+        # setting again:
+        cli.do_p(wordpadExe)
+        self.checkusertestinifile(key, wordpadExe, "UnimacroIniFilesEditor, should again be set now to: %s"% wordpadExe)
+        self.checkusertestinifile(oldKey, "", "OldUnimacroIniFilesEditor, should be cleared again")
 
+        pass
+    
+    def test_setClearDirectoryOptions(self):
+        """This option tests the different directory functions of natlinkconfigfunctions
         
-    def tttest_setClearUserDirectory(self):
-        """This option should set or clear the natlink user directory
+        UserDirectory is NOT Unimacro any more.
+        
+        assume %HOME% and "~" point to C:\Documenten.
+        assume testing with Dragon12 on a 64 bits machine
+        
+        
         """
-        testName = 'test_setClearUserDirectory'
-        key = "UserDirectory"
-        cli = natlinkconfigfunctions.CLI()
-        old = self.inifiletestsection.get(key, None)
-        # not a valid folder:
-        cli.do_n("notAValidFolder")
-        self.checkusertestinifile(key, old, "%s, nothing should be changed yet"% testName)
+        dnsinstalldir = "%PROGRAMFILES%/Nuance/NaturallySpeaking12"
+        wordpadexe = r"C:\Program Files\Windows NT\Accessories\wordpad.exe"
+        if not os.path.isfile(wordpadexe):
+            raise TestError("should have a path to wordpad.exe, %s does not exist"% wordpadexe)
+        dummyfile = os.path.join(self.tmpTest, 'exists.txt')
+        f = open(dummyfile, 'w')
+        f.close()
+        dummyexefile = os.path.join(self.tmpTest, 'autohotkey.exe')
+        f = open(dummyexefile, 'w')
+        f.close()
+        
+        for (key, functionLetter, testFolder) in [
+            ("DNSIniDir", 'c', self.tmpTest),
+            ("DNSInstallDir", 'd', dnsinstalldir),
+            ("UserDirectory", 'n', self.tmpTest),
+            ("UnimacroUserDirectory", 'o', self.unimacrousertest),
+            ("VocolaUserDirectory", 'v', self.vocolausertest),
+            ("UnimacroIniFilesEditor", "p", wordpadexe), 
+            ("AhkExeDir", "h", self.tmpTest),
+            ("AhkUserDir", "k", self.tmpTest)]:
+                print '---- start testing "%s", letter: "%s"'% (key, functionLetter)
 
-        # change userdirectory
-        cli.do_n(self.tmpTest)
-        self.checkusertestinifile(key, self.tmpTest, "%s, UserDirectory should be changed now"% testName)
+                oldKey = "Old" + key
+                cli = self.cli
+                # make clean section:
+                self.testinisection.clear()
+                funcSetName = 'do_'+functionLetter
+                funcClearName = 'do_'+functionLetter.upper()
+                funcSet = getattr(cli, funcSetName)
+                funcClear = getattr(cli, funcClearName)
+                # not a valid folder:
+                funcSet("notAValidFolder")
+                self.checkusertestinifile(key, "", "%s, should be there yet"% key)
+                self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet")
+        
+                checkTestFolder = isValidPath(testFolder)
+                if not checkTestFolder:
+                    raise TestError("testFolder  should be a valid directory, not: %s"% testFolder)
+                # setting the variable:
+                funcSet(testFolder)
+                if functionLetter == 'c':
+                    self.checkusertestinifile(key,"", "%s, nothing should be changed yet (Inifiles do not exist)"% key)
+            
+                    #existence of these two files is checked:
+                    testinifile = os.path.join(self.tmpTest, 'nsapps.ini')
+                    f1 = open(testinifile, 'w')
+                    f1.close()
+            
+                    testinifile = os.path.join(self.tmpTest, 'nssystem.ini')
+                    f1 = open(testinifile, 'w')
+                    f1.close()
+            
+                    funcSet(testFolder)
+            
+                self.checkusertestinifile(key, testFolder, "%s, should be set now to: %s"% (key, testFolder))
+                self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet"% key)
+        
+                # repeated has no effect:
+                funcSet(testFolder)
+                self.checkusertestinifile(key, testFolder, "%s, should be set now to: %s"% (key, testFolder))
+                self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet"% key)
+        
+        
+                # now remove again:
+                funcClear("dummy")
+                self.checkusertestinifile(key, "", "%s, should be clear now")
+                self.checkusertestinifile(oldKey, testFolder, "Old%s, should be set now to: %s"% (key, testFolder))
+        
+                # repeat has no effect:
+                funcClear("dummy")
+                self.checkusertestinifile(key, "", "%s, should be still clear")
+                self.checkusertestinifile(oldKey, testFolder, "Old%s, should still be set now to: %s"%  (key, testFolder))
+                
+                # setting again:
+                funcSet(testFolder)
+                self.checkusertestinifile(key, testFolder, "%s, should again be set now to: %s"% (key,  testFolder))
+                self.checkusertestinifile(oldKey, "", "Old%s, should be cleared again"% key)
+                print '==== end of testing "%s", letter: "%s"'% (key, functionLetter)
 
-        # now clear:
-        cli.do_N("dummy")
-        self.checkusertestinifile(key, None, "%s UserDirectory should be cleared now"% testName)
+
         
 
     def tttest_setClearVocolaUserDirectory(self):
@@ -476,7 +640,7 @@ class TestConfigureFunctions(unittest.TestCase):
         testName = 'test_setClearVocolaUserDirectory'
         key = "VocolaUserDirectory"
         cli = natlinkconfigfunctions.CLI()
-        old = self.inifiletestsection.get(key, None)
+        old = self.testinisection.get(key, None)
         # not a valid folder:
         cli.do_v("notAValidFolder")
         self.checkusertestinifile(key, old, "%s, nothing should be changed yet"% testName)
@@ -495,7 +659,7 @@ class TestConfigureFunctions(unittest.TestCase):
         testName = 'test_setClearVocolaCommandFilesEditor'
         key = "VocolaCommandFilesEditor"
         cli = natlinkconfigfunctions.CLI()
-        old = self.inifiletestsection.get(key, None)
+        old = self.testinisection.get(key, None)
 
         # not a valid folder:
         cli.do_w("not a valid file")
@@ -515,83 +679,68 @@ class TestConfigureFunctions(unittest.TestCase):
         self.checkusertestinifile(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
 
                 
-    def tttest_setClearUnimacroIniFilesEditor(self):
-        """This option should set or clear the unimacro INI files editor
-        """
-        testName = 'test_setClearUnimacroIniFilesEditor'
-        key = "UnimacroIniFilesEditor"
-        cli = natlinkconfigfunctions.CLI()
-        old = self.inifiletestsection.get(key, None)
-
-        
-        # not a valid folder:
-        cli.do_p("not a valid file")
-        self.checkusertestinifile(key, old, "%s, nothing should be changed yet"% testName)
-
-        # change to notepad:
-        wordpad = os.path.join(natlinkcorefunctions.getExtendedEnv("PROGRAMFILES"), 'Windows NT',
-                            Accessories, "wordpad.exe")
-        if not os.path.isfile(wordpad):
-            raise IOError("Test error, cannot find wordpad on: %s"% wordpad)
-        
-        cli.do_p(wordpad)
-        self.checkusertestinifile(key, wordpad, "%s, UnimacroIniFilesEditor should be changed now"% testName)
-
-        # now clear:
-        cli.do_P("dummy")
-        self.checkusertestinifile(key, None, "%s UnimacroIniFilesEditor should be cleared now"% testName)
-
-
-    def test_setClearUnimacroUserDirectory(self):
+    def tttest_setClearUnimacroUserDirectory(self):
         """This option should set or clear the unimacro (ini files) user directory
         """
         testName = 'test_setClearUnimacroUserDirectory'
         key = "UnimacroUserDirectory"
+        keyOld = "OldUnimacroUserDirectory"
         cli = self.cli
         old = cli.config.userregnl[key]
+        self.assert_(old == "", "key %s should not be set at start of test: %s"% (key, testName))
+        old = cli.config.userregnl[keyOld]
+        self.assert_(old == "", "key %s should not be set at start of test: %s"% (keyOld, testName))
 
         # not a valid folder:
         cli.do_o("notAValidFolder")
         self.checkusertestinifile(key, old, "%s, nothing should be changed yet"% testName)
-
+        self.checkusertestinifile(keyOld, old, "%s, nothing should be changed yet"% testName)
+        
         # change userdirectory
         cli.do_o(self.tmpTest)
         self.checkusertestinifile(key, self.tmpTest, "%s, UnimacroUserDirectory should be changed now"% testName)
+        self.checkusertestinifile(keyOld, old, "%s, nothing should be changed yet"% testName)
 
         # now clear:
         cli.do_O("dummy")
-        self.checkusertestinifile(key, None, "%s UnimacroUserDirectory should be cleared now"% testName)
-        
-                
+        self.checkusertestinifile(key, "", "%s UnimacroUserDirectory should be cleared now"% testName)
+        self.checkusertestinifile(keyOld, self.tmpTest, "%s, Old key should be set now"% testName)
+
+    
+
 
     # Testing addition vocola options
-    def test_enableDisableExtraVocolaOptions(self):
-        """This option should set and cleared the settings for additional vocola options
+    def tttest_enableDisableOnOffOptions(self):
+        """This option should set and clear the different options
         """
         key = "VocolaTakesLanguages"
-        cli = self.cli
-        cli.do_b("dummy")
+        self.doTestOnOffOption(key, 'b', 'B')
+
+        key = "IncludeUnimacroInPythonPath"
+        self.doTestOnOffOption(key, 'f', 'F')
         
-        self.checkusertestinifile(key, 1, "setting vocola takes languages")
-        cli.do_B("dummy")
-        # clear is delete!
-        self.checkusertestinifile(key, None, "clearing vocola takes languages")
-
-
+        key = "NatlinkmainDebugLoad"
+        self.doTestOnOffOption(key, 'x', 'X', functionNameGet="getDebugLoad")
+        
+        key = "NatlinkmainDebugCallback"
+        self.doTestOnOffOption(key, 'y', 'Y', functionNameGet="getDebugCallback")
+        
+        key = "VocolaTakesUnimacroActions"
+        self.doTestOnOffOption(key, 'a', 'A')
         
         
 ##    def tttest_RegistrySettings(self):
 ##        """test if registry settings are saved and restored correctly
 ##
-##        make a backup in setup, and restore in teardown, see example with inifiletestsection.
+##        make a backup in setup, and restore in teardown, see example with testinisection.
 ##
 ##        If you doubt about the working, step through this test function and see what happens
 ##        
 ##        """
 ##        
-##        self.inifiletestsection['testtt'] = 'hello new test'
-##        for key in self.inifiletestsection:
-##            del self.inifiletestsection[key]
+##        self.testinisection['testtt'] = 'hello new test'
+##        for key in self.testinisection:
+##            del self.testinisection[key]
 ##            break
 ##        print 'things should be the same, test by hand'
 ##                

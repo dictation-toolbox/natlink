@@ -6,6 +6,8 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+# July 2015 (QH): assume Unimacro at fixed place, extend macro files to BaseDirectory (Vocola),
+#    UnimacroDirectory, UserDirectory
 # August 2011 (QH): added function reorderKeys, which influences the order
 #   of the grammars to load. Hardcoded are _tasks.py (first) and _control (last)
 #   _vocola_main could be set here too, but already has a special treatment.
@@ -166,7 +168,7 @@ try:
         checkForGrammarChanges = value
     
     # start silent, set this to 0:
-    natlinkmainPrintsAtEnd = 0
+    natlinkmainPrintsAtEnd = 1
     ## << QH added
     
     #
@@ -175,50 +177,18 @@ try:
     
     # the base directory is one level above the core directory.
     # Vocola grammar files are located here.
-    try:
-        coreDirectory
-    except NameError:
-        coreDirectory = ''
-    try:
-        baseDirectory
-    except NameError:
-        baseDirectory = ''
-    
-    try:
-        DNSuserDirectory
-    except NameError:
-        DNSuserDirectory = ''   # folder of the current user speech profiles...
-    #
-    # This is the current user directory. (of natspeak, the user files are located there...
-    #
-    try:
-        userName 
-    except NameError:
-        userName = ''
-        
-    # this is now the NatLink user directory, which can be configured
-    # this folder may be empty, or points to the folder where user-defined grammars
-    # are, for example the unimacro grammars.
-    try:
-        userDirectory
-    except NameError:
-        userDirectory = ''  
-    
-    # if userDirectory is NOT set, searchImportDirs only contains the base directory.
+    for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
+                 'unimacroDirectory', 'userDirectory', 'DNSdirectory',
+                 'WindowsVersion', 'BaseModel', 'BaseTopic']:
+        if not name in globals():
+            globals()[name] = ''
+    del name
     # set in findAndLoadFiles:
     try:
         searchImportDirs
     except NameError:
         searchImportDirs = []
-    try:
-        DNSdirectory
-    except NameError:
-        DNSdirectory = ''
     DNSVersion = status.getDNSVersion()
-    try:
-        WindowsVersion
-    except NameError:
-        WindowsVersion = ''
     try:
         DNSmode
     except NameError:
@@ -231,18 +201,6 @@ try:
     
     # at start and at changeCallback (new user) get the current language:
     language = ''
-    
-    # service to trainuser.py:
-    try:
-        BaseModel
-    except NameError:
-        BaseModel = ''
-    try:
-        BaseTopic
-    except NameError:
-        BaseTopic = ''
-    #<<QH
-    
     #
     # We maintain a dictionary of all the modules which we have loaded.  The key
     # is the Python module name.  The value is the complete path to the loaded
@@ -423,6 +381,16 @@ try:
             for x in userDirFiles:
                 res = pat.match(x)
                 if res: addToFilesToLoad( filesToLoad, res.group(1), userDirectory, moduleHasDot )
+        ## unimacro:
+        if status.UnimacroIsEnabled():
+            unimacroDirFiles = [x for x in os.listdir(unimacroDirectory) if x.endswith('.py')]
+            for x in unimacroDirFiles:
+                res = pat.match(x)
+                if res: addToFilesToLoad( filesToLoad, res.group(1), unimacroDirectory, moduleHasDot )
+        else:
+            unimacroDirFiles = []
+
+
         # baseDirectory:
         if baseDirectory:
             baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
@@ -568,12 +536,16 @@ try:
     def setSearchImportDirs():
         """set the global list of import dirs, to be used for import
         
-        either [userDirectory, baseDirectory] or [baseDirectory] (if no userDirectory)
+        either [userDirectory, baseDirectory, unimacroDirectory] or less (if no userDirectory or no unimacroDirectory)
+        
         """
         global searchImportDirs
         searchImportDirs = []
         if userDirectory != '':
             searchImportDirs.append(userDirectory)
+        if unimacroDirectory != '':
+            searchImportDirs.append(unimacroDirectory)
+        
         searchImportDirs.append(baseDirectory)
     
     
@@ -722,7 +694,7 @@ try:
     def start_natlink(doNatConnect=None):
         """do the startup of the python macros system
         """
-        global userDirectory, DNSVersion, baseDirectory, WindowsVersion
+        global userDirectory, DNSVersion, baseDirectory, WindowsVersion, unimacroDirectory
         try:
             # compute the directory where this module came from
             if not natlink.isNatSpeakRunning():
@@ -746,16 +718,45 @@ try:
     
             if debugLoad: print "NatLink pyd dir " + coreDirectory
             baseDirectory = os.path.normpath(os.path.abspath(os.path.join(coreDirectory,"..")))
+            if not baseDirectory in sys.path:
+                sys.path.insert(0,baseDirectory)
+                if debugLoad:
+                    print 'insert baseDirectory: %s to sys.path!'% baseDirectory
             if debugLoad: print "NatLink base dir" + baseDirectory
             
             # get the current user information from the NatLink module
             userDirectory = status.getUserDirectory()
-            # for unimacro, in order to reach unimacro files to be imported:
-            if userDirectory and os.path.isdir(userDirectory) and not userDirectory in sys.path:
+            if userDirectory:
+                if not userDirectory in sys.path:
+                    sys.path.insert(0,userDirectory)
+                    if debugLoad:
+                        print 'insert userDirectory: %s to sys.path!'% userDirectory
+                else:
+                    if debugLoad:
+                        print 'userDirectory: %s'% userDirectory
+            else:
                 if debugLoad:
-                    print 'insert userDirectory: %s to sys.path!'% userDirectory
-                sys.path.insert(0,userDirectory)
-        
+                    print 'no userDirectory'
+                
+            # for unimacro, in order to reach unimacro files to be imported:
+            unimacroDirectory = status.getUnimacroDirectory()
+            if unimacroDirectory:
+                if status.UnimacroIsEnabled():
+                    if not unimacroDirectory in sys.path:
+                        sys.path.insert(0,unimacroDirectory)
+                        if debugLoad:
+                            print 'insert unimacroDirectory: %s to sys.path!'% unimacroDirectory
+                    else:
+                        if debugLoad:
+                            print 'unimacroDirectory: %s'% unimacroDirectory
+                else:
+                    if debugLoad:
+                        print 'Unimacro not enabled'
+                    
+            else:
+                if debugLoad:
+                    print 'no unimacroDirectory'
+                
             # setting searchImportDirs:
             setSearchImportDirs()
         
@@ -785,10 +786,16 @@ try:
             traceback.print_exc()
         
         if debugLoad:
-            print "userDirectory: %s\nbaseDirectory: %s"% (userDirectory, baseDirectory)
+            print "userDirectory: %s\nbaseDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, baseDirectory, unimacroDirectory)
             print "natlinkmain imported-----------------------------------"
         elif natlinkmainPrintsAtEnd:
-            print 'natlinkmain started (imported)\n'
+            if status.UnimacroIsEnabled():
+                print 'Unimacro enabled, user directory: %s'% status.getUnimacroUserDirectory()
+            if status.VocolaIsEnabled():
+                print 'Vocola enabled, user directory: %s'% status.getVocolaUserDirectory()
+            if userDirectory:
+                print "User defined macro's (UserDirectory) enabled: %s"% userDirectory
+            print '-'*40
         #else:
         #    natlinkLogMessage('natlinkmain started (imported)\n')
         if status.hadWarning:

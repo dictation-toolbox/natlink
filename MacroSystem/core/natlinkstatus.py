@@ -1,4 +1,4 @@
-__version__ = "4.1november"
+__version__ = "4.1oscar"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "4.1november"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1oscar: installer changed, extended with Unimacro, apart from UserDirectory
 # 4.1november: a few small bugs
 # 4.1mike: extra checks in start_configurenatlink.py
 #          unimacro additions
@@ -88,8 +89,7 @@ getDNSIniDir:
     notably nssystem.ini and nsapps.ini.
     If the registry key NatspeakIniDir exists (CURRENT_USER/Software/Natlink),
     and the folder exists and the needed INI files are in this folder this path is returned.
-    Otherwise it is looked for in %COMMON_APPDATA%\Nuance\... or %COMMON_APPDATA%\Scansoft\...
-
+    Otherwise it is looked for in %COMMON_APPDATA%\Nuance\... 
 getDNSVersion:
     returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, ... (???)
     note distinction is made here between different subversions.
@@ -111,9 +111,12 @@ getPythonVersion:
 #(getFullPythonVersion: get string of complete version info).
 
 
-getUserDirectory: get the NatLink user directory, Unimacro will be there. If not return ''
+getUserDirectory: get the NatLink user directory, ##Unimacro will be there. If not return '' not any more (july 2015)
+    UserDirectory is now for non Unimacro grammar files, including Dragonfly.
     (if run from natlinkconfigfunctions use getUserDirectoryFromIni, which checks inifile
-     at each call...)
+     at each call...) 
+
+getUnimacroDirectory: get the directory, which should be in natlink\Unimacro. 
 
 getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
     (if run from natlinkconfigfunctions use getVocolaDirectoryFromIni, which checks inifile
@@ -154,6 +157,7 @@ getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in def
 import os, re, win32api, win32con, sys, pprint, stat
 import RegistryDict, natlinkcorefunctions
 import pywintypes
+import time
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -259,7 +263,10 @@ class NatlinkStatus(object):
     userArgs = [None, None]
 
     # for quicker access (only once lookup in a run)
-    UserDirectory = None
+    UserDirectory = None # not Unimacro!!
+    BaseDirectory = None
+    CoreDirectory = None
+    UnimacroDirectory = None
     UnimacroUserDirectory = None
     VocolaUserDirectory = None
     AhkUserDir = None
@@ -267,6 +274,12 @@ class NatlinkStatus(object):
     hadWarning = []
 
     def __init__(self, skipSpecialWarning=None):
+
+        ## start setting the CoreDirectory and BaseDirectory:
+        CoreDirectory = natlinkcorefunctions.getBaseFolder()
+        self.__class__.CoreDirectory = CoreDirectory
+        self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
+
 
         # for the migration from registry to ini files:
         if self.userregnl.firstUse:
@@ -276,7 +289,8 @@ class NatlinkStatus(object):
                 if not skipSpecialWarning:
                     print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
         self.correctIniSettings() # change to newer conventions
-        if self.checkNatlinkPydFile() is None:
+        result = self.checkNatlinkPydFile()
+        if result is None:
             if not skipSpecialWarning:
                 self.warning('WARNING: invalid version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
             
@@ -304,9 +318,12 @@ class NatlinkStatus(object):
         
         (the registry is out of use, only the core directory is in the
         PythonPath \ NatLink setting, for natlink be able to be started.
+        
+        Also set here the CoreDirectory and BaseDirectory
         """
-        coreDir = natlinkcorefunctions.getBaseFolder()
-        if coreDir.lower().endswith('core'):
+        CoreDirectory = self.getCoreDirectory()
+
+        if CoreDirectory.lower().endswith('core'):
             # check the registry setting:
             try:
                 regDict, sectionName = self.getHKLMPythonPathDict()
@@ -330,19 +347,19 @@ Please try to correct this by running the NatLink Config Program (with administr
 Please try to correct this by running the NatLink Config Program (with administration rights)"""
                 return
             setting = section['']
-            if setting.lower() == coreDir.lower():
-                baseDir = os.path.normpath(os.path.join(coreDir, ".."))
-                self.InsertToSysPath(coreDir)
+            if setting.lower() == CoreDirectory.lower():
+                baseDir = os.path.normpath(os.path.join(CoreDirectory, ".."))
+                self.InsertToSysPath(CoreDirectory)
                 self.InsertToSysPath(baseDir)
             else:
                 print """PythonPath/Natlink setting in registry does not match this core directory\n
-registry: %s\ncoreDir: %s\n
+registry: %s\nCoreDirectory: %s\n
 Please try to correct this by running the NatLink Config Program (with administration rights)"""% (
-                setting, coreDir)
+                setting, CoreDirectory)
                 return
         else:
             baseDir = None
-            print 'non expected core directory %s, cannot find baseDirectory\nTry to run the Config Program with administrator rights'% coreDir
+            print 'non expected core directory %s, cannot find baseDirectory\nTry to run the Config Program with administrator rights'% CoreDirectory
         userDir = self.getUserDirectory()
         # special for other user directories, insert also unimacro for actions etc.
         if userDir: 
@@ -361,6 +378,7 @@ Please try to correct this by running the NatLink Config Program (with administr
             else:
                 print 'no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
                     unimacroDir
+     
         return 1 
          
                 
@@ -379,11 +397,12 @@ Please try to correct this by running the NatLink Config Program (with administr
         
         the config program should be run.
         """
-        coreDir = natlinkcorefunctions.getBaseFolder()
+        CoreDirectory = self.getCoreDirectory()
+        
         originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
-        wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
-        currentPydPath = os.path.join(coreDir, 'natlink.pyd')
+        wantedPydPath = os.path.join(CoreDirectory, 'PYD', wantedPyd)
+        currentPydPath = os.path.join(CoreDirectory, 'natlink.pyd')
         
         if not os.path.isfile(wantedPydPath):
             if not fromConfig:
@@ -414,7 +433,6 @@ Please try to correct this by running the NatLink Config Program (with administr
                 if not fromConfig:
                     self.warning('Current pyd file (%s) out of date, compared with\n%s'% (currentPydPath, wantedPydPath))
                 return
-        
         # all well
         return 1
 
@@ -493,6 +511,10 @@ Please try to correct this by running the NatLink Config Program (with administr
             print 'correct setting from "NatlinkDllRegistered" to "NatlinkPydRegistered"'      
             ini.set('NatlinkPydRegistered', oldSetting)
             ini.delete('NatlinkDllRegistered')
+        oldSetting = ini.get('UserDirectory')
+        if oldSetting and oldSetting.find('Unimacro') > 0:
+            ini.delete('UserDirectory')
+            
             
     def setUserInfo(self, args):
         """set username and userdirectory at change callback user
@@ -509,6 +531,13 @@ Please try to correct this by running the NatLink Config Program (with administr
         return self.userArgs[0]
     def getDNSuserDirectory(self):
         return self.userArgs[1]
+
+    def getCoreDirectory(self):
+        """return the path to coreDir or CoreDirectory
+        """
+        if self.CoreDirectory is None:
+            return natlinkcorefunctions.getBaseFolder()
+        return self.CoreDirectory
 
     def getOriginalNatlinkPydFile(self):
         """return the path of the original dll/pyd file
@@ -573,7 +602,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         """
         # first try if set (by configure dialog/natlinkinstallfunctions.py) if regkey is set:
         key = 'DNSIniDir'
-        P = self.userregnl.get(key, '')
+        P = self.userregnl.get(key)
         if P:
             os.path.normpath(P)
             if os.path.isdir(P):
@@ -658,7 +687,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         try from the list DNSPaths, look for 9, 8, 7.
         """
         key = 'DNSInstallDir'
-        P = self.userregnl.get(key, '')
+        P = self.userregnl.get(key)
         if P:
             os.path.normpath(P)
             if os.path.isdir(P):
@@ -727,11 +756,6 @@ Please try to correct this by running the NatLink Config Program (with administr
     def printPythonPath(self):
         pprint.pprint(self.getPythonPath())
 
-    def getCoreDirectory(self):
-        """return this directory
-        """
-        return natlinkcorefunctions.getBaseFolder()
-    
 
     def getNSSYSTEMIni(self):
         inidir = self.getDNSIniDir()
@@ -774,6 +798,8 @@ Please try to correct this by running the NatLink Config Program (with administr
     warning message, UNLESS silent = 1.
 
         """
+        if not self.CoreDirectory:
+            return
         nssystemini = self.getNSSYSTEMIni()
         actual1 = win32api.GetProfileVal(self.section1, self.key1, "", nssystemini)
 
@@ -819,6 +845,8 @@ Please try to correct this by running the NatLink Config Program (with administr
             self.hadWarning.append(text)
 
     def VocolaIsEnabled(self):
+        if not self.NatlinkIsEnabled():
+            return
         vocDir = self.getVocolaUserDirectory()
         if vocDir:
             return 1
@@ -828,17 +856,57 @@ Please try to correct this by running the NatLink Config Program (with administr
 
         _control.py is in this directory
         """
-        userDir = self.getUserDirectory()
-        if userDir and os.path.isdir(userDir):
-            files = os.listdir(userDir)
+        if not self.NatlinkIsEnabled():
+            return
+        UnimacroDir = self.getUnimacroDirectory()
+        UnimacroUserDir = self.getUnimacroUserDirectory()
+        if not UnimacroDir:
+            print 'no valid UnimacroDirectory, Unimacro is disabled'
+            return
+        if UnimacroUserDir and os.path.isdir(UnimacroUserDir):
+            files = os.listdir(UnimacroDir)
             if '_control.py' in files:
                 return 1
 
+    def UserIsEnabled(self):
+        if not self.NatlinkIsEnabled():
+            return
+        userDir = self.getUserDirectory()
+        if userDir:
+            return 1
+  
+    def getUnimacroDirectory(self):
+        """return the path to the Unimacro Directory, starting July 2015 
+        
+        should be in a fixed place!
+        
+        """
+        if not self.UnimacroDirectory is None: return self.UnimacroDirectory
+        if not self.CoreDirectory:
+            print 'no valid CoreDirectory, so no UnimacroDirectory'
+            uDir = ''
+        else:
+            uDir = os.path.normpath(os.path.join(self.CoreDirectory, '..','..', '..', 'Unimacro'))
+            if uDir and os.path.isdir(uDir):
+                print 'UnimacroDirectory: %s'% uDir
+            else:
+                print 'UnimacroDirectory empty, directory not found: %s'% uDir
+                uDir = ''
+            
+        self.__class__.UnimacroDirectory = uDir # meaning path is invalid!!
+            
+        return uDir 
+
+
     def getUserDirectory(self):
-        """return the path to the NatLink user directory
+        """return the path to the NatLink User directory
+        
+        this one is not any more for Unimacro, but for User specified grammars, also Dragonfly
 
         should be set in configurenatlink, otherwise ignore...
         """
+        if not self.NatlinkIsEnabled:
+            return
         if not self.UserDirectory is None: return self.UserDirectory
         uDir = self.getUserDirectoryFromIni()
         if uDir:
@@ -847,28 +915,17 @@ Please try to correct this by running the NatLink Config Program (with administr
 
     def getUserDirectoryFromIni(self):
         """get the UserDirectory from the ini file
+        return '' if invalid path or not specified...
         """
         key = 'UserDirectory'
-        value = self.userregnl.get(key, '')
+        value = self.userregnl.get(key)
         if value:
-            if os.path.isdir(value):
-                value2 = os.path.normpath(value)
-                self.__class__.UserDirectory = value2
-                return value2
+            Path = isValidPath(value, wantDirectory=1)
+            if Path:
+                self.__class__.UserDirectory = Path
+                return Path
             else:
-                value2 = natlinkcorefunctions.expandEnvVariables(value)
-                    ## can possibly take expandEnvVariable (which can also hold env variables in
-                    ## the middle of the string )
-                if os.path.isdir(value2):
-                    value2 = os.path.normpath(value2)
-                    #print 'UserDirectory (expanded): %s'% value2
-                    self.__class__.UserDirectory = value2
-                    return value2
-                elif value2:
-                    print 'Invalid UserDirectory: %s (ignore value)'% value2
-                else:
-                    print 'No UserDirectory specified'
-                    
+                print 'invalid path for UserDirectory: "%s"'% value
         self.__class__.UserDirectory = ''
         return ''
 
@@ -879,27 +936,17 @@ Please try to correct this by running the NatLink Config Program (with administr
     def getVocolaUserDirectoryFromIni(self):
         key = 'VocolaUserDirectory'
         
-        value = self.userregnl.get(key, '')
+        value = self.userregnl.get(key)
         if value:
-            if os.path.isdir(value):
-                value2 = os.path.normpath(value)
-                self.__class__.VocolaUserDirectory = value2
-                return value2
+            Path = isValidPath(value, wantDirectory=1)
+            if Path:
+                self.__class__.VocolaUserDirectory = Path
+                return Path
             else:
-                value2 = natlinkcorefunctions.expandEnvVariables(value)
-                ## can possibly take expandEnvVariable (which can also hold env variables in
-                ## the middle of the string )
-                if os.path.isdir(value2):
-                    value2 = os.path.normpath(value2)
-                    self.__class__.VocolaUserDirectory = value2
-                    print 'VocolaUserDirectory (expanded): %s'% value2
-                    return value2
-                elif value2:
-                    print 'not a valid VocolaUserDirectory: %s (ignore value)'% value2
-                else:
-                    print 'No VocolaUserDirectory specified'
+                print 'invalid path for VocolaUserDirectory: "%s"'% value
         self.__class__.VocolaUserDirectory = ''
         return ''
+
 
     def getAhkUserDir(self):
         if not self.AhkUserDir is None: return self.AhkUserDir
@@ -908,25 +955,14 @@ Please try to correct this by running the NatLink Config Program (with administr
     def getAhkUserDirFromIni(self):
         key = 'AhkUserDir'
         
-        value = self.userregnl.get(key, '')
+        value = self.userregnl.get(key)
         if value:
-            if os.path.isdir(value):
-                value2 = os.path.normpath(value)
-                self.__class__.AhkUserDir = value2
-                return value2
+            Path = isValidPath(value, wantDirectory=1)
+            if Path:
+                self.__class__.AhkUserDir = Path
+                return Path
             else:
-                value2 = natlinkcorefunctions.expandEnvVariables(value)
-                ## can possibly take expandEnvVariable (which can also hold env variables in
-                ## the middle of the string )
-                if os.path.isdir(value2):
-                    value2 = os.path.normpath(value2)
-                    self.__class__.AhkUserDir = value2
-                    #print 'AhkUserDir (expanded): %s'% value2
-                    return value2
-                elif value2:
-                    print 'not a valid AhkUserDir: %s (ignore value)'% value2
-                else:
-                    print 'No AhkUserDir specified'
+                print 'invalid path for AhkUserDir: "%s"'% value
         self.__class__.AhkUserDir = ''
         return ''
 
@@ -936,44 +972,16 @@ Please try to correct this by running the NatLink Config Program (with administr
 
     def getAhkExeDirFromIni(self):
         key = 'AhkExeDir'
-        
-        value = self.userregnl.get(key, '')
-        if not value:
-            self.__class__.AhkExeDir = ''
-            return ''
-    
-        if os.path.isdir(value):
-            value2 = os.path.normpath(value)
-        else:
-            value2 = natlinkcorefunctions.expandEnvVariables(value)
-            ## can possibly take expandEnvVariable (which can also hold env variables in
-            ## the middle of the string )
-            if os.path.isdir(value2):
-                value2 = os.path.normpath(value2)
-        if value2 and os.path.isdir(value2):
-            ahkexe = os.path.join(value2, 'autohotkey.exe')
-            if os.path.isfile(ahkexe):
-                self.__class__.AhkExeDir = value2
-                return value2
-
-        print 'No valid AhkExeDir defined in inifile: %s'% value
+        value = self.userregnl.get(key)
+        if value:
+            Path = isValidPath(value, wantDirectory=1)
+            if Path:
+                self.__class__.AhkExeDir = Path
+                return Path
+            else:
+                print 'invalid path for AhkExeDir: "%s"'% value
         self.__class__.AhkExeDir = ''
         return ''
-
-    def getOriginalUnimacroDirectory(self):
-        """for use of finding sample_ini directories for example,
-        
-        if userDirectory different from unimacro directory, find the one in relation to core
-        prevent recursive calling with fromGetUserDirectory variable...
-        """
-        coreDir = self.getCoreDirectory()
-        oud = os.path.normpath(os.path.join(coreDir, '..', '..', '..', 'Unimacro'))
-        if os.path.isdir(oud):
-            return oud
-        else:
-            print 'cannot find original Unimacro directory'
-            return ''
-
 
     def getUnimacroUserDirectory(self):
         if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
@@ -981,41 +989,20 @@ Please try to correct this by running the NatLink Config Program (with administr
         
     def getUnimacroUserDirectoryFromIni(self):
         key = 'UnimacroUserDirectory'
-        value = self.userregnl.get(key, '')
+        value = self.userregnl.get(key)
         if value:
-            if os.path.isdir(value):
-                value2 = os.path.normpath(value)
-                self.__class__.UnimacroUserDirectory = value2
-                return value2
+            Path = isValidPath(value, wantDirectory=1)
+            if Path:
+                self.__class__.UnimacroUserDirectory = Path
+                return Path
             else:
-                value2 = natlinkcorefunctions.expandEnvVariables(value)
-                ## can possibly take expandEnvVariable (which can also hold env variables in
-                ## the middle of the string )
-                if os.path.isdir(value2):
-                    value2 = os.path.normpath(value2)
-                    self.__class__.UnimacroUserDirectory = value2
-                    return value2
-                else:
-                    value3 = self.getUserDirectory()
-                    print 'not a valid UnimacroUserDirectory:' \
-                          '%s. Take default: %s'% (value2, value3)
-                    self.__class__.UnimacroUserDirectory = value3
-                    return value3
-        elif self.UnimacroIsEnabled():
-            value4 = self.getUserDirectory()
-            print '\nTake UserDirectory for UnimacroUserDirectory: %s\n'\
-                  '---Consider to change this to eg a subdirectory of your\n'\
-                  'Documents directory (like "[My ]Documents\\Natlink\\Unimacro")---\n'% value4
-            self.__class__.UnimacroUserDirectory = value4                
-            return value4
-        else:
-            self.__class__.UnimacroUserDirectory = ""
-            return ""
-        raise Exception("should not come here, could not find a valid UnimacroUserDirectory")
+                print 'invalid path for %s: "%s"'% (key, value)
+        self.__class__.UnimacroUserDirectory = ''
+        return ''
 
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
-        value = self.userregnl.get(key, '')
+        value = self.userregnl.get(key)
         if not value:
             value = 'notepad'
         if self.UnimacroIsEnabled():
@@ -1163,11 +1150,12 @@ Please try to correct this by running the NatLink Config Program (with administr
         value = self.userregnl.get(key, None)
         return value
 
-    def getNatlinkDebug(self):
-        """gets value for debug output in DNS logfile"""
-        key = 'NatlinkDebug'
-        value = self.userregnl.get(key, None)
-        return value
+    # def getNatlinkDebug(self):
+    #     """gets value for debug output in DNS logfile"""
+    # obsolete (for a long time, 2015 and earlier)
+    #     key = 'NatlinkDebug'
+    #     value = self.userregnl.get(key, None)
+    #     return value
 
     def getIncludeUnimacroInPythonPath(self):
         """gets the value of alway include Unimacro directory in PythonPath"""
@@ -1214,23 +1202,26 @@ Please try to correct this by running the NatLink Config Program (with administr
                     'DNSFullVersion', 
                     'PythonVersion',
                     'DNSName',
-                    
-                    'DebugLoad', 'DebugCallback', 'CoreDirectory',
+                    'UnimacroDirectory',
+                    'DebugLoad', 'DebugCallback',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'UnimacroIniFilesEditor',
-                    'NatlinkDebug', 'InstallVersion', 'NatlinkPydRegistered',
+                    'InstallVersion', 'NatlinkPydRegistered',
                     'IncludeUnimacroInPythonPath',
                     'AhkExeDir', 'AhkUserDir']:
 ##                    'BaseTopic', 'BaseModel']:
             keyCap = key[0].upper() + key[1:]
             execstring = "D['%s'] = self.get%s()"% (key, keyCap)
             exec(execstring)
+        D['CoreDirectory'] = self.CoreDirectory
+        D['BaseDirectory'] = self.BaseDirectory 
         D['UserDirectory'] = self.getUserDirectoryFromIni()
         D['VocolaUserDirectory'] = self.getVocolaUserDirectoryFromIni()
         D['UnimacroUserDirectory'] = self.getUnimacroUserDirectoryFromIni()
         D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
         D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
+        D['userIsEnabled'] = self.UserIsEnabled()
         return D
         
     def getNatlinkStatusString(self):
@@ -1255,7 +1246,7 @@ Please try to correct this by running the NatLink Config Program (with administr
             ## Vocola::
             if D['vocolaIsEnabled']:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
-                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages',
+                for key in ('BaseDirectory', 'VocolaUserDirectory', 'VocolaTakesLanguages',
                             'VocolaTakesUnimacroActions'):
                     self.appendAndRemove(L, D, key)
             else:
@@ -1264,10 +1255,10 @@ Please try to correct this by running the NatLink Config Program (with administr
                             'VocolaTakesUnimacroActions'):
                     del D[key]
                     
-            ## Unimacro or UserDirectory:
+            ## Unimacro:
             if D['unimacroIsEnabled']:
                 self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is enabled")
-                for key in ('UserDirectory',):
+                for key in ('UnimacroDirectory',):
                     self.appendAndRemove(L, D, key)
                 for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
                     self.appendAndRemove(L, D, key)
@@ -1275,15 +1266,18 @@ Please try to correct this by running the NatLink Config Program (with administr
                 self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is disabled")
                 for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
                     del D[key]
-                if D['UserDirectory']:
-                    L.append('but UserDirectory is defined:')
-                    for key in ('UserDirectory',):
-                        self.appendAndRemove(L, D, key)
-                else:
-                    del D['UserDirectory']
+            ##  UserDirectory:
+            if D['userIsEnabled']:
+                self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are enabled")
+                for key in ('UserDirectory',):
+                    self.appendAndRemove(L, D, key)
+            else:
+                self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are disabled")
+                del D['UserDirectory']
+
             ## remaining NatLink options:
             L.append('other NatLink info:')
-            for key in ('DebugLoad', 'DebugCallback', 'NatlinkDebug'):
+            for key in ('DebugLoad', 'DebugCallback'):
                 self.appendAndRemove(L, D, key)
     
         else:
@@ -1328,6 +1322,130 @@ def getFileDate(modName):
     try: return os.stat(modName)[stat.ST_MTIME]
     except OSError: return 0        # file not found
 
+# for splitting the env variables:
+reEnv = re.compile('(%[A-Z_]+%)', re.I)
+
+NatLinkEnvVarDict = None
+def SetInNatLinkEnvDictIfValidPath(name, filepath):
+    """set if valid, otherwise DO NOT SET.
+    
+    If UserDirectory is not set in the configuration, it will not be set in this dict.
+    """
+    global NatLinkEnvVarDict
+    if NatLinkEnvVarDict is None:
+        NatLinkEnvVarDict = {}
+    if filepath:
+        filepath = os.path.normpath(filepath)
+        if os.path.isdir(filepath):
+            NatLinkEnvVarDict[name] = filepath
+        else:
+            print 'natlinkstatus.SetInNatLinkEnvDictIfValidPath:\nInvalid directory: "%s" for "%s". Set in NatLinkEnvVarDict to ""'% (filepath, name)
+
+def createNatLinkEnvVarDict():
+    """make the special NatLink variables global in this module
+    """
+    status = NatlinkStatus()
+    CoreDirectory = status.getCoreDirectory()
+    SetInNatLinkEnvDictIfValidPath("CoreDirectory", CoreDirectory)
+
+    NATLINK = os.path.normpath(os.path.join(CoreDirectory, '..', '..'))
+    SetInNatLinkEnvDictIfValidPath("NATLINK", NATLINK)
+    SetInNatLinkEnvDictIfValidPath("NatLink", NATLINK)
+
+    UNIMACRO = os.path.normpath(os.path.join(NATLINK, '..', 'Unimacro'))
+    SetInNatLinkEnvDictIfValidPath("UNIMACRO", UNIMACRO)
+    SetInNatLinkEnvDictIfValidPath("Unimacro", UNIMACRO)
+
+    CoreDirectory = status.CoreDirectory
+    SetInNatLinkEnvDictIfValidPath("CoreDirectory", CoreDirectory)
+    BaseDirectory = status.BaseDirectory
+    SetInNatLinkEnvDictIfValidPath("BaseDirectory", BaseDirectory)
+        
+    for var in ["UserDirectory", "UnimacroDirectory", "VocolaUserDirectory", "UnimacroUserDirectory"]:
+        func = getattr(status, "get"+var, None)
+        if func:
+            value = func()
+            SetInNatLinkEnvDictIfValidPath(var, value)
+        else:
+            print 'natlinkstatus.createNatLinkEnvVarDict:\nCannot find entry for "%s"'% var
+            
+            
+def expandEnvVars(filepath): 
+    """try to substitute environment variable into a path name
+    
+    first try the NatLink special variables
+        NATLINK, NatLink, Unimacro,
+        CoreDirectory, BaseDirectory (==MacroSystem), UserDirectory
+        UnimacroDirectory, 
+        VocolaUserDirectory, UnimacroUserDirectory
+
+    If %...% persist, call the function in natlinkcorefunctions.
+    """
+    if NatLinkEnvVarDict is None:
+        createNatLinkEnvVarDict()
+    filepath = filepath.strip()
+    
+    if filepath.startswith('~'):
+        folderpart = natlinkcorefunctions.getExtendedEnv('~')
+        filepart = filepath[1:]
+        filepart = filepart.strip('/\\ ')
+        filepath = os.path.normpath(os.path.join(folderpart, filepart))
+    
+    if reEnv.search(filepath):
+        List = reEnv.split(filepath)
+        #print 'parts: %s'% List
+        List2 = []
+        for part in List:
+            if not part: continue
+            key = part.strip("%")
+            if key in NatLinkEnvVarDict:
+                # natlink related env variables:
+                folderpart = NatLinkEnvVarDict[key]
+            else:
+                try:
+                    # try all system env variables:
+                    folderpart = natlinkcorefunctions.getExtendedEnv(part)
+                except ValueError:
+                    folderpart = part
+            List2.append(folderpart)
+        filepath = ''.join(List2)
+        return os.path.normpath(filepath)
+    # no match
+    return filepath
+
+def isValidPath(spec, wantFile=None, wantDirectory=None):
+    """check existence of spec, allow for pseudosymbols.
+    
+    Return the normpath (expanded) if exists and optionally is a file or a directory
+    
+    ~ and %...% should be evaluated
+    
+    tested in testConfigfunctions.py
+    """
+    if not spec:
+        return
+    
+    if not os.path.exists(spec):
+        spec2 = expandEnvVars(spec)
+    else:
+        spec2 = spec
+    spec2 = os.path.normpath(spec2)
+    if os.path.exists(spec2):
+        if wantDirectory and wantFile:
+            raise ValueError("isValidPath, only wantFile or wantDirectory may be specified, not both!")
+        if wantFile:
+            if  os.path.isfile(spec2):
+                return spec2
+            else:
+                print 'isValidPath, path exists, but is not a file: "%s"'% spec2
+                return
+        if wantDirectory:
+            if os.path.isdir(spec2):
+                return spec2
+            else:
+                print 'isValidPath, path exists, but is not a directory: "%s"'% spec2
+                return
+        return spec2
 
 
 if __name__ == "__main__":
@@ -1336,6 +1454,38 @@ if __name__ == "__main__":
     print status.getNatlinkStatusString()
     lang = status.getLanguage()
     
+    
+    # exapmles, for more tests in ...
+    print '\n====\nexamples of expanding ~ and %...% variables:'
+    short = "~/Quintijn"
+    expanded = expandEnvVars(short)
+    print 'Some directory in home:', expanded
+    
+    # the Dragon directory:
+    short = "%PROGRAMFILES%/Nuance"
+    expanded = expandEnvVars(short)
+    print "The dragon directory: %s"% expanded
+    # the Dragon ini files directory:
+    short = "%COMMON_APPDATA%/Nuance"
+    expanded = expandEnvVars(short)
+    print "The dragon config files: %s"% expanded
+
+    # My UnimacroUserDirectory:
+    short = "%UnimacroUserDirectory%"
+    expanded = expandEnvVars(short)
+    print "My UnimacroUserDirectory: %s"% expanded
+
+    # My VocolaUserDirectory:
+    short = "%VocolaUserDirectory%"
+    expanded = expandEnvVars(short)
+    print "My VocolaUserDirectory: %s"% expanded
+    
+    
+
+    # print 'private NatLinkEnvVarDict:'
+    # print NatLinkEnvVarDict
+
+
     # next things only testable when changing the dir in the functions above
     # and copying the ini files to this dir...
     # they normally run only when natspeak is on (and from NatSpeak)
