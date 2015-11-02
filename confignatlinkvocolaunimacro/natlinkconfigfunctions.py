@@ -71,13 +71,16 @@ except:
 
 import os
 import sys
-if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
-    mess = ["Warning, the configure program GUI probably does not work for this old python version: %s."% sys.version[:3],
-            "Also the natlink.pyd files are for older versions of NatSpeak (10 and before) only."
-            "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7"]
-    
-    mess = '\n\n'.join(mess)
-    windowsMessageBox(mess)
+
+if __name__ == '__main__':
+    if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
+        pyVersion = sys.version[:3]
+        mess = ["Here are the natlinkconfigfuntions, with which you can configure NatLink even for this older (%s) version of Python."% pyVersion,
+                "Note: the natlink.pyd files (natlink.dll) that work with python %s are for older versions of NatSpeak (10 and before) only."% pyVersion,
+                "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7. You then use the newer natlink.pyd files in which several problems that arose between NatSpeak 10 and Dragon 11 are solved."]
+        
+        mess = '\n\n'.join(mess)
+        windowsMessageBox(mess)
 
 
 class ElevationError(Exception):

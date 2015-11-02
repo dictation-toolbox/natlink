@@ -45,16 +45,18 @@ except:
 import os
 import sys
 if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
-    mess = ["Warning, this configure program GUI probably does not work for this old python version: %s."% sys.version[:3],
-            "Also the natlink.pyd files are for older versions of NatSpeak (10 and before) only.",
-            "You can still use NatLink for NatSpeak 10 and before, but you should do the configuration via the natlinkconfigfunctions.py",
-            'Please start this program, preferably in elevated mode via start_configurenatlinkfunctions.py or via "Configure NatLink via Command Line Interface" in the start menu'
+    pyVersion = sys.version[:3]
+    mess = ["Warning, this Configure NatLink GUI possibly does not work for this old python version: %s."% pyVersion,
+            "Also the natlink.pyd files (natlink.dll) that work with python %s are for older versions of NatSpeak (10 and before) only."% pyVersion,
+            'Now the good news: you can still use NatLink for NatSpeak 10 and before even with this python version.',
+            'But if the Configure NatLink GUI does not work, you should do the configuration via "natlinkconfigfunctions.py".',
+            'Please start that program, preferably in elevated mode via "start_configurenatlinkfunctions.py" or via "Configure NatLink via Command Line Interface" in the start menu.',
             "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7"]
     
     mess = '\n\n'.join(mess)
     windowsMessageBox(mess)
 
-import sys, traceback, win32ui
+import sys, traceback
 from configurenatlink_wdr import *
 import os, os.path, string, copy, types
 from natlinkconfigfunctions import ElevationError
@@ -315,7 +317,9 @@ See more help information in the log panel"""
             return mess
         try:
             result = func(pathName)
-        except ElevationError as e:
+        except ElevationError:
+            e = sys.exc_info()[1]
+
             mess = 'This program should run in elevated mode (%s).'% e.message
             self.error(mess)
             mess2  = mess = '\n\nPlease Close and run via start_configurenatlink.py\n\nPlease close Dragon too.'
@@ -379,7 +383,9 @@ class ConfigureNatlinkPanel(wx.Panel):
         error = 0
         try:
             self.cli = nf.CLI(self.GUI)
-        except ElevationError as e:
+        except ElevationError:
+            e = sys.exc_info()[1]
+
             mess = 'This program should run in elevated mode (%s).'% e.message
             self.error(mess)
             mess += '\n\nPlease Close and run via start_configurenatlink.pyw'
@@ -658,7 +664,9 @@ class ConfigureNatlinkPanel(wx.Panel):
     
         try:
             result = func(pathName)
-        except ElevationError as e:
+        except ElevationError:
+            e = sys.exc_info()[1]
+
             mess = 'This command needs elevated mode: %s'% e.message
             mess2 = mess + '\n\nClose this program and run "start_configurenatlink.py"'
             self.error(mess)
