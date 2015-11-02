@@ -48,6 +48,33 @@ etc.
 More at the bottom, with the CLI description...
 
 """
+try:
+    from win32com.shell.shell import IsUserAnAdmin
+except:
+    import ctypes
+    IsUserAnAdmin = ctypes.windll.shell32.IsUserAnAdmin
+
+try:
+    from win32ui import MessageBox
+    def windowsMessageBox(message, title="NatLink configure program"):
+        """do messagebox from windows, no wx needed
+        """
+        MessageBox(message, title)
+except:
+    import ctypes
+    MessageBoxA = ctypes.windll.user32.MessageBoxA
+    def windowsMessageBox(message, title="NatLink configure program"):
+        """do messagebox from windows, no wx needed
+        for old versions of python
+        """
+        MessageBoxA(None, message, title, 0)
+
+import os
+import sys
+if sys.version[:3] == '2.5':
+    windowsMessageBox("xxxx")
+
+
 class ElevationError(Exception):
     def __init__(self, message):
         self.message = message
@@ -128,8 +155,7 @@ def fatal_error(message, new_raise=None):
 from win32com.shell import shell
 
 import win32api
-import win32ui
-import os, sys, shutil, re, pywintypes 
+
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
 if thisDir == coreDir:
@@ -165,7 +191,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
         self.changesInInitPhase = 0
         self.DNSName = self.getDNSName()
-        self.isElevated = shell.IsUserAnAdmin()
+        self.isElevated = IsUserAnAdmin()
         # self.isNatSpeakRunning = natlink.isNatSpeakRunning  # function
         
     def checkCoreDirectory(self):
@@ -1359,7 +1385,8 @@ class CLI(cmd.Cmd):
                     print 'remove obsolete key from natlinkstatus.ini: "%s"'% key
                     self.config.userregnl.delete(key)
             self.DNSName = self.config.getDNSName()
-        except ElevationError as e:
+        except ElevationError:
+            e = sys.exc_info()[1]
             print 'You need to run this program in elevated mode. (%s).'% e.message
             raise
             
@@ -2045,14 +2072,9 @@ Informational commands: i and I
 """
     help_usage = help_u
     
-def windowsMessageBox(message, title="NatLink configure program"):
-    """do messagebox from windows, no wx needed
-    """
-    win32ui.MessageBox(message, title)
-    
+
         
 if __name__ == "__main__":
-    import sys
     if len(sys.argv) == 1:
         cli = CLI()
         cli.info = "type u for usage"
@@ -2060,10 +2082,12 @@ if __name__ == "__main__":
             cli.cmdloop()
         except (KeyboardInterrupt, SystemExit):
             pass
-        except ElevationError as e:
+        except ElevationError:
+            e = sys.exc_info()[1]
             print 'please run this program in elevated mode (%s).'% e.message
             cli.do_q("dummy")
-        except NatSpeakRunningError as e:
+        except NatSpeakRunningError:
+            e = sys.exc_info()[1]
             print 'Dragon should not be running, %s.'% e.message
     else:
       _main()
