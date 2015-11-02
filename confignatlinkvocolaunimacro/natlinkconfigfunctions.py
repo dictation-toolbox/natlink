@@ -71,8 +71,13 @@ except:
 
 import os
 import sys
-if sys.version[:3] == '2.5':
-    windowsMessageBox("xxxx")
+if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
+    mess = ["Warning, the configure program GUI probably does not work for this old python version: %s."% sys.version[:3],
+            "Also the natlink.pyd files are for older versions of NatSpeak (10 and before) only."
+            "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7"]
+    
+    mess = '\n\n'.join(mess)
+    windowsMessageBox(mess)
 
 
 class ElevationError(Exception):

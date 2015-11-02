@@ -27,6 +27,33 @@ except ImportError:
         pass
     raise
 
+try:
+    from win32ui import MessageBox
+    def windowsMessageBox(message, title="NatLink configure program"):
+        """do messagebox from windows, no wx needed
+        """
+        MessageBox(message, title)
+except:
+    import ctypes
+    MessageBoxA = ctypes.windll.user32.MessageBoxA
+    def windowsMessageBox(message, title="NatLink configure program"):
+        """do messagebox from windows, no wx needed
+        for old versions of python
+        """
+        MessageBoxA(None, message, title, 0)
+
+import os
+import sys
+if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
+    mess = ["Warning, this configure program GUI probably does not work for this old python version: %s."% sys.version[:3],
+            "Also the natlink.pyd files are for older versions of NatSpeak (10 and before) only.",
+            "You can still use NatLink for NatSpeak 10 and before, but you should do the configuration via the natlinkconfigfunctions.py",
+            'Please start this program, preferably in elevated mode via start_configurenatlinkfunctions.py or via "Configure NatLink via Command Line Interface" in the start menu'
+            "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7"]
+    
+    mess = '\n\n'.join(mess)
+    windowsMessageBox(mess)
+
 import sys, traceback, win32ui
 from configurenatlink_wdr import *
 import os, os.path, string, copy, types
@@ -1147,7 +1174,7 @@ More control on the Unimacro features in the "Vocola compatibility" dialog.
         letter = 'y'
         control = self.GetCheckboxdebugcallbackoutput()
         self.do_checkboxcommand(letter, control)
-        
+        a = 1/0
 
     def OnDBDebugLoad(self, event):
         letter = 'x'

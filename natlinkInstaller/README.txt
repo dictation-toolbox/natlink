@@ -1,4 +1,9 @@
-We are slowly moving to a new stable release for Dragon 12 and NatLink too. (July 2014)
+We are slowly moving to a new stable release for Dragon 12 (and later) and NatLink too. (November 2015)
+
+4.1oscar:
+  - many configure things, now use UnimacroUserDirectory for enable/disable Unimacro
+  - more reliable configure program
+  - separate UserDirectory
 
 4.1mike:
 - extra checks for missing modules in start_configurenatlink.py and in start_natlinkconfigfunctions.py

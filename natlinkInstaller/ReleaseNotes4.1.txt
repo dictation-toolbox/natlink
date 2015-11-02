@@ -1,4 +1,8 @@
 
+Release 4.1oscar;
+  - many installer things, now use UnimacroUserDirectory for enable/disable Unimacro
+  - Separate UserDirectory
+
 Release 4.1mike:
   - extra checks for missing modules in start_configurenatlink.py and in start_natlinkconfigfunctions.py
   - Unimacro grammar folders, added recent files trick and xplorer2 support.
