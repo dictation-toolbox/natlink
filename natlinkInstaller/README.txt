@@ -1,5 +1,6 @@
 We are slowly moving to a new stable release for Dragon 12 (and later) and NatLink too. (November 2015)
 
+(few fixed in same file, last one November 4, 10:00 hrs Dutch time)
 4.1oscar:
   - many configure things, now use UnimacroUserDirectory for enable/disable Unimacro
   - more reliable configure program
