@@ -292,7 +292,7 @@ class NatlinkStatus(object):
         result = self.checkNatlinkPydFile()
         if result is None:
             if not skipSpecialWarning:
-                self.warning('WARNING: invalid version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
+                self.warning('WARNING: invalid or no version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
             
     def getWarningText(self):
         """return a printable text if there were warnings
@@ -412,7 +412,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         # first check existence of natlink.pyd (probably never comes here)
         if not os.path.isfile(currentPydPath):
             if not fromConfig:
-                print '%s does not exist, (re)run the configuration program of NatLink'% currentPydPath
+                print '%s does not exist...'% currentPydPath
             return
         
         # check correct pyd version, with python version and Dragon version:

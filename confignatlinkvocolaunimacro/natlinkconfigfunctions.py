@@ -69,7 +69,7 @@ except:
         """
         MessageBoxA(None, message, title, 0)
 
-import os
+import os, shutil
 import sys
 
 if __name__ == '__main__':
@@ -233,8 +233,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if not os.path.isfile(currentPydPath):
             if not self.isElevated: raise ElevationError("natlink.pyd is not found")
             mess = "natlink.pyd is not found, try to repair this."
-            windowsMessageBox(mess)
-            self.message("natlink.pyd is not found, try to repair this.")
+            # windowsMessageBox(mess)
+            # self.message("natlink.pyd is not found, try to repair this.")
             
             key = 'NatlinkPydRegistered'
             print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
