@@ -171,9 +171,10 @@ NSExt10Path  = "Nuance\NaturallySpeaking10"
 NSExt11Path  = "Nuance\NaturallySpeaking11"
 NSExt12Path  = "Nuance\NaturallySpeaking12"
 NSExt13Path  = "Nuance\NaturallySpeaking13"
+NSExt14Path  = "Nuance\NaturallySpeaking14"
 DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
-DNSPaths = [NSExt13Path, NSExt12Path, NSExt11Path, NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
-DNSVersions = [13,12,11,10,9,8,7]
+DNSPaths = [NSExt14Path, NSExt13Path, NSExt12Path, NSExt11Path, NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
+DNSVersions = [14,13,12,11,10,9,8,7]
 # augment above when a new version is there!
 
 # utility functions: 
