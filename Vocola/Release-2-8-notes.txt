@@ -1,3 +1,13 @@
+New in 2.8.3:
+
+* Source code converted to git, moved to github at
+  https://github.com/mdbridge/Vocola-2
+
+* Removed support for falling back to Simpscrp
+
+* Removed support for using Perl version of Vocola
+
+
 New in 2.8.2:
 
 * Fixed a bug where one command invoking another in the same grammar

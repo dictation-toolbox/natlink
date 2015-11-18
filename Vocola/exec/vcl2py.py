@@ -23,7 +23,7 @@
 #
 # Copyright (c) 2000-2003, 2005, 2007, 2009-2012 by Rick Mohr.
 # 
-# Portions Copyright (c) 2012-14 by Hewlett-Packard Development Company, L.P.
+# Portions Copyright (c) 2012-15 by Hewlett-Packard Development Company, L.P.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -119,7 +119,7 @@ import sys
 # ---------------------------------------------------------------------------
 # Main control flow
 
-VocolaVersion = "2.8.2I"
+VocolaVersion = "2.8.3"
 
 def main():
     global Debug, Default_maximum_commands, Error_encountered, Force_processing, In_folder, Default_number_words, LOG

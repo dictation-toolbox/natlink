@@ -1,9 +1,0 @@
-# Microsoft Developer Studio Generated Dependency File, included by simpscrp.mak
-
-.\simpscrp.cpp : \
-	".\StdAfx.h"\
-	
-
-.\StdAfx.cpp : \
-	".\StdAfx.h"\
-	
