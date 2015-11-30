@@ -48,20 +48,23 @@ etc.
 More at the bottom, with the CLI description...
 
 """
+import ctypes
 try:
     from win32com.shell.shell import IsUserAnAdmin
 except:
-    import ctypes
     IsUserAnAdmin = ctypes.windll.shell32.IsUserAnAdmin
 
 try:
     from win32ui import MessageBox
+    raise Exception # want windowsMessageBox, this one sucks...
+    
     def windowsMessageBox(message, title="NatLink configure program"):
         """do messagebox from windows, no wx needed
         """
         MessageBox(message, title)
+    
 except:
-    import ctypes
+
     MessageBoxA = ctypes.windll.user32.MessageBoxA
     def windowsMessageBox(message, title="NatLink configure program"):
         """do messagebox from windows, no wx needed
@@ -995,7 +998,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)        
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
-        if not (pythonVersion and len(pythonVersion) == 2):
+        if not (pythonVersion and len(pythonVersion) == 3):
             fatal_error('not a valid python version found: |%s|'% pythonVersion)
             
         # for safety unregister always:

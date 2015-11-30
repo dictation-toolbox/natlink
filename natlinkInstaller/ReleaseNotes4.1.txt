@@ -1,5 +1,16 @@
 
-Release 4.1oscar;
+Release 4.1papa:
+-New in Vocola 2.8.3:
+
+* Source code converted to git, moved to github at
+  https://github.com/mdbridge/Vocola-2
+
+* Removed support for falling back to Simpscrp
+
+* Removed support for using Perl version of Vocola
+
+
+Release 4.1oscar:
   - many installer things, now use UnimacroUserDirectory for enable/disable Unimacro
   - Separate UserDirectory
 
