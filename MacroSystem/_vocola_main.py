@@ -8,7 +8,7 @@
 #
 # Copyright (c) 2002-2012 by Rick Mohr.
 # 
-# Portions Copyright (c) 2012-2014 by Hewlett-Packard Development Company, L.P.
+# Portions Copyright (c) 2012-2015 by Hewlett-Packard Development Company, L.P.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -57,12 +57,6 @@ from   natlinkutils import *
 #                                                                         #
 ###########################################################################
 
-# The Vocola translator is a perl program. By default we use the precompiled
-# executable vcl2py.exe, which doesn't require installing perl.
-# To instead use perl and vcl2py.pl, set the following variable to 1:
-usePerl = 0
-
-
 try:
     import natlinkstatus
     Quintijn_installer = True
@@ -84,16 +78,11 @@ NatLinkFolder = re.sub(r'\core$', "", NatLinkFolder)
 
 VocolaFolder     = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
 ExecFolder       = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'exec'))
-# C module "simpscrp" defines Exec(), which runs a program in a minimized
-# window and waits for completion. Since such modules need to be compiled
-# separately for each python version we need this careful import:
-pydFolder        = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'exec', sys.version[0:3]))
 ExtensionsFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola', 'extensions'))
 
 NatLinkFolder    = os.path.abspath(NatLinkFolder)
 
 if VocolaEnabled:
-    sys.path.append(pydFolder)
     sys.path.append(ExecFolder)
     sys.path.append(ExtensionsFolder)
 
@@ -426,17 +415,6 @@ Commands" and "Edit Global Commands" are activated.
                 new.write(includeLine)                    
             new.close()
 
-        wantedPath = os.path.join(commandFolder, file)
-        if path and path != wantedPath:
-            # copy from other location
-            if wantedPath.startswith(path) and len(wantedPath) - len(path) == 3:
-                print 'copying enx version to language version %s'% language
-                copyVclFileLanguageVersion(path, wantedPath)
-            else:
-                print 'copying from other location'
-                self.copyVclFile(path, wantedPath)
-            path = wantedPath   
-
         #
         # NatLink/DNS bug causes os.startfile or wpi32api.ShellExecute
         # to crash DNS if allResults is on in *any* grammer (e.g., Unimacro)
@@ -529,12 +507,6 @@ def compile_Vocola(inputFileOrFolder, force):
 
     # below line currently needed because kludge changes the the folder:
     VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
-    if usePerl:
-        executable = "perl"
-        arguments  = [VocolaFolder + r'\exec\vcl2py.pl']
-    else:
-        executable = VocolaFolder + r'\exec\vcl2py.exe'
-        arguments  = []
     executable = sys.prefix + r'\python.exe'
     arguments  = [VocolaFolder + r'\exec\vcl2py.py']
 
@@ -573,25 +545,18 @@ def purgeOutput():
 def hidden_call(executable, arguments):
     args = [executable] + arguments
     try:
-        # Using simpscrp is depreciated; remove '_disabled' below to use:
-        import simpscrp_disabled
-        args = ['"' + str(x) + '"' for x in args]
-        call = ' '.join(args)
-        simpscrp.Exec(call, 1)
+        import subprocess
+        si             = subprocess.STARTUPINFO()
+        # Location of below constants seems to vary from Python
+        # version to version so hardcode them:
+        si.dwFlags     = 1 # subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = 0 # subprocess.SW_HIDE
+        return subprocess.call(args, startupinfo=si)
     except ImportError:
-        try:
-            import subprocess
-            si             = subprocess.STARTUPINFO()
-            # Location of below constants seems to vary from Python
-            # version to version so hardcode them:
-            si.dwFlags     = 1 # subprocess.STARTF_USESHOWWINDOW
-            si.wShowWindow = 0 # subprocess.SW_HIDE
-            return subprocess.call(args, startupinfo=si)
-        except ImportError:
-            pid = os.spawnv(os.P_NOWAIT, executable, args)
-            pid, exit_code = os.waitpid(pid, 0)
-            exit_code = exit_code >> 8
-            return exit_code
+        pid = os.spawnv(os.P_NOWAIT, executable, args)
+        pid, exit_code = os.waitpid(pid, 0)
+        exit_code = exit_code >> 8
+        return exit_code
 
 
 lastVocolaFileTime    = 0
@@ -768,7 +733,7 @@ purgeOutput()
 if not VocolaEnabled:
     print "Vocola not active"
 else:
-    print "Vocola version 2.8.2I starting..."
+    print "Vocola version 2.8.3I starting..."
     thisGrammar = ThisGrammar()
     thisGrammar.initialize()
 
