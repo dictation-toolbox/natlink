@@ -425,21 +425,6 @@ Commands" and "Edit Global Commands" are activated.
         #    os.spawnv(os.P_NOWAIT, prog, [prog, path])
         natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
 
-    def copyVclFile(self, Input, Output):
-        """copy to another location
-        """
-        # QH, febr, 5, 2008
-        Input  = os.path.normpath(Input)
-        Output = os.path.normpath(Output)
-
-        input  = open(Input, 'r').read()
-        output = open(Output, 'w')
-        output.write("# vocola file from a sample directory %s\n"% Input)
-        lines = map(string.strip, str(input).split('\n'))
-        for line in lines:
-            output.write(line + '\n')
-        output.close()                
-
     def updateUnimacroHeaderIfNeeded(self):
         import shutil
         if not status.getVocolaTakesUnimacroActions(): 
