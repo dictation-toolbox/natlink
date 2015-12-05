@@ -505,8 +505,6 @@ def compile_Vocola(inputFileOrFolder, force):
 
     may_have_compiled = True
 
-    # below line currently needed because kludge changes the the folder:
-    VocolaFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
     executable = sys.prefix + r'\python.exe'
     arguments  = [VocolaFolder + r'\exec\vcl2py.py']
 
