@@ -406,13 +406,6 @@ Commands" and "Edit Global Commands" are activated.
 
             new = open(path, 'w')
             new.write('# ' + comment + '\n\n')
-            # insert include line to Unimacro.vch:
-            if status.getVocolaTakesUnimacroActions():
-                if language == 'enx' or not status.getVocolaTakesLanguages():
-                    includeLine = 'include Unimacro.vch;\n\n'
-                else:
-                    includeLine = 'include ..\\Unimacro.vch;\n\n'
-                new.write(includeLine)                    
             new.close()
 
         #
