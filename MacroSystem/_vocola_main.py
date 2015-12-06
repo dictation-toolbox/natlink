@@ -30,15 +30,6 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
-#
-# WARNING: This version of _vocola_main.py has been modified to work
-#          with Quintijn's installer/version of NatLink and has a
-#          number of unofficial changes/improvements.  The code has
-#          been organized to minimize the diff's with the official
-#          version.
-#
-
 import string
 import sys
 import os               # access to file information
@@ -88,6 +79,14 @@ if VocolaEnabled:
 
 
 def get_command_folder():
+    commandFolder = get_top_command_folder()
+    if commandFolder:
+        uDir = os.path.join(commandFolder, language)
+        if os.path.isdir(uDir):
+            commandFolder = uDir
+    return commandFolder
+
+def get_top_command_folder():
     configured = None
     try:
         import natlinkstatus
@@ -116,17 +115,6 @@ def get_command_folder():
 commandFolder = get_command_folder()
 if VocolaEnabled and not commandFolder:
     print >> sys.stderr, "Warning: no Vocola command folder found!"
-
-
-## 
-## Quintijn's unofficial multiple language kludge:
-## 
-
-if VocolaEnabled and commandFolder:
-    uDir = os.path.join(commandFolder, language)
-    if os.path.isdir(uDir):
-        commandFolder = uDir
-        print 'Using Vocola command subdirectory: %s' % language
 
 
 
@@ -221,8 +209,9 @@ class ThisGrammar(GrammarBase):
 Vocola Warning: no language "%s" translations for the built-in Vocola
 commands (e.g., commands to load voice commands) are currently
 available; consider helping translate them -- inquire on
-http://www.speechcomputing.com.  For now the English versions, like "Edit
-Commands" and "Edit Global Commands" are activated.
+https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25.  For
+now the English versions, like "Edit Commands" and "Edit Global
+Commands" are activated.
 """ % language
         
 
@@ -638,7 +627,7 @@ purgeOutput()
 if not VocolaEnabled:
     print "Vocola not active"
 else:
-    print "Vocola version 2.8.3I starting..."
+    print "Vocola version 2.8.3I+ starting..."
     thisGrammar = ThisGrammar()
     thisGrammar.initialize()
 
