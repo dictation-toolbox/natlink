@@ -136,6 +136,7 @@ try:
     import glob             # new way to collect the grammar files
     import pprint
     import natlinkstatus    # for extracting status info (QH)
+    import natlinkstartup
     debugTiming=0
     #
     # This redirects stdout and stderr to a dialog box.
@@ -627,10 +628,8 @@ try:
             moduleInfo = natlink.getCurrentModule()
             if debugCallback:
                 print "---------changeCallback, User changed to", userName
-            elif changeCallbackUserFirst:
+            elif not changeCallbackUserFirst:
                 # first time, no print message, but next time do...
-                changeCallbackUserFirst = 0
-            else:
                 print "\n------ user changed to: %s\n"% userName
     
             unloadEverything()
@@ -640,6 +639,9 @@ try:
             language = status.getLanguage()
             if debugCallback:
                 print 'usercallback, language: %s'% language
+            if changeCallbackUserFirst:
+                natlinkstartup.start()
+                changeCallbackUserFirst = 0
             # changed next two lines QH:
             findAndLoadFiles()        
             beginCallback(moduleInfo, checkAll=1)
@@ -765,10 +767,11 @@ try:
             WindowsVersion = status.getWindowsVersion()
             
             # init things identical to when user changes:
+            #   [MDL: this calls findAndLoadFiles()!]
             changeCallback('user', natlink.getCurrentUser())
         
         ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
-                
+
             # load all global files in user directory and current directory
             findAndLoadFiles()
         

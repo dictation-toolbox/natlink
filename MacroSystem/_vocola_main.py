@@ -122,40 +122,11 @@ if VocolaEnabled and not commandFolder:
 ## Quintijn's unofficial multiple language kludge:
 ## 
 
-def copyVclFileLanguageVersion(Input, Output):
-    """copy to another location, keeping the include files one directory above
-    """
-    # let include lines to relative paths point to the folder above ..\
-    # so you can take the same include file for the alternate language.
-    reInclude = re.compile(r'(include\s+)\w')
-    Input     = os.path.normpath(Input)
-    Output    = os.path.normpath(Output)
-    input     = open(Input, 'r').read()
-    output    = open(Output, 'w')
-    output.write("# vocola file for alternate language: %s\n"% language)
-    lines = map(string.strip, str(input).split('\n'))
-    for line in lines:
-        if reInclude.match(line):
-            line = 'include ..\\' + line[8:]
-        output.write(line + '\n')
-    output.close()                
-
-def copyToNewSubDirectory(trunk, subdirectory):
-    for f in os.listdir(trunk):
-        if f.endswith('.vcl'):
-            copyVclFileLanguageVersion(os.path.join(trunk, f),
-                                       os.path.join(subdirectory, f))
-
-if VocolaEnabled and status.getVocolaTakesLanguages():
-    print '_vocola_main started with language: %s' % language
-    if language != 'enx' and commandFolder:
-        uDir  = commandFolder
-        uDir2 = os.path.join(uDir, language)
-        if not os.path.isdir(uDir2):
-            print 'creating userCommandFolder for language %s' % language
-            os.mkdir(uDir2)
-            copyToNewSubDirectory(uDir, uDir2)
-        commandFolder = uDir2
+if VocolaEnabled and commandFolder:
+    uDir = os.path.join(commandFolder, language)
+    if os.path.isdir(uDir):
+        commandFolder = uDir
+        print 'Using Vocola command subdirectory: %s' % language
 
 
 
@@ -256,8 +227,6 @@ Commands" and "Edit Global Commands" are activated.
         
 
     def initialize(self):
-        self.updateUnimacroHeaderIfNeeded()
-
         if os.environ.has_key('COMPUTERNAME'):
             self.machine = string.lower(os.environ['COMPUTERNAME'])
         else: self.machine = 'local'
@@ -424,46 +393,6 @@ Commands" and "Edit Global Commands" are activated.
         #    prog = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
         #    os.spawnv(os.P_NOWAIT, prog, [prog, path])
         natlink.execScript("AppBringUp \"" + path + "\", \"" + path + "\"")
-
-    def updateUnimacroHeaderIfNeeded(self):
-        import shutil
-        if not status.getVocolaTakesUnimacroActions(): 
-            return
-        
-        destDir              = status.getVocolaUserDirectory()
-        sourceDir            = os.path.join(status.getUserDirectory(), 'vocola_compatibility')
-        destPath             = os.path.join(destDir,   'Unimacro.vch')
-        sourcePath           = os.path.join(sourceDir, 'Unimacro.vch')
-        sourceTime, destTime = vocolaGetModTime(sourcePath), vocolaGetModTime(destPath)
-
-        if not (sourceTime or destTime):
-            print >> sys.stderr, """\n
-Error: The option "Vocola Takes Unimacro Actions" is switched on, but
-no file "Unimacro.vch" is found.
-
-Please fix the configuration of NatLink/Vocola/Unimacro and restart
-Dragon.  Either ensure the source file is at:
-    "%s",
-or switch off the option "Vocola Takes Unimacro Actions".
-"""% sourceDir
-            return
-        
-        if destTime < sourceTime:
-            try:
-                shutil.copyfile(sourcePath, destPath)
-            except IOError:
-                print >> sys.stderr, """\n
-Warning: Could not copy example "Unimacro.vch" to:
-    "%s".
-
-There is a valid "Unimacro.vch" available, but a newer file is
-available at: "%s".
-
-Please fix the configuration of NatLink/Vocola/Unimacro and restart
-Dragon, if you want to use the updated version of this file."""% (destDir, sourceDir)
-            else:
-                print 'Succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s".'% (sourceDir, destDir)
-
 
 
 
