@@ -1,3 +1,14 @@
+New in 2.8.4:
+
+* Versions of Python earlier than 2.6 are no longer supported.
+
+* If the user's command folder C contains a subdirectory matching the
+  current language's short name (e.g., enx for English), use that
+  subdirectory (e.g., C/enx) as their command folder instead.  This
+  allows multilingual users to have separate commands for each language
+  they use.
+
+
 New in 2.8.3:
 
 * Source code converted to git, moved to github at

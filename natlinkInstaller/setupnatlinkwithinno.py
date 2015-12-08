@@ -142,7 +142,7 @@ class InnoScript:
         self.outputFilename = "setup-natlink-%s"% self.version
         print >> ofi, r"OutputBaseFilename=%s"% self.outputFilename
         print >> ofi, r"AppName=%s"% self.name
-        print >> ofi, r"AppVerName=%s version %s (including Vocola 2.8.3I+ and Unimacro)" % (self.name, self.version)
+        print >> ofi, r"AppVerName=%s version %s (including Vocola 2.8.4 and Unimacro)" % (self.name, self.version)
         print >> ofi, r"DefaultDirName=C:\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
         print >> ofi, r"LicenseFile=..\NatLink\COPYRIGHT.txt"

@@ -3,7 +3,7 @@
 ###
 ###
 ### Copyright (c) 2002-2011 by Rick Mohr.
-### 
+###
 ### Permission is hereby granted, free of charge, to any person
 ### obtaining a copy of this software and associated documentation
 ### files (the "Software"), to deal in the Software without
@@ -11,10 +11,10 @@
 ### modify, merge, publish, distribute, sublicense, and/or sell copies
 ### of the Software, and to permit persons to whom the Software is
 ### furnished to do so, subject to the following conditions:
-### 
+###
 ### The above copyright notice and this permission notice shall be
 ### included in all copies or substantial portions of the Software.
-### 
+###
 ### THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 ### EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 ### MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,11 +25,13 @@
 ### DEALINGS IN THE SOFTWARE.
 ###
 
-import natlink
-from   types import *
-import string
 import re
+import string
 import sys
+from   types import *
+import traceback  # for debugging traceback code in handle_error
+
+import natlink
 
 
 #
@@ -64,7 +66,7 @@ def combineDictationWords(fullResults):
 
 ##
 ## Runtime error handling:
-## 
+##
 
 class VocolaRuntimeError(Exception):
     pass
@@ -79,19 +81,19 @@ def to_long(string):
 
 def do_flush(functional_context, buffer):
     if functional_context:
-        raise VocolaRuntimeError('attempt to call Unimacro, Dragon, or a Vocola extension procedure in a functional context!')
+        raise VocolaRuntimeError(
+            'attempt to call Unimacro, Dragon, or a Vocola extension ' +
+            'procedure in a functional context!')
     if buffer != '':
         natlink.playString(convert_keys(buffer))
     return ''
 
 
-import traceback
-
 def handle_error(filename, line, command, exception):
-    print 
+    print
     print >> sys.stderr, "While executing the following Vocola command:"
     print >> sys.stderr, "    " + command
-    print >> sys.stderr, "defined at line " + str(line) + " of " + filename + ","
+    print >> sys.stderr, "defined at line " + str(line) + " of " + filename +","
     print >> sys.stderr, "the following error occurred:"
     print >> sys.stderr, "    " + exception.__class__.__name__ + ": " \
         + str(exception)
@@ -101,9 +103,9 @@ def handle_error(filename, line, command, exception):
 
 
 ##
-## Dragon built-ins: 
+## Dragon built-ins:
 ##
- 
+
 dragon_prefix = ""
 
 def convert_keys(keys):
@@ -111,8 +113,8 @@ def convert_keys(keys):
     #   (is somewhat generous about what counts as a key name)
     #
     # Because we can't be sure of the current code page, treat all non-ASCII
-    # characters as potential accented letters for now.  
-    keys = re.sub(r"""(?x) 
+    # characters as potential accented letters for now.
+    keys = re.sub(r"""(?x)
                       \{ ( (?: [a-zA-Z\x80-\xff]+ \+ )*
                            (?:[^}]|[-a-zA-Z0-9/*+.\x80-\xff]+) )
                       [ _]
@@ -143,9 +145,9 @@ def call_Dragon(function_name, argument_types, arguments):
             argument = quoteAsVisualBasicString(str(argument))
         else:
             # there is a vcl2py.pl bug if this happens:
-            raise VocolaRuntimeError("Vocola compiler error: unknown data type " +
-                                     " specifier '" + argument_type +
-                                   "' supplied for a Dragon procedure argument")
+            raise VocolaRuntimeError("Vocola compiler error: unknown data type "
+                                     + " specifier '" + argument_type +
+                                     "' supplied for a Dragon procedure argument")
 
         if script != '':
             script += ','
@@ -192,7 +194,7 @@ def call_Unimacro(argumentString):
                 + '        Unimacro(' + argumentString + ')\n' \
                 + '    Unimacro reported the following error:\n' \
                 + '        ' + type(e).__name__ + ": " + str(e)
-            raise VocolaRuntimeError, m
+            raise VocolaRuntimeError(m)
     else:
         m = "Unimacro call failed because Unimacro is unavailable"
         raise VocolaRuntimeError(m)
@@ -205,27 +207,27 @@ def call_Unimacro(argumentString):
 
 def eval_template(template, *arguments):
     variables = {}
-    
+
     waiting = list(arguments)
     def get_argument():
         if len(waiting) == 0:
             raise VocolaRuntimeError(
                 "insufficient number of arguments passed to Eval[Template]")
         return waiting.pop(0)
-            
+
     def get_variable(value):
         argument_number = len(arguments)-len(waiting)
         name = "v" + str(argument_number)
         variables[name] = value
         return name
-    
+
     # is string the canonical representation of a long?
     def isCanonicalNumber(string):
         try:
             return str(long(string)) == string
         except ValueError:
             return 0
-    
+
     def handle_descriptor(m):
         descriptor = m.group()
         if descriptor == "%%":
@@ -242,7 +244,7 @@ def eval_template(template, *arguments):
                 return get_variable(str(a))
         else:
             return descriptor
-    
+
     expression = re.sub(r'%.', handle_descriptor, template)
     try:
         return eval('str(' + expression + ')', variables.copy())
