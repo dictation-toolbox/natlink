@@ -52,19 +52,17 @@ import ctypes
 try:
     from win32com.shell.shell import IsUserAnAdmin
 except:
+
     IsUserAnAdmin = ctypes.windll.shell32.IsUserAnAdmin
 
 try:
     from win32ui import MessageBox
-    raise Exception # want windowsMessageBox, this one sucks...
-    
     def windowsMessageBox(message, title="NatLink configure program"):
         """do messagebox from windows, no wx needed
         """
         MessageBox(message, title)
-    
 except:
-
+    import ctypes
     MessageBoxA = ctypes.windll.user32.MessageBoxA
     def windowsMessageBox(message, title="NatLink configure program"):
         """do messagebox from windows, no wx needed
@@ -998,7 +996,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)        
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
-        if not (pythonVersion and len(pythonVersion) == 3):
+        if not (pythonVersion and len(pythonVersion) == 2):
             fatal_error('not a valid python version found: |%s|'% pythonVersion)
             
         # for safety unregister always:
@@ -1054,36 +1052,18 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         """
         dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)        
         pythonVersion = self.getPythonVersion()
-        if int(pythonVersion) >= 25:
-            PydPath = os.path.join(coreDir, 'natlink.pyd')
-        else:
-            PydPath = os.path.join(coreDir, 'natlink.pyd')
+        PydPath = os.path.join(coreDir, 'natlink.pyd')
+       
         if not os.path.isfile(PydPath):
             return
 
-        if silent:
-            try:
-                import win32api
-            except:
-                fatal_error("cannot import win32api, please see if win32all of Python is properly installed")
-            
-            try:
-                result = win32api.WinExec('regsvr32 /s /u "%s"'% PydPath)
-                if not result:
-                    pass
-                else:
-                    #print 'failed to unregister %s, result %s'% (PydPath, result)
-                    self.userregnl.set('NatlinkPydRegistered', 0)
-            except:
-                pass
-        else:
-            # os.system:
-            os.system('regsvr32 /u "%s"'% PydPath)
-            self.userregnl.set('NatlinkPydRegistered', 0)
-
-        #self.clearNatlinkFromPythonPathRegistry()
-        # and remove the natlink.pyd (there remain pythonversion ones 23, 24 and 25)
-        #os.remove(PydPath)
+        try:
+            # pass this step if it does not succeed:
+            dll = ctypes.windll[PydPath]
+            dll.DllUnregisterServer()
+        except WindowsError:
+            print 'Cannot unregister natlink.pyd, maybe it is not registered, maybe Dragon is running... Try to proceed'
+            pass    
         
     def enableDebugLoadOutput(self):
         """setting registry key so debug output of loading of natlinkmain is given
