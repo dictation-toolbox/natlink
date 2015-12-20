@@ -214,6 +214,13 @@ languages = {"Nederlands": "nld",
              "Italiano": "ita",
              "Espa\xf1ol": "esp"}
 
+shiftKeyDict = {"nld": "Shift",
+                "enx": 'shift',
+                "fra": "maj",
+                "deu": "umschalt",
+                "ita": "maiusc",
+                "esp": "may\xfas"}
+
 class NatlinkStatus(object):
     """this class holds the NatLink status functions
 
@@ -1138,6 +1145,17 @@ Please try to correct this by running the NatLink Config Program (with administr
             print 'getLanguage: Language: %s not found in languageslist: %s, take "xxx"'% \
                     (lang, languages)
             return 'xxx'
+
+    def getShiftKey(self, language):
+        """return the shiftkey, for setting in natlinkmain when user language changes.
+        
+        used for self.playString in natlinkutils, for the dropping character bug. (dec 2015, QH).
+        """
+        try:
+            return "{%s}"% shiftKeyDict[language]
+        except KeyError:
+            print 'no shiftKey code provided for language: %s, take empty string.'% language
+            return ""
 
     # get different debug options for natlinkmain:   
     def getDebugLoad(self):

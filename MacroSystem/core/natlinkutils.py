@@ -55,15 +55,15 @@
 
 ############################################################################
 # experiment Mark (Vocola Extension)
-useMarkSendInput = 1
-if useMarkSendInput:                                
-    from ExtendedSendDragonKeys import senddragonkeys_to_events
-    from SendInput import send_input
-    print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is used for all normal playString calls!"
-    print "If you do not want this, change the variable useMarkSendInput to 0 in line 58 of natlinkutils.py"
-    print "This file is located in the directory NatLink\MacroSystem\Core."
-    print "Then restart Dragon...\n======"
-
+# useMarkSendInput = 1
+# if useMarkSendInput:                                
+#     from ExtendedSendDragonKeys import senddragonkeys_to_events
+#     from SendInput import send_input
+#     print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is used for all normal playString calls!"
+#     print "If you do not want this, change the variable useMarkSendInput to 0 in line 58 of natlinkutils.py"
+#     print "This file is located in the directory NatLink\MacroSystem\Core."
+#     print "Then restart Dragon...\n======"
+# 
 
 import os, os.path, copy, types
 import struct
@@ -72,6 +72,7 @@ import time
 import natlink
 #from gramparser import *
 import gramparser
+import natlinkmain
 
 # The following constants define the common windows message codes which
 # are passed to playEvents.
@@ -169,12 +170,19 @@ def matchWindow(moduleInfo, modName, wndText):
 # This function simulates a button click or button double click.  Pass in the
 # button name ('left','right' or 'middle') and the count (1 or 2)
 
-def buttonClick(btnName='left',count=1):
+
+
+def buttonClick(btnName='left',count=1,modifiers=None):
     x, y = natlink.getCursorPos()
+    unimacroButtons = {1:'left', 2:'right', 3:'middle'}
+    
+    if btnName in [1,2,3]:
+        btnName = unimacroButtons[btnName]
+        
     singleLookup = { 
         'left':  [(wm_lbuttondown,x,y),(wm_lbuttonup,x,y)],
         'right': [(wm_rbuttondown,x,y),(wm_rbuttonup,x,y)],
-        'moddle':[(wm_mbuttondown,x,y),(wm_mbuttonup,x,y)] }
+        'middle':[(wm_mbuttondown,x,y),(wm_mbuttonup,x,y)] }
     doubleLookup = {
         'left':  [(wm_lbuttondblclk,x,y),(wm_lbuttonup,x,y)],
         'right': [(wm_rbuttondblclk,x,y),(wm_rbuttonup,x,y)],
@@ -183,54 +191,85 @@ def buttonClick(btnName='left',count=1):
     single = singleLookup[btnName]  # KeyError means invalid button name
     double = doubleLookup[btnName]
 
+    if modifiers:
+        try:
+            keycodes = getModifierKeyCodes(modifiers)
+        except KeyError:
+            print 'buttonClick, invalid "modifiers" given: %s, ignore.'% repr(modifiers)
+            keycodes = []
+        natlink.playEvents( [(wm_keydown, k) for k in keycodes] )
+
     if count == 1: natlink.playEvents( single )
     elif count == 2: natlink.playEvents( single + double )
     else: raise ValueError( "invalid count" )
 
+    if modifiers:
+        natlink.playEvents( [(wm_keyup, k) for k in keycodes] )
+ 
+def getModifierKeyCodes(modifiers):
+    """return a list with keycodes for modifiers
+    
+    input can be a list of valid modifiers (ctrl, shift or menu == alt ),
+    either in a sequence or as single string. If string contains the + symbol,
+    the string is split before searching the keycodes
+    
+    Invalid input raises a KeyError.
+    Testing in unittestNatLink, see testNatlinkUtilsFunctions
+    
+    """
+    modifier_dict = dict(ctrl=vk_control,
+                         shift=vk_shift,
+                         menu=vk_menu,
+                         alt=vk_menu)   # added alt  == menu
+    if not modifiers: return
+    if isinstance(modifiers, basestring):
+        modifiers = modifiers.replace("+", " ").split()
+    return [modifier_dict[m] for m in modifiers]
+
 # temporary hopefully, QH, 4-9-2013  now 22-10-2013:
+# reverting to Marks solution, insert {shift}, at least for English and Dutch profiles... (december 2015)
 def playString(keys, hooks=None):
     """insert {shift} as workaround for losing keystrokes
     
-    does not work. revert to normal playString
-    
-    not if hooks (like systemkeys) are used...
-    
-    use send_input module from Mark Lillibridge.
-    Remove references to "ext" keyboard {ext..} and {ctrl+ext...}
-    
+    only if no special hooks are asked for: insert a {shift} in front of the keystrokes.
+    (if default behaviour is wanted, call natlink.playString directly)
     """
     if not keys:
         return
-    #elif hooks not in (None, 0x100) or keys.startswith("{shift}"):
-    #    # special hooks or startig with {shift} already...
-    #    pass
-    #elif keys.startswith("{"):
-    #    print 'playString, do shift + pause'
-    #    natlink.playString("{shift}")
-    #    time.sleep(1)
-    #else:
-    #    print 'playString, insert shift before keys'
-    #    keys = "{shift}" + keys
-        
-    if hooks in [None, 0x100]:
-        if useMarkSendInput:
-            if keys.find("{ext") >= 0:
-                keys = keys.replace("{ext", "{")
-            if keys.find("+ext") >= 0:
-                keys = keys.replace("+ext", "+")
-            # the Vocola extension, code by Mark Lillibridge:
-            #print 'send_input and senddragonkeys_to_events: %s'% keys
-            if keys.find('\n') > 0:
-                keys = keys.replace('\n', '{enter}')
-                print 'send_input, change keys to: %s'% repr(keys)
-            #print 'do via sendinput: %s'% repr(keys)
-            send_input(senddragonkeys_to_events(keys))
-        else:
-            #print 'do via natlink.playString: %s'% repr(keys)
-            natlink.playString(keys, 0x100)
-    else:
-        #print 'do via natlink.playString: %s'% repr(keys)
+    if hooks not in (None, 0x100):
         natlink.playString(keys, hooks)
+    # elif keys.startswith("@@@@{"):
+    #     print 'playString, do shift + pause'
+    #     natlink.playString("{shift}")
+    #     time.sleep(0.5)
+    else:
+        shiftkey = natlinkmain.shiftkey
+        # if shiftkey:
+        #     print 'shiftcode: %s'% shiftkey
+        # else:
+        #     print 'no shiftcode'
+        # insert shiftkey before the keys:
+        natlink.playString(shiftkey + keys)
+
+    # if hooks in [None, 0x100]:
+    #     if useMarkSendInput:
+    #         if keys.find("{ext") >= 0:
+    #             keys = keys.replace("{ext", "{")
+    #         if keys.find("+ext") >= 0:
+    #             keys = keys.replace("+ext", "+")
+    #         # the Vocola extension, code by Mark Lillibridge:
+    #         #print 'send_input and senddragonkeys_to_events: %s'% keys
+    #         if keys.find('\n') > 0:
+    #             keys = keys.replace('\n', '{enter}')
+    #             print 'send_input, change keys to: %s'% repr(keys)
+    #         #print 'do via sendinput: %s'% repr(keys)
+    #         send_input(senddragonkeys_to_events(keys))
+    #     else:
+    #         #print 'do via natlink.playString: %s'% repr(keys)
+    #         natlink.playString(keys, 0x100)
+    # else:
+    #     #print 'do via natlink.playString: %s'% repr(keys)
+    #     natlink.playString(keys, hooks)
 #---------------------------------------------------------------------------
 # (internal use) shared base class for all Grammar base classes.  Do not use
 # this class directly.  See GrammarBase, DictGramBase or SelectGramBase.

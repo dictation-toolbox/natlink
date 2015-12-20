@@ -202,6 +202,10 @@ try:
     
     # at start and at changeCallback (new user) get the current language:
     language = ''
+    shiftkey = ''  # {shift} or different in some other languages,
+                   # will be changed at changecallback when a speech profile opens.
+                   # for example tp {umschalt} for german speech profiles.
+                   # Is used by natlinkutils.playString.
     #
     # We maintain a dictionary of all the modules which we have loaded.  The key
     # is the Python module name.  The value is the complete path to the loaded
@@ -613,7 +617,7 @@ try:
     #
     
     def changeCallback(type,args):
-        global userName, DNSuserDirectory, language, BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst
+        global userName, DNSuserDirectory, language, BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
         if debugCallback:
             print 'changeCallback, type: %s, args: %s'% (type, args)
         if type == 'mic' and args == 'on':
@@ -637,6 +641,9 @@ try:
     ##        changeUserDirectory()
             status.setUserInfo(args)
             language = status.getLanguage()
+            shiftkey = status.getShiftKey(language)
+            print 'setting shiftkey to: %s (language: %s)'% (shiftkey, language)
+            
             if debugCallback:
                 print 'usercallback, language: %s'% language
             if changeCallbackUserFirst:
@@ -653,7 +660,6 @@ try:
                 print 'The performance of many NatLink grammars is not good with this model.'
                 print 'Please choose another User Profile with for example Speech Model BestMatch IV.'
                 print 'See http://unimacro.antenna.nl/installation/speechmodel.html\n----'
-    
     
         #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself
         # the grammar should include a function like:
