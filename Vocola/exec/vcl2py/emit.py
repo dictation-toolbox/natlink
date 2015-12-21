@@ -1,6 +1,8 @@
 import re
 from vcl2py.ast import *
 
+log_error = None   # temporary kludge
+
 def output(out_file, statements,
            _VocolaVersion,
            _Should_emit_dictation_support,

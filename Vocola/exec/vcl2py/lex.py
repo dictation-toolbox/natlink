@@ -1,5 +1,7 @@
 import re
 
+log_error = None   # temporary kludge
+
 
 # ---------------------------------------------------------------------------
 # Lexing routines

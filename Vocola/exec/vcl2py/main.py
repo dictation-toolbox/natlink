@@ -13,7 +13,7 @@ from vcl2py.parse     import parse_input, check_forward_references
 from vcl2py.transform import transform
 
 
-VocolaVersion = "2.8.4"
+VocolaVersion = "2.8.4A"
 
 
 # ---------------------------------------------------------------------------

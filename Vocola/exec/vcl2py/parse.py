@@ -7,8 +7,9 @@ from vcl2py.log import *
 
 
 def parse_input(in_file, in_folder, extension_functions, debug):
-    global In_folder, Extension_functions, Debug
+    global Input_name, In_folder, Extension_functions, Debug
 
+    Input_name          = in_file
     In_folder           = in_folder
     Extension_functions = extension_functions
     Debug               = debug
@@ -865,3 +866,10 @@ def check_forward_references():
 
             Include_stack_file = stack_file
             Include_stack_line = stack_line
+
+
+
+import vcl2py.lex as lex
+lex.log_error = log_error  # temporary kludge
+import vcl2py.emit as emit
+emit.log_error = log_error  # temporary kludge
