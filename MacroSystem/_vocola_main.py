@@ -119,6 +119,10 @@ if VocolaEnabled and not commandFolder:
     print >> sys.stderr, "Warning: no Vocola command folder found!"
 
 
+import VocolaUtils
+VocolaUtils.Language = language
+
+
 
 ###########################################################################
 #                                                                         #
@@ -633,7 +637,7 @@ purgeOutput()
 if not VocolaEnabled:
     print "Vocola not active"
 else:
-    print "Vocola version 2.8.4A starting..."
+    print "Vocola version 2.8.5 starting..."
     thisGrammar = ThisGrammar()
     thisGrammar.initialize()
 

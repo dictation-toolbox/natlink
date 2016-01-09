@@ -1,3 +1,21 @@
+New in 2.8.5:
+
+! Workaround for the doubling/dropping bug: key sequences are now
+  preceded by the current-language-appropriate version of {shift};
+  doubling or dropping of the initial shift key down event does not
+  affect later keystrokes.
+
+! Updating to a different version of Vocola is now much easier; just:
+    unzip it to a temporary location, say T
+    run (e.g., double click) T/install.bat
+    (re)start Dragon
+  Updating from source code is similar but you instead run
+    R/src/install.bat where R is the Vocola 2 repository root
+
+* New exception, VocolaRuntimeAbort, that Vocola extensions may raise to
+  abort the current utterance without error.
+
+
 New in 2.8.4:
 
 * Versions of Python earlier than 2.6 are no longer supported.

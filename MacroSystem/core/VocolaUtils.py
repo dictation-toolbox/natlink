@@ -1,8 +1,11 @@
+# -*- encoding: latin-1 -*-
 ###
 ### VocolaUtils.py - Code used by Vocola's generated Python code
 ###
 ###
 ### Copyright (c) 2002-2011 by Rick Mohr.
+###
+### Portions Copyright (c) 2015 by Hewlett-Packard Development Company, L.P.
 ###
 ### Permission is hereby granted, free of charge, to any person
 ### obtaining a copy of this software and associated documentation
@@ -33,6 +36,19 @@ import traceback  # for debugging traceback code in handle_error
 
 import natlink
 
+
+##
+## Global variables:
+##
+
+# DNS short name of current language being used, set by _vocola_main.py:
+Language = None
+
+
+
+##
+## Handling <_anything>:
+##
 
 #
 # Massage recognition results to make a single entry for each
@@ -71,6 +87,26 @@ def combineDictationWords(fullResults):
 class VocolaRuntimeError(Exception):
     pass
 
+# raise this to abort current utterance without error:
+class VocolaRuntimeAbort(Exception):
+    pass
+
+
+def handle_error(filename, line, command, exception):
+    if isinstance(exception, VocolaRuntimeAbort):
+        return
+
+    print
+    print >> sys.stderr, "While executing the following Vocola command:"
+    print >> sys.stderr, "    " + command
+    print >> sys.stderr, "defined at line " + str(line) + " of " + filename +","
+    print >> sys.stderr, "the following error occurred:"
+    print >> sys.stderr, "    " + exception.__class__.__name__ + ": " \
+        + str(exception)
+    #traceback.print_exc()
+    #raise exception
+
+
 def to_long(string):
     try:
         return long(string)
@@ -87,18 +123,6 @@ def do_flush(functional_context, buffer):
     if buffer != '':
         natlink.playString(convert_keys(buffer))
     return ''
-
-
-def handle_error(filename, line, command, exception):
-    print
-    print >> sys.stderr, "While executing the following Vocola command:"
-    print >> sys.stderr, "    " + command
-    print >> sys.stderr, "defined at line " + str(line) + " of " + filename +","
-    print >> sys.stderr, "the following error occurred:"
-    print >> sys.stderr, "    " + exception.__class__.__name__ + ": " \
-        + str(exception)
-    #traceback.print_exc()
-    #raise exception
 
 
 
@@ -119,7 +143,30 @@ def convert_keys(keys):
                            (?:[^}]|[-a-zA-Z0-9/*+.\x80-\xff]+) )
                       [ _]
                       (\d+) \}""", r'{\1 \2}', keys)
+
+    # prefix with current language appropriate version of {shift}
+    # to prevent doubling/dropping bug:
+    shift = name_for_shift()
+    if shift:
+        keys = "{" + shift + "}" + keys
+
     return keys
+
+def name_for_shift():
+    if Language == "enx":
+        return "shift"
+    elif Language == "nld":
+        return "shift"
+    elif Language == "fra":
+        return "Maj"
+    elif Language == "deu":
+        return "Umschalt"
+    elif Language == "ita":
+        return "MAIUSC"
+    elif Language == "esp":
+        return "MAYÚS"
+    else:
+        return None
 
 def call_Dragon(function_name, argument_types, arguments):
     global dragon_prefix
@@ -248,6 +295,8 @@ def eval_template(template, *arguments):
     expression = re.sub(r'%.', handle_descriptor, template)
     try:
         return eval('str(' + expression + ')', variables.copy())
+    except VocolaRuntimeAbort:
+        raise
     except Exception, e:
         m = "when Eval[Template] called Python to evaluate:\n" \
             + '        str(' + expression + ')\n' \
