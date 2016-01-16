@@ -172,9 +172,16 @@ NSExt11Path  = "Nuance\NaturallySpeaking11"
 NSExt12Path  = "Nuance\NaturallySpeaking12"
 NSExt13Path  = "Nuance\NaturallySpeaking13"
 NSExt14Path  = "Nuance\NaturallySpeaking14"
-DNSrx = re.compile(r"^NaturallySpeaking\s+(\d+\.\d+)$")
-DNSPaths = [NSExt14Path, NSExt13Path, NSExt12Path, NSExt11Path, NSExt10Path, NSExt9Path, NSExt8Path, NSExt73Path]
-DNSVersions = [14,13,12,11,10,9,8,7]
+DNSPaths = []
+DNSVersions = range(16,6,-1)
+for v in DNSVersions:
+    varname = "NSExt%sPath"%v 
+    if "NSExt%sPath"% v not in globals():
+        globals()[varname] = "Nuance\NaturallySpeaking%s"% v
+    DNSPaths.append(globals()[varname])
+    
+# print 'DNSVersions: %s'% DNSVersions
+# print 'path 15: %s'% NSExt15Path
 # augment above when a new version is there!
 
 # utility functions: 
@@ -199,8 +206,8 @@ Wversions = {'1/4/10': '98',
              '2/5/1':  'XP',
              '2/6/0':  'Vista',
              '2/6/1':  '7',
-             '2/6/2':  '8'
-             }
+             '2/6/2':  '8or10',
+             } 
 
 # the possible languages (for getLanguage)
 languages = {"Nederlands": "nld",
@@ -599,10 +606,17 @@ Please try to correct this by running the NatLink Config Program (with administr
         tup = win32api.GetVersionEx()
         version = "%s/%s/%s"% (tup[3], tup[0], tup[1])
         try:
-            return Wversions[version]
+            windowsVersion = Wversions[version]
         except KeyError:
             print 'natlinkstatus.getWindowsVersion: (yet) unknown Windows version: %s'% version
             return  version
+        if windowsVersion == '8or10':
+            if tup[2] == 7601:
+                return '8'
+            elif tup[2] == 9200:
+                return '10'
+        return windowsVersion
+    
 
     def getDNSIniDir(self):
         """get the path (one above the users profile paths) where the INI files

@@ -228,7 +228,8 @@ def getModifierKeyCodes(modifiers):
     return [modifier_dict[m] for m in modifiers]
 
 # temporary hopefully, QH, 4-9-2013  now 22-10-2013:
-# reverting to Marks solution, insert {shift}, at least for English and Dutch profiles... (december 2015)
+# reverting to Marks solution, insert {shift}
+# use the language specific shift code, as given in natlinkstatus, and set in natlinkmain  (december 2015)
 def playString(keys, hooks=None):
     """insert {shift} as workaround for losing keystrokes
     
