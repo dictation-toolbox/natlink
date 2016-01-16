@@ -610,11 +610,6 @@ Please try to correct this by running the NatLink Config Program (with administr
         except KeyError:
             print 'natlinkstatus.getWindowsVersion: (yet) unknown Windows version: %s'% version
             return  version
-        if windowsVersion == '8or10':
-            if tup[2] == 7601:
-                return '8'
-            elif tup[2] == 9200:
-                return '10'
         return windowsVersion
     
 
