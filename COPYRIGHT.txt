@@ -39,7 +39,8 @@ NatLink
 Vocola
 	Copyright (c) 2002-2012 by Rick Mohr
 
-	Portions Copyright (c) 2012-15 by Hewlett-Packard Development Company, L.P.
+	Portions Copyright (c) 2012-15 by Hewlett-Packard Development
+	Company, L.P.
 
 	Permission is hereby granted, free of charge, to any person
 	obtaining a copy of this software and associated documentation
@@ -71,8 +72,8 @@ Configurenatlinkunimacrovocola:
 
 -----------------------------------
 
-Unimacro (c)  2002-2011 Quintijn Hoogenboom, Ben Staniford, Bart Jan van Os
-	     2011 Frank Olaf Sem-Jacobsen
+Unimacro (c) 2002-2011 Quintijn Hoogenboom, Ben Staniford, Bart Jan 
+	     van Os 2011 Frank Olaf Sem-Jacobsen
 	
 		"unimacro" is free software; you can redistribute it
 		and/or modify it under the terms of the GNU General
@@ -88,7 +89,8 @@ which has the copyright notice shown above.
 -----------------------------------
 
 ConfigureNatLink.exe NLVCSetup.msi MessageWindow.dll
-	Copyright (c) 2004-2005 Applied Recognition Inc. All rights reserved.
+	Copyright (c) 2004-2005 Applied Recognition Inc. All rights
+	reserved.
 
 	You may freely obtain this software from
 	http://speechwiki.org/NL.HomePage
