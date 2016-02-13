@@ -1,5 +1,10 @@
-We are slowly moving to a new stable release for Dragon 12 (and later) and NatLink too. (November 2015)
+We are slowly moving to a new stable release for Dragon 12 (and later) and NatLink too. (January 2016)
 
+4.1papa:
+  - intermediate, changes in Vocola
+  - try to find correct Dragon 14 version
+  - Windows version check sucks, reports now 8or10
+  
 (few fixed in same file, last one November 4, 10:00 hrs Dutch time)
 4.1oscar:
   - many configure things, now use UnimacroUserDirectory for enable/disable Unimacro

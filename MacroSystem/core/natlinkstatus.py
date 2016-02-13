@@ -1,4 +1,4 @@
-__version__ = "4.1oscar"
+__version__ = "4.1papa"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "4.1oscar"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1papa:  intermediate, checking correct Dragon version and reporting windows 8or10
 # 4.1oscar: installer changed, extended with Unimacro, apart from UserDirectory
 # 4.1november: a few small bugs
 # 4.1mike: extra checks in start_configurenatlink.py
@@ -1194,18 +1195,22 @@ Please try to correct this by running the NatLink Config Program (with administr
 
     # get additional options Vocola
     def getVocolaTakesLanguages(self):
-        """gets and value for distinction of different languages in Vocola"""
-        
+        """gets and value for distinction of different languages in Vocola
+        If Vocola is not enabled, this option will also return False
+        """
         key = 'VocolaTakesLanguages'
-        value = self.userregnl.get(key, None)
-        return value
+        if self.VocolaIsEnabled():
+            value = self.userregnl.get(key, None)
+            return value
 
     def getVocolaTakesUnimacroActions(self):
-        """gets and value for optional Vocola takes Unimacro actions"""
-        
+        """gets and value for optional Vocola takes Unimacro actions
+        If Vocola is not enabled, this option will also return False
+        """
         key = 'VocolaTakesUnimacroActions'
-        value = self.userregnl.get(key, None)
-        return value
+        if self.VocolaIsEnabled():
+            value = self.userregnl.get(key, None)
+            return value
     
     def getInstallVersion(self):
         return __version__

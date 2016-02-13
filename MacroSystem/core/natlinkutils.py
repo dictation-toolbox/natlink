@@ -6,6 +6,8 @@
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
 #
+# January 2016 (QH):
+# - added modifier keys for buttonClick (shift, ctrl, alt)
 # September 2013 (QH):
 # use import natlink instead of from natlink import *, forcing qualifying all calls to natlink functions from this module.
 # March 2010 (QH):
@@ -170,13 +172,23 @@ def matchWindow(moduleInfo, modName, wndText):
 #    
 # This function simulates a button click or button double click.  Pass in the
 # button name ('left','right' or 'middle') and the count (1 or 2)
+#
 
 
-
-def buttonClick(btnName='left',count=1,modifiers=None):
-    x, y = natlink.getCursorPos()
-    unimacroButtons = {1:'left', 2:'right', 3:'middle'}
+def buttonClick(btnName='left', count=1, modifiers=None):
+    """performs a button (double) click of the mouse
     
+    without parameters: a single left click
+    accepted values:
+     - btnName: 'left', 'right' or 'middle', or 1, 2, 3
+     - count: 1 or 2 or 3 (3 not fully tested)
+     -  modifiers: 'shift', 'ctrl', 'alt', 'menu' ('alt' and 'menu' are identical)
+            (see function getModifierKeyCodes below)
+            (if you want more modifiers, separate by "+" or " ", eg. "shift+ctrl")
+    """
+    x, y = natlink.getCursorPos()
+    
+    unimacroButtons = {1:'left', 2:'right', 3:'middle'}
     if btnName in [1,2,3]:
         btnName = unimacroButtons[btnName]
         
@@ -189,29 +201,47 @@ def buttonClick(btnName='left',count=1,modifiers=None):
         'right': [(wm_rbuttondblclk,x,y),(wm_rbuttonup,x,y)],
         'middle':[(wm_mbuttondblclk,x,y),(wm_mbuttonup,x,y)] }
 
-    single = singleLookup[btnName]  # KeyError means invalid button name
-    double = doubleLookup[btnName]
-
+    try:
+        single = singleLookup[btnName]  # KeyError means invalid button name
+        double = doubleLookup[btnName]
+    except KeyError:
+        raise ValueError('buttonClick, invalid "btnName": %s'% btnName)
+        
+    events = [] # collect all events in a list
     if modifiers:
         try:
             keycodes = getModifierKeyCodes(modifiers)
         except KeyError:
-            print 'buttonClick, invalid "modifiers" given: %s, ignore.'% repr(modifiers)
-            keycodes = []
-        natlink.playEvents( [(wm_keydown, k) for k in keycodes] )
-
-    if count == 1: natlink.playEvents( single )
-    elif count == 2: natlink.playEvents( single + double )
-    else: raise ValueError( "invalid count" )
+            raise ValueError('buttonClick, invalid "modifiers": %s'% repr(modifiers))
+        for k in keycodes:
+            events.append( (wm_keydown, k) )
+        # print "modifiers keycodes: %s"% keycodes
+        
+    if count == 1:
+        events.extend( single )
+    elif count == 2:
+        events.extend( single )
+        events.extend( double )
+    elif count == 3:
+        events.extend( single )
+        events.extend( single )
+        events.extend( single )
+    else:
+        raise ValueError( 'buttonClick, invalid "count": %s'% count )
 
     if modifiers:
-        natlink.playEvents( [(wm_keyup, k) for k in keycodes] )
+        for k in keycodes:
+            events.append( (wm_keyup, k) )
+    if events:
+        # print 'buttonClick events: %s'% events
+        natlink.playEvents(events)
+
  
 def getModifierKeyCodes(modifiers):
     """return a list with keycodes for modifiers
     
     input can be a list of valid modifiers (ctrl, shift or menu == alt ),
-    either in a sequence or as single string. If string contains the + symbol,
+    either in a sequence or as single string. If string contains the + symbol or a space,
     the string is split before searching the keycodes
     
     Invalid input raises a KeyError.
@@ -245,13 +275,18 @@ def playString(keys, hooks=None):
     #     natlink.playString("{shift}")
     #     time.sleep(0.5)
     else:
+        t0 = time.time()
         shiftkey = natlinkmain.shiftkey
+        t1 = time.time()
         # if shiftkey:
         #     print 'shiftcode: %s'% shiftkey
         # else:
         #     print 'no shiftcode'
         # insert shiftkey before the keys:
+        print 'playString with shiftkey'
         natlink.playString(shiftkey + keys)
+        t2 = time.time()
+        print 'shiftkey: %.4f, natlink.playSting: %.4f'% (t2-t1, t1-t0)
 
     # if hooks in [None, 0x100]:
     #     if useMarkSendInput:
@@ -276,7 +311,7 @@ def playString(keys, hooks=None):
 # (internal use) shared base class for all Grammar base classes.  Do not use
 # this class directly.  See GrammarBase, DictGramBase or SelectGramBase.
 
-class GramClassBase:
+class GramClassBase(object):
 
     def __init__(self):
         self.gramObj = natlink.GramObj()
