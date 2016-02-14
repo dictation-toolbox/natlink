@@ -6,8 +6,10 @@
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
 #
-# January 2016 (QH):
+# Februari 2016 (QH):
 # - added modifier keys for buttonClick (shift, ctrl, alt)
+# - add a {shift} in front of every "normal" playString call, thus preventing the double/dropping character bug.
+#   (the {shift} key is language specific, natlinkmain hold the correct string)
 # September 2013 (QH):
 # use import natlink instead of from natlink import *, forcing qualifying all calls to natlink functions from this module.
 # March 2010 (QH):
@@ -270,43 +272,10 @@ def playString(keys, hooks=None):
         return
     if hooks not in (None, 0x100):
         natlink.playString(keys, hooks)
-    # elif keys.startswith("@@@@{"):
-    #     print 'playString, do shift + pause'
-    #     natlink.playString("{shift}")
-    #     time.sleep(0.5)
     else:
-        t0 = time.time()
         shiftkey = natlinkmain.shiftkey
-        t1 = time.time()
-        # if shiftkey:
-        #     print 'shiftcode: %s'% shiftkey
-        # else:
-        #     print 'no shiftcode'
-        # insert shiftkey before the keys:
-        print 'playString with shiftkey'
         natlink.playString(shiftkey + keys)
-        t2 = time.time()
-        print 'shiftkey: %.4f, natlink.playSting: %.4f'% (t2-t1, t1-t0)
 
-    # if hooks in [None, 0x100]:
-    #     if useMarkSendInput:
-    #         if keys.find("{ext") >= 0:
-    #             keys = keys.replace("{ext", "{")
-    #         if keys.find("+ext") >= 0:
-    #             keys = keys.replace("+ext", "+")
-    #         # the Vocola extension, code by Mark Lillibridge:
-    #         #print 'send_input and senddragonkeys_to_events: %s'% keys
-    #         if keys.find('\n') > 0:
-    #             keys = keys.replace('\n', '{enter}')
-    #             print 'send_input, change keys to: %s'% repr(keys)
-    #         #print 'do via sendinput: %s'% repr(keys)
-    #         send_input(senddragonkeys_to_events(keys))
-    #     else:
-    #         #print 'do via natlink.playString: %s'% repr(keys)
-    #         natlink.playString(keys, 0x100)
-    # else:
-    #     #print 'do via natlink.playString: %s'% repr(keys)
-    #     natlink.playString(keys, hooks)
 #---------------------------------------------------------------------------
 # (internal use) shared base class for all Grammar base classes.  Do not use
 # this class directly.  See GrammarBase, DictGramBase or SelectGramBase.

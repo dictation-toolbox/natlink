@@ -591,7 +591,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test extra functions of NatLink (getUser, getAllUsers)
 
-    def tttestGetAllUsersEtc(self):
+    def testGetAllUsersEtc(self):
         self.log("testGetAllUsersEtc", 0) # not to DragonPad!
         currentUser = natlink.getCurrentUser()[0]
         
@@ -610,7 +610,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def tttestPlayString(self):
+    def testPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -666,7 +666,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestExecScript(self):
+    def testExecScript(self):
         self.log("testExecScript", 1)
 
         testForException = self.doTestForException
@@ -676,7 +676,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestDictObj(self):
+    def testDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = natlink.DictObj()
@@ -948,7 +948,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
         
-    def tttestRecognitionMimic(self):
+    def testRecognitionMimic(self):
         """test different phrases with spoken forms,
         
         since Dragon 11, lots of things have changed here, so it seems good to make a special
@@ -1099,7 +1099,7 @@ class UnittestNatlink(unittest.TestCase):
             # end of testing recognitionMimic for NatSpeak <= 10    
 
         
-    def tttestWordFuncs(self):
+    def testWordFuncs(self):
         """tests the different vocabulary word functions.
 
         These tests are a bit vulnerable and seem to have changed in more recent
@@ -1344,6 +1344,51 @@ class UnittestNatlink(unittest.TestCase):
 
     # September 2015: add unimacroDirectory in between baseDirectory and userDirectory
 
+    def testNatlinkUtilsFunctions(self):
+        """test utility functions of natlinkutils
+     
+        getModifierKeyCodes: transforms modifiers ctrl alt (or menu) and shift into
+        a list of playEvent keycodes
+        """
+        # constants from from natlinkutils:        
+        vk_shift = 0x10
+        vk_control = 0x11
+        vk_menu = 0x12      # alt-key
+
+
+        func = getModifierKeyCodes
+        testForException = self.doTestForException
+        testFuncReturn = self.doTestFuncReturn
+        testFuncReturn(None,"getModifierKeyCodes('')",locals())
+        testFuncReturn([vk_control],"getModifierKeyCodes('ctrl')",locals())
+        testFuncReturn([vk_menu],"getModifierKeyCodes('alt')",locals())
+        testFuncReturn([vk_menu],"getModifierKeyCodes('menu')",locals())
+        testFuncReturn([vk_shift],"getModifierKeyCodes('shift')",locals())
+        testFuncReturn([vk_control],"getModifierKeyCodes('ctrl+')",locals())
+        testFuncReturn([vk_control, vk_shift, vk_menu],"getModifierKeyCodes('ctrl+shift+alt+')",locals())
+        # should not want this: testFuncReturn([vk_control, vk_shift, vk_menu],"getModifierKeyCodes('ctrl shift alt menu shift ')",locals())
+
+        testFuncReturn(None,"getModifierKeyCodes([])",locals())
+        testFuncReturn([vk_control],"getModifierKeyCodes(['ctrl'])",locals())
+        testFuncReturn([vk_menu],"getModifierKeyCodes(['alt'])",locals())
+        testFuncReturn([vk_menu, vk_shift],"getModifierKeyCodes(['alt','shift'])",locals())
+
+        testForException(KeyError, "getModifierKeyCodes('typo')")
+
+    def testButtonClick(self):
+        """test the ButtonClick function of natlinkutils
+     
+        """
+        for l in string.lowercase:
+            natlink.playString(l*10+" ")
+        natlinkutils.buttonClick()
+        clearClipboard()
+        natlink.playString("{ctrl+c}")
+        s = natlink.getClipboard()
+        self.assert_(len(s) == 0, "clipboard should be empty now")
+        
+
+
     def testNatLinkMain(self):
 
         # through this grammar we get the recogtype:
@@ -1548,7 +1593,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestWordProns(self):
+    def testWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
@@ -1698,10 +1743,10 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
-    def tttestParser(self):
+    def testParser(self):
         self.log("testParser", 1)
 
-        def tttestGrammarError(exceptionType,gramSpec):
+        def testGrammarError(exceptionType,gramSpec):
             try:
                 parser = gramparser.GramParser([gramSpec])
                 parser.doParse()
@@ -1988,7 +2033,7 @@ class UnittestNatlink(unittest.TestCase):
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
 
-    def tttestGrammarRecognitions(self):
+    def testGrammarRecognitions(self):
         self.log("testGrammarRecognitions", 1)
 
         # Create a lot of grammars to test the actual recognition results
@@ -2049,7 +2094,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         
 
-    def tttestDgndictationEtc(self):
+    def testDgndictationEtc(self):
         self.log("testDgndictationEtc", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -2283,7 +2328,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         testGram.resetExperiment()
 
-    def tttestRecognitionChangingRulesExclusive(self):
+    def testRecognitionChangingRulesExclusive(self):
         self.log("testRecognitionChangingRulesExclusive", 1)
 
         # Create a simple command grammar.
@@ -2381,7 +2426,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase
 
-    def tttestDictGram(self):
+    def testDictGram(self):
         self.log("testDictGram")
 
         # Create a dictation grammar.  This grammar simply gets the results of
@@ -2534,7 +2579,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
 
-    def tttestSelectGram(self):
+    def testSelectGram(self):
         self.log("testSelectGram")
 
         # Create a selection grammar.  This grammar simply gets the results of
@@ -2680,7 +2725,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def tttestTrayIcon(self):
+    def testTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -2718,7 +2763,7 @@ class UnittestNatlink(unittest.TestCase):
     # QH, april 2010:
     # Added test for self.rulesByName dict...
 
-    def tttestNextPrevRulesAndWords(self):
+    def testNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -2843,7 +2888,7 @@ class UnittestNatlink(unittest.TestCase):
     ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
     ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
 
-    def tttestNextPrevRulesAndWordsRecursive(self):
+    def testNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -2986,7 +3031,7 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched to "%s" mic'% micState)
             time.sleep(w)
 
-    def tttestNestedMimics(self):
+    def testNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -3310,7 +3355,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def tttest....
+    # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')
