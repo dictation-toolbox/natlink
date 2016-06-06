@@ -666,6 +666,12 @@ class GrammarBase(GramClassBase):
         self.fullResults = fullResults
         self.seqsAndRules = seqsAndRules
         self.wordsByRule = wordsByRule
+        ## print for debugging puposes, eg in the testIniGrammar.py module of Unimacro:
+        # print 'words = %s'% words
+        # print 'seqsAndRules = %s'% seqsAndRules
+        # print 'fullResults = %s'% fullResults
+        
+        ## printing for debug purposes...
         # now we make the callbacks (in each case we only call the fucntion 
         # if it exists in the derived class)
         # - we first call gotResultsInit
