@@ -1,4 +1,4 @@
-__version__ = "4.1papa"
+__version__ = "4.1quebec"
 # coding=latin-1
 #
 # natlinkstatus.py
@@ -7,6 +7,7 @@ __version__ = "4.1papa"
 #  (C) Copyright Quintijn Hoogenboom, February 2008
 #
 #----------------------------------------------------------------------------
+# 4.1quebec, working to check of pyd register errors.
 # 4.1papa:  intermediate, checking correct Dragon version and reporting windows 8or10
 # 4.1oscar: installer changed, extended with Unimacro, apart from UserDirectory
 # 4.1november: a few small bugs
