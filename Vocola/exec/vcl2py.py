@@ -24,6 +24,8 @@
 # Copyright (c) 2000-2003, 2005, 2007, 2009-2012 by Rick Mohr.
 # 
 # Portions Copyright (c) 2012-15 by Hewlett-Packard Development Company, L.P.
+# 
+# Portions Copyright (c) 2015-16 by Mark Lillibridge.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files

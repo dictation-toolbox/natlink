@@ -228,9 +228,8 @@ unimacro_available = False
 try:
     import actions
     unimacro_available = True
-except:
-    print 'Cannot import Unimacro "actions.py", Unimacro is unavailable'
-    unimacro_available = False
+except ImportError:
+    pass
 
 def call_Unimacro(argumentString):
     if unimacro_available:

@@ -1,3 +1,24 @@
+New in 2.8.6:
+
+* As of DNS 13, <_anything> can no longer match nothing.  Accordingly,
+  [<_anything>], [[with] <_anything>], and the like are now permitted.
+  These were previously prohibited in an attempt to prohibit optional
+  parts whose contents could be empty.
+
+! Grammar rules are now [de]activated as infrequently as possible; this
+  improves performance with DNS 13/DPI 14, which take a long time to
+  deactivate grammars.
+
+* Fixed an error where include statements were not interpreted relative
+  to the file containing them.  For example, "include bar/baz.vch" in
+  foo/zeep.vcl now correctly refers to foo/zeep/bar/baz.vch.
+
+* Executables whose names contain underscores are now properly handled.
+  For example, a Vocola file named xyz_inc_edit__routines.vcl now
+  contains commands that work only with executables named
+  xyz_inc_edit__routines, xyz_inc_edit, xyz_inc, and xyz.
+
+
 New in 2.8.5:
 
 ! Workaround for the doubling/dropping bug: key sequences are now
