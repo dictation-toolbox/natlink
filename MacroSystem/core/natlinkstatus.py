@@ -1141,7 +1141,9 @@ Please try to correct this by running the NatLink Config Program (with administr
         inisection = natlinkcorefunctions.InifileSection(section=section,
                                                          filename=acousticini)
         print 'get data from section %s, key: %s, file: %s'% (section, keyToModel, acousticini)
+        print 'keys of inisection: %s'% inisection.keys()
         print 'inisection:\n%s\n========'% repr(inisection)
+
         lang = inisection.get(keyToModel)
         if not lang:
             print 'getLanguage: Warning, no model specification string for key %s found in "Base Acoustic" of inifile: %s'% (keyToModel, acousticini)
