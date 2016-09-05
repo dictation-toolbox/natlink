@@ -304,7 +304,7 @@ class InifileSection(object):
                  if value = "0" or "1" the integer value 0 or 1 is returned
         delete(key): deletes from section
         keys(): return a list of keys in the section
-        
+        __repr__: give contents of a section
         
     """
     def __init__(self, section, filename):
@@ -318,6 +318,15 @@ class InifileSection(object):
         self.firstUse = (not os.path.isfile(self.filename))
         self.section =  section
          
+    def __repr__(self):
+        """return contents of sections
+        """
+        L = ["[%s]"% self.section ]
+        for k in self.keys():
+            v = self.get(k)
+            L.append("%s=%s"% (k, v))
+        return '\n'.join(L)
+    
     def __iter__(self):
         for item in self.keys():
             yield item         

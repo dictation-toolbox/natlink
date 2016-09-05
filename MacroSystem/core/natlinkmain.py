@@ -573,8 +573,9 @@ try:
         global loadedFiles, prevModInfo
         cbd = natlink.getCallbackDepth()
         if debugCallback:
-            print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
-                  (cbd, checkAll, checkForGrammarChanges)
+            print 'beginCallback, cbd: %s'% cbd
+            # print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
+            #       (cbd, checkAll, checkForGrammarChanges)
         # maybe should be 1...
         if natlink.getCallbackDepth() > 1:
             return
