@@ -3037,7 +3037,7 @@ class UnittestNatlink(unittest.TestCase):
         class TestGrammar(GrammarBase):
 
             gramSpec = """
-                <run> exported = test test run ( 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 ) ;
+                <run> exported = testtestrun ( 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 ) ;
                 <test1> exported = test test 1 ;
                 <test2> exported = test test 2 ;
                 <test3> exported = test test 3 ;
@@ -3087,7 +3087,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testGram = TestGrammar()
         testGram.initialize()
-        natlink.recognitionMimic(['test','test','run','1'])
+        natlink.recognitionMimic(['testtestrun','1'])
         testGram.checkExperiment(['run','1'])
         
         natlink.recognitionMimic(['test','test','run','2'])

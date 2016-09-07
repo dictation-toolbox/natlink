@@ -6,6 +6,9 @@
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
 #
+# September 2016 (QH)
+# - rulenumbers are one lower than before in Dragon 15, fix in resultsCallback.
+#
 # Februari 2016 (QH):
 # - added modifier keys for buttonClick (shift, ctrl, alt)
 # - add a {shift} in front of every "normal" playString call, thus preventing the double/dropping character bug.
@@ -78,6 +81,9 @@ import natlink
 #from gramparser import *
 import gramparser
 import natlinkmain
+DNSVersion = natlinkmain.DNSVersion
+print 'DNSVersion (natlinkutils) %s'% DNSVersion
+
 
 # The following constants define the common windows message codes which
 # are passed to playEvents.
@@ -630,24 +636,27 @@ class GrammarBase(GramClassBase):
             #print 'skip rest of resultsCallback'
             return
         for x in wordsAndNums:
-            words.append( x[0] )
+            word, ruleNumber = x
+            words.append( word )
             # the numbering of some rules appears to be different in NatSpeak10, catch with try:
+            if DNSVersion >= 15:
+                ruleNumber += 1
             try:
-                ruleName = self.ruleMap[x[1]]
+                ruleName = self.ruleMap[ruleNumber]
             except KeyError:
-                if x[1] == 1000000 and 'dgndictation' in self.ruleMap.values():
+                if ruleNumber in (1000000, 1000001) and 'dgndictation' in self.ruleMap.values():
                     ruleName = 'dgndictation'
-                elif x[1] == 1000001 and 'dgnletters' in self.ruleMap.values():
+                elif ruleNumber in (1000001, 1000002) and 'dgnletters' in self.ruleMap.values():
                     ruleName = 'dgnletters'
                 else:
                     print '='*50
                     print 'wordsAndNums: %s'% wordsAndNums
                     print 'ruleMap: %s'% `self.ruleMap`
-                    mess =  'Invalid key %s for ruleMap'% x[1]
+                    mess =  'Invalid key %s for ruleMap'% ruleNumber
                     raise KeyError(mess)
 
-            fullResults.append( ( x[0], ruleName ) )
-            wordsByRule.setdefault(ruleName, []).append(x[0])
+            fullResults.append( ( word, ruleName ) )
+            wordsByRule.setdefault(ruleName, []).append(word)
                 
         # we also compute a list similar to fullResults except that we group
         # all words which are sequential and in the same rule together in a
@@ -666,10 +675,12 @@ class GrammarBase(GramClassBase):
         self.fullResults = fullResults
         self.seqsAndRules = seqsAndRules
         self.wordsByRule = wordsByRule
+        if wordsAndNums[0][0] == 'testtestrun':
+            print 'wordsAndNums: %s'% wordsAndNums
         ## print for debugging puposes, eg in the testIniGrammar.py module of Unimacro:
-        # print 'words = %s'% words
-        # print 'seqsAndRules = %s'% seqsAndRules
-        # print 'fullResults = %s'% fullResults
+            print 'words = %s'% words
+            print 'seqsAndRules = %s'% seqsAndRules
+            print 'fullResults = %s'% fullResults
         
         ## printing for debug purposes...
         # now we make the callbacks (in each case we only call the fucntion 
