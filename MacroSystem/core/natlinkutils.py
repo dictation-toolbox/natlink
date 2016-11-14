@@ -675,12 +675,13 @@ class GrammarBase(GramClassBase):
         self.fullResults = fullResults
         self.seqsAndRules = seqsAndRules
         self.wordsByRule = wordsByRule
-        if wordsAndNums[0][0] == 'testtestrun':
-            print 'wordsAndNums: %s'% wordsAndNums
-        ## print for debugging puposes, eg in the testIniGrammar.py module of Unimacro:
-            print 'words = %s'% words
-            print 'seqsAndRules = %s'% seqsAndRules
-            print 'fullResults = %s'% fullResults
+        # if wordsAndNums[0][0] == 'testtestrun':
+        # if wordsAndNums[0][0] == 'testtestrun' or True:
+        #     print 'wordsAndNums: %s'% wordsAndNums
+        # ## print for debugging puposes, eg in the testIniGrammar.py module of Unimacro:
+        #     print 'words = %s'% words
+        #     print 'seqsAndRules = %s'% seqsAndRules
+        #     print 'fullResults = %s'% fullResults
         
         ## printing for debug purposes...
         # now we make the callbacks (in each case we only call the fucntion 
