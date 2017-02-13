@@ -639,8 +639,8 @@ class GrammarBase(GramClassBase):
             word, ruleNumber = x
             words.append( word )
             # the numbering of some rules appears to be different in NatSpeak10, catch with try:
-            if DNSVersion >= 15:
-                ruleNumber += 1
+            # if DNSVersion >= 15:
+            #     ruleNumber += 1
             try:
                 ruleName = self.ruleMap[ruleNumber]
             except KeyError:
@@ -650,6 +650,7 @@ class GrammarBase(GramClassBase):
                     ruleName = 'dgnletters'
                 else:
                     print '='*50
+                    print 'word: %s, ruleNumber: %s'% (word, ruleNumber)
                     print 'wordsAndNums: %s'% wordsAndNums
                     print 'ruleMap: %s'% `self.ruleMap`
                     mess =  'Invalid key %s for ruleMap'% ruleNumber

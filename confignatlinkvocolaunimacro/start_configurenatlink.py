@@ -33,6 +33,12 @@ except ImportError:
     print 'http://sourceforge.net/projects/natlink/files/pythonfornatlink/' 
     print '(choose the python version you are using right now: %s)'% sys.version[:3]
     print
+    print 'NOTE: it can be possible you installed the windows extensions,'
+    print 'but the installation did not finish correct.'
+    print
+    print 'You can try to run the batch script "start_postinstallscript_pywin32.cmd" in'
+    print 'Admin mode, in order to finish the installation. Hopefully this helps.'
+    print 'This file can be found in the "confignatlinkvocolaunimacro" subdirectory of your NatLink directory.'
     while True:
         pass
     raise

@@ -5,7 +5,7 @@
 When you disable NatLink, Dragon starts as usual.
 
 Solution (on Windows 7, 32 bits computer with Natspeak 10):
--goto the natlink core directory (eg C:\NatLinkSvn\NatLink\MacroSystem\core) and then
+-goto the natlink core directory (eg C:\NatLink\NatLink\MacroSystem\core) and then
 -goto the subdirectory msvcr100fix.
 -copy the dll file msvcr100.dll into the core directory or into the C:\Windows\System32 directory. For the latter choice you need to confirm the action.
 

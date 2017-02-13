@@ -21,3 +21,7 @@ menu or the folder that you are in now, preferably in elevated mode too with sta
 
 
 Quintijn Hoogenboom, February 18, 2008, reviewed April 6, 2009/July 2010/January 2013/July 2013
+
+See more on http://qh.antenna.nl/unimacro sections on configuration.
+
+
