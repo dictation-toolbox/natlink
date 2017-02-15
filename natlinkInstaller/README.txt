@@ -1,4 +1,15 @@
-We are slowly moving to a new stable release for Dragon 12 (and later) and NatLink too. (January 2016)
+We are slowly moving to a new stable release for Dragon 12, 13, 14 and NatLink too. (February 2017)
+
+--Still problems with Dragon 15 and NatLink. 
+
+Release 4.1quebec:
+-meant to be pre final
+-Works with Dragon up to version 14.
+-New Unimacro grammar: chrome_browsing.py, using the splendid "Click by Voice" extension written by Mark Lillybridge.
+-Hints for fixing the msvcr100.dll problem (subdirectory of the core Directory of NatLink/MacroSystem)
+-Probable solution for intermittent failure of the installation of the Windows (win32) extensions of Python.
+-NatLink does not (yet) work with Dragon 15.
+-All comments welcome!
 
 4.1papa:
   - intermediate, changes in Vocola

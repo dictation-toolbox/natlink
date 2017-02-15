@@ -357,7 +357,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """checks if core directory is
 
         1. in the sys.path
-    ###    2. in the registry keys of HKLM\SOFTWARE\Python\PythonCore\2.3\PythonPath\NatLink
+    ###    2. in the registry keys of HKLM\SOFTWARE\Python\PythonCore\2.7\PythonPath\NatLink
 
         the latter part is inserted again, as, for some reason the automatic loading of
         natlinkmain needs the core directory in its path. Only take the core dir now!!
@@ -398,11 +398,15 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 ##            print 'lmPythonPath: ', lmPythonPath.keys()
         if not 'NatLink' in lmPythonPathDict:
             if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings and register natlink.pyd.")
-
             # first time install, silently register
             self.registerNatlinkPyd(silent=1)
             self.setNatlinkInPythonPathRegistry()
             return 1
+        else:
+            coreDirFromRegistry = lmPythonPathDict['NatLink']['']
+            if coreDirFromRegistry != coreDir:
+                self.doFatalRegistryProblem(coreDirFromRegistry, coreDir)
+                return
         
         lmNatlinkPathDict = lmPythonPathDict['NatLink']
         Keys = lmNatlinkPathDict.keys()
@@ -441,6 +445,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             
         if oldPathString.lower() == pathString.lower():
             return 1 # OK
+        ## not ok:
+        self.doFatalRegistryProblem(oldPathString, pathString)
+        
+        
+    def doFatalRegistryProblem(self, CoreDirFromRegistry, currentCoreDir):
+        """registry does not match, make text and report
+        """
         # now for something more serious:::
         text = \
 """
@@ -462,7 +473,7 @@ before rerunning this program.  Possibly you have to restart your computer.
 
 If you do NOT want these new settings, simply close this program and run
 from the correct place.
-"""% (oldPathString, pathString, self.DNSName)
+"""% (CoreDirFromRegistry, currentCoreDir, self.DNSName)
         self.warning(text)
         self.checkedUrgent = 1
 
@@ -1358,6 +1369,15 @@ class CLI(cmd.Cmd):
         try:
             self.config.checkCoreDirectory()
             self.config.correctIniSettings()
+            # warning if path from which this is run does not match the registry
+            result = self.config.checkPythonPathAndRegistry()
+            if result is None:
+                if __name__ == "__main__":
+                    print "Error starting NatlinkConfig, Type 'u' for a usage message"
+    
+                self.checkedConfig = self.config.checkedUrgent
+                return
+                
             result = self.config.configCheckNatlinkPydFile()
             if result is None:
                 if __name__ == "__main__":
@@ -1366,7 +1386,6 @@ class CLI(cmd.Cmd):
                 self.checkedConfig = self.config.checkedUrgent
                 return
     
-            self.config.checkPythonPathAndRegistry()
             self.config.checkIniFiles()
             self.checkedConfig = self.config.checkedUrgent
             self.isValidPath = self.config.isValidPath  ## convenient
