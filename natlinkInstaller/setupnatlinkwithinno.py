@@ -29,9 +29,7 @@ GrammarsToDisable = ['_brackets.py', '_editcomments.py', '_number.py', '_number 
                      'frescobaldi.py'
                      ]
 
-GrammarsToEnable = ['_control.py', '_general.py', '_folders.py', '_lines.py','firefox_browsing.py',
-                    
-                    ]
+GrammarsToEnable = ['_control.py', '_general.py', '_folders.py', '_lines.py', 'chrome_browsing.py']
 
 FoldersToIgnore = ['sample_global_dictation']
 ExtensionsToIgnore = [".wmv"]
