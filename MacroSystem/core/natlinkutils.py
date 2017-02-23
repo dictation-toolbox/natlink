@@ -82,7 +82,7 @@ import natlink
 import gramparser
 import natlinkmain
 DNSVersion = natlinkmain.DNSVersion
-print 'DNSVersion (natlinkutils) %s'% DNSVersion
+# print 'DNSVersion (natlinkutils) %s'% DNSVersion
 
 
 # The following constants define the common windows message codes which

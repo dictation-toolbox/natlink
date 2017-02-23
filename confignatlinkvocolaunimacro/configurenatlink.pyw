@@ -79,15 +79,15 @@ class DialogUnimacroVocolaCompatibiliy(wx.Dialog):
         DialogVocolaCombatibility( self, True )
         
         # WDR: handler declarations for DialogUnimacroVocolaCompatibiliy
-        wx.EVT_CHECKBOX(self, ID_IncludeUnimacroInPythonPath, self.OnIncludeUnimacroInPythonPath)
+        # wx.EVT_CHECKBOX(self, ID_IncludeUnimacroInPythonPath, self.OnIncludeUnimacroInPythonPath)
         wx.EVT_BUTTON(self, ID_BUTTONCancel, self.OnCancel)
         wx.EVT_BUTTON(self, ID_BUTTONOK, self.OnOK)
         
 
     # WDR: methods for DialogUnimacroVocolaCompatibiliy
 
-    def GetIncludeunimacroinpythonpath(self):
-        return self.FindWindowById( ID_IncludeUnimacroInPythonPath )
+    # def GetIncludeunimacroinpythonpath(self):
+    #     return self.FindWindowById( ID_IncludeUnimacroInPythonPath )
 
     def GetCheckboxremoveunimacroincludelines(self):
         return self.FindWindowById( ID_CHECKBOXRemoveUnimacroIncludeLines )
@@ -100,8 +100,8 @@ class DialogUnimacroVocolaCompatibiliy(wx.Dialog):
 
     # WDR: handler implementations for DialogUnimacroVocolaCompatibiliy
 
-    def OnIncludeUnimacroInPythonPath(self, event):
-        pass
+    # def OnIncludeUnimacroInPythonPath(self, event):
+    #     pass
 
     def OnOK(self, event):
         code = 0
@@ -341,7 +341,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 
         # WDR: handler declarations for configurenatlink
         wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaTakesUnimacroActions, self.OnCheckVocolaTakesUnimacroActions)
-        wx.EVT_CHECKBOX(self, ID_IncludeUnimacroInPythonPath, self.OnButtonIncludeUnimacroInPythonPath)
+        # wx.EVT_CHECKBOX(self, ID_IncludeUnimacroInPythonPath, self.OnButtonIncludeUnimacroInPythonPath)
         wx.EVT_BUTTON(self, ID_BUTTONVocolaCompatibiliy, self.OnButtonVocolaCompatibility)
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroEditor, self.OnButtonUnimacroEditor)
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroEnable, self.OnButtonUnimacroEnableDisable)
@@ -469,12 +469,12 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['userIsEnabled'] = self.GetButtonuserenable
         # D['UnimacroEnable'] = self.GetTextctrlunimacroinifilesdirectory
         D['UnimacroIniFilesEditor'] = self.GetTextctrlunimacroeditor
-        D['IncludeUnimacroInPythonPath'] = self.GetIncludeunimacroinpythonpath
+        # D['IncludeUnimacroInPythonPath'] = self.GetIncludeunimacroinpythonpath
         self.checkboxes = ['VocolaTakesLanguages',
                            'VocolaTakesUnimacroActions',
                            'DebugCallback', 'DebugLoad',
                            #'NatlinkDebug',
-                           'IncludeUnimacroInPythonPath'
+                           #'IncludeUnimacroInPythonPath'
                            ]
         return D
 
@@ -711,8 +711,8 @@ class ConfigureNatlinkPanel(wx.Panel):
     def GetCheckboxvocolatakesunimacroactions(self):
         return self.FindWindowById( ID_CHECKBOXVocolaTakesUnimacroActions )
 
-    def GetIncludeunimacroinpythonpath(self):
-        return self.FindWindowById( ID_IncludeUnimacroInPythonPath )
+    # def GetIncludeunimacroinpythonpath(self):
+    #     return self.FindWindowById( ID_IncludeUnimacroInPythonPath )
 
     def GetTextctrlunimacroeditor(self):
         return self.FindWindowById( ID_TEXTCTRLunimacroeditor )
@@ -803,10 +803,10 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.do_checkboxcommand(letter, control)
         
 
-    def OnButtonIncludeUnimacroInPythonPath(self, event):
-        letter = 'f'
-        control = self.GetIncludeunimacroinpythonpath()
-        self.do_checkboxcommand(letter, control)
+    # def OnButtonIncludeUnimacroInPythonPath(self, event):
+    #     letter = 'f'
+    #     control = self.GetIncludeunimacroinpythonpath()
+    #     self.do_checkboxcommand(letter, control)
 
     def OnButtonVocolaCompatibility(self, event):
         title = "Unimacro features can be used by Vocola"
@@ -814,7 +814,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 ##        dlg.SetText(text)
         answer = dlg.ShowModal()
         if answer:
-            print 'answer: %s'% answer
+            # print 'answer: %s'% answer
             if answer%2:
                 print "(re)copy Unimacro.vch file to Vocola user commands directory"
                 doLetter = 'l'
@@ -954,7 +954,7 @@ Dragonfly users can use this option.
         self.warning(text)
 
     def OnButtonHelp3(self, event):
-        print '---help on Enable/disable Unimacro:'
+        print '---help on Enable/Disable Unimacro:'
         print 'note the letters correspond to the commands in the self.cli (command line interface)'
         self.cli.help_n()
         self.cli.help_o()
@@ -969,14 +969,12 @@ When you disable Unimacro, this UnimacroUserDirectory setting is cleared from th
 When Unimacro is enabled, you can also specify:
     - a program for editing these user (INI) files, default is Notepad
 
-Vocola can use Unimacro features.
-If Unimacro is NOT enabled, still this feature can be switched on if
-also the checkbox 'Include Unimacro directory in PythonPath' is checked.
+Vocola can use Unimacro features, by checking the checkbox in the Vocola section.
 
-The necessary include file (Unimacro.vch) is copied into the Vocola User
-Directory at startup of NatLink/Vocola/Unimacro when Dragon starts.
+Via the dialog Vocola Compatibility, you can handle things around the include file, Unimacro.vch.
+This file is also copied to the UnimacroDirectory if this is - at first time use, with Unimacro NOT enabled  - required.
 
-More control on the Unimacro features in the "Vocola compatibility" dialog.
+More about this in the "Vocola Compatibility" dialog.
 """
 
         self.warning(text)
@@ -1332,13 +1330,6 @@ class Stderr:
     def write(self, t):
         """write to output"""
         self.window.AppendText(t)
-
-def windowsMessageBox(message, title="NatLink configure program"):
-    """do messagebox from windows, no wx needed
-    """
-    win32ui.MessageBox(message, title)
-    
-
 
 class MyApp(wx.App):
     def OnInit(self):

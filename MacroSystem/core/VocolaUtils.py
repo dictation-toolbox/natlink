@@ -243,7 +243,11 @@ def call_Unimacro(argumentString):
                 + '        ' + type(e).__name__ + ": " + str(e)
             raise VocolaRuntimeError(m)
     else:
-        m = "Unimacro call failed because Unimacro is unavailable"
+        m = '\n'.join(['Unimacro call failed because ',
+                       '    the link with Unimacro is unavailable.',
+                       '    You can fix this by switching on the option:',
+                       '    "Vocola takes Unimacro Actions" in the',
+                       '    program "Configure NatLink via GUI".'])
         raise VocolaRuntimeError(m)
 
 

@@ -1472,8 +1472,6 @@ a/A     - enable/disable the possibility to use Unimacro actions in Vocola
 
 o/O     - enable/disable Unimacro, by setting/clearing the UnimacroUserDirectory, where
           the Unimacro user INI files are located, and several other directories (~ or %HOME% allowed)
-f/F     - force Unimacro directory to be in the python path, even if
-          the userDirectory is set to another path (-F: do not force this)
 p/P     - set/clear path for program that opens Unimacro INI files.
 l       - copy header file Unimacro.vch into Vocola User Directory
 m/M     - insert/remove an include line for Unimacro.vch in all Vocola
@@ -1603,13 +1601,13 @@ again search for its INI files in the "default/normal" place(s).
         self.message = "Clears NatLink User Directory"
         self.config.clearUserDirectory()
 
-    def do_f(self, arg):
-        self.message = "Include UnimacroDirectory in PythonPath even if Unimacro is disabled"
-        print 'do action: %s'% self.message
-        self.config.alwaysIncludeUnimacroDirectoryInPath()
-    def do_F(self, arg):
-        self.message = "Do NOT include UnimacroDirectory in PythonPath when Unimacro is disabled"
-        self.config.ignoreUnimacroDirectoryInPathIfNotUserDirectory()
+    # def do_f(self, arg):
+    #     self.message = "Include UnimacroDirectory in PythonPath even if Unimacro is disabled"
+    #     print 'do action: %s'% self.message
+    #     self.config.alwaysIncludeUnimacroDirectoryInPath()
+    # def do_F(self, arg):
+    #     self.message = "Do NOT include UnimacroDirectory in PythonPath when Unimacro is disabled"
+    #     self.config.ignoreUnimacroDirectoryInPathIfNotUserDirectory()
     
     def help_n(self):
         print '-'*60
@@ -1622,8 +1620,6 @@ Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro dire
         print '='*60
         
     help_N = help_n
-    help_f = help_n
-    help_F = help_n
     
     # Unimacro User directory and Editor or Unimacro INI files-----------------------------------
     def do_o(self, arg):
@@ -1633,7 +1629,7 @@ Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro dire
         self.config.setUnimacroUserDir(arg)
             
     def do_O(self, arg):
-        self.message = "Clearing Unimacro user directory, falling back to default: %s"% self.config.getUserDirectory()
+        self.message = "Clearing Unimacro user directory, and disable Unimacro"
         print 'do action: %s'% self.message
         self.config.clearUnimacroUserDir()
 
@@ -1645,8 +1641,8 @@ Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro dire
 
 And enable/disable Unimacro.
 
-If you specify this directory, your user INI files (and possibly other user
-dependent files) will be put there.
+In this directory, your user INI files (and possibly other user
+dependent files) will be put.
 
 You can use (if entered through the CLI) "~" (or %%HOME%%) for user home directory, or
 another environment variable (%%...%%). (example: "o ~\NatLink\Unimacro")
