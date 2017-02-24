@@ -257,7 +257,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             # if self.isNatSpeakRunning(): raise NatSpeakRunningError("natlink.pyd should be changed")
             self.changesInInitPhase = 1
             result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
-            self.registerNatlinkPyd()
+            if not result:
+                return
+            result = self.registerNatlinkPyd()
             if result:
                 print '-'*30
                 print 'Copying and registering the latest natlink.pyd was succesful.'
@@ -303,7 +305,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             try:
                 os.remove(currentPydFile)
             except WindowsError:
-                fatal_error('cannot remove currentPydFile "%s",\nProbably you must exit Dragon first'% currentPydFile)
+                fatal_error('cannot remove currentPydFile "%s",\nProbably you must exit Dragon first\nPossibly restart your computer.'% currentPydFile)
                 return
             
         if os.path.isfile(wantedPydFile):

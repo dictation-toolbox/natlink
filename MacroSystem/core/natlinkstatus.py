@@ -442,6 +442,7 @@ Please try to correct this by running the NatLink Config Program (with administr
                 else:
                     self.warning('incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd))
             return
+            
         # now check for updates:
         timeWantedPyd = getFileDate(wantedPydPath)
         timeCurrentPyd = getFileDate(currentPydPath)
