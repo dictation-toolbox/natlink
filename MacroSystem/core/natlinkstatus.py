@@ -711,6 +711,9 @@ Please try to correct this by running the NatLink Config Program (with administr
 
         """
         dnsPath = self.getDNSInstallDir()
+        if dnsPath is None:
+            print 'dnsPath not found, please ensure there is a proper DNSInstallDir'
+            return 0
         pos = dnsPath.rfind("NaturallySpeaking")
         if pos > 0:
             versionString = dnsPath[-2:]
@@ -774,7 +777,7 @@ Please try to correct this by running the NatLink Config Program (with administr
                 if os.path.isdir(programfolder):
                     return os.path.normpath(cand)
         print 'no valid DNS Install Dir found, please provide one in natlinkconfigfunctions (option "d") or in natlinkconfig  GUI (info panel)'
-        
+        return ''
 
 
     #def getPythonFullVersion(self):
