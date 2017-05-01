@@ -2,7 +2,11 @@ We are slowly moving to a new stable release for Dragon 12, 13, 14 and NatLink t
 
 --Still problems with Dragon 15 and NatLink. 
 
+Release 4.1romeo:
+- fixed problem with installer (problem reregistering the natlink.pyd)
+
 Release 4.1quebec:
+-small fix with DNSInstallDirs for Udo
 -meant to be pre final
 -Works with Dragon up to version 14.
 -New Unimacro grammar: chrome_browsing.py, using the splendid "Click by Voice" extension written by Mark Lillybridge.

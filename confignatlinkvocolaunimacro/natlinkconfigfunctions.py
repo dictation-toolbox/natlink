@@ -1013,8 +1013,8 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             fatal_error('not a valid python version found: |%s|'% pythonVersion)
             
         # for safety unregister always:
-        print 'first unregister, just to be sure...'
-        self.unregisterNatlinkPyd(silent=1)    
+        # print 'first unregister, just to be sure...'
+        # self.unregisterNatlinkPyd(silent=1)    
             
         PydPath = os.path.join(coreDir, 'natlink.pyd')
         if not os.path.isfile(PydPath):
@@ -1023,7 +1023,6 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         baseDir = os.path.join(coreDir, '..')
     
         newIniSetting = "%s;%s"% (pythonVersion, dragonVersion)
-    
         if silent:
             try:
                 import win32api
@@ -1031,7 +1030,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 fatal_error("cannot import win32api, please see if win32all of python is properly installed")
             
             try:
-
+    
                 result = win32api.WinExec('regsvr32 /s "%s"'% PydPath)
                 if result:
                     fatal_error('failed to register %s (result: %s)\nPossibly exit Dragon and run this program in Elevated (admin) mode'% (PydPath, result))
@@ -1040,7 +1039,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 else:
                     self.userregnl.set('NatlinkPydRegistered', newIniSetting)
                     print 'Registring pyd file succesful: %s'% PydPath
-
+    
     #                    print 'registered %s '% PydPath
                     
             except:
@@ -1059,6 +1058,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 print 'Registring pyd file succesful: %s'% PydPath
                 
         self.setNatlinkInPythonPathRegistry()
+        return result is None
 
     def unregisterNatlinkPyd(self, silent=1):
         """unregister explicit, should not be done normally
@@ -1073,10 +1073,20 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         try:
             # pass this step if it does not succeed:
             dll = ctypes.windll[PydPath]
-            dll.DllUnregisterServer()
+            result = dll.DllUnregisterServer()
+            if result != 0:
+                print 'could not unregister %s'% PydPath
         except WindowsError:
             print 'Cannot unregister natlink.pyd, maybe it is not registered, maybe Dragon is running... Try to proceed'
-            pass    
+            pass
+        finally:
+            handle = dll._handle # obtain the DLL handle
+            result2 = ctypes.windll.kernel32.FreeLibrary(handle)
+                       
+        if result2 != 1:
+            print 'could not free the link to %s'% PydPath
+        return result == 0
+        
         
     def enableDebugLoadOutput(self):
         """setting registry key so debug output of loading of natlinkmain is given
