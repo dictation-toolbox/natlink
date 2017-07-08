@@ -85,13 +85,19 @@ __version__ = ""   #changed with SVN
 # debugging to print information about when a module is loaded.
 #
 # start with the redirect, so the messages window responds:
-import natlink, sys, traceback
+import natlink
+import sys
+import traceback
+import types
+
 class NewStdout(object):
     softspace=1
     def write(self,text):
         if text.find('\x00') >= 0:
             text = text.replace('\x00', '')
             text = "===Warning, text contains null bytes==\n" + text
+        if type(text) == types.UnicodeType:
+            text = text.encode('cp1252')
         natlink.displayText(text, 0)
     def flush(self):
         pass
@@ -102,6 +108,8 @@ class NewStderr(object):
         if text.find('\x00') >= 0:
             text = text.replace('\x00', '')
             text = "===Warning, text contains null bytes===\n" + text
+        if type(text) == types.UnicodeType:
+            text = text.encode('cp1252')
         natlink.displayText(text, 1)
     def flush(self):
         pass

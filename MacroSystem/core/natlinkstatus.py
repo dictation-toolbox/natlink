@@ -1,5 +1,4 @@
 __version__ = "4.1romeo"
-# coding=latin-1
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -212,23 +211,23 @@ Wversions = {'1/4/10': '98',
              } 
 
 # the possible languages (for getLanguage)
-languages = {"Nederlands": "nld",
-             "Fran\xe7ais": "fra",
-             "Deutsch": "deu",
-             "UK English": "enx",
-             "US English": "enx",
-             "Australian English": "enx",
-             "Indian English": "enx",
-             "SEAsian English": "enx",
-             "Italiano": "ita",
-             "Espa\xf1ol": "esp"}
+languages = {u"Nederlands": "nld",
+             u"Fran\xe7ais": "fra",
+             u"Deutsch": "deu",
+             u"UK English": "enx",
+             u"US English": "enx",
+             u"Australian English": "enx",
+             u"Indian English": "enx",
+             u"SEAsian English": "enx",
+             u"Italiano": "ita",
+             u"Espa\xf1ol": "esp"}
 
-shiftKeyDict = {"nld": "Shift",
-                "enx": 'shift',
-                "fra": "maj",
-                "deu": "umschalt",
-                "ita": "maiusc",
-                "esp": "may\xfas"}
+shiftKeyDict = {"nld": u"Shift",
+                "enx": u'shift',
+                "fra": u"maj",
+                "deu": u"umschalt",
+                "ita": u"maiusc",
+                "esp": u"may\xfas"}
 
 reportDNSIniDirErrors = True # set after one stroke to False, if errors were there (2017, february)
 
