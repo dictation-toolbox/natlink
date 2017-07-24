@@ -1,3 +1,11 @@
+Release 4.1tango:
+-Still pre final
+-Some improvements in configuration program. Checking if natlink.pyd (dll) is registered failed. Hope however the fails of the config program for some users will be gone by now.
+-NatLink: Messages Window can now also print diacritical characters.
+-Unimacro:
+--grammar chrome browsing working with *Click by Voice*, see documentation Unimacro website
+--grammar tasks, improved, with document positions.
+
 Release 4.1quebec:
 -meant to be pre final
 -Works with Dragon up to version 14.
