@@ -49,6 +49,7 @@ More at the bottom, with the CLI description...
 
 """
 import ctypes
+import traceback
 try:
     from win32com.shell.shell import IsUserAnAdmin
 except:
@@ -1017,6 +1018,10 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         # self.unregisterNatlinkPyd(silent=1)    
             
         PydPath = os.path.join(coreDir, 'natlink.pyd')
+        # result = self.PydIsRegistered(PydPath)
+        # print 'register function before: registered: %s'% result
+        
+        
         if not os.path.isfile(PydPath):
             fatal_error("Pyd file not found in core folder: %s"% PydPath)
     
@@ -1060,15 +1065,37 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         self.setNatlinkInPythonPathRegistry()
         return result is None
 
+    def PydIsRegistered(self, PydPath):
+        """returns True if path is registered as dll/pyd
+        
+        seems not to work or give complications.
+        """
+        try:
+            # pass this step if it does not succeed:
+            dll = ctypes.windll[PydPath]
+            return True
+        except WindowsError:
+            dll = None
+            return False
+        finally:
+            handle = dll._handle # obtain the DLL handle
+            result2 = ctypes.windll.kernel32.FreeLibrary(handle)
+        pass
+    
+
+
     def unregisterNatlinkPyd(self, silent=1):
         """unregister explicit, should not be done normally
         """
         dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)        
         pythonVersion = self.getPythonVersion()
         PydPath = os.path.join(coreDir, 'natlink.pyd')
-       
+
+        # if not self.PydIsRegistered(PydPath):
+        #     print 'unregisterNatlinkPyd: is not registered, %s'% PydPath
+        
         if not os.path.isfile(PydPath):
-            return
+            print 'PydPath (%s) does not exist, but pyd is registered, continue'% PydPath
 
         try:
             # pass this step if it does not succeed:
@@ -1076,15 +1103,24 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             result = dll.DllUnregisterServer()
             if result != 0:
                 print 'could not unregister %s'% PydPath
-        except WindowsError:
-            print 'Cannot unregister natlink.pyd, maybe it is not registered, maybe Dragon is running... Try to proceed'
-            pass
+        except KeyError:
+            if os.path.isfile(PydPath):
+                print 'Cannot unregister natlink.pyd, maybe it is not registered, maybe Dragon is running...'
+            else:
+                print 'Cannot unregister natlink.pyd.'
+        except:
+            traceback.print_exc() 
         finally:
             handle = dll._handle # obtain the DLL handle
             result2 = ctypes.windll.kernel32.FreeLibrary(handle)
                        
         if result2 != 1:
             print 'could not free the link to %s'% PydPath
+        
+        # extra check:
+        # registered = self.PydIsRegistered(PydPath)
+        # if registered and result:
+        #     print 'unregistering %s failed'% PydPath
         return result == 0
         
         
@@ -1833,7 +1869,11 @@ You may have to manually create this folder first.
 ##
 ##    help_W = help_w
     
-
+## testing:
+    def do_s(self, arg):
+        pydPath = r"C:\natlink\natlink\macrosystem\core\natlink.pyd"
+        print 'registered?: %s'% self.config.PydIsRegistered(pydPath)
+        pass
     def do_g(self, arg):
         print 'no valid option'
         pass

@@ -1,4 +1,4 @@
-__version__ = "4.1romeo"
+__version__ = "4.1sierra"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -6,6 +6,10 @@ __version__ = "4.1romeo"
 #  (C) Copyright Quintijn Hoogenboom, February 2008/February2017
 #
 #----------------------------------------------------------------------------
+# 4.1sierra, improving installer
+#            Messages window handles diacritical characters.
+#            several changes unimacro
+#            added chrome_browsing, using Click by Voice.
 # 4.1quebec, working to check of pyd register errors.
 #            cleaning up some functions, getting the correct Dragon version
 #            getting the correct DNSIniDir
