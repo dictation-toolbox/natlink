@@ -1,4 +1,4 @@
-__version__ = "4.1sierra"
+__version__ = "4.1tango"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -6,7 +6,7 @@ __version__ = "4.1sierra"
 #  (C) Copyright Quintijn Hoogenboom, February 2008/February2017
 #
 #----------------------------------------------------------------------------
-# 4.1sierra, improving installer
+# 4.1tango, improving installer
 #            Messages window handles diacritical characters.
 #            several changes unimacro
 #            added chrome_browsing, using Click by Voice.
