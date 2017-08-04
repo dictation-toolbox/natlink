@@ -1,12 +1,12 @@
-We are slowly moving to a new stable release for Dragon 12, 13, 14 and NatLink too. (February 2017)
-
---Still problems with Dragon 15 and NatLink. 
-
-Release 4.1romeo:
-- fixed problem with installer (problem reregistering the natlink.pyd)
+Release 4.1tango:
+-Still pre final
+-Some improvements in configuration program. Checking if natlink.pyd (dll) is registered failed. Hope however the fails of the config program for some users will be gone by now.
+-NatLink: Messages Window can now also print diacritical characters.
+-Unimacro:
+--grammar chrome browsing working with *Click by Voice*, see documentation Unimacro website
+--grammar tasks, improved, with document positions.
 
 Release 4.1quebec:
--small fix with DNSInstallDirs for Udo
 -meant to be pre final
 -Works with Dragon up to version 14.
 -New Unimacro grammar: chrome_browsing.py, using the splendid "Click by Voice" extension written by Mark Lillybridge.
@@ -15,29 +15,38 @@ Release 4.1quebec:
 -NatLink does not (yet) work with Dragon 15.
 -All comments welcome!
 
-4.1papa:
-  - intermediate, changes in Vocola
-  - try to find correct Dragon 14 version
-  - Windows version check sucks, reports now 8or10
-  
-(few fixed in same file, last one November 4, 10:00 hrs Dutch time)
-4.1oscar:
-  - many configure things, now use UnimacroUserDirectory for enable/disable Unimacro
-  - more reliable configure program
-  - separate UserDirectory
+Release 4.1papa:
+-New in Vocola 2.8.3:
 
-4.1mike:
-- extra checks for missing modules in start_configurenatlink.py and in start_natlinkconfigfunctions.py
-- Unimacro grammar folders, added recent files trick and xplorer2 support.
+* Source code converted to git, moved to github at
+  https://github.com/mdbridge/Vocola-2
 
-4.1kilo/lima:
-- adapt to Dragon13 also recognising 12.80 as 13.
+* Removed support for falling back to Simpscrp
 
-4.1juliet:
-- adapted playString function (Mark Lillibridge) via natlinkutils.playString (SendInput)
-- natlinkmain.py has nearly all code caught in a try except statement
+* Removed support for using Perl version of Vocola
 
-4.1india:
+
+Release 4.1oscar:
+  - many installer things, now use UnimacroUserDirectory for enable/disable Unimacro
+  - Separate UserDirectory
+
+Release 4.1mike:
+  - extra checks for missing modules in start_configurenatlink.py and in start_natlinkconfigfunctions.py
+  - Unimacro grammar folders, added recent files trick and xplorer2 support.
+
+Release 4.1lima:
+  - Dragon 13 beta exposes version 12.80. This is also returned in natlinkstatus as 13
+  - The warning about BestMatch V is printed only for Dragon 12
+
+Release 4.1kilo:
+  - also recognise Dragon13 
+
+Release 4.1juliet:
+  - playString function that uses adapted playString function (SendInput from Mark Lillibridge) via natlinkutils.playString
+  - natlinkmain.py has nearly all code caught in a try except statement
+  - Unimacro now has a grammar frescobaldi (music notes input program). several smaller changes
+
+Release 4.1india:
 ! MAJOR non-backward-compatible change to what names
   natlinkutils provides.
   - This was done because we are moving away from
@@ -46,15 +55,21 @@ Release 4.1quebec:
   - In particular, recognitionMimic, getCursorPos, and Badwindow among
     others names now must be imported from natlink rather than from 
     natlinkutils.
-  - See http://qh.antenna.nl/unimacro/installation/technicaldetails/natlinkutils.html for more details.
+  - See /html/installation/technicaldetails/natlinkutils.html for more explanation.
 - Vocola suffered from this change, this is now fixed in Vocola 2.8.1I+
 
 - more stable pyd files (hopefully)
 - Title changed to "Messages from NatLink - built 01/01/2014"
 - installer checks for 64 bit python (forbidden)
-- many Unimacro improvements, action classes for specific programs (lines module hundred)
+- many Unimacro improvements, action classes for specific programs
+  (lines module hundred)
 - autohotkey support
-- New release of Vocola 2, 2.8.1:
+! MAJOR non-backward-compatible change to what names natlinkutils
+  provides
+  - In particular, recognitionMimic, getCursorPos, and Badwindow among
+    others names now must be imported from natlink rather than
+    natlinkutils.
+- New release of Vocola 2, 2.8.1 (now 2.8.1I+, see above)
     New in 2.8.1:
     
     ! Any series of one or more terms at least one of which is not optional
@@ -67,18 +82,47 @@ Release 4.1quebec:
     
     * Bug fix for adjacent <_anything>'s in command sequences
 
-4.1hotel is removed.
+4.1hotel: removed
 
-From earlier "4.1" "beta" releases:
--This includes a new stable Vocola release which is complete implemented in python
+4.1golf:
+- some improvements in config program
+- new build of previous version of natlink.pyd (which was already in 4.1delta version)
+- natlinkutils.playString tries to workaround the sendkeys problem sometimes experienced.
 
--NatLink can be used with python 2.6 and python 2.7.
+4.1foxtrot: some changes in config program
+4.1echo:
+reverted the 2.7 UNICODE pyd to the charlie version because of trouble with the delta version
 
--Note that with Dragon 12, you should NOT use the speech model BestMatch V, which is used by default on most computers when create a new User Profile.
 
--Python 2.5 still can be used, but only for Dragon <= 11.
+Release 4.1delta:
+- natlink.pyd now for python 2.7, experimental version, which seems to be stable
+- more testing and messages when starting NatLink and when running the config program
 
-Consider to make a small donation to the 3 people who do most work for this development:
--Rudiger Wilke, working on the heart of the program, the NatLink core
--Mark Lillibridge, maintaining and improving Vocola 2
--Quintijn Hoogenboom, working at Unimacro and the installer stuff 
+Release 4.1charlie:
+- natlink.pyd now for python 2.7, experimental version, which seems to be stable
+- Vocola now runs 2.8I, which is implemented all in python
+
+Release 4.1beta:
+
+--- adaptations for Dragon 12. Numerous.
+
+Working on new test releases, 4.1alpha
+
+--- New in Vocola:
+
+  * now installs Vocola 2.7.3I; this is primarily a maintenance release
+    over 2.7.2I
+
+
+---New in Unimacro:
+  * tasks grammar improved and added "give name" option
+  * folders grammar made more secure. More work to be done
+  * spanish translations (Javier Panta) for esp_spokenforms.ini and _control.ini and _folders.ini
+
+---New in the combined NatLink/Vocola/Unimacro installer:
+
+---Changed in NatLink (for programmers only):
+  * at callback time the wordsByRule dict is now also provided (see website)
+
+---Changes in order to get NatLink working in Dragon 12: 
+
