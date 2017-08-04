@@ -1,3 +1,13 @@
+"""reading and writing files with unicode strings, handles encodings.
+"""
+
+import io
+import os
+import os.path
+import types
+import copy
+
+
 def fixCrLf(tRaw):
     """replace crlf into lf
     """
@@ -85,3 +95,44 @@ def writeAnything(filepath, encoding, content):
             return
     print 'fail to encode file %s with encoding(s): %s. Use xmlcharrefreplace'% (filepath, encodings)
     io.open(filepath, 'w', encoding=encoding, errors='xmlcharrefreplace').write(content)
+
+def decodeencode(tRaw, filetype):
+    """return the decoded string or False
+    
+    used by readAnything, also see testreadanything in miscqh/test scripts
+    """
+    try:
+        tDecoded = tRaw.decode(filetype)
+    except UnicodeDecodeError:
+        return False
+    encodedAgain = tDecoded.encode(filetype)
+    if encodedAgain == tRaw:
+        return tDecoded
+    else:
+        return False
+
+if __name__ == '__main__':
+    testdir = r'C:\NatLink\NatLink\PyTest\test_vcl_files'
+    for filename in os.listdir(testdir):
+        if filename.startswith('out'):
+            continue
+        filepath = os.path.join(testdir, filename)
+        result = readAnything(filepath)
+        if result:
+            encoding, t = result
+            print 'file: %s, encoding: %s'% (filename, encoding)
+            print 'content: %s'% t
+            print '-'*40
+            outfilename = 'out' + filename
+            outfilepath = os.path.join(testdir, outfilename)
+            if encoding == 'ascii':
+                encodings = ['ascii', 'utf-8']
+            else:
+                encodings = [encoding]   # can also take ['ascii', encoding], then, if no more non-ascii characters
+                                         # the encoding goes back to ascii
+            # test should go wrong:
+            encoding = 'ascii'
+            # writeAnything(outfilepath, encoding, t)
+            writeAnything(outfilepath, encodings, t)
+        else:
+            print 'file: %s, no result'
