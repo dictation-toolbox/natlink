@@ -165,6 +165,29 @@ def formatWords(wordList,state=None):
 
     return output, state
 
+countDict= dict(one=1, two=2, three=3, four=4, five=5, six=6, seven=7, eight=8, nine=9,
+                een=1, twee=2, drie=3, vier=4, vijf=5, zes=6, zeven=7, acht=8, negen=9)
+
+
+def formatPassword(wordList):
+    """format the words, no spaces capping each word, getting the numbers and repeating the @ etc
+>>> formatPassword(['small', 'bird', 'three', '@'])
+
+    """
+    nextRepeat = 0
+    outList = []
+    for w in wordList:
+        if nextRepeat:
+            while nextRepeat:
+                outList.append(w)
+                nextRepeat -= 1
+        elif w in countDict:
+            nextRepeat = countDict[w]
+            outList.append(unicode(nextRepeat))
+        else:
+            outList.append(w.capitalize())
+    return ''.join(outList)
+        
 def formatLetters(wordList):
     """this is more tricks, formats dngletters input
 
@@ -492,14 +515,19 @@ def testFormatting11():
     print 'Example Formatting tests (11) passed, more in unittestNsformat (in PyTest directory)'
 
 if __name__=='__main__':
+    import doctest
     natlink.natConnect()
-    try:
-        if natlinkmain.DNSVersion >= 11:
-            testFormatting11()
-        else:
-            testFormatting10()
-        natlink.natDisconnect()
-    except:
-        natlink.natDisconnect()
-        raise
+    doctest.testmod()
+    natlink.natDisconnect()
+    
+    # natlink.natConnect()
+    # try:
+    #     if natlinkmain.DNSVersion >= 11:
+    #         testFormatting11()
+    #     else:
+    #         testFormatting10()
+    #     natlink.natDisconnect()
+    # except:
+    #     natlink.natDisconnect()
+    #     raise
 

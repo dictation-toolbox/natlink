@@ -718,11 +718,19 @@ Please try to correct this by running the NatLink Config Program (with administr
             print 'dnsPath not found, please ensure there is a proper DNSInstallDir'
             return 0
         pos = dnsPath.rfind("NaturallySpeaking")
-        if pos > 0:
-            versionString = dnsPath[-2:]
-            if versionString[0] == 'g':
-                versionString = versionString[-1:]  # dragon 9 
-        
+        if pos == -1:
+            print 'Cannot find "NaturallySpeaking" in dnsPath: "%s"'% dnsPath
+
+        versionString = dnsPath[-2:]
+        try:
+            i = int(versionString[0])
+        except ValueError:
+            versionString = versionString[-1:]  # dragon 9 
+        try:
+            i = int(versionString) 
+        except ValueError:
+            print 'Cannot find versionString, dnsPath should end in two digits (or one for versions below 10): %s'% dnsPath
+            return ''
         if versionString and len(versionString) == 2:
             return versionString
 

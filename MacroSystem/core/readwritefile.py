@@ -1,4 +1,18 @@
 """reading and writing files with unicode strings, handles encodings.
+
+when reading a file, a 3 tuple (encoding, bom, content is returned.
+With utf-8, the bom mark could be present. a 3 byte raw string
+
+readAnything(source, filetype=None, tryAlternatives=True)
+    (works best if filetype is NOT given. c
+     Common alternatives for tryAlternatives are given by default, but utf-8 should be first)
+
+
+when writing a file, these three parameters should be passed again,
+    bom: None if no bom mark is present or wanted
+    
+writeAnything(filepath, encoding, bom, content)
+
 """
 
 import io
@@ -46,7 +60,8 @@ def readAnything(source, filetype=None, tryAlternatives=True):
         # chardetResult = chardet.detect(tRaw)
         # guessedType = chardetResult['encoding']
         # confidence = chardetResult['confidence']
-        # 
+        #
+        bom = None
         for codingscheme in codingschemes:
             result = decodeencode(tRaw, codingscheme)
             if not result is False:
@@ -54,7 +69,8 @@ def readAnything(source, filetype=None, tryAlternatives=True):
                     pass
                 if result and ord(result[0]) == 65279:  # BOM, remove
                     result = result[1:]
-                return codingscheme, result
+                    bom = tRaw[0:3]
+                return codingscheme, bom, result
         print 'readAnything: file %s is not ascii, utf-8 or latin-1, continue with chardet'% filename
         chardetResult = chardet.detect(tRaw)
         guessedType = chardetResult['encoding']
@@ -62,15 +78,15 @@ def readAnything(source, filetype=None, tryAlternatives=True):
         result = decodeencode(tRaw, guessedType)
         if not result is False:
             print 'readAnything: encoding %s succesfull (%s)'% (guessedType, sourceslash)
-            return guessedType, result
+            return guessedType, bom, result
         print 'readAnything: no valid encoding found for file: %s (chardet gave: %s)' % (sourceslash, guessedType)
-        return ''
+        return 
     else:
         # consider source als stream of text
         # print 'readAnything, continue with text: %s'% makeReadable(source)
-        return None, source
+        return None, None, source
 
-def writeAnything(filepath, encoding, content):
+def writeAnything(filepath, encoding, bom, content):
     """write unicode or list of unicode to file
     use any of the encodings eg ['ascii', 'utf-8'],
     if they all fail, use xmlcharrefreplace in order to output all.
@@ -86,15 +102,22 @@ def writeAnything(filepath, encoding, content):
 
     for encoding in encodings:
         try:
-            io.open(filepath, 'w', encoding=encoding).write(content)
+            tRaw = content.encode(encoding=encoding)
         except UnicodeEncodeError:
             continue
         else:
             if len(encodings) > 1:
                 print 'did encoding %s (%s)'% (encoding, filepath)
-            return
-    print 'fail to encode file %s with encoding(s): %s. Use xmlcharrefreplace'% (filepath, encodings)
-    io.open(filepath, 'w', encoding=encoding, errors='xmlcharrefreplace').write(content)
+            break
+    else:
+        print 'fail to encode file %s with encoding(s): %s. Use xmlcharrefreplace'% (filepath, encodings)
+        tRaw = content.encode(encoding=encoding, errors='xmlcharrefreplace')
+    if bom:
+        print 'add bom for tRaw'
+        tRaw = bom + tRaw 
+    io.open(filepath, 'wb').write(tRaw)
+    pass
+
 
 def decodeencode(tRaw, filetype):
     """return the decoded string or False
@@ -119,8 +142,8 @@ if __name__ == '__main__':
         filepath = os.path.join(testdir, filename)
         result = readAnything(filepath)
         if result:
-            encoding, t = result
-            print 'file: %s, encoding: %s'% (filename, encoding)
+            encoding, bom, t = result
+            print 'file: %s, encoding: %s, bom: %s'% (filename, encoding, bom)
             print 'content: %s'% t
             print '-'*40
             outfilename = 'out' + filename
@@ -133,6 +156,21 @@ if __name__ == '__main__':
             # test should go wrong:
             encoding = 'ascii'
             # writeAnything(outfilepath, encoding, t)
-            writeAnything(outfilepath, encodings, t)
+            writeAnything(outfilepath, encodings, bom, t)
         else:
             print 'file: %s, no result'
+
+    testfile = r'C:/natlink/rudiger/acoustic.ini'
+    result = readAnything(testfile)
+    if result:
+        encoding, bom, t = result
+        print 'testfile: %s, encoding: %s, bom: %s'% (testfile, encoding, bom)
+        outfile = r'C:/natlink/rudiger/bomacoustic.ini'
+        writeAnything(outfile, encoding, bom, t)
+        result2 = readAnything(outfile)
+        enc2, bom2, t2 = result2
+        print 'enc2: %s, (equal? %s)'% (enc2, encoding == enc2)
+        print 'bom2: %s, (equal? %s)'% (bom2, bom == bom2)
+        print 'text2: %s, (equal? %s)'% (t2, t == t2)
+        
+    
