@@ -28,9 +28,10 @@ Note: for extension with %NATLINK% etc. see natlinkutils.py.
 """ 
 import os, sys, re, copy
 from win32com.shell import shell, shellcon
-import win32api
+# import win32api
 # for extended environment variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
+from inivars import IniVars
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -293,8 +294,9 @@ class InifileSection(object):
         
         So one instance operates only on one section of one ini file!
         
-        other instances can be opened by giving the filename
-        and/or the section
+        Now uses the inivars module of Quintijn instead of GetProfileVal system calls.
+        
+        Only use for readonly or for one section if you want to rewrite data!!
         
         methods:
         set(key, value): set a key=value entry in the section
@@ -311,28 +313,21 @@ class InifileSection(object):
         """open a section in a inifile
         
         """
-        dirName, filePart = os.path.split(filename)
-        if not os.path.isdir(dirName):
-            raise ValueError("InifileSection, filename should be in a valid directory, not: %s"% dirName)
-        self.filename = filename
-        self.firstUse = (not os.path.isfile(self.filename))
-        self.section =  section
+        self.section = section
+        self.ini = IniVars(filename)
          
     def __repr__(self):
         """return contents of sections
         """
         L = ["[%s]"% self.section ]
-        for k in self.keys():
-            v = self.get(k)
+        for k in self.ini.get(self.section):
+            v = self.ini.get(self.section, k)
             L.append("%s=%s"% (k, v))
         return '\n'.join(L)
     
     def __iter__(self):
-        for item in self.keys():
+        for item in self.ini.get(self.section):
             yield item         
-            
-    def __getitem__(self, key, defaultValue=None):
-        return self.get(key, defaultValue=defaultValue)
             
     def get(self, key, defaultValue=None):
         """get an item from a key
@@ -342,10 +337,12 @@ class InifileSection(object):
             defaultValue = ''
         else:
             defaultValue = str(defaultValue)
-        value = win32api.GetProfileVal(self.section, key, defaultValue, self.filename)
+        value = self.ini.get(self.section, key, defaultValue)
+
+        # value = win32api.GetProfileVal(self.section, key, defaultValue, self.filename)
 ##        if value:
 ##            print 'get: %s, %s: %s'% (self.section, key, value)
-        if value in ("0", "1"):
+        if value in (u"0", u"1"):
             return int(value)
         return value
 
@@ -359,29 +356,36 @@ class InifileSection(object):
         if value in [0, "0"]:
             self.delete(key)
         elif not value:
-            self.delete(key)
+            self.ini.delete(self.section, key)
         else:
-            win32api.WriteProfileVal( self.section, key, str(value), self.filename)
-            checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
-            if not (checkValue == value or \
-                              value in [0, 1] and checkValue == str(value)):
-                print 'set failed:  %s, %s: %s, got %s instead'% (self.section, key, value, checkValue)
-
+            self.ini.set(self.section, key, value)
+            self.ini.write()
+            pass
+            # win32api.WriteProfileVal( self.section, key, str(value), self.filename)
+            # checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
+            # if not (checkValue == value or \
+            #                   value in [0, 1] and checkValue == str(value)):
+            #     print 'set failed:  %s, %s: %s, got %s instead'% (self.section, key, value, checkValue)
+            
     def delete(self, key):
         """delete an item for a key (really set to "")
         
         """
+        self.ini.delete(self.section, key)
+        self.ini.write()
+        pass
         # print 'delete: %s, %s'% (self.section, key)
-        value = win32api.WriteProfileVal( self.section, key, None,
-                                       self.filename)
-        checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
-        if checkValue != 'nonsens':
-            print 'delete failed:  %s, %s: got %s instead'% (self.section, key, checkValue)
+        # value = win32api.WriteProfileVal( self.section, key, None,
+        #                                self.filename)
+        # checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
+        # if checkValue != 'nonsens':
+        #     print 'delete failed:  %s, %s: got %s instead'% (self.section, key, checkValue)
 
     def keys(self):
-        Keys =  win32api.GetProfileSection( self.section, self.filename)
-        Keys = [k.split('=')[0].strip() for k in Keys]
-        #print 'return Keys: %s'% Keys
+        Keys = self.ini.get(self.section)
+        # Keys =  win32api.GetProfileSection( self.section, self.filename)
+        # Keys = [k.split('=')[0].strip() for k in Keys]
+        # #print 'return Keys: %s'% Keys
         return Keys
 
 defaultFilename = "natlinkstatus.ini"
@@ -422,4 +426,13 @@ if __name__ == "__main__":
               "%WINDOWS%\\folder\\strange testfolder"):
         expanded = expandEnvVariables(p)
         print 'expandEnvVariables: %s: %s'% (p, expanded)
+
+    testIniSection = NatlinkstatusInifileSection()
+    print testIniSection.keys()
+    testIniSection.set("test", "een test")
+    testval = testIniSection.get("test")
+    print 'testval: %s'% testval
+    testIniSection.delete("test")
+    testval = testIniSection.get("test")
+    print 'testval: %s'% testval
 

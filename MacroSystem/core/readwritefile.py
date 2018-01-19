@@ -11,7 +11,10 @@ readAnything(source, filetype=None, tryAlternatives=True)
 when writing a file, these three parameters should be passed again,
     bom: None if no bom mark is present or wanted
     
-writeAnything(filepath, encoding, bom, content)
+writeAnything(filepath, encoding, bom, content # if encoding is None take 'ASCII'
+                                               # if bom is None use no bom 
+
+Quintijn Hoogenboom, 2018, January
 
 """
 
@@ -80,7 +83,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
             print 'readAnything: encoding %s succesfull (%s)'% (guessedType, sourceslash)
             return guessedType, bom, result
         print 'readAnything: no valid encoding found for file: %s (chardet gave: %s)' % (sourceslash, guessedType)
-        return 
+        return None, None, None
     else:
         # consider source als stream of text
         # print 'readAnything, continue with text: %s'% makeReadable(source)
@@ -89,13 +92,19 @@ def readAnything(source, filetype=None, tryAlternatives=True):
 def writeAnything(filepath, encoding, bom, content):
     """write unicode or list of unicode to file
     use any of the encodings eg ['ascii', 'utf-8'],
-    if they all fail, use xmlcharrefreplace in order to output all.
+    if they all fail, use xmlcharrefreplace in order to output all
+    take "ASCII" if encoding is None
+    take "" if bom is None
     """
     if type(content) in (types.ListType, types.TupleType):
         content = '\n'.join(content)
     if type(content) != types.UnicodeType:
         raise TypeError("writeAnything, content should be Unicode, not %s (%s)"% (type(content), filepath))
-    if type(encoding) in (types.ListType, types.TupleType):
+    if encoding in [None, 'ascii']:
+        encodings = ['ascii', 'latin-1']  # could change to cp1252, or utf-8
+                                          # this is only if the encoding is new or read as ascii, and accented characters are introduced
+                                          # in the text to output.
+    elif type(encoding) in (types.ListType, types.TupleType):
         encodings = copy.copy(encoding)
     else:
         encodings = [encoding]
@@ -106,8 +115,8 @@ def writeAnything(filepath, encoding, bom, content):
         except UnicodeEncodeError:
             continue
         else:
-            if len(encodings) > 1:
-                print 'did encoding %s (%s)'% (encoding, filepath)
+            # if len(encodings) > 1:
+            #     print 'did encoding %s (%s)'% (encoding, filepath)
             break
     else:
         print 'fail to encode file %s with encoding(s): %s. Use xmlcharrefreplace'% (filepath, encodings)
@@ -149,7 +158,7 @@ if __name__ == '__main__':
             outfilename = 'out' + filename
             outfilepath = os.path.join(testdir, outfilename)
             if encoding == 'ascii':
-                encodings = ['ascii', 'utf-8']
+                encodings = ['ascii', 'latin-1']
             else:
                 encodings = [encoding]   # can also take ['ascii', encoding], then, if no more non-ascii characters
                                          # the encoding goes back to ascii
@@ -164,13 +173,13 @@ if __name__ == '__main__':
     result = readAnything(testfile)
     if result:
         encoding, bom, t = result
-        print 'testfile: %s, encoding: %s, bom: %s'% (testfile, encoding, bom)
+        print 'testfile: %s, encoding: %s, bom: %s'% (testfile, encoding, repr(bom))
         outfile = r'C:/natlink/rudiger/bomacoustic.ini'
         writeAnything(outfile, encoding, bom, t)
         result2 = readAnything(outfile)
         enc2, bom2, t2 = result2
         print 'enc2: %s, (equal? %s)'% (enc2, encoding == enc2)
-        print 'bom2: %s, (equal? %s)'% (bom2, bom == bom2)
+        print 'bom2: %s, (equal? %s)'% (repr(bom2), bom == bom2)
         print 'text2: %s, (equal? %s)'% (t2, t == t2)
         
     

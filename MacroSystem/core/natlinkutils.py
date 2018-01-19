@@ -482,12 +482,21 @@ class GrammarBase(GramClassBase):
         self.doOnlyGotResultsObject = None # can rarely be set (QH, dec 2009)
 
     def load(self,gramSpec,allResults=0,hypothesis=0, grammarName=None):
-        if type(gramSpec) == types.StringType:
+        # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
+        # code upper ascii characters with latin1 if they were in the process entered as unicode
+        if type(gramSpec) == types.ListType:
+            for grampart in gramSpec:
+                if type(grampart) == types.UnicodeType:
+                    newGramSpec = [g.encode('latin1') for g in gramSpec]
+                    gramSpec = newGramSpec
+                    break
+
+        elif type(gramSpec) == types.UnicodeType:
+            gramSpec = [gramSpec.encode('latin1')]
+        elif type(gramSpec) == types.StringType:
             gramSpec = [gramSpec]
-        elif type(gramSpec) != types.ListType:
-            raise TypeError( "grammar definition must be a list of strings" )
-        elif type(gramSpec[0]) != types.StringType:
-            raise TypeError( "grammar definition must be a list of strings" )
+        else:
+            raise TypeError( "grammar definition must be a string or a list of strings, not %s"% gramSpec )
 
         gramparser.splitApartLines(gramSpec)
         parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
@@ -598,7 +607,10 @@ class GrammarBase(GramClassBase):
             self.gramObj.appendList(listName,words)
         else:
             for x in words:
-                self.gramObj.appendList(listName,x)
+                if type(x) == types.UnicodeType:
+                    self.gramObj.appendList(listName, x.encode('latin1'))
+                else:
+                    self.gramObj.appendList(listName,x)
     
     def setList(self, listName, words):
         self.emptyList(listName)

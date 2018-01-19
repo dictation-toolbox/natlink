@@ -637,7 +637,20 @@ try:
             beginCallback(moduleInfo, checkAll=1)
             loadModSpecific(moduleInfo)
         if type == 'user' and userName != args[0]:
-            userName, DNSuserDirectory = args
+            userLanguage, userTopic = None, None  
+            if len(args) == 2:
+                userName, DNSuserDirectory = args
+                if debugCallback:
+                    print 'two arguments in natlinkmain %s'% repr(args)
+            elif len(args) == 4:
+                if debugCallback:
+                    print 'four arguments in natlinkmain %s'% repr(args)
+                userName, DNSuserDirectory, userLanguage, userTopic = args
+            else:
+                print "----changeCallback, unexpected number of return parameters from getCurrentModule: %s (%s)"% (len(args), repr(args))
+                userName, DNSuserDirectory, userLanguage = "unknown", "unknown"
+                language = status.getLanguage(userLanguage)  # from dpi15 given here, convert from US English to enx
+
             moduleInfo = natlink.getCurrentModule()
             if debugCallback:
                 print "---------changeCallback, User changed to", userName
@@ -649,9 +662,10 @@ try:
     ## this is not longer needed here, as we fixed the userDirectory
     ##        changeUserDirectory()
             status.setUserInfo(args)
-            language = status.getLanguage()
+            language = status.getLanguage(userLanguage)
             shiftkey = status.getShiftKey(language)
-            print 'setting shiftkey to: %s (language: %s)'% (shiftkey, language)
+            if debugCallback:
+                print 'setting shiftkey to: %s (language: %s)'% (shiftkey, language)
             
             if debugCallback:
                 print 'usercallback, language: %s'% language
@@ -662,8 +676,10 @@ try:
             findAndLoadFiles()        
             beginCallback(moduleInfo, checkAll=1)
             loadModSpecific(moduleInfo)
-            # give a warning for BestMatch V , only for Dragon 12:
-            BaseModel, BaseTopic = status.getBaseModelBaseTopic()
+            # # give a warning for BestMatch V , only for Dragon 12:
+            BaseModel = status.getBaseModel()
+            # BaseTopic = status.getBaseTopic(userTopic=userTopic)
+            BaseTopic = status.getBaseTopic()
             if DNSVersion == 12 and BaseModel.find("BestMatch V") > 0:
                 print '\n--- WARNING: Speech Model BestMatch V is used for this User Profile'
                 print 'The performance of many NatLink grammars is not good with this model.'
@@ -796,7 +812,7 @@ try:
 
             print 'natlinkmain started from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
                       (status.getCoreDirectory(), status.getInstallVersion(),
-                       DNSVersion, status.getPythonVersion(), WindowsVersion)
+                       DNSVersion, status.getPythonVersion(), WindowsVersion, )
 
         
         except:

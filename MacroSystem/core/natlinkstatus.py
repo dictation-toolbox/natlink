@@ -1,11 +1,15 @@
-__version__ = "4.1tango"
+__version__ = "4.1uniform"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
 #
-#  (C) Copyright Quintijn Hoogenboom, February 2008/February2017
+#  (C) Copyright Quintijn Hoogenboom, February 2008/January 2018
 #
 #----------------------------------------------------------------------------
+#
+# 4.1uniform, changes for DPI15, and also getting 4 parameters from natlink.changeCallback
+#                                so the userLanguage (and also userTopic) is reporting via natlink.
+#
 # 4.1tango, improving installer
 #            Messages window handles diacritical characters.
 #            several changes unimacro
@@ -144,8 +148,11 @@ getNSAPPSIni(): get the path of nsapps.ini
 
 getBaseModelBaseTopic:
     return these as strings, not ready yet, only possible when
-    NatSpeak/NatLink is running.
-
+    NatSpeak/NatLink is running. Obsolete 2018, use
+getBaseModel
+    get the acoustic model from config files
+getBaseTopic 
+    get the baseTopic, from ini files (can be got from changeCallback as well, DPI15)
 getDebugLoad:
     get value from registry, if set do extra output of natlinkmain at (re)load time
 getDebugCallback:
@@ -182,7 +189,7 @@ NSExt9Path  = "Nuance\NaturallySpeaking9"
 # NSExt13Path  = "Nuance\NaturallySpeaking13"
 # NSExt14Path  = "Nuance\NaturallySpeaking14"
 DNSPaths = []
-DNSVersions = range(18,6,-1)
+DNSVersions = range(19,6,-1)
 for v in DNSVersions:
     varname = "NSExt%sPath"%v 
     if "NSExt%sPath"% v not in globals():
@@ -224,7 +231,14 @@ languages = {u"Nederlands": "nld",
              u"Indian English": "enx",
              u"SEAsian English": "enx",
              u"Italiano": "ita",
-             u"Espa\xf1ol": "esp"}
+             u"Espa\xf1ol": "esp",
+             "Dutch": "nld",
+             "French": "fra",
+             "German": "deu",
+             "CAN English": "enx",
+             "AUS English": "enx",
+             "Italian": "ita",
+             "Spanish": "esp",}
 
 shiftKeyDict = {"nld": u"Shift",
                 "enx": u'shift',
@@ -305,12 +319,12 @@ class NatlinkStatus(object):
 
 
         # for the migration from registry to ini files:
-        if self.userregnl.firstUse:
-            if self.userregnlOld:
-                self.copyRegSettingsToInifile(self.userregnlOld, self.userregnl)
-            else:
-                if not skipSpecialWarning:
-                    print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
+        # if self.userregnl.firstUse:
+        #     if self.userregnlOld:
+        #         self.copyRegSettingsToInifile(self.userregnlOld, self.userregnl)
+        #     else:
+        #         if not skipSpecialWarning:
+        #             print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
         self.correctIniSettings() # change to newer conventions
         result = self.checkNatlinkPydFile()
         if result is None:
@@ -586,8 +600,10 @@ Please try to correct this by running the NatLink Config Program (with administr
             
         if drag <= 11:
             ansiUnicode = 'ANSI'
+        elif drag <= 14:
+            ansiUnicode= 'UNICODE'
         else:
-            ansiUnicode = 'UNICODE'
+            ansiUnicode = 'Ver15'
 
         pydFilename = 'natlink_%s_%s.pyd'% (pythonInFileName, ansiUnicode)
         return pydFilename    
@@ -605,8 +621,10 @@ Please try to correct this by running the NatLink Config Program (with administr
 
         if drag <= 11:
             ansiUnicode = 'ANSI'
+        elif drag <= 14:
+            ansiUnicode= 'UNICODE'
         else:
-            ansiUnicode = 'UNICODE'
+            ansiUnicode = 'Ver15'
 
         pydFilename = 'natlink_%s_%s.pyd'% (pythonInFileName, ansiUnicode)
         return pydFilename    
@@ -1145,54 +1163,66 @@ Please try to correct this by running the NatLink Config Program (with administr
         return keyToModel
     
 
-    def getBaseModelBaseTopic(self):
-        """extract BaseModel and BaseTopic of current user
-        
-        for historical reasons here,
-        better use getBaseModel and getBaseTopic separate...
-        """
-        return self.getBaseModel(), self.getBaseTopic()
+    # def getBaseModelBaseTopic(self, userTopic=None):
+    #     """extract BaseModel and BaseTopic of current user
+    #     
+    #     for historical reasons here,
+    #     better use getBaseModel and getBaseTopic separate...
+    #     """
+    #     return self.getBaseModel(), self.getBaseTopic(userTopic=userTopic)
 
     def getBaseModel(self):
         """getting the base model, '' if error occurs
         """
-        dir = self.getDNSuserDirectory()
+        Dir = self.getDNSuserDirectory()
         #dir = r'D:\projects'   # for testing, see bottom of file
         keyToModel = self.getLastUsedAcoustics()
-        acousticini = os.path.join(dir, 'acoustic.ini')
+        acousticini = os.path.join(Dir, 'acoustic.ini')
         section = "Base Acoustic"
         basesection = natlinkcorefunctions.InifileSection(section=section,
                                                          filename=acousticini)
         BaseModel = basesection.get(keyToModel, "")
+        # print 'getBaseModel: %s'% BaseModel
         return BaseModel
-    
 
-        return self.getBaseModelBaseTopic()[0]
-
-    def getBaseTopic(self):
+    def getBaseTopic(self, userTopic=None):
         """getting the base topic, '' if error occurs
+        
+        
+        with DPI15, the userTopic is given by getCurrentUser
         """
-        dir = self.getDNSuserDirectory()
+        Dir = self.getDNSuserDirectory()
         #dir = r'D:\projects'   # for testing, see bottom of file
         keyToModel = self.getLastUsedTopic()
         if not keyToModel:
             print 'Warning, no valid key to topic found'
             return ''
-        topicsini = os.path.join(dir, 'topics.ini')
+        topicsini = os.path.join(Dir, 'topics.ini')
         section = "Base Topic"
         topicsection = natlinkcorefunctions.InifileSection(section=section,
                                                          filename=topicsini)
         BaseTopic = topicsection.get(keyToModel, "")
+        # print 'getBaseTopic: %s'% BaseTopic
         return BaseTopic
 
 
-    def getLanguage(self):
+    def getLanguage(self, languageFromNatLink=None):
         """this can only be run if natspeak is running
 
         The directory of the user speech profiles must be passed.
         So this function should be called at changeCallback when a new user
         is opened.
+        
+        DPI15: language (like US English) is passed here as languageFromNatLink (from natlinkmain)
         """
+        if languageFromNatLink:
+            try:
+                language = languages[languageFromNatLink]
+                return language
+            except KeyError:
+                print 'getLanguage, got invalid languageFromNatLink: %s'% languageFromNatLink
+                print 'try to find via ini files...'
+        # do it "the old way" through ini files:
         dir = self.getDNSuserDirectory()
         if dir is None:
             print 'probably no speech profile on'
