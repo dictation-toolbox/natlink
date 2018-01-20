@@ -618,7 +618,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         pyth = self.getPythonVersion()
         drag = self.getDNSVersion()
         pythonInFileName = pyth[0] + '.' + pyth[-1]
-
+        drag, pyth = int(drag), int(pyth)
         if drag <= 11:
             ansiUnicode = 'ANSI'
         elif drag <= 14:
