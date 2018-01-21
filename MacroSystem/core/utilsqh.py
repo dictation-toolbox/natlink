@@ -15,7 +15,6 @@ except:
     pass
 
 import io
-import chardet
 
 import types, string, os, shutil, copy, filecmp, pywintypes
 import glob, re, sys, traceback
