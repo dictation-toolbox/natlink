@@ -2384,8 +2384,11 @@ def getValidPathUnicode(variablePathDefinition):
     """
     for p in loop_through_alternative_paths(variablePathDefinition):
         if os.path.exists(p):
-            return unicode(p)
-    return u""
+            resultP = p
+            break
+        else:
+            resultP = p
+    return resultP
 
 class PathError(Exception): pass
 
@@ -2677,12 +2680,14 @@ u'axxxc'
     def basename(self):
         """gives basename
 
+        >>> path(u"C:/dropbox/website avp/invoer/1_informatie/t_Mijn gedicht/c_Gedicht 'littekens' juni 2013 (19).jpg").basename()
+        u"c_Gedicht 'littekens' juni 2013 (19).jpg"
         >>> path(testdrive + r"/a/bcd.txt").basename()
         u'bcd.txt'
         """
-        return path(os.path.basename(unicode(self)))
-
-
+        fp = unicode(self)
+        basen = os.path.basename(fp)
+        return path(basen)
 
     def getValidDirectory(self):
         """return the first valid directory and the rest going steps back

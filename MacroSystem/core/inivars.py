@@ -1642,11 +1642,16 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         """
         if type(prefix) == six.binary_type:
             prefix = unicode(prefix)
+        if type(longerText) == six.binary_type:
+            longerText = unicode(longerText)
         postfixes = self.getSectionPostfixesWithPrefix(prefix)
         #print 'postfixes: %s'% postfixes
         if longerText is None:
             L = [prefix + ' ' + postfix for postfix in postfixes]
-        elif isinstance(longerText, basestring):
+        elif type(longerText) == six.text_type:
+            # print 'longerText: %s (%s)'% (longerText, type(longerText))
+            # for postfix in postfixes:
+            #     print '---postfix: %s (%s)'% (postfix, type(postfix))
             L = [prefix + ' ' + postfix for postfix in postfixes
                                     if longerText.find(postfix) >= 0]
         elif type(longerText) in (types.ListType, types.TupleType):

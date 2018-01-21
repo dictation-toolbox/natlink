@@ -237,10 +237,12 @@ def call_Unimacro(argumentString):
         try:
             actions.doAction(argumentString)
         except Exception, e:
+            # traceback.print_exc()
             m = "when Vocola called Unimacro to execute:\n" \
                 + '        Unimacro(' + argumentString + ')\n' \
                 + '    Unimacro reported the following error:\n' \
-                + '        ' + type(e).__name__ + ": " + str(e)
+                + '        ' + type(e).__name__ + ": " + str(e) 
+                
             raise VocolaRuntimeError(m)
     else:
         m = '\n'.join(['Unimacro call failed because ',

@@ -188,6 +188,12 @@ class InnoScript:
             else:
                 print 'neither disable or enable (include nevertheless): %s'% path
                 print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+      
+        ## remove inivars.py from Unimacro if present before:
+        print >> ofi
+        print >> ofi, r"[InstallDelete]"
+        print >> ofi, r'Type: files; Name: "{app}\Unimacro\inivars.py"'
+        
         ## will only be included if directory is present:
         #for path in kaiser_files:
         #    print >> ofi, r'Source: "..\kaiser_dictation\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
