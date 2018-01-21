@@ -3565,22 +3565,6 @@ def makeReadable(t):
     else:
         return t
         
-def decodeencode(tRaw, filetype):
-    """return the decoded string or False
-    
-    used by readAnything, also see testreadanything in miscqh/test scripts
-    """
-    try:
-        tDecoded = tRaw.decode(filetype)
-    except UnicodeDecodeError:
-        return False
-    encodedAgain = tDecoded.encode(filetype)
-    if encodedAgain == tRaw:
-        return tDecoded
-    else:
-        return False
-
-
 # def openAnything(source, filetype=None, tryAlternatives=True):
 #     """URI, filename, or string --> stream
 # 
