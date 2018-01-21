@@ -44,6 +44,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
     SKIP THIS: then fix a few invalid bytes, 91-92, '" and space SKIP THIS
     IN FAVOUR OF: cp1252, a microsoft superset of latin-1.
     
+    # next step with chardet removed for the time being...
     If this fails, ask chardet and try. In my guess this should rarely happen,
     as the first three nearly always do the job
     (tried in test scripts/testreadanything.py)
@@ -74,15 +75,12 @@ def readAnything(source, filetype=None, tryAlternatives=True):
                     result = result[1:]
                     bom = tRaw[0:3]
                 return codingscheme, bom, result
-        print 'readAnything: file %s is not ascii, utf-8 or latin-1, continue with chardet'% filename
-        chardetResult = chardet.detect(tRaw)
-        guessedType = chardetResult['encoding']
-        confidence = chardetResult['confidence']
-        result = decodeencode(tRaw, guessedType)
-        if not result is False:
-            print 'readAnything: encoding %s succesfull (%s)'% (guessedType, sourceslash)
-            return guessedType, bom, result
-        print 'readAnything: no valid encoding found for file: %s (chardet gave: %s)' % (sourceslash, guessedType)
+        # print 'readAnything: file %s is not ascii, utf-8 or latin-1, continue with chardet'% filename
+        # chardetResult = chardet.detect(tRaw)
+        # guessedType = chardetResult['encoding']
+        # confidence = chardetResult['confidence']
+        # result = decodeencode(tRaw, guessedType)
+        print 'readAnything: no valid encoding found for file: %s' % sourceslash
         return None, None, None
     else:
         # consider source als stream of text

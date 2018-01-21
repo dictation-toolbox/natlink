@@ -2529,6 +2529,9 @@ class path(unicode):
         if len(v) > 1 and v[1] == ':':
             v = v[0].upper() + v[1:]
         if v.find("(") >= 0 and v.find(")") > 0:
+            if v.find('aba') > 0:
+
+                pass
             v = getValidPathUnicode(v)            
         return unicode.__new__(self, v)
             
@@ -2695,12 +2698,19 @@ u'axxxc'
         a two length tuple (valid, rest) is returned.
         if the directory is valid, the rest is ""
         
+        if not valid path is found, return (u'', input)
+        
 >>> path(testdrive).getValidDirectory()
 (u'C:/projects/unittest/testdrive', u'')
 >>> path(testdrive + r"/a/bcd.txt").getValidDirectory()
 (u'C:/projects/unittest/testdrive', u'a/bcd.txt')
 >>> path("(C:|D:)/aba/cada/bra").getValidDirectory()
-(u'C:/', u'aba/cada/bra')
+(u'C:/', u'aba/cada/bra')  # this one needs attention!!!
+>>> path("(C|D):/testfile with (19) brackets.jpg").getValidDirectory()
+(u'C:/', u'testfile with (19) brackets.jpg')
+>>> path("testfile with (19) brackets.jpg").getValidDirectory()
+(u'', u'testfile with (19) brackets.jpg')
+
         """
         if self.isdir():
             return self, ""
