@@ -67,7 +67,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
         #
         bom = None
         for codingscheme in codingschemes:
-            result = decodeencode(tRaw, codingscheme)
+            result = DecodeEncode(tRaw, codingscheme)
             if not result is False:
                 if codingscheme == 'latin-1':
                     pass
@@ -79,7 +79,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
         # chardetResult = chardet.detect(tRaw)
         # guessedType = chardetResult['encoding']
         # confidence = chardetResult['confidence']
-        # result = decodeencode(tRaw, guessedType)
+        # result = DecodeEncode(tRaw, guessedType)
         print 'readAnything: no valid encoding found for file: %s' % sourceslash
         return None, None, None
     else:
@@ -126,7 +126,7 @@ def writeAnything(filepath, encoding, bom, content):
     pass
 
 
-def decodeencode(tRaw, filetype):
+def DecodeEncode(tRaw, filetype):
     """return the decoded string or False
     
     used by readAnything, also see testreadanything in miscqh/test scripts
@@ -140,6 +140,7 @@ def decodeencode(tRaw, filetype):
         return tDecoded
     else:
         return False
+
 
 if __name__ == '__main__':
     testdir = r'C:\NatLink\NatLink\PyTest\test_vcl_files'
