@@ -6,7 +6,7 @@ import six
 import win32api, types
 import os, os.path, sys, re, copy, string
 import utilsqh
-from utilsqh import path, peek_ahead
+from utilsqh import path, peek_ahead, convertToUnicode
 import locale
 locale.setlocale(locale.LC_ALL, '')
 import readwritefile  # reading with encoding BOM mark
@@ -1903,7 +1903,7 @@ def formatReverseNumbersDict(D):
     #    reverseD.setdefault(v, []).append(k)
         
     
-    items = [(k,v) for k,v in D.items()]
+    items = [(convertToUnicode(k),convertToUnicode(v)) for k,v in D.items()]
     items.sort()
     #print 'items: %s'% items
     it = peek_ahead(items)

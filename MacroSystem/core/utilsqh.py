@@ -174,6 +174,29 @@ def fixdotslashspacehyphen(to_translate):
     translate_table = dict((ord(char), translate_to) for char in dotslash)
     return to_translate.translate(translate_table)
 
+def convertToUnicode(text):
+    """take a string and guess the conversion type
+    
+    for use in all sorts of python modules, inivars, actions (Unimacro) 
+    
+    """    
+    codingschemes = ['utf-8', 'cp1252',  'latin-1']
+    if type(text) != six.binary_type:
+        return text
+    try:
+        result = unicode(text)
+        return result
+    except UnicodeDecodeError:
+        pass
+    for codingscheme in codingschemes:
+        result = DecodeEncode(text, codingscheme)
+        if not result is False:
+            if result and ord(result[0]) == 65279:  # BOM, remove
+                result = result[1:]
+            return result
+    print 'natlinkutilsqh, convertToUnicode: cannot decode string: %s'% text
+    return text
+
 
 def curry(func, *args, **kwds):
     """curry from python cookbook, example 15.7,
