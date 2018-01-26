@@ -6,10 +6,11 @@ import six
 import win32api, types
 import os, os.path, sys, re, copy, string
 import utilsqh
-from utilsqh import path, peek_ahead, convertToUnicode
+from utilsqh import path, peek_ahead
 import locale
 locale.setlocale(locale.LC_ALL, '')
 import readwritefile  # reading with encoding BOM mark
+# from UserDict import UserDict
 lineNum = 0
 fileName = ''
 class IniError(Exception):
@@ -646,7 +647,7 @@ u'simple.ini'
         """
         if type(returnValue) in (types.StringType, types.UnicodeType):
             if self._returnStrings and type(returnValue) == types.UnicodeType:
-                return returnValue.encode('latin1')
+                return utilsqh.convertToBinary(returnValue)
             elif (not self._returnStrings) and type(returnValue) == types.StringType:
                 return unicode(returnValue)
             else:
@@ -928,8 +929,6 @@ u'simple.ini'
         
         >>> 
         """
-        if self._returnStrings:
-            pass
         if type(s) == types.ListType or type(s) == types.TupleType:
             if k:
                 if type(k) == six.binary_type:
@@ -952,6 +951,8 @@ u'simple.ini'
                 for S in s:
                     l = self.get(S)
                     for k in l:
+                        if self._returnStrings:
+                            k = utilsqh.convertToBinary(k)
                         if k not in L:
                             L.append(k)
                 return L
@@ -1005,7 +1006,10 @@ u'simple.ini'
                 return []
         else:
             # no section, request section list
-            return self.keys()
+            Keys = self.keys()
+            if self._returnStrings:
+                Keys = [utilsqh.convertToBinary(k) for k in Keys]
+            return Keys
 
     def set(self, s, k=None, v=None):
         """set section, key to value
@@ -1903,9 +1907,9 @@ def formatReverseNumbersDict(D):
     #    reverseD.setdefault(v, []).append(k)
         
     
-    items = [(convertToUnicode(k),convertToUnicode(v)) for k,v in D.items()]
+    items = [(k,v) for k,v in D.items()]
     items.sort()
-    #print 'items: %s'% items
+    # print 'items: %s'% items
     it = peek_ahead(items)
     kPrev = None
     L = []
@@ -1938,8 +1942,9 @@ def formatReverseNumbersDict(D):
                 if L: L.append(', ')
                 L.append('%s'% v[0])
                 kPrev = k
-                
-    return u''.join(L)
+    # for line in L:
+    #     print 'line: %s (%s_)'% (line, type(line))
+    return ''.join(L)
 
     ###???
     #minNum, maxNum = min(nums), max(nums)
