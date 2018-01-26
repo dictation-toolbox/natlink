@@ -47,6 +47,24 @@ if not os.path.isfile(pathToPython):
         pass
     raise
     
+try:
+    import natlinkconfigfunctions
+except ImportError:
+    print 'Unable to start the command line interface configuration program of NatLink/Unimacro/Vocola:'
+    print 'the python module natlinkconfigfunctions.py gives an error.'
+    print
+    print 'Please report this error message to the NatLink developers,'
+    print 'preferably to q.hoogenboom@antenna.nl'
+    print
+    import traceback
+    traceback.print_exc()
+    
+    while True:
+        pass
+    raise
+
+
+
     
 configFunctionsPath = os.path.join(os.path.dirname(__file__), "natlinkconfigfunctions.py")
 if not os.path.isfile(configFunctionsPath):

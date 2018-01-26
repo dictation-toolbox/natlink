@@ -487,7 +487,7 @@ class GrammarBase(GramClassBase):
         # code upper ascii characters with latin1 if they were in the process entered as unicode
         if not type(gramSpec) in (six.text_type, six.binary_type, types.ListType):
             raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
-        print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
+        # print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
         if type(gramSpec) == types.ListType:
             for i, grampart in enumerate(gramSpec):
                 line = grampart
@@ -506,9 +506,6 @@ class GrammarBase(GramClassBase):
             
 
         gramparser.splitApartLines(gramSpec)
-        if grammarName == 'algemeen':
-            for line in gramSpec:
-                print 'line: %s (%s)'% (line, type(line))
         parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
         parser.doParse()
         parser.checkForErrors()
