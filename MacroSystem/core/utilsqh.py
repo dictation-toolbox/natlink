@@ -8,11 +8,11 @@ import sys
 import itertools
 import unicodedata
 
-try:
-    import checkpath
-    checkpath.checkpath()
-except:
-    pass
+# try:
+#     import checkpath
+#     checkpath.checkpath()
+# except:
+#     pass
 
 import io
 
@@ -23,10 +23,9 @@ if sys.platform != 'linux2':
     import win32com.client
     from win32gui import GetClassName, EnumWindows, GetWindowText, GetWindow
 import urllib, difflib
-from htmlentitydefs import codepoint2name
-import htmlencode
-import locale
-locale.setlocale(locale.LC_ALL, '')
+# from htmlentitydefs import codepoint2name
+# import locale
+# locale.setlocale(locale.LC_ALL, '')
 
 class QHError(Exception):
     pass
@@ -199,14 +198,15 @@ return with "?": A-xyz-?-abc-ascii
 >>> convertToBinary(t+'ascii + cp1252', ['ascii', 'cp1252'])
 'A-xyz-\\xe9-abc-ascii + cp1252'
 >>> convertToBinary(convertToBinary(t+'double convert'))
-convertToBinary, input is already printable (binary)
 'A-xyz-\\xe9-abc-double convert'
+>>> tbinary = '\xe9\xe9n binaire string'
+>>> convertToBinary(convertToBinary(tbinary))
+'\\xe9\\xe9n binaire string'
 
     """
+    # a binary string can hold accented characters:
     if type(unicodeString) == six.binary_type:
-        print 'convertToBinary, input is already printable (binary)' 
-        return unicodeString
-    assert(type(unicodeString) == six.text_type)
+        unicodeString = convertToUnicode(unicodeString)
     if encoding is None:
         encoding = ['ascii', 'cp1252', 'latin-1']
     elif encoding and type(encoding) in (six.text_type, six.binary_type):
@@ -222,6 +222,24 @@ convertToBinary, input is already printable (binary)
         res = unicodeString.encode('ascii', 'replace')
         print 'convertToBinary, cannot convert to printable string with encoding: %s\nreturn with "?": %s'% (encoding, res)
     return res
+                                 
+                                 
+def DecodeEncode(tRaw, filetype):
+    """return the decoded string or False
+
+    copy from readwritefile, in order to prevent another import statement.    
+    used by readAnything, also see testreadanything in miscqh/test scripts
+    """
+    try:
+        tDecoded = tRaw.decode(filetype)
+    except UnicodeDecodeError:
+        return False
+    encodedAgain = tDecoded.encode(filetype)
+    if encodedAgain == tRaw:
+        return tDecoded
+    else:
+        return False
+
                                  
 def convertToUnicode(text):
     """take a string and guess the conversion type

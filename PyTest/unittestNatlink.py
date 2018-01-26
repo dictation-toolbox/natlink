@@ -553,6 +553,14 @@ class UnittestNatlink(unittest.TestCase):
             return
         self.fail("Fail in doTestEqualLists: %s\nexpected: %s\ngot: %s"% (message, expected, got))
 
+    def doTestSplitApartLines(self, func, input, expected):
+        got = func(input)
+        if expected == got:
+            return
+        self.fail("Fail in doTestSplitApartLines: %s\nexpected: %s\ngot: %s"% (input, expected, got))
+        
+        
+
     def doTestEqualDicts(self, expected, got, message):
         if expected == got:
             return
@@ -1438,7 +1446,7 @@ class UnittestNatlink(unittest.TestCase):
             self.lookForDragonPad()
             natlink.playString('{ctrl+a}{del}')
     
-            # now separate two parts. Note this cannot be checked here together,
+            # now separate two parts. Note this cannot be checked here together,this is automated testing from python six this is automated testing from python one this is automated testing from python two this is automated testing from python three this is automated testing from python four this is automated testing from python five this is automated testing from python seven this is automated testing from python eight
             # because changes in natlinkmain take no effect when done from this
             # program!
             if natlinkmain.checkForGrammarChanges:
@@ -1533,6 +1541,7 @@ class UnittestNatlink(unittest.TestCase):
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','fourty'], recCmdDict,  0)
             # filenames with spaces (valid)
             createMacroFile(baseDirectory,spacesFilenameCalcValid+'.py','fifty')
+            time.sleep(3)
             toggleMicrophone()
             testCommandRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','fifty'],recCmdDict, 1)
             
@@ -1740,6 +1749,16 @@ class UnittestNatlink(unittest.TestCase):
                                 (words, cmdgrammar.hadRecog))
 
 
+    #---------------------------------------------------------------------------
+    # Test the splitApartLines function of gramparser
+    
+    def testSplitApartLines(self):
+        self.log("testSplitApartLines", 1)
+        func = gramparser.splitApartLines
+        self.doTestSplitApartLines(func, 'hello', ['hello', '\x00'])
+        
+    
+    
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
@@ -2245,11 +2264,17 @@ class UnittestNatlink(unittest.TestCase):
             testRecognition(['DICTOOOTE','letters','b\\bravo', 'k\\kilo'])
             testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', 'b\\bravo\\h', 'k\\kilo\\h'],
                                      [('DICTOOOTE', 'Start2'), ('letters', 'Start2'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
-        else:
+        elif DNSVersion < 15:   # probably 14
             testRecognition(['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
             testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
                                      [('DICTOOOTE', 'Start2'), ('letters', 'Start2'), ('b\\spelling-letter\\bravo', 'dgnletters'),
                                         ('k\\spelling-letter\\K', 'dgnletters')])
+        else:
+            testRecognition(['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
+            testGram.checkExperiment(1,'self', ['DICTOOOTE', 'letters', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
+                                     [('DICTOOOTE', 'Start2'), ('letters', 'Start2'), ('b\\spelling-letter\\bravo', 'dgndictation'),
+                                                ('k\\spelling-letter\\K', 'dgndictation')])
+
 
         testRecognition(['DICTOOOTE','word','hello'])
         if DNSVersion != 11:
@@ -3064,7 +3089,7 @@ class UnittestNatlink(unittest.TestCase):
 
             def gotResults_run(self,words,fullResults):
                 self.results.append('run')
-                natlink.recognitionMimic(['test','test',words[3]])
+                natlink.recognitionMimic(['test','test',words[1]])
 
             def gotResults_test1(self,words,fullResults):
                 self.results.append('1')
@@ -3090,13 +3115,13 @@ class UnittestNatlink(unittest.TestCase):
         natlink.recognitionMimic(['testtestrun','1'])
         testGram.checkExperiment(['run','1'])
         
-        natlink.recognitionMimic(['test','test','run','2'])
+        natlink.recognitionMimic(['testtestrun','2'])
         testGram.checkExperiment(['run','2','1'])
 
-        natlink.recognitionMimic(['test','test','run','3'])
+        natlink.recognitionMimic(['testtestrun','3'])
         testGram.checkExperiment(['run','3','1'])
         
-        natlink.recognitionMimic(['test','test','run','4'])
+        natlink.recognitionMimic(['testtestrun','4'])
         testGram.checkExperiment(['run','4','3','1'])
         
         if DNSVersion < 12:
@@ -3273,7 +3298,7 @@ macroFileTemplate = """
 import natlink
 from natlinkutils import *
 class ThisGrammar(GrammarBase):
-    gramSpec = '<Start> exported = this is automated testing from PYTHON %s;'
+    gramSpec = '<Start> exported = this is automated testing from python %s;'
     def initialize(self):
         self.load(self.gramSpec)
         self.activateAll()

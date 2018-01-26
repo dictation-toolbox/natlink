@@ -72,7 +72,7 @@
 #     print "natlinkutils.py.  This file is located in the directory "
 #     print "NatLink\MacroSystem\Core.  Then restart Dragon...\n======"
 # 
-
+import six
 import os, os.path, copy, types
 import struct
 import time
@@ -81,6 +81,7 @@ import natlink
 #from gramparser import *
 import gramparser
 import natlinkmain
+import utilsqh
 DNSVersion = natlinkmain.DNSVersion
 # print 'DNSVersion (natlinkutils) %s'% DNSVersion
 
@@ -484,21 +485,30 @@ class GrammarBase(GramClassBase):
     def load(self,gramSpec,allResults=0,hypothesis=0, grammarName=None):
         # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
         # code upper ascii characters with latin1 if they were in the process entered as unicode
+        if not type(gramSpec) in (six.text_type, six.binary_type, types.ListType):
+            raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
+        print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
         if type(gramSpec) == types.ListType:
-            for grampart in gramSpec:
-                if type(grampart) == types.UnicodeType:
-                    newGramSpec = [g.encode('latin1') for g in gramSpec]
-                    gramSpec = newGramSpec
-                    break
-
-        elif type(gramSpec) == types.UnicodeType:
-            gramSpec = [gramSpec.encode('latin1')]
-        elif type(gramSpec) == types.StringType:
-            gramSpec = [gramSpec]
-        else:
-            raise TypeError( "grammar definition must be a string or a list of strings, not %s"% gramSpec )
+            for i, grampart in enumerate(gramSpec):
+                line = grampart
+                if type(line) == six.binary_type:
+                    line = utilsqh.convertToUnicode(line)
+                if type(line) == six.text_type:
+                    line = utilsqh.convertToBinary(line)
+                if line != grampart:
+                    gramSpec[i] = line
+        if type(gramSpec) == six.binary_type:
+            gramSpec = utilsqh.convertToUnicode(gramSpec)
+        if type(gramSpec) == six.text_type:
+            gramSpec = utilsqh.convertToBinary(gramSpec)
+            gramSpec = gramSpec.split('\n')
+            gramSpec = [g.rstrip() for g in gramSpec]
+            
 
         gramparser.splitApartLines(gramSpec)
+        if grammarName == 'algemeen':
+            for line in gramSpec:
+                print 'line: %s (%s)'% (line, type(line))
         parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
         parser.doParse()
         parser.checkForErrors()
@@ -601,18 +611,19 @@ class GrammarBase(GramClassBase):
         self.gramObj.emptyList(listName)
 
     def appendList(self, listName, words):
+        listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
-        if type(words) == type(""):
+        if type(words) in (six.binary_type, six.text_type):
+            words = utilsqh.convertToBinary(words)
             self.gramObj.appendList(listName,words)
         else:
             for x in words:
-                if type(x) == types.UnicodeType:
-                    self.gramObj.appendList(listName, x.encode('latin1'))
-                else:
-                    self.gramObj.appendList(listName,x)
+                x = utilsqh.convertToBinary(x)
+                self.gramObj.appendList(listName,x)
     
     def setList(self, listName, words):
+        listName = utilsqh.convertToBinary(listName)
         self.emptyList(listName)
         self.appendList(listName, words)
 

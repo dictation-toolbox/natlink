@@ -49,9 +49,11 @@
 #       noise words is filtered out from any results reported to clients.
 # 
 ########################################################################
-
+import six
 from struct import pack
 import re, sys, os, os.path, traceback
+import utilsqh ## convertToBinary
+
 reAlphaNumeric = re.compile('\w+$')
 #
 # This is the lexical scanner.
@@ -832,9 +834,17 @@ def splitApartLines(lines):
     see  unittest still problems here!!
     """
     for x in range(len(lines)-1, -1, -1):
+        line = lines[x]
+        if type(line) == six.binary_type:
+            line = utilsqh.convertToUnicode(line)
+        if type(line) == six.text_type:
+            line = utilsqh.convertToBinary(line)
+            lines[x] = line
         lines[x] = lines[x].rstrip()
         crlf = lines[x].find('\n')
         if crlf >= 0:
+            if x > 0:
+                print 'insert lines at item %s: %s'% (x, lines[x])
             lines[x:x+1] = lines[x].split('\n')
 
     # spacing at end of lines:
@@ -844,7 +854,7 @@ def splitApartLines(lines):
 
     leftSpacing = [len(l) - len(l.lstrip()) for l in lines]
     if len(leftSpacing) == 0:
-        raise ValueError("splitApartLines, empyt grammar: %s"% repr(lines))
+        raise ValueError("splitApartLines, empty grammar: %s"% repr(lines))
 
     if len(leftSpacing) > 1:
         minLeftSpacing = min(leftSpacing[1:])

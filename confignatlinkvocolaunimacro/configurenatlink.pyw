@@ -378,7 +378,8 @@ class ConfigureNatlinkPanel(wx.Panel):
                 """overload, to make it also in GUI visible"""
                 super(NatlinkConfigGUI, self).warning(text)
                 #self.parent.warning(text)
-    
+
+        self.firstThaw = True
         self.GUI = NatlinkConfigGUI(parent=self)
         error = 0
         try:
@@ -516,10 +517,12 @@ class ConfigureNatlinkPanel(wx.Panel):
                         thisOneChanged = 1
                         changed = 1
                     if key in self.checkboxes:
-                        if value:
-                            func().SetValue(True)
-                        else:
-                            func().SetValue(False)
+                        # value = func().Value
+                        if self.firstThaw:
+                            if value:
+                                func().SetValue(True)
+                            else:
+                                func().SetValue(False)
                             
                         if thisOneChanged:
                             func().SetForegroundColour(wx.RED)
@@ -580,6 +583,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 
         finally:
             self.parent.Thaw()
+            self.firstThaw = False
 
     def composeStatusLine(self, status):
         """takes a dict with NatLink, Vocola, Unimacro as keys,
@@ -704,7 +708,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             undoLetter = letter.lower()                                       
         result = self.do_command(doLetter, undo=undoLetter)
         if not result:
-            self.setstatus("checkbox option changed, restart %s to take effect"% self.DNSName)
+            self.setstatus("checkbox option changed to %s; restart %s to take effect"% (value, self.DNSName))
 
        
     # WDR: methods for configurenatlink
@@ -1180,7 +1184,7 @@ More about this in the "Vocola Compatibility" dialog.
         letter = 'y'
         control = self.GetCheckboxdebugcallbackoutput()
         self.do_checkboxcommand(letter, control)
-        a = 1/0
+
 
     def OnDBDebugLoad(self, event):
         letter = 'x'
@@ -1350,4 +1354,3 @@ except:
     sys.exit(1)
 else:
     app.MainLoop()
-
