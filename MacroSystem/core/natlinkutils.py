@@ -539,6 +539,8 @@ class GrammarBase(GramClassBase):
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
         if ruleName not in self.validRules:
             raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
+        if type(ruleName) != six.binary_type:
+            print 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName))
         if ruleName in self.activeRules:
             if noError: return None
             raise gramparser.GrammarError( "rule %s is already active"% ruleName, self.scanObj)
@@ -550,6 +552,8 @@ class GrammarBase(GramClassBase):
     def deactivate(self, ruleName, noError=0):
         if ruleName not in self.validRules:
             if noError: return
+        if type(ruleName) != six.binary_type:
+            print 'GrammarBase, deactivate, %s (%s)'% (ruleName, type(ruleName))
             raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName, self.scanObj)
         if ruleName not in self.activeRules:
             if noError: return
@@ -558,14 +562,18 @@ class GrammarBase(GramClassBase):
         self.activeRules.remove(ruleName)
 
     def activateSet(self, ruleNames, window=0, exclusive=None):
-        if not type(ruleNames ) in (types.ListType, types.TupleType):
+        if not type(ruleNames) in (types.ListType, types.TupleType):
             raise TypeError("activateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
-                            (`ruleNames`, type(ruleNames)))
+                            (repr(ruleNames), type(ruleNames)))
         for x in copy.copy(self.activeRules):
             if not x in ruleNames:
+                if type(x) != six.binary_type:
+                    print 'GrammarBase, activateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x))
                 self.gramObj.deactivate(x)
                 self.activeRules.remove(x)
         for x in ruleNames:
+            if type(x) != six.binary_type:
+                print 'GrammarBase, activateSet, wrong type in rule to activate, %s (%s)'% (x, type(x))
             if x not in self.validRules:
                 raise gramparser.GrammarError( "rule %s was not exported in the grammar" % x, self.scanObj )
             if not x in self.activeRules:
@@ -577,8 +585,10 @@ class GrammarBase(GramClassBase):
     def deactivateSet(self, ruleNames, noError=0):
         if not type(ruleNames ) in (types.ListType, types.TupleType):
             raise TypeError("deactivateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
-                            (`ruleNames`, type(ruleNames)))
+                            (repr(ruleNames), type(ruleNames)))
         for x in ruleNames:
+            if type(x) != six.binary_type:
+                print 'GrammarBase, deactivateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x))
             self.deactivate(x, noError=noError)
 
     def activateAll(self, window=0, exclusive=None, exceptlist=None):
