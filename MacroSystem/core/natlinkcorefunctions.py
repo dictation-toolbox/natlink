@@ -23,7 +23,8 @@ getAllFolderEnvironmentVariables: get a dict of all possible HOME and CSIDL vari
            that result in a valid folder path
 substituteEnvVariableAtStart: substitute back into a file/folder path an environment variable
 
-Note: for extension with %NATLINK% etc. see natlinkutils.py.
+Note: for extension with %NATLINK% etc. see natlinkstatus.py
+    (call getAllEnv, this one first takes NatLink variables and then these extended env variables)
 
 """ 
 import os, sys, re, copy
@@ -52,6 +53,10 @@ def getBaseFolder(globalsDict=None):
 ##        print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder
 
+# the NatLink Core directory:
+thisBaseFolder = getBaseFolder()
+
+
 # report function:
 def fatal_error(message, new_raise=None):
     """prints a fatal error when running this module"""
@@ -74,6 +79,17 @@ def fatal_error(message, new_raise=None):
 #
 # to collect all env variables, call getAllFolderEnvironmentVariables, see below
 recentEnv = {}
+
+def addToRecentEnv(name, value):
+    """to be filled for NATLINK variables from natlinkstatus
+    """
+    recentEnv[name] = value
+
+def deleteFromRecentEnv(name):
+    """to possibly delete from recentEnv, from natlinkstatus
+    """
+    if name in recentEnv:
+        del recentEnv[name]
 
 def getExtendedEnv(var, envDict=None, displayMessage=1):
     """get from environ or windows CSLID
@@ -148,6 +164,7 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
     """return, as a dict, all the environ AND all CSLID variables that result into a folder
     
     TODO:  Also include NATLINK, UNIMACRO, VOICECODE, DRAGONFLY, VOCOLAUSERDIR, UNIMACROUSERDIR
+    these are now done in natlinkstatus
 
     Optionally put them in recentEnv, if you specify fillRecentEnv to 1 (True)
 
@@ -165,7 +182,7 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
             if len(v) > 2 and os.path.isdir(v):
                 D[kStripped] = v
             elif v == '.':
-                D[kStripped] = os.getcwd()
+                D[kStripped] = os.getcwd
     # os.environ overrules CSIDL:
     for k in os.environ:
         v = os.environ[k]
@@ -174,7 +191,6 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
             if k in D and D[k] != v:
                 print 'warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v)
             D[k] = v
-            
     if fillRecentEnv:
         recentEnv = copy.copy(D)
     return D
@@ -188,7 +204,6 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
 #        return
 #    print 'setting in recentEnv: %s to %s'% (key, value)
 #    recentEnv[key] = value
-            
 
 def substituteEnvVariableAtStart(filepath, envDict=None): 
     """try to substitute back one of the (preused) environment variables back
@@ -285,6 +300,10 @@ def expandEnvVariables(filepath, envDict=None):
         return os.path.normpath(filepath)
     # no match
     return filepath
+
+def printAllEnvVariables():
+    for k, v in recentEnv.items():
+        print k, v
 
 class InifileSection(object):
     """simulate a part of the registry through inifiles
@@ -409,9 +428,10 @@ class NatlinkstatusInifileSection(InifileSection):
 if __name__ == "__main__":
     print 'this module is in folder: %s'% getBaseFolder(globals())
     vars = getAllFolderEnvironmentVariables()
-    print 'allfolderenvironmentvariables:  %s'% vars.keys()
-    for k,v in vars.items():
-        print '%s: %s'% (k, v)
+    for k in sorted(vars):
+        print '%s: %s'% (k, vars[k])
+        if not os.path.isdir(vars[k]):
+            print '----- not a directory: %s (%s)'% (vars[k], k)
 
     print 'testing       expandEnvVariableAtStart'
     print 'also see expandEnvVar in natlinkstatus!!'
@@ -427,12 +447,12 @@ if __name__ == "__main__":
         expanded = expandEnvVariables(p)
         print 'expandEnvVariables: %s: %s'% (p, expanded)
 
-    testIniSection = NatlinkstatusInifileSection()
-    print testIniSection.keys()
-    testIniSection.set("test", "een test")
-    testval = testIniSection.get("test")
-    print 'testval: %s'% testval
-    testIniSection.delete("test")
-    testval = testIniSection.get("test")
-    print 'testval: %s'% testval
-
+    # testIniSection = NatlinkstatusInifileSection()
+    # print testIniSection.keys()
+    # testIniSection.set("test", "een test")
+    # testval = testIniSection.get("test")
+    # print 'testval: %s'% testval
+    # testIniSection.delete("test")
+    # testval = testIniSection.get("test")
+    # print 'testval: %s'% testval
+    print 'recentEnv: %s'% len(recentEnv)

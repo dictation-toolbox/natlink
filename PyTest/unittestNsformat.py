@@ -26,6 +26,7 @@ from natlinkutils import *
 import natlinkutils
 import win32gui
 from nsformat import *
+import utilsqh
 
 class TestError(Exception):
     pass

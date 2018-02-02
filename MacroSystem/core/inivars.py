@@ -35,16 +35,16 @@ DEBUG = 0
 # doctest at the bottom
 #reAllSections = re.compile(r'^\s*[([^]]+)\]\s*$', re.M)
 #reAllKeys = re.compile(r'(^[^=\n]+)[=]', re.M)
-reValidSection = re.compile(r'\[\b([- \.\w]+)]\s*$', re.L)
-reFindKeyValue = re.compile(r'\b([- \.\w]+)\s*=(.*)$', re.L)
-reValidKey = re.compile(r'(\w[\w \.\-]*)$', re.L)
-reQuotes = re.compile(r'[\'"]')
+reValidSection = re.compile(ur'\[\b([- \.\w]+)]\s*$', re.L)
+reFindKeyValue = re.compile(ur'\b([- \.\w]+)\s*=(.*)$', re.L)
+reValidKey = re.compile(ur'(\w[\w \.\-]*)$', re.L)
+reQuotes = re.compile(ur'[\'"]')
 
-reListValueSplit = re.compile(r'[\n;]', re.M)
-reWhiteSpace = re.compile(r'\s+')
+reListValueSplit = re.compile(ur'[\n;]', re.M)
+reWhiteSpace = re.compile(ur'\s+')
 
-reDoubleQuotes = re.compile(r'^"([^"]*)"$', re.M)
-reSingleQuotes = re.compile(r"^'([^']*)'$", re.M)
+reDoubleQuotes = re.compile(ur'^"([^"]*)"$', re.M)
+reSingleQuotes = re.compile(ur"^'([^']*)'$", re.M)
 
 def quoteSpecial(t, extraProtect = None):
     """add quotes to string, to protect starting quotes, spaces
@@ -91,8 +91,8 @@ def quoteSpecial(t, extraProtect = None):
     
     >>> quoteSpecial("a;bc", ";\\n")
     '"a;bc"'
-    >>> quoteSpecial("ab\\nc", ";\\n")
-    '"ab\\nc"'
+    >>> quoteSpecial(u"ab\xe9\\nc", ";\\n")
+    u'"ab\\xe9\\nc"'
 
     and for the dict possibility:
     
@@ -161,10 +161,10 @@ def stripSpecial(t):
     'abc'
     >>> stripSpecial(" x ")
     'x'
-    >>> stripSpecial("' a '")
-    ' a '
-    >>> stripSpecial('" a  "')
-    ' a  '
+    >>> stripSpecial("' a\xe9 '")
+    ' a\\xe9 '
+    >>> stripSpecial(u'" a\xe9  "')
+    u' a\\xe9  '
 
     """
     
@@ -208,27 +208,29 @@ def getIniList(t, sep=(u";", u"\n")):
     space his met
 
     >>> list(getIniList("a; c"))
-    ['a', 'c']
+    [u'a', u'c']
     >>> list(getIniList("a;c"))
-    ['a', 'c']
+    [u'a', u'c']
     >>> list(getIniList("a; c;"))
-    ['a', 'c', '']
+    [u'a', u'c', u'']
     >>> list(getIniList("'a\\"b'; c"))
-    ['a"b', 'c']
+    [u'a"b', u'c']
     >>> list(getIniList('"a "; c'))
-    ['a ', 'c']
+    [u'a ', u'c']
     >>> list(getIniList("a ; ' c '"))
-    ['a', ' c ']
+    [u'a', u' c ']
     >>> list(getIniList("';a '; ' c '"))
-    [';a ', ' c ']
+    [u';a ', u' c ']
     >>> list(getIniList("'a '\\n' c '"))
-    ['a ', ' c ']
+    [u'a ', u' c ']
 
     """
     i =  0
     l = len(t)
     state = 0
     hadQuote = ''
+    if type(t) == six.binary_type:
+        t = utilsqh.convertToUnicode(t)
 ##    print '---------------------------length: %s'% l
     for j in range(l):
         c = t[j]
@@ -254,7 +256,7 @@ def getIniList(t, sep=(u";", u"\n")):
         elif c in sep:
             if state == 0:
                 # yielding empty string
-                yield ''
+                yield u''
             elif state == 1:
                 # end of normal string
                 yield t[i:j].strip()
@@ -279,7 +281,7 @@ def getIniList(t, sep=(u";", u"\n")):
 
     if state == 0:
         # empty string at end
-        yield ''
+        yield u''
     elif state == 1:
 ##        print 'yielding normal last part: |%s|, i: %s,length: %s'% (t[i:],i,l)
         yield t[i:].strip()
@@ -298,46 +300,47 @@ def getIniDict(t):
     in different yield statements    
 
     >>> list(getIniDict("a"))
-    [('a', None)]
-    >>> list(getIniDict("a:value of a"))
-    [('a', 'value of a')]
+    [(u'a', None)]
+    >>> list(getIniDict("apricot:value of a"))
+    [(u'apricot', u'value of a')]
     >>> list(getIniDict("a: ' '"))
-    [('a', ' ')]
+    [(u'a', u' ')]
     >>> list(getIniDict('a: "with, comma"'))
-    [('a', 'with, comma')]
+    [(u'a', u'with, comma')]
     >>> list(getIniDict("a: 'with, comma'"))
-    [('a', 'with, comma')]
+    [(u'a', u'with, comma')]
     >>> list(getIniDict('a: more, "intricate, with, comma", example'))
-    [('a', ['more', 'intricate, with, comma', 'example'])]
+    [(u'a', [u'more', u'intricate, with, comma', u'example'])]
     >>> list(getIniDict("a: c, d"))
-    [('a', ['c', 'd'])]
+    [(u'a', [u'c', u'd'])]
     >>> list(getIniDict("a, b: c"))
-    [('a', 'c'), ('b', 'c')]
+    [(u'a', u'c'), (u'b', u'c')]
     >>> list(getIniDict("a,b : c, d"))
-    [('a', ['c', 'd']), ('b', ['c', 'd'])]
+    [(u'a', [u'c', u'd']), (u'b', [u'c', u'd'])]
     """
+    if type(t) == six.binary_type:
+        t = utilsqh.convertToUnicode(t)
     if t.find('\n') >= 0:
         raise IniError('getIniDict must be called through getIniList, so newline chars are not possible: |%s|'%
                        t)
-            
-    if t.find(':') >= 0:
-        Keys, Values = map(string.strip, t.split(':', 1))
+    if t.find(u':') >= 0:
+        Keys, Values = [item.strip() for item in t.split(':', 1)]
     else:
         Keys = t.strip()
-        Values = ''
+        Values = u''
 
     if not Values:
         Values = None
     else:
-        Values = list(getIniList(Values, ","))
+        Values = list(getIniList(Values, u","))
         if len(Values) == 1:
             Values = Values[0]
 
     if not Keys:
         return
 
-    if Keys.find(',') > 0:
-        Keys = map(string.strip, Keys.split(','))
+    if Keys.find(u',') > 0:
+        Keys = [k.strip() for k in Keys.split(u',')]
         for k in Keys:
             if not reValidKey.match(k):
                 raise IniError('invalid character in key |%s| of dictionary entry: |%s|'%
@@ -531,7 +534,7 @@ u'simple.ini'
 >>> ini2.get('s', 'k')
 'v'
 >>> ini2.get('s')
-[u'k2', u'k']
+['k2', 'k']
     """
     _SKIgnorecase = None
     
@@ -640,18 +643,60 @@ u'simple.ini'
 ##        for k,v in mod.__dict__.items():
 ##            if k[0:2] != '__' and type(v) == types.DictType:
 ##                d[k] = v
-##        if DEBUG: print 'read from py:', d
+##        if DEBUG:  'read from py:', d
 ##        return d
     def returnStringOrUnicode(self, returnValue):
         """if option returnStrings is set to True, only return strings
+        
+        This function affects only Strings (binary or text)
+        other types are passed unchanged.
+>>> try: os.remove('returnunicode.ini')
+... except: pass
+>>> ini = IniVars("returnunicode.ini")
+>>> ini.set("section","string","value")
+>>> ini.get("section")
+[u'string']
+>>> ini.get("section", 'string')
+u'value'
+>>> ini.set("section","number", 12)
+>>> ini.get("section", 'number')
+12
+>>> ini.set("section","none", None)
+>>> ini.get("section", 'none')
+>>> ini.get("section")
+[u'none', u'string', u'number']
+>>> ini.get()
+[u'section']
+
+
+ ## now returnString=True
+>>> try: os.remove('returnbinary.ini')
+... except: pass
+>>> ini = IniVars("returnbinary.ini", returnStrings=True)
+>>> ini.set("section","string","value")
+>>> ini.get("section")
+['string']
+>>> ini.get("section", 'string')
+'value'
+>>> ini.set("section","number", 12)
+>>> ini.get("section", 'number')
+12
+>>> ini.set("section","stringnone", None)
+>>> ini.get("section", 'stringnone')
+>>> ini.get("section")
+['stringnone', 'string', 'number']
+>>> ini.get()
+['section']
         """
-        if type(returnValue) in (types.StringType, types.UnicodeType):
-            if self._returnStrings and type(returnValue) == types.UnicodeType:
+        if type(returnValue) in (six.binary_type, six.text_type):
+            if self._returnStrings and type(returnValue) == six.text_type:
                 return utilsqh.convertToBinary(returnValue)
-            elif (not self._returnStrings) and type(returnValue) == types.StringType:
+            elif (not self._returnStrings) and type(returnValue) == six.binary_type:
                 return unicode(returnValue)
             else:
                 return returnValue
+        else:
+            return returnValue
                                           
         
     def _readIni(self, file):
@@ -787,13 +832,19 @@ u'simple.ini'
                 hasTrailingNewline = 0
                 v = self[s][k]
                 if type(v) == types.IntType:
-                    L.append('%s = %s' % (k, v))
+                    L.append(u'%s = %s' % (k, v))
                 elif type(v) == types.FloatType:
-                    L.append('%s = %s' % (k, v))
+                    L.append(u'%s = %s' % (k, v))
                 elif type(v) == types.BooleanType:
-                    L.append('%s = %s' % (k, str(v)))
+                    L.append(u'%s = %s' % (k, str(v)))
                 elif not v:
-                    L.append('%s =' % k)
+                    # print 'k: %s(%s)'% (k, type(k))
+                    try:
+                        L.append(u'%s =' % k)
+                    except UnicodeDecodeError:
+                        k = utilsqh.convertToUnicode(k)
+                        L.append(u'%s =' % k)
+                        
                 elif type(v) in (six.text_type, six.binary_type):
                     if type(v) == six.binary_type:
                         v = unicode(v)
@@ -803,30 +854,30 @@ u'simple.ini'
                         V = v.split('\n')
                         if not hadTrailingNewline:
                             L.append('')    # 1 extra newline
-                        L.append('%s =' % k)
+                        L.append(u'%s =' % k)
                         spacing = ' '*4
                         for li in V:
                             if li:
-                                L.append('%s%s' % (spacing, li))
+                                L.append(u'%s%s' % (spacing, li))
                             else:
                                 L.append('')
                         L.append('')
                     elif len(k) + len(v) > 72:
                         if not hasTrailingNewline:
                             L.append('')
-                        L.append('%s = %s' % (k, v))
+                        L.append(u'%s = %s' % (k, v))
                         L.append('')
                         hasTrailingNewline = 1
                     else:
                         L.append('%s = %s' % (k, v))
                 elif type(v) == types.ListType or type(v) == types.TupleType:
                     valueList = map(quoteSpecialList, v)
-                    startString = '%s = '% k
+                    startString = u'%s = '% k
                     length = len(startString)
                     listToWrite = []
                     for v in valueList:
                         if listToWrite and length + len(v) + 2 > self._maxLength:
-                            L.append('%s%s' % (startString, '; '.join(listToWrite)))
+                            L.append(u'%s%s' % (startString, '; '.join(listToWrite)))
                             listToWrite = [v]
                             startString = ' '*len(startString)
                             length = len(startString) + len(v)
@@ -835,7 +886,7 @@ u'simple.ini'
                             length += len(v) + 2
                     if length > 72:
                         hasTrailingNewline = 1
-                    L.append('%s%s' % (startString, '; '.join(listToWrite)))
+                    L.append(u'%s%s' % (startString, '; '.join(listToWrite)))
                     L.append('')
                 elif type(v) == types.DictType:
                     inverse = {}
@@ -995,7 +1046,8 @@ u'simple.ini'
                         return self.returnStringOrUnicode(value)
                 else:
                     # no key given, request a list of keys
-                    return self[s].keys()
+                    KeysList = self[s].keys()
+                    return [self.returnStringOrUnicode(kk) for kk in KeysList]
             elif k:
                 # s doesn't exist, return default value
                 if type(value) == six.binary_type:
@@ -1007,9 +1059,7 @@ u'simple.ini'
         else:
             # no section, request section list
             Keys = self.keys()
-            if self._returnStrings:
-                Keys = [utilsqh.convertToBinary(k) for k in Keys]
-            return Keys
+            return [self.returnStringOrUnicode(kk) for kk in Keys]
 
     def set(self, s, k=None, v=None):
         """set section, key to value
@@ -1072,9 +1122,9 @@ u'simple.ini'
         # now make new section if not existing before:
         s = s.strip()
         if reWhiteSpace.search(s):
-            s = reWhiteSpace.sub(' ', s).strip()
+            s = reWhiteSpace.sub(u' ', s).strip()
 
-        if not reValidSection.match('['+s+']'):
+        if not reValidSection.match(u'['+s+']'):
             raise IniError("Invalid section name to set to: %s"% s)
 
         if not self.hasSection(s):
@@ -1086,7 +1136,7 @@ u'simple.ini'
                 raise IniError('setting empty section with nonempty value: %s'% v)
             return
             
-        if type(k) == types.ListType or type(k) == types.TupleType:
+        if type(k) in (types.ListType, types.TupleType):
             for K in k:
                 self.set(s, K, v)
             return
@@ -1099,7 +1149,7 @@ u'simple.ini'
         # finally set s, k, to v
         k = k.strip()
         if reWhiteSpace.search(k):
-            k = reWhiteSpace.sub(' ', k)
+            k = reWhiteSpace.sub(u' ', k)
         if reQuotes.search(k):
             k = reQuotes.sub('', k)
         if not reValidKey.match(k):
@@ -1107,7 +1157,7 @@ u'simple.ini'
         
         if type(v) == six.binary_type:
             v = unicode(v)
-
+        # print "s: %s(%s), k: %s(%s), v: %s(%s)"% (s, type(s), k, type(k), v, type(v))
         if type(v) == six.text_type:
             self[s][k] = quoteSpecial(v)
         else:

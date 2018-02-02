@@ -98,6 +98,9 @@ class DialogUnimacroVocolaCompatibiliy(wx.Dialog):
     def GetCheckboxrefreshunimacrovch(self):
         return self.FindWindowById( ID_CHECKBOXRefreshUnimacroVch )
 
+    def GetCheckboxvocolatakesunimacroactions(self):
+        return self.FindWindowById( ID_CHECKBOXVocolaTakesUnimacroActions )
+
     # WDR: handler implementations for DialogUnimacroVocolaCompatibiliy
 
     # def OnIncludeUnimacroInPythonPath(self, event):
@@ -340,7 +343,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         MainWindow( self, True )
 
         # WDR: handler declarations for configurenatlink
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaTakesUnimacroActions, self.OnCheckVocolaTakesUnimacroActions)
+        wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaTakesUnimacroActions, self.OnCBVocolaTakesUnimacroActions)
         # wx.EVT_CHECKBOX(self, ID_IncludeUnimacroInPythonPath, self.OnButtonIncludeUnimacroInPythonPath)
         wx.EVT_BUTTON(self, ID_BUTTONVocolaCompatibiliy, self.OnButtonVocolaCompatibility)
         wx.EVT_BUTTON(self, ID_BUTTONUnimacroEditor, self.OnButtonUnimacroEditor)
@@ -356,7 +359,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         wx.EVT_BUTTON(self, ID_BUTTONNatlinkEnable, self.OnButtonNatlinkEnableDisable)
         wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaTakesLanguages, self.OnCBVocolaTakesLanguages)
         wx.EVT_CHECKBOX(self, ID_CHECKBOXDebugCallbackOutput, self.OnCBDebugCallback)
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXDebugLoad, self.OnDBDebugLoad)
+        wx.EVT_CHECKBOX(self, ID_CHECKBOXDebugLoad, self.OnCBDebugLoad)
         wx.EVT_BUTTON(self, ID_BUTTONHelp3, self.OnButtonHelp3)
         wx.EVT_BUTTON(self, ID_BUTTONHelp2, self.OnButtonHelp2)
 
@@ -379,7 +382,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 super(NatlinkConfigGUI, self).warning(text)
                 #self.parent.warning(text)
 
-        self.firstThaw = True
+        self.firstThaw = True  # set to true first time and at undo action...
         self.GUI = NatlinkConfigGUI(parent=self)
         error = 0
         try:
@@ -771,14 +774,11 @@ class ConfigureNatlinkPanel(wx.Panel):
     def GetCheckboxdebugload(self):
         return self.FindWindowById( ID_CHECKBOXDebugLoad )
 
-    def GetCheckboxdebugoutput(self):
-        return self.FindWindowById( ID_CHECKBOXDebugOutput )
+    # def GetCheckboxdebugoutput(self):
+    #     return self.FindWindowById( ID_CHECKBOXDebugOutput )
 
     def GetCheckboxvocolatakeslanguages(self):
         return self.FindWindowById( ID_CHECKBOXVocolaTakesLanguages )
-
-    def GetCheckboxdebugoutput(self):
-        return self.FindWindowById( ID_CHECKBOXDebugOutput )
 
     def GetCheckboxenablenatlink(self):
         return self.FindWindowById( ID_CHECKBOXEnableNatlink )
@@ -801,7 +801,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 
     # WDR: handler implementations for configurenatlink
 
-    def OnCheckVocolaTakesUnimacroActions(self, event):
+    def OnCBVocolaTakesUnimacroActions(self, event):
         letter = 'a'
         control = self.GetCheckboxvocolatakesunimacroactions()
         self.do_checkboxcommand(letter, control)
@@ -991,8 +991,10 @@ More about this in the "Vocola Compatibility" dialog.
 
     def OnButtonUndo(self, event):
         if self.undoList:
+            self.firstThaw = True
             cmd = self.undoList.pop()
             self.do_command(*cmd)
+            # self.getNatlinkStatusDict()
             self.setstatus("Did undo")
        
 
@@ -1186,7 +1188,7 @@ More about this in the "Vocola Compatibility" dialog.
         self.do_checkboxcommand(letter, control)
 
 
-    def OnDBDebugLoad(self, event):
+    def OnCBDebugLoad(self, event):
         letter = 'x'
         control = self.GetCheckboxdebugload()
         self.do_checkboxcommand(letter, control)
@@ -1349,7 +1351,7 @@ except:
     # traceback.print_exception(type, value, traceback[, limit[, file]])
     traceback.print_exc(file=open("configurenatlink_error.txt", "w")) 
     mess  = traceback.format_exc(limit=1)
-    mess += '\n\nMore info in configurenatlink_error.txt'
+    mess += '\n\nMore info in configurenatlink_error.txt in the directory "(C:\\natlink)\\natlink\\confignatlinkvocolaunimacro"'
     windowsMessageBox(mess, "Error at startup of configurenatlink")
     sys.exit(1)
 else:

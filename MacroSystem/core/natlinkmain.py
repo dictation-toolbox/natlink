@@ -748,6 +748,10 @@ try:
                     pass
                 else:
                     break
+
+            # initialize recentEnv in natlinkcorefunctions (new 2018, 4.1uniform)
+            natlinkstatus.AddExtendedEnvVariables()
+            natlinkstatus.AddNatLinkEnvironmentVariables(status=status)
     
             if debugLoad: print "NatLink pyd dir " + coreDirectory
             baseDirectory = os.path.normpath(os.path.abspath(os.path.join(coreDirectory,"..")))
@@ -809,11 +813,10 @@ try:
             # initialize our callbacks
             natlink.setBeginCallback(beginCallback)
             natlink.setChangeCallback(changeCallback)
-
+            
             print 'natlinkmain started from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
                       (status.getCoreDirectory(), status.getInstallVersion(),
                        DNSVersion, status.getPythonVersion(), WindowsVersion, )
-
         
         except:
             sys.stderr.write( 'Error initializing natlinkmain\n' )

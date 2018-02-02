@@ -227,8 +227,6 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             print '============================================='
             return
         
-        
-        
         coreDir2 = self.getCoreDirectory()
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
@@ -256,6 +254,12 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         #fatal_error("The current file natlink.pyd is not available, the correct version or outdated, try to replace it by the proper (newer) version...")
         ## now go on with trying to replace natlink.pyd with the correct version and register it...
         wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
+        if not wantedPyd:
+            fatal_error('natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find filename for wantedPydPath')
+            return
+        if not os.path.isfile(wantedPydPath):
+            fatal_error('natlinkconfigfunctions, configCheckNatlinkPydFile: wantedPydPath does not exits: %s'% wantedPydPath)
+            return
         if natlinkPydWasAlreadyThere:
             if not self.isElevated: raise ElevationError("natlink.pyd should be changed")
             # if self.isNatSpeakRunning(): raise NatSpeakRunningError("natlink.pyd should be changed")
@@ -410,7 +414,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return 1
         else:
             coreDirFromRegistry = lmPythonPathDict['NatLink']['']
-            if coreDirFromRegistry != coreDir:
+            if coreDirFromRegistry.lower() != coreDir.lower():
                 self.doFatalRegistryProblem(coreDirFromRegistry, coreDir)
                 return
         

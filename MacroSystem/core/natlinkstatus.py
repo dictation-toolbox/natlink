@@ -1,4 +1,4 @@
-__version__ = "4.1uniform"
+__version__ = "4.1uniform-4"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -168,7 +168,7 @@ getAhkExeDir: return the directory where AutoHotkey is found (only needed when n
 getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.
 
 """
-
+import six
 
 import os, re, win32api, win32con, sys, pprint, stat
 import RegistryDict, natlinkcorefunctions
@@ -316,7 +316,7 @@ class NatlinkStatus(object):
         CoreDirectory = natlinkcorefunctions.getBaseFolder()
         self.__class__.CoreDirectory = CoreDirectory
         self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
-
+        self.__class__.NatlinkDirectory = os.path.normpath(os.path.join(CoreDirectory, '..', '..'))
 
         # for the migration from registry to ini files:
         # if self.userregnl.firstUse:
@@ -345,7 +345,6 @@ class NatlinkStatus(object):
         """
         while self.hadWarning:
             self.hadWarning.pop()
-                
    
     def checkSysPath(self):
         """add base, unimacro and user directory to sys.path
@@ -618,6 +617,10 @@ Please try to correct this by running the NatLink Config Program (with administr
         pyth = self.getPythonVersion()
         drag = self.getDNSVersion()
         pythonInFileName = pyth[0] + '.' + pyth[-1]
+        if not pyth:
+            return ""
+        if not drag:
+            return ""
         drag, pyth = int(drag), int(pyth)
         if drag <= 11:
             ansiUnicode = 'ANSI'
@@ -732,22 +735,26 @@ Please try to correct this by running the NatLink Config Program (with administr
 
         """
         dnsPath = self.getDNSInstallDir()
-        if dnsPath is None:
+        if not dnsPath:
             print 'dnsPath not found, please ensure there is a proper DNSInstallDir'
             return 0
-        pos = dnsPath.rfind("NaturallySpeaking")
-        if pos == -1:
-            print 'Cannot find "NaturallySpeaking" in dnsPath: "%s"'% dnsPath
+        # pos = dnsPath.rfind("NaturallySpeaking")
+        # if pos == -1:
+        #     print 'Cannot find "NaturallySpeaking" in dnsPath: "%s"'% dnsPath
 
         versionString = dnsPath[-2:]
+        
         try:
             i = int(versionString[0])
         except ValueError:
-            versionString = versionString[-1:]  # dragon 9 
+            versionString = versionString[-1:]  # dragon 9
+        except IndexError:
+            print 'versionString: "%s", dnsPath: "%s"'% (versionString, dnsPath)
         try:
             i = int(versionString) 
         except ValueError:
             print 'Cannot find versionString, dnsPath should end in two digits (or one for versions below 10): %s'% dnsPath
+            print 'These digits must match the version number of Dragon!!!'
             return ''
         if versionString and len(versionString) == 2:
             return versionString
@@ -1357,6 +1364,8 @@ Please try to correct this by running the NatLink Config Program (with administr
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
         D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
         D['userIsEnabled'] = self.UserIsEnabled()
+        # extra for information purposes:
+        D['NatlinkDirectory'] = self.NatlinkDirectory
         return D
         
     def getNatlinkStatusString(self):
@@ -1460,93 +1469,27 @@ def getFileDate(modName):
 # for splitting the env variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
 
-NatLinkEnvVarDict = None
-def SetInNatLinkEnvDictIfValidPath(name, filepath):
-    """set if valid, otherwise DO NOT SET.
-    
-    If UserDirectory is not set in the configuration, it will not be set in this dict.
+def AddExtendedEnvVariables():
+    """call to natlinkcorefunctions, called from natlinkmain at startup or user callback
     """
-    global NatLinkEnvVarDict
-    if NatLinkEnvVarDict is None:
-        NatLinkEnvVarDict = {}
-    if filepath:
-        filepath = os.path.normpath(filepath)
-        if os.path.isdir(filepath):
-            NatLinkEnvVarDict[name] = filepath
-        else:
-            print 'natlinkstatus.SetInNatLinkEnvDictIfValidPath:\nInvalid directory: "%s" for "%s". Set in NatLinkEnvVarDict to ""'% (filepath, name)
+    natlinkcorefunctions.getAllFolderEnvironmentVariables(fillRecentEnv=1)
 
-def createNatLinkEnvVarDict():
+
+def AddNatLinkEnvironmentVariables(status=None):
     """make the special NatLink variables global in this module
     """
-    status = NatlinkStatus()
-    CoreDirectory = status.getCoreDirectory()
-    SetInNatLinkEnvDictIfValidPath("CoreDirectory", CoreDirectory)
-
-    NATLINK = os.path.normpath(os.path.join(CoreDirectory, '..', '..'))
-    SetInNatLinkEnvDictIfValidPath("NATLINK", NATLINK)
-    SetInNatLinkEnvDictIfValidPath("NatLink", NATLINK)
-
-    UNIMACRO = os.path.normpath(os.path.join(NATLINK, '..', 'Unimacro'))
-    SetInNatLinkEnvDictIfValidPath("UNIMACRO", UNIMACRO)
-    SetInNatLinkEnvDictIfValidPath("Unimacro", UNIMACRO)
-
-    CoreDirectory = status.CoreDirectory
-    SetInNatLinkEnvDictIfValidPath("CoreDirectory", CoreDirectory)
-    BaseDirectory = status.BaseDirectory
-    SetInNatLinkEnvDictIfValidPath("BaseDirectory", BaseDirectory)
-        
-    for var in ["UserDirectory", "UnimacroDirectory", "VocolaUserDirectory", "UnimacroUserDirectory"]:
-        func = getattr(status, "get"+var, None)
-        if func:
-            value = func()
-            SetInNatLinkEnvDictIfValidPath(var, value)
-        else:
-            print 'natlinkstatus.createNatLinkEnvVarDict:\nCannot find entry for "%s"'% var
-            
-            
-def expandEnvVars(filepath): 
-    """try to substitute environment variable into a path name
-    
-    first try the NatLink special variables
-        NATLINK, NatLink, Unimacro,
-        CoreDirectory, BaseDirectory (==MacroSystem), UserDirectory
-        UnimacroDirectory, 
-        VocolaUserDirectory, UnimacroUserDirectory
-
-    If %...% persist, call the function in natlinkcorefunctions.
-    """
-    if NatLinkEnvVarDict is None:
-        createNatLinkEnvVarDict()
-    filepath = filepath.strip()
-    
-    if filepath.startswith('~'):
-        folderpart = natlinkcorefunctions.getExtendedEnv('~')
-        filepart = filepath[1:]
-        filepart = filepart.strip('/\\ ')
-        filepath = os.path.normpath(os.path.join(folderpart, filepart))
-    
-    if reEnv.search(filepath):
-        List = reEnv.split(filepath)
-        #print 'parts: %s'% List
-        List2 = []
-        for part in List:
-            if not part: continue
-            key = part.strip("%")
-            if key in NatLinkEnvVarDict:
-                # natlink related env variables:
-                folderpart = NatLinkEnvVarDict[key]
-            else:
-                try:
-                    # try all system env variables:
-                    folderpart = natlinkcorefunctions.getExtendedEnv(part)
-                except ValueError:
-                    folderpart = part
-            List2.append(folderpart)
-        filepath = ''.join(List2)
-        return os.path.normpath(filepath)
-    # no match
-    return filepath
+    if status is None:
+        status = NatlinkStatus()
+    D = status.getNatlinkStatusDict()
+    addedList = []
+    for k, v in D.items():
+        if type(v) in (six.text_type, six.binary_type) and os.path.isdir(v):
+            k = k.upper()
+            v = os.path.normpath(v)
+            addedList.append("%s: %s"% (k,v))
+            natlinkcorefunctions.addToRecentEnv(k, v)
+    print 'added to ExtendedEnvVariables:\n'
+    print '\n'.join(addedList)
 
 def isValidPath(spec, wantFile=None, wantDirectory=None):
     """check existence of spec, allow for pseudosymbols.
@@ -1561,7 +1504,7 @@ def isValidPath(spec, wantFile=None, wantDirectory=None):
         return
     
     if not os.path.exists(spec):
-        spec2 = expandEnvVars(spec)
+        spec2 = natlinkcorefunctions.getExtendedEnv(spec)
     else:
         spec2 = spec
     spec2 = os.path.normpath(spec2)
@@ -1593,33 +1536,28 @@ if __name__ == "__main__":
     # exapmles, for more tests in ...
     print '\n====\nexamples of expanding ~ and %...% variables:'
     short = "~/Quintijn"
-    expanded = expandEnvVars(short)
-    print 'Some directory in home:', expanded
+    AddExtendedEnvVariables()
+    AddNatLinkEnvironmentVariables()
     
     # the Dragon directory:
-    short = "%PROGRAMFILES%/Nuance"
-    expanded = expandEnvVars(short)
+    short = "%PROGRAMFILES%"
+    expanded = natlinkcorefunctions.getExtendedEnv(short)
     print "The dragon directory: %s"% expanded
     # the Dragon ini files directory:
-    short = "%COMMON_APPDATA%/Nuance"
-    expanded = expandEnvVars(short)
-    print "The dragon config files: %s"% expanded
+    short = "%UNIMACRODIRECTORY%"
+    expanded = natlinkcorefunctions.getExtendedEnv(short)
+    print "The Unimacro directory: %s"% expanded
 
     # My UnimacroUserDirectory:
     short = "%UnimacroUserDirectory%"
-    expanded = expandEnvVars(short)
+    expanded = natlinkcorefunctions.getExtendedEnv(short)
     print "My UnimacroUserDirectory: %s"% expanded
 
     # My VocolaUserDirectory:
     short = "%VocolaUserDirectory%"
-    expanded = expandEnvVars(short)
+    expanded = natlinkcorefunctions.getExtendedEnv(short)
     print "My VocolaUserDirectory: %s"% expanded
     
-    
-
-    # print 'private NatLinkEnvVarDict:'
-    # print NatLinkEnvVarDict
-
 
     # next things only testable when changing the dir in the functions above
     # and copying the ini files to this dir...
