@@ -625,18 +625,18 @@ try:
     # we ignore the callback.
     #
     
-    def changeCallback(type,args):
+    def changeCallback(Type,args):
         global userName, DNSuserDirectory, language, BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
         if debugCallback:
-            print 'changeCallback, type: %s, args: %s'% (type, args)
-        if type == 'mic' and args == 'on':
+            print 'changeCallback, Type: %s, args: %s'% (Type, args)
+        if Type == 'mic' and args == 'on':
             if debugCallback:
                 print 'findAndLoadFiles...'
             moduleInfo = natlink.getCurrentModule()
             findAndLoadFiles()
             beginCallback(moduleInfo, checkAll=1)
             loadModSpecific(moduleInfo)
-        if type == 'user' and userName != args[0]:
+        if Type == 'user' and userName != args[0]:
             userLanguage, userTopic = None, None  
             if len(args) == 2:
                 userName, DNSuserDirectory = args
@@ -657,6 +657,7 @@ try:
             elif not changeCallbackUserFirst:
                 # first time, no print message, but next time do...
                 print "\n------ user changed to: %s\n"% userName
+    
     
             unloadEverything()
     ## this is not longer needed here, as we fixed the userDirectory
@@ -685,6 +686,10 @@ try:
                 print 'The performance of many NatLink grammars is not good with this model.'
                 print 'Please choose another User Profile with for example Speech Model BestMatch IV.'
                 print 'See http://unimacro.antenna.nl/installation/speechmodel.html\n----'
+            if debugCallback:
+                print 'language: %s (%s)'% (language, type(language))
+                print 'userLanguage: %s (%s)'% (userLanguage, type(userLanguage))
+                print 'DNSuserDirectory: %s (%s)'% (DNSuserDirectory, type(DNSuserDirectory))
     
         #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself
         # the grammar should include a function like:
@@ -693,13 +698,13 @@ try:
         #        thisGrammar.cancelMode()
         # and the grammar should have a cancelMode function that finishes exclusive mode.
         # see _oops, _repeat, _control for examples
-        changeCallbackLoadedModules(type,args)
+        changeCallbackLoadedModules(Type,args)
     ##    else:
     ##        # possibility to do things when changeCallBack with mic on: (experiment)
     ##        changeCallbackLoadedModulesMicOn(type, args)
     
     
-    def changeCallbackLoadedModules(type,args):
+    def changeCallbackLoadedModules(Type,args):
         """BJ added, in order to intercept in a grammar (oops, repeat, control) in eg mic changed
     
         in those cases the cancelMode can be called, so exclusiveMode is finished
@@ -712,7 +717,7 @@ try:
                 except AttributeError: pass
                 else:
     ##                print 'call changeCallback for: %s'% x
-                    apply(func, [type,args])
+                    apply(func, [Type,args])
     
     ### try here a adapted recognitionMimic function
     def recognitionMimic(mimicList):
