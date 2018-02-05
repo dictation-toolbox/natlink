@@ -642,6 +642,8 @@ try:
             findAndLoadFiles()
             beginCallback(moduleInfo, checkAll=1)
             loadModSpecific(moduleInfo)
+
+        ## user: at start and at user switch:
         if Type == 'user' and userName != args[0]:
             if debugCallback:
                 print 'callback user, args: %s'% repr(args)
@@ -672,6 +674,11 @@ try:
             
             if debugCallback:
                 print 'usercallback, language: %s'% language
+
+            # initialize recentEnv in natlinkcorefunctions (new 2018, 4.1uniform)
+            natlinkstatus.AddExtendedEnvVariables()
+            natlinkstatus.AddNatlinkEnvironmentVariables(status=status)
+                
             if changeCallbackUserFirst:
                 natlinkstartup.start()
                 changeCallbackUserFirst = 0
@@ -705,14 +712,9 @@ try:
     ##        # possibility to do things when changeCallBack with mic on: (experiment)
     ##        changeCallbackLoadedModulesMicOn(type, args)
         if debugCallback:
-            try:
-                1/0
-            except:
-                print 'deliberate:'
-                traceback.print_exc()
-                
+            print '=== debugCallback info ==='                
             for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
-             'unimacroDirectory', 'userDirectory', 'DNSdirectory',
+             'unimacroDirectory', 'userDirectory', 
              'WindowsVersion', 'BaseModel', 'BaseTopic',
              'language', 'userLanguage', 'userTopic']:
                 if not name in globals():
@@ -770,10 +772,6 @@ try:
                 else:
                     break
 
-            # initialize recentEnv in natlinkcorefunctions (new 2018, 4.1uniform)
-            natlinkstatus.AddExtendedEnvVariables()
-            natlinkstatus.AddNatLinkEnvironmentVariables(status=status)
-    
             if debugLoad: print "NatLink pyd dir " + coreDirectory
             baseDirectory = os.path.normpath(os.path.abspath(os.path.join(coreDirectory,"..")))
             if not baseDirectory in sys.path:

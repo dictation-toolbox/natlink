@@ -1734,13 +1734,14 @@ u'a/d/e/g'
         if not a:
             continue
         elif isStringLike(a):
+            a = convertToUnicode(a)
             l.append(a)
         elif type(a) == types.ListType:
             l.append(apply(opj, tuple(a)))
         elif type(a) == types.TupleType:
             l.append(apply(opj, a))
         else:
-            raise SitegenError('invalid type for opj: %s'% `a`)
+            raise SitegenError('invalid type for opj: %s'% repr(a))
     if not l:
         return ''
     return path('/'.join(l))
@@ -1799,9 +1800,12 @@ def isStringLike(anobj):
     >>> isStringLike(['a'])
     0
     """
-    try: anobj + ''
-    except: return 0
-    return 1
+    if type(anobj) in (six.text_type, six.binary_type):
+        return 1
+    elif isinstance(anobj, path):
+        return 1
+    else:
+        return 0
 
 def checkFolderExistence(args):
     """raises error if folder not valid (mostly non-existent)
@@ -1817,7 +1821,8 @@ def checkFolderExistence(args):
     a = args
     if not a:
         raise ValueError('checkFolderExistence, no path given!')
-    if type(a) in (types.StringType, types.UnicodeType):
+    if isStringLike(a):
+        a = convertToUnicode(a)
         if os.path.isdir(a):
             return
         elif os.path.exists(a):
@@ -1825,7 +1830,7 @@ def checkFolderExistence(args):
         else:
             raise OSError, 'folder does not exist: %s'% a
     else:
-        raise Exception('invalid type for checkFolderExistence: %s'% `a`)
+        raise Exception('invalid type for checkFolderExistence: %s'% repr(a))
 
 def checkFileExistence(folderOrPath, *args):
     """raises error if file not valid (mostly non-existent)
@@ -1855,7 +1860,7 @@ def checkFileExistence(folderOrPath, *args):
     if not args:
         p = folderOrPath
         if isStringLike(p):
-            p = unicode(p)
+            p = convertToUnicode(p)
             if os.path.isfile(p):
                 return
             elif os.path.exists(p):
@@ -1873,13 +1878,14 @@ def checkFileExistence(folderOrPath, *args):
     for a in args:
         if not a:
             continue
-        elif isinstance(a, six.text_type):
+        elif isStringLike(a):
+            a = convertToUnicode(a)
             checkFileExistence(os.path.join(folder, a))
         elif type(a) == types.ListType or type(a) == types.TupleType:
             for A in a:
                 checkFileExistence(folder, A)
         else:
-            raise Exception('invalid type for checkFileExistence: %s'% `a`)
+            raise Exception('invalid type for checkFileExistence: %s'% repr(a))
 
 def makeEmptyFolder(*args):
     """delete a folder and creates it again
@@ -1909,9 +1915,12 @@ def makeEmptyFolder(*args):
     """
     for a in args:
         if not a:
+            pass
             continue
         if isStringLike(a):
-            a = unicode(a).replace('\\', '/') # make outside path instances!
+            if type(a) == six.binary_type:
+                a = convertToUnicode(a)
+            a = a.replace('\\', '/') # make outside path instances!
         if isStringLike(a):
             if os.path.isdir(a):
                 if os.path.isdir(a):
@@ -1919,13 +1928,13 @@ def makeEmptyFolder(*args):
                 if os.path.exists(a):
                     raise OSError, 'path already exists, but is not a folder, or could not be deleted: %s'% a
             os.mkdir(a)
-
+            pass
         elif type(a) == types.ListType:
             apply(makeEmptyFolder, tuple(a))
         elif type(a) == types.TupleType:
             apply(makeEmptyFolder, a)
         else:
-            raise Exception('invalid type for makeEmptyFolder: %s'% `a`)
+            raise Exception('invalid type for makeEmptyFolder: %s'% repr(a))
 
 
 def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minSize=None, checkTime=None):
@@ -2006,6 +2015,12 @@ def createFolderIfNotExistent(*args):
     >>> try: folderName.rmtree()
     ... except OSError: pass
     >>> createFolderIfNotExistent(folderName)
+    >>> folderName
+    u'C:/natlink/natlink/pytest/testutilsqh/qhtemp'
+    >>> path(folderName).isdir()
+    True
+    >>> os.path.isdir(folderName)
+    True
     >>> os.listdir(folderName)
     []
     >>> createFolderIfNotExistent(folderName)
@@ -2015,10 +2030,14 @@ def createFolderIfNotExistent(*args):
     """
     for a in args:
         if isStringLike(a):
-            a = unicode(a) # make outside path instances!
+            if type(a) == six.binary_type:
+                a = convertToUnicode(a)
+            if isinstance(a, path):
+                a = unicode(a)
+                pass
         if not a:
             continue
-        elif isStringLike(a):
+        elif type(a) == six.text_type:
             if os.path.isdir(a):
                 continue
             elif os.path.exists(a):
@@ -2037,7 +2056,7 @@ def createFolderIfNotExistent(*args):
         elif type(a) == types.TupleType:
             apply(createIfNotExistent, a)
         else:
-            raise Exception('invalid type for createIfNotExistent: %s'% `a`)
+            raise Exception('invalid type for createIfNotExistent: %s'% repr(a))
 
 def touch(folder, *args):
     """touches a file, in a given folder
@@ -2075,7 +2094,9 @@ def touch(folder, *args):
 
     """
     if isStringLike(folder):
-        folder = unicode(folder).replace('\\', '/')
+        if type(folder) == six.binary_type:
+            folder = convertToUnicode(folder)
+            folder = folder.replace('\\', '/')
 
     if not args:
         # Only one argument, folder is the whole path!
@@ -2105,7 +2126,7 @@ def touch(folder, *args):
                 p = os.path.join(folder, A)
                 touch(p)
         else:
-            raise Exception('invalid type for touch is: %s'% `a`)
+            raise Exception('invalid type for touch is: %s'% repr(a))
 
 ##def isOutOfDate(newer, older):
 ##    """check if out is newer than in

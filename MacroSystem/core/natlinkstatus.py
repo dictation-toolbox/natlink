@@ -228,16 +228,18 @@ Wversions = {'1/4/10': '98',
              } 
 
 # the possible languages (for getLanguage)
-languages = {u"Nederlands": "nld",
-             u"Fran\xe7ais": "fra",
-             u"Deutsch": "deu",
-             u"UK English": "enx",
-             u"US English": "enx",
-             u"Australian English": "enx",
-             u"Indian English": "enx",
-             u"SEAsian English": "enx",
-             u"Italiano": "ita",
-             u"Espa\xf1ol": "esp",
+languages = {  # from config files (if not given by args in setUserInfo)
+             "Nederlands": "nld",
+             "Fran\xe7ais": "fra",
+             "Deutsch": "deu",
+             "UK English": "enx",
+             "US English": "enx",
+             "Australian English": "enx",
+             "Indian English": "enx",
+             "SEAsian English": "enx",
+             "Italiano": "ita",
+             "Espa\xf1ol": "esp",
+             # as passed by args in changeCallback, DPI15:
              "Dutch": "nld",
              "French": "fra",
              "German": "deu",
@@ -592,26 +594,32 @@ Please try to correct this by running the NatLink Config Program (with administr
                 language = languages[userLanguage]
             except KeyError:
                 print 'natlinkstatus, setUserInfo: cannot get language from userLanguage: %s'% userLanguage
-                userLanguageIni = self.getUserLanguageFromInifile(userName)
+                print '=== please report to q.hoogenboom@antenna.nl ==='
+                userLanguageIni = self.getUserLanguageFromInifile()
                 try:
                     language = languages[userLanguageIni]
                 except KeyError:
                     print 'SERIOUS ERROR: natlinkstatus, setUserInfo: cannot get language from  ini file either: %s'% userLanguageIni
+                    print 'languages: %s'% languages
                     language = 'zxz'
-                print 'got language: %s, userLanguage1: %s, userLanguage2: %s'% (language, userLanguage, userLanguageIni)
+                print 'got language: %s, userLanguage1: %s, userLanguageIni (from config files): %s'% (language, userLanguage, userLanguageIni)
             self.userArgsDict['language'] = language
             self.userArgsDict['userLanguage'] = userLanguage
             self.userArgsDict['userTopic'] = args[3]
         else:
-            print 'natlinkstatus, setUserInfo: unexpected length of args for userArgsDict: %s'% (len(args), repr(args))
+            print 'natlinkstatus, setUserInfo: unexpected length of args for userArgsDict: %s (%s)'% (len(args), repr(args))
+            print '=== please report to q.hoogenboom@antenna.nl ==='
             userLanguageIni = self.getUserLanguageFromInifile()
             try:
-                language = languages['userLanguageIni']
+                language = ''
+                language = languages[userLanguageIni]
             except KeyError:
                 print 'SERIOUS ERROR, natlinkstatus setUserInfo: cannot find language for %s'% userLanguageIni
-            print 'got language: %s, userLanguage1: %s, userLanguage2: %s'% (language, userLanguage, userLanguageIni)
+                print 'got language: %s, userLanguageIni: %s'% (language, userLanguageIni)
+                print 'natlinkstatus, languages: %s'% languages
+                language = 'xyz'
             self.userArgsDict['language'] = language
-            self.userArgsDict['userLanguage'] = userLanguage
+            self.userArgsDict['userLanguage'] = userLanguageIni
             self.userArgsDict['userTopic'] = self.getBaseTopic()
         print 'set userArgsDict: %s'% self.userArgsDict
         
@@ -1532,13 +1540,22 @@ def getFileDate(modName):
 # for splitting the env variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
 
+    # 
+    # # initialize recentEnv in natlinkcorefunctions (new 2018, 4.1uniform)
+    # this is done from natlinkmain in changeCallback user:
+    # natlinkstatus.AddExtendedEnvVariables()
+    # natlinkstatus.AddNatLinkEnvironmentVariables(status=status)
+    
+
+
 def AddExtendedEnvVariables():
     """call to natlinkcorefunctions, called from natlinkmain at startup or user callback
     """
+    natlinkcorefunctions.clearRecentEnv() # make a fresh start!
     natlinkcorefunctions.getAllFolderEnvironmentVariables(fillRecentEnv=1)
 
 
-def AddNatLinkEnvironmentVariables(status=None):
+def AddNatlinkEnvironmentVariables(status=None):
     """make the special NatLink variables global in this module
     """
     if status is None:
@@ -1551,8 +1568,8 @@ def AddNatLinkEnvironmentVariables(status=None):
             v = os.path.normpath(v)
             addedList.append("%s: %s"% (k,v))
             natlinkcorefunctions.addToRecentEnv(k, v)
-    print 'added to ExtendedEnvVariables:\n'
-    print '\n'.join(addedList)
+    # print 'added to ExtendedEnvVariables:\n'
+    # print '\n'.join(addedList)
 
 def isValidPath(spec, wantFile=None, wantDirectory=None):
     """check existence of spec, allow for pseudosymbols.
@@ -1592,10 +1609,6 @@ def isValidPath(spec, wantFile=None, wantDirectory=None):
 if __name__ == "__main__":
     status = NatlinkStatus()
     status.checkSysPath()
-    DNSuserDirectory = 'C:\\ProgramData\\Nuance\\NaturallySpeaking15\\Users\\QNederlands\\current' ## status.getDNSuserDirectory()
-    
-    userName = 'QNederlands'
-    language = status.getUserLanguageFromInifile(DNSuserDirectory)
 
     print status.getNatlinkStatusString()
     lang = status.getLanguage()
@@ -1605,7 +1618,7 @@ if __name__ == "__main__":
     print '\n====\nexamples of expanding ~ and %...% variables:'
     short = "~/Quintijn"
     AddExtendedEnvVariables()
-    AddNatLinkEnvironmentVariables()
+    AddNatlinkEnvironmentVariables()
     
     # the Dragon directory:
     short = "%PROGRAMFILES%"
