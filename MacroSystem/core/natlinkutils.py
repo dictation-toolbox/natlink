@@ -678,13 +678,17 @@ class GrammarBase(GramClassBase):
                     ruleName = 'dgndictation'
                 elif ruleNumber in (1000001, 1000002) and 'dgnletters' in self.ruleMap.values():
                     ruleName = 'dgnletters'
+                elif ruleNumber == 0 and word == '\\noise\\?':
+                    continue
                 else:
                     print '='*50
                     print 'word: %s, ruleNumber: %s'% (word, ruleNumber)
                     print 'wordsAndNums: %s'% wordsAndNums
                     print 'ruleMap: %s'% `self.ruleMap`
                     mess =  'Invalid key %s for ruleMap'% ruleNumber
-                    raise KeyError(mess)
+                    print mess
+                    print '==============================='
+                    continue
 
             fullResults.append( ( word, ruleName ) )
             wordsByRule.setdefault(ruleName, []).append(word)

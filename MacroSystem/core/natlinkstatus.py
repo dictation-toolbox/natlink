@@ -786,7 +786,7 @@ Please try to correct this by running the NatLink Config Program (with administr
 
     
     def getDNSVersion(self):
-        """find the correct DNS version number (integer)
+        """find the correct DNS version number (as an integer)
 
 
         note: 12.80 is also 13
@@ -819,9 +819,8 @@ Please try to correct this by running the NatLink Config Program (with administr
         except ValueError:
             print 'Cannot find versionString, dnsPath should end in two digits (or one for versions below 10): %s'% dnsPath
             print 'These digits must match the version number of Dragon!!!'
-            return ''
-        if versionString and len(versionString) == 2:
-            return versionString
+            return 0
+        return i
 
         ## older versions, not taken from the install dir (obsolete really)
         version = self.getDNSFullVersion()
