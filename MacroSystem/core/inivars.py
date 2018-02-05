@@ -543,7 +543,7 @@ u'simple.ini'
 
         """
         # add str function in case file is a path instance:
-        file = unicode(File)
+        file = utilsqh.convertToUnicode(File)
         self._name = os.path.basename(file)
         self._file = file
         self._ext = self.getExtension(file)
@@ -692,7 +692,7 @@ u'value'
             if self._returnStrings and type(returnValue) == six.text_type:
                 return utilsqh.convertToBinary(returnValue)
             elif (not self._returnStrings) and type(returnValue) == six.binary_type:
-                return unicode(returnValue)
+                return utilsqh.convertToUnicode(returnValue)
             else:
                 return returnValue
         else:
@@ -847,7 +847,7 @@ u'value'
                         
                 elif type(v) in (six.text_type, six.binary_type):
                     if type(v) == six.binary_type:
-                        v = unicode(v)
+                        v = utilsqh.convertToUnicode(v)
                     v = v.strip()
                     if v.find('\n') >= 0:
                         hasTrailingNewline = 1
@@ -892,7 +892,7 @@ u'value'
                     inverse = {}
                     for K, V in v.items():
                         if type(V) == six.binary_type:
-                            V = unicode(V)
+                            V = utilsqh.convertToUnicode(V)
                             vv = quoteSpecialDict(V)                            
                         elif type(V) == types.ListType or type(V) == types.TupleType:
                             vv = ', '.join(map(quoteSpecialDict, V))
@@ -983,7 +983,7 @@ u'value'
         if type(s) == types.ListType or type(s) == types.TupleType:
             if k:
                 if type(k) == six.binary_type:
-                    k = unicode(k)
+                    k = utilsqh.convertToUnicode(k)
                 k = k.strip()
                 if reWhiteSpace.search(k):
                     k = reWhiteSpace.sub(' ', k)
@@ -1015,7 +1015,7 @@ u'value'
                 return L
         if s:
             if type(s) == six.binary_type:
-                s = unicode(s)
+                s = utilsqh.convertToUnicode(s)
             s = s.strip()
             if reWhiteSpace.search(s):
                 s = reWhiteSpace.sub(' ', s)
@@ -1024,7 +1024,7 @@ u'value'
                 # s exists, process key requests
                 if k:
                     if type(k) == six.binary_type:
-                        k = unicode(k)
+                        k = utilsqh.convertToUnicode(k)
                     k = k.strip()
                     if reWhiteSpace.search(k):
                         k = reWhiteSpace.sub(' ', k)
@@ -1034,7 +1034,7 @@ u'value'
                         # k exists, return value
                         v = self[s][k]
                         if type(v) == six.binary_type:
-                            v = unicode(v)
+                            v = utilsqh.convertToUnicode(v)
                         if stripping and type(v) == six.text_type:
                             return self.returnStringOrUnicode(stripping(v))
                         else:
@@ -1042,7 +1042,7 @@ u'value'
                     else:
                         # no key, return default value
                         if type(value) == six.binary_type:
-                            value = unicode(value)
+                            value = utilsqh.convertToUnicode(value)
                         return self.returnStringOrUnicode(value)
                 else:
                     # no key given, request a list of keys
@@ -1051,7 +1051,7 @@ u'value'
             elif k:
                 # s doesn't exist, return default value
                 if type(value) == six.binary_type:
-                    value = unicode(value)
+                    value = utilsqh.convertToUnicode(value)
                 return self.returnStringOrUnicode(value)
             else:
                 # s doesn't exist, return empty list of keys
@@ -1116,7 +1116,7 @@ u'value'
             return
         # now s in string:
         if type(s) != six.text_type:
-            s = unicode(s)
+            s = utilsqh.convertToUnicode(s)
         assert type(s) == six.text_type
 
         # now make new section if not existing before:
@@ -1142,7 +1142,7 @@ u'value'
             return
 
         if type(k) != six.text_type:
-            k = unicode(k)
+            k = utilsqh.convertToUnicode(k)
         if type(k) != six.text_type:
             raise IniError('key must be list, tuple or string, not: %s'% k)
             
@@ -1156,7 +1156,7 @@ u'value'
             raise IniError('key contains invalid character(s): |%s|'% repr(k))
         
         if type(v) == six.binary_type:
-            v = unicode(v)
+            v = utilsqh.convertToUnicode(v)
         # print "s: %s(%s), k: %s(%s), v: %s(%s)"% (s, type(s), k, type(k), v, type(v))
         if type(v) == six.text_type:
             self[s][k] = quoteSpecial(v)
@@ -1437,7 +1437,7 @@ u'value'
         if type(i) == types.IntType:
             return i
         if type(i) == six.binary_type:
-            i = unicode(i)
+            i = utilsqh.convertToUnicode(i)
         if type(i) == six.text_type:
             if i:
                 try:
@@ -1493,7 +1493,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         if type(i) == types.FloatType:
             return 
         if type(i) == six.binary_type:
-            i = unicode(i)
+            i = utilsqh.convertToUnicode(i)
         if type(i) == six.text_type:
             if i:
                 try:
@@ -1637,7 +1637,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
 
         """
         if type(prefix) == six.binary_type:
-            prefix = unicode(prefix)
+            prefix = utilsqh.convertToUnicode(prefix)
         if '_sectionPostfixesWP' not in self.__dict__:
             self._sectionPostfixesWP = {}  # create new dictionary for remembering
         if prefix in self._sectionPostfixesWP:
@@ -1671,7 +1671,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
 
         """
         if type(prefix) == six.binary_type:
-            prefix = unicode(prefix)
+            prefix = utilsqh.convertToUnicode(prefix)
         postfixes = self.getSectionPostfixesWithPrefix(prefix)
         
         for postfix  in postfixes:
@@ -1695,9 +1695,9 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
 
         """
         if type(prefix) == six.binary_type:
-            prefix = unicode(prefix)
+            prefix = utilsqh.convertToUnicode(prefix)
         if type(longerText) == six.binary_type:
-            longerText = unicode(longerText)
+            longerText = utilsqh.convertToUnicode(longerText)
         postfixes = self.getSectionPostfixesWithPrefix(prefix)
         #print 'postfixes: %s'% postfixes
         if longerText is None:
@@ -1781,7 +1781,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         for s in sectionList:
             if key in self.get(s):
                 if type(s) == six.binary_type:
-                    return unicode(s)
+                    return utilsqh.convertToUnicode(s)
                 else:
                     return s
         return u'section not found'
@@ -1825,7 +1825,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         if not prefix:
             return []
         if type(prefix) == six.binary_type:
-            prefix = unicode(prefix)
+            prefix = utilsqh.convertToUnicode(prefix)
         lenprefix = len(prefix)
         rawlist = [k for k in self.get(section) if k.startswith(prefix)]
         if not rawlist: return []

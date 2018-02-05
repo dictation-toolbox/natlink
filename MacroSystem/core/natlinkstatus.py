@@ -115,6 +115,12 @@ getLanguage:
     returns the 3 letter code of the language of the speech profile that
     is open (only possible when NatSpeak/NatLink is running)
 
+getUserLanguage:
+    returns the language from changeCallback (>= 15) or config files
+    
+getUserTopic
+    returns the topic of the current speech profile, via changeCallback (>= 15) or config files
+
 getPythonVersion:
     changed jan 2013, return two character version, so without the dot! eg '26'
     
@@ -150,9 +156,9 @@ getBaseModelBaseTopic:
     return these as strings, not ready yet, only possible when
     NatSpeak/NatLink is running. Obsolete 2018, use
 getBaseModel
-    get the acoustic model from config files
+    get the acoustic model from config files (for DPI15, obsolescent)
 getBaseTopic 
-    get the baseTopic, from ini files (can be got from changeCallback as well, DPI15)
+    get the baseTopic, from ini files. Better use getUserTopic in DPI15
 getDebugLoad:
     get value from registry, if set do extra output of natlinkmain at (re)load time
 getDebugCallback:
@@ -297,7 +303,7 @@ class NatlinkStatus(object):
     key2 = "App Support GUID"
     value2 = NATLINK_CLSID    
 
-    userArgs = [None, None]
+    userArgsDict = {}
 
     # for quicker access (only once lookup in a run)
     UserDirectory = None # not Unimacro!!
@@ -561,18 +567,61 @@ Please try to correct this by running the NatLink Config Program (with administr
     def setUserInfo(self, args):
         """set username and userdirectory at change callback user
         """
-        self.userArgs[0] = args[0]
-        self.userArgs[1] = args[1]
-        
+        if len(args) < 2:
+            print 'UNEXPECTED ERROR: natlinkstatus, setUserInfo: length of args to small, should be at least 2: %s (%s)'% (len(args), repr(args))
+            return
 
+        userName = args[0]
+        self.userArgsDict[u'userName'] = userName
+        DNSuserDirectory = args[1]
+        self.userArgsDict[u'DNSuserDirectory'] = DNSuserDirectory
+        if len(args) == 2:
+            userLanguage = self.getUserLanguageFromInifile(DNSuserDirectory)
+            try:
+                language = languages[userLanguage]
+            except KeyError:
+                language = ''
+            
+        elif len(args) == 4:
+            userLanguage = args[2]
+            try:
+                language = languages[userLanguage]
+            except KeyError:
+                print 'natlinkstatus, setUserInfo: cannot get language from userLanguage: %s'% userLanguage
+                userLanguageIni = self.getUserLanguageFromInifile(userName)
+                try:
+                    language = languages[userLanguageIni]
+                except KeyError:
+                    print 'SERIOUS ERROR: natlinkstatus, setUserInfo: cannot get language from  ini file either: %s'% userLanguageIni
+                    language = 'zxz'
+                print 'got language: %s, userLanguage1: %s, userLanguage2: %s'% (language, userLanguage, userLanguageIni)
+            self.userArgsDict['language'] = language
+            self.userArgsDict['userLanguage'] = userLanguage
+            self.userArgsDict['userTopic'] = args[3]
+        else:
+            print 'natlinkstatus, setUserInfo: unexpected length of args for userArgsDict: %s'% (len(args), repr(args))
+            language, userLanguageIni = self.getLanguageFromInifile(userName, DNSuserDirectory)
+            print 'got language: %s, userLanguage1: %s, userLanguage2: %s'% (language, userLanguage, userLanguageIni)
+            self.userArgsDict['language'] = language
+            self.userArgsDict['userLanguage'] = userLanguage
+            self.userArgsDict['userTopic'] = self.getBaseTopic()
+        print 'set userArgsDict: %s'% self.userArgsDict
+        
     def clearUserInfo(self):
-        self.userArgs[0] = None
-        self.userArgs[1] = None
+        self.userArgsDict.clear()
 
     def getUserName(self):
-        return self.userArgs[0]
+        try:
+            return self.userArgsDict[u'userName']
+        except KeyError:
+            return ''
+
     def getDNSuserDirectory(self):
-        return self.userArgs[1]
+        try:
+            return self.userArgsDict[u'DNSuserDirectory']
+        except KeyError:
+            return ''
+        
 
     def getCoreDirectory(self):
         """return the path to coreDir or CoreDirectory
@@ -664,7 +713,6 @@ Please try to correct this by running the NatLink Config Program (with administr
             knownDNSVersion = str(self.getDNSVersion())
         else:
             knownDNSVersion = None
-        
         
         # first try in allusersprofile/'application data'
         allusersprofile = natlinkcorefunctions.getExtendedEnv('ALLUSERSPROFILE')
@@ -1120,19 +1168,16 @@ Please try to correct this by running the NatLink Config Program (with administr
         else:
             return ''
 
-    def getLastUsedAcoustics(self):
-        """get name of last used acoustics,
+    def _getLastUsedAcoustics(self, DNSuserDirectory):
+        """get name of last used acoustics, must have DNSuserDirectory passed
         
         used by getLanguage, getBaseModel and getBaseTopic
         """
-        dir = self.getDNSuserDirectory()
-        if dir is None:
+        if not (DNSuserDirectory and os.path.isdir(DNSuserDirectory)):
             print 'probably no speech profile on'
-            return
+            return ''
         #dir = r'D:\projects'  # for testing (at bottom of file)
-        if not os.path.isdir(dir):
-            raise ValueError('not a valid DNSuserDirectory: |%s|, check your configuration'% dir)
-        optionsini = os.path.join(dir, 'options.ini')
+        optionsini = os.path.join(DNSuserDirectory, 'options.ini')
         if not os.path.isfile(optionsini):
             raise ValueError('not a valid options inifile found: |%s|, check your configuration'% optionsini)
         
@@ -1146,16 +1191,16 @@ Please try to correct this by running the NatLink Config Program (with administr
                              (keyToModel, optionsini))
         return keyToModel
 
-    def getLastUsedTopic(self):
+    def _getLastUsedTopic(self, DNSuserDirectory):
         """get name of last used topic,
         
         used by getBaseTopic
         """
-        dir = self.getDNSuserDirectory()
-        #dir = r'D:\projects'  # for testing (at bottom of file)
-        if not os.path.isdir(dir):
-            raise ValueError('not a valid DNSuserDirectory: |%s|, check your configuration'% dir)
-        optionsini = os.path.join(dir, 'options.ini')
+        # Dir = self.getDNSuserDirectory()
+        # #dir = r'D:\projects'  # for testing (at bottom of file)
+        if not os.path.isdir(DNSuserDirectory):
+            raise ValueError('not a valid DNSuserDirectory: |%s|, check your configuration'% DNSuserDirectory)
+        optionsini = os.path.join(DNSuserDirectory, 'options.ini')
         if not os.path.isfile(optionsini):
             raise ValueError('not a valid options inifile found: |%s|, check your configuration'% optionsini)
         
@@ -1180,10 +1225,11 @@ Please try to correct this by running the NatLink Config Program (with administr
 
     def getBaseModel(self):
         """getting the base model, '' if error occurs
+        getting obsolete in DPI15
         """
         Dir = self.getDNSuserDirectory()
         #dir = r'D:\projects'   # for testing, see bottom of file
-        keyToModel = self.getLastUsedAcoustics()
+        keyToModel = self._getLastUsedAcoustics(Dir)
         acousticini = os.path.join(Dir, 'acoustic.ini')
         section = "Base Acoustic"
         basesection = natlinkcorefunctions.InifileSection(section=section,
@@ -1192,15 +1238,14 @@ Please try to correct this by running the NatLink Config Program (with administr
         # print 'getBaseModel: %s'% BaseModel
         return BaseModel
 
-    def getBaseTopic(self, userTopic=None):
+    def getBaseTopic(self):
         """getting the base topic, '' if error occurs
-        
-        
-        with DPI15, the userTopic is given by getCurrentUser
+
+        with DPI15, the userTopic is given by getCurrentUser, so better use that one
         """
         Dir = self.getDNSuserDirectory()
         #dir = r'D:\projects'   # for testing, see bottom of file
-        keyToModel = self.getLastUsedTopic()
+        keyToModel = self._getLastUsedTopic(Dir)
         if not keyToModel:
             print 'Warning, no valid key to topic found'
             return ''
@@ -1212,31 +1257,46 @@ Please try to correct this by running the NatLink Config Program (with administr
         # print 'getBaseTopic: %s'% BaseTopic
         return BaseTopic
 
-
-    def getLanguage(self, languageFromNatLink=None):
-        """this can only be run if natspeak is running
-
-        The directory of the user speech profiles must be passed.
-        So this function should be called at changeCallback when a new user
-        is opened.
+    def getUserTopic(self):
+        """return the userTopic.
         
-        DPI15: language (like US English) is passed here as languageFromNatLink (from natlinkmain)
+        from DPI15 returned by changeCallback user, before identical to BaseTopic
         """
-        if languageFromNatLink:
-            try:
-                language = languages[languageFromNatLink]
-                return language
-            except KeyError:
-                print 'getLanguage, got invalid languageFromNatLink: %s'% languageFromNatLink
-                print 'try to find via ini files...'
-        # do it "the old way" through ini files:
-        dir = self.getDNSuserDirectory()
-        if dir is None:
-            print 'probably no speech profile on'
-            return
-        #dir = r'D:\projects' # for testing, see bottom of file
-        keyToModel = self.getLastUsedAcoustics()
-        acousticini = os.path.join(dir, 'acoustic.ini')
+        try:
+            return self.userArgsDict['userTopic']
+        except KeyError:
+            return self.getBaseTopic()
+        
+    def getLanguage(self):
+        """get language from userArgsDict
+        
+        '' if not set, probably no speech profile on then
+    
+        """
+        try:
+            return self.userArgsDict['language']
+        except KeyError:
+            return ''
+    
+    def getUserLanguage(self):
+        """get userLanguage from userArgsDict
+        
+        '' if not set, probably no speech profile on then
+        """
+        try:
+            return self.userArgsDict['userLanguage']
+        except KeyError:
+            return ''
+        
+    def getUserLanguageFromInifile(self):
+        """get language, userLanguage info from acoustics ini file
+        """
+        Dir = self.getDNSuserDirectory()
+        
+        if not (Dir and os.path.isdir(Dir)):
+            return ''
+        keyToModel = self._getLastUsedAcoustics(DNSuserDirectory)
+        acousticini = os.path.join(DNSuserDirectory, 'acoustic.ini')
         section = "Base Acoustic"        
         if not os.path.isfile(acousticini):
             print 'getLanguage: Warning, language of the user cannot be found, acoustic.ini not a file in directory %s'% dir
@@ -1258,19 +1318,14 @@ Please try to correct this by running the NatLink Config Program (with administr
         if not lang:
             print 'getLanguage: Warning, no valid specification of language string (key: %s) found in "Base Acoustic" of inifile: %s'% (lang, acousticini)
             return 'www'
-        if lang in languages:
-            return languages[lang]
-        else:
-            
-            print 'getLanguage: Language: %s not found in languageslist: %s, take "xxx"'% \
-                    (lang, languages)
-            return 'xxx'
+        return lang
 
-    def getShiftKey(self, language):
+    def getShiftKey(self):
         """return the shiftkey, for setting in natlinkmain when user language changes.
         
         used for self.playString in natlinkutils, for the dropping character bug. (dec 2015, QH).
         """
+        language = self.getLanguage()
         try:
             return "{%s}"% shiftKeyDict[language]
         except KeyError:
@@ -1529,9 +1584,14 @@ def isValidPath(spec, wantFile=None, wantDirectory=None):
 if __name__ == "__main__":
     status = NatlinkStatus()
     status.checkSysPath()
+    DNSuserDirectory = 'C:\\ProgramData\\Nuance\\NaturallySpeaking15\\Users\\QNederlands\\current' ## status.getDNSuserDirectory()
+    
+    userName = 'QNederlands'
+    language = status.getUserLanguageFromInifile(DNSuserDirectory)
+
     print status.getNatlinkStatusString()
     lang = status.getLanguage()
-    
+    print 'language: %s'% lang
     
     # exapmles, for more tests in ...
     print '\n====\nexamples of expanding ~ and %...% variables:'

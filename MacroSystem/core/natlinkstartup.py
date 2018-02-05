@@ -72,8 +72,6 @@ def vocolaGetModTime(file):
     try: return os.stat(file)[ST_MTIME]
     except OSError: return 0        # file not found
 
-
-
 ## 
 ## Quintijn's unofficial multiple language kludge:
 ## 

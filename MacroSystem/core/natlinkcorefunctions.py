@@ -333,8 +333,8 @@ class InifileSection(object):
         
         """
         self.section = section
-        self.ini = IniVars(filename)
-         
+        self.ini = IniVars(filename, returnStrings=True) # want strings to be returned
+          
     def __repr__(self):
         """return contents of sections
         """

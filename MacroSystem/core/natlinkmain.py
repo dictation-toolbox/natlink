@@ -187,10 +187,14 @@ try:
     # the base directory is one level above the core directory.
     # Vocola grammar files are located here.
     for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
-                 'unimacroDirectory', 'userDirectory', 'DNSdirectory',
-                 'WindowsVersion', 'BaseModel', 'BaseTopic']:
+                 'unimacroDirectory', 'userDirectory',
+                 'WindowsVersion', 'BaseModel', 'BaseTopic',
+                 'language', 'userLanguage', 'userTopic']:
         if not name in globals():
             globals()[name] = ''
+        else:
+            if debugCallback:
+                print 'natlinkmain starting, global variable: %s: %s'% (name, globals()[name])
     del name
     # set in findAndLoadFiles:
     try:
@@ -626,7 +630,9 @@ try:
     #
     
     def changeCallback(Type,args):
-        global userName, DNSuserDirectory, language, BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
+        global userName, DNSuserDirectory, language, userLanguage, userTopic, \
+                BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
+        
         if debugCallback:
             print 'changeCallback, Type: %s, args: %s'% (Type, args)
         if Type == 'mic' and args == 'on':
@@ -637,20 +643,8 @@ try:
             beginCallback(moduleInfo, checkAll=1)
             loadModSpecific(moduleInfo)
         if Type == 'user' and userName != args[0]:
-            userLanguage, userTopic = None, None  
-            if len(args) == 2:
-                userName, DNSuserDirectory = args
-                if debugCallback:
-                    print 'two arguments in natlinkmain %s'% repr(args)
-            elif len(args) == 4:
-                if debugCallback:
-                    print 'four arguments in natlinkmain %s'% repr(args)
-                userName, DNSuserDirectory, userLanguage, userTopic = args
-            else:
-                print "----changeCallback, unexpected number of return parameters from getCurrentModule: %s (%s)"% (len(args), repr(args))
-                userName, DNSuserDirectory, userLanguage = "unknown", "unknown"
-                language = status.getLanguage(userLanguage)  # from dpi15 given here, convert from US English to enx
-
+            if debugCallback:
+                print 'callback user, args: %s'% repr(args)
             moduleInfo = natlink.getCurrentModule()
             if debugCallback:
                 print "---------changeCallback, User changed to", userName
@@ -662,9 +656,17 @@ try:
             unloadEverything()
     ## this is not longer needed here, as we fixed the userDirectory
     ##        changeUserDirectory()
+            status.clearUserInfo()
             status.setUserInfo(args)
-            language = status.getLanguage(userLanguage)
-            shiftkey = status.getShiftKey(language)
+            language = status.getLanguage()
+            DNSuserDirectory = status.getDNSuserDirectory()
+            userLanguage = status.getUserLanguage()
+            print 'userLanguage: %s'% userLanguage
+            userTopic = status.getUserTopic()
+            baseTopic = status.getBaseTopic() # obsolescent, 2018, DPI15
+            baseModel = status.getBaseModel() # osbolescent, 2018, DPI 15
+            userName = status.getUserName()
+            shiftkey = status.getShiftKey()
             if debugCallback:
                 print 'setting shiftkey to: %s (language: %s)'% (shiftkey, language)
             
@@ -702,7 +704,21 @@ try:
     ##    else:
     ##        # possibility to do things when changeCallBack with mic on: (experiment)
     ##        changeCallbackLoadedModulesMicOn(type, args)
-    
+        if debugCallback:
+            try:
+                1/0
+            except:
+                print 'deliberate:'
+                traceback.print_exc()
+                
+            for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
+             'unimacroDirectory', 'userDirectory', 'DNSdirectory',
+             'WindowsVersion', 'BaseModel', 'BaseTopic',
+             'language', 'userLanguage', 'userTopic']:
+                if not name in globals():
+                    print 'natlinkmain, changeCallback, not in globals: %s'% name
+                else:
+                    print 'natlinkmain changeCallback, global variable: %s: %s'% (name, globals()[name])
     
     def changeCallbackLoadedModules(Type,args):
         """BJ added, in order to intercept in a grammar (oops, repeat, control) in eg mic changed
@@ -732,7 +748,7 @@ try:
     def start_natlink(doNatConnect=None):
         """do the startup of the python macros system
         """
-        global userDirectory, DNSVersion, baseDirectory, WindowsVersion, unimacroDirectory
+        global userDirectory, DNSVersion, coreDirectory, baseDirectory, WindowsVersion, unimacroDirectory
         try:
             # compute the directory where this module came from
             if not natlink.isNatSpeakRunning():
