@@ -576,11 +576,15 @@ Please try to correct this by running the NatLink Config Program (with administr
         DNSuserDirectory = args[1]
         self.userArgsDict[u'DNSuserDirectory'] = DNSuserDirectory
         if len(args) == 2:
-            userLanguage = self.getUserLanguageFromInifile(DNSuserDirectory)
+            userLanguage = self.getUserLanguageFromInifile()
             try:
                 language = languages[userLanguage]
             except KeyError:
+                print 'natlinkstatus, setUserInfo: no language found for userLanguage: %s'% userLanguage
                 language = ''
+            self.userArgsDict['language'] = language
+            self.userArgsDict['userLanguage'] = userLanguage
+            self.userArgsDict['userTopic'] = self.getUserTopic() # will be the basetopic...
             
         elif len(args) == 4:
             userLanguage = args[2]
@@ -600,7 +604,11 @@ Please try to correct this by running the NatLink Config Program (with administr
             self.userArgsDict['userTopic'] = args[3]
         else:
             print 'natlinkstatus, setUserInfo: unexpected length of args for userArgsDict: %s'% (len(args), repr(args))
-            language, userLanguageIni = self.getLanguageFromInifile(userName, DNSuserDirectory)
+            userLanguageIni = self.getUserLanguageFromInifile()
+            try:
+                language = languages['userLanguageIni']
+            except KeyError:
+                print 'SERIOUS ERROR, natlinkstatus setUserInfo: cannot find language for %s'% userLanguageIni
             print 'got language: %s, userLanguage1: %s, userLanguage2: %s'% (language, userLanguage, userLanguageIni)
             self.userArgsDict['language'] = language
             self.userArgsDict['userLanguage'] = userLanguage
@@ -1295,8 +1303,8 @@ Please try to correct this by running the NatLink Config Program (with administr
         
         if not (Dir and os.path.isdir(Dir)):
             return ''
-        keyToModel = self._getLastUsedAcoustics(DNSuserDirectory)
-        acousticini = os.path.join(DNSuserDirectory, 'acoustic.ini')
+        keyToModel = self._getLastUsedAcoustics(Dir)
+        acousticini = os.path.join(Dir, 'acoustic.ini')
         section = "Base Acoustic"        
         if not os.path.isfile(acousticini):
             print 'getLanguage: Warning, language of the user cannot be found, acoustic.ini not a file in directory %s'% dir
