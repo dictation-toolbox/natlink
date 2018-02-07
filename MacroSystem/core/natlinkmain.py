@@ -761,8 +761,14 @@ try:
                 time.sleep(10)
                 return
     
-            if doNatConnect:
-                natlink.natConnect(1) # 0 or 1, should not be needed when automatic startup
+            if not doNatConnect is None:
+                if doNatConnect:
+                    print 'start_natlink, do natConnect with option 1, threading'
+                    natlink.natConnect(1) # 0 or 1, should not be needed when automatic startup
+                else:
+                    print 'start_natlink, do natConnect with option 0, no threading'
+                    natlink.natConnect(0) # 0 or 1, should not be needed when automatic startup
+                    
     
             #print "\n".join(["%s=%s" % (k,v) for k, v in sys.modules ])
             #print "\n".join(sys.modules.keys())

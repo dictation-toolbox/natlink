@@ -574,9 +574,9 @@ Please try to correct this by running the NatLink Config Program (with administr
             return
 
         userName = args[0]
-        self.userArgsDict[u'userName'] = userName
+        self.userArgsDict['userName'] = userName
         DNSuserDirectory = args[1]
-        self.userArgsDict[u'DNSuserDirectory'] = DNSuserDirectory
+        self.userArgsDict['DNSuserDirectory'] = DNSuserDirectory
         if len(args) == 2:
             userLanguage = self.getUserLanguageFromInifile()
             try:
