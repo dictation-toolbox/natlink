@@ -262,8 +262,9 @@ def getModifierKeyCodes(modifiers):
                          menu=vk_menu,
                          alt=vk_menu)   # added alt  == menu
     if not modifiers: return
-    if isinstance(modifiers, basestring):
-        modifiers = modifiers.replace("+", " ").split()
+    if type(modifiers) == six.text_type:
+        modifiers = utilsqh.convertToBinary(modifiers)
+    modifiers = modifiers.replace("+", " ").split()
     return [modifier_dict[m] for m in modifiers]
 
 # temporary hopefully, QH, 4-9-2013  now 22-10-2013:
@@ -562,15 +563,20 @@ class GrammarBase(GramClassBase):
         self.activeRules.remove(ruleName)
 
     def activateSet(self, ruleNames, window=0, exclusive=None):
+        """activate a set of rules.
+        
+        as an experiment, deactivate all rules before doing so.
+        """
         if not type(ruleNames) in (types.ListType, types.TupleType):
             raise TypeError("activateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
                             (repr(ruleNames), type(ruleNames)))
-        for x in copy.copy(self.activeRules):
-            if not x in ruleNames:
-                if type(x) != six.binary_type:
-                    print 'GrammarBase, activateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x))
-                self.gramObj.deactivate(x)
-                self.activeRules.remove(x)
+        self.deactivateAll()
+        # for x in copy.copy(self.activeRules):
+        #     if not x in ruleNames:
+        #         if type(x) != six.binary_type:
+        #             print 'GrammarBase, activateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x))
+        #         self.gramObj.deactivate(x)
+        #         self.activeRules.remove(x)
         for x in ruleNames:
             if type(x) != six.binary_type:
                 print 'GrammarBase, activateSet, wrong type in rule to activate, %s (%s)'% (x, type(x))
@@ -592,17 +598,23 @@ class GrammarBase(GramClassBase):
             self.deactivate(x, noError=noError)
 
     def activateAll(self, window=0, exclusive=None, exceptlist=None):
-        if exceptlist:
-            for x in exceptlist:
-                if x in self.activeRules:
-                    self.gramObj.deactivate(x)
-                    self.activeRules.remove(x)
+        """activate all rules
+        
+        as experiment first deactivate all rules before doing so
+        """
+        self.deactivateAll()
+        assert self.activeRules == []
+        # if exceptlist:
+        #     for x in exceptlist:
+        #         if x in self.activeRules:
+        #             self.gramObj.deactivate(x)
+        #             self.activeRules.remove(x)
         for x in self.validRules:
-            if x not in self.activeRules:
-                if exceptlist and x in exceptlist:
-                    continue
-                self.gramObj.activate(x,window)
-                self.activeRules.append(x)
+            # if x not in self.activeRules:
+            if exceptlist and x in exceptlist:
+                continue
+            self.gramObj.activate(x,window)
+            self.activeRules.append(x)
         if exclusive != None:
             self.gramObj.setExclusive(exclusive)
 
@@ -632,11 +644,10 @@ class GrammarBase(GramClassBase):
     def setList(self, listName, words):
         listName = utilsqh.convertToBinary(listName)
         self.emptyList(listName)
-        self.appendList(listName, words)
+        self.appendList(listName, words) # other way around?
 
     # when a recognition for this grammar occurs, this function gets called
     # by GramObj (it is set as the callback in GrammarBase.load.
-
     def resultsCallback(self, wordsAndNums, resObj):
         # if the allResults flag is set it is possible that the first
         # parameter will be a string instead of a data structure. We 

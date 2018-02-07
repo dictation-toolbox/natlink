@@ -2282,7 +2282,7 @@ False
 
     """
     outDate = getFileDate(outputfile)
-    if isinstance(inputfiles, basestring):
+    if isStringLike(inputfiles):
         inDate = getFileDate(inputfiles)
         if inDate == 0:
             raise IOError("checkIfOutOfDate: inputfile not present: %s"% inputfiles)
@@ -2642,7 +2642,9 @@ class path(unicode):
             if v.find('aba') > 0:
 
                 pass
-            v = getValidPathUnicode(v)            
+            v = getValidPathUnicode(v)
+        if type(v) == six.binary_type:
+            v = convertToUnicode(v)
         return unicode.__new__(self, v)
             
 
@@ -2663,7 +2665,7 @@ False
 
         """
         if not isinstance(other, self.__class__):
-            if isinstance(other, basestring):
+            if type(other) in (six.text_type, six.binary_type):
                 other = path(other)
         return unicode(self).lower() == unicode(other).lower()
 

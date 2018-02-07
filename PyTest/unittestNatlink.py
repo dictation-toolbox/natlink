@@ -46,7 +46,7 @@
 # April 1, 2000
 #   - added testParser, testGramimar, testDictGram, testSelectGram
 #
-
+import six
 import sys, unittest, types
 import os
 import os.path
@@ -997,7 +997,7 @@ class UnittestNatlink(unittest.TestCase):
                          (r'A\uppercase-letter\uppercase alpha', 'A AAaaAA'),
                          ([r'I\letter', r'I\pronoun', r'I\letter\India'], 'A AAaaAAI I I'),
                          ]:
-                if isinstance(word, basestring):
+                if type(word) in (six.text_type, six.binary_type):
                     words = [word]
                     total.append(word)
                 else:
@@ -1019,7 +1019,7 @@ class UnittestNatlink(unittest.TestCase):
                          (['two', 'three', 'four', 'five'], '2345'), 
                          (['six', 'seven', 'eight', 'nine'], '6789')]:
             
-                if isinstance(word, basestring):
+                if type(word) in (six.text_type, six_binary_type):
                     words = [word]
                     total.append(word)
                 else:
@@ -1034,7 +1034,7 @@ class UnittestNatlink(unittest.TestCase):
                         (r',\comma\comma', ','),
                         ([r'\caps-on\caps on', 'hello', 'world'], 'Hello World'),
                         ([r'\all-caps-on\all caps on', 'hello', 'world'], 'HELLO WORLD')]:
-                if isinstance(word, basestring):
+                if type(word) in (six.text_type, six_binary_type):
                     words = [word]
                 else:
                     words = word[:]
@@ -1045,7 +1045,7 @@ class UnittestNatlink(unittest.TestCase):
             for word, expected in [
                         ([r'\caps-on', 'hello', 'world'], 'Hello World'),
                         ([r'\all-caps-on', 'hello', 'world'], 'HELLO WORLD')]:
-                if isinstance(word, basestring):
+                if type(word) in (six.text_type, six_binary_type):
                     words = [word]
                 else:
                     words = word[:]
@@ -1061,7 +1061,7 @@ class UnittestNatlink(unittest.TestCase):
                          (r'a\alpha', 'A A. a'),
                          ([r'I.', r'i\india'], 'A A. a I. i'),
                          ]:
-                if isinstance(word, basestring):
+                if type(word) in (six.text_type, six_binary_type):
                     words = [word]
                     total.append(word)
                 else:
@@ -1083,7 +1083,7 @@ class UnittestNatlink(unittest.TestCase):
                          (['two', 'three', 'four', 'five'], '2345'), 
                          (['six', 'seven', 'eight', 'nine'], '6789')]:
             
-                if isinstance(word, basestring):
+                if type(word) in (six.text_type, six_binary_type):
                     words = [word]
                     total.append(word)
                 else:
@@ -1098,7 +1098,7 @@ class UnittestNatlink(unittest.TestCase):
                         (r',\comma', ','),
                         ([r'\Caps-On', 'hello', 'world'], 'Hello World'),
                         ([r'\All-Caps-On', 'hello', 'world'], 'HELLO WORLD')]:
-                if isinstance(word, basestring):
+                if type(word) in (six.text_type, six_binary_type):
                     words = [word]
                 else:
                     words = word[:]

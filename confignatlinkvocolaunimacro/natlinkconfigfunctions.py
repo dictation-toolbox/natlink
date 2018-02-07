@@ -201,10 +201,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     
     """
     def __init__(self):
+        self.DNSName = 'Dragon'
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
         self.changesInInitPhase = 0
-        self.DNSName = self.getDNSName()
-        self.isElevated = IsUserAnAdmin()
         # self.isNatSpeakRunning = natlink.isNatSpeakRunning  # function
         
     def checkCoreDirectory(self):
@@ -328,7 +327,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return
         return 1
         
-    def getHKLMPythonPathDict(self, flags=win32con.KEY_ALL_ACCESS, recursive=False):
+    def getCoreDirectoryHKLMPythonPathDict(self, flags=win32con.KEY_ALL_ACCESS, recursive=False):
         """returns the dict that contains the PythonPath section of HKLM
         
         Overload for config program, automatically set or repair the pythonpath variable if the format is not ok
@@ -522,7 +521,7 @@ NatLink is now disabled.
             
     def warning(self,text):
         """is currently overloaded in GUI"""
-        if isinstance(text, basestring):
+        if type(text) in (six.text_type, six.binary_type):
             T = text
         else:
             # list probably:
@@ -534,7 +533,7 @@ NatLink is now disabled.
     
     def error(self,text):
         """is currently overloaded in GUI"""
-        if isinstance(text, basestring):
+        if type(text) in (six.text_type, six.binary_type):
             T = text
         else:
             # list probably:
@@ -548,7 +547,7 @@ NatLink is now disabled.
     def message(self, text):
         """prints message, can be overloaded in configureGUI
         """
-        if isinstance(text, basestring):
+        if type(text) in (six.text_type, six.binary_type):
             T = text
         else:
             # list probably:
@@ -560,7 +559,7 @@ NatLink is now disabled.
     def setstatus(self, text):
         """prints status, should be overloaded in configureGUI
         """
-        if isinstance(text, basestring):
+        if type(text) in (six.text_type, six.binary_type):
             T = text
         else:
             # list probably:
@@ -654,22 +653,26 @@ NatLink is now disabled.
     def setDNSInstallDir(self, new_dir):
         """set in registry local_machine\natlink
 
+        try if App/Program or Program is a valid subdirectory
         """
         key = 'DNSInstallDir'
         checkDir = self.isValidPath(new_dir, wantDirectory=1)
-        if checkDir:
-            programDir = os.path.join(checkDir, 'Program')
-            if os.path.isdir(programDir):
-                # print 'set DNS Install Directory to: %s'% new_dir
-                self.userregnl.delete("Old"+key)
-                self.userregnl.set(key, new_dir)
-                return
-            else:
-                mess =  "setDNSInstallDir, directory misses a Program subdirectory: %s"% new_dir
-                print mess
-        else:
+        while checkDir and (checkDir.lower().endswith("app") or checkDir.lower().endswith("program")):
+            print 'setDNSInstallDir, one directory too deep %s'% checkDir
+            checkDir = os.path.join(os.path.normpath(os.path.join(checkDir, '..')))
+            print '... and proceed with: %s'% checkDir
+        if not checkDir:
             mess = "setDNSInstallDir, not a valid directory: %s"% new_dir
-        return mess
+            return mess
+
+        if self.checkDNSProgramDir(checkDir):
+            # print 'set DNS Install Directory to: %s'% new_dir
+            self.userregnl.delete("Old"+key)
+            self.userregnl.set(key, checkDir)
+            return
+        else:
+            mess =  'setDNSInstallDir, directory "%s" is not a correct Dragon Program Directory: %s'% checkDir
+            print mess
  
            
     def clearDNSInstallDir(self):
@@ -1590,7 +1593,7 @@ After you change settings, restart %s.
         if not arg:
             self.message = "please enter a directory"
             return
-        self.message = "Change %s directory to: %s"% (self.DNSName, arg)
+        self.message = "Change Dragon directory to: %s"% arg
         return self.config.setDNSInstallDir(arg)
 
     def do_D(self, arg):

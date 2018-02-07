@@ -325,7 +325,7 @@ class NatlinkStatus(object):
         self.__class__.CoreDirectory = CoreDirectory
         self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
         self.__class__.NatlinkDirectory = os.path.normpath(os.path.join(CoreDirectory, '..', '..'))
-
+        self.skipSpecialWarning = skipSpecialWarning
         # for the migration from registry to ini files:
         # if self.userregnl.firstUse:
         #     if self.userregnlOld:
@@ -621,7 +621,7 @@ Please try to correct this by running the NatLink Config Program (with administr
             self.userArgsDict['language'] = language
             self.userArgsDict['userLanguage'] = userLanguageIni
             self.userArgsDict['userTopic'] = self.getBaseTopic()
-        print 'set userArgsDict: %s'% self.userArgsDict
+        print '--- natlinkstatus, set userArgsDict: %s'% self.userArgsDict
         
     def clearUserInfo(self):
         self.userArgsDict.clear()
@@ -862,10 +862,22 @@ Please try to correct this by running the NatLink Config Program (with administr
         key = 'DNSInstallDir'
         P = self.userregnl.get(key)
         if P:
-            os.path.normpath(P)
-            if os.path.isdir(P):
+            if self.checkDNSProgramDir(P):
                 return P
-                
+            else:
+                if not self.skipSpecialWarning:
+                    print '-'*60
+                    print 'DNSInstallDir is set in natlinkstatus.ini to "%s", ...'% P
+                    print '... this does not match a valid Dragon Program Directory.'
+                    print
+                    print 'Please set or clear DNSInstallDir:'
+                    print 'In Config GUI, with button in the info panel, or'
+                    print 'Via natlinkconfigfunctions.py with option d'
+                    print '-'*60
+                    raise IOError('Invalid value of DNSInstallDir: %s'% P)
+                else:
+                    print 'invalid DNSInstallDir: %s, but proceed...'% P
+                    return ''
         pf = natlinkcorefunctions.getExtendedEnv('PROGRAMFILES')
         if not os.path.isdir(pf):
             raise IOError("no valid folder for program files: %s"% pf)
@@ -878,7 +890,25 @@ Please try to correct this by running the NatLink Config Program (with administr
         print 'no valid DNS Install Dir found, please provide one in natlinkconfigfunctions (option "d") or in natlinkconfig  GUI (info panel)'
         return ''
 
-
+    def checkDNSProgramDir(self, checkDir):
+        """check if directory P is a Dragon directory
+     
+        it must be a directory, and have as subdirectories App/Program (reported by Udo) or Program.
+        In this subdirectory there should be natspeak.exe
+        """
+        if not checkDir:
+            return
+        if not os.path.isdir(checkDir):
+            print 'checkDNSProgramDir, %s is not a directory'% P
+            return
+        programDirs = os.path.join(checkDir, 'Program'), os.path.join(checkDir, 'App', 'Program')
+        for programDir in programDirs:
+            programDir = os.path.normpath(programDir)
+            programFile = os.path.join(programDir, 'natspeak.exe')
+            if os.path.isdir(programDir) and os.path.isfile(programFile):
+                return True
+        print 'checkDNSProgramDir, %s is not a valid Dragon Program Directory'%  checkDir
+        return 
     #def getPythonFullVersion(self):
     #    """get the version string from sys
     #    """
@@ -1061,9 +1091,10 @@ Please try to correct this by running the NatLink Config Program (with administr
         else:
             uDir = os.path.normpath(os.path.join(self.CoreDirectory, '..','..', '..', 'Unimacro'))
             if uDir and os.path.isdir(uDir):
-                print 'UnimacroDirectory: %s'% uDir
+                pass
+                # print 'UnimacroDirectory: %s'% uDir
             else:
-                print 'UnimacroDirectory empty, directory not found: %s'% uDir
+                print 'UnimacroDirectory not found: %s, set empty string'% uDir
                 uDir = ''
             
         self.__class__.UnimacroDirectory = uDir # meaning path is invalid!!

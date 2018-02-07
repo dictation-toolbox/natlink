@@ -177,6 +177,7 @@ try:
         checkForGrammarChanges = value
     
     # start silent, set this to 0:
+    natlinkmainPrintsAtStart = 1
     natlinkmainPrintsAtEnd = 1
     ## << QH added
     
@@ -649,10 +650,10 @@ try:
                 print 'callback user, args: %s'% repr(args)
             moduleInfo = natlink.getCurrentModule()
             if debugCallback:
-                print "---------changeCallback, User changed to", userName
+                print "---------changeCallback, User changed to", args[0]
             elif not changeCallbackUserFirst:
                 # first time, no print message, but next time do...
-                print "\n------ user changed to: %s\n"% userName
+                print "\n--- user changed to: %s\n"% args[0]
     
     
             unloadEverything()
@@ -663,7 +664,6 @@ try:
             language = status.getLanguage()
             DNSuserDirectory = status.getDNSuserDirectory()
             userLanguage = status.getUserLanguage()
-            print 'userLanguage: %s'% userLanguage
             userTopic = status.getUserTopic()
             baseTopic = status.getBaseTopic() # obsolescent, 2018, DPI15
             baseModel = status.getBaseModel() # osbolescent, 2018, DPI 15
@@ -751,8 +751,11 @@ try:
         """do the startup of the python macros system
         """
         global userDirectory, DNSVersion, coreDirectory, baseDirectory, WindowsVersion, unimacroDirectory
+        if natlinkmainPrintsAtStart:
+            print '-- natlinkmain starting...'
         try:
             # compute the directory where this module came from
+            
             if not natlink.isNatSpeakRunning():
                 print 'start Dragon first, the rerun the script natlinkmain...'
                 time.sleep(10)
