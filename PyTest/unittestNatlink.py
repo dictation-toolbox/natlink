@@ -112,11 +112,13 @@ if not os.path.normpath(coreDir) in sys.path:
     print 'inserting %s to pythonpath...'% coreDir
     sys.path.insert(0, coreDir)
 
+natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
+                     # at least some errors in testNatlinkMain seem to be raised when set to 0
 
 
 import natlink
 import natlinkmain  # for Dragon 12, need recognitionMimic from natlinkmain
-natlinkmain.start_natlink() #?? otherwise baseDirectory etc have no values...
+natlinkmain.start_natlink(natconnectOption) #?? otherwise baseDirectory etc have no values...
 import gramparser
 from natlinkutils import *
 import natlinkutils
@@ -156,8 +158,6 @@ thisDir = getBaseFolder(globals())
 # try some experiments more times, because gotBegin sometimes seems
 # not to hit
 nTries = 10
-natconnectOption = 1 # or 1 for threading, 0 for not. Seems to make difference
-                     # at least some errors in testNatlinkMain seem to be raised when set to 0
 logFileName = os.path.join(thisDir, "testresult.txt")
 
 ## try more special file names, test in testNatlinkMain:
