@@ -264,7 +264,8 @@ def getModifierKeyCodes(modifiers):
     if not modifiers: return
     if type(modifiers) == six.text_type:
         modifiers = utilsqh.convertToBinary(modifiers)
-    modifiers = modifiers.replace("+", " ").split()
+    if type(modifiers) == six.binary_type:
+        modifiers = modifiers.replace("+", " ").split()
     return [modifier_dict[m] for m in modifiers]
 
 # temporary hopefully, QH, 4-9-2013  now 22-10-2013:
@@ -278,6 +279,7 @@ def playString(keys, hooks=None):
     """
     if not keys:
         return
+    keys = utilsqh.convertToBinary(keys)
     if hooks not in (None, 0x100):
         natlink.playString(keys, hooks)
     else:
@@ -541,7 +543,7 @@ class GrammarBase(GramClassBase):
         if ruleName not in self.validRules:
             raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
         if type(ruleName) != six.binary_type:
-            print 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName))
+            raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)))
         if ruleName in self.activeRules:
             if noError: return None
             raise gramparser.GrammarError( "rule %s is already active"% ruleName, self.scanObj)
@@ -570,7 +572,8 @@ class GrammarBase(GramClassBase):
         if not type(ruleNames) in (types.ListType, types.TupleType):
             raise TypeError("activateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
                             (repr(ruleNames), type(ruleNames)))
-        self.deactivateAll()
+        if self.activeRules:
+            self._deactivateAll()  # does not affect exclusive state
         # for x in copy.copy(self.activeRules):
         #     if not x in ruleNames:
         #         if type(x) != six.binary_type:
@@ -602,7 +605,8 @@ class GrammarBase(GramClassBase):
         
         as experiment first deactivate all rules before doing so
         """
-        self.deactivateAll()
+        if self.activeRules:
+            self._deactivateAll()  # experiment Febr 2018
         assert self.activeRules == []
         # if exceptlist:
         #     for x in exceptlist:
@@ -618,10 +622,17 @@ class GrammarBase(GramClassBase):
         if exclusive != None:
             self.gramObj.setExclusive(exclusive)
 
+    def _deactivateAll(self):
+        """deactivate all rules, no change of exclusive state
+        """
+        for x in copy.copy(self.activeRules):
+            self.deactivate(x)
+        assert self.activeRules == []
+
     def deactivateAll(self):
-        for x in self.activeRules:
-            self.gramObj.deactivate(x)
-        self.activeRules = []
+        """deactivate all rules and reset explicit the exclusive state of the grammar
+        """
+        self._deactivateAll()
         self.gramObj.setExclusive(0)
 
     def emptyList(self, listName):

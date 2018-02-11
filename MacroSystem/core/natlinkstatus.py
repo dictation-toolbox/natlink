@@ -248,12 +248,12 @@ languages = {  # from config files (if not given by args in setUserInfo)
              "Italian": "ita",
              "Spanish": "esp",}
 
-shiftKeyDict = {"nld": u"Shift",
-                "enx": u'shift',
-                "fra": u"maj",
-                "deu": u"umschalt",
-                "ita": u"maiusc",
-                "esp": u"may\xfas"}
+shiftKeyDict = {"nld": "Shift",
+                "enx": 'shift',
+                "fra": "maj",
+                "deu": "umschalt",
+                "ita": "maiusc",
+                "esp": "may\xfas"}
 
 reportDNSIniDirErrors = True # set after one stroke to False, if errors were there (2017, february)
 

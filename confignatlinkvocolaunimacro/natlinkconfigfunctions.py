@@ -56,7 +56,6 @@ import traceback
 try:
     from win32com.shell.shell import IsUserAnAdmin
 except:
-
     IsUserAnAdmin = ctypes.windll.shell32.IsUserAnAdmin
 
 try:
@@ -204,7 +203,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         self.DNSName = 'Dragon'
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
         self.changesInInitPhase = 0
-        # self.isNatSpeakRunning = natlink.isNatSpeakRunning  # function
+        self.isElevated = IsUserAnAdmin()
         
     def checkCoreDirectory(self):
         """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
