@@ -1,4 +1,4 @@
-__version__ = "4.1uniform-4"
+__version__ = "4.1uniform-5"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
