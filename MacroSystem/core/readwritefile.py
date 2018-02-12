@@ -61,6 +61,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
             codingschemes = [filetype]
         else:
             codingschemes = ['utf-8', 'cp1252',  'latin-1']
+        # utf16le for nssystem.ini of Dragon15 cannot get this working: 'utf_16le', 'utf_16be', 'utf_16',
         # chardetResult = chardet.detect(tRaw)
         # guessedType = chardetResult['encoding']
         # confidence = chardetResult['confidence']
@@ -69,7 +70,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
         for codingscheme in codingschemes:
             result = DecodeEncode(tRaw, codingscheme)
             if not result is False:
-                if codingscheme == 'latin-1':
+                if codingscheme in ('latin-1', 'cp1252'):
                     pass
                 if result and ord(result[0]) == 65279:  # BOM, remove
                     result = result[1:]

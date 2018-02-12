@@ -8,7 +8,6 @@
 #   Quintijn Hoogenboom, January 2008
 #
 """
-
 With the functions in this module NatLink can be configured.
 
 This can be done in three ways:
@@ -48,10 +47,9 @@ etc.
 More at the bottom, with the CLI description...
 
 """
+import six
 import ctypes
 import traceback
-
-
 
 try:
     from win32com.shell.shell import IsUserAnAdmin
@@ -783,6 +781,7 @@ NatLink is now disabled.
         section1 = self.section1
         key1 = self.key1
         value1 = self.value1
+        # 
         try:
             win32api.WriteProfileVal(section1, key1, value1, nssystemini)
         except pywintypes.error, details:
@@ -793,7 +792,7 @@ NatLink is now disabled.
                 raise
             
         result = self.NatlinkIsEnabled(silent=1)
-        if result == None:
+        if result is None:
             nsappsini = self.getNSAPPSIni()
             section2 = self.section2
             key2 = self.key2

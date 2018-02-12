@@ -1,4 +1,11 @@
 
+Release 4.1uniform:
+- Many things, for making the new natlink.pyd for Dragon 15 work.
+- Getting the unittestNatlink mainly in order
+- Lots of things for getting the (mainly future) conversion to all Unicode work
+Natlink:
+- natlinkutils.py: trying a new detail in the activate/deactivate procedure of rules: at new activateAll or activateSet call, first the current active rules are deactivated. Previous this was done more subtle, but apparently sometimes this mechanism sucks. Maybe better with this trick!
+
 Release 4.1tango:
 -Still pre final
 -Some improvements in configuration program. Checking if natlink.pyd (dll) is registered failed. Hope however the fails of the config program for some users will be gone by now.

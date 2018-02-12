@@ -1,4 +1,4 @@
-__version__ = "4.1uniform-5"
+__version__ = "4.1uniform-6"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -95,7 +95,7 @@ getDNSInstallDir:
     this path is taken (if it points to a valid folder)
     Otherwise one of the default paths is taken,
     %PROGRAMFILES%\Nuance\... or %PROGRAMFILES%\ScanSoft\...
-    It must contain at least a Program subdirectory
+    It must contain at least a Program subdirectory or App\Program subdirectory
 
 getDNSIniDir:
     returns the directory where the NatSpeak INI files are located,
@@ -180,6 +180,7 @@ import os, re, win32api, win32con, sys, pprint, stat
 import RegistryDict, natlinkcorefunctions
 import pywintypes
 import time
+import inivars
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -744,8 +745,6 @@ Please try to correct this by running the NatLink Config Program (with administr
             if reportDNSIniDirErrors:
                 report.append('DNSIniDir not found, did not find paths to try from for version: %s'% self.getDNSVersion())
                 report.append('Please report to q.hoogenboom@antenna.nl')
-                
-            
         
         for trunk in trunkPaths:
             for dnsdir in triedPaths:
@@ -869,6 +868,9 @@ Please try to correct this by running the NatLink Config Program (with administr
                     print '-'*60
                     print 'DNSInstallDir is set in natlinkstatus.ini to "%s", ...'% P
                     print '... this does not match a valid Dragon Program Directory.'
+                    print 'This directory should hold a Program subdirectory or'
+                    print 'or the subdirectories "App\\Program"'
+                    print 'in which the Dragon program is located.'
                     print
                     print 'Please set or clear DNSInstallDir:'
                     print 'In Config GUI, with button in the info panel, or'
@@ -1004,10 +1006,14 @@ Please try to correct this by running the NatLink Config Program (with administr
         if not self.CoreDirectory:
             return
         nssystemini = self.getNSSYSTEMIni()
+        if not os.path.isfile(nssystemini):
+            raise IOError("NatlinkIsEnabled, not a valid file: %s"% nssystemini)
         actual1 = win32api.GetProfileVal(self.section1, self.key1, "", nssystemini)
 
 
         nsappsini = self.getNSAPPSIni()
+        if not os.path.isfile(nsappsini):
+            raise IOError("NatlinkIsEnabled, not a valid file: %s"% nsappsini)
         actual2 = win32api.GetProfileVal(self.section2, self.key2, "", nsappsini)
         if self.value1 == actual1:
             if self.value2 == actual2:
