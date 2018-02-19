@@ -115,7 +115,7 @@ if not os.path.normpath(coreDir) in sys.path:
     print 'inserting %s to pythonpath...'% coreDir
     sys.path.insert(0, coreDir)
 
-natconnectOption = 1 # or 1 for threading, 0 for not. Seems to make difference
+natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # at least some errors in testNatlinkMain seem to be raised when set to 0
 
 
@@ -200,6 +200,7 @@ class UnittestNatlink(unittest.TestCase):
         # remember user and get DragonPad in front:
         self.user = natlink.getCurrentUser()[0]
         self.setMicState = "off"
+        self.komodoHndle = natlink.getCurrentModule()[2]
         self.lookForDragonPad()
         #if self.getWindowContents():
         #    print 'The DragonPad window is not empty, probably open when starting the tests...'
@@ -463,11 +464,29 @@ class UnittestNatlink(unittest.TestCase):
     def doTestActiveRules(self, gram, expected):
         """gram must be a grammar instance, sort the rules to be expected and got
         """
-        expected.sort()
         got = gram.activeRules
-        got.sort()
+        if type(got) != types.DictType:
+            raise TestError('doTestActiveRules, activeRules should be a dict, not: %s (%s)'% (repr(got), type(got)))
+        if type(expected) != types.DictType:
+            raise TestError('doTestActiveRules, expected should be a dict, not: %s (%s)'% (repr(expected), type(expected)))
+        
         self.assertEqual(expected, got,
                          'Active rules not as expected:\nexpected: %s, got: %s'%
+                         (expected, got))
+
+    def doTestValidRules(self, gram, expected):
+        """gram must be a grammar instance, sort the rules to be expected and got
+        """
+        got = gram.validRules
+        if type(got) != types.ListType:
+            raise TestError('doTestValidRules, activeRules should be a list: %s (%s)'% (repr(got), type(got)))
+        if type(expected) != types.ListType:
+            raise TestError('doTestValidRules, expected should be a list, not: %s (%s)'% (repr(expected), type(expected)))
+        got.sort()
+        expected.sort()
+        
+        self.assertEqual(expected, got,
+                         'Valid rules not as expected:\nexpected: %s, got: %s'%
                          (expected, got))
 
 
@@ -612,7 +631,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test extra functions of NatLink (getUser, getAllUsers)
 
-    def testGetAllUsersEtc(self):
+    def tttestGetAllUsersEtc(self):
         self.log("testGetAllUsersEtc", 0) # not to DragonPad!
         currentUser = natlink.getCurrentUser()[0]
         
@@ -627,7 +646,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def testPlayString(self):
+    def tttestPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -687,7 +706,7 @@ class UnittestNatlink(unittest.TestCase):
         natlink.playString('{ctrl+a}{del}')
         testWindowContents('','playString empty')
 
-    def testNatlinkutilsPlayString(self):
+    def tttestNatlinkutilsPlayString(self):
         """this version captions accented and unicode characters (possibly)
         
         Can also work around the double or drop first character by using the shift key trick
@@ -709,7 +728,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testExecScript(self):
+    def tttestExecScript(self):
         self.log("testExecScript", 1)
 
         testForException = self.doTestForException
@@ -719,7 +738,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testDictObj(self):
+    def tttestDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = natlink.DictObj()
@@ -989,7 +1008,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def testRecognitionMimicCommands(self):
+    def tttestRecognitionMimicCommands(self):
         """test different phrases with commands, from own grammar
         
         explore when the recognitionMimic fails
@@ -1069,7 +1088,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
        
-    def testRecognitionMimic(self):
+    def tttestRecognitionMimic(self):
         """test different phrases with spoken forms,
         
         since Dragon 11, lots of things have changed here, so it seems good to make a special
@@ -1225,7 +1244,7 @@ class UnittestNatlink(unittest.TestCase):
             # end of testing recognitionMimic for NatSpeak <= 10    
 
         
-    def testWordFuncs(self):
+    def tttestWordFuncs(self):
         """tests the different vocabulary word functions.
 
         These tests are a bit vulnerable and seem to have changed in more recent
@@ -1477,7 +1496,7 @@ class UnittestNatlink(unittest.TestCase):
     # September 2015: add unimacroDirectory in between baseDirectory and userDirectory
     # Febr 2018: convert to binary added (QH)
 
-    def testNatlinkUtilsFunctions(self):
+    def tttestNatlinkUtilsFunctions(self):
         """test utility functions of natlinkutils
      
         getModifierKeyCodes: transforms modifiers ctrl alt (or menu) and shift into
@@ -1508,7 +1527,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException(KeyError, "getModifierKeyCodes('typo')")
 
-    def testNatLinkMain(self):
+    def tttestNatLinkMain(self):
 
         # through this grammar we get the recogtype:
         recCmdDict = RecordCommandOrDictation()
@@ -1714,7 +1733,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testWordProns(self):
+    def tttestWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
@@ -1832,7 +1851,7 @@ class UnittestNatlink(unittest.TestCase):
                 self.log("did not recognise (as expected): %s"% words)
 
 
-    def dotestCommandRecognition(self, words, shouldWork=1, log=None, testGram=None):
+    def doTestCommandRecognition(self, words, shouldWork=1, log=None, testGram=None):
         """test if a recognition is recognised as command
         
         needs the testGram for the results!!
@@ -1840,47 +1859,35 @@ class UnittestNatlink(unittest.TestCase):
         Be sure the testing grammar is loaded with allResult=1, so
         the recognitionMimic can check for dictate recognition
         
+        shouldWork can be 0 or 1, 'self', 'other', 'reject' (recogType in gotResultsObject), or None if grammar is not loaded yet
+        
         see: testRecognitionChangingRulesExclusive  (Febr 2018 QH)
         """
-        if shouldWork:
-            try:
-                natlink.recognitionMimic(words)
-            except natlink.MimicFailed:
-                self.fail("recognition failed: %s")
-            # wait for the grammar to be updated:
-            for i in range(10):
-                if testGram.recogType: break
-                time.sleep(0.1)
-            if testGram.recogType == 'self':
-                m = "recognition by this grammar: %s"% words
-                if log: self.log(m)
+        if not shouldWork in (0, 1, None, 'self', 'other', 'reject', 'exclusive'):
+            raise TestError('doTestCommandRecognition, shouldWork has invalid value: %s'% shouldWork)
+        try:
+            natlink.recognitionMimic(words)
+        except natlink.MimicFailed:
+            if shouldWork == 0:
+                return  # succes
             else:
-                m = 'recognition by other grammar or dictate "%s": %s'% (testGram.recogType, words)
-                if log: self.log(m)
-                self.fail(m)                
-
-        else:
-            try:
-                natlink.recognitionMimic(words)
-            except natlink.MimicFailed:
-                if log:
-                    self.log('test ok, mimic should fail: %s'% words)
-            # wait for the grammar to be updated:
-            for i in range(10):
-                if testGram.recogType: break
-                time.sleep(0.1)
-            if testGram.recogType in ('other', 'reject'):
-                m = "recognition by dicate or other grammar: %s"% words
-                if log: self.log(m)
-            elif testGram.recogType == 'self':
-                m = 'recognition should have failed but is "%s": %s'% (testGram.recogType, words)
-                if log: self.log(m)
-                self.fail(m)
+                self.fail("===test failed: MimicFailed, but expected %s (words: %s)"% (shouldWork, words))
+        ## mimic ok, now result:
+        recogType = testGram.recogType
+        if recogType == shouldWork:
+            return # ok
+        if testGram.recogType is None:
+            raise TestError('recognition mimic succeeded, but got no recogType from testGram, words: %s'% words)
+        if shouldWork == 1:
+            if recogType == 'self':
+                return # ok
             else:
-                m = 'Unexpected value for recogtype: "%s", words: %s'% (testGram.recogType, words)
-                
-                
-
+                self.fail("recognition mimic succeeded, but got wrong recogType from testGram '%s', words: %s (expected 'self'"% (recogType, words))
+        elif shouldWork == 0:
+            if recogType == 'self':
+                self.fail("recognition mimic succeeded, but got wrong recogType from testGram %s, words: %s (expected 'reject' or 'other'"% (recogType, words))
+            else:
+                return # reject and other is ok
         
     def _doTheCommandRecognition(self, words, shouldWork=1):
         """do the mimic and report back, mimicFailed.
@@ -1915,7 +1922,7 @@ class UnittestNatlink(unittest.TestCase):
     # Test the splitApartLines function of gramparser
     # has to be developed (QH, 2018)
     
-    # def testSplitApartLines(self):
+    # def tttestSplitApartLines(self):
     #     self.log("testSplitApartLines", 1)
     #     func = gramparser.splitApartLines
     #     self.doTestSplitApartLines(func, 'hello', ['hello', '\x00'])
@@ -1925,10 +1932,10 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
-    def testParser(self):
+    def tttestParser(self):
         self.log("testParser", 1)
 
-        def testGrammarError(exceptionType,gramSpec):
+        def tttestGrammarError(exceptionType,gramSpec):
             try:
                 parser = gramparser.GramParser([gramSpec])
                 parser.doParse()
@@ -2092,6 +2099,7 @@ class UnittestNatlink(unittest.TestCase):
         testForException(natlink.UnknownName,"testGram.gramObj.activate('start',0)",locals())
         testForException(natlink.BadWindow,"testGram.gramObj.activate('rule',1)",locals())
         testGram.gramObj.activate('rule',0)
+        testGram.gramObj.deactivate('start')
         testForException(natlink.WrongState,"testGram.gramObj.deactivate('start')",locals())
         testGram.gramObj.deactivate('rule')
         testForException(natlink.WrongState,"testGram.gramObj.deactivate('rule')",locals())
@@ -2215,7 +2223,7 @@ class UnittestNatlink(unittest.TestCase):
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
 
-    def testGrammarRecognitions(self):
+    def tttestGrammarRecognitions(self):
         self.log("testGrammarRecognitions", 1)
 
         # Create a lot of grammars to test the actual recognition results
@@ -2276,7 +2284,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         
 
-    def testDgndictationEtc(self):
+    def tttestDgndictationEtc(self):
         self.log("testDgndictationEtc", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -2530,9 +2538,14 @@ class UnittestNatlink(unittest.TestCase):
         # activate different rules
         # make exclusive and change the activated rules
         # see if the rules are recognised correct
-        # (to be sure, for kaiser_dictation project, QH)
+        # for exclusive global rules it seems to work.
+        # the test grammar is activated with allResults = 1, so callsback at
+        # every recognition.
+        # this seems also to work for exclusive grammar rules.
+        # with application specific rules, this mechanism seems not to work
+        # either the activation of the rules is incorrect, or the allResults flag does not work
+        #
 
-        # only in DragonPad, test the imported rules dgndictation, dgnletters and dgnwords        
         class TestGrammar(GrammarBase):
 
             def __init__(self):
@@ -2540,104 +2553,236 @@ class UnittestNatlink(unittest.TestCase):
                 self.resetExperiment()
 
             def resetExperiment(self):
-                self.sawBegin = 0
                 self.recogType = None
-                self.words = []
-                self.fullResults = []
-                self.error = None
 
             def gotBegin(self,moduleInfo):
                 self.resetExperiment()
-                if self.sawBegin > nTries:
-                    self.error = 'Command grammar called gotBegin twice'
-                self.sawBegin += 1
-                if moduleInfo != natlink.getCurrentModule():
-                    self.error = 'Invalid value for moduleInfo in GrammarBase.gotBegin'
 
             def gotResultsObject(self,recogType,resObj):
                 self.recogType = recogType
-
-            def gotResults(self,words,fullResults):
-                if self.words:
-                    self.error = 'Command grammar called gotResults twice'
-                self.words = words
-                self.fullResults = fullResults
-
-            # def checkExperiment(self,sawBegin,recogType,words,fullResults):
-            #     if self.error:
-            #         raise TestError,self.error
-            #     if self.sawBegin != sawBegin:
-            #         raise TestError,'Unexpected result for GrammarBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
-            #     if self.recogType != recogType:
-            #         raise TestError,'Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
-            #     if self.words != words:
-            #         raise TestError,'Unexpected result for GrammarBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
-            #     if self.fullResults != fullResults:
-            #         raise TestError,'Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults))
-            #     self.resetExperiment()
         
         testGram = TestGrammar()
         # this test function must have testGram=testGram passed, for correct report of
         # the recogtype. self = recognition by this grammar
         # reject = not recognized, other = dictate or other grammar.
-        testCommandRecognition = self.dotestCommandRecognition
+        testCommandRecognition = self.doTestCommandRecognition
+        testRecognition = self.doTestRecognition
         testForException = self.doTestForException
         testActiveRules = self.doTestActiveRules
+        testValidRules = self.doTestValidRules
 
-        testGram.unload()
-        testGram.resetExperiment()
+        # testGram.unload()
+        # testGram.resetExperiment()
 
     # test working of dgnwords:
         self.log("testing changing exclusive rules")
-        testGram.load("""
-        <one> exported = exclusive rule one <two>;
-        <two> = rule two;
-        <three> exported = normal rule three;
-        <four> exported = exclusive rule four;
-        """, allResults=1)
-        testGram.activateAll(window=0)
-        testGram.activateSet(['one'])
-        self.log('===rule one, not exclusive')
-
-        testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)  
-
-        testGram.setExclusive(1)
-        self.log('===rule one, exclusive')
-
-        # comes in as dictate, exclusive state, no dictate is recognised
-        testCommandRecognition(['hello'], shouldWork=0, testGram=testGram)  
-
-        testCommandRecognition(['exclusive','rule','one', 'rule', 'two'], testGram=testGram, log=1)
-        testCommandRecognition(['exclusive','rule','one', 'rule', 'two'], testGram=testGram, log=1)
-        self.log('===rule one and four, exclusive')
-        testGram.activateSet(['one', 'four'])
-        testCommandRecognition(['exclusive','rule','one', 'rule', 'two'], testGram=testGram, log=1)
-        testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
-        testCommandRecognition(['exclusive','rule','four'], testGram=testGram, log=1)
+        # grammar not loaded yet
+        testActiveRules(testGram, dict())
+        testValidRules(testGram, [])
+        self.assertEquals(testGram.isExclusive(), False)
+        self.assertEquals(testGram.isActive(), False)
+        self.assertEquals(testGram.isLoaded(), False)
         
-        # new rule:
-        self.log('===only rule four')
-        testGram.activateSet(['four'])
-        testCommandRecognition(['exclusive','rule','four'], testGram=testGram, log=1)  
-        testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  # should fail
-        testCommandRecognition(['exclusive','rule','one', 'rule', 'two'], shouldWork=0, testGram=testGram, log=1) # should fail
+        gramSpec = """
+            <one> exported = xclusaif rule one;
+            <two> exported = normal rule two;
+            <three> exported = normal rule three;
+            <four> exported = xclusaif rule four;
+        """
+        testGram.load(gramSpec, allResults=1)
+        
+        # loaded, not active yet:
+        testValidRules(testGram, ['one', 'two', 'three', 'four'])
+        # testActiveRules(testGram, dict())
+        # self.assertEquals(testGram.isExclusive(), False)
+        # self.assertEquals(testGram.isActive(), False)
+        # self.assertEquals(testGram.isLoaded(), True)
+        # 
+        # self.log("\n=== grammar loaded, but not active yet...", doPlaystring=1)
+        # 
+        # testCommandRecognition(['xclusaif', 'rule', 'one'], 0, testGram=testGram)
+        # self.assertEquals(testGram.isExclusive(), False)
+        # 
+        # # try setting exclusive with no rules on:
+        # testGram.setExclusive(1)
+        # self.assertEquals(testGram.isExclusive(), True)
+        # 
+        # # not activated yet, check if dictate is recognised:
+        # self.log("\n=== grammar is now exclusive but not active yet, so leaves through recognitions...", doPlaystring=1)
+        # 
+        # testCommandRecognition(['xclusaif', 'rule', 'one'], 0, testGram=testGram)
+        # testRecognition(['normal', 'rule', 'two'])
+        # testRecognition(['scratch', 'that'])
+        # testRecognition(['normal', 'rule', 'three'])
+        # testRecognition(['scratch', 'that'])
+        # 
+        # # activate one, should be exclusive now:
+        # self.log("\n=== activate rule one now, grammar should be exclusive now...", doPlaystring=1)
+        # testGram.activate('one')
+        # expActRules = dict(one=0)
+        # testActiveRules(testGram, expActRules)
+        # self.assertEquals(testGram.isExclusive(), True)
+        # 
+        # testCommandRecognition(['normal', 'rule', 'two'], 0, testGram=testGram) # no recognition, exclusive is on
+        # testCommandRecognition(['xclusaif', 'rule', 'one'], 1, testGram=testGram)  # this is the exclusive command
+        # testRecognition(['normal', 'rule', 'two'], 0)
+        # testRecognition(['scratch', 'that'], 0)
+        # 
+        # self.log("\n=== activateSet['one', 'four'] grammar should still be exclusive ...", doPlaystring=1)
+        # testGram.activateSet(['one', 'four'])
+        # expActRules = dict(one=0, four=0)
+        # testActiveRules(testGram, expActRules)
+        # self.assertEquals(testGram.isExclusive(), True)
+        # 
+        # testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
+        # testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)  
+        # testCommandRecognition(['xclusaif','rule','four'], shouldWork=1, testGram=testGram, log=1)  
+        # 
+        # testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)  
+        # 
+        # self.log("\n=== switch off exclusive mode, keep set ['one', 'four'] ...", doPlaystring=1)
+        # testGram.setExclusive(0)
+        # expActRules = dict(one=0, four=0)
+        # testActiveRules(testGram, expActRules)
+        # self.assertEquals(testGram.isExclusive(), False)
+        # 
+        # testCommandRecognition(['normal','rule','three'], shouldWork='other', testGram=testGram, log=1)  
+        # testRecognition(['scratch', 'that'])
+        # testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)
+        # testCommandRecognition(['normal', 'rule', 'two'], shouldWork=0, testGram=testGram, log=1)
+        # testRecognition(['scratch', 'that'])
+        # testRecognition(['normal', 'rule', 'two'])
+        # testRecognition(['scratch', 'that'])
+        # 
+        # testCommandRecognition(['xclusaif','rule','four'], shouldWork=1, testGram=testGram, log=1)  
+        # testCommandRecognition(['hello', 'world'], shouldWork='other', testGram=testGram)  
+        # testRecognition(['scratch', 'that'])
+        # 
+        # self.log("\n=== switch off exclusive mode, keep set ['one', 'four'] ...", doPlaystring=1)
+        # testGram.setExclusive(0)
+        # testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
+        # testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)  
+        # 
+        # self.log("\n=== switch on 'one' and 'three' for dragonpad and 'two', 'three' and 'four'  (non exclusive)...", doPlaystring=1)
+        testGram.deactivateAll()
+        thisHndle = natlink.getCurrentModule()[2] # test, this is my python ide, komode
+        self.lookForDragonPad()
+        dragonpadHndle = natlink.getCurrentModule()[2]
+        # expActRules = dict(one=0, four=0)
+        expActRules = dict()
+        testActiveRules(testGram, expActRules)
+        testGram.activate('one', window=dragonpadHndle)
+        # expActRules = dict(one=dragonpadHndle, four=0)
+        expActRules = dict(one=dragonpadHndle)
+        testActiveRules(testGram, expActRules)
+        # # this one removes a global rule (four):
+        # testGram.activateSet(['one', 'three'], window=dragonpadHndle)
+        # expActRules = dict(one=dragonpadHndle, three=dragonpadHndle)
+        # testActiveRules(testGram, expActRules)
+        # 
+        self.lookForCalc()
+        calcHndle = natlink.getCurrentModule()[2]
+        expActRules = dict(one=dragonpadHndle)
+        testActiveRules(testGram, expActRules)
+        self.log('now active for dragonpad: one (%s)'% dragonpadHndle)
+        ## this one
+        
+        testGram.activate('two', window=calcHndle)
+        self.log('activate two calc (%s)'% calcHndle)
+        expActRules = dict(one=dragonpadHndle, two=calcHndle)
+        testActiveRules(testGram, expActRules)
 
-        # new rule:
-        self.log('===only rule one')
+        self.log('activate two, three, four calc')
+        testGram.activateSet(['two', 'three', 'four'], window=calcHndle)
+        testGram.deactivate('two')
+        testGram.deactivate('three')
+        
+        expActRules = dict(one=dragonpadHndle, four=calcHndle)
+        testActiveRules(testGram, expActRules)
+        
+        self.lookForDragonPad()
+        dragonpadHndle = natlink.getCurrentModule()[2]
+        self.log("\n=== switch on Dragonpad again, with rule one...", doPlaystring=1)
+        testGram.deactivateAll()  # try this
+        expActRules = dict()
+        testActiveRules(testGram, expActRules)
+        
+        testGram.activateSet(['four'], window=self.komodoHndle)  # not exclusive, this does not work in the test.
+        testGram.activateSet(['one'], window=dragonpadHndle)  # not exclusive, this does not work in the test.
+        expActRules = dict(one=dragonpadHndle, four=self.komodoHndle)
+        # expActRules = dict(one=dragonpadHndle)
+        testActiveRules(testGram, expActRules)
+        self.assertEquals(testGram.isExclusive(), False)
 
-        testGram.activateSet(['one'])
-        testCommandRecognition(['exclusive','rule','four'], shouldWork=0, testGram=testGram, log=1)  
-        testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  # should fail
-        testCommandRecognition(['exclusive','rule','one', 'rule', 'two'], testGram=testGram, log=1) 
+        # from here it goes wrong:
+        ## nothing exclusive here, but only for dragonpad window:
+        testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)  
+
+        testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)
+        testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram)
+                # apparently exclusive grammars do not callback in an
+                # allResults grammar, but mimic works.
+                # strange...
+
+        self.lookForCalc()
+        calcHndle = natlink.getCurrentModule()[2]
+        expActRules = dict(one=dragonpadHndle, four=self.komodoHndle)
+        testActiveRules(testGram, expActRules)
+        self.log('now active for dragonpad: one, three (%s)'% dragonpadHndle)
+
+        testCommandRecognition(['normal','rule','two'], shouldWork=0, testGram=testGram) 
+
+        testGram.activate('two', window=calcHndle)
+        self.log('activate two calc (%s)'% calcHndle)
+        expActRules = dict(one=dragonpadHndle, two=calcHndle, four=self.komodoHndle)
+        testActiveRules(testGram, expActRules)
+        
+        testCommandRecognition(['normal','rule','two'], shouldWork=1, testGram=testGram) 
+       
+        self.log('activate two, three, four calc')
+        testGram.activateSet(['two', 'three', 'four'], window=calcHndle)
+        expActRules = dict(one=dragonpadHndle, two=calcHndle, three=calcHndle, four=calcHndle)
+        testActiveRules(testGram, expActRules)
+        # note: nothing exclusive here, this seems not to work for window specific rules:
+        testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)
+        testCommandRecognition(['normal','rule','three'], shouldWork=1, testGram=testGram)
+        testCommandRecognition(['normal','rule','two'], shouldWork=1, testGram=testGram) 
+
 
         testGram.setExclusive(0)
-        self.log('switch off exclusive')
-        testCommandRecognition(['exclusive','rule','four'], shouldWork=0, testGram=testGram, log=1)  
-        testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  # should fail
-        testCommandRecognition(['exclusive','rule','one', 'rule', 'two'], testGram=testGram, log=1) 
+        self.lookForDragonPad()
+        dragonpadHndle2 = natlink.getCurrentModule()[2]
+        if dragonpadHndle2 != dragonpadHndle:
+            raise TestError("hndles DragonPad not same, expected them to be so")
+        testGram.setExclusive(1)
 
+        expActRules = dict(one=dragonpadHndle, four=self.komodoHndle)
+        testActiveRules(testGram, expActRules)
+        
+        self.log("\n=== Now exclusive with rule one for Dragonpad...", doPlaystring=1)
+        testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)
+        self.log("\n=== Rule one passed exclusive...", doPlaystring=1)
 
+        testCommandRecognition(['normal','rule','two'], shouldWork=0, testGram=testGram, log=1)  
+        testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
+        testCommandRecognition(['xclusaif','rule','four'], shouldWork=0, testGram=testGram, log=1)  
 
+        self.log("\n=== Rules two three four passed exclusive...", doPlaystring=1)
+
+        testGram.setExclusive(0)
+        self.log("\n=== Non exclusive with rule one for Dragonpad...", doPlaystring=1)
+        testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)
+        self.log("\n=== Rule one passed non exclusive...", doPlaystring=1)
+        
+        
+        
+        testCommandRecognition(['normal','rule','two'], shouldWork=0, testGram=testGram, log=1)  
+        testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
+        testCommandRecognition(['xclusaif','rule','four'], shouldWork=0, testGram=testGram, log=1)  
+
+        self.log("\n=== Rules two three four passed non exclusive...", doPlaystring=1)
+
+        
         testGram.unload()
         testGram.resetExperiment()
 
@@ -2645,7 +2790,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase
 
-    def testDictGram(self):
+    def tttestDictGram(self):
         self.log("testDictGram")
 
         # Create a dictation grammar.  This grammar simply gets the results of
@@ -2798,7 +2943,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
 
-    def testSelectGram(self):
+    def tttestSelectGram(self):
         self.log("testSelectGram")
 
         # Create a selection grammar.  This grammar simply gets the results of
@@ -2948,7 +3093,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def testTrayIcon(self):
+    def tttestTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -2986,7 +3131,7 @@ class UnittestNatlink(unittest.TestCase):
     # QH, april 2010:
     # Added test for self.rulesByName dict...
 
-    def testNextPrevRulesAndWords(self):
+    def tttestNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3112,7 +3257,7 @@ class UnittestNatlink(unittest.TestCase):
     ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
     ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
 
-    def testNextPrevRulesAndWordsRecursive(self):
+    def tttestNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3257,7 +3402,7 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched to "%s" mic'% micState)
             time.sleep(w)
 
-    def testNestedMimics(self):
+    def tttestNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -3581,7 +3726,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def test....
+    # the test names to her example def tttest....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')

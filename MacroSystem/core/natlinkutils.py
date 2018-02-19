@@ -84,7 +84,7 @@ import natlinkmain
 import utilsqh
 DNSVersion = natlinkmain.DNSVersion
 # print 'DNSVersion (natlinkutils) %s'% DNSVersion
-
+debugLoad = natlinkmain.debugLoad
 
 # The following constants define the common windows message codes which
 # are passed to playEvents.
@@ -313,7 +313,7 @@ class GramClassBase(object):
     def activate(self,window=0,exclusive=None):
         self.gramObj.activate('',window)
         if exclusive != None:
-            self.gramObj.setExclusive(exclusive)
+            self.setExclusive(exclusive)
 
     def deactivate(self):
         self.gramObj.deactivate('')
@@ -480,7 +480,8 @@ class GrammarBase(GramClassBase):
 
     def __init__(self):
         GramClassBase.__init__(self)
-        self.activeRules = []
+        self.exclusiveState = 0
+        self.activeRules = {}
         self.validRules = []
         self.validLists = []
         self.doOnlyGotResultsObject = None # can rarely be set (QH, dec 2009)
@@ -537,59 +538,92 @@ class GrammarBase(GramClassBase):
 
     def unload(self):
         GramClassBase.unload(self)
-        self.activeRules = []
+        self.activeRules.clear()
+        while self.validRules:
+            self.validRules.pop()
+        while self.validLists:
+            self.validLists.pop()
+        self.exclusiveState = 0
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
         if ruleName not in self.validRules:
             raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
         if type(ruleName) != six.binary_type:
-            raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)))
+            raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
         if ruleName in self.activeRules:
-            if noError: return None
-            raise gramparser.GrammarError( "rule %s is already active"% ruleName, self.scanObj)
+            if window == self.activeRules[ruleName]:
+                print 'rule %s already active for window %s'% (ruleName, window)
+                return
+            else:
+                print 'change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window)
+                self.gramObj.deactivate(ruleName)
+        if debugLoad: print 'activate rule %s (window: %s)'% (ruleName, window)
         self.gramObj.activate(ruleName,window)
-        self.activeRules.append(ruleName)
-        if exclusive != None:
-            self.gramObj.setExclusive(exclusive)
+        self.activeRules[ruleName] = window
+        if not exclusive is None:
+            if debugLoad: print 'set exclusive mode to %s for rule %s'% (exclusive, ruleName)
+            self.setExclusive(exclusive)
+        pass            
 
     def deactivate(self, ruleName, noError=0):
         if ruleName not in self.validRules:
             if noError: return
         if type(ruleName) != six.binary_type:
             print 'GrammarBase, deactivate, %s (%s)'% (ruleName, type(ruleName))
-            raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName, self.scanObj)
+            raise gramparser.GrammarError( "rule %s (%s) was not exported in the grammar" %
+                                          ruleName, type(ruleName), self.scanObj)
         if ruleName not in self.activeRules:
             if noError: return
             raise gramparser.GrammarError( "rule %s is not active", self.scanObj)
+        if debugLoad: print 'deactivate rule %s'% ruleName
         self.gramObj.deactivate(ruleName)
-        self.activeRules.remove(ruleName)
+        del self.activeRules[ruleName]
 
     def activateSet(self, ruleNames, window=0, exclusive=None):
         """activate a set of rules.
-        
-        as an experiment, deactivate all rules before doing so.
+
+        Try new strategy, based on the trick of Vocola. Natlink does not work completely correct here.        
         """
-        if not type(ruleNames) in (types.ListType, types.TupleType):
+        if type(ruleNames) == types.ListType:
+            rulenames = copy.copy(ruleNames) # so we can pop items
+        elif type(ruleNames) == types.TupleType:
+            rulenames = list(ruleNames) # so we can pop items
+        else:
             raise TypeError("activateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
                             (repr(ruleNames), type(ruleNames)))
-        if self.activeRules:
-            self._deactivateAll()  # does not affect exclusive state
-        # for x in copy.copy(self.activeRules):
-        #     if not x in ruleNames:
-        #         if type(x) != six.binary_type:
-        #             print 'GrammarBase, activateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x))
-        #         self.gramObj.deactivate(x)
-        #         self.activeRules.remove(x)
-        for x in ruleNames:
+        activeKeys = self.activeRules.keys()
+        for x in activeKeys:
             if type(x) != six.binary_type:
-                print 'GrammarBase, activateSet, wrong type in rule to activate, %s (%s)'% (x, type(x))
-            if x not in self.validRules:
-                raise gramparser.GrammarError( "rule %s was not exported in the grammar" % x, self.scanObj )
-            if not x in self.activeRules:
-                self.gramObj.activate(x,window)
-                self.activeRules.append(x)
-        if exclusive != None:
-            self.gramObj.setExclusive(exclusive)
+                raise TypeError('activateSet, rulename "%s" should be of binary_type, not: %s'% (x, type(x)))
+
+            curWindow = self.activeRules[x]
+            if x in rulenames:
+                if curWindow == window:
+                    rulenames.remove(x)
+                    if debugLoad: print 'activateSet, rule %s already active for %s'% (x, window)
+                else:
+                    if debugLoad: print 'activateSet, rule %s, change from window %s to window %s'% (x, curWindow, window)
+                    self.deactivate(x)
+                    # self.activate(x, window)
+                    # rulenames.remove(x)
+            else:
+                # if same window, deactivate, otherwise just leave...
+                # deactivate direct to gramObj here:
+                if window == curWindow:
+                    if debugLoad: print 'activateSet, do not want %s, so deactivate, same window: %s'% (x, curWindow)
+                    self.deactivate(x)
+                elif window == 0:
+                    if debugLoad: print 'activateSet, deactivate rule %s (global), previous window: %s'% (x, curWindow)
+                    self.deactivate(x)
+                elif curWindow == 0:
+                    if debugLoad: print 'activateSet, deactivate global rule %s, new window window: %s'% (x, window)
+                    self.deactivate(x)
+                else:
+                    if debugLoad: print 'activateSet, deactivate not needed, different window: rule %s, previous window: %s new window: %s'% (x, curWindow, window)             
+        for x in rulenames:
+            self.activate(x, window)
+        if not exclusive is None:
+            self.setExclusive(exclusive)
 
     def deactivateSet(self, ruleNames, noError=0):
         if not type(ruleNames ) in (types.ListType, types.TupleType):
@@ -605,36 +639,65 @@ class GrammarBase(GramClassBase):
         
         as experiment first deactivate all rules before doing so
         """
-        if self.activeRules:
-            self._deactivateAll()  # experiment Febr 2018
-        assert self.activeRules == []
-        # if exceptlist:
-        #     for x in exceptlist:
-        #         if x in self.activeRules:
-        #             self.gramObj.deactivate(x)
-        #             self.activeRules.remove(x)
-        for x in self.validRules:
-            # if x not in self.activeRules:
-            if exceptlist and x in exceptlist:
-                continue
-            self.gramObj.activate(x,window)
-            self.activeRules.append(x)
-        if exclusive != None:
-            self.gramObj.setExclusive(exclusive)
+        allRules = copy.copy(self.validRules)
+        if exceptlist:
+            for x in exceptlist:
+                allRules.remove(x)
+            if debugLoad: print 'activateAll except %s'% exceptlist
+            
+        self.activateSet(allRules, window=window, exclusive=exclusive)
+        if not exclusive is None:
+            self.setExclusive(exclusive)
 
     def _deactivateAll(self):
         """deactivate all rules, no change of exclusive state
         """
-        for x in copy.copy(self.activeRules):
+        activeRules = self.activeRules.keys()
+        
+        for x in activeRules:
             self.deactivate(x)
-        assert self.activeRules == []
 
     def deactivateAll(self):
         """deactivate all rules and reset explicit the exclusive state of the grammar
         """
         self._deactivateAll()
-        self.gramObj.setExclusive(0)
+        self.setExclusive(0)
 
+    def setExclusive(self, exclusive):
+        """call into gramObj directly
+        maintain self.exclusiveState
+        """
+        if exclusive is None: return
+        if exclusive:
+            value = 1
+        else:
+            value = 0
+            
+        self.gramObj.setExclusive(value)
+        self.exclusiveState = value
+
+    def isExclusive(self):
+        """return True if exclusive, False if non-exclusive (most of the time)
+        """
+        if self.exclusiveState:
+            return True
+        return False
+
+    def isActive(self):
+        """return True is active (rules activated), False if loaded, but no rules active
+        return None if grammar is not loaded (yet)
+        """
+        if self.activeRules:
+            return True
+        return False
+    
+    def isLoaded(self):
+        """return True if grammar is loaded
+        """
+        if self.validRules:
+            return True
+        return False
+    
     def emptyList(self, listName):
         if listName not in self.validLists:
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)

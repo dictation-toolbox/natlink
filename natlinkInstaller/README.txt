@@ -1,5 +1,6 @@
-Release 4.1uniform-5:
+Release 4.1uniform-6:
 
+- small change in DNSInstallDir, some users have the natspeak.exe not in Program but in App/Program
 - Many things done, for making the new natlink.pyd for Dragon 15 work.
 - Most things now seem to work.
 - Getting the unittestNatlink better working and analysed.
