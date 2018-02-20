@@ -1,4 +1,4 @@
-__version__ = "4.1uniform-6"
+__version__ = "4.1uniform-7"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -180,6 +180,7 @@ import os, re, win32api, win32con, sys, pprint, stat
 import RegistryDict, natlinkcorefunctions
 import pywintypes
 import time
+import types
 import inivars
 # for getting generalised env variables:
 
@@ -205,17 +206,17 @@ for v in DNSVersions:
 
 # utility functions: 
 ## report function:
-#def fatal_error(message, new_raise=None):
-#    """prints a fatal error when running this module"""
-#    print
-#    print 'natlinkconfigfunctions fails because of fatal error:'
-#    print
-#    print message
-#    print
-#    print 'This can (hopefully) be solved by closing Dragon and then running the NatLink/Unimacro/Vocola Config program with administrator rights.'
-#    print 
-#    if new_raise:
-#        raise
+def fatal_error(message, new_raise=None):
+    """prints a fatal error when running this module"""
+    print
+    print 'natlinkconfigfunctions fails because of fatal error:'
+    print
+    print message
+    print
+    print 'This can (hopefully) be solved by closing Dragon and then running the NatLink/Unimacro/Vocola Config program with administrator rights.'
+    print 
+    if new_raise:
+        raise
 
 # of course for extracting the windows version:
 Wversions = {'1/4/10': '98',
@@ -498,25 +499,28 @@ Please try to correct this by running the NatLink Config Program (with administr
         try:
             lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
         except:
-            fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
-                             (pythonPathSectionName, version))
-            return None, None
+            fatal_error("registry section for pythonpath does not exist, probably invalid python version: %s"% version)
+
         if 'NatLink' in lmPythonPathDict.keys():
             subDict = lmPythonPathDict['NatLink']
             if isinstance(subDict, RegistryDict.RegistryDict):
                 if '' in subDict.keys():
                     value = subDict['']
-                    if value and type(value) in (str, unicode):
+                    if value and type(value) in (types.StringType, types.UnicodeType):
                         # all well (only the value is not tested yet):
                         pass  #OK otherwise print an error
                     else:
-                        fatal_error('registry section for PythonPath should contain a folder "NatLink" with a non empty string or unicode default entry (key empty string), not: %s'%  repr(subDict))
+                        if not self.skipSpecialWarning:
+                            fatal_error('registry section for PythonPath should contain a folder "NatLink" with a non empty string or unicode default entry (key empty string), not: %s'%  repr(subDict))
                 else:
-                    fatal_error('registry section for PythonPath should contain in folder "NatLink" a default entry (key empty string), not: %s'%  repr(subDict))
+                    if not self.skipSpecialWarning:
+                        fatal_error('registry section for PythonPath should contain in folder "NatLink" a default entry (key empty string), not: %s'%  repr(subDict))
             else:
-                fatal_error('registry section for PythonPath should contain a folder "NatLink" with a default entry (key empty string): HKLM\\\\%s'%  pythonPathSectionName)
+                if not self.skipSpecialWarning:
+                    fatal_error('registry section for PythonPath should contain a folder "NatLink" with a default entry (key empty string): HKLM\\\\%s'%  pythonPathSectionName)
         else:
-            fatal_error('Registry section for PythonPath should contain a folder "NatLink": HKLM\\\\%s'% pythonPathSectionName)
+            if not self.skipSpecialWarning:
+                fatal_error('Registry section for PythonPath should contain a folder "NatLink": HKLM\\\\%s'% pythonPathSectionName)
         return lmPythonPathDict, pythonPathSectionName
 
     def InsertToSysPath(self, newdir):

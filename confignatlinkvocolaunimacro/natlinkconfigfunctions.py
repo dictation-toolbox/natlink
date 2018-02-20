@@ -47,9 +47,9 @@ etc.
 More at the bottom, with the CLI description...
 
 """
-import six
 import ctypes
 import traceback
+import types
 
 try:
     from win32com.shell.shell import IsUserAnAdmin
@@ -73,6 +73,7 @@ except:
 
 import os, shutil
 import sys
+import pywintypes
 
 if __name__ == '__main__':
     if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
@@ -385,8 +386,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if __name__ == '__main__':
             print "checking PythonPathAndRegistry"
         try:
-            lmPythonPathDict, PythonPathSectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
-        except pywintypes.error:
+             result = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+             if result is None:
+                pass
+             lmPythonPathDict, PythonPathSectionName = result
+        except (pywintypes.error, KeyError):
             mess =  'The section "NatLink" does not exist and cannot be created in the registry. You probably should run this program with administrator rights'
             self.warning(mess)
             self.checkedUrgent = 1
@@ -402,17 +406,18 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         pathString = coreDir
 ##        if lmPythonPath:
 ##            print 'lmPythonPath: ', lmPythonPath.keys()
-        if not 'NatLink' in lmPythonPathDict:
+        result = lmPythonPathDict['NatLink']
+        if result and '' in result:
+            coreDirFromRegistry = lmPythonPathDict['NatLink']['']
+            if coreDirFromRegistry.lower() != coreDir.lower():
+                self.doFatalRegistryProblem(coreDirFromRegistry, coreDir)
+                return
+        else:        
             if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings and register natlink.pyd.")
             # first time install, silently register
             self.registerNatlinkPyd(silent=1)
             self.setNatlinkInPythonPathRegistry()
             return 1
-        else:
-            coreDirFromRegistry = lmPythonPathDict['NatLink']['']
-            if coreDirFromRegistry.lower() != coreDir.lower():
-                self.doFatalRegistryProblem(coreDirFromRegistry, coreDir)
-                return
         
         lmNatlinkPathDict = lmPythonPathDict['NatLink']
         Keys = lmNatlinkPathDict.keys()
@@ -518,7 +523,7 @@ NatLink is now disabled.
             
     def warning(self,text):
         """is currently overloaded in GUI"""
-        if type(text) in (six.text_type, six.binary_type):
+        if type(text) in (types.StringType, types.UnicodeType):
             T = text
         else:
             # list probably:
@@ -530,7 +535,7 @@ NatLink is now disabled.
     
     def error(self,text):
         """is currently overloaded in GUI"""
-        if type(text) in (six.text_type, six.binary_type):
+        if type(text) in (types.StringType, types.UnicodeType):
             T = text
         else:
             # list probably:
@@ -544,7 +549,8 @@ NatLink is now disabled.
     def message(self, text):
         """prints message, can be overloaded in configureGUI
         """
-        if type(text) in (six.text_type, six.binary_type):
+        
+        if type(text) in (types.StringType, types.UnicodeType):
             T = text
         else:
             # list probably:
@@ -556,7 +562,7 @@ NatLink is now disabled.
     def setstatus(self, text):
         """prints status, should be overloaded in configureGUI
         """
-        if type(text) in (six.text_type, six.binary_type):
+        if type(text) in (types.StringType, types.UnicodeType):
             T = text
         else:
             # list probably:
