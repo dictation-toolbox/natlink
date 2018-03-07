@@ -50,7 +50,7 @@ DNSVersion = nlstatus.getDNSVersion()
 class UnittestNsformat(unittest.TestCase):
     def setUp(self):
         if not natlink.isNatSpeakRunning():
-            raise TestError,'NatSpeak is not currently running'
+            raise TestError('NatSpeak is not currently running')
         self.connect()
         # remember user and get DragonPad in front:
         self.setMicState = "off"
@@ -95,7 +95,7 @@ class UnittestNsformat(unittest.TestCase):
             exec(command,globals(),localVars)
         except exceptionType:
             return
-        raise TestError,'Expecting an exception to be raised calling '+command
+        raise TestError('Expecting an exception to be raised calling '+command)
                 
     #---------------------------------------------------------------------------
     # Utility function which calls a routine and tests the return value
@@ -109,7 +109,7 @@ class UnittestNsformat(unittest.TestCase):
 
         if actual != expected:
             time.sleep(1)
-        self.assertEquals(expected, actual, 'Function call "%s" returned unexpected result\nExpected: %s, got: %s'%
+        self.assertEqual(expected, actual, 'Function call "%s" returned unexpected result\nExpected: %s, got: %s'%
                           (command, expected, actual))
 
     def doTestFormatting(self, state, input, output):
@@ -124,7 +124,7 @@ class UnittestNsformat(unittest.TestCase):
         for i in range(len(words)):
             words[i] = string.replace(words[i],'_',' ')
         actual,state = formatWords(words,state)
-        self.assertEquals(output, actual, "output not as expected: expected: |%s|, actual output: |%s|\n\t\t(input: %s, state in: %s, state out: %s)"%
+        self.assertEqual(output, actual, "output not as expected: expected: |%s|, actual output: |%s|\n\t\t(input: %s, state in: %s, state out: %s)"%
                                 (output, actual, words, inputState, state))
         return state
 
@@ -136,7 +136,7 @@ class UnittestNsformat(unittest.TestCase):
         for i in range(len(words)):
             words[i] = string.replace(words[i],'_',' ')
         actual = formatLetters(words)
-        self.assertEquals(output, actual, "output of formatLetters not as expected: expected: |%s|, actual output: |%s|\n\t\t(input: %s)"%
+        self.assertEqual(output, actual, "output of formatLetters not as expected: expected: |%s|, actual output: |%s|\n\t\t(input: %s)"%
                                 (output, actual, words))
 
     #---------------------------------------------------------------------------
@@ -154,12 +154,12 @@ class UnittestNsformat(unittest.TestCase):
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
             formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=set())
-            print 'stateFlages after formatting of %s: %s (%s)'% (word, `newState`, `showStateFlags(newState)`)
-            self.assert_(formattedResult == expectedWord,
+            print(('stateFlages after formatting of %s: %s (%s)'% (word, repr(newState), repr(showStateFlags(newState)))))
+            self.assertTrue(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
             expSet = set(expectedState)
-            self.assert_(expSet == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
+            self.assertTrue(expSet == newState, "state after %s (%s) not as expected\nActual: %s, Expected: %s"%
                          (word, formattedResult, repr(newState), repr(expSet)))
 
     def testFormatLetters(self):
@@ -194,37 +194,37 @@ class UnittestNsformat(unittest.TestCase):
             
         for w,t in wfList:
             varInNsformat = 'flags_like_%s'% t
-            if type(w) == types.TupleType:
+            if type(w) == tuple:
                 flags = w
             else:
                 wInfo = gwi(w)
-                self.assert_(wInfo != None, "word info for word: %s could not be found. US user???"% w)
+                self.assertTrue(wInfo != None, "word info for word: %s could not be found. US user???"% w)
                 flags = wordInfoToFlags(wInfo)
                 flags.discard(3)
                 flags = tuple(flags) # no delete flag not interesting
             fromNsFormat = globals()[varInNsformat]
-            self.assert_(fromNsFormat == flags, "flags_like variable |%s| not as expected\nIn nsformat.py: %s (%s)\nFrom actual word infoExpected: %s (%s)"%
+            self.assertTrue(fromNsFormat == flags, "flags_like variable |%s| not as expected\nIn nsformat.py: %s (%s)\nFrom actual word infoExpected: %s (%s)"%
                          (varInNsformat, fromNsFormat, showStateFlags(fromNsFormat), flags, showStateFlags(flags)))
             
     def testInitializeStateFlags(self):
         """test helper functions of nsformat"""
         result = initializeStateFlags()
         expected = set()
-        self.assert_(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
+        self.assertTrue(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
                      (result, expected))
 
         result = initializeStateFlags(flag_cond_no_space)
         expected = set([10])
-        self.assert_(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
+        self.assertTrue(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
                      (result, expected))
         
         result = initializeStateFlags(flag_cond_no_space, flag_no_formatting)
         expected =set([10, 18])
-        self.assert_(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
+        self.assertTrue(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
                      (result, expected))
         readable = showStateFlags(result)
         expectedReadable = ('flag_cond_no_space', 'flag_no_formatting')
-        self.assert_(expectedReadable == readable, "initialised state flags readable were not as expected\nActual: %s, Expected: %s"%
+        self.assertTrue(expectedReadable == readable, "initialised state flags readable were not as expected\nActual: %s, Expected: %s"%
                      (readable, expectedReadable))
         
             
@@ -250,16 +250,16 @@ class UnittestNsformat(unittest.TestCase):
             ## all starting with stateFlags 0, normal formatting behaviour:
             formattedResult, newState = formatWord(word, wordInfo=info, stateFlags=newState)
             totalResult.append(formattedResult)
-            print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
-            self.assert_(formattedResult == expectedWord,
+            print(('showStateFlages of %s: %s'% (word, repr(showStateFlags(newState)))))
+            self.assertTrue(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
             expectedState = set(expectedState)  # changes QH oct 2011
-            self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
+            self.assertTrue(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
                          (word, formattedResult, repr(newState), repr(expectedState)))
         expected = " 3.5 by 4 centimeter, proceeding"
         actual = ''.join(totalResult)
-        self.assert_(expected == actual, "total result of first test not as expected\nActual: |%s|, expected: |%s|"%
+        self.assertTrue(expected == actual, "total result of first test not as expected\nActual: |%s|, expected: |%s|"%
                          (actual, expected))
 
 
@@ -275,16 +275,16 @@ class UnittestNsformat(unittest.TestCase):
             ## all starting with stateFlags 0, normal formatting behaviour:
             formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=newState)
             totalResult.append(formattedResult)
-            print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
-            self.assert_(formattedResult == expectedWord,
+            print(('showStateFlages of %s: %s'% (word, repr(showStateFlags(newState)))))
+            self.assertTrue(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
-            self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: |%s|, expected: |%s|"%
-                         (word, formattedResult, `newState`, `expectedState`))
+            self.assertTrue(expectedState == newState, "state of %s (%s) not as expected\nActual: |%s|, expected: |%s|"%
+                         (word, formattedResult, repr(newState), repr(expectedState)))
 
         expected = "The .is."
         actual = ''.join(totalResult)
-        self.assert_(expected == actual, "total result of second test not as expected\nActual: |%s|, expected: |%s|"%
+        self.assertTrue(expected == actual, "total result of second test not as expected\nActual: |%s|, expected: |%s|"%
                          (actual, expected))
 
 
@@ -299,16 +299,16 @@ class UnittestNsformat(unittest.TestCase):
             ## all starting with stateFlags 0, normal formatting behaviour:
             formattedResult, newState = formatWord(word, wordInfo=wordInfo, stateFlags=newState)
             totalResult.append(formattedResult)
-            print 'showStateFlages of %s: %s'% (word, `showStateFlags(newState)`)
-            self.assert_(formattedResult == expectedWord,
+            print(('showStateFlages of %s: %s'% (word, repr(showStateFlags(newState)))))
+            self.assertTrue(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
-            self.assert_(expectedState == newState, "state of %s (%s) not as expected\nActual: |%s|, expected: |%s|"%
-                         (word, formattedResult, `newState`, `expectedState`))
+            self.assertTrue(expectedState == newState, "state of %s (%s) not as expected\nActual: |%s|, expected: |%s|"%
+                         (word, formattedResult, repr(newState), repr(expectedState)))
 
         expected = "The test is 3.4 by 5 centimeter"
         actual = ''.join(totalResult)
-        self.assert_(expected == actual, "total result of third test not as expected\nActual: |%s|, expected: |%s|"%
+        self.assertTrue(expected == actual, "total result of third test not as expected\nActual: |%s|, expected: |%s|"%
                          (actual, expected))
 
     def testSpacebar(self):
@@ -586,7 +586,7 @@ def log(t):
     I have no complete insight is this, but checking the logfile afterwards
     always works (QH)
     """
-    print t
+    print(t)
     if logFile:
         logFile.write(t + '\n')
     

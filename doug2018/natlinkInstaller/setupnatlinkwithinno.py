@@ -44,13 +44,13 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-        print 'baseFolder from argv: %s'% baseFolder
+        print('baseFolder from argv: %s'% baseFolder)
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print 'baseFolder from __file__: %s'% baseFolder
+        print('baseFolder from __file__: %s'% baseFolder)
     if not baseFolder:
         baseFolder = os.getcwd()
-        print 'baseFolder was empty, take wd: %s'% baseFolder
+        print('baseFolder was empty, take wd: %s'% baseFolder)
     return baseFolder
 
 def getCoreDir(thisDir):
@@ -65,7 +65,7 @@ def getCoreDir(thisDir):
     """
     coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
     if not os.path.isdir(coreFolder):
-        print 'not a directory: %s'% coreFolder
+        print('not a directory: %s'% coreFolder)
         return thisDir
 ## dllPath version dependent, so skip this check:
 ##    dllPath = os.path.join(coreFolder, 'natlink.dll')
@@ -75,19 +75,19 @@ def getCoreDir(thisDir):
 ##        print 'natlink.dll not found in core directory: %s'% coreFolder
 ##        return thisDir
     if not os.path.isfile(mainPath):
-        print 'natlinkmain.py not found in core directory: %s'% coreFolder
+        print('natlinkmain.py not found in core directory: %s'% coreFolder)
         return thisDir
     if not os.path.isfile(statusPath):
-        print 'natlinkstatus.py not found in core directory: %s'% coreFolder
+        print('natlinkstatus.py not found in core directory: %s'% coreFolder)
         return thisDir
     return coreFolder
 def fatal_error(message, new_raise=None):
     """prints a fatal error when running this module"""
-    print 'natlinkconfigfunctions fails because of fatal error:'
-    print message
-    print
-    print 'This can (hopefully) be solved by (re)installing NatLink'
-    print 
+    print('natlinkconfigfunctions fails because of fatal error:')
+    print(message)
+    print()
+    print('This can (hopefully) be solved by (re)installing NatLink')
+    print() 
     if new_raise:
         raise new_raise
     else:
@@ -97,13 +97,13 @@ import os, sys, shutil
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
 trunkDir = os.path.normpath(os.path.join(thisDir, '..', '..'))
-print 'trunkDir: %s'% trunkDir
+print('trunkDir: %s'% trunkDir)
 
 if thisDir == coreDir:
     raise IOError('setupnatlinkwithinno cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(coreDir) in sys.path:
-    print 'inserting %s to pythonpath...'% coreDir
+    print('inserting %s to pythonpath...'% coreDir)
     sys.path.insert(0, coreDir)
 import natlinkstatus
 _version = natlinkstatus.__version__
@@ -134,90 +134,90 @@ class InnoScript:
         self.pathname = pathname
         self.site = pathname
         ofi = self.file = open(pathname, "w")
-        print >> ofi, "; WARNING: This script has been created by setupnatlinkwithinno"
-        print >> ofi, "; will be overwritten the next time this module is run!"
-        print >> ofi, r"[Setup]"
-        print >> ofi, r"OutputDir=."
+        print("; WARNING: This script has been created by setupnatlinkwithinno", file=ofi)
+        print("; will be overwritten the next time this module is run!", file=ofi)
+        print(r"[Setup]", file=ofi)
+        print(r"OutputDir=.", file=ofi)
         self.outputFilename = "setup-natlink-%s"% self.version
-        print >> ofi, r"OutputBaseFilename=%s"% self.outputFilename
-        print >> ofi, r"AppName=%s"% self.name
-        print >> ofi, r"AppVerName=%s version %s (including Vocola 2.8.6 and Unimacro)" % (self.name, self.version)
-        print >> ofi, r"DefaultDirName=C:\%s" % self.name
-        print >> ofi, r"DefaultGroupName=%s" % self.name
-        print >> ofi, r"LicenseFile=..\NatLink\COPYRIGHT.txt"
+        print(r"OutputBaseFilename=%s"% self.outputFilename, file=ofi)
+        print(r"AppName=%s"% self.name, file=ofi)
+        print(r"AppVerName=%s version %s (including Vocola 2.8.6 and Unimacro)" % (self.name, self.version), file=ofi)
+        print(r"DefaultDirName=C:\%s" % self.name, file=ofi)
+        print(r"DefaultGroupName=%s" % self.name, file=ofi)
+        print(r"LicenseFile=..\NatLink\COPYRIGHT.txt", file=ofi)
 ##        print >> ofi, "DisableDirPage=yes"
-        print >> ofi, "UsePreviousAppDir=yes"
-        print >> ofi, "ChangesAssociations=yes"
+        print("UsePreviousAppDir=yes", file=ofi)
+        print("ChangesAssociations=yes", file=ofi)
 
-        print >> ofi
-        print >> ofi, r'[Registry]'
-        print >> ofi, 'Root: HKCR; Subkey: ".vcl"; ValueType: string; ValueName: ""; ValueData: "Vocola_command_file"; Flags: uninsdeletevalue'
-        print >> ofi, 'Root: HKCR; Subkey: ".vch"; ValueType: string; ValueName: ""; ValueData: "Vocola_include_file"; Flags: uninsdeletevalue'
+        print(file=ofi)
+        print(r'[Registry]', file=ofi)
+        print('Root: HKCR; Subkey: ".vcl"; ValueType: string; ValueName: ""; ValueData: "Vocola_command_file"; Flags: uninsdeletevalue', file=ofi)
+        print('Root: HKCR; Subkey: ".vch"; ValueType: string; ValueName: ""; ValueData: "Vocola_include_file"; Flags: uninsdeletevalue', file=ofi)
 
-        print >> ofi, r'Root: HKCR; Subkey: "Vocola_command_file"; ValueType: string; ValueName: ""; ValueData: "Vocola command file"; Flags: uninsdeletekey'
-        print >> ofi, r'Root: HKCR; Subkey: "Vocola_include_file"; ValueType: string; ValueName: ""; ValueData: "Vocola include file"; Flags: uninsdeletekey'
+        print(r'Root: HKCR; Subkey: "Vocola_command_file"; ValueType: string; ValueName: ""; ValueData: "Vocola command file"; Flags: uninsdeletekey', file=ofi)
+        print(r'Root: HKCR; Subkey: "Vocola_include_file"; ValueType: string; ValueName: ""; ValueData: "Vocola include file"; Flags: uninsdeletekey', file=ofi)
 
         notepad = os.path.join(os.getenv('WINDIR'), 'notepad.exe')
-        print >> ofi, r'Root: HKCR; Subkey: "Vocola_command_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """' + notepad + '"" ""%1"""'
-        print >> ofi, r'Root: HKCR; Subkey: "Vocola_include_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """' + notepad + '"" ""%1"""'
+        print(r'Root: HKCR; Subkey: "Vocola_command_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """' + notepad + '"" ""%1"""', file=ofi)
+        print(r'Root: HKCR; Subkey: "Vocola_include_file\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """' + notepad + '"" ""%1"""', file=ofi)
 
-        print >> ofi
-        print >> ofi, r'[Languages]'
-        print >> ofi, r'Name: "en"; MessagesFile: "..\NatLink\natlinkInstaller\Natlink.isl"'
+        print(file=ofi)
+        print(r'[Languages]', file=ofi)
+        print(r'Name: "en"; MessagesFile: "..\NatLink\natlinkInstaller\Natlink.isl"', file=ofi)
 
-        print >> ofi
-        print >> ofi, r"[Files]"
+        print(file=ofi)
+        print(r"[Files]", file=ofi)
         natlink_files = getAllFiles('NatLink')
         unimacro_files = getAllFiles('Unimacro')
         ## adaptation for Jason Koller, Kaiser hospital Honolulu:
         #kaiser_files = getAllFiles('kaiser_dictation')
         for path in natlink_files:
-            print >> ofi, r'Source: "..\NatLink\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+            print(r'Source: "..\NatLink\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path)), file=ofi)
         for path in unimacro_files:
-            if filter(None, [path for ext in ExtensionsToIgnore if path.endswith(ext)]):
-                print 'ignoring because of extension: %s'% path
+            if [_f for _f in [path for ext in ExtensionsToIgnore if path.endswith(ext)] if _f]:
+                print('ignoring because of extension: %s'% path)
                 continue
-            if filter(None, [path for subdir in FoldersToIgnore if path.find(subdir) >= 0]):
-                print 'ignoring because in FoldersToIgnore: %s'% path
+            if [_f for _f in [path for subdir in FoldersToIgnore if path.find(subdir) >= 0] if _f]:
+                print('ignoring because in FoldersToIgnore: %s'% path)
                 continue
             
-            if filter(None, [path == f for f in GrammarsToDisable]):
-                print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
-            elif filter(None, [path == f for f in GrammarsToEnable]):
-                print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+            if [_f for _f in [path == f for f in GrammarsToDisable] if _f]:
+                print(r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\DisabledGrammars\%s"; Flags: ignoreversion' % (path, os.path.dirname(path)), file=ofi)
+            elif [_f for _f in [path == f for f in GrammarsToEnable] if _f]:
+                print(r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path)), file=ofi)
             else:
-                print 'neither disable or enable (include nevertheless): %s'% path
-                print >> ofi, r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+                print('neither disable or enable (include nevertheless): %s'% path)
+                print(r'Source: "..\Unimacro\%s"; DestDir: "{app}\Unimacro\%s"; Flags: ignoreversion' % (path, os.path.dirname(path)), file=ofi)
       
         ## remove inivars.py and utilsqh.py from Unimacro if present before:
-        print >> ofi
-        print >> ofi, r"[InstallDelete]"
-        print >> ofi, r'Type: files; Name: "{app}\Unimacro\inivars.py"'
-        print >> ofi, r'Type: files; Name: "{app}\Unimacro\utilsqh.py"'
+        print(file=ofi)
+        print(r"[InstallDelete]", file=ofi)
+        print(r'Type: files; Name: "{app}\Unimacro\inivars.py"', file=ofi)
+        print(r'Type: files; Name: "{app}\Unimacro\utilsqh.py"', file=ofi)
         
         ## will only be included if directory is present:
         #for path in kaiser_files:
         #    print >> ofi, r'Source: "..\kaiser_dictation\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         
-        print >> ofi
+        print(file=ofi)
 
 
 
-        print >> ofi, r"[Icons]"
+        print(r"[Icons]", file=ofi)
         Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.py'
         # back to above:
         #Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.bat'
-        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
-              ("Configure NatLink via GUI", Path)
+        print(r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
+              ("Configure NatLink via GUI", Path), file=ofi)
         Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.py'
         # back to above:
         #Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.bat'
-        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
-              ("Configure NatLink via command line interface", Path)
+        print(r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
+              ("Configure NatLink via command line interface", Path), file=ofi)
 
 
         # run GUI after install:
-        print >> ofi, r"[Run]"
+        print(r"[Run]", file=ofi)
         Path = r'NatLink\confignatlinkvocolaunimacro\start_configurenatlink.py'
 
 ##        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch NatLink configuration GUI"; Flags: postinstall'% \
@@ -233,21 +233,21 @@ class InnoScript:
                 import os
                 os.startfile(self.pathname)
             else:
-                print "Ok, using win32api.", self.pathname
+                print("Ok, using win32api.", self.pathname)
                 win32api.ShellExecute(0, "compile",
                                                 self.pathname,
                                                 None,
                                                 None,
                                                 0)
         else:
-            print "Cool, you have ctypes installed."
+            print("Cool, you have ctypes installed.")
             res = ctypes.windll.shell32.ShellExecuteA(0, "compile",
                                                       self.pathname,
                                                       None,
                                                       None,
                                                       0)
             if res < 32:
-                raise RuntimeError, "ShellExecute failed, error %d" % res
+                raise RuntimeError("ShellExecute failed, error %d" % res)
 
 
 ################################################################
@@ -263,9 +263,9 @@ def run():
     script = InnoScript("NatLink",
                         dist_dir)
                         
-    print "*** creating the inno setup script***"
+    print("*** creating the inno setup script***")
     script.create()
-    print "*** compiling the inno setup script***"
+    print("*** compiling the inno setup script***")
     script.compile()
 ################################################################
 

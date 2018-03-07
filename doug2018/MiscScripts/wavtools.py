@@ -119,7 +119,7 @@ import re
 import time
 import string
 import struct
-import cStringIO
+import io
 
 #---------------------------------------------------------------------------
 # Convert word from SAPI format with embeded spaces to SDAPI format with
@@ -187,7 +187,7 @@ def formatNistWave(waveData,transcript=None,speaker=None,dateTime=None):
     #   recognized_text -s29 market ,\comma \New-Paragraph
     #   record_time -s20 23-07-1999, 09:13:54
     #   end_head
-    outBuf = cStringIO.StringIO()
+    outBuf = io.StringIO()
     outBuf.write('NIST_1A\n')
     outBuf.write('   1024\n')
     outBuf.write('channel_count -i 1\n')
@@ -227,15 +227,15 @@ class NistWave:
         # the size of the header
         res = re.match('NIST_1A\n\\s*(\\d+)\n',dataIn[headerStart:headerStart+32])
         if not res:
-            raise TypeError,'Unable to find start of NIST wave header in data'
+            raise TypeError('Unable to find start of NIST wave header in data')
         headerSize = int(res.group(1))
         if headerSize > len(dataIn)+headerStart:
-            raise TypeError,'Header size is smaller than size of data buffer'
+            raise TypeError('Header size is smaller than size of data buffer')
 
         # Now we can extract the header and split it into lines
         headerEnd = string.find(dataIn,'end_head',headerStart,headerStart+headerSize)
         if headerEnd < 0:
-            raise TypeError,'Missing end_head string in header'
+            raise TypeError('Missing end_head string in header')
             
         headerLines = string.split(dataIn[headerStart:headerEnd],'\n')
 
@@ -249,9 +249,9 @@ class NistWave:
             elif tagType[:2] == '-s':
                 self.fields[tagName] = tagData
                 if int(tagType[2:]) != len(tagData):
-                    raise TypeError,'String length error for %s in NIST header'%tagName
+                    raise TypeError('String length error for %s in NIST header'%tagName)
             else:
-                raise TypeError,'Unknown field type %s in NIST header'%tagType
+                raise TypeError('Unknown field type %s in NIST header'%tagType)
 
         # compute the length of the data block
         dataSize = self.fields.get('channel_count',1) * \
@@ -264,20 +264,20 @@ class NistWave:
     # Return a binary string which represents the NistWave data.
     def dump(self):
         if not self.data:
-            raise ValueError,'No data has been loaded'
+            raise ValueError('No data has been loaded')
     
         # compute the necessary length of the header
         sizeNeeded = 64
-        for key,value in self.fields.items():
+        for key,value in list(self.fields.items()):
             sizeNeeded = sizeNeeded + len(key) + 10
             if type(value)==type(''):
                 sizeNeeded = sizeNeeded + len(value)
         headerSize = 1024 * ( (sizeNeeded + 1023) / 1024 )
 
-        outBuf = cStringIO.StringIO()
+        outBuf = io.StringIO()
         outBuf.write('NIST_1A\n')
         outBuf.write('   %4d\n'%headerSize)
-        for key,value in self.fields.items():
+        for key,value in list(self.fields.items()):
             if type(value)==type(''):
                 outBuf.write('%s -s%s %s\n'%(key,len(value),value))
             else:
@@ -328,7 +328,7 @@ TestError = 'TestError'
 
 def testConvertWord(word):
     if word != convertBack(convertWord(word)):
-        raise TestError,'Convertion of "%s" is not reversable'%word
+        raise TestError('Convertion of "%s" is not reversable'%word)
     
 def test():
     testConvertWord('hello')
@@ -340,4 +340,4 @@ def test():
     testConvertWord('~~x~~~x~~~~x~~~~~x~~~~~~')
     testConvertWord('~~_~~~_~~~~_~~~~~_~~~~~~')
     testConvertWord('_~__~___~____~_____')
-    print 'Test of wavtools passed.'
+    print('Test of wavtools passed.')

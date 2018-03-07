@@ -163,7 +163,7 @@ class VoiceDictation:
                     return getattr(dictObj,attr)
         except KeyError:
             pass
-        raise AttributeError, attr
+        raise AttributeError(attr)
 
 #---------------------------------------------------------------------------
 # Dialog box

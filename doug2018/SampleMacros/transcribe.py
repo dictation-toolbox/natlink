@@ -89,14 +89,14 @@ def decodeHeader(sriFile):
 
     headerSize,headerID,unused,fileFormat,coderFormat = struct.unpack("H3sBBB",header[0:8])
     if headerSize != sriHeaderSize or headerID != 'SRI':
-        raise TranscribeError,'File is not a valid SRI file'
+        raise TranscribeError('File is not a valid SRI file')
     
     year,month,day,hour,minute,second = struct.unpack("BBBBBB",header[12:18])
     year = year + 1992
 
     packetSize,packetCount = struct.unpack("LL",header[32:40])
     if packetSize != sriFrameSize * 9 + 1:
-        raise TranscribeError,'Unexpected packet size in header'
+        raise TranscribeError('Unexpected packet size in header')
 
     return (year,month,day,hour,minute,second,packetCount)
 
@@ -201,7 +201,7 @@ def formatDate(year,month,day,hour,minute,second):
 
 def run():
     if not natlink.isNatSpeakRunning():
-        raise TranscribeError,'NatSpeak should be running before transcribing files'
+        raise TranscribeError('NatSpeak should be running before transcribing files')
     try:
         natlink.natConnect()
         doTranscription()

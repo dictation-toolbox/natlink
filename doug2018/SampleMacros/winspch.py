@@ -114,7 +114,7 @@ class TestGrammar(GrammarBase):
     # it to type a message
 
     def gotResultsInit(self,words,fullResults):
-        print 'Got recognition:', string.join(words)
+        print(('Got recognition:', string.join(words)))
         self.digits = 0
         self.hundreds = 0
         self.number = 0
@@ -156,7 +156,7 @@ class TestGrammar(GrammarBase):
         elif words[0] == 'million':
             self.number = self.number + 1000000 * temp
         elif words[0] != '0':
-            raise ValueError, "Unexpected recognition results"
+            raise ValueError("Unexpected recognition results")
 
     # This callback is made at the end of results processing.  Here we 
     # finish the number formatting and print the results
@@ -164,7 +164,7 @@ class TestGrammar(GrammarBase):
     def gotResults(self,words,fullResults):
         if not self.sawNumber: return None
         self.number = self.number + self.digits + self.hundreds * 100
-        print 'Resulting number is %d' % self.number
+        print(('Resulting number is %d' % self.number))
 
 #---------------------------------------------------------------------------
 #
@@ -205,9 +205,9 @@ class TestDialog(dialog.Dialog):
 
     def changeCallback(self,what,param):
         if what == 'user':
-            print 'User changed.  New user is', param[0]
+            print(('User changed.  New user is', param[0]))
         elif what == 'mic':
-            print 'Microphone state changed.  New state is', param
+            print(('Microphone state changed.  New state is', param))
             if param == 'on' or param == 'sleeping':
                 self.SetDlgItemText(IDC_MIC,'&Turn Mic Off')
             else:
@@ -220,7 +220,7 @@ class TestDialog(dialog.Dialog):
                  IDC_CLICK:'Click This Button',
                  IDC_SPEECH:'Speech Works',
                  IDC_NOTHING:'Do Nothing' }
-        print 'Button click:', text[nID]
+        print(('Button click:', text[nID]))
 
     # Special code for the microphone button.  We turn the microphone on or
     # off depending on its current state.  We do not update the button text
@@ -230,10 +230,10 @@ class TestDialog(dialog.Dialog):
     def onMic(self,nID,code):
         micState = natlink.getMicState()
         if micState == 'on' or micState == 'sleeping':
-            print 'Button click: Turn Mic Off'
+            print('Button click: Turn Mic Off')
             natlink.setMicState('off')
         else:
-            print 'Button click: Turn Mic On'
+            print('Button click: Turn Mic On')
             natlink.setMicState('on')
 
     # This function is called when we print. It puts the string in the

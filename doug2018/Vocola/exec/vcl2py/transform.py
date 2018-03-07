@@ -30,13 +30,13 @@ def transform_nodes(nodes):   # -> nodes
     return result
 
 def transform_node(node):
-    if node.has_key("COMMANDS"):
+    if "COMMANDS" in node:
         node["COMMANDS"] = transform_nodes(node["COMMANDS"])
-    if node.has_key("TERMS"):
+    if "TERMS" in node:
         node["TERMS"]    = transform_nodes(node["TERMS"])
-    if node.has_key("MENU"): transform_node(node["MENU"])
+    if "MENU" in node: transform_node(node["MENU"])
 
-    if node.has_key("ACTIONS"):
+    if "ACTIONS" in node:
         substitution = {}
         node["ACTIONS"] = transform_actions(substitution, node["ACTIONS"])
 
@@ -61,7 +61,7 @@ def transform_command(command):  # -> commands !
     before    = len(get_variable_terms(without_terms[0:i]))
     vanishing = len(get_variable_terms(terms[i]["TERMS"]))
     after     = len(get_variable_terms(without_terms[i+1:]))
-    if without.has_key("ACTIONS"):
+    if "ACTIONS" in without:
         without["ACTIONS"] = nop_references(without["ACTIONS"], before,
                                             vanishing, after)
     return transform_command(with_terms) + transform_command(without)
@@ -78,9 +78,9 @@ def nop_references(actions, before, vanishing, after):
     nop = create_word_node("", "", -1)
 
     substitution = {}
-    for j in xrange(1+before,1+before+vanishing):
+    for j in range(1+before,1+before+vanishing):
         substitution[str(j)] = [nop]
-    for j in xrange(1+before+vanishing, 1+before+vanishing+after):
+    for j in range(1+before+vanishing, 1+before+vanishing+after):
         reference         = {}
         reference["TYPE"] = "reference"
         reference["TEXT"] = str(j - vanishing)
@@ -106,7 +106,7 @@ def transform_arguments(substitution, arguments): # -> lists of actions
 def transform_action(substitution, action):  # -> actions
     if action["TYPE"] == "formalref" or action["TYPE"] == "reference":
         name = action["TEXT"]
-        if substitution.has_key(name):
+        if name in substitution:
             return substitution[name]
     if action["TYPE"] == "call":
         return transform_call(substitution, action)
@@ -118,7 +118,7 @@ def transform_call(substitution, call):  # -> actions
     new_call["TYPE"]      = call["TYPE"]
     new_call["TEXT"]      = call["TEXT"]
     new_call["CALLTYPE"]  = call["CALLTYPE"]
-    if call.has_key("ARGTYPES"):  new_call["ARGTYPES"]  = call["ARGTYPES"]
+    if "ARGTYPES" in call:  new_call["ARGTYPES"]  = call["ARGTYPES"]
     new_call["ARGUMENTS"] = call["ARGUMENTS"]
 
     if new_call["CALLTYPE"] == "vocola" and new_call["TEXT"] == "Eval":

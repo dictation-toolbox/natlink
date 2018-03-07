@@ -24,12 +24,12 @@ Afterwards can be set:
 
 DNSInstallDir
     - if not found in one of the predefined subfolders of %PROGRAMFILES%,
-      this directory can be set in HKCU\Software\Natlink.
+      this directory can be set in HKCU\\Software\\Natlink.
       Functions: setDNSInstallDir(path) (d path) and clearDNSInstallDir() (D)
       
 DNSINIDir
     - if not found in one of the subfolders of %COMMON_APPDATA%
-      where they are expected, this one can be set in HKCU\Software\Natlink.
+      where they are expected, this one can be set in HKCU\\Software\\Natlink.
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
 When NatLink is enabled natlink.pyd is registered with
@@ -47,6 +47,7 @@ etc.
 More at the bottom, with the CLI description...
 
 """
+
 import ctypes
 import traceback
 import types
@@ -110,13 +111,13 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-        print 'baseFolder from argv: %s'% baseFolder
+        print(('baseFolder from argv: %s'% baseFolder))
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print 'baseFolder from __file__: %s'% baseFolder
+        print(('baseFolder from __file__: %s'% baseFolder))
     if not baseFolder:
         baseFolder = os.getcwd()
-        print 'baseFolder was empty, take wd: %s'% baseFolder
+        print(('baseFolder was empty, take wd: %s'% baseFolder))
     return baseFolder
 
 def getCoreDir(thisDir):
@@ -130,7 +131,7 @@ def getCoreDir(thisDir):
     """
     coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
     if not os.path.isdir(coreFolder):
-        print 'not a directory: %s'% coreFolder
+        print(('not a directory: %s'% coreFolder))
         return thisDir
 ##    PydPath = os.path.join(coreFolder, 'natlink.pyd')
     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
@@ -139,10 +140,10 @@ def getCoreDir(thisDir):
 ##        print 'natlink.pyd not found in core directory: %s'% coreFolder
 ##        return thisDir
     if not os.path.isfile(mainPath):
-        print 'natlinkmain.py not found in core directory: %s'% coreFolder
+        print(('natlinkmain.py not found in core directory: %s'% coreFolder))
         return thisDir
     if not os.path.isfile(statusPath):
-        print 'natlinkstatus.py not found in core directory: %s'% coreFolder
+        print(('natlinkstatus.py not found in core directory: %s'% coreFolder))
         return thisDir
     return coreFolder
 hadFatalErrors = []
@@ -157,7 +158,7 @@ def fatal_error(message, new_raise=None):
                 'So if Dragon is running, close it and then rerun this program (in elevated mode).']
         mess = '\n'.join(mess)
         windowsMessageBox(mess)
-        print mess
+        print(mess)
     if message not in hadFatalErrors:
         hadFatalErrors.append(message)
     if new_raise:
@@ -173,11 +174,11 @@ if thisDir == coreDir:
     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(thisDir) in sys.path:
-    print 'inserting %s to pythonpath...'% thisDir
+    print(('inserting %s to pythonpath...'% thisDir))
     sys.path.insert(0, thisDir)
     
 if not os.path.normpath(coreDir) in sys.path:
-    print 'inserting %s to pythonpath...'% coreDir
+    print(('inserting %s to pythonpath...'% coreDir))
     sys.path.insert(0, coreDir)
 
 # from core directory, use registry entries from CURRENT_USER/Software/Natlink:
@@ -217,11 +218,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         self.checkedUrgent = 1
         if sys.version.find("64 bit") >= 0:
-            print '============================================='
-            print 'You installed a 64 bit version of python.'
-            print 'NatLink cannot run with this version, please uninstall and'
-            print 'install a 32 bit version of python, see http://qh.antenna.nl/unimacro,,,'
-            print '============================================='
+            print('=============================================')
+            print('You installed a 64 bit version of python.')
+            print('NatLink cannot run with this version, please uninstall and')
+            print('install a 32 bit version of python, see http://qh.antenna.nl/unimacro,,,')
+            print('=============================================')
             return
         
         coreDir2 = self.getCoreDirectory()
@@ -237,7 +238,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             # self.message("natlink.pyd is not found, try to repair this.")
             
             key = 'NatlinkPydRegistered'
-            print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
+            print(('%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)))
             self.userregnl.delete(key)
             natlinkPydWasAlreadyThere = 0
         else:
@@ -266,10 +267,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                 return
             result = self.registerNatlinkPyd()
             if result:
-                print '-'*30
-                print 'Copying and registering the latest natlink.pyd was succesful.'
-                print 'You can now close this program and restart Dragon.'
-                print '-'*30
+                print(('-'*30))
+                print('Copying and registering the latest natlink.pyd was succesful.')
+                print('You can now close this program and restart Dragon.')
+                print(('-'*30))
         else:
             if not self.isElevated: raise ElevationError("first run of configure program must be done in elevated mode")
             
@@ -316,7 +317,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if os.path.isfile(wantedPydFile):
             try:
                 shutil.copyfile(wantedPydFile, currentPydFile)
-                print 'copied pyd (=dll) file %s to %s'% (wantedPydFile, currentPydFile)
+                print(('copied pyd (=dll) file %s to %s'% (wantedPydFile, currentPydFile)))
             except:
                 fatal_error("Could not copy %s to %s\nProbably you need to exit Dragon first."% (wantedPydFile, currentPydFile))
                 return
@@ -343,19 +344,19 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         #    fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
         #                     (pythonPathSectionName, version))
         #    return None, None
-        if 'NatLink' in lmPythonPathDict.keys():
+        if 'NatLink' in list(lmPythonPathDict.keys()):
             subDict = lmPythonPathDict['NatLink']
             if isinstance(subDict, RegistryDict.RegistryDict):
-                if '' in subDict.keys():
+                if '' in list(subDict.keys()):
                     value = subDict['']
-                    if value and type(value) in (str, unicode):
+                    if value and type(value) in (str, str):
                         # all well (only the value is not tested yet):
                         return lmPythonPathDict, pythonPathSectionName                        
         # not ok, repair the setting, admin rights needed:
         if recursive:
             fatal_error("Registry entry NatLink in pythonpath cannot be set correct, This can (hopefully) be solved by closing Dragon and then running the NatLink/Unimacro/Vocola Config program with administrator rights.run this program")
             return None, None
-        print '==== Set NatLink setting in PythonPath section of registry to "%s"'% coreDir
+        print(('==== Set NatLink setting in PythonPath section of registry to "%s"'% coreDir))
         lmPythonPathDict['NatLink'] = {'': coreDir}
         return self.getHKLMPythonPathDict(recursive=True)
                                  
@@ -364,7 +365,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """checks if core directory is
 
         1. in the sys.path
-    ###    2. in the registry keys of HKLM\SOFTWARE\Python\PythonCore\2.7\PythonPath\NatLink
+    ###    2. in the registry keys of HKLM\\SOFTWARE\\Python\\PythonCore\\2.7\\PythonPath\\NatLink
 
         the latter part is inserted again, as, for some reason the automatic loading of
         natlinkmain needs the core directory in its path. Only take the core dir now!!
@@ -384,7 +385,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         self.checkedUrgent = None
         if __name__ == '__main__':
-            print "checking PythonPathAndRegistry"
+            print("checking PythonPathAndRegistry")
         try:
              result = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
              if result is None:
@@ -420,7 +421,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return 1
         
         lmNatlinkPathDict = lmPythonPathDict['NatLink']
-        Keys = lmNatlinkPathDict.keys()
+        Keys = list(lmNatlinkPathDict.keys())
         if not Keys:
             # first time install Section is there, but apparently empty
             if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings and register natlink.pyd.")
@@ -440,7 +441,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         # now section has default "" key, proceed:            
         oldPathString = lmNatlinkPathDict[""]
         if oldPathString.find(';') > 0:
-            print 'remove double entry, go back to single entry'
+            print('remove double entry, go back to single entry')
             self.setNatlinkInPythonPathRegistry()
 
         oldPathString = lmNatlinkPathDict[""]
@@ -523,26 +524,26 @@ NatLink is now disabled.
             
     def warning(self,text):
         """is currently overloaded in GUI"""
-        if type(text) in (types.StringType, types.UnicodeType):
+        if type(text) in (bytes, str):
             T = text
         else:
             # list probably:
             T = '\n'.join(text)
-        print '-'*60
-        print T
-        print '='*60
+        print(('-'*60))
+        print(T)
+        print(('='*60))
         return T
     
     def error(self,text):
         """is currently overloaded in GUI"""
-        if type(text) in (types.StringType, types.UnicodeType):
+        if type(text) in (bytes, str):
             T = text
         else:
             # list probably:
             T = '\n'.join(text)
-        print '-'*60
-        print T
-        print '='*60
+        print(('-'*60))
+        print(T)
+        print(('='*60))
         return T
     
 
@@ -550,26 +551,26 @@ NatLink is now disabled.
         """prints message, can be overloaded in configureGUI
         """
         
-        if type(text) in (types.StringType, types.UnicodeType):
+        if type(text) in (bytes, str):
             T = text
         else:
             # list probably:
             T = '\n'.join(text)
-        print '-'*60
-        print T
-        print '='*60
+        print(('-'*60))
+        print(T)
+        print(('='*60))
 
     def setstatus(self, text):
         """prints status, should be overloaded in configureGUI
         """
-        if type(text) in (types.StringType, types.UnicodeType):
+        if type(text) in (bytes, str):
             T = text
         else:
             # list probably:
             T = '\n'.join(text)
-        print '-'*60
-        print T
-        print '='*60
+        print(('-'*60))
+        print(T)
+        print(('='*60))
 
     def isValidPath(self, Path, wantDirectory=None, wantFile=None):
         """return the path, if valid
@@ -620,7 +621,7 @@ NatLink is now disabled.
         # key was there already:
         wantedValue = coreDir
         if value == wantedValue:
-            print 'registry PythonPath/NatLink setting ok: %s'% value
+            print(('registry PythonPath/NatLink setting ok: %s'% value))
             return 1
         # value different from current value:
         if secondTry:
@@ -646,12 +647,12 @@ NatLink is now disabled.
     #            self.warning("cannot clear Python path for NatLink in registry (HKLM section), probably you have insufficient rights to do this")
 
     def printInifileSettings(self):
-        print 'Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getCoreDirectory()
-        Keys = self.userregnl.keys()
+        print(('Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getCoreDirectory()))
+        Keys = list(self.userregnl.keys())
         Keys.sort()
         for k in Keys:
-            print "\t%  s:\t%s"% (k, self.userregnl.get(k))
-        print "-"*60
+            print(("\t%  s:\t%s"% (k, self.userregnl.get(k))))
+        print(("-"*60))
     
     def setDNSInstallDir(self, new_dir):
         """set in registry local_machine\natlink
@@ -661,9 +662,9 @@ NatLink is now disabled.
         key = 'DNSInstallDir'
         checkDir = self.isValidPath(new_dir, wantDirectory=1)
         while checkDir and (checkDir.lower().endswith("app") or checkDir.lower().endswith("program")):
-            print 'setDNSInstallDir, one directory too deep %s'% checkDir
+            print(('setDNSInstallDir, one directory too deep %s'% checkDir))
             checkDir = os.path.join(os.path.normpath(os.path.join(checkDir, '..')))
-            print '... and proceed with: %s'% checkDir
+            print(('... and proceed with: %s'% checkDir))
         if not checkDir:
             mess = "setDNSInstallDir, not a valid directory: %s"% new_dir
             return mess
@@ -675,7 +676,7 @@ NatLink is now disabled.
             return
         else:
             mess =  'setDNSInstallDir, directory "%s" is not a correct Dragon Program Directory: %s'% checkDir
-            print mess
+            print(mess)
  
            
     def clearDNSInstallDir(self):
@@ -699,18 +700,18 @@ NatLink is now disabled.
             nsapps = os.path.join(new_dir, self.NSAppsIni)
             if not os.path.isfile(nssystem):
                 mess = 'folder %s does not have the INI file %s'% (new_dir, self.NSSystemIni)
-                print mess
+                print(mess)
                 return mess
             if not os.path.isfile(nsapps):
                 mess =  'folder %s does not have the INI file %s'% (new_dir, self.NSAppsIni)
-                print mess
+                print(mess)
                 return mess
             self.userregnl.set(key, new_dir)
             self.userregnl.delete("Old"+key)
             return  # OK
         else:
             mess = "setDNSIniDir, not a valid directory: %s"% new_dir
-            print mess
+            print(mess)
             return mess  # signify an error...
     
     
@@ -729,11 +730,11 @@ NatLink is now disabled.
     def setUserDirectory(self, v):
         key = 'UserDirectory'
         if v and self.isValidPath(v):
-            print "Setting the UserDirectory of NatLink to %s"% v
+            print(("Setting the UserDirectory of NatLink to %s"% v))
             self.userregnl.set(key, v)
             self.userregnl.delete("Old"+key)
         else:
-            print 'Setting the UserDirectory of NatLink failed, not a valid directory: %s'% v
+            print(('Setting the UserDirectory of NatLink failed, not a valid directory: %s'% v))
             
         
     def clearUserDirectory(self):
@@ -743,9 +744,9 @@ NatLink is now disabled.
             self.userregnl.set("Old"+key, oldvalue)
         if self.userregnl.get(key):
             self.userregnl.delete(key)
-            print 'clearing UserDirectory of NatLink'
+            print('clearing UserDirectory of NatLink')
         else:
-            print 'The UserDirectory of NatLink was not set, nothing changed...'
+            print('The UserDirectory of NatLink was not set, nothing changed...')
             
     def alwaysIncludeUnimacroDirectoryInPath(self):
         """set variable so natlinkstatus knows to include Unimacro in path
@@ -754,8 +755,8 @@ NatLink is now disabled.
         Unimacro is expected at ../../Unimacro relative to the Core directory
         """
         key = 'IncludeUnimacroInPythonPath'
-        Keys = self.userregnl.keys()
-        print 'set %s'% key
+        Keys = list(self.userregnl.keys())
+        print(('set %s'% key))
         self.userregnl.set(key, 1)
 
     def ignoreUnimacroDirectoryInPathIfNotUserDirectory(self):
@@ -766,13 +767,13 @@ NatLink is now disabled.
         Unimacro is expected at ../../Unimacro relative to the Core directory
         """
         key = 'IncludeUnimacroInPythonPath'
-        Keys = self.userregnl.keys()
+        Keys = list(self.userregnl.keys())
 
         if key in Keys:
-            print 'clearing variable %s'% key
+            print(('clearing variable %s'% key))
             self.userregnl.delete(key)
         else:
-            print 'was not set %s'% key
+            print(('was not set %s'% key))
         
       
     def enableNatlink(self, silent=None):
@@ -790,11 +791,11 @@ NatLink is now disabled.
         # 
         try:
             win32api.WriteProfileVal(section1, key1, value1, nssystemini)
-        except pywintypes.error, details:
+        except pywintypes.error as details:
             if details[0] == 5:
-                print 'cannot enable NatLink (1), you probably need administrator rights'
+                print('cannot enable NatLink (1), you probably need administrator rights')
             else:
-                print 'unexpected error at enable NatLink (1)'
+                print('unexpected error at enable NatLink (1)')
                 raise
             
         result = self.NatlinkIsEnabled(silent=1)
@@ -805,11 +806,11 @@ NatLink is now disabled.
             value2 = self.value2
             try:
                 win32api.WriteProfileVal(section2, key2, value2, nsappsini)
-            except pywintypes.error, details:
+            except pywintypes.error as details:
                 if details[0] == 5:
-                    print 'cannot enable NatLink (2), you probably need administrator rights'
+                    print('cannot enable NatLink (2), you probably need administrator rights')
                 else:
-                    print 'unexpected error at enable NatLink (2)'
+                    print('unexpected error at enable NatLink (2)')
                     raise
             result = self.NatlinkIsEnabled(silent=1)
             if result == None:
@@ -823,7 +824,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         result = self.NatlinkIsEnabled(silent=1)
         if result:            
             if not silent:
-                print 'NatLink enabled, you can now restart %s'% self.DNSName
+                print(('NatLink enabled, you can now restart %s'% self.DNSName))
         else:
             if not silent:
                 self.warning("failed to enable NatLink")
@@ -842,21 +843,21 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         # this one disables NatLink:
         try:
             win32api.WriteProfileVal(section1, key1, None, nssystemini)
-        except pywintypes.error, details:
+        except pywintypes.error as details:
             if details[0] == 5:
-                print 'cannot disable NatLink, you probably need administrator rights'
+                print('cannot disable NatLink, you probably need administrator rights')
             else:
-                print 'unexpected error at disable NatLink'
+                print('unexpected error at disable NatLink')
                 raise
         result = self.NatlinkIsEnabled(silent=1)
         if result:            
             t = 'NatLink is NOT disabled, you probably need administrator rights, please restart the config program in "elevated mode"'
-            print t
+            print(t)
             self.warning(t)
         else:
             if not silent:
-                print 'NatLink disabled, restart %s'% self.DNSName
-                print 'Note natlink.pyd is NOT UNREGISTERED, but this is not necessary either'
+                print(('NatLink disabled, restart %s'% self.DNSName))
+                print('Note natlink.pyd is NOT UNREGISTERED, but this is not necessary either')
         
     def getVocolaUserDir(self):
         key = 'VocolaUserDirectory'
@@ -866,7 +867,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     def setVocolaUserDir(self, v):
         key = 'VocolaUserDirectory'
         if self.isValidPath(v, wantDirectory=1):
-            print "Setting VocolaUserDirectory %s and enable Vocola"% v
+            print(("Setting VocolaUserDirectory %s and enable Vocola"% v))
             self.userregnl.set(key, v)
             self.userregnl.delete("Old"+key)
         else:
@@ -884,7 +885,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             self.userregnl.set("Old"+key, oldvalue)
         if self.userregnl.get(key):
             self.userregnl.delete(key)
-            print 'clearing the VocolaUserDirectory and disable Vocola'
+            print('clearing the VocolaUserDirectory and disable Vocola')
         else:
             mess = 'no valid VocolaUserDirectory, so Vocola was already disabled'
             return mess
@@ -902,7 +903,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         if ahkexedir:
             exepath = os.path.join(ahkexedir, 'autohotkey.exe')
             if os.path.isfile(exepath):
-                print 'Set AutoHotkey Exe Directory (AhkExeDir) to %s'% v
+                print(('Set AutoHotkey Exe Directory (AhkExeDir) to %s'% v))
                 self.userregnl.set(key, v)
                 self.userregnl.delete('Old'+key)
                 return
@@ -919,7 +920,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             self.userregnl.set("Old"+key, oldvalue)
         if self.userregnl.get(key):
             self.userregnl.delete(key)
-            print 'Clear AutoHotkey User Directory (AhkUserDir)'
+            print('Clear AutoHotkey User Directory (AhkUserDir)')
         else:
             mess = 'AutoHotkey User Directory (AhkUserDir) was not set, do nothing'
             return mess
@@ -933,7 +934,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         key = 'AhkUserDir'
         ahkuserdir = self.isValidPath(v, wantDirectory=1)
         if ahkuserdir:
-            print 'Set AutoHotkey User Directory (AhkUserDir) to %s'% v
+            print(('Set AutoHotkey User Directory (AhkUserDir) to %s'% v))
             self.userregnl.set(key, v)
             self.userregnl.delete('Old'+key)
             return
@@ -948,7 +949,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             self.userregnl.set("Old"+key, oldvalue)
         if self.userregnl.get(key):
             self.userregnl.delete(key)
-            print 'Clear AutoHotkey Exe Directory (AhkExeDir)'
+            print('Clear AutoHotkey Exe Directory (AhkExeDir)')
         else:
             mess = 'AutoHotkey Exe Directory (AhkExeDir) was not set, do nothing'
             return mess
@@ -965,13 +966,13 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         if unimacrouserdir:
             oldDir = self.isValidPath(oldDir, wantDirectory=1)
             if oldDir == unimacrouserdir:
-                print 'UnimacroUserDirectory is already set to "%s", Unimacro is enabled'% v
+                print(('UnimacroUserDirectory is already set to "%s", Unimacro is enabled'% v))
                 return
-                print 'Set UnimacroUserDirectory to %s, enable Unimacro'% v
+                print(('Set UnimacroUserDirectory to %s, enable Unimacro'% v))
             if oldDir:
-                print '\n-----------\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
+                print(('\n-----------\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
                       'from old UnimacroUserDirectory (%s) to \n' \
-                      'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, unimacrouserdir)
+                      'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, unimacrouserdir)))
             self.userregnl.set(key, v)
             self.userregnl.delete('Old'+key)
             return
@@ -990,7 +991,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             keyOld = 'Old' + key
             self.userregnl.set(keyOld, oldValue)
         else:
-            print 'UnimacroUserDirectory was already cleared, Unimacro remains disabled'
+            print('UnimacroUserDirectory was already cleared, Unimacro remains disabled')
 
     def setUnimacroIniFilesEditor(self, v):
         key = "UnimacroIniFilesEditor"
@@ -998,9 +999,9 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         if exefile and v.endswith(".exe"):
             self.userregnl.set(key, v)
             self.userregnl.delete("Old"+key)
-            print 'Set UnimacroIniFilesEditor to "%s"'% v
+            print(('Set UnimacroIniFilesEditor to "%s"'% v))
         else:
-            print 'not a valid .exe file: %s'% (key, v)
+            print(('not a valid .exe file: %s'% (key, v)))
             
     def clearUnimacroIniFilesEditor(self):
         key = "UnimacroIniFilesEditor"
@@ -1009,7 +1010,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         if oldexefile:
             self.userregnl.set("Old"+key, oldvalue)
         self.userregnl.delete(key)
-        print 'UnimacroIniFilesEditor cleared'
+        print('UnimacroIniFilesEditor cleared')
                 
     def registerNatlinkPyd(self, silent=1):
         """register natlink.pyd
@@ -1057,7 +1058,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                     return
                 else:
                     self.userregnl.set('NatlinkPydRegistered', newIniSetting)
-                    print 'Registring pyd file succesful: %s'% PydPath
+                    print(('Registring pyd file succesful: %s'% PydPath))
     
     #                    print 'registered %s '% PydPath
                     
@@ -1069,12 +1070,12 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             # os.system:
             result = os.system('regsvr32 "%s"'% PydPath)
             if result:
-                print 'failed to register %s (result: %s)'% (PydPath, result)
+                print(('failed to register %s (result: %s)'% (PydPath, result)))
                 self.userregnl.set('NatlinkPydRegistered', 0)
                 return
             else:
                 self.userregnl.set('NatlinkPydRegistered', newIniSetting)
-                print 'Registring pyd file succesful: %s'% PydPath
+                print(('Registring pyd file succesful: %s'% PydPath))
                 
         self.setNatlinkInPythonPathRegistry()
         return result is None
@@ -1109,19 +1110,19 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         #     print 'unregisterNatlinkPyd: is not registered, %s'% PydPath
         
         if not os.path.isfile(PydPath):
-            print 'PydPath (%s) does not exist, but pyd is registered, continue'% PydPath
+            print(('PydPath (%s) does not exist, but pyd is registered, continue'% PydPath))
 
         try:
             # pass this step if it does not succeed:
             dll = ctypes.windll[PydPath]
             result = dll.DllUnregisterServer()
             if result != 0:
-                print 'could not unregister %s'% PydPath
+                print(('could not unregister %s'% PydPath))
         except KeyError:
             if os.path.isfile(PydPath):
-                print 'Cannot unregister natlink.pyd, maybe it is not registered, maybe Dragon is running...'
+                print('Cannot unregister natlink.pyd, maybe it is not registered, maybe Dragon is running...')
             else:
-                print 'Cannot unregister natlink.pyd.'
+                print('Cannot unregister natlink.pyd.')
         except:
             traceback.print_exc() 
         finally:
@@ -1129,7 +1130,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             result2 = ctypes.windll.kernel32.FreeLibrary(handle)
                        
         if result2 != 1:
-            print 'could not free the link to %s'% PydPath
+            print(('could not free the link to %s'% PydPath))
         
         # extra check:
         # registered = self.PydIsRegistered(PydPath)
@@ -1205,12 +1206,12 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                     
                     toFile = os.path.join(toFolder, uscFile)
                     if os.path.isfile(toFile):
-                        print 'remove previous %s'% toFile
+                        print(('remove previous %s'% toFile))
                         try:
                             os.remove(toFile)
                         except:
                             pass
-                    print 'copy %s from %s to %s'%(uscFile, fromFolder, toFolder)
+                    print(('copy %s from %s to %s'%(uscFile, fromFolder, toFolder)))
                     try:
                         shutil.copyfile(fromFile, toFile)
                     except:
@@ -1218,11 +1219,11 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                     else:
                         oldUscFile = os.path.join(toFolder, oldUscFile)
                         if os.path.isfile(oldUscFile):
-                            print 'remove old usc.vcl file: %s'% oldUscFile
+                            print(('remove old usc.vcl file: %s'% oldUscFile))
                             os.remove(oldUscFile)
                         return
         mess = "could not copy file %s from %s to %s"%(uscFile, fromFolder, toFolder)
-        print mess
+        print(mess)
         return mess
         
 
@@ -1252,7 +1253,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             
         if not os.path.isdir(toFolder):
             mess = 'cannot find Vocola command files directory, not a valid path: %s'% toFolder
-            print mess
+            print(mess)
             return mess
         nFiles = 0
         for f in os.listdir(toFolder):
@@ -1283,7 +1284,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         mess = 'changed %s files in %s, and set the variable "%s"'% (nFiles, toFolder,
                                                                      "VocolaTakesUnimacroActions")
         
-        print mess
+        print(mess)
 
     def removeUnimacroVchLineInVocolaFiles(self, subDirectory=None):
         """remove the Unimacro wrapper support line into all Vocola command files
@@ -1314,7 +1315,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             
         if not os.path.isdir(toFolder):
             mess = 'cannot find Vocola command files directory, not a valid path: %s'% toFolder
-            print mess
+            print(mess)
             return mess
         nFiles = 0
         for f in os.listdir(toFolder):
@@ -1336,7 +1337,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             elif len(f) == 3 and os.path.isdir(F):
                 self.removeUnimacroVchLineInVocolaFiles(F)
         mess = 'removed include lines from %s files in %s'% (nFiles, toFolder)
-        print mess
+        print(mess)
 
 
     def enableVocolaTakesLanguages(self):
@@ -1384,27 +1385,27 @@ def _main(Options=None):
     shortOptions = "aAiIeEfFgGyYxXDCVbBNOPlmMrRzZuq"
     shortArgOptions = "d:c:v:n:o:p:"
     if Options:
-        if type(Options) == types.StringType:
+        if type(Options) == bytes:
             Options = Options.split(" ", 1)
-        Options = map(string.strip, Options)                
+        Options = list(map(string.strip, Options))                
     else:
         Options = sys.argv[1:]
 
     try:
         options, args = getopt.getopt(Options, shortOptions+shortArgOptions)
     except getopt.GetoptError:
-        print 'invalid option: %s'% `Options`
+        print(('invalid option: %s'% repr(Options)))
         cli.usage()
         return
 
     if args:
-        print 'should not have extraneous arguments: %s'% `args`
+        print(('should not have extraneous arguments: %s'% repr(args)))
     for o, v in options:
         o = o.lstrip('-')
         funcName = 'do_%s'% o
         func = getattr(cli, funcName, None)
         if not func:
-            print 'option %s not found in cli functions: %s'% (o, funcName)
+            print(('option %s not found in cli functions: %s'% (o, funcName)))
             cli.usage()
             continue
         if o in shortOptions:
@@ -1412,7 +1413,7 @@ def _main(Options=None):
         elif o in shortArgOptions:
             func(v)
         else:
-            print 'options should not come here'
+            print('options should not come here')
             cli.usage()
 
 
@@ -1435,7 +1436,7 @@ class CLI(cmd.Cmd):
             result = self.config.checkPythonPathAndRegistry()
             if result is None:
                 if __name__ == "__main__":
-                    print "Error starting NatlinkConfig, Type 'u' for a usage message"
+                    print("Error starting NatlinkConfig, Type 'u' for a usage message")
     
                 self.checkedConfig = self.config.checkedUrgent
                 return
@@ -1443,7 +1444,7 @@ class CLI(cmd.Cmd):
             result = self.config.configCheckNatlinkPydFile()
             if result is None:
                 if __name__ == "__main__":
-                    print "Error starting NatlinkConfig, Type 'u' for a usage message"
+                    print("Error starting NatlinkConfig, Type 'u' for a usage message")
     
                 self.checkedConfig = self.config.checkedUrgent
                 return
@@ -1453,17 +1454,17 @@ class CLI(cmd.Cmd):
             self.isValidPath = self.config.isValidPath  ## convenient
             for key in ObsoleteStatusKeys:
                 # see at top of this file!
-                if key in self.config.userregnl.keys():
-                    print 'remove obsolete key from natlinkstatus.ini: "%s"'% key
+                if key in list(self.config.userregnl.keys()):
+                    print(('remove obsolete key from natlinkstatus.ini: "%s"'% key))
                     self.config.userregnl.delete(key)
             self.DNSName = self.config.getDNSName()
         except ElevationError:
             e = sys.exc_info()[1]
-            print 'You need to run this program in elevated mode. (%s).'% e.message
+            print(('You need to run this program in elevated mode. (%s).'% e.message))
             raise
             
         if __name__ == "__main__":
-            print "Type 'u' for a usage message"
+            print("Type 'u' for a usage message")
 
     def getFatalErrors(self):
         """get the fatal errors from this module and clear them automatically
@@ -1492,7 +1493,7 @@ class CLI(cmd.Cmd):
         if os.path.isdir(n):    
             return n
         else:
-            print 'not a valid directory: %s (%s)'% (n, dirName)
+            print(('not a valid directory: %s (%s)'% (n, dirName)))
             return ''
             
         
@@ -1501,9 +1502,8 @@ class CLI(cmd.Cmd):
         """gives the usage of the command line options or options when
         the command line interface  (CLI) is used
         """
-        print '-'*60
-        print \
-"""Use either from the command line like 'natlinkconfigfunctions.py -i'
+        print(('-'*60))
+        print("""Use either from the command line like 'natlinkconfigfunctions.py -i'
 or in an interactive session using the CLI (command line interface). 
 
 [Status]
@@ -1541,7 +1541,7 @@ m/M     - insert/remove an include line for Unimacro.vch in all Vocola
 
 [UserDirectory]
 n/N     - enable/disable UserDirectory, the directory where
-          User NatLink grammar files are located (e.g., ...\My Documents\NatLink)
+          User NatLink grammar files are located (e.g., ...\\My Documents\\NatLink)
 
 [Repair]
 r/R     - register/unregister NatLink, the natlink.pyd (natlink.pyd) file
@@ -1557,14 +1557,14 @@ u/usage - give this list
 q       - quit
 
 help <command>: give more explanation on <command>
-        """
-        print '='*60
+        """)
+        print(('='*60))
 
     # info----------------------------------------------------------
     def do_i(self, arg):
         S = self.config.getNatlinkStatusString()
         S = S + '\n\nIf you changed things, you must restart %s'% self.DNSName
-        print S
+        print(S)
     def do_I(self, arg):
         # inifile natlinkstatus.ini settings:
         self.config.printInifileSettings()
@@ -1573,9 +1573,8 @@ help <command>: give more explanation on <command>
         self.config.printPythonPath()
 
     def help_i(self):
-        print '-'*60
-        print \
-"""The command info (i) gives an overview of the settings that are
+        print(('-'*60))
+        print(("""The command info (i) gives an overview of the settings that are
 currently set inside the NatLink system.
 
 The command settings (I) gives all the NatLink settings, kept in
@@ -1588,8 +1587,8 @@ Settings are set by either the NatLink/Vocola/Unimacro installer
 or by functions that are called by the CLI (command line interface).
 
 After you change settings, restart %s.
-"""% self.DNSName
-        print '='*60
+"""% self.DNSName))
+        print(('='*60))
     help_j = help_I = help_i
 
     # DNS install directory------------------------------------------
@@ -1602,13 +1601,12 @@ After you change settings, restart %s.
 
     def do_D(self, arg):
         self.message = "Clear DNS directory in registry"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         return self.config.clearDNSInstallDir()
 
     def help_d(self):
-        print '-'*60
-        print \
-"""Set (d <path>) or clear (D) the directory where %s is installed.
+        print(('-'*60))
+        print(("""Set (d <path>) or clear (D) the directory where %s is installed.
 
 Setting is only needed when %s is not found at one of the "normal" places.
 So setting is seldom not needed.
@@ -1617,8 +1615,8 @@ When you have a pre-8 version of NatSpeak, setting this option might work.
 
 After you clear this setting, NatLink will, at starting time, again
 search for the %s install directory in the "normal" place(s).
-"""% (self.DNSName, self.DNSName, self.DNSName)
-        print '='*60
+"""% (self.DNSName, self.DNSName, self.DNSName)))
+        print(('='*60))
     help_D = help_d
 
     # DNS INI directory-----------------------------------------
@@ -1633,12 +1631,11 @@ search for the %s install directory in the "normal" place(s).
 
     def do_C(self, arg):
         self.message = "Clear %s INI files directory in registry"% self.DNSName
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         return self.config.clearDNSIniDir()
     def help_c(self):
-        print '-'*60
-        print \
-"""Set (c <path>) or clear (C) the directory where %s INI file locations
+        print(('-'*60))
+        print(("""Set (c <path>) or clear (C) the directory where %s INI file locations
 (nssystem.ini and nsapps.ini) are located.
 
 Only needed if these cannot be found in the normal place(s):
@@ -1647,14 +1644,14 @@ Only needed if these cannot be found in the normal place(s):
 
 After Clearing this registry entry NatLink will, when it is started by %s,
 again search for its INI files in the "default/normal" place(s).
-"""% (self.DNSName, self.DNSName)
-        print '='*60
+"""% (self.DNSName, self.DNSName)))
+        print(('='*60))
     help_C = help_c
     
     # User Directories -------------------------------------------------
     def do_n(self, arg):
         if not arg:
-            print 'also enter a valid folder'
+            print('also enter a valid folder')
             return
         arg = arg.strip()
         self.config.setUserDirectory(arg)
@@ -1672,14 +1669,13 @@ again search for its INI files in the "default/normal" place(s).
     #     self.config.ignoreUnimacroDirectoryInPathIfNotUserDirectory()
     
     def help_n(self):
-        print '-'*60
-        print \
-"""Sets (n <path>) or clears (N) the UserDirectory of NatLink.
+        print(('-'*60))
+        print("""Sets (n <path>) or clears (N) the UserDirectory of NatLink.
 This is the folder where your own python grammar files are/will be located.
 
 Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro directory.
-"""
-        print '='*60
+""")
+        print(('='*60))
         
     help_N = help_n
     
@@ -1692,14 +1688,13 @@ Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro dire
             
     def do_O(self, arg):
         self.message = "Clearing Unimacro user directory, and disable Unimacro"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.clearUnimacroUserDir()
 
     def help_o(self):
-        print '-'*60
+        print(('-'*60))
         userDir = self.config.getUserDirectory()
-        print \
-"""set/clear UnimacroUserDirectory (o <path>/O)
+        print("""set/clear UnimacroUserDirectory (o <path>/O)
 
 And enable/disable Unimacro.
 
@@ -1707,11 +1702,11 @@ In this directory, your user INI files (and possibly other user
 dependent files) will be put.
 
 You can use (if entered through the CLI) "~" (or %%HOME%%) for user home directory, or
-another environment variable (%%...%%). (example: "o ~\NatLink\Unimacro")
+another environment variable (%%...%%). (example: "o ~\\NatLink\\Unimacro")
 
 Setting this directory also enables Unimacro. Clearing it disables Unimacro
-"""
-        print '='*60
+""")
+        print(('='*60))
 
     help_O = help_o
 
@@ -1719,20 +1714,19 @@ Setting this directory also enables Unimacro. Clearing it disables Unimacro
     def do_p(self, arg):
         if os.path.isfile(arg) and arg.endswith(".exe"):
             self.message = "Setting (path to) Unimacro INI Files editor to %s"% arg
-            print 'do action: %s'% self.message
+            print(('do action: %s'% self.message))
             self.config.setUnimacroIniFilesEditor(arg)
         else:
-            print 'Please specify a valid path for the Unimacro INI files editor, not |%s|'% arg
+            print(('Please specify a valid path for the Unimacro INI files editor, not |%s|'% arg))
             
     def do_P(self, arg):
         self.message = "Clear Unimacro INI file editor, go back to default Notepad"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.clearUnimacroIniFilesEditor()
 
     def help_p(self):
-        print '-'*60
-        print \
-"""set/clear path to Unimacro INI files editor (p <path>/P)
+        print(('-'*60))
+        print("""set/clear path to Unimacro INI files editor (p <path>/P)
 
 By default (when you clear this setting) "notepad" is used, but:
 
@@ -1741,8 +1735,8 @@ TextPad, NotePad++, UltraEdit, or win32pad
 
 You can even specify Wordpad, maybe Microsoft Word...
 
-"""
-        print '='*60
+""")
+        print(('='*60))
 
     help_P = help_p
 
@@ -1751,29 +1745,28 @@ You can even specify Wordpad, maybe Microsoft Word...
     # can be called from the Vocola compatibility button in the config GUI.
     def do_l(self, arg):
         self.message = "Copy include file Unimacro.vch into Vocola User Directory"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.copyUnimacroIncludeFile()
 
     def help_l(self):
-        print '-'*60
-        print \
-"""Copy Unimacro.vch header file into Vocola User Files directory      (l)
+        print(('-'*60))
+        print("""Copy Unimacro.vch header file into Vocola User Files directory      (l)
 
 Insert/remove 'include Unimacro.vch' lines into/from each Vocola 
 command file                                                        (m/M)
 
 Using Unimacro.vch, you can call Unimacro shorthand commands from a
 Vocola command.
-"""
-        print '='*60
+""")
+        print(('='*60))
 
     def do_m(self, arg):
         self.message = 'Insert "include Unimacro.vch" line in each Vocola Command File'
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.includeUnimacroVchLineInVocolaFiles()
     def do_M(self, arg):
         self.message = 'Remove "include Unimacro.vch" line from each Vocola Command File'
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.removeUnimacroVchLineInVocolaFiles()
     help_m = help_M = help_l
 
@@ -1781,16 +1774,15 @@ Vocola command.
     # enable/disable NatLink------------------------------------------------
     def do_e(self, arg):
         self.message = "Enabling NatLink:"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.enableNatlink()
     def do_E(self, arg):
         self.message = "Disabling NatLink:"
         self.config.disableNatlink()
 
     def help_e(self):
-        print '-'*60
-        print \
-"""Enable NatLink (e) or disable NatLink (E):
+        print(('-'*60))
+        print(("""Enable NatLink (e) or disable NatLink (E):
 
 When you enable NatLink, the necessary settings in nssystem.ini and nsapps.ini
 are done.
@@ -1813,8 +1805,8 @@ so the window 'Messages from NatLink' is NOT OPENED.
 Note: when you disable NatLink, the natlink.pyd file is NOT unregistered.
 It is not called any more by %s, as its declaration is removed from
 the Global Clients section of nssystem.ini.
-"""% (self.DNSName, self.DNSName, self.DNSName)
-        print "="*60
+"""% (self.DNSName, self.DNSName, self.DNSName)))
+        print(("="*60))
         
         
     help_E = help_e
@@ -1830,18 +1822,17 @@ the Global Clients section of nssystem.ini.
             self.message = "do_v, not a valid path: %s"% arg
             return
         self.message =  'Set VocolaUserDirectory to "%s" and enable Vocola'% arg
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.setVocolaUserDir(arg)
             
     def do_V(self, arg):
         self.message = "Clear VocolaUserDirectory and (therefore) disable Vocola"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.clearVocolaUserDir()
 
     def help_v(self):
-        print '-'*60
-        print \
-"""Enable/disable Vocola by setting/clearing the VocolaUserDirectory
+        print(('-'*60))
+        print("""Enable/disable Vocola by setting/clearing the VocolaUserDirectory
 (v <path>/V).
 
 In this VocolaUserDirectory your Vocola Command File are/will be located.
@@ -1850,8 +1841,8 @@ In this VocolaUserDirectory your Vocola Command File are/will be located.
 popular choice.
 
 You may have to manually create this folder first.
-"""
-        print '='*60
+""")
+        print(('='*60))
 
     help_V = help_v
 
@@ -1886,47 +1877,45 @@ You may have to manually create this folder first.
 ## testing:
     def do_s(self, arg):
         pydPath = r"C:\natlink\natlink\macrosystem\core\natlink.pyd"
-        print 'registered?: %s'% self.config.PydIsRegistered(pydPath)
+        print(('registered?: %s'% self.config.PydIsRegistered(pydPath)))
         pass
     def do_g(self, arg):
-        print 'no valid option'
+        print('no valid option')
         pass
     def do_G(self, arg):
-        print 'no valid option'
+        print('no valid option')
 
     def help_g(self):
-        print '-'*60
-        print \
-"""not a valid option
-"""
-        print '='*60
+        print(('-'*60))
+        print("""not a valid option
+""")
+        print(('='*60))
 
     help_G = help_g
     # enable/disable NatLink debug output...
     def do_x(self, arg):
         self.message = 'Enable natlinkmain giving debugLoad output to "Messages from Natlink" window'
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.enableDebugLoadOutput()
     def do_X(self, arg):
         self.message = 'Disable natlinkmain giving debugLoad output to "Messages from Natlink" window'
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.disableDebugLoadOutput()
     # enable/disable NatLink debug output...
     def do_y(self, arg):
         self.message = 'Enable natlinkmain giving debugCallback output to "Messages from Natlink" window'
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.enableDebugCallbackOutput()
     def do_Y(self, arg):
         self.message = 'Disable natlinkmain giving debugCallback output to messages of "Messages from Natlink" window'
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.disableDebugCallbackOutput()
 
 
 
     def help_x(self):
-        print '-'*60
-        print \
-"""Enable (x)/disable (X) natlinkmain debug load output
+        print(('-'*60))
+        print("""Enable (x)/disable (X) natlinkmain debug load output
 
 Enable (y)/disable (Y) natlinkmain debug callback output
 
@@ -1937,8 +1926,8 @@ This sends sometimes lengthy debugging messages to the
 
 Mainly used when you suspect problems with the working 
 of NatLink, so keep off (X and Y) most of the time.
-"""
-        print '='*60
+""")
+        print(('='*60))
 
     help_y = help_x
     help_X = help_x
@@ -1948,7 +1937,7 @@ of NatLink, so keep off (X and Y) most of the time.
     def do_r(self, arg):
         self.message = "(Re) register and enable natlink.pyd"
         if self.config.isElevated:
-            print 'do action: %s'% self.message
+            print(('do action: %s'% self.message))
             isRegistered = self.config.userregnl.get("NatlinkPydRegistered")
             #if isRegistered:
             #    print "If you have problems re-registering natlink.pyd, please try the following:"
@@ -1997,9 +1986,8 @@ of NatLink, so keep off (X and Y) most of the time.
         self.config.unregisterNatlinkPyd(silent=1)
 
     def help_r(self):
-        print '-'*60
-        print \
-"""Registers (r) / unregisters (R) natlink.pyd explicitly.
+        print(('-'*60))
+        print("""Registers (r) / unregisters (R) natlink.pyd explicitly.
 
 Registering is also done (silently) when you start this program or the
 configuration GUI the first time, so this option should only be needed in rare cases.
@@ -2019,8 +2007,8 @@ will be copied to this name and registered. In the log panel of the configure GU
 
 If you want to (silently) enable NatLink and register silently use -z,
 To disable NatLink and unregister (silently) use Z
-"""
-        print '='*60
+""")
+        print(('='*60))
     help_R = help_r
     help_z = help_r
     help_Z = help_r
@@ -2029,26 +2017,25 @@ To disable NatLink and unregister (silently) use Z
     # different Vocola options
     def do_b(self, arg):
         self.message = "Enable Vocola different user directories for different languages"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.enableVocolaTakesLanguages()
     def do_B(self, arg):
         self.message = "Disable Vocola different user directories for different languages"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.disableVocolaTakesLanguages()
 
     def do_a(self, arg):
         self.message = "Enable Vocola taking Unimacro actions"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.enableVocolaTakesUnimacroActions()
     def do_A(self, arg):
         self.message = "Disable Vocola taking Unimacro actions"
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.disableVocolaTakesUnimacroActions()
 
     def help_a(self):
-        print '-'*60
-        print \
-"""----Enable (a)/disable (A) Vocola taking Unimacro actions.
+        print(('-'*60))
+        print("""----Enable (a)/disable (A) Vocola taking Unimacro actions.
         
 These actions (Unimacro Shorthand Commands) and "meta actions" are processed by
 the Unimacro actions module.
@@ -2059,13 +2046,12 @@ The special option for that is (f).
 
 Note this option (f) is only needed when you use Vocola with Unimacro actions,
 but you do not use Unimacro.
-"""
-        print '='*60
+""")
+        print(('='*60))
         
     def help_b(self):
-        print '-'*60
-        print \
-"""----Enable (b)/disable (B) different Vocola User Directories
+        print(('-'*60))
+        print("""----Enable (b)/disable (B) different Vocola User Directories
 
 If enabled, Vocola will look into a subdirectory "xxx" of
 VocolaUserDirectory IF the language code of the current user speech
@@ -2078,8 +2064,8 @@ Dutch speech profile (language code "nld"), a subdirectory "nld"
 is created, and all existing Vocola Command files for this Dutch speech profile are copied into this folder.
 
 When you use your English speech profile again, ("enx") the Vocola Command files in the VocolaUserDirectory are taken again.
-"""
-        print '='*60
+""")
+        print(('='*60))
 
     help_B = help_b
     help_A = help_a
@@ -2087,12 +2073,12 @@ When you use your English speech profile again, ("enx") the Vocola Command files
     # autohotkey settings:
     def do_h(self, arg):
         self.message = 'set directory of AutoHotkey.exe to: %s'% arg
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.setAhkExeDir(arg)
 
     def do_H(self, arg):
         self.message = 'clear directory of AutoHotkey.exe, return to default'
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.clearAhkExeDir()
 
     def do_k(self, arg):
@@ -2104,29 +2090,28 @@ When you use your English speech profile again, ("enx") the Vocola Command files
 
     def do_K(self, arg):
         self.message = 'clear user directory of AutoHotkey scripts, return to default'
-        print 'do action: %s'% self.message
+        print(('do action: %s'% self.message))
         self.config.clearAhkUserDir()
             
     def help_h(self):
-        print '-'*60
-        print \
-"""----Set (h)/clear (return to default) (H) the AutoHotkey exe directory.
+        print(('-'*60))
+        print("""----Set (h)/clear (return to default) (H) the AutoHotkey exe directory.
        Assume autohotkey.exe is found there (if not AutoHotkey support will not be there)
        If set to a invalid directory, AutoHotkey support will be switched off.
        
        Set (k)/clear (return to default) (K) the User Directory for AutoHotkey scripts.
        
        Note: currently these options can only be run from the natlinkconfigfunctions.py script.
-"""
-        print '='*60
+""")
+        print(('='*60))
 
     help_H = help_k = help_K = help_h
 
     # enable/disable NatLink debug output...
 
     def default(self, line):
-        print 'no valid entry: %s, type u or usage for list of commands'% line
-        print
+        print(('no valid entry: %s, type u or usage for list of commands'% line))
+        print()
 
     def do_quit(self, arg):
         sys.exit()
@@ -2135,13 +2120,12 @@ When you use your English speech profile again, ("enx") the Vocola Command files
         self.usage()
     do_u = do_usage
     def help_u(self):
-        print '-'*60
-        print \
-"""u and usage give the list of commands
+        print(('-'*60))
+        print("""u and usage give the list of commands
 lowercase commands usually set/enable something
 uppercase commands usually clear/disable something
 Informational commands: i and I
-"""
+""")
     help_usage = help_u
     
 
@@ -2156,11 +2140,11 @@ if __name__ == "__main__":
             pass
         except ElevationError:
             e = sys.exc_info()[1]
-            print 'please run this program in elevated mode (%s).'% e.message
+            print(('please run this program in elevated mode (%s).'% e.message))
             cli.do_q("dummy")
         except NatSpeakRunningError:
             e = sys.exc_info()[1]
-            print 'Dragon should not be running, %s.'% e.message
+            print(('Dragon should not be running, %s.'% e.message))
     else:
       _main()
 

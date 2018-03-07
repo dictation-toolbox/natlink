@@ -6,9 +6,9 @@ def set_log(target):
 def print_log(message, no_newline=False):
     global LOG
     if no_newline:
-        print >>LOG, message,
+        print(message, end=' ', file=LOG)
     else:
-        print >>LOG, message
+        print(message, file=LOG)
 
 def close_log():
     global LOG

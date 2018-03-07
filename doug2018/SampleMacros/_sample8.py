@@ -23,7 +23,7 @@ class ThisGrammar(GrammarBase):
         natlink.playString(' ' + text)
 
     def gotResults_dgnletters(self,words,fullResults):
-        words = map(lambda x: x[:1], words)
+        words = [x[:1] for x in words]
         text = string.join(words, '')
         natlink.playString(' ' + text)
         

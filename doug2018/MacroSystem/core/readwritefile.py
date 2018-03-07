@@ -29,7 +29,7 @@ def fixCrLf(tRaw):
     """replace crlf into lf
     """
     if b'\r\r\n' in tRaw:
-        print 'readAnything, fixCrLf: fix crcrlf'
+        print('readAnything, fixCrLf: fix crcrlf')
         tRaw = tRaw.replace(b'\r\r\n', b'\r\n')
     if b'\r' in tRaw:
         # print 'readAnything, fixCrLf, remove cr'
@@ -81,7 +81,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
         # guessedType = chardetResult['encoding']
         # confidence = chardetResult['confidence']
         # result = DecodeEncode(tRaw, guessedType)
-        print 'readAnything: no valid encoding found for file: %s' % sourceslash
+        print(('readAnything: no valid encoding found for file: %s' % sourceslash))
         return None, None, None
     else:
         # consider source als stream of text
@@ -95,15 +95,15 @@ def writeAnything(filepath, encoding, bom, content):
     take "ASCII" if encoding is None
     take "" if bom is None
     """
-    if type(content) in (types.ListType, types.TupleType):
+    if type(content) in (list, tuple):
         content = '\n'.join(content)
-    if type(content) != types.UnicodeType:
+    if type(content) != str:
         raise TypeError("writeAnything, content should be Unicode, not %s (%s)"% (type(content), filepath))
     if encoding in [None, 'ascii']:
         encodings = ['ascii', 'latin-1']  # could change to cp1252, or utf-8
                                           # this is only if the encoding is new or read as ascii, and accented characters are introduced
                                           # in the text to output.
-    elif type(encoding) in (types.ListType, types.TupleType):
+    elif type(encoding) in (list, tuple):
         encodings = copy.copy(encoding)
     else:
         encodings = [encoding]
@@ -118,10 +118,10 @@ def writeAnything(filepath, encoding, bom, content):
             #     print 'did encoding %s (%s)'% (encoding, filepath)
             break
     else:
-        print 'fail to encode file %s with encoding(s): %s. Use xmlcharrefreplace'% (filepath, encodings)
+        print(('fail to encode file %s with encoding(s): %s. Use xmlcharrefreplace'% (filepath, encodings)))
         tRaw = content.encode(encoding=encoding, errors='xmlcharrefreplace')
     if bom:
-        print 'add bom for tRaw'
+        print('add bom for tRaw')
         tRaw = bom + tRaw 
     io.open(filepath, 'wb').write(tRaw)
     pass
@@ -152,9 +152,9 @@ if __name__ == '__main__':
         result = readAnything(filepath)
         if result:
             encoding, bom, t = result
-            print 'file: %s, encoding: %s, bom: %s'% (filename, encoding, bom)
-            print 'content: %s'% t
-            print '-'*40
+            print(('file: %s, encoding: %s, bom: %s'% (filename, encoding, bom)))
+            print(('content: %s'% t))
+            print(('-'*40))
             outfilename = 'out' + filename
             outfilepath = os.path.join(testdir, outfilename)
             if encoding == 'ascii':
@@ -167,19 +167,19 @@ if __name__ == '__main__':
             # writeAnything(outfilepath, encoding, t)
             writeAnything(outfilepath, encodings, bom, t)
         else:
-            print 'file: %s, no result'
+            print('file: %s, no result')
 
     testfile = r'C:/natlink/rudiger/acoustic.ini'
     result = readAnything(testfile)
     if result:
         encoding, bom, t = result
-        print 'testfile: %s, encoding: %s, bom: %s'% (testfile, encoding, repr(bom))
+        print(('testfile: %s, encoding: %s, bom: %s'% (testfile, encoding, repr(bom))))
         outfile = r'C:/natlink/rudiger/bomacoustic.ini'
         writeAnything(outfile, encoding, bom, t)
         result2 = readAnything(outfile)
         enc2, bom2, t2 = result2
-        print 'enc2: %s, (equal? %s)'% (enc2, encoding == enc2)
-        print 'bom2: %s, (equal? %s)'% (repr(bom2), bom == bom2)
-        print 'text2: %s, (equal? %s)'% (t2, t == t2)
+        print(('enc2: %s, (equal? %s)'% (enc2, encoding == enc2)))
+        print(('bom2: %s, (equal? %s)'% (repr(bom2), bom == bom2)))
+        print(('text2: %s, (equal? %s)'% (t2, t == t2)))
         
     

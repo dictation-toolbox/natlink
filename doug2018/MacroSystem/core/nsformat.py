@@ -50,7 +50,7 @@ flag_topicadded = 30
 flagNames = {}
 name = ''
 for name in globals():
-    if name.startswith('flag_') and type(globals()[name]) == types.IntType and 0 < globals()[name] < 32:
+    if name.startswith('flag_') and type(globals()[name]) == int and 0 < globals()[name] < 32:
         flagNames[globals()[name]] = name    
 #
 flags_like_period = (9, 4, 21, 17)  # flag_two_spaces_next = 9,  flag_passive_cap_next = 4, flag_no_space_before = 21
@@ -154,7 +154,7 @@ def formatWords(wordList,state=None):
             state = set([flag_no_space_next])
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
-        elif type(state) in (types.ListType, types.TupleType):
+        elif type(state) in (list, tuple):
             state = set(state)
         elif type(state) != type(emptySet):
             state = wordInfoToFlags(state)
@@ -183,7 +183,7 @@ def formatPassword(wordList):
                 nextRepeat -= 1
         elif w in countDict:
             nextRepeat = countDict[w]
-            outList.append(unicode(nextRepeat))
+            outList.append(str(nextRepeat))
         else:
             outList.append(w.capitalize())
     return ''.join(outList)
@@ -245,7 +245,7 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
             state = set(flag_no_space_next)
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
-        elif type(state) in (types.ListType, types.TupleType):
+        elif type(state) in (list, tuple):
             state = set(state)
         else:
             raise ValueError("formatWord, invalid stateFlags: %s"% repr(stateFlags))
@@ -405,7 +405,7 @@ def getWordInfo11(word):
         elif prop.startswith('right-'):
             return set(propDict['right-double-quote'])
         else:
-            print 'getWordInfo11, unknown word property: "%s" ("%s")'% (prop, word)          
+            print(('getWordInfo11, unknown word property: "%s" ("%s")'% (prop, word)))          
             return set()  # empty tuple
     else:
         # should not come here
@@ -442,14 +442,14 @@ def wordInfoToFlags(wordInfo):
     elif wordInfo == 0:
         return emptySet
     wordFlags = set()
-    if type(wordInfo) == types.IntType:
+    if type(wordInfo) == int:
         if  wordInfo:
             for i in range(32):
                 if wordInfo & (1<<i):
                     wordFlags.add(i)
             else:
                 pass # wordInfo == 0
-    elif type(wordInfo) in (types.TupleType, types.ListType):
+    elif type(wordInfo) in (tuple, list):
         wordFlags = set(wordInfo)
     elif type(wordInfo) == type(emptySet):
         wordFlags = copy.copy(wordInfo)
@@ -472,8 +472,8 @@ def testSubroutine(state,input,output):
         words[i] = string.replace(words[i],'_',' ')
     actual,state = formatWords(words,state)
     if actual != output:
-        print 'Expected "%s"'%output
-        print 'Actually "%s"'%actual
+        print(('Expected "%s"'%output))
+        print(('Actually "%s"'%actual))
         raise 'TestError'
     return state
 
@@ -493,7 +493,7 @@ def testFormatting10():
         r'an "\open-quote example of testing .\period "\close-quote hello',
         ' an "example of testing."  Hello')
 
-    print 'Example Formatting tests passed, more in unittestNsformat (in PyTest directory)'
+    print('Example Formatting tests passed, more in unittestNsformat (in PyTest directory)')
 
 def testFormatting11():
 
@@ -512,7 +512,7 @@ def testFormatting11():
         r'\caps-on\Caps-On as you can see ,\comma\comma this yours_truly works \caps-off\caps_off well',
         '  As You Can See, This Yours Truly Works well')
 
-    print 'Example Formatting tests (11) passed, more in unittestNsformat (in PyTest directory)'
+    print('Example Formatting tests (11) passed, more in unittestNsformat (in PyTest directory)')
 
 if __name__=='__main__':
     import doctest

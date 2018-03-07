@@ -18,7 +18,7 @@ class ThisGrammar(GrammarBase):
     """
 
     def gotResults_change(self,words,fullResults):
-        if self.priorityMap.has_key(words[4]):
+        if words[4] in self.priorityMap:
             p=self.priorityMap[words[4]]
             res=win32process.SetPriorityClass(win32process.GetCurrentProcess(),p)
 

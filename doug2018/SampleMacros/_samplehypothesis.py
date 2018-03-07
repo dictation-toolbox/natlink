@@ -20,22 +20,22 @@ class ThisGrammar(GrammarBase):
         self.load(self.gramSpec, hypothesis=1, allResults=1)
         self.activateAll()
     def gotResults_dummy(self,words,fullResults):
-        print 'got the dummy rule of gotHypothesis'
+        print('got the dummy rule of gotHypothesis')
                            
     def gotBegin(self,moduleInfo):
-        print '_samplehypothesis, starting new recognition'
+        print('_samplehypothesis, starting new recognition')
 
     def gotHypothesis(self, words):
         """display the words when a hypothesis is called back happens
         """
-        print 'hypothesis: %s'% words
+        print(('hypothesis: %s'% words))
 
     def gotResultsObject(self,recogType,resObj):
         try:
             words = resObj.getWords(0)
         except (natlink.OutOfRange, IndexError):
                 words = "<???>"
-        print '---result: %s'% words
+        print(('---result: %s'% words))
 
 thisGrammar = ThisGrammar()
 thisGrammar.initialize()

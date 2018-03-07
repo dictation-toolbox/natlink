@@ -124,7 +124,7 @@ class ThisGrammar(GrammarBase):
     
     def initialize(self):
         self.load(self.gramDefn)
-        for listName in self.listDefn.keys():
+        for listName in list(self.listDefn.keys()):
             self.setList(listName,self.listDefn[listName])
         self.activateSet(['start'],exclusive=0)
 
@@ -184,7 +184,7 @@ class ThisGrammar(GrammarBase):
         self.cancelMode()
         direction = findKeyWord(words,self.listDefn['direction'])
         count = findKeyWord(words,self.listDefn['count'])
-        amount = findKeyWord(words,amountDict.keys())
+        amount = findKeyWord(words,list(amountDict.keys()))
         if count: 
             count = string.atoi(count)
         elif amount: 

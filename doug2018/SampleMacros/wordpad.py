@@ -142,8 +142,8 @@ class ThisGrammar(GrammarBase):
             'right align':  "output = '{Ctrl+r}'",
             'delete':       "output = '{Del}'",
             'restore':      "output = '{Alt+o}f{Alt+y}Regular{Enter}'" }
-        if keywords.has_key(words[0]): 
-            exec keywords[words[0]]
+        if words[0] in keywords: 
+            exec(keywords[words[0]])
             natlink.playString(output)
 
     # The base class calls this function when one or more words in the
@@ -191,14 +191,14 @@ class ThisGrammar(GrammarBase):
         rulesFound = convertResults(fullResults)
         # this brings up the font format dialog
         natlink.playString('{Alt+o}f')
-        if rulesFound.has_key('fontFace'):
+        if 'fontFace' in rulesFound:
             # set the font face if found
             natlink.playString('{Alt+f}' + rulesFound['fontFace'][0])
-        if rulesFound.has_key('fontStyle'):
+        if 'fontStyle' in rulesFound:
             # handle the font style if found
-            exec keywords[ rulesFound['fontStyle'][0] ]
+            exec(keywords[ rulesFound['fontStyle'][0] ])
             natlink.playString(output)
-        if rulesFound.has_key('fontSize'):
+        if 'fontSize' in rulesFound:
             # set the font size if found
             natlink.playString('{Alt+s}' + rulesFound['fontSize'][0])
         # close the font format dialog
@@ -221,7 +221,7 @@ class ThisGrammar(GrammarBase):
             else: first = 0
             message = message + x
         message = message + "'"
-        print message
+        print(message)
 
 ############################################################################
 #

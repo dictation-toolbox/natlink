@@ -48,24 +48,24 @@ class ThisGrammar(GrammarBase):
                 self.application=win32com.client.Dispatch('Word.Application')
             if self.activated:
                 if winHandle != self.activated:
-                    print 'DEactivate for previous %s'% self.activated
+                    print(('DEactivate for previous %s'% self.activated))
                     self.deactivateAll()
                     self.activated = None
             if not self.activated:
-                print 'activate for %s'% winHandle
+                print(('activate for %s'% winHandle))
                 self.activateAll(window=winHandle)
                 self.activated = winHandle
         else:
             winHandle = matchWindow(moduleInfo,'winword','')
             if not winHandle:
-                print 'other application, release word'
+                print('other application, release word')
                 if self.application:
                     self.application = None
             # outside an interesting window so:
             return
         
         # new modInfo, possibly a new document in front:
-        print 'update styles'
+        print('update styles')
         self.updateStyles()
 ##        print 'self.styles: %s'% self.styles.keys()
             
@@ -75,9 +75,9 @@ class ThisGrammar(GrammarBase):
             document = self.application.ActiveDocument
             style_map = [(str(s), s) for s in  document.Styles]
             self.styles = dict(style_map)
-            self.setList('style', self.styles.keys())
+            self.setList('style', list(self.styles.keys()))
         else:
-            print 'no word application loaded... %s'% self.application
+            print(('no word application loaded... %s'% self.application))
 
     def gotResults_updateStyles(self, words, fullResults):
         """possibility to "manually" update the styles list"""
@@ -86,19 +86,19 @@ class ThisGrammar(GrammarBase):
     def gotResults_showStyles(self, words, fullResults):
         """print a list of all valid styles in the messages window"""
         if self.styles:
-            print 'styles in use: %s'% self.styles.keys()
+            print(('styles in use: %s'% list(self.styles.keys())))
         else:
-            print 'no styles in use...'
+            print('no styles in use...')
 
     def gotResults_setStyle(self, words, fullResults):
         """apply a style to the cursor or selection"""
         style = words[-1]
         if style in self.styles:
-            print 'setting style %s'% style
+            print(('setting style %s'% style))
             sel = self.application.Selection
             sel.Style = style
         else:
-            print 'style not in stylelist: %s'% style
+            print(('style not in stylelist: %s'% style))
             
 # standard stuff:
 thisGrammar = ThisGrammar()

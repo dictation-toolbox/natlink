@@ -155,7 +155,7 @@ def unparse_function_definition(statement):
 
 def unparse_command(command, show_actions):
     result = unparse_terms(show_actions, command["TERMS"])
-    if command.has_key("ACTIONS") and show_actions:
+    if "ACTIONS" in command and show_actions:
         result += " = " + unparse_actions(command["ACTIONS"])
     return result
 

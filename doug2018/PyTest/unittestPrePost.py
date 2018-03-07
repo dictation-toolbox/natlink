@@ -139,7 +139,7 @@ class UnittestNatlink(unittest.TestCase):
             exec(command,globals(),localVars)
         except exceptionType:
             return
-        raise TestError,'Expecting an exception to be raised calling '+command
+        raise TestError('Expecting an exception to be raised calling '+command)
 
     #---------------------------------------------------------------------------
     # This utility subroutine will returns the contents of the NatSpeak window as
@@ -148,7 +148,7 @@ class UnittestNatlink(unittest.TestCase):
     # to the end of the window to handle the case that the window is empty.
 
 def run():
-    print 'starting unittestPrePost'
+    print('starting unittestPrePost')
     unittest.main()
     
 

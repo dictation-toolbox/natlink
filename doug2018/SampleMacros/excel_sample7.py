@@ -73,7 +73,7 @@ class ThisGrammar(GrammarBase):
         for row in range(1,50):
             for col in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
                 cell=worksheet.Range(col+str(row))
-                if colorMap.has_key(cell.Value):
+                if cell.Value in colorMap:
                     cell.Font.Color=colorMap[cell.Value]
                     cell.Borders.Weight = consts.xlThick
 

@@ -115,9 +115,9 @@ def doTraining(fileSpecs,userName='',baseModel='',baseTopic=''):
             allFiles = allFiles + expandFiles(fileSpec)
 
     if not len(allFiles):
-        print "No files found which match fileSpec:"
-        print "  ",fileSpecs
-        raise TrainingError,'no files'
+        print("No files found which match fileSpec:")
+        print("  ",fileSpecs)
+        raise TrainingError('no files')
 
     #
     # Create a new user.  Make sure the new user is active.
@@ -162,11 +162,11 @@ def doTraining(fileSpecs,userName='',baseModel='',baseTopic=''):
         lstSize = len(allWords[fileNum])
         nwvSize = len(allResults[fileNum])
         if lstSize != nwvSize:
-            print 'The number of utterances in',
-            print allFiles[fileNum]+'.nwv','('+str(nwvSize)+')',
-            print 'does not match',
-            print 'the number of lines in',
-            print allFiles[fileNum]+'.lst','('+str(lstSize)+')'
+            print('The number of utterances in', end=' ')
+            print(allFiles[fileNum]+'.nwv','('+str(nwvSize)+')', end=' ')
+            print('does not match', end=' ')
+            print('the number of lines in', end=' ')
+            print(allFiles[fileNum]+'.lst','('+str(lstSize)+')')
         for resNum in range(lstSize):
             words = allWords[fileNum][resNum]
             resObj = allResults[fileNum][resNum]
@@ -195,9 +195,9 @@ def doTraining(fileSpecs,userName='',baseModel='',baseTopic=''):
     # Save the user.
     #
 
-    print 'Saving the user...'
+    print('Saving the user...')
     natlink.saveUser()
-    print 'All done.'
+    print('All done.')
 
 #---------------------------------------------------------------------------
 # expandFile
@@ -227,22 +227,22 @@ def expandFiles(fileSpec):
 
 def createNewUser(userName,baseModel,baseTopic):
     if natlink.getCurrentUser()[0] == userName:
-        print 'Training existing user:',userName
+        print('Training existing user:',userName)
     else:
-        print 'Creating user:',userName
+        print('Creating user:',userName)
         if baseModel:
-            print '  using baseModel:',baseModel
+            print('  using baseModel:',baseModel)
         else:
-            print '  using baseModel: (default)'
+            print('  using baseModel: (default)')
         if baseTopic:
-            print '  using baseTopic:',baseTopic
+            print('  using baseTopic:',baseTopic)
         else:
-            print '  using baseTopic: (default)'
+            print('  using baseTopic: (default)')
         natlink.createUser(userName,baseModel,baseTopic)
         natlink.openUser(userName)
     if natlink.getUserTraining():
-        print 'Error: user is already at least partially trained.'
-        raise TrainingError,'user is trained'
+        print('Error: user is already at least partially trained.')
+        raise TrainingError('user is trained')
 
 #---------------------------------------------------------------------------
 # loadWords
@@ -263,9 +263,9 @@ def loadWords(fileName):
     elif os.access(fileName+'.lst',4):
         fileName = fileName + '.lst'
     else:
-        raise TrainingError,'Unable to find LST or LS2 file for %s'%fileName
+        raise TrainingError('Unable to find LST or LS2 file for %s'%fileName)
 
-    print 'Loading words from '+fileName
+    print('Loading words from '+fileName)
     allWords = []
     for line in open(fileName,'r').readlines():
         if not line or string.lower(line[:7]) in ['*delete','[reject']:
@@ -281,8 +281,8 @@ def loadWords(fileName):
 # Here we create an array of results objects for every 
  
 def loadResults(fileName):
-    print 'Recognizing from '+fileName+'.nwv...'
-    print '>',' '*70,
+    print('Recognizing from '+fileName+'.nwv...')
+    print('>',' '*70, end=' ')
     grammar = DictationGrammar()
     grammar.initialize()
     
@@ -291,7 +291,7 @@ def loadResults(fileName):
     # function (callback.func) where they will be collected in an array
     natlink.inputFromFile(fileName+'.nwv')
 
-    print ''
+    print('')
     grammar.unload()
     return grammar.results
 
@@ -328,8 +328,8 @@ class DictationGrammar(GrammarBase):
         self.results.append(resObj)
         if recogType != 'reject':
             words = string.ljust(string.join(resObj.getWords(0)),70)
-            print '\b'*72,
-            print words[0:70],
+            print('\b'*72, end=' ')
+            print(words[0:70], end=' ')
 
 #---------------------------------------------------------------------------
 # trainingPass
@@ -340,14 +340,14 @@ class DictationGrammar(GrammarBase):
 
 def trainingPass(combinedResults,trainingType):
     count = len(combinedResults)
-    print 'Performing %s on %d utterances...           ' % (trainingType,count),
+    print('Performing %s on %d utterances...           ' % (trainingType,count), end=' ')
     natlink.startTraining(trainingType)
     for result in combinedResults:
         result[1].correction(result[0])
         count = count - 1
         sys.stdout.write('\b\b\b\b\b\b\b\b\b\b%5d left' % count)
     natlink.finishTraining()
-    print ''
+    print('')
 
 #---------------------------------------------------------------------------
 # parseArgs
@@ -358,25 +358,25 @@ def trainingPass(combinedResults,trainingType):
 
 def parseArgs(args):
     if not( 1<=len(args)<=4 ) or args[0]=='?':
-        print ''
-        print 'Trainuser.py creates a new NatSpeak user by simulating enrollment'
-        print '  using recordings with corrected transcripts.'
-        print ''
-        print 'Usage: trainuser.py fileSpecs [userName [baseModel [baseTopic]]]'
-        print '  fileSpecs = name of NWV source file(s), wildcards allowed'
-        print '  userName = name for user to be created'
-        print '  baseModel = name of base acoustic models to use, one of:'
-        print '    "Standard Model"         or standard'
-        print '    "BestMatch Model"        or bestmatch'
-        print '    "BestMatch III Model"    or bestmatch3'
-        print '    "Student Standard Model" or student'
-        print '  baseTopic = name of base vocabulary to use, one of:'
-        print '    "US General English - Standard"            or standard'
-        print '    "US General English - BestMatch"           or bestmatch'
-        print '    "US General English - BestMatch Plus"      or plus'
-        print '    "Student General English - Standard"'
-        print '    "Student General English - BestMatch"      or student'
-        print '    "Student General English - BestMatch Plus"'
+        print('')
+        print('Trainuser.py creates a new NatSpeak user by simulating enrollment')
+        print('  using recordings with corrected transcripts.')
+        print('')
+        print('Usage: trainuser.py fileSpecs [userName [baseModel [baseTopic]]]')
+        print('  fileSpecs = name of NWV source file(s), wildcards allowed')
+        print('  userName = name for user to be created')
+        print('  baseModel = name of base acoustic models to use, one of:')
+        print('    "Standard Model"         or standard')
+        print('    "BestMatch Model"        or bestmatch')
+        print('    "BestMatch III Model"    or bestmatch3')
+        print('    "Student Standard Model" or student')
+        print('  baseTopic = name of base vocabulary to use, one of:')
+        print('    "US General English - Standard"            or standard')
+        print('    "US General English - BestMatch"           or bestmatch')
+        print('    "US General English - BestMatch Plus"      or plus')
+        print('    "Student General English - Standard"')
+        print('    "Student General English - BestMatch"      or student')
+        print('    "Student General English - BestMatch Plus"')
         return None,None,None,None
 
     fileSpecs = args[0]
@@ -422,13 +422,13 @@ def run(args):
         natlink.natConnect()
         doTraining(fileSpecs,userName,baseModel,baseTopic)
         natlink.natDisconnect()
-    except TrainingError,message:
+    except TrainingError as message:
         natlink.natDisconnect()
-        print ''
-        print 'TrainingError:',message
+        print('')
+        print('TrainingError:',message)
     except:
         natlink.natDisconnect()
-        print ''
+        print('')
         traceback.print_exc()
 
 if __name__=='__main__':

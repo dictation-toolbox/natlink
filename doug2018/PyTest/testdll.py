@@ -17,13 +17,13 @@ def testdll(p, dllname=None):
             try:
                 dll = ctypes.windll[fPath]
             except:
-                print 'cannot be accessed: %s (%s)'% (f, dirpath)
-                print sys.exc_info()
-                print 'size: %s: %s'% (fPath, os.path.getsize(fPath))
+                print(('cannot be accessed: %s (%s)'% (f, dirpath)))
+                print((sys.exc_info()))
+                print(('size: %s: %s'% (fPath, os.path.getsize(fPath))))
             else:
                 pass
-                print 'OK: %s (%s)'% (f, dirpath)
-                print 'size: %s: %s'% (fPath, os.path.getsize(fPath))
+                print(('OK: %s (%s)'% (f, dirpath)))
+                print(('size: %s: %s'% (fPath, os.path.getsize(fPath))))
 
 if __name__ == "__main__":
     #p = os.path.normpath(r'C:\Windows\syswow64')
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     #dllname = 'msvcr100.dll'  # None for all testing dll pyd
 
     if os.path.isdir(p):
-        print 'scanning for pyd files', p
+        print(('scanning for pyd files', p))
         testdll(p, dllname=dllname)
     else:
-        print 'not a directory: ', p
+        print(('not a directory: ', p))

@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 """
 
 tests the different functions in utilsqh. Excluding the path class, these have a separate unittest file
@@ -17,6 +17,7 @@ import TestCaseWithHelpers
 import os, os.path
 import utilsqh
 import time
+import imp
 
 baseFolder = utilsqh.getValidPath("(C|D):/projects/unittest/testutilsqh")
 
@@ -39,7 +40,7 @@ class UtilsqhTest(TestCaseWithHelpers.TestCaseWithHelpers):
         # probably somewhere in NatLink now
         homeVariable = utilsqh.getExtendedEnv("~")
         homeVariableDuplicate = utilsqh.getExtendedEnv("HOME")
-        self.assert_(len(homeVariable) > 0, "homeVariable was not caught")
+        self.assertTrue(len(homeVariable) > 0, "homeVariable was not caught")
         self.assert_equal(homeVariable, homeVariableDuplicate,"to ways of getting home variable should be equal" )
 
         personalVariable = utilsqh.getExtendedEnv("PERSONAL")
@@ -79,7 +80,7 @@ class UtilsqhTest(TestCaseWithHelpers.TestCaseWithHelpers):
         D = utilsqh.getAllFolderEnvironmentVariables()
         # to see them::::
 ##        print D
-        self.assert_('APPDATA' in D, "getAllFolderEnvironmentVariables, APPDATA should (at least) be in")
+        self.assertTrue('APPDATA' in D, "getAllFolderEnvironmentVariables, APPDATA should (at least) be in")
         
     def tttest_get_newest_file(self):
         """check file dates, returns first with largest mod date
@@ -150,18 +151,18 @@ class UtilsqhTest(TestCaseWithHelpers.TestCaseWithHelpers):
                 
             ['aa', 'bb'],
             
-            ['\u00C4rgument', 'BBnormaal']
+            ['\\u00C4rgument', 'BBnormaal']
             ]:
         
-            print 'test peekable for %s'% inputList
+            print(('test peekable for %s'% inputList))
             it = utilsqh.peekable(inputList)
             expected = inputList
             result = list(it)
         self.assert_equal(expected, result, 'iterator does not give expected result\nexpected: %s\nresult:   %s\n----'%
                           (expected, result))
         it = utilsqh.peekable(inputList)
-        nextItem = it.next()
-        print 'nextItem: %s'% nextItem
+        nextItem = next(it)
+        print(('nextItem: %s'% nextItem))
 
     def test_readAnythingNotepad(self):
         """test files with encodings
@@ -173,8 +174,8 @@ class UtilsqhTest(TestCaseWithHelpers.TestCaseWithHelpers):
                                                     # zg unicode varianten willen niet.
                                                     # eerste save, zonder speciale tekens, ANSI, maar gevonden als utf-8.
                                                     # bij speciale tekens wordt cp1252 gevonden
-        expText = u"""test
--\u2018Onderbuikgevoel\u2019: 
+        expText = """test
+-\\u2018Onderbuikgevoel\\u2019: 
  Er gaat ergens een zacht belletje af..."""
         inputEncoding = ['cp1252','utf-8','cp1252']
         
@@ -215,8 +216,8 @@ class UtilsqhTest(TestCaseWithHelpers.TestCaseWithHelpers):
         # formaten met kladblok, notepad:
         files = ['winpadtest.txt']
               ###   'winpadtestunicode.txt']      # two files with win32pad saved
-        expText = u"""test
--\u2018Onderbuikgevoel\u2019: 
+        expText = """test
+-\\u2018Onderbuikgevoel\\u2019: 
  Er gaat ergens een zacht belletje af..."""
         inputEncoding = ['cp1252'] ###, 'ISO-8852-2'] krijg de zg unicode saves niet aan de praat.
         
@@ -231,6 +232,6 @@ class UtilsqhTest(TestCaseWithHelpers.TestCaseWithHelpers):
         
         
 if __name__ == "__main__":
-    print 'starting utilsqhtest'
-    reload(utilsqh)
+    print('starting utilsqhtest')
+    imp.reload(utilsqh)
     unittest.main()

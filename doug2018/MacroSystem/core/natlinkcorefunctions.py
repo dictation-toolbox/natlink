@@ -60,12 +60,12 @@ thisBaseFolder = getBaseFolder()
 # report function:
 def fatal_error(message, new_raise=None):
     """prints a fatal error when running this module"""
-    print 'natlinkconfigfunctions fails because of fatal error:'
-    print
-    print message
-    print
-    print 'Exit Dragon and run the configurenatlink program (via start_configurenatlink.py)'
-    print 
+    print('natlinkconfigfunctions fails because of fatal error:')
+    print()
+    print(message)
+    print()
+    print('Exit Dragon and run the configurenatlink program (via start_configurenatlink.py)')
+    print() 
     if new_raise:
         raise new_raise
     else:
@@ -131,7 +131,7 @@ def getExtendedEnv(var, envDict=None, displayMessage=1):
         CSIDL_variable =  'CSIDL_%s'% var2
         shellnumber = getattr(shellcon,CSIDL_variable, -1)
     except:
-        print 'getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2
+        print(('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2))
         return ''
     if shellnumber < 0:
         # on some systems have SYSTEMROOT instead of SYSTEM:
@@ -142,7 +142,7 @@ def getExtendedEnv(var, envDict=None, displayMessage=1):
         result = shell.SHGetFolderPath (0, shellnumber, 0, 0)
     except:
         if displayMessage:
-            print 'getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2
+            print(('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2))
         return ''
 
     
@@ -189,7 +189,7 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
         if os.path.isdir(v):
             v = os.path.normpath(v)
             if k in D and D[k] != v:
-                print 'warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v)
+                print(('warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v)))
             D[k] = v
     if fillRecentEnv:
         recentEnv = copy.copy(D)
@@ -225,7 +225,7 @@ def substituteEnvVariableAtStart(filepath, envDict=None):
     """
     if envDict == None:
         envDict = recentEnv
-    Keys = envDict.keys()
+    Keys = list(envDict.keys())
     # sort, longest result first, shortest keyname second:
     decorated = [(-len(envDict[k]), len(k), k) for k in Keys]
     decorated.sort()
@@ -260,7 +260,7 @@ def expandEnvVariableAtStart(filepath, envDict=None):
         try:
             folderpart = getExtendedEnv(envVar, envDict)
         except ValueError:
-            print 'invalid (extended) environment variable: %s'% envVar
+            print(('invalid (extended) environment variable: %s'% envVar))
         else:
             # OK, found:
             filepart = filepath[len(envVar)+1:]
@@ -302,8 +302,8 @@ def expandEnvVariables(filepath, envDict=None):
     return filepath
 
 def printAllEnvVariables():
-    for k, v in recentEnv.items():
-        print k, v
+    for k, v in list(recentEnv.items()):
+        print((k, v))
 
 class InifileSection(object):
     """simulate a part of the registry through inifiles
@@ -361,7 +361,7 @@ class InifileSection(object):
         # value = win32api.GetProfileVal(self.section, key, defaultValue, self.filename)
 ##        if value:
 ##            print 'get: %s, %s: %s'% (self.section, key, value)
-        if value in (u"0", u"1"):
+        if value in ("0", "1"):
             return int(value)
         return value
 
@@ -426,26 +426,26 @@ class NatlinkstatusInifileSection(InifileSection):
 
 
 if __name__ == "__main__":
-    print 'this module is in folder: %s'% getBaseFolder(globals())
+    print(('this module is in folder: %s'% getBaseFolder(globals())))
     vars = getAllFolderEnvironmentVariables()
     for k in sorted(vars):
-        print '%s: %s'% (k, vars[k])
+        print(('%s: %s'% (k, vars[k])))
         if not os.path.isdir(vars[k]):
-            print '----- not a directory: %s (%s)'% (vars[k], k)
+            print(('----- not a directory: %s (%s)'% (vars[k], k)))
 
-    print 'testing       expandEnvVariableAtStart'
-    print 'also see expandEnvVar in natlinkstatus!!'
+    print('testing       expandEnvVariableAtStart')
+    print('also see expandEnvVar in natlinkstatus!!')
     for p in ("D:\\natlink\\unimacro", "~/unimacroqh",
               "%HOME%/personal",
               "%WINDOWS%\\folder\\strange testfolder"):
         expanded = expandEnvVariableAtStart(p)
-        print 'expandEnvVariablesAtStart: %s: %s'% (p, expanded)
-    print 'testing       expandEnvVariables'  
+        print(('expandEnvVariablesAtStart: %s: %s'% (p, expanded)))
+    print('testing       expandEnvVariables')  
     for p in ("D:\\%username%", "D:\\natlink\\unimacro", "~/unimacroqh",
               "%HOME%/personal",
               "%WINDOWS%\\folder\\strange testfolder"):
         expanded = expandEnvVariables(p)
-        print 'expandEnvVariables: %s: %s'% (p, expanded)
+        print(('expandEnvVariables: %s: %s'% (p, expanded)))
 
     # testIniSection = NatlinkstatusInifileSection()
     # print testIniSection.keys()
@@ -455,4 +455,4 @@ if __name__ == "__main__":
     # testIniSection.delete("test")
     # testval = testIniSection.get("test")
     # print 'testval: %s'% testval
-    print 'recentEnv: %s'% len(recentEnv)
+    print(('recentEnv: %s'% len(recentEnv)))
