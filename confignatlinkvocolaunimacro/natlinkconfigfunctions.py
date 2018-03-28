@@ -237,9 +237,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             # self.message("natlink.pyd is not found, try to repair this.")
             
             key = 'NatlinkPydRegistered'
-            print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
+            # print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
             self.userregnl.delete(key)
             natlinkPydWasAlreadyThere = 0
+            self.checkedUrgent = None
         else:
             natlinkPydWasAlreadyThere = 1
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version

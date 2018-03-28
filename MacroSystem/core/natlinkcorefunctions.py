@@ -456,3 +456,5 @@ if __name__ == "__main__":
     # testval = testIniSection.get("test")
     # print 'testval: %s'% testval
     print 'recentEnv: %s'% len(recentEnv)
+    np = getExtendedEnv("NOTEPAD")
+    print np
