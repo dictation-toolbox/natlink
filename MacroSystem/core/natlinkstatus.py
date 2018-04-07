@@ -1,4 +1,4 @@
-__version__ = "4.1uniform-7"
+__version__ = "4.1uniform-8"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -219,14 +219,13 @@ def fatal_error(message, new_raise=None):
         raise
 
 # of course for extracting the windows version:
+# newer versions go via platform.platform() call
 Wversions = {'1/4/10': '98',
              '2/3/51': 'NT351',
              '2/4/0':  'NT4',
              '2/5/0':  '2000',
              '2/5/1':  'XP',
-             '2/6/0':  'Vista',
-             '2/6/1':  '7',
-             '2/6/2':  '8or10',
+             '2/6/0':  'Vista'
              } 
 
 # the possible languages (for getLanguage)
@@ -713,17 +712,15 @@ Please try to correct this by running the NatLink Config Program (with administr
         try:
             windowsVersion = Wversions[version]
         except KeyError:
-            print 'natlinkstatus.getWindowsVersion: (yet) unknown Windows version: %s'% version
-            return  version
-        
-        if windowsVersion == '8or10':
             import platform
             wVersion = platform.platform()
-            if wVersion.startswith('Windows-10'):
-                return '10'
+            if '-' in wVersion:
+                return wVersion.split('-')[1]
             else:
-                return '8'
-        return windowsVersion
+                print 'Warning, probably cannot find correct Windows Version... (%s)'% wVersion
+                return wVersion
+        else:
+            return windowsVersion
     
 
     def getDNSIniDir(self, calledFrom=None):
@@ -905,7 +902,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         return ''
 
     def checkDNSProgramDir(self, checkDir):
-        """check if directory P is a Dragon directory
+        """check if directory is a Dragon directory
      
         it must be a directory, and have as subdirectories App/Program (reported by Udo) or Program.
         In this subdirectory there should be natspeak.exe
@@ -913,7 +910,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         if not checkDir:
             return
         if not os.path.isdir(checkDir):
-            print 'checkDNSProgramDir, %s is not a directory'% P
+            print 'checkDNSProgramDir, %s is not a directory'% checkDir
             return
         programDirs = os.path.join(checkDir, 'Program'), os.path.join(checkDir, 'App', 'Program')
         for programDir in programDirs:
