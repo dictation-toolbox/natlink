@@ -114,7 +114,7 @@ def getBaseFolder(globalsDict=None):
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
         print 'baseFolder from __file__: %s'% baseFolder
-    if not baseFolder:
+    if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
         print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder
@@ -129,6 +129,7 @@ def getCoreDir(thisDir):
     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
     """
     coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
+    print 'coreDirectory: %s'% coreFolder
     if not os.path.isdir(coreFolder):
         print 'not a directory: %s'% coreFolder
         return thisDir
@@ -173,10 +174,12 @@ if thisDir == coreDir:
     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(thisDir) in sys.path:
+    thisDir = os.path.normpath(thisDir)
     print 'inserting %s to pythonpath...'% thisDir
     sys.path.insert(0, thisDir)
     
 if not os.path.normpath(coreDir) in sys.path:
+    coreDir = os.path.normpath(coreDir)
     print 'inserting %s to pythonpath...'% coreDir
     sys.path.insert(0, coreDir)
 

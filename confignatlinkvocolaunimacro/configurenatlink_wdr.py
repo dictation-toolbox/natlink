@@ -257,32 +257,32 @@ def InfoWindow( parent, call_fit = True, set_sizer = True ):
     
     item3 = wx.FlexGridSizer( 0, 4, 0, 0 )
     
-    item4 = wx.StaticText( parent, ID_TEXTDNSversion, "DNS version", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item4 = wx.StaticText( parent, ID_TEXTDNSversion, "DNS version:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item5 = wx.BoxSizer( wx.HORIZONTAL )
     
-    item6 = wx.TextCtrl( parent, ID_TEXTCTRLDNSVersion, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+    item6 = wx.TextCtrl( parent, ID_TEXTCTRLDNSVersion, "", wx.DefaultPosition, [50,-1], wx.TE_READONLY )
     item6.SetBackgroundColour( wx.LIGHT_GREY )
-    item5.Add( item6, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item5.Add( item6, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP|wx.BOTTOM, 5 )
 
-    item7 = wx.StaticText( parent, ID_TEXT, "Windows version", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item7 = wx.StaticText( parent, ID_TEXT, "Windows version:", wx.DefaultPosition, [180,-1], wx.ALIGN_RIGHT )
     item5.Add( item7, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item8 = wx.TextCtrl( parent, ID_TEXTCTRLWindowsVersion, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+    item8 = wx.TextCtrl( parent, ID_TEXTCTRLWindowsVersion, "", wx.DefaultPosition, [50,-1], wx.TE_READONLY )
     item8.SetBackgroundColour( wx.LIGHT_GREY )
-    item5.Add( item8, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item5.Add( item8, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.TOP|wx.BOTTOM, 5 )
 
     item3.Add( item5, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-    item9 = wx.StaticText( parent, ID_TEXT, "Python version", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item9 = wx.StaticText( parent, ID_TEXT, "Python version:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item9, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item10 = wx.TextCtrl( parent, ID_TEXTCTRLpythonversion, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+    item10 = wx.TextCtrl( parent, ID_TEXTCTRLpythonversion, "", wx.DefaultPosition, [50,-1], wx.TE_READONLY )
     item10.SetBackgroundColour( wx.LIGHT_GREY )
-    item3.Add( item10, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+    item3.Add( item10, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 10 )
 
-    item11 = wx.StaticText( parent, ID_TEXTdnsinstallpath, "DNS install path", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item11 = wx.StaticText( parent, ID_TEXTdnsinstallpath, "DNS install path:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item11, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item12 = wx.TextCtrl( parent, ID_TEXTCTRLDNSinstallpath, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
@@ -295,7 +295,7 @@ def InfoWindow( parent, call_fit = True, set_sizer = True ):
     item14 = wx.Button( parent, ID_BUTTONClearDNSInstallPath, "Clear-&D", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item14, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item15 = wx.StaticText( parent, ID_TEXTdnsinifilepath, "DNS ini file path", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item15 = wx.StaticText( parent, ID_TEXTdnsinifilepath, "DNS ini file path:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item15, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item16 = wx.TextCtrl( parent, ID_TEXTCTRLdnsinifilepath, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
@@ -308,7 +308,7 @@ def InfoWindow( parent, call_fit = True, set_sizer = True ):
     item18 = wx.Button( parent, ID_BUTTONClearDNSInifilePath, "Clear-&C", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item18, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
-    item19 = wx.StaticText( parent, ID_TEXTNatlinkCorePath, "NatlinkCore path", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item19 = wx.StaticText( parent, ID_TEXTNatlinkCorePath, "NatlinkCore path:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item19, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item20 = wx.TextCtrl( parent, ID_TEXTCTRLnatlinkcorepath, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
