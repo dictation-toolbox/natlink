@@ -218,8 +218,8 @@ def fatal_error(message, new_raise=None):
     if new_raise:
         raise
 
-# of course for extracting the windows version:
-# newer versions go via platform.platform() call
+# Nearly obsolete table, for extracting older windows versions:
+# newer versions go via platform.platform() 
 Wversions = {'1/4/10': '98',
              '2/3/51': 'NT351',
              '2/4/0':  'NT4',
