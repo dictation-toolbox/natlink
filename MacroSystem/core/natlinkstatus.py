@@ -715,6 +715,14 @@ Please try to correct this by running the NatLink Config Program (with administr
         except KeyError:
             print 'natlinkstatus.getWindowsVersion: (yet) unknown Windows version: %s'% version
             return  version
+        
+        if windowsVersion == '8or10':
+            import platform
+            wVersion = platform.platform()
+            if wVersion.startswith('Windows-10'):
+                return '10'
+            else:
+                return '8'
         return windowsVersion
     
 
