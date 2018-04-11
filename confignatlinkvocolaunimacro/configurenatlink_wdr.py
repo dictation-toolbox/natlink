@@ -8,7 +8,7 @@
 # Include wxPython modules
 import wx
 import wx.grid
-import wx.animate
+# import wx.animate
 
 # Window functions
 
