@@ -203,6 +203,8 @@ return with "?": A-xyz-?-abc-ascii
 >>> convertToBinary(convertToBinary(tbinary))
 '\\xe9\\xe9n binaire string'
 
+## wrong unicode, PU2: 
+>>> convertToBinary(u'fondationnimba rapportsd\x92archive index.html')
     """
     # a binary string can hold accented characters:
     if type(unicodeString) == six.binary_type:
@@ -809,9 +811,8 @@ def getBaseFolder(globalsDict):
     elif globalsDict['__file__']:
         baseFolder = os.path.split(globalsDict['__file__'])[0]
         print 'baseFolder from __file__: %s'% baseFolder
-    if not baseFolder:
+    if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
-        print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder
 
 Classes = ('ExploreWClass', 'CabinetWClass')

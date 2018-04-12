@@ -48,7 +48,7 @@ def getBaseFolder(globalsDict=None):
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
 ##        print 'baseFolder from __file__: %s'% baseFolder
-    if not baseFolder:
+    if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
 ##        print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder

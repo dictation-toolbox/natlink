@@ -32,8 +32,8 @@ def updateUnimacroHeaderIfNeeded():
         
     destDir              = status.getVocolaUserDirectory()
     coreFolder           = os.path.split(__file__)[0]
-    sourceDir            = os.path.join(coreFolder, "..", "..", "..",
-                                        "Unimacro", 'vocola_compatibility')
+    sourceDir            = os.path.normpath(os.path.join(coreFolder, "..", "..", "..",
+                                        "Unimacro", 'vocola_compatibility'))
     destPath             = os.path.join(destDir,   'Unimacro.vch')
     sourcePath           = os.path.join(sourceDir, 'Unimacro.vch')
     sourceTime, destTime = vocolaGetModTime(sourcePath), \

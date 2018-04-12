@@ -43,13 +43,13 @@ ID_BUTTONHelp5 = 10026
 
 def MainWindow( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
-    
+
     item2 = wx.StaticBox( parent, -1, "Status" )
     item2.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item1 = wx.StaticBoxSizer( item2, wx.VERTICAL )
-    
+
     item3 = wx.FlexGridSizer( 0, 1, 0, 0 )
-    
+
     item4 = wx.TextCtrl( parent, ID_TEXTCTRLstatus, "", wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
     item4.SetBackgroundColour( wx.LIGHT_GREY )
     item3.Add( item4, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL, 5 )
@@ -63,14 +63,14 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item6 = wx.StaticBox( parent, -1, "Natlink" )
     item6.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item5 = wx.StaticBoxSizer( item6, wx.VERTICAL )
-    
+
     item7 = wx.FlexGridSizer( 0, 3, 0, 0 )
-    
+
     item8 = wx.Button( parent, ID_BUTTONNatlinkEnable, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
     item7.Add( item8, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item9 = wx.BoxSizer( wx.HORIZONTAL )
-    
+
     item10 = wx.CheckBox( parent, ID_CHECKBOXDebugCallbackOutput, "Debug Callback", wx.DefaultPosition, wx.DefaultSize, 0 )
     item9.Add( item10, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
@@ -91,9 +91,9 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item14 = wx.StaticBox( parent, -1, "Vocola" )
     item14.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item13 = wx.StaticBoxSizer( item14, wx.VERTICAL )
-    
+
     item15 = wx.FlexGridSizer( 0, 3, 0, 0 )
-    
+
     item16 = wx.Button( parent, ID_BUTTONVocolaEnable, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
     item15.Add( item16, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
@@ -111,7 +111,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item15.Add( item20, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item21 = wx.BoxSizer( wx.HORIZONTAL )
-    
+
     item22 = wx.CheckBox( parent, ID_CHECKBOXVocolaTakesUnimacroActions, "Vocola takes Unimacro Actions", wx.DefaultPosition, [280,-1], 0 )
     item21.Add( item22, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
@@ -129,9 +129,9 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item25 = wx.StaticBox( parent, -1, "Unimacro" )
     item25.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item24 = wx.StaticBoxSizer( item25, wx.VERTICAL )
-    
+
     item26 = wx.FlexGridSizer( 0, 3, 0, 0 )
-    
+
     item27 = wx.Button( parent, ID_BUTTONUnimacroEnable, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
     item26.Add( item27, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
@@ -159,7 +159,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item26.Add( item34, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item35 = wx.BoxSizer( wx.HORIZONTAL )
-    
+
     item36 = wx.Button( parent, ID_BUTTONHelp3, "Help-&3", wx.DefaultPosition, wx.DefaultSize, 0 )
     item35.Add( item36, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
@@ -173,9 +173,9 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
 
     item38 = wx.StaticBox( parent, -1, "UserDirectory" )
     item37 = wx.StaticBoxSizer( item38, wx.VERTICAL )
-    
+
     item39 = wx.FlexGridSizer( 0, 4, 0, 0 )
-    
+
     item40 = wx.Button( parent, ID_BUTTONUserEnable, "Enable/Disable", wx.DefaultPosition, wx.DefaultSize, 0 )
     item39.Add( item40, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
@@ -198,9 +198,9 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     item45 = wx.StaticBox( parent, -1, "Repair" )
     item45.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item44 = wx.StaticBoxSizer( item45, wx.VERTICAL )
-    
+
     item46 = wx.FlexGridSizer( 0, 6, 0, 0 )
-    
+
     item47 = wx.Button( parent, ID_BUTTONregister, "(re)Register NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item46.Add( item47, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
 
@@ -229,7 +229,7 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
         parent.SetSizer( item0 )
         if call_fit == True:
             item0.SetSizeHints( parent )
-    
+
     return item0
 
 ID_TEXTDNSversion = 10027
@@ -251,17 +251,17 @@ ID_BUTTONHelpInfo = 10042
 
 def InfoWindow( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
-    
+
     item2 = wx.StaticBox( parent, -1, "Info" )
     item1 = wx.StaticBoxSizer( item2, wx.VERTICAL )
-    
+
     item3 = wx.FlexGridSizer( 0, 4, 0, 0 )
-    
+
     item4 = wx.StaticText( parent, ID_TEXTDNSversion, "DNS version:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item5 = wx.BoxSizer( wx.HORIZONTAL )
-    
+
     item6 = wx.TextCtrl( parent, ID_TEXTCTRLDNSVersion, "", wx.DefaultPosition, [50,-1], wx.TE_READONLY )
     item6.SetBackgroundColour( wx.LIGHT_GREY )
     item5.Add( item6, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.TOP|wx.BOTTOM, 5 )
@@ -343,7 +343,7 @@ def InfoWindow( parent, call_fit = True, set_sizer = True ):
         parent.SetSizer( item0 )
         if call_fit == True:
             item0.SetSizeHints( parent )
-    
+
     return item0
 
 ID_CHECKBOXMakeUnimacroIncludeLines = 10043
@@ -354,8 +354,8 @@ ID_BUTTONCancel = 10047
 
 def DialogVocolaCombatibility( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
-    
-    item1 = wx.StaticText( parent, ID_TEXT, 
+
+    item1 = wx.StaticText( parent, ID_TEXT,
         "Vocola can profit from Unimacro features.\n"
         "\n"
         "If you wish to do so, switch on the checkbox \"Vocola takes Unimacro Actions\" in the configure panel.\n"
@@ -381,7 +381,7 @@ def DialogVocolaCombatibility( parent, call_fit = True, set_sizer = True ):
     item0.Add( item4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item5 = wx.BoxSizer( wx.HORIZONTAL )
-    
+
     item6 = wx.Button( parent, ID_BUTTONOK, "OK", wx.DefaultPosition, wx.DefaultSize, 0 )
     item5.Add( item6, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
@@ -394,7 +394,7 @@ def DialogVocolaCombatibility( parent, call_fit = True, set_sizer = True ):
         parent.SetSizer( item0 )
         if call_fit == True:
             item0.SetSizeHints( parent )
-    
+
     return item0
 
 ID_TEXTahkexedir = 10048
@@ -411,12 +411,12 @@ ID_BUTTONhelprepair = 10058
 
 def ExtraWindow( parent, call_fit = True, set_sizer = True ):
     item0 = wx.BoxSizer( wx.VERTICAL )
-    
+
     item2 = wx.StaticBox( parent, -1, "AutoHotkey" )
     item1 = wx.StaticBoxSizer( item2, wx.VERTICAL )
-    
+
     item3 = wx.FlexGridSizer( 0, 4, 0, 0 )
-    
+
     item4 = wx.StaticText( parent, ID_TEXTahkexedir, "Ahk Exe Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
     item3.Add( item4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
@@ -462,11 +462,11 @@ def ExtraWindow( parent, call_fit = True, set_sizer = True ):
     item17 = wx.StaticBox( parent, -1, "Repair" )
     item17.SetFont( wx.Font( 10, wx.SWISS, wx.NORMAL, wx.NORMAL ) )
     item16 = wx.StaticBoxSizer( item17, wx.VERTICAL )
-    
+
     item18 = wx.FlexGridSizer( 0, 3, 0, 0 )
-    
+
     item19 = wx.BoxSizer( wx.HORIZONTAL )
-    
+
     item20 = wx.Button( parent, ID_BUTTONregister, "(re)Register NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item19.Add( item20, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
 
@@ -476,14 +476,14 @@ def ExtraWindow( parent, call_fit = True, set_sizer = True ):
     item18.Add( item19, 0, wx.ALIGN_CENTER|wx.ALL, 5 )
 
     item22 = wx.BoxSizer( wx.HORIZONTAL )
-    
+
     item23 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, [20,20], 0 )
     item22.Add( item23, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item18.Add( item22, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
     item24 = wx.BoxSizer( wx.HORIZONTAL )
-    
+
     item25 = wx.Button( parent, ID_BUTTONcloseadvanced, "Close", wx.DefaultPosition, wx.DefaultSize, 0 )
     item24.Add( item25, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, 5 )
 
@@ -504,7 +504,7 @@ def ExtraWindow( parent, call_fit = True, set_sizer = True ):
         parent.SetSizer( item0 )
         if call_fit == True:
             item0.SetSizeHints( parent )
-    
+
     return item0
 
 # Menubar functions
@@ -515,15 +515,15 @@ ID_MENUhelp = 10061
 
 def MyMenuBarFunc():
     item0 = wx.MenuBar()
-    
+
     item1 = wx.Menu()
     item1.Append( ID_MENUClose, "Close\tc", "" )
     item0.Append( item1, "File" )
-    
+
     item2 = wx.Menu()
     item2.Append( ID_MENUhelp, "Help", "" )
     item0.Append( item2, "Help" )
-    
+
     return item0
 
 # Toolbar functions

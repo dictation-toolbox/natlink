@@ -62,15 +62,18 @@
 
 ############################################################################
 # experiment Mark (Vocola Extension)
-# useMarkSendInput = 1
-# if useMarkSendInput:                                
-#     from ExtendedSendDragonKeys import senddragonkeys_to_events
-#     from SendInput import send_input
-#     print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is "
-#     print "used for all normal playString calls!  If you do not want this,"
-#     print "change the variable useMarkSendInput to 0 in line 58 of"
-#     print "natlinkutils.py.  This file is located in the directory "
-#     print "NatLink\MacroSystem\Core.  Then restart Dragon...\n======"
+useMarkSendInput = 1
+if useMarkSendInput:
+    import ExtendedSendDragonKeys
+    import SendInput
+
+    from ExtendedSendDragonKeys import senddragonkeys_to_events
+    from SendInput import send_input
+    print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is "
+    print "used for all normal playString calls!  If you do not want this,"
+    print "change the variable useMarkSendInput to 0 in line 65 of"
+    print "natlinkutils.py.  This file is located in the directory "
+    print "NatLink\MacroSystem\Core.  Then restart Dragon...\n======"
 # 
 import six
 import os, os.path, copy, types
@@ -272,19 +275,35 @@ def getModifierKeyCodes(modifiers):
 # reverting to Marks solution, insert {shift}
 # use the language specific shift code, as given in natlinkstatus, and set in natlinkmain  (december 2015)
 def playString(keys, hooks=None):
-    """insert {shift} as workaround for losing keystrokes
+    """do smarter and faster playString than natlink.playString
     
-    only if no special hooks are asked for: insert a {shift} in front of the keystrokes.
-    (if default behaviour is wanted, call natlink.playString directly)
+    If useMarkSendInput is set to 1 (True) (top of this file):
+    the SendInput module of Mark Lillibridge is used.
+    
+    Disadvantage: does not work in elevated windows.
+    
+    This behaviour can be circumvented by adding a hook in the call,
+    or by using SendDragonKeys, SendSystemKeys or SSK (Unimacro).
+    
+    If useMarkSendInput is set to 0 (False), or a hook is added
+    (0x100 for normal behaviour, 0x200 for systemkeys behaviour)
+    then natlink.playString is used, but a {shift} in front of the keystrokes is inserted,
+    in order to prevent doubling or losing keystrokes.
+    
+    (if default behaviour is wanted, you can call natlink.playString directly)
     """
     if not keys:
         return
     keys = utilsqh.convertToBinary(keys)
-    if hooks not in (None, 0x100):
-        natlink.playString(keys, hooks)
-    else:
-        shiftkey = natlinkmain.shiftkey
-        natlink.playString(shiftkey + keys)
+    if hooks is None and useMarkSendInput:
+        SendInput.send_input(
+            ExtendedSendDragonKeys.senddragonkeys_to_events(keys))
+    else:    
+        if hooks not in (None, 0x100):
+            natlink.playString(keys, hooks)
+        else:
+            shiftkey = natlinkmain.shiftkey
+            natlink.playString(shiftkey + keys)
 
 #---------------------------------------------------------------------------
 # (internal use) shared base class for all Grammar base classes.  Do not use

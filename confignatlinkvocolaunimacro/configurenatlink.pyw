@@ -52,7 +52,7 @@ if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
             'But if the Configure NatLink GUI does not work, you should do the configuration via "natlinkconfigfunctions.py".',
             'Please start that program, preferably in elevated mode via "start_configurenatlinkfunctions.py" or via "Configure NatLink via Command Line Interface" in the start menu.',
             "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7"]
-    
+
     mess = '\n\n'.join(mess)
     windowsMessageBox(mess)
 
@@ -73,16 +73,16 @@ class DialogUnimacroVocolaCompatibiliy(wx.Dialog):
         title = title or "Unimacro/Vocola compatibility"
         wx.Dialog.__init__(self, parent, id, title, pos)
         # WDR: dialog function YesNoAbort for MyYesNoAbortDialog
-        
-        
+
+
         # WDR: dialog function DialogVocolaCombatibility for DialogUnimacroVocolaCompatibiliy
         DialogVocolaCombatibility( self, True )
-        
+
         # WDR: handler declarations for DialogUnimacroVocolaCompatibiliy
         # wx.EVT_CHECKBOX(self, ID_IncludeUnimacroInPythonPath, self.OnIncludeUnimacroInPythonPath)
-        wx.EVT_BUTTON(self, ID_BUTTONCancel, self.OnCancel)
-        wx.EVT_BUTTON(self, ID_BUTTONOK, self.OnOK)
-        
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, id=ID_BUTTONCancel)
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=ID_BUTTONOK)
+
 
     # WDR: methods for DialogUnimacroVocolaCompatibiliy
 
@@ -118,7 +118,7 @@ class DialogUnimacroVocolaCompatibiliy(wx.Dialog):
 
         self.SetReturnCode(code)
         self.Destroy()
-            
+
     def OnCancel(self, event):
         self.SetReturnCode(0)
         self.Destroy()
@@ -133,12 +133,12 @@ class InfoPanel(wx.Panel):
         # WDR: dialog function InfoWindow for infopanel
         InfoWindow( self, True )
         # WDR: handler declarations for infopanel
-        wx.EVT_BUTTON(self, ID_BUTTONHelpInfo, self.OnButtonHelpInfo)
-        wx.EVT_BUTTON(self, ID_BUTTONClearDNSInifilePath, self.OnButtonClearDNSInifilePath)
-        wx.EVT_BUTTON(self, ID_BUTTONchangednsinifilepath, self.OnButtonChangeDNSInifilePath)
-        wx.EVT_BUTTON(self, ID_BUTTONClearDNSInstallPath, self.OnButtonClearDNSInstallPath)
-        wx.EVT_BUTTON(self, ID_BUTTONchangednsinstallpath, self.OnButtonChangeDNSInstallPath)
-        wx.EVT_BUTTON(self, ID_BUTTONLogInfo, self.OnButtonLogInfo)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonHelpInfo, id=ID_BUTTONHelpInfo)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonClearDNSInifilePath, id=ID_BUTTONClearDNSInifilePath)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonChangeDNSInifilePath, id=ID_BUTTONchangednsinifilepath)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonClearDNSInstallPath, id=ID_BUTTONClearDNSInstallPath)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonChangeDNSInstallPath, id=ID_BUTTONchangednsinstallpath)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonLogInfo, id=ID_BUTTONLogInfo)
 
     # WDR: methods for infopanel
     def GetTextctrlpythonversion(self):
@@ -180,7 +180,7 @@ class InfoPanel(wx.Panel):
         else:
             self.setstatus("DNSIniDir was NOT set, so no action needed")
             return
-    
+
         statustext = 'DNSIniDir is Cleared, search (again) for default.'
         result = self.do_command(doLetter, undo=undoCmd)
         if result:
@@ -201,7 +201,7 @@ class InfoPanel(wx.Panel):
         Path = D['DNSIniDir']
         if not (Path and os.path.isdir(Path)):
             Path = nc.getExtendedEnv("COMMON_APPDATA")
-        
+
         dlg.SetPath(Path)
         dlg.SetMessage('Please specify the directory where the DNS INI files are located')
         statustext = 'DNS INI file location is changed'
@@ -228,7 +228,7 @@ class InfoPanel(wx.Panel):
         else:
             self.setstatus("DNSInstallDir was NOT set, so no action needed")
             return
-    
+
         statustext = 'DNSInstallDir is Cleared, search (again) for default.'
         result = self.do_command(doLetter, undo=undoCmd)
         if result:
@@ -249,7 +249,7 @@ class InfoPanel(wx.Panel):
         Path = D['DNSInstallDir']
         if not (Path and os.path.isdir(Path)):
             Path = nc.getExtendedEnv("PROGRAMFILES")
-        
+
         dlg.SetPath(Path)
         dlg.SetMessage('Please specify the directory where DNS is installed')
         statustext = 'DNS Install directory is changed'
@@ -297,7 +297,7 @@ See more help information in the log panel"""
 
         when calling from undo button, provide 'noundo' = 1 as keyword argument.
 
-    
+
         """
         if len(args) < 1:
             print 'empty command %s'% `args`
@@ -313,7 +313,7 @@ See more help information in the log panel"""
         funcName = 'do_%s'% letter
         cli = self.cpanel.cli
         func = getattr(cli, funcName, None)
-            
+
         if not func:
             mess = 'invalid command: %s'% letter
             print mess
@@ -343,28 +343,28 @@ class ConfigureNatlinkPanel(wx.Panel):
         MainWindow( self, True )
 
         # WDR: handler declarations for configurenatlink
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaTakesUnimacroActions, self.OnCBVocolaTakesUnimacroActions)
+        self.Bind(wx.EVT_CHECKBOX, self.OnCBVocolaTakesUnimacroActions, id=ID_CHECKBOXVocolaTakesUnimacroActions)
         # wx.EVT_CHECKBOX(self, ID_IncludeUnimacroInPythonPath, self.OnButtonIncludeUnimacroInPythonPath)
-        wx.EVT_BUTTON(self, ID_BUTTONVocolaCompatibiliy, self.OnButtonVocolaCompatibility)
-        wx.EVT_BUTTON(self, ID_BUTTONUnimacroEditor, self.OnButtonUnimacroEditor)
-        wx.EVT_BUTTON(self, ID_BUTTONUnimacroEnable, self.OnButtonUnimacroEnableDisable)
-        wx.EVT_BUTTON(self, ID_BUTTONHelp5, self.OnButtonHelp5)
-        wx.EVT_BUTTON(self, ID_BUTTONHelp1, self.OnButtonHelp1)
-        wx.EVT_BUTTON(self, ID_BUTTONHelp4, self.OnButtonHelp4)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonVocolaCompatibility, id=ID_BUTTONVocolaCompatibiliy)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonUnimacroEditor, id=ID_BUTTONUnimacroEditor)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonUnimacroEnableDisable, id=ID_BUTTONUnimacroEnable)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonHelp5, id=ID_BUTTONHelp5)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonHelp1, id=ID_BUTTONHelp1)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonHelp4, id=ID_BUTTONHelp4)
         #wx.EVT_CHECKBOX(self, ID_CHECKBOXNatlinkDebug, self.OnCBNatlinkDebug)
-        wx.EVT_BUTTON(self, ID_BUTTONClose, self.OnButtonClose)
-        wx.EVT_BUTTON(self, ID_BUTTONUndo, self.OnButtonUndo)
-        wx.EVT_BUTTON(self, ID_BUTTONUserEnable, self.OnButtonUserEnableDisable)
-        wx.EVT_BUTTON(self, ID_BUTTONVocolaEnable, self.OnButtonVocolaEnableDisable)
-        wx.EVT_BUTTON(self, ID_BUTTONNatlinkEnable, self.OnButtonNatlinkEnableDisable)
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXVocolaTakesLanguages, self.OnCBVocolaTakesLanguages)
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXDebugCallbackOutput, self.OnCBDebugCallback)
-        wx.EVT_CHECKBOX(self, ID_CHECKBOXDebugLoad, self.OnCBDebugLoad)
-        wx.EVT_BUTTON(self, ID_BUTTONHelp3, self.OnButtonHelp3)
-        wx.EVT_BUTTON(self, ID_BUTTONHelp2, self.OnButtonHelp2)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonClose, id=ID_BUTTONClose)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonUndo, id=ID_BUTTONUndo)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonUserEnableDisable, id=ID_BUTTONUserEnable)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonVocolaEnableDisable, id=ID_BUTTONVocolaEnable)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonNatlinkEnableDisable, id=ID_BUTTONNatlinkEnable)
+        self.Bind(wx.EVT_CHECKBOX, self.OnCBVocolaTakesLanguages, id=ID_CHECKBOXVocolaTakesLanguages)
+        self.Bind(wx.EVT_CHECKBOX, self.OnCBDebugCallback, id=ID_CHECKBOXDebugCallbackOutput)
+        self.Bind(wx.EVT_CHECKBOX, self.OnCBDebugLoad, id=ID_CHECKBOXDebugLoad)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonHelp3, id=ID_BUTTONHelp3)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonHelp2, id=ID_BUTTONHelp2)
 
-        wx.EVT_BUTTON(self, ID_BUTTONunregister, self.OnButtonUnregister)
-        wx.EVT_BUTTON(self, ID_BUTTONregister, self.OnButtonRegister)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonUnregister, id=ID_BUTTONunregister)
+        self.Bind(wx.EVT_BUTTON, self.OnButtonRegister, id=ID_BUTTONregister)
 
         try:
             nf = __import__('natlinkconfigfunctions')
@@ -404,7 +404,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.error('could not import natlinkcorefunctions')
             error = 1
         if not error:
-            self.config = self.cli.config        
+            self.config = self.cli.config
         title = self.frame.GetTitle()
         self.functions = self.getGetterFunctions()  # including self.checkboxes
         self.undoList = []
@@ -425,7 +425,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                     self.urgentMessage = "See the log panel for urgent startup information!!"
                 else:
                     self.urgentMessage = "See the log panel for startup information, the init phase was succesful"
-                
+
             self.setInfo()
         # now self.DNSName is known (NatSpeak or Dragon)
             self.DNSName = self.config.getDNSName()
@@ -438,7 +438,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         dlg = wx.MessageDialog(self, Text, title,
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
-        dlg.Destroy()               
+        dlg.Destroy()
 
     def getGetterFunctions(self):
         D = {}
@@ -450,7 +450,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         # checkboxes should have a getter, an event (OnCB...) and
         # be included in self.checkboxes list.
         ##QH: should include DNSName maybe (2014)
-        
+
         D['DNSVersion'] = self.frame.infopanel.GetTextctrldnsversion
         D['DNSInstallDir'] = self.frame.infopanel.GetTextctrldnsinstallpath
         D['PythonVersion'] = self.frame.infopanel.GetTextctrlpythonversion
@@ -468,7 +468,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         D['DNSIniDir'] = self.frame.infopanel.GetTextctrldnsinifilepath
         D['natlinkIsEnabled'] = self.GetButtonnatlinkenable
         D['vocolaIsEnabled'] = self.GetButtonvocolaenable
-        
+
         D['unimacroIsEnabled'] = self.GetButtonunimacroenable
         D['userIsEnabled'] = self.GetButtonuserenable
         # D['UnimacroEnable'] = self.GetTextctrlunimacroinifilesdirectory
@@ -504,8 +504,8 @@ class ConfigureNatlinkPanel(wx.Panel):
 ##                print '%s: %s'% (k,v)
 ##        print '-------'
         newStatus = {} # dict with keys NatLink, Vocola, Unimacro, values (value, changed) each of them
-        
-        
+
+
         try:
             changed = 0
             for key in D:
@@ -526,7 +526,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                                 func().SetValue(True)
                             else:
                                 func().SetValue(False)
-                            
+
                         if thisOneChanged:
                             func().SetForegroundColour(wx.RED)
                         else:
@@ -535,7 +535,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                         # no checkbox:
                         label = str(value)
                         if key == 'DNSVersion':
-                            # DNSFullVersion gives different information as 
+                            # DNSFullVersion gives different information as
                             # natspeak help window
                             label = '%s'% D[key]
                         elif key == 'PythonVersion':
@@ -579,7 +579,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 if key in self.functions and self.functions[key]:
                     control = self.functions[key]()
                     control.Enable(value)
-            
+
             self.composeStatusLine(newStatus)
             self.urgentStatusLine(self.urgentMessage)
             self.urgentMessage = None
@@ -610,10 +610,10 @@ class ConfigureNatlinkPanel(wx.Panel):
             else:
                 line = '%s is %s'% (part, enableddisabled)
                 L.append(line)
-                
+
             if part == 'NatLink' and enableddisabled == 'disabled':
                 break # stop further status info
-                    
+
         statusLine = '; '.join(L)
         control = self.GetTextctrlstatus()
         control.SetValue(statusLine)
@@ -621,7 +621,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             control.SetForegroundColour(wx.RED)
         else:
             control.SetForegroundColour(wx.BLACK)
-        
+
     def urgentStatusLine(self, statusString=None):
         """writes a urgent message to the status text control
         """
@@ -629,8 +629,8 @@ class ConfigureNatlinkPanel(wx.Panel):
         control = self.GetTextctrlstatus()
         control.SetValue(statusString)
         control.SetForegroundColour(wx.RED)
-        
-        
+
+
 
     def do_command(self, *args, **kw):
         """a single letter, optionally followed by a path
@@ -649,7 +649,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 
         when calling from undo button, provide 'noundo' = 1 as keyword argument.
 
-    
+
         """
         if len(args) < 1:
             print 'empty command %s'% `args`
@@ -668,7 +668,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             mess = 'invalid command: %s'% letter
             print mess
             return mess
-    
+
         try:
             result = func(pathName)
         except ElevationError:
@@ -679,7 +679,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.error(mess)
             self.warning(mess2)
             return mess
-        
+
         # append to undoList
         if not 'undo' in kw:
             self.setInfo()
@@ -700,7 +700,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         """take value from control and do the command in upper or lowercase
         value = 1 (checked) lowercase command
         value = 0 (unchecked) uppercase command
-        
+
         """
         value = control.GetValue()
         if value:
@@ -708,12 +708,12 @@ class ConfigureNatlinkPanel(wx.Panel):
             undoLetter = letter.upper()
         else:
             doLetter = letter.upper()
-            undoLetter = letter.lower()                                       
+            undoLetter = letter.lower()
         result = self.do_command(doLetter, undo=undoLetter)
         if not result:
             self.setstatus("checkbox option changed to %s; restart %s to take effect"% (value, self.DNSName))
 
-       
+
     # WDR: methods for configurenatlink
     def GetCheckboxvocolatakesunimacroactions(self):
         return self.FindWindowById( ID_CHECKBOXVocolaTakesUnimacroActions )
@@ -738,7 +738,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 
     def GetButtonvocolaenable(self):
         return self.FindWindowById( ID_BUTTONVocolaEnable )
-    
+
 
     def GetTextctrlvocolauserdirectory(self):
         return self.FindWindowById( ID_TEXTCTRLvocolauserdirectory )
@@ -805,7 +805,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         letter = 'a'
         control = self.GetCheckboxvocolatakesunimacroactions()
         self.do_checkboxcommand(letter, control)
-        
+
 
     # def OnButtonIncludeUnimacroInPythonPath(self, event):
     #     letter = 'f'
@@ -846,10 +846,10 @@ class ConfigureNatlinkPanel(wx.Panel):
                 self.setInfo()
         else:
             print 'nothing chosen'
-            
+
     def OnButtonUnimacroEditor(self, event):
         D = self.config.getNatlinkStatusDict()
-        
+
         doLetter = 'p'
         undoLetter = 'P'
         statustext = 'Unimacro Editor is specified, this will take effect after you restart %s'% self.DNSName
@@ -879,7 +879,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         else:
             if old_path:
                 self.setstatus("Pressed Cancel, return to default")
-                self.do_command( undoLetter, undo=(doLetter, old_path) )             
+                self.do_command( undoLetter, undo=(doLetter, old_path) )
             return
         self.do_command(doLetter,new_path, undo=undoLetter)
         self.setstatus(statustext)
@@ -888,7 +888,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 
 #    def OnButtonVocolaEditor(self, event):
 #        D = self.config.getNatlinkStatusDict()
-#        
+#
 #        doLetter = 'w'
 #        undoLetter = 'W'
 #        statustext = 'Vocola Editor is specified, this will take effect after you restart %s'% self.DNSName
@@ -910,12 +910,12 @@ class ConfigureNatlinkPanel(wx.Panel):
 #                return
 #        else:
 #            self.setstatus("Pressed Cancel, return to default")
-#            self.do_command( undoLetter, undo=(doLetter, old_path) )             
+#            self.do_command( undoLetter, undo=(doLetter, old_path) )
 #            return
 #        self.do_command(doLetter,new_path, undo=undoLetter)
 #        self.setstatus(statustext)
 #        self.setInfo()
-        
+
 
     def OnButtonLogInfo(self, event):
         self.cli.do_i("dummy")
@@ -945,7 +945,7 @@ you should first close Dragon and you need elevated mode", so run start_configur
 .
 """
         self.warning(text)
-        
+
 
     def OnButtonHelp4(self, event):
         text = \
@@ -996,7 +996,7 @@ More about this in the "Vocola Compatibility" dialog.
             self.do_command(*cmd)
             # self.getNatlinkStatusDict()
             self.setstatus("Did undo")
-       
+
 
     def OnButtonUnimacroEnableDisable(self, event):
         D = self.config.getNatlinkStatusDict()
@@ -1029,7 +1029,7 @@ More about this in the "Vocola Compatibility" dialog.
                 tryHome = self.config.isValidPath("%PERSONAL%")
             if tryHome:
                 oldPath = tryHome
-        if oldPath:                
+        if oldPath:
             dlg.SetPath(oldPath)
         dlg.SetMessage('Specify the UnimacroUserDirectory, where your ini files are/will be located; this also enables Unimacro.')
         if dlg.ShowModal() == wx.ID_OK:
@@ -1074,7 +1074,7 @@ More about this in the "Vocola Compatibility" dialog.
         if not oldPath:
             tryNatlink = os.path.join(D['CoreDirectory'], '..', '..', '..')
             oldPath = self.config.isValidPath(tryNatlink)
-        if oldPath:                
+        if oldPath:
             dlg.SetPath(oldPath)
         dlg.SetMessage('Please specify the UserDirectory, where user grammar files are located')
         if dlg.ShowModal() == wx.ID_OK:
@@ -1113,9 +1113,9 @@ More about this in the "Vocola Compatibility" dialog.
         doLetter = letter.lower()
         undoLetter = letter.upper()
         statustext = 'Vocola is ENABLED, this will take effect after you restart %s'% self.DNSName
-    
-    
-    
+
+
+
         # ask for the correct directory:
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
               style=wx.DD_DEFAULT_STYLE)
@@ -1129,7 +1129,7 @@ More about this in the "Vocola Compatibility" dialog.
                 tryHome = self.config.isValidPath("%PERSONAL%")
             if tryHome:
                 oldPath = tryHome
-        if oldPath:                
+        if oldPath:
             dlg.SetPath(oldPath)
         dlg.SetMessage('Specify the VocolaUserDirectory, where your Vocola Command Files are located; this also enables Vocola')
         if dlg.ShowModal() == wx.ID_OK:
@@ -1145,7 +1145,7 @@ More about this in the "Vocola Compatibility" dialog.
         self.do_command(doLetter,new_path, undo=undoLetter)
         self.setstatus(statustext)
         self.setInfo()
-        
+
 
     def OnButtonNatlinkEnableDisable(self, event):
         D = self.config.getNatlinkStatusDict()
@@ -1159,7 +1159,7 @@ More about this in the "Vocola Compatibility" dialog.
                 statustext = 'NatLink is NOT DISABLED, please run this program in "elevated mode"'
             else:
                 statustext = 'NatLink is DISABLED, this will take effect after you restart %s'% self.DNSName
-                
+
         else:
             # enable:
             doLetter = letter.lower()
@@ -1170,12 +1170,12 @@ More about this in the "Vocola Compatibility" dialog.
             else:
                 statustext = 'NatLink is NOT ENABLED, please run this program in "elevated mode"'
         self.setstatus(statustext)
-        
+
     #def OnCBNatlinkDebug(self, event):   ## obsolete, QH 26-08-2013
     #    letter = 'g'
     #    control = self.GetCheckboxnatlinkdebug()
     #    self.do_checkboxcommand(letter, control)
-        
+
 
     def OnCBVocolaTakesLanguages(self, event):
         letter = 'b'
@@ -1235,7 +1235,7 @@ At first run after you installed NatLink, natlink.pyd is registered silently, bu
 So in that case click on Enable for getting started.
 """
         self.warning(text)
-        
+
 
 
     def OnButtonUnregister(self, event):
@@ -1249,7 +1249,7 @@ So in that case click on Enable for getting started.
         self.warning("Close this program, %s, all Python applications and\n\npossibly restart your computer\n\nbefore you run this program again!"% self.DNSName)
         self.urgentMessage = "Close this program, restart %s, possibly computer"% self.DNSName
         self.setInfo()
-        
+
 
 class MyFrame(wx.Frame):
     def __init__(self, parent, id, title,
@@ -1257,9 +1257,9 @@ class MyFrame(wx.Frame):
         style = wx.DEFAULT_FRAME_STYLE ):
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
         self.app = parent
-        wx.EVT_MENU(self, ID_MENUhelp, self.OnMenuHelp)
-        wx.EVT_MENU(self, ID_MENUClose, self.OnMenuClose)
-                
+        self.Bind(wx.EVT_MENU, self.OnMenuHelp, id=ID_MENUhelp)
+        self.Bind(wx.EVT_MENU, self.OnMenuClose, id=ID_MENUClose)
+
         self.CreateStatusBar(1)
         self.SetStatusText("This is the Configure NatLink & Vocola & Unimacro GUI")
         self.CreateMyMenuBar()
@@ -1270,11 +1270,11 @@ class MyFrame(wx.Frame):
         self.log = wx.TextCtrl(self.nb, -1, name='log',
               style=wx.TE_READONLY | wx.TE_MULTILINE|wx.TE_NOHIDESEL, value='')
         sys.stdout = Stdout(self.log)
-##        self.errors = wx.TextCtrl(self.nb, -1, name='errors', 
+##        self.errors = wx.TextCtrl(self.nb, -1, name='errors',
 ##              style=wx.TE_READONLY | wx.TE_MULTILINE|wx.TE_NOHIDESEL, value='')
 ##        sys.stderr = Stderr(self.errors)
         sys.stderr = sys.stdout
-        
+
         self.nb.AddPage(imageId=-1, page=self.log, select=False,
               text='log')
 ##        self.nb.AddPage(imageId=-1, page=self.errors, select=False,
@@ -1289,7 +1289,7 @@ class MyFrame(wx.Frame):
         self.infopanel.cpanel = self.cpanel
 ## self.nb = wx.Notebook(name='notebook', parent=self, style=0)
 
-            
+
     # WDR: methods for MyFrame
     def CreateMyMenuBar(self):
         self.SetMenuBar(MyMenuBarFunc() )
@@ -1301,25 +1301,25 @@ class MyFrame(wx.Frame):
         text = ['This configure GUI makes it possible to configure NatLink, ',
                 'including Vocola and Unimacro',"",
                 'Detailed help is given through various help buttons and in the "log" panel',""
-                'Written by Quintijn Hoogenboom, February, 2008/May, 2009,',
+                'Written by Quintijn Hoogenboom, February, 2008/May, 2009/April, 2018',
                 'See also http://qh.antenna.nl/unimacro']
         self.warning('\n'.join(text))
-                
 
-    def warning(self, text, title='Message from Configure NatLink GUI'):                     
+
+    def warning(self, text, title='Message from Configure NatLink GUI'):
         dlg = wx.MessageDialog(self, text, title,
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
-        dlg.Destroy()               
+        dlg.Destroy()
 
-    
+
     # WDR: handler implementations for MyFrame
 
 class Stdout:
     def __init__(self, object):
-        self.writeto = object       
+        self.writeto = object
 ##      self.write('stdout started')
-        
+
     def flush(self):
         pass
     def write(self, t):
@@ -1332,7 +1332,7 @@ class Stderr:
 
     def flush(self):
         pass
-    
+
     def write(self, t):
         """write to output"""
         self.window.AppendText(t)
@@ -1349,7 +1349,7 @@ try:
 except:
     import sys, traceback
     # traceback.print_exception(type, value, traceback[, limit[, file]])
-    traceback.print_exc(file=open("configurenatlink_error.txt", "w")) 
+    traceback.print_exc(file=open("configurenatlink_error.txt", "w"))
     mess  = traceback.format_exc(limit=1)
     mess += '\n\nMore info in configurenatlink_error.txt in the directory "(C:\\natlink)\\natlink\\confignatlinkvocolaunimacro"'
     windowsMessageBox(mess, "Error at startup of configurenatlink")

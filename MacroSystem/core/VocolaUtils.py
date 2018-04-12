@@ -35,7 +35,7 @@ from   types import *
 import traceback  # for debugging traceback code in handle_error
 
 import natlink
-
+import natlinkutils
 
 ##
 ## Global variables:
@@ -121,7 +121,7 @@ def do_flush(functional_context, buffer):
             'attempt to call Unimacro, Dragon, or a Vocola extension ' +
             'procedure in a functional context!')
     if buffer != '':
-        natlink.playString(convert_keys(buffer))
+        natlinkutils.playString(convert_keys(buffer))
     return ''
 
 
@@ -229,6 +229,9 @@ try:
     import actions
     unimacro_available = True
 except ImportError:
+    pass
+except IOError:
+    # print 'cannot open Unimacro actions file'
     pass
 
 def call_Unimacro(argumentString):

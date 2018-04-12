@@ -7,10 +7,17 @@ readAnything(source, filetype=None, tryAlternatives=True)
     (works best if filetype is NOT given. c
      Common alternatives for tryAlternatives are given by default, but utf-8 should be first)
 
+### example:
+    from readwritefile import readAnything
+    result = readAnything(testfile)
+    if result:
+        encoding, bom, t = result
+
 
 when writing a file, these three parameters should be passed again,
     bom: None if no bom mark is present or wanted
-    
+
+from readwritefile import writeAnything    
 writeAnything(filepath, encoding, bom, content # if encoding is None take 'ASCII'
                                                # if bom is None use no bom 
 
