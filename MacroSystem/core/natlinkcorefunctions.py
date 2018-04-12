@@ -121,6 +121,13 @@ def getExtendedEnv(var, envDict=None, displayMessage=1):
         myEnvDict[var] = os.environ[var]
         return myEnvDict[var]
 
+    if var == 'NOTEPAD':
+        windowsDir = getExtendedEnv("WINDOWS")
+        notepadPath = os.path.join(windowsDir, 'notepad.exe')
+        if os.path.isfile(notepadPath):
+            return notepadPath
+        raise ValueError('getExtendedEnv, cannot find path for "NOTEPAD"')
+
     # try to get from CSIDL system call:
     if var == 'HOME':
         var2 = 'PERSONAL'
