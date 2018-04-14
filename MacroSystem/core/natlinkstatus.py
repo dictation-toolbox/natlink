@@ -177,7 +177,8 @@ getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in def
 import six
 
 import os, re, win32api, win32con, sys, pprint, stat
-import RegistryDict, natlinkcorefunctions
+import RegistryDict
+import natlinkcorefunctions
 import pywintypes
 import time
 import types
@@ -1613,6 +1614,7 @@ def AddNatlinkEnvironmentVariables(status=None):
             v = os.path.normpath(v)
             addedList.append("%s: %s"% (k,v))
             natlinkcorefunctions.addToRecentEnv(k, v)
+    return addedList
     # print 'added to ExtendedEnvVariables:\n'
     # print '\n'.join(addedList)
 
@@ -1663,28 +1665,19 @@ if __name__ == "__main__":
     print '\n====\nexamples of expanding ~ and %...% variables:'
     short = "~/Quintijn"
     AddExtendedEnvVariables()
-    AddNatlinkEnvironmentVariables()
-    
-    # the Dragon directory:
-    short = "%PROGRAMFILES%"
-    expanded = natlinkcorefunctions.getExtendedEnv(short)
-    print "The dragon directory: %s"% expanded
-    # the Dragon ini files directory:
-    short = "%UNIMACRODIRECTORY%"
-    expanded = natlinkcorefunctions.getExtendedEnv(short)
-    print "The Unimacro directory: %s"% expanded
-
-    # My UnimacroUserDirectory:
-    short = "%UnimacroUserDirectory%"
-    expanded = natlinkcorefunctions.getExtendedEnv(short)
-    print "My UnimacroUserDirectory: %s"% expanded
-
-    # My VocolaUserDirectory:
-    short = "%VocolaUserDirectory%"
-    expanded = natlinkcorefunctions.getExtendedEnv(short)
-    print "My VocolaUserDirectory: %s"% expanded
+    addedListNatlinkVariables = AddNatlinkEnvironmentVariables()
     
 
+    print('All "NATLINK" extended variables:')
+    print '\n'.join(addedListNatlinkVariables)
+
+    print('\nExample: the Vocola compatibility folder in Unimacro:')
+    voccompDir = natlinkcorefunctions.expandEnvVariableAtStart('%UNIMACRODIRECTORY%/vocola_compatibility')
+    print('%%UNIMACRODIRECTORY%%/vocola_compatibility is expanded to: %s'% voccompDir)
+    print('Is valid directory: %s'% os.path.isdir(voccompDir))
+    
+    
+    
     # next things only testable when changing the dir in the functions above
     # and copying the ini files to this dir...
     # they normally run only when natspeak is on (and from NatSpeak)

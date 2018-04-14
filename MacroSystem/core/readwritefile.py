@@ -46,7 +46,7 @@ def fixCrLf(tRaw):
 def readAnything(source, filetype=None, tryAlternatives=True):
     """take any file and decode to unicode string
     
-    works best if filetype is NOT given.
+                                         works best if filetype is NOT given.
     Try in arow ascii, utf-8, 'cp1252' latin-1
     SKIP THIS: then fix a few invalid bytes, 91-92, '" and space SKIP THIS
     IN FAVOUR OF: cp1252, a microsoft superset of latin-1.
@@ -67,7 +67,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
         if filetype:
             codingschemes = [filetype]
         else:
-            codingschemes = ['utf-8', 'cp1252',  'latin-1']
+            codingschemes = ['ascii', 'utf-8', 'cp1252',  'latin-1']
         # utf16le for nssystem.ini of Dragon15 cannot get this working: 'utf_16le', 'utf_16be', 'utf_16',
         # chardetResult = chardet.detect(tRaw)
         # guessedType = chardetResult['encoding']

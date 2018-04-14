@@ -448,7 +448,7 @@ if __name__ == "__main__":
         expanded = expandEnvVariableAtStart(p)
         print 'expandEnvVariablesAtStart: %s: %s'% (p, expanded)
     print 'testing       expandEnvVariables'  
-    for p in ("D:\\%username%", "D:\\natlink\\unimacro", "~/unimacroqh",
+    for p in ("D:\\%username%", "%NATLINK%\\unimacro", "%UNIMACROUSER%",
               "%HOME%/personal",
               "%WINDOWS%\\folder\\strange testfolder"):
         expanded = expandEnvVariables(p)

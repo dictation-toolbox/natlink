@@ -941,8 +941,9 @@ If, for example, Vocola shows the button "Enable", it is currently disabled.
 In order to let the changes take effect, you have to restart NatSpeak.
 
 For the actions Enable/Disable NatLink and unregister/(re)register natlink.pyd
-you should first close Dragon and you need elevated mode", so run start_configurenatlink.py
-.
+you need "elevated mode".
+This is established by running "start_configurenatlink.py".
+
 """
         self.warning(text)
 
@@ -976,7 +977,8 @@ When Unimacro is enabled, you can also specify:
 Vocola can use Unimacro features, by checking the checkbox in the Vocola section.
 
 Via the dialog Vocola Compatibility, you can handle things around the include file, Unimacro.vch.
-This file is also copied to the UnimacroDirectory if this is - at first time use, with Unimacro NOT enabled  - required.
+
+This file is automatically copied from  (...)\Unimacro\vocola_compatibility into the VocolaUserDirectory when Vocola is started.
 
 More about this in the "Vocola Compatibility" dialog.
 """

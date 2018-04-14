@@ -1,4 +1,5 @@
 # -*- coding: latin-1 -*-
+from __future__ import unicode_literals
 """contains class IniVars, that does inifiles
 
 """
@@ -1622,6 +1623,15 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         >>> ini.formatKeysOrderedFromSections(L)
         u'[pref foo]\\nkey\\n\\n[pref f]\\nl\\n\\n[pref]\\nm\\n'
 
+        >>> ini.formatKeysOrderedFromSections(L, giveLength=True)
+        u'[pref foo] (1)\\nkey\\n\\n[pref f] (1)\\nl\\n\\n[pref] (1)\\nm\\n'
+
+
+        ## if you specify giveLength as int, only sections with more items than giveLength
+        ## have the number added.
+        >>> ini.formatKeysOrderedFromSections(L, giveLength=10)
+        u'[pref foo]\\nkey\\n\\n[pref f]\\nl\\n\\n[pref]\\nm\\n'
+                
         For debugging purposes the section that matches a key
         from a section list can be retrieved:
 
@@ -1756,7 +1766,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         
             
 
-    def formatKeysOrderedFromSections(self, sectionList, lineLen=60, sort=1):
+    def formatKeysOrderedFromSections(self, sectionList, lineLen=60, sort=1, giveLength=None):
         """formats in a long string all possible keys from a list of sections 
 
         The dictionary of the function "getKeysOrderedFromSections" is used,
@@ -1768,7 +1778,14 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         D = self.getKeysOrderedFromSections(sectionList)
         L = []
         for k in sectionList:
-            L.append('[%s]'%k)
+            if giveLength:
+                lenValues = len(D[k])
+                if type(giveLength) == types.IntType and lenValues < giveLength:
+                        L.append('[%s]'%k)
+                else:
+                    L.append('[%s] (%s)'% (k, len(D[k])))
+            else:
+                L.append('[%s]'%k)
             L.append(utilsqh.formatListColumns(D[k], lineLen=lineLen, sort=sort))
             L.append('')
         return '\n'.join(L)
