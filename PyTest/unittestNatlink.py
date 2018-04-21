@@ -74,9 +74,8 @@ def getBaseFolder(globalsDict=None):
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
         print 'baseFolder from __file__: %s'% baseFolder
-    if not baseFolder:
+    if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
-        print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder
 
 def getCoreDir(thisDir):
@@ -117,7 +116,12 @@ if not os.path.normpath(coreDir) in sys.path:
 
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # at least some errors in testNatlinkMain seem to be raised when set to 0
-
+doSleep = 0.1
+# set to a small (time) number if some tests should be slowed down
+                     # eg doTestWindowContents
+                     # especially after a paste action, some pause should be set..
+                     # 0.1 seems to fit, 0.05 seems to be too short...
+                     # see testNatlinkutilsPlayString and testPlayString
 
 import natlink
 import natlinkmain  # for Dragon 12, need recognitionMimic from natlinkmain
@@ -152,7 +156,7 @@ def getBaseFolder(globalsDict=None):
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
         print 'baseFolder from __file__: %s'% baseFolder
-    if not baseFolder:
+    if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
         print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder
@@ -202,12 +206,8 @@ class UnittestNatlink(unittest.TestCase):
         self.setMicState = "off"
         self.komodoHndle = natlink.getCurrentModule()[2]
         self.lookForDragonPad()
-        #if self.getWindowContents():
-        #    print 'The DragonPad window is not empty, probably open when starting the tests...'
-        #    #raise TestError('The DragonPad window is not empty, probably open when starting the tests...')
-
-
-
+        # self.lookForWord()
+        
     def tearDown(self):
         try:
             # give message:
@@ -244,6 +244,28 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.execScript('HeardWord "Start","DragonPad"')
 ##        time.sleep(1)
     #    natlink.execScript('HeardWord "switch","to","DragonPad"')
+    def lookForWord(self):
+        """try some tests with word,
+        """
+        natlink.execScript('AppBringup "winword"')
+        i = 0
+        while i < 50:
+            time.sleep(0.2)
+            mod, title, hndle = natlink.getCurrentModule()
+            mod = getBaseName(mod)
+            print 'mod: %s'% mod
+            if mod == 'winword':
+                print 'got word after %s steps'% i
+                break
+            i += 1
+        natlink.playString("{ctrl+a}{ctrl+c}")
+        self.wait(1)
+        t = natlink.getClipboard()
+        if t:
+            natlink.playString("{ctrl+n}")
+            self.wait(0.5)
+        
+
     def lookForDragonPad(self):
         """start/find DragonPad"""
 
@@ -367,24 +389,26 @@ class UnittestNatlink(unittest.TestCase):
     
     def killCalc(self):
         try:
-            hndle = self.CalcHndle
+            wantHndle = self.CalcHndle
         except AttributeError:
             # not active:
             return
-        try:
-            win32gui.SetForegroundWindow(hndle)
-        except:
-            raise TestError("cannot get calc in foreground, hndle: %s"% hndle)
-        del self.CalcHndle
         i = 0
         while i < 10:
+            try:
+                win32gui.SetForegroundWindow(wantHndle)
+            except:
+                pass
             time.sleep(0.1)
             mod, title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
-            if mod == "calc": break
+            if mod == "calc" and hndle == wantHndle : break
+            natlink.playString("{alt+tab}", 0x200)
             i += 1
         else:
             raise TestError("in killCalc, could not get back to Calc window")
+        if i:
+            print 'got calc after %s steps'
         natlink.playString("{alt+f4}")
         time.sleep(0.5)
 
@@ -416,7 +440,11 @@ class UnittestNatlink(unittest.TestCase):
             return parent == 0 
 
 
-    def wait(self, t=0.1):
+    def wait(self, t=None):
+        """wait some time, doSleep (if set) or 0.1 or whatever is passed
+        """
+        if t is None:
+            t = doSleep or 0.1
         time.sleep(t)
 
 
@@ -497,6 +525,9 @@ class UnittestNatlink(unittest.TestCase):
     # to the end of the window to handle the case that the window is empty.
 
     def getWindowContents(self):
+        """get the foreground window contents, used mainly in DragonPad
+        use natlink.playString, and insert pauses 
+        """
         clearClipboard()
         self.wait()
         natlink.playString('{ctrl+end}x{ctrl+a}')
@@ -513,6 +544,9 @@ class UnittestNatlink(unittest.TestCase):
         return contents[:-1]
 
     def doTestWindowContents(self, expected,testName=None, stripResult=None):
+        """test contents of the windows, slowing down if doSleep is set
+        """
+        if doSleep: time.sleep(doSleep)
         contents = self.getWindowContents()
         if stripResult:
             contents, expected = contents.strip(), expected.strip()
@@ -631,7 +665,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test extra functions of NatLink (getUser, getAllUsers)
 
-    def tttestGetAllUsersEtc(self):
+    def testGetAllUsersEtc(self):
         self.log("testGetAllUsersEtc", 0) # not to DragonPad!
         currentUser = natlink.getCurrentUser()[0]
         
@@ -646,7 +680,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def tttestPlayString(self):
+    def testPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -655,65 +689,103 @@ class UnittestNatlink(unittest.TestCase):
         testForException(TypeError,"natlink.playString(1)")
         testForException(TypeError,"natlink.playString('','')")
         self.wait()
-#         natlink.playString('This is a test')
-# ##        try:
-#         self.wait()
-#         testWindowContents('This is a test','playString')
-# ##        except KeyboardInterrupt:
-# ##            # This failure sometimes happens on Windows 2000
-# ##            print
-# ##            print '*******'
-# ##            print 'One of the NatLink tests has failed.'
-# ##            print
-# ##            print 'This particular failure has been seen on Windows 2000 when'
-# ##            print 'there is a problem switching to Dragon NaturallySpeaking.'
-# ##            print
-# ##            print 'To fix this:'
-# ##            print '(1) Switch to the Dragon NaturallySpeaking window'
-# ##            print '(2) Switch back to Python'
-# ##            print '(3) Try this selftest again - testnatlink.run()'
-# ##            raise ExitQuietly
-# 
-#         natlink.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
-#         testWindowContents('This is a testThis i','playString')
-# 
-#         natlink.playString('{ctrl+a}{del}')
-#         natlink.playString('testing',hook_f_shift)
-#         testWindowContents('Testing','playString')
-# 
-#         natlink.playString(' again')
-#         natlink.playString('a{ctrl+c}{del}',hook_f_ctrl)
-#         natlink.playString('ep',hook_f_alt)
-#         testWindowContents('Testing again\r\n','playString')
-# 
-#         natlink.playString('a{ctrl+c}{del}',hook_f_rightctrl)
-#         natlink.playString('ep',hook_f_rightalt)
-#         natlink.playString('now',hook_f_rightshift)
-#         testWindowContents('Testing again\r\n\r\nNow','playString')
-# 
-#         natlink.playString('{ctrl+a}{del}')
-#         natlink.playString('oneWORD ',genkeys_f_uppercase)
-#         natlink.playString('twoWORDs ',genkeys_f_lowercase)
-#         natlink.playString('threeWORDs',genkeys_f_capitalize)
-#         testWindowContents('ONEWORD twowords ThreeWORDs','playString')
-# 
-#         natlink.playString('{ctrl+a}{del}')
-#         testWindowContents('','playString')
+        natlink.playString('This is a test')
+        testWindowContents('This is a test','playString')
+
+        natlink.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
+        testWindowContents('This is a testThis i','playString')
+
+        natlink.playString('{ctrl+a}{del}')
+        natlink.playString('testing',hook_f_shift)
+        testWindowContents('Testing','playString')
+
+        natlink.playString(' again')
+        natlink.playString('a{ctrl+c}{del}',hook_f_ctrl)
+        # paste contents via menu command using alt:
+        natlink.playString('ep',hook_f_alt)
+        testWindowContents('Testing again\r\n','playString')
+
+        natlink.playString('a{ctrl+c}{del}',hook_f_rightctrl)
+        natlink.playString('ep',hook_f_rightalt)
+        natlink.playString('now',hook_f_rightshift)
+        testWindowContents('Testing again\r\n\r\nNow','playString')
+
+        natlink.playString('{ctrl+a}{del}')
+        natlink.playString('oneWORD ',genkeys_f_uppercase)
+        natlink.playString('twoWORDs ',genkeys_f_lowercase)
+        natlink.playString('threeWORDs',genkeys_f_capitalize)
+        testWindowContents('ONEWORD twowords ThreeWORDs','playString')
+
+        natlink.playString('{ctrl+a}{del}')
+        testWindowContents('','playString')
         
         # now try accented characters and unicode strings:
         natlink.playString('ge\xe9\xfatest{backspace}')
         testWindowContents('ge\xe9\xfates','playString')
+        #
+        ## open and close a dialog
+        natlinkutils.playString("{ctrl+a}Testing dialog window")
+        testWindowContents('Testing dialog window')
+        natlinkutils.playString('{ctrl+o}{esc}')
+        testWindowContents('Testing dialog window')
+
         natlink.playString('{ctrl+a}{del}')
         testWindowContents('','playString empty')
 
-    def tttestNatlinkutilsPlayString(self):
+
+
+    def testNatlinkutilsPlayString(self):
         """this version captions accented and unicode characters (possibly)
         
         Can also work around the double or drop first character by using the shift key trick
+        
+        Works with SendInput (mdl), if option has been chosen in natlinkutils
+                
         """
         self.log("testNatlinkutilsPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
+
+        natlinkutils.playString('This is a test')
+        testWindowContents('This is a test','playString')
+        # here play with the sleeps necessary:
+        natlinkutils.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}')
+        if doSleep: time.sleep(doSleep)
+        natlinkutils.playString('{backspace 9}')
+        testWindowContents('This is a testThis i','playString')
+
+        natlinkutils.playString('{ctrl+a}{del}')
+        natlinkutils.playString('testing',hook_f_shift)
+        testWindowContents('Testing','playString')
+
+        natlinkutils.playString(' again')
+        testWindowContents('Testing again','playString')
+        natlinkutils.playString('a{ctrl+c}{del}',hook_f_ctrl)
+        # paste contents via menu command using alt:
+        # this one is sent through to natlink.playString:
+        natlinkutils.playString('ep',hook_f_alt)
+        if doSleep: self.wait()
+        testWindowContents('Testing again\r\n','playString')
+
+        natlinkutils.playString('a{ctrl+c}{del}',hook_f_rightctrl)
+        natlinkutils.playString('ep',hook_f_rightalt)
+        if doSleep: self.wait()
+        natlinkutils.playString('now hook rightctrl',hook_f_rightshift)
+        testWindowContents('Testing again\r\n\r\nNow hook rightctrl','playString')
+
+        # this one should be handled by the SendKeys of Mark:
+        natlinkutils.playString('{backspace 26} with only SendKeys')
+        testWindowContents('Testing with only SendKeys','playString')
+        natlinkutils.playString('{ctrl+a}{ctrl+c}{del}')
+        # paste contents via menu command using alt:
+        natlinkutils.playString('{alt+e}p')
+        testWindowContents('Testing with only SendKeys\r\n','playString')
+
+        # now try accented characters and unicode strings:
+        natlinkutils.playString('{ctrl+a}{del}ge\xe9\xfatest{backspace}')
+        testWindowContents('ge\xe9\xfates','playString')
+        natlinkutils.playString('{ctrl+a}{del}')
+        testWindowContents('','playString empty')
 
         natlinkutils.playString('simple string')
         testWindowContents('simple string','natlinkutils.playString')        
@@ -724,11 +796,19 @@ class UnittestNatlink(unittest.TestCase):
 
         natlinkutils.playString(u'\u0041-xyz-\u00e9-abc-')
         testWindowContents('A-xyz-\xe9-abc-','natlinkutils.playString')
-        # 
+
+
+        #
+        ## open and close a dialog
+        natlinkutils.playString("{ctrl+a}Testing dialog window")
+        testWindowContents('Testing dialog window')
+        natlinkutils.playString('{ctrl+o}{esc}')
+        testWindowContents('Testing dialog window')
+        
 
     #---------------------------------------------------------------------------
 
-    def tttestExecScript(self):
+    def testExecScript(self):
         self.log("testExecScript", 1)
 
         testForException = self.doTestForException
@@ -738,7 +818,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestDictObj(self):
+    def testDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = natlink.DictObj()
@@ -1008,7 +1088,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def tttestRecognitionMimicCommands(self):
+    def testRecognitionMimicCommands(self):
         """test different phrases with commands, from own grammar
         
         explore when the recognitionMimic fails
@@ -1055,7 +1135,7 @@ class UnittestNatlink(unittest.TestCase):
         self.log("test recognitionMimicCommands, version: %s"% DNSVersion, 1)
         self.clearDragonPad()
         self.doTestWindowContents("")
-        testCommandRecognition = self.dotestCommandRecognition
+        testCommandRecognition = self.doTestCommandRecognition
         testGram = TestGrammar()
         testGram.initialize()
 
@@ -1088,7 +1168,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
        
-    def tttestRecognitionMimic(self):
+    def testRecognitionMimic(self):
         """test different phrases with spoken forms,
         
         since Dragon 11, lots of things have changed here, so it seems good to make a special
@@ -1244,7 +1324,7 @@ class UnittestNatlink(unittest.TestCase):
             # end of testing recognitionMimic for NatSpeak <= 10    
 
         
-    def tttestWordFuncs(self):
+    def testWordFuncs(self):
         """tests the different vocabulary word functions.
 
         These tests are a bit vulnerable and seem to have changed in more recent
@@ -1496,7 +1576,7 @@ class UnittestNatlink(unittest.TestCase):
     # September 2015: add unimacroDirectory in between baseDirectory and userDirectory
     # Febr 2018: convert to binary added (QH)
 
-    def tttestNatlinkUtilsFunctions(self):
+    def testNatlinkUtilsFunctions(self):
         """test utility functions of natlinkutils
      
         getModifierKeyCodes: transforms modifiers ctrl alt (or menu) and shift into
@@ -1527,7 +1607,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException(KeyError, "getModifierKeyCodes('typo')")
 
-    def tttestNatLinkMain(self):
+    def testNatLinkMain(self):
 
         # through this grammar we get the recogtype:
         recCmdDict = RecordCommandOrDictation()
@@ -1733,7 +1813,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestWordProns(self):
+    def testWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
@@ -1922,7 +2002,7 @@ class UnittestNatlink(unittest.TestCase):
     # Test the splitApartLines function of gramparser
     # has to be developed (QH, 2018)
     
-    # def tttestSplitApartLines(self):
+    # def testSplitApartLines(self):
     #     self.log("testSplitApartLines", 1)
     #     func = gramparser.splitApartLines
     #     self.doTestSplitApartLines(func, 'hello', ['hello', '\x00'])
@@ -1932,10 +2012,10 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
-    def tttestParser(self):
+    def testParser(self):
         self.log("testParser", 1)
 
-        def tttestGrammarError(exceptionType,gramSpec):
+        def testGrammarError(exceptionType,gramSpec):
             try:
                 parser = gramparser.GramParser([gramSpec])
                 parser.doParse()
@@ -2223,7 +2303,7 @@ class UnittestNatlink(unittest.TestCase):
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
 
-    def tttestGrammarRecognitions(self):
+    def testGrammarRecognitions(self):
         self.log("testGrammarRecognitions", 1)
 
         # Create a lot of grammars to test the actual recognition results
@@ -2284,7 +2364,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         
 
-    def tttestDgndictationEtc(self):
+    def testDgndictationEtc(self):
         self.log("testDgndictationEtc", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -2790,7 +2870,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase
 
-    def tttestDictGram(self):
+    def testDictGram(self):
         self.log("testDictGram")
 
         # Create a dictation grammar.  This grammar simply gets the results of
@@ -2943,7 +3023,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
 
-    def tttestSelectGram(self):
+    def testSelectGram(self):
         self.log("testSelectGram")
 
         # Create a selection grammar.  This grammar simply gets the results of
@@ -3093,7 +3173,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def tttestTrayIcon(self):
+    def testTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -3131,7 +3211,7 @@ class UnittestNatlink(unittest.TestCase):
     # QH, april 2010:
     # Added test for self.rulesByName dict...
 
-    def tttestNextPrevRulesAndWords(self):
+    def testNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3257,7 +3337,7 @@ class UnittestNatlink(unittest.TestCase):
     ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
     ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
 
-    def tttestNextPrevRulesAndWordsRecursive(self):
+    def testNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3402,7 +3482,7 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched to "%s" mic'% micState)
             time.sleep(w)
 
-    def tttestNestedMimics(self):
+    def testNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -3726,7 +3806,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def tttest....
+    # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')

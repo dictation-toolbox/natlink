@@ -1,4 +1,4 @@
-__version__ = "4.1uniform-8"
+__version__ = "4.1victor"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -6,6 +6,8 @@ __version__ = "4.1uniform-8"
 #  (C) Copyright Quintijn Hoogenboom, February 2008/January 2018
 #
 #----------------------------------------------------------------------------
+#
+# 4.1victor, changes for DPI15, nearly stable, waiting for Mark getting SendKeys implemented.
 #
 # 4.1uniform, changes for DPI15, and also getting 4 parameters from natlink.changeCallback
 #                                so the userLanguage (and also userTopic) is reporting via natlink.
