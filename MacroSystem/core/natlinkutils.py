@@ -62,7 +62,7 @@
 
 ############################################################################
 # experiment Mark (Vocola Extension)
-useMarkSendInput = 1
+useMarkSendInput = 0
 if useMarkSendInput:
     import ExtendedSendDragonKeys
     import SendInput
