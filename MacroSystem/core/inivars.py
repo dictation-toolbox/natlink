@@ -2007,11 +2007,16 @@ def formatReverseNumbersDict(D):
             else:
                 # one item of longer possibly ... separated sequence
                 if L: L.append(', ')
-                L.append('%s'% v[0])
+                try:
+                    L.append(u'%s'% v[0])
+                except UnicodeDecodeError:
+                    # print('inivars, formatReverseNumbersDict fails: %s (type: %s)'% (ord(v[0][0]), type(v[0])))
+                    vv = utilsqh.convertToUnicode(v[0])
+                    L.append(vv)
                 kPrev = k
     # for line in L:
     #     print 'line: %s (%s_)'% (line, type(line))
-    return ''.join(L)
+    return u''.join(L)
 
     ###???
     #minNum, maxNum = min(nums), max(nums)

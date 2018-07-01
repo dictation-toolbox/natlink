@@ -30,7 +30,7 @@ import os
 import os.path
 import types
 import copy
-
+import sys
 
 def fixCrLf(tRaw):
     """replace crlf into lf
@@ -60,7 +60,6 @@ def readAnything(source, filetype=None, tryAlternatives=True):
     filename = os.path.split(sourceslash)[-1]
     
     if os.path.isfile(sourceslash):
-        
         tRaw = io.open(sourceslash, 'rb').read()
         tRaw = fixCrLf(tRaw)
 
@@ -104,6 +103,7 @@ def writeAnything(filepath, encoding, bom, content):
     """
     if type(content) in (types.ListType, types.TupleType):
         content = '\n'.join(content)
+
     if type(content) != types.UnicodeType:
         raise TypeError("writeAnything, content should be Unicode, not %s (%s)"% (type(content), filepath))
     if encoding in [None, 'ascii']:
@@ -127,6 +127,14 @@ def writeAnything(filepath, encoding, bom, content):
     else:
         print 'fail to encode file %s with encoding(s): %s. Use xmlcharrefreplace'% (filepath, encodings)
         tRaw = content.encode(encoding=encoding, errors='xmlcharrefreplace')
+        
+    if sys.platform == 'win32':
+        if tRaw.find('\r\n') > 0:
+            print 'text already found \\r\\n, no replace needed'
+        else:
+            print('text change for windows \\n into \\r\\n: %s'% filepath)
+            tRaw = tRaw.replace('\n', '\r\n')
+        
     if bom:
         print 'add bom for tRaw'
         tRaw = bom + tRaw 

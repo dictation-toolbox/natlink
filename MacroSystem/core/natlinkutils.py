@@ -62,7 +62,7 @@
 
 ############################################################################
 # experiment Mark (Vocola Extension)
-useMarkSendInput = 0
+useMarkSendInput = 1
 if useMarkSendInput:
     import ExtendedSendDragonKeys
     import SendInput
@@ -294,7 +294,7 @@ def playString(keys, hooks=None):
     """
     if not keys:
         return
-    keys = utilsqh.convertToBinary(keys)
+    # keys = utilsqh.convertToBinary(keys)
     if hooks is None and useMarkSendInput:
         SendInput.send_input(
             ExtendedSendDragonKeys.senddragonkeys_to_events(keys))
@@ -1089,6 +1089,7 @@ class SelectGramBase(GramClassBase):
         # Now make the callback
         self.callIfExists( 'gotResults', (words, startPos, endPos) )
 
+    #;ydebug(lLoO9)::::  (NL Verenigde Staten)
     # A selection grammar is similar to a Microsoft SAPI grammar.
     #   SRHEADER
     #       dwType = DGNSRHDRTYPE_SELECT(10)
@@ -1138,3 +1139,14 @@ def convertResults(fullResults):
         else: dict[x[1]] = [x[0]]
     return dict
 
+def testSendInput(keys):
+    if useMarkSendInput == 0:
+        print 'warning cannot test SendInput, first set useMarkSendInput to 1'
+    playString(keys)
+
+if __name__ == "__main__":
+    # testSendInput('abc#(){}zz')
+    testSendInput('\xe9\xe9n example')
+    # testSendInput(u';ydebug(lLoO9)::::')
+    # testSendInput(u'U\u00e9\u0106\u00D6 character')
+    #

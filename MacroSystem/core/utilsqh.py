@@ -203,8 +203,9 @@ return with "?": A-xyz-?-abc-ascii
 >>> convertToBinary(convertToBinary(tbinary))
 '\\xe9\\xe9n binaire string'
 
-## wrong unicode, PU2: 
+## \x92 (PU2) is from cp1252 (windows convention): 
 >>> convertToBinary(u'fondationnimba rapportsd\x92archive index.html')
+'fondationnimba rapportsd\\x92archive index.html'
     """
     # a binary string can hold accented characters:
     if type(unicodeString) == six.binary_type:
@@ -2681,7 +2682,9 @@ False
         u'C:/f/a/b'
         >>> v/'.'
         u'C:/f'
-
+        >>> v/u'unicodepath.jpg'
+        u'C:/f/unicodepath.jpg'
+        
         side cases, in use with relpathdirs and relpathfiles:
 
         >>> path('../'*1)/['a', 'b']
