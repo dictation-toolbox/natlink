@@ -256,7 +256,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         ## now go on with trying to replace natlink.pyd with the correct version and register it...
         wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
         if not wantedPyd:
-            fatal_error('natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find filename for wantedPydPath')
+            fatal_error('natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find filename for wantedPydPath\ncoreDir: %s, wantedPyd: %s'% (coreDir, wantedPyd))
             return
         if not os.path.isfile(wantedPydPath):
             fatal_error('natlinkconfigfunctions, configCheckNatlinkPydFile: wantedPydPath does not exits: %s'% wantedPydPath)
