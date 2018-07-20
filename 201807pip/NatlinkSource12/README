@@ -1,0 +1,18 @@
+    This directory contains a new version of the NatLink DLL source code
+provided by Rüdiger; it handles Unicode and thus works with DNS 12+,
+unlike the previous version that only did ASCII.  He writes:
+
+
+    The file natlink.vcxproj contains all the appropriate configurations
+and settings.  Double click on that file and Visual Studio will load them
+accordingly.
+
+    There are four different release configurations, all ready to build:
+
+  ANSI 2.6    (for Python 2.6 and less than DNS 12)
+  Unicode 2.6 (for Python 2.6 and higher than DNS 11)
+  Ansi 2.7
+  Unicode 2.7
+
+Of course, you may have to edit the paths to link to, such as the Python
+directory as an example.

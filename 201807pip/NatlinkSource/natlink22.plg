@@ -1,0 +1,79 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: natlink - Win32 Release MinDependency--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x409 /fo"ReleaseMinDependency/natlink.res" /d "NDEBUG" "C:\NatLink\NatlinkSource\natlink.rc"" 
+Creating temporary file "C:\DOCUME~1\DARREN~1\LOCALS~1\Temp\RSP10.tmp" with contents
+[
+/nologo /MT /W3 /O1 /I "e:\Python22\include" /I "c:\Python22\include" /I "d:\Python22\include" /I "c:\Program Files\Python22\include" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "PYTHON22" /Fp"ReleaseMinDependency/natlink22.pch" /Yu"stdafx.h" /Fo"ReleaseMinDependency/" /Fd"ReleaseMinDependency/" /FD /c 
+"C:\NatLink\NatlinkSource\appsupp.cpp"
+"C:\NatLink\NatlinkSource\dictobj.cpp"
+"C:\NatLink\NatlinkSource\DragCode.cpp"
+"C:\NatLink\NatlinkSource\excepts.cpp"
+"C:\NatLink\NatlinkSource\GramObj.cpp"
+"C:\NatLink\NatlinkSource\natlink.cpp"
+"C:\NatLink\NatlinkSource\PythWrap.cpp"
+"C:\NatLink\NatlinkSource\ResObj.cpp"
+"C:\NatLink\NatlinkSource\SecdThrd.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\DARREN~1\LOCALS~1\Temp\RSP10.tmp" 
+Creating temporary file "C:\DOCUME~1\DARREN~1\LOCALS~1\Temp\RSP11.tmp" with contents
+[
+/nologo /MT /W3 /O1 /I "e:\Python22\include" /I "c:\Python22\include" /I "d:\Python22\include" /I "c:\Program Files\Python22\include" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "PYTHON22" /Fp"ReleaseMinDependency/natlink22.pch" /Yc"stdafx.h" /Fo"ReleaseMinDependency/" /Fd"ReleaseMinDependency/" /FD /c 
+"C:\NatLink\NatlinkSource\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\DARREN~1\LOCALS~1\Temp\RSP11.tmp" 
+Creating temporary file "C:\DOCUME~1\DARREN~1\LOCALS~1\Temp\RSP12.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"..\MacroSystem/natlink22.pdb" /machine:I386 /def:".\natlink22.def" /out:"..\MacroSystem/natlink22.dll" /implib:"..\MacroSystem/natlink22.lib" /libpath:"c:\Python22\libs" /libpath:"d:\Python22\libs" /libpath:"e:\Python22\libs" /libpath:"c:\Program Files\Python22\libs" 
+.\ReleaseMinDependency\appsupp.obj
+.\ReleaseMinDependency\dictobj.obj
+.\ReleaseMinDependency\DragCode.obj
+.\ReleaseMinDependency\excepts.obj
+.\ReleaseMinDependency\GramObj.obj
+.\ReleaseMinDependency\natlink.obj
+.\ReleaseMinDependency\PythWrap.obj
+.\ReleaseMinDependency\ResObj.obj
+.\ReleaseMinDependency\SecdThrd.obj
+.\ReleaseMinDependency\StdAfx.obj
+.\ReleaseMinDependency\natlink.res
+]
+Creating command line "link.exe @C:\DOCUME~1\DARREN~1\LOCALS~1\Temp\RSP12.tmp"
+Creating temporary file "C:\DOCUME~1\DARREN~1\LOCALS~1\Temp\RSP13.bat" with contents
+[
+@echo off
+regsvr32 /s /c "\NatLink\MacroSystem\natlink22.dll"
+echo regsvr32 exec. time > ".\..\MacroSystem\regsvr32.trg"
+]
+Creating command line "C:\DOCUME~1\DARREN~1\LOCALS~1\Temp\RSP13.bat"
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+appsupp.cpp
+dictobj.cpp
+DragCode.cpp
+excepts.cpp
+GramObj.cpp
+natlink.cpp
+PythWrap.cpp
+ResObj.cpp
+SecdThrd.cpp
+Generating Code...
+Linking...
+   Creating library ..\MacroSystem/natlink22.lib and object ..\MacroSystem/natlink22.exp
+natlink22.exp : warning LNK4070: /OUT:natlink20.dll directive in .EXP differs from output filename "..\MacroSystem/natlink22.dll"; ignoring directive
+<h3>Output Window</h3>
+Registering ActiveX Control...
+
+
+
+<h3>Results</h3>
+natlink22.dll - 0 error(s), 1 warning(s)
+</pre>
+</body>
+</html>

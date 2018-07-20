@@ -1,0 +1,23 @@
+;
+; Python Macro Language for Dragon NaturallySpeaking
+;	(c) Copyright 1999 by Joel Gould
+;	Portions (c) Copyright 1999 by Dragon Systems, Inc.
+;
+; NatLink.def 
+;	Declares the module parameters.
+;
+; April 25, 1999
+;	- packaged for external release
+;
+; March 3, 1999
+;	- initial version
+;
+
+LIBRARY      "natlink26.pyd"
+
+EXPORTS
+	DllCanUnloadNow      PRIVATE
+	DllGetClassObject    PRIVATE
+	DllRegisterServer    PRIVATE
+	DllUnregisterServer	 PRIVATE
+	initnatlink			

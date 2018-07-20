@@ -1,0 +1,42 @@
+# Commands useful in "remote control" applications like VNC and Terminal
+# Server Client
+
+selectStart() := touchNearEdge(sw,1,-1) Wait(100) {Esc};
+switchLeft(n)  := selectStart() {Tab_2}{Right_$n} " ";
+switchRight(n) := selectStart() "{Tab_2}{End}{Left " Eval($n-1) } " ";
+launch(n)      := selectStart() {Tab}{Left}{Esc}{Right_$n} " ";
+
+<1to20> := 1..20;
+
+Local Switch to <1to20>      = switchRight($1);
+Local Close     <1to20>      = switchRight($1) Wait(100) {Alt+F4};
+Local Switch to <1to20> Left = switchLeft($1);
+Local Close     <1to20> Left = switchLeft($1) Wait(100) {Alt+F4};
+
+Local Start Menu = touchNearEdge(sw,1,-1);
+
+Local Launch <1to20> = launch($1);
+
+run(exe) := touchNearEdge(sw,1,-1) {Up_2}{Enter} $exe {Enter};
+Start (regedit|explorer) = run($1);
+Environment Variables = run("C:\WINNT\System32\SYSDM.CPL")
+                        Wait(1000) {Right_4}{Alt+e}; 
+
+# This allows application-specific commands in a remote session.
+# The "Title" command changes the window title of the remote session to
+# the name of the application you want to use. (For the "set title" utility
+# see http://www.synapseadaptive.com/joel/settitleautilityamodule_m.htm)
+# Then we include that application's commands below as window
+# title-specific commands.
+
+Title (Notepad | Shell | Explorer | Visual C++)
+    = DllCall(SetTitle.dll, SetTitle, $1);
+
+Notepad:
+    include notepad.vcl;
+Shell:
+    include ntvdm.vcl;
+Explorer:
+    include explorer.vcl;
+Visual C++:
+    include msdev.vcl;
