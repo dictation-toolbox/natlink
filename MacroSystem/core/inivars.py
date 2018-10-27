@@ -810,6 +810,8 @@ u'value'
         sections.sort()
         hasTrailingNewline = 1   # no newline for section
         for s in sections:
+            if s == 'cache next date':
+                pass
             hadTrailingNewline = hasTrailingNewline
             hasTrailingNewline = 0
             if  not hadTrailingNewline:
@@ -819,6 +821,8 @@ u'value'
             #  key char has '-', for sitegen:
             keyhashyphen = 0
             for k in keys:
+                if k == 'next check date':
+                    pass
                 if k.find('-') > 0:
                     keyhashyphen = 1
                     break
@@ -846,31 +850,6 @@ u'value'
                         k = utilsqh.convertToUnicode(k)
                         L.append(u'%s =' % k)
                         
-                elif type(v) in (six.text_type, six.binary_type):
-                    if type(v) == six.binary_type:
-                        v = utilsqh.convertToUnicode(v)
-                    v = v.strip()
-                    if v.find('\n') >= 0:
-                        hasTrailingNewline = 1
-                        V = v.split('\n')
-                        if not hadTrailingNewline:
-                            L.append('')    # 1 extra newline
-                        L.append(u'%s =' % k)
-                        spacing = ' '*4
-                        for li in V:
-                            if li:
-                                L.append(u'%s%s' % (spacing, li))
-                            else:
-                                L.append('')
-                        L.append('')
-                    elif len(k) + len(v) > 72:
-                        if not hasTrailingNewline:
-                            L.append('')
-                        L.append(u'%s = %s' % (k, v))
-                        L.append('')
-                        hasTrailingNewline = 1
-                    else:
-                        L.append('%s = %s' % (k, v))
                 elif type(v) == types.ListType or type(v) == types.TupleType:
                     valueList = map(quoteSpecialList, v)
                     startString = u'%s = '% k
@@ -895,9 +874,11 @@ u'value'
                         if type(V) == six.binary_type:
                             V = utilsqh.convertToUnicode(V)
                             vv = quoteSpecialDict(V)                            
+                        elif type(V) == six.text_type:
+                            vv = quoteSpecialDict(V)                            
                         elif type(V) == types.ListType or type(V) == types.TupleType:
                             vv = ', '.join(map(quoteSpecialDict, V))
-                        elif V == None:
+                        elif V is None:
                             vv = None
                         if vv in inverse:
                             inverse[vv].append(K)
@@ -920,6 +901,34 @@ u'value'
                                 startString = ' '*len(startString)
                     hasTrailingNewline = 1
                     L.append('')
+                else:
+                    if type(v) == six.binary_type:
+                        v = utilsqh.convertToUnicode(v)
+                    if type(v) != six.text_type:
+                        v = unicode(v)
+                    v = v.strip()
+                    if v.find('\n') >= 0:
+                        hasTrailingNewline = 1
+                        V = v.split('\n')
+                        if not hadTrailingNewline:
+                            L.append('')    # 1 extra newline
+                        L.append(u'%s =' % k)
+                        spacing = ' '*4
+                        for li in V:
+                            if li:
+                                L.append(u'%s%s' % (spacing, li))
+                            else:
+                                L.append('')
+                        L.append('')
+                    elif len(k) + len(v) > 72:
+                        if not hasTrailingNewline:
+                            L.append('')
+                        L.append(u'%s = %s' % (k, v))
+                        L.append('')
+                        hasTrailingNewline = 1
+                    else:
+                        L.append('%s = %s' % (k, v))
+
             if not hadTrailingNewline:
                 L.append('')
 ##        if path(self._file).isfile():
@@ -983,6 +992,8 @@ u'value'
         """
         if type(s) == types.ListType or type(s) == types.TupleType:
             if k:
+                if k == 'next check date':
+                    pass
                 if type(k) == six.binary_type:
                     k = utilsqh.convertToUnicode(k)
                 k = k.strip()
@@ -1110,7 +1121,7 @@ u'value'
         >>> ini.get('quotes', 'double')
         u'" a "'
         """
-        self._changed = 1
+        # self._changed = 1
         if type(s) == types.ListType or type(k) == types.TupleType:
             for S in s:
                 self.set(S, k, v)
@@ -1148,6 +1159,9 @@ u'value'
             raise IniError('key must be list, tuple or string, not: %s'% k)
             
         # finally set s, k, to v
+        if k == 'next check date':
+            pass
+
         k = k.strip()
         if reWhiteSpace.search(k):
             k = reWhiteSpace.sub(u' ', k)
@@ -1160,8 +1174,14 @@ u'value'
             v = utilsqh.convertToUnicode(v)
         # print "s: %s(%s), k: %s(%s), v: %s(%s)"% (s, type(s), k, type(k), v, type(v))
         if type(v) == six.text_type:
-            self[s][k] = quoteSpecial(v)
-        else:
+            v = quoteSpecial(v)
+        prevV = None
+        try:
+            prevV = self[s][k]
+        except KeyError:
+            pass
+        if v != prevV:
+            self._changed = 1    
             self[s][k] = v
 
     def delete(self, s=None, k=None):
@@ -1190,7 +1210,6 @@ u'value'
         >>> ini.close()
         >>>
         """
-        self._changed = 1
         if s: s = s.strip()
         if s and reWhiteSpace.search(s):
             s = reWhiteSpace.sub(' ', s)
@@ -1206,15 +1225,20 @@ u'value'
                     # delete given key
                     if self.hasKey(s, k):
                         # k exists, delete it
+                        self._changed = 1
                         del self[s][k]
                     if not self[s]:
+                        self._changed = 1
                         del self[s]
                 else:
                     # no key given, delete whole section
+                    self._changed = 1
                     del self[s]
         else:
             # no section, delete all sections and keys
-            self.clear()
+            if self.toDict():
+                self._changed = 1
+                self.clear()
 
     def hasSection(self, s):
         if reWhiteSpace.search(s):

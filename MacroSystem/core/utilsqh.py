@@ -2522,7 +2522,7 @@ class path(unicode):
     See python cookbook 4.16
     >>> import sys
     >>> root = path(sys.prefix)
-    >>> sitepkgs = root/'lib'/'site-packages'
+    >>> sitepkgs = root/u'lib'/u'site-packages'
     >>> sitepkgs
     u'C:/python27/lib/site-packages'
     >>> unicode(sitepkgs)
@@ -2710,6 +2710,8 @@ False
             return path(com)
         else:
             return self
+    ## for old fashioned division and new style:
+    __truediv__ = __div__
 
     def __add__(self, other):
         """make new instance just adding the string

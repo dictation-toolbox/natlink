@@ -214,9 +214,22 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\from status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
+    def checkDNSInstallDir(self):
+        """check if install directory of Dragon is found
+        
+        if not rais an error
+        """
+        try:
+            dnsDir = self.getDNSInstallDir()
+        except IOError:
+            dnsDir = None
+        if not dnsDir:
+            fatal_error('no valid DNSInstallDir found, please repair in Config program or Configuration GUI')
+        pass
     
     def configCheckNatlinkPydFile(self):
         """see if natlink.pyd is in core directory, if not copy from correct version
+        if DNSInstallDir or DNSIniDir is not properly set, all goes wrong.
         """
         self.checkedUrgent = 1
         if sys.version.find("64 bit") >= 0:
@@ -225,6 +238,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             print 'NatLink cannot run with this version, please uninstall and'
             print 'install a 32 bit version of python, see http://qh.antenna.nl/unimacro,,,'
             print '============================================='
+            return
+        
+        if self.getDNSInstallDir == -1:
+            return
+        if self.getDNSIniDir == -1:
             return
         
         coreDir2 = self.getCoreDirectory()
@@ -497,6 +515,11 @@ from the correct place.
         this is done through the
 
         """
+        if self.DNSInstallDir == -1:
+            return
+        if self.DNSIniDir == -1:
+            return
+        
         result = self.NatlinkIsEnabled(silent=1)
         if result == None:
             if not self.isElevated: raise ElevationError("needed for fixing the natlink enabled state")
@@ -676,6 +699,7 @@ NatLink is now disabled.
             # print 'set DNS Install Directory to: %s'% new_dir
             self.userregnl.delete("Old"+key)
             self.userregnl.set(key, checkDir)
+            self.getDNSInstallDir(force=1)  ## new settings
             return
         else:
             mess =  'setDNSInstallDir, directory "%s" is not a correct Dragon Program Directory: %s'% checkDir
@@ -691,6 +715,9 @@ NatLink is now disabled.
         if oldvalue and self.isValidPath(oldvalue):
             self.userregnl.set("Old"+key, oldvalue)
         self.userregnl.delete(key)
+        self.getDNSInstallDir(force=1)  ## new settings
+
+
         
     def setDNSIniDir(self, new_dir):
         """set in registry local_machine\natlink
@@ -711,6 +738,7 @@ NatLink is now disabled.
                 return mess
             self.userregnl.set(key, new_dir)
             self.userregnl.delete("Old"+key)
+            self.getDNSIniDir(force=1)
             return  # OK
         else:
             mess = "setDNSIniDir, not a valid directory: %s"% new_dir
@@ -727,8 +755,7 @@ NatLink is now disabled.
         if oldvalue and self.isValidPath(oldvalue):
             self.userregnl.set("Old"+key, oldvalue)
         self.userregnl.delete(key)
-
-
+        self.getDNSIniDir(force=1)
 
     def setUserDirectory(self, v):
         key = 'UserDirectory'
@@ -1433,8 +1460,17 @@ class CLI(cmd.Cmd):
         else:
             self.config = NatlinkConfig()
         try:
+            self.config.checkDNSInstallDir()
             self.config.checkCoreDirectory()
             self.config.correctIniSettings()
+            # check pyd file
+            result = self.config.configCheckNatlinkPydFile()
+            if result is None:
+                if __name__ == "__main__":
+                    print "Error starting NatlinkConfig, Type 'u' for a usage message"
+                self.checkedConfig = self.config.checkedUrgent
+                return
+
             # warning if path from which this is run does not match the registry
             result = self.config.checkPythonPathAndRegistry()
             if result is None:
@@ -1444,10 +1480,6 @@ class CLI(cmd.Cmd):
                 self.checkedConfig = self.config.checkedUrgent
                 return
                 
-            result = self.config.configCheckNatlinkPydFile()
-            if result is None:
-                if __name__ == "__main__":
-                    print "Error starting NatlinkConfig, Type 'u' for a usage message"
     
                 self.checkedConfig = self.config.checkedUrgent
                 return

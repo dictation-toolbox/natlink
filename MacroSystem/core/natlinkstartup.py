@@ -14,7 +14,7 @@ import natlinkstatus
 # loading grammars for the first time:
 #
 def start():
-    print 'start of natlinkstartup'
+    print '--- natlinkstartup starting...'
     updateUnimacroHeaderIfNeeded()
     create_new_language_subdirectory_if_needed()
 

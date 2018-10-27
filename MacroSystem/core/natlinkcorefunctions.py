@@ -144,7 +144,8 @@ def getExtendedEnv(var, envDict=None, displayMessage=1):
         # on some systems have SYSTEMROOT instead of SYSTEM:
         if var == 'SYSTEM':
             return getExtendedEnv('SYSTEMROOT', envDict=envDict)
-        raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+        return ''
+        # raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
     try:
         result = shell.SHGetFolderPath (0, shellnumber, 0, 0)
     except:
@@ -170,8 +171,8 @@ def clearRecentEnv():
 def getAllFolderEnvironmentVariables(fillRecentEnv=None):
     """return, as a dict, all the environ AND all CSLID variables that result into a folder
     
-    TODO:  Also include NATLINK, UNIMACRO, VOICECODE, DRAGONFLY, VOCOLAUSERDIR, UNIMACROUSERDIR
-    these are now done in natlinkstatus
+    Now also implemented:  Also include NATLINK, UNIMACRO, VOICECODE, DRAGONFLY, VOCOLAUSERDIR, UNIMACROUSERDIR
+    This is done by calling from natlinkstatus, see there and example in natlinkmain.
 
     Optionally put them in recentEnv, if you specify fillRecentEnv to 1 (True)
 
@@ -309,8 +310,8 @@ def expandEnvVariables(filepath, envDict=None):
     return filepath
 
 def printAllEnvVariables():
-    for k, v in recentEnv.items():
-        print k, v
+    for k in sorted(recentEnv.keys()):
+        print("%s\t%s"% (k, recentEnv[k]))
 
 class InifileSection(object):
     """simulate a part of the registry through inifiles
@@ -449,7 +450,7 @@ if __name__ == "__main__":
         print 'expandEnvVariablesAtStart: %s: %s'% (p, expanded)
     print 'testing       expandEnvVariables'  
     for p in ("D:\\%username%", "%NATLINK%\\unimacro", "%UNIMACROUSER%",
-              "%HOME%/personal",
+              "%HOME%/personal", "%HOME%", "%personal%"
               "%WINDOWS%\\folder\\strange testfolder"):
         expanded = expandEnvVariables(p)
         print 'expandEnvVariables: %s: %s'% (p, expanded)

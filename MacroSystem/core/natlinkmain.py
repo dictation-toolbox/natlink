@@ -31,7 +31,7 @@
 #   - userDirectory inserted at front of sys.path (was appended)
 #   - made special arrangements for _vocola_main, so it calls back before
 #     anything else is done, see doVocolaFirst, vocolaModule and vocolaIsLoaded.
-#     These 3 variables control all. Moreover VocolaUserDirectory must be given,
+#     These 3 variables control all. Moreover` `VocolaUserDirectory must be given,
 #     otherwise Vocola will not switch on.
 #
 # Jan 2008 (QH)
@@ -159,13 +159,22 @@ try:
     
     # status:
     status = natlinkstatus.NatlinkStatus()
-    status.checkSysPath()
-    debugLoad = status.getDebugLoad()
-    debugCallback = status.getDebugCallback()
-    if debugLoad:
-        print 'do extra output at (re)loading time: %s'% debugLoad
-    if debugCallback:
-        print 'do extra output at callback time: %s'% debugCallback
+    debugLoad = debugCallback = None
+    canStartNatlink = True
+    if status.getDNSInstallDir() == -1:
+        print 'DNSInstallDir not valid, please run the Natlink config GUI to fix this'
+        canStartNatlink = False 
+    if status.getDNSIniDir() == -1:
+        print 'DNSIniDir not valid, please run the Natlink config GUI to fix this'
+        canStartNatlink = False
+    if canStartNatlink:
+        status.checkSysPath()
+        debugLoad = status.getDebugLoad()
+        debugCallback = status.getDebugCallback()
+        if debugLoad:
+            print 'do extra output at (re)loading time: %s'% debugLoad
+        if debugCallback:
+            print 'do extra output at callback time: %s'% debugCallback
     
     # QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
     # otherwise no grammar change checking is performed, only at microphone toggle
@@ -653,9 +662,8 @@ try:
                 print "---------changeCallback, User changed to", args[0]
             elif not changeCallbackUserFirst:
                 # first time, no print message, but next time do...
-                print "\n--- user changed to: %s\n"% args[0]
-    
-    
+                print("\n--- user changed to: %s"% args[0])
+                
             unloadEverything()
     ## this is not longer needed here, as we fixed the userDirectory
     ##        changeUserDirectory()
@@ -699,7 +707,11 @@ try:
                 print 'language: %s (%s)'% (language, type(language))
                 print 'userLanguage: %s (%s)'% (userLanguage, type(userLanguage))
                 print 'DNSuserDirectory: %s (%s)'% (DNSuserDirectory, type(DNSuserDirectory))
-    
+            else:
+                ## end of user info message:
+                if language != 'enx':
+                    print('--- userLanguage: %s\n'% language)
+
         #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself
         # the grammar should include a function like:
         #def changeCallback():
@@ -842,7 +854,7 @@ try:
             natlink.setBeginCallback(beginCallback)
             natlink.setChangeCallback(changeCallback)
             
-            print 'natlinkmain started from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s\n'% \
+            print 'natlinkmain started from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
                       (status.getCoreDirectory(), status.getInstallVersion(),
                        DNSVersion, status.getPythonVersion(), WindowsVersion, )
         
@@ -890,15 +902,18 @@ try:
     #except AttributeError:
     #    caller_name = None
     #
-    if caller_name is None:
-        # apparently called from natlink.pyd:
-        # redirect stdout and stderr
-        # automatic start of python macro system:toon alle grammatica's
-        #sys.stdout = NewStdout()  # at start!!
-        #sys.stderr = NewStderr()
-        start_natlink()
+    if canStartNatlink:
+        if caller_name is None:
+            # apparently called from natlink.pyd:
+            # redirect stdout and stderr
+            # automatic start of python macro system:toon alle grammatica's
+            #sys.stdout = NewStdout()  # at start!!
+            #sys.stderr = NewStderr()
+            start_natlink()
+        else:
+            print 'natlinkmain imported only, caller_name: %s'% caller_name
     else:
-        print 'natlinkmain imported only, caller_name: %s'% caller_name
+        print 'Cannot start Natlink'
 except:
     print 'some error occurred'
     traceback.print_exc()

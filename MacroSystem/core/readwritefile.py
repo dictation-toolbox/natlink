@@ -129,10 +129,8 @@ def writeAnything(filepath, encoding, bom, content):
         tRaw = content.encode(encoding=encoding, errors='xmlcharrefreplace')
         
     if sys.platform == 'win32':
-        if tRaw.find('\r\n') > 0:
-            print 'text already found \\r\\n, no replace needed'
-        else:
-            print('text change for windows \\n into \\r\\n: %s'% filepath)
+        if tRaw.find('\r\n') == -1:
+            # print('text change for windows \\n into \\r\\n: %s'% filepath)
             tRaw = tRaw.replace('\n', '\r\n')
         
     if bom:
@@ -140,7 +138,6 @@ def writeAnything(filepath, encoding, bom, content):
         tRaw = bom + tRaw 
     io.open(filepath, 'wb').write(tRaw)
     pass
-
 
 def DecodeEncode(tRaw, filetype):
     """return the decoded string or False

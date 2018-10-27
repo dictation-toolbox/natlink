@@ -11,6 +11,9 @@ Solution (on Windows 7, 32 bits computer with Natspeak 10):
 
 -Restart Dragon. Hopefully it works.
 
+The problem can also possibly be solved by installing 
+
+https://www.microsoft.com/en-us/download/details.aspx?id=26999
 
 Please report your experiences to q.hoogenboom@antenna.nl
 
