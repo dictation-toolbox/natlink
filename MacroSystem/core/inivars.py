@@ -11,7 +11,7 @@ from utilsqh import path, peek_ahead
 import locale
 locale.setlocale(locale.LC_ALL, '')
 import readwritefile  # reading with encoding BOM mark
-# from UserDict import UserDict
+from UserDict import UserDict
 lineNum = 0
 fileName = ''
 class IniError(Exception):
@@ -20,7 +20,7 @@ class IniError(Exception):
         self.value = value
         self.lineNum = lineNum
         self.fileName = fileName
-
+        
     def __str__(self):
         s = ['Inivars error ']
         if fileName:
@@ -373,7 +373,7 @@ def lensort(a, b):
     else:
         return -cmp(la, lb)
 
-class IniSection(dict):
+class IniSection(UserDict):
     """represents a section of an inivars instance"""
 
     def __init__(self, parent):
@@ -382,21 +382,26 @@ class IniSection(dict):
         """
         self._parent = parent
         self._SKIgnorecase = parent._SKIgnorecase
+        UserDict.__init__(self)
 
     def __getitem__(self, key):
         '''double underscore means internal value'''
-        if type(key) == six.text_type and key.startswith == '__':
-            return self.__dict__[key]
+        if type(key) in (six.text_type, six.binary_type):
+            if key.startswith == '__':
+                return self.__dict__[key]
+            else:
+                key = key.strip()
+                if reWhiteSpace.search(key):
+                    key = reWhiteSpace.sub(' ', key)
+                if self._SKIgnorecase:
+                    key = key.lower()
+                try:
+                    return UserDict.__getitem__(self, key)
+                except KeyError:
+                    return ""
         else:
-            key = key.strip()
-            if reWhiteSpace.search(key):
-                key = reWhiteSpace.sub(' ', key)
-            if self._SKIgnorecase:
-                key = key.lower()
-            try:
-                return dict.__getitem__(self, key)
-            except KeyError:
-                return ""
+            raise TypeError('inivars, __getitem__ of IniSection expects str for key "%s", not: %s'% (key, type(key)))
+
 
     def __setitem__(self, key, value):
         key = key.strip()
@@ -406,12 +411,16 @@ class IniSection(dict):
             raise IniError, '__setitem__, invalid key |%s|(false), with value |%s| in inifile: %s'% \
                   (key, value, self._parent._file)
         
-        if type(key) == six.text_type and key.startswith == '__':
-            self.__dict__[key] = value
+        if type(key) in (six.text_type, six.binary_type):
+            if key.startswith == '__':
+                self.__dict__[key] = value
+            else:
+                if self._SKIgnorecase:
+                    key = key.lower()
+                UserDict.__setitem__(self, key, value)
         else:
-            if self._SKIgnorecase:
-                key = key.lower()
-            dict.__setitem__(self, key, value)
+            raise TypeError('inivars, IniSection __setitem__ expects str for key "%s", not: %s'% (key, type(key)))
+
 
     def __delitem__(self, key):
         key = key.strip()
@@ -421,17 +430,24 @@ class IniSection(dict):
             raise IniError, '__delitem__, invalid key |%s|(false),  inifile: %s'% \
                   (key, self._parent._file)
         
-        if type(key) == six.text_type and key.startswith == '__':
-            del self.__dict__[key]
+        if type(key) in (six.text_type, six.binary_type):
+            if key.startswith == '__':
+                del self.__dict__[key]
+            else:
+                if self._SKIgnorecase:
+                    key = key.lower()
+                try:
+                    UserDict.__delitem__(self, key)
+                except KeyError:
+                    pass
         else:
-            if self._SKIgnorecase:
-                key = key.lower()
-            try:
-                dict.__delitem__(self, key)
-            except KeyError:
-                pass
+            raise TypeError('inivars, __delitem__ of IniSection expects str for key "%s", not: %s'% (key, type(key)))
+            
+            
+    def __iter__(self):
+        return iter(self.data)
 
-class IniVars(dict):
+class IniVars(UserDict):
     """do inivars from an .ini file, or possibly (extending this class)
     with other file types.
 
@@ -543,6 +559,7 @@ u'simple.ini'
         """init from valid files, raise error if invalid file
 
         """
+        UserDict.__init__(self)
         # add str function in case file is a path instance:
         file = utilsqh.convertToUnicode(File)
         self._name = os.path.basename(file)
@@ -569,11 +586,13 @@ u'simple.ini'
         if not os.path.isfile(file):
             return
         else:
+            readFuncName = u'_read' + self._ext
             try:
-                execstring = 'self._read%s(file)'% self._ext
-                exec(execstring)
+                readFunc = getattr(self, readFuncName)
             except AttributeError:
                 raise IniError, 'file has invalid extension: %s'% self._file
+            else:
+                readFunc(file)
         if DEBUG: print 'read from INI:', self
 
     def __nonzero__(self):
@@ -586,20 +605,32 @@ u'simple.ini'
         return self._name
 
     def __getitem__(self, key):
-        if type(key) == six.text_type and key.startswith == '__':
-            return self.__dict__[key]
+        # if type(key) == six.binary_type:
+        #     key = unicode(key)
+        if type(key) in (six.text_type, six.binary_type):
+            if key.startswith == '__':
+                return self.__dict__[key]
+            else:
+                key = key.strip()
+                if reWhiteSpace.search(key):
+                    key = reWhiteSpace.sub(' ', key)
+                if self._SKIgnorecase:
+                    key = key.lower()
+                try:
+                    return UserDict.__getitem__(self, key)
+                except KeyError:
+                    return ""
         else:
-            key = key.strip()
-            if reWhiteSpace.search(key):
-                key = reWhiteSpace.sub(' ', key)
-            if self._SKIgnorecase:
-                key = key.lower()
-            try:
-                return dict.__getitem__(self, key)
-            except KeyError:
-                return ""
+            raise TypeError('inivars, __getitem__ of IniVars expects str for key "%s", not: %s'% (key, type(key)))
+            
+                
+
 
     def __setitem__(self, key, value):
+        
+        # if type(key) == six.binary_type:
+        #     key = unicode(key)
+        
         key = key.strip()
         if reWhiteSpace.search(key):
             key = reWhiteSpace.sub(' ', key)
@@ -607,12 +638,17 @@ u'simple.ini'
             raise IniError, '__setitem__, invalid key |%s|(false), with value |%s| in inifile: %s'% \
                   (key, value, self._file)
         
-        if type(key) == six.text_type and key.startswith == '__':
-            self.__dict__[key] = value
+        if type(key) in (six.text_type, six.binary_type):
+            if key.startswith == '__':
+                self.__dict__[key] = value
+            else:
+                if self._SKIgnorecase:
+                    key = key.lower()
+                UserDict.__setitem__(self, key, value)
         else:
-            if self._SKIgnorecase:
-                key = key.lower()
-            dict.__setitem__(self, key, value)
+            raise TypeError('inivars, __setitem__ of IniVars expects str for key "%s", not: %s'% (key, type(key)))
+
+
 
     def __delitem__(self, key):
         key = key.strip()
@@ -622,16 +658,21 @@ u'simple.ini'
             raise IniError, '__delitem__, invalid key |%s|(false), with value |%s| in inifile: %s'% \
                   (key, value, self._file)
         
-        if type(key) == six.text_type and key.startswith == '__':
-            del self.__dict__[key]
+        if type(key) in (six.text_type, six.binary_type):
+            if key.startswith == '__':
+                del self.__dict__[key]
+            else:
+                if self._SKIgnorecase:
+                    key = key.lower()
+                try:
+                    UserDict.__delitem__(self, key)
+                except KeyError:
+                    pass
         else:
-            if self._SKIgnorecase:
-                key = key.lower()
-            try:
-                dict.__delitem__(self, key)
-            except KeyError:
-                pass
+            raise TypeError('inivars, __delitem__ of IniVars expects str for key "%s", not: %s'% (key, type(key)))
             
+    def __iter__(self):
+        return iter(self.data)            
 ##    def _readPy(self, file):
 ##
 ##        # prepare file for importing:
@@ -1908,7 +1949,10 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
     def toDict(self, section=None):
         """for testing, return contents as a pure dict"""
         if section:
-            return dict(self[section])
+            if section in self:
+                return dict(self[section])
+            else:
+                return
         # whole inifile:
         D = dict()
         for (k,v) in self.iteritems():

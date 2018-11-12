@@ -129,9 +129,8 @@ def writeAnything(filepath, encoding, bom, content):
         tRaw = content.encode(encoding=encoding, errors='xmlcharrefreplace')
         
     if sys.platform == 'win32':
-        if tRaw.find('\r\n') == -1:
-            # print('text change for windows \\n into \\r\\n: %s'% filepath)
-            tRaw = tRaw.replace('\n', '\r\n')
+        tRaw = tRaw.replace('\n', '\r\n')
+        tRaw = tRaw.replace('\r\r\n', '\r\n')
         
     if bom:
         print 'add bom for tRaw'
