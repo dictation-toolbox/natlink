@@ -1,3 +1,8 @@
+
+Release 4.1vwhiskey
+-nearly stable release. Minor changes.
+
+
 Release 4.1victor
 -nearly stable release.
 -several small but not unimportant changes

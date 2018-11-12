@@ -1,4 +1,4 @@
-__version__ = "4.1victor"
+__version__ = "4.1whiskey"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -7,6 +7,7 @@ __version__ = "4.1victor"
 #
 #----------------------------------------------------------------------------
 #
+# 4.1whiskey, minor changes, 12/11/2018
 # 4.1victor, changes for DPI15, nearly stable, waiting for Mark getting SendKeys implemented.
 #
 # 4.1uniform, changes for DPI15, and also getting 4 parameters from natlink.changeCallback
