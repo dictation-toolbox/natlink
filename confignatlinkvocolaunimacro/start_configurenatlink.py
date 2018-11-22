@@ -5,6 +5,13 @@ import os
 import sys
 import time
 
+
+
+print('Starting start_configurenatlink.py,')
+print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')
+print()
+
+
 if not sys.version.startswith('2.'):
     print('This script should start with python2, not with %s'% sys.version)
     time.sleep(30)
@@ -22,12 +29,15 @@ else:
 
 try:
     import wx
-except KeyError:
+except (KeyError, ModuleNotFoundError):
     print('Unable to run the GUI configuration program of NatLink/Unimacro/Vocola')
     print('because module wx was not found.  This probably')
     print('means that wxPython is not installed correct:')
     print()
     print('Please try to install wxPython via pip, see https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
+    print()
+    print('You can also try to run start_natlinkconfigfunctions.py,')
+    print('via Start, Configure Natlink via Command Line Interface')
     time.sleep(30)
     sys.exit()
 

@@ -5,6 +5,11 @@ import os
 import sys
 import time
 
+
+print('Starting start_natlinkconfigfunctions.py,')
+print('Try to run natlinkconfigfunctions.py in Elevated mode...')
+print()
+
 if not sys.version.startswith('2.'):
     print('This script should start with python3, not with %s'% sys.version)
     time.sleep(30)
@@ -14,6 +19,7 @@ try:
     from future import standard_library
 except ModuleNotFoundError:
     print('Cannot find module "future", consider pip install future')
+    time.sleep(30)
 else:
     standard_library.install_aliases()
     from future.builtins import next
@@ -32,8 +38,9 @@ if sys.version.find("64 bit") >= 0:
 try:
     from win32api import ShellExecute, GetVersionEx
 except ImportError:
-    print('Unable to start the configuration program of NatLink/Unimacro/Vocola')
-    print('because the module "win32api" is not found.  This probably')
+    print('Unable to start the configuration program of')
+    print('Natlink/Unimacro/Vocola, because the')
+    print('bmodule "win32api" is not found.  This probably')
     print('means that the windowns extensions package for (pywin32) is not installed (properly).')
 
     print('')
@@ -58,11 +65,12 @@ if not os.path.isfile(pathToPython):
     sys.exit()    
 try:
     import natlinkconfigfunctions
-except ImportError:
-    print('Unable to start the command line interface configuration program of NatLink/Unimacro/Vocola:')
+except:
+    print('Unable to start the command line interface configuration program of')
+    print('Natlink/Unimacro/Vocola:')
     print('the python module natlinkconfigfunctions.py gives an error.')
     print('')
-    print('Please report this error message to the NatLink developers,')
+    print('Please report this error message to the Natlink developers,')
     print('preferably to q.hoogenboom@antenna.nl')
     import traceback
     traceback.print_exc()
