@@ -1,11 +1,18 @@
 #! python3
+from __future__ import print_function
+
 import os
 import sys
 import time
 
+from future import standard_library
+standard_library.install_aliases()
+from future.builtins import next
+from future.builtins import object
+
 if not sys.version.startswith('2.'):
     print('This script should start with python3, not with %s'% sys.version)
-    time.sleep(10)
+    time.sleep(30)
     sys.exit()
 
 if sys.version.find("64 bit") >= 0:
@@ -14,12 +21,11 @@ if sys.version.find("64 bit") >= 0:
     print('Natlink cannot run with this version, please uninstall and')
     print('install a 32 bit version of python, see https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
     print('=============================================')
-    while True:
-        pass
-    raise
+    time.sleep(30)
+    sys.exit()
 
 try:
-    import win32api
+    from win32api import ShellExecute, GetVersionEx
 except ImportError:
     print('Unable to start the configuration program of NatLink/Unimacro/Vocola')
     print('because the module "win32api" is not found.  This probably')
@@ -27,11 +33,10 @@ except ImportError:
 
     print('')
     print('Please try to install this package via pip')
-    while True:
-        pass
-    raise
+    time.sleep(30)
+    sys.exit()
 
-from win32api import ShellExecute, GetVersionEx
+
 
 # see natlinkstatus.py for windows versions (getWindowsVersion)
 wversion = GetVersionEx()
@@ -44,10 +49,8 @@ else:
 pathToPython = os.path.join(sys.prefix, "python.exe")
 if not os.path.isfile(pathToPython):
     print("cannot find the python executable: %s"% pathToPython)
-    while True:
-        pass
-    raise
-    
+    time.sleep(30)
+    sys.exit()    
 try:
     import natlinkconfigfunctions
 except ImportError:
@@ -59,16 +62,14 @@ except ImportError:
     import traceback
     traceback.print_exc()
     
-    while True:
-        pass
-    raise
+    time.sleep(30)
+    sys.exit()
   
 configFunctionsPath = os.path.join(os.path.dirname(__file__), "natlinkconfigfunctions.py")
 if not os.path.isfile(configFunctionsPath):
     print("cannot find the CLI configuration program: %s"% configFunctionsPath)
-    while True:
-        pass
-    raise
+    time.sleep(30)
+    sys.exit()
 
 
 # print('run with "%s": %s'% (openpar, configFunctionsPath)

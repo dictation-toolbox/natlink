@@ -1,10 +1,18 @@
 #! python3
+from __future__ import print_function
+
+import os
 import sys
 import time
 
+from future import standard_library
+standard_library.install_aliases()
+from future.builtins import next
+from future.builtins import object
+
 if not sys.version.startswith('2.'):
     print('This script should start with python2, not with %s'% sys.version)
-    time.sleep(10)
+    time.sleep(30)
     sys.exit()
 
 try:
@@ -15,12 +23,11 @@ except KeyError:
     print('means that wxPython is not installed correct:')
     print()
     print('Please try to install wxPython via pip, see https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
-    while True:
-        pass
-    raise
+    time.sleep(30)
+    sys.exit()
 
 try:
-    import win32api
+    from win32api import ShellExecute, GetVersionEx
 except ImportError:
     print('Unable to start the configuration program of NatLink/Unimacro/Vocola')
     print('because the module "win32api" is not found.  This probably')
@@ -32,9 +39,8 @@ except ImportError:
     print('You can then try to run the batch script "start_postinstallscript_pywin32.cmd" in')
     print('Admin mode, in order to finish the installation. Hopefully this helps.')
     print('This file can be found in the "confignatlinkvocolaunimacro" subdirectory of your NatLink directory.')
-    while True:
-        pass
-    raise
+    time.sleep(30)
+    sys.exit()
 
 try:
     import natlinkconfigfunctions
@@ -48,15 +54,11 @@ except ImportError:
     import traceback
     traceback.print_exc()
     
-    while True:
-        pass
-    raise
+    time.sleep(30)
+    sys.exit()
 
 
 try:
-    import os, time
-    from win32api import ShellExecute, GetVersionEx
-    import sys
     # see natlinkstatus.py for windows versions (getWindowsVersion)
     wversion = GetVersionEx()
     if wversion[3] == 2 and wversion[0] >= 6:
@@ -68,17 +70,14 @@ try:
     pathToPythonW = os.path.join(sys.prefix, "pythonw.exe")
     if not os.path.isfile(pathToPythonW):
         print("cannot find the Pythonw exectutable: %s"% pathToPythonW)
-        while True:
-            pass
-        raise
-
+    time.sleep(30)
+    sys.exit()
         
     configPath = os.path.join(os.path.dirname(__file__), "configurenatlink.pyw")
     if not os.path.isfile(configPath):
         print("cannot find the NatLink/Unimacro/Vocola configuration program: %s"% configPath)
-        while True:
-            pass
-        raise
+    time.sleep(30)
+    sys.exit()
 
 
     #print('run with "%s": %s'% (openpar, configPath)

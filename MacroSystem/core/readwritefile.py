@@ -135,7 +135,7 @@ def writeAnything(filepath, encoding, bom, content):
     if bom:
         print 'add bom for tRaw'
         tRaw = bom + tRaw 
-    io.open(filepath, 'wb').write(tRaw)
+    nBytes = io.open(filepath, 'wb').write(tRaw)
     pass
 
 def DecodeEncode(tRaw, filetype):
