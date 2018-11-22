@@ -1,19 +1,24 @@
-#! python3
+#! python2
 from __future__ import print_function
 
 import os
 import sys
 import time
 
-from future import standard_library
-standard_library.install_aliases()
-from future.builtins import next
-from future.builtins import object
-
 if not sys.version.startswith('2.'):
     print('This script should start with python3, not with %s'% sys.version)
     time.sleep(30)
     sys.exit()
+
+try:
+    from future import standard_library
+except ModuleNotFoundError:
+    print('Cannot find module "future", consider pip install future')
+else:
+    standard_library.install_aliases()
+    from future.builtins import next
+    from future.builtins import object
+
 
 if sys.version.find("64 bit") >= 0:
     print('=============================================')

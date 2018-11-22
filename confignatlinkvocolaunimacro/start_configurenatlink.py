@@ -1,19 +1,24 @@
-#! python3
+#! python2
 from __future__ import print_function
 
 import os
 import sys
 import time
 
-from future import standard_library
-standard_library.install_aliases()
-from future.builtins import next
-from future.builtins import object
-
 if not sys.version.startswith('2.'):
     print('This script should start with python2, not with %s'% sys.version)
     time.sleep(30)
     sys.exit()
+
+try:
+    from future import standard_library
+except ModuleNotFoundError:
+    print('Cannot find module "future", consider "pip install future"')
+    time.sleep(10)
+else:
+    standard_library.install_aliases()
+    from future.builtins import next
+    from future.builtins import object
 
 try:
     import wx
@@ -70,14 +75,14 @@ try:
     pathToPythonW = os.path.join(sys.prefix, "pythonw.exe")
     if not os.path.isfile(pathToPythonW):
         print("cannot find the Pythonw exectutable: %s"% pathToPythonW)
-    time.sleep(30)
-    sys.exit()
+        time.sleep(30)
+        sys.exit()
         
     configPath = os.path.join(os.path.dirname(__file__), "configurenatlink.pyw")
     if not os.path.isfile(configPath):
         print("cannot find the NatLink/Unimacro/Vocola configuration program: %s"% configPath)
-    time.sleep(30)
-    sys.exit()
+        time.sleep(30)
+        sys.exit()
 
 
     #print('run with "%s": %s'% (openpar, configPath)
