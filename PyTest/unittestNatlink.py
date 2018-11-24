@@ -316,6 +316,7 @@ class UnittestNatlink(unittest.TestCase):
         i = 0
         while i < 10:
             time.sleep(0.1)
+            print('waiting for calc window %s'% i)
             mod, title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
             if mod == "calc": break
@@ -323,6 +324,7 @@ class UnittestNatlink(unittest.TestCase):
         else:
             raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
         self.CalcMod = mod
+        print('setting CalcHndle: %s'% hndle)
         self.CalcHndle = hndle
         return hndle
 
@@ -409,7 +411,7 @@ class UnittestNatlink(unittest.TestCase):
             raise TestError("in killCalc, could not get back to Calc window")
         if i:
             print 'got calc after %s steps'
-        natlink.playString("{alt+f4}")
+        natlink.playString("{alt+f4}", 0x200)
         time.sleep(0.5)
 
     def clearTestFiles(self):
@@ -2921,9 +2923,7 @@ class UnittestNatlink(unittest.TestCase):
         testForException =self.doTestForException
         # load the calculator again
 ##        time.sleep(5) # let the calculator recover from last test
-        natlink.execScript('AppBringUp "calc"')
-        calcWindow = natlink.getCurrentModule()[2]
-        print natlink.getCurrentModule()
+        self.lookForCalc()
         
         # Activate the grammar and try a test recognition
         testGram.load()

@@ -6,6 +6,9 @@
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
 #
+# November 2018 (QH)
+#   Accept unicode input, convert to python 2.6 string
+#
 # September 2016 (QH)
 # - rulenumbers are one lower than before in Dragon 15, fix in resultsCallback.
 #
@@ -294,7 +297,8 @@ def playString(keys, hooks=None):
     """
     if not keys:
         return
-    # keys = utilsqh.convertToBinary(keys)
+    if type(keys) == six.text_type:
+        keys = utilsqh.convertToBinary(keys)
     if hooks is None and useMarkSendInput:
         SendInput.send_input(
             ExtendedSendDragonKeys.senddragonkeys_to_events(keys))
@@ -565,6 +569,8 @@ class GrammarBase(GramClassBase):
         self.exclusiveState = 0
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
+        if type(ruleName) == six.text_type:
+            ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
             raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
         if type(ruleName) != six.binary_type:
@@ -585,6 +591,8 @@ class GrammarBase(GramClassBase):
         pass            
 
     def deactivate(self, ruleName, noError=0):
+        if type(ruleName) == six.text_type:
+            ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
             if noError: return
         if type(ruleName) != six.binary_type:
@@ -718,6 +726,8 @@ class GrammarBase(GramClassBase):
         return False
     
     def emptyList(self, listName):
+        if type(listName) == six.text_type:
+            listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
         self.gramObj.emptyList(listName)
@@ -731,11 +741,13 @@ class GrammarBase(GramClassBase):
             self.gramObj.appendList(listName,words)
         else:
             for x in words:
-                x = utilsqh.convertToBinary(x)
+                if type(x) == six.text_type:
+                    x = utilsqh.convertToBinary(x)
                 self.gramObj.appendList(listName,x)
     
     def setList(self, listName, words):
-        listName = utilsqh.convertToBinary(listName)
+        if type(listName) == six.text_type:
+            listName = utilsqh.convertToBinary(listName)
         self.emptyList(listName)
         self.appendList(listName, words) # other way around?
 

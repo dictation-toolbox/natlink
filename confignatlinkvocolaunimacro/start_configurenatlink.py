@@ -1,11 +1,11 @@
 #! python2
 from __future__ import print_function
-
+import six
 import os
 import sys
 import time
 
-
+if six.PY2: ModuleNotFoundError = ImportError
 
 print('Starting start_configurenatlink.py,')
 print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')
