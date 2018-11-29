@@ -223,7 +223,7 @@ return with "?": A-xyz-?-abc-ascii
             pass
     else:
         res = unicodeString.encode('ascii', 'replace')
-        print 'convertToBinary, cannot convert to printable string with encoding: %s\nreturn with "?": %s'% (encoding, res)
+        print('convertToBinary, cannot convert to printable string with encoding: %s\nreturn with "?": %s'% (encoding, res))
     return res
                                  
                                  
@@ -264,7 +264,7 @@ def convertToUnicode(text):
             if result and ord(result[0]) == 65279:  # BOM, remove
                 result = result[1:]
             return result
-    print 'natlinkutilsqh, convertToUnicode: cannot decode string: %s'% text
+    print('natlinkutilsqh, convertToUnicode: cannot decode string: %s'% text)
     return text
 
 
@@ -1939,7 +1939,7 @@ def makeEmptyFolder(*args):
             raise Exception('invalid type for makeEmptyFolder: %s'% repr(a))
 
 
-def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minSize=None, checkTime=None):
+def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minSize=None, reachMax=0, checkTime=None):
     """file is to be created, and needs an optional minimum file size
     
     (.exe is created small and filled at the end of a long process)
@@ -1948,19 +1948,19 @@ def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minS
     """
     if checkTime:
         now  = time.time()
-    if not silent: print 'waiting for file to be created or renewed:\n%s'% filepath
+    if not silent: print('waiting for file to be created or renewed:\n%s'% filepath)
     fileexists = filechanged = filelargeenough = 0
     exetime = getFileDate(filepath)
     filesize = getFileSize(filepath)
     if exetime:
         fileexists = 1
+    filesizechecking = reachMax
+    filelargeenough = False
     if minSize:
         if filesize > minSize:
             filelargeenough = 1
     else:
-        # no size checking
         filelargeenough = 1
-            
     if checkTime:
         if exetime > checkTime:
             filechanged = 1
@@ -1968,13 +1968,16 @@ def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minS
         filechanged = 1
 
     if fileexists and filechanged and filelargeenough:
-        return
+        if not filesizechecking:
+            return
     
-    
-    sleepTime = 5
+    filesize = 0
+    prevSize = 0
+    nEqual = 0
+
     for i in range(60):  # max 3 minutes
-        if fileexists and filechanged and filelargeenough:
-            return filepath
+        time.sleep(sleepTime)
+        if not silent: print i, 
 
         exetime = getFileDate(filepath)
         filesize = getFileSize(filepath)
@@ -1982,25 +1985,33 @@ def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minS
         if not fileexists:
             if exetime:
                 fileexists = 1
-                if not silent:  'file now exists: ',
-        
+                if not silent: print 'file now exists... ',
+            continue        
         if not filechanged:
             if exetime > checkTime:
                 filechanged = 1
-                if not silent:  'file is changed: ',
+                if not silent:  print('file is changed... ')
+            continue
         
         if not filelargeenough:
             if filesize > minSize:
                 filelargeenough = 1
-                if not silent:  'filesize OK: ',
+                if not silent:  print('minimum filesize reached: %s...'% filesize)
+            continue
 
-
-        if fileexists and filechanged and filelargeenough:
-            time.sleep(extraTime)
-            return filepath
-        print i,
-        time.sleep(sleepTime)
-    if not silent: print 'waiting time expired, did not find file: %s\nfileexists: %s, filechanged: %s, filelargeenough: %s'% (filepath, fileexists, filechanged, filelargeenough)
+        if fileexists and filechanged and filelargeenough and filesizechecking:
+            if filesize > prevSize:
+                prevSize = filesize
+            else:
+                if not silent:  print('stable check: %s'% filesizechecking)
+                filesizechecking -= 1
+            continue
+        if not silent:  print('filesize stable: %s'% filesize)
+        time.sleep(extraTime)
+        return filepath
+                    
+    time.sleep(sleepTime)
+    if not silent: print('waiting time expired, did not find file: %s\nfileexists: %s, filechanged: %s, filelargeenough: %s'% (filepath, fileexists, filechanged, filelargeenough))
 
 
 
@@ -2959,7 +2970,29 @@ u'F:/projects/unexisting'
                 shutil.copytree(unicode(self), unicode(out))
             except OSError:
                 raise PathError('cannot copy folder %s to %s' % (self, out))
-
+    def move(self, out):
+        """move file"""
+        if self.isfile():
+            if path(out).isdir():
+                try:
+                    shutil.move(unicode(self), unicode(out))
+                except OSError:
+                    raise PathError('cannot move file %s to %s' % (self, out))
+            elif path(out).exists():
+                raise PathError('cannot move file %s to %s, not a directory' % (self, out))
+            else:
+                try:
+                    shutil.move(unicode(self), unicode(out))
+                except OSError:
+                    raise PathError('cannot move file %s to %s' % (self, out))
+        elif not self.exists():
+            raise PathError('sourcefile of move does not exist: %s'% self)
+                
+        elif self.isdir():
+            raise PathError('move not implemented for source directories')
+        else:
+            raise PathError('move not implemented for else clause')
+            
 
     def copywithoutsvn(self, outPath):
         """copy file, leave svn intact"""
