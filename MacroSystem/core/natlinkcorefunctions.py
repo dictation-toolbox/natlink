@@ -91,6 +91,33 @@ def deleteFromRecentEnv(name):
     if name in recentEnv:
         del recentEnv[name]
 
+def getFolderFromLibraryName(fName):
+    """from windows library names extract the real folder
+    
+    the CabinetWClass and #32770 controls return "Documents", "Dropbox", "Desktop" etc.
+    try to resolve these throug the extended env variables.
+    """
+    if fName.startswith("Docum"):  # Documents in Dutch and English
+        return getExtendedEnv("PERSONAL")
+    if fName in ["Muziek", "Music"]:
+        return getExtendedEnv("MYMUSIC")
+    if fName in ["Pictures", "Afbeeldingen"]:
+        return getExtendedEnv("MYPICTURES")
+    if fName in ["Videos", "Video's"]:
+        return getExtendedEnv("MYVIDEO")
+    if fName in ['OneDrive']:
+        return getExtendedEnv("OneDrive")
+    if fName in ['Desktop', "Bureaublad"]:
+        return getExtendedEnv("DESKTOP")
+    if fName in ['Dropbox', 'Download', 'Downloads']:
+        personal = getExtendedEnv('PERSONAL')
+        userDir = os.path.normpath(os.path.join(personal, '..'))
+        if os.path.isdir(userDir):
+            tryDir = os.path.normpath(os.path.join(userDir, fName))
+            if os.path.isdir(tryDir):
+                return tryDir
+    print 'cannot find folder for Library name: %s'% fName
+
 def getExtendedEnv(var, envDict=None, displayMessage=1):
     """get from environ or windows CSLID
 
@@ -466,3 +493,6 @@ if __name__ == "__main__":
     print 'recentEnv: %s'% len(recentEnv)
     np = getExtendedEnv("NOTEPAD")
     print np
+    for lName in ['Documenten', 'Documents', 'Muziek', 'Afbeeldingen', 'Dropbox', 'OneDrive', 'Desktop', 'Bureaublad']:
+        f = getFolderFromLibraryName(lName)
+        print 'folder from library name %s: %s'% (lName, f)
