@@ -1,5 +1,9 @@
 
 Release 4.1vwhiskey
+-natlinkcorefunctions fixed error
+-Unimacro _keystrokes: some errors corrected
+-Unimacro _folders: subfolders open in same window
+                  : virtualdrives expand better, few problems fixed
 -nearly stable release. Minor changes.
 
 

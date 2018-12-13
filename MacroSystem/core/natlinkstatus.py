@@ -1,4 +1,4 @@
-__version__ = "4.1whiskey2"
+__version__ = "4.1whiskey3"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain

@@ -109,7 +109,9 @@ def getFolderFromLibraryName(fName):
         return getExtendedEnv("OneDrive")
     if fName in ['Desktop', "Bureaublad"]:
         return getExtendedEnv("DESKTOP")
-    if fName in ['Dropbox', 'Download', 'Downloads']:
+    if fName == 'Dropbox':
+        return getDropboxFolder()
+    if fName in ['Download', 'Downloads']:
         personal = getExtendedEnv('PERSONAL')
         userDir = os.path.normpath(os.path.join(personal, '..'))
         if os.path.isdir(userDir):
@@ -117,12 +119,69 @@ def getFolderFromLibraryName(fName):
             if os.path.isdir(tryDir):
                 return tryDir
     print 'cannot find folder for Library name: %s'% fName
+def getDropboxFolder(containsFolder=None):
+    """get the dropbox folder, or the subfolder which is specified.
+    
+    Searching is done in all 'C:\Users' folders, and in the root of "C:"
+    (See DirsToTry)
+    
+    raises IOError if more folders are found (should not happen, I think)
+    if containsFolder is not passed, the dropbox main folder is returned
+    if containsFolder is passed, this folder is returned if it is found in the dropbox folder
+    
+    otherwise None is returned.
+    """
+    results = []
+    root = 'C:\\Users'
+    dirsToTry = [ os.path.join(root, s) for s in os.listdir(root) if os.path.isdir(os.path.join(root,s)) ]
+    dirsToTry.append('C:\\')
+    for root in dirsToTry:
+        if not os.path.isdir(root):
+            continue
+        try:
+            subs = os.listdir(root)
+        except WindowsError:
+            continue
+        if 'Dropbox' in subs:
+            subAbs = os.path.join(root, 'Dropbox')
+            subsub = os.listdir(subAbs)
+            if not ('.dropbox' in subsub and os.path.isfile(os.path.join(subAbs,'.dropbox'))):
+                continue
+            elif containsFolder:
+                result = matchesStart(subsub, containsFolder, caseSensitive=False)
+                if result:
+                    results.append(os.path.join(subAbs,result))
+            else:
+                results.append(subAbs)
+    if not results:
+        return
+    if len(results) > 1:
+        raise IOError('getDropboxFolder, more dropbox folders found: %s')
+    return results[0]                 
+
+def matchesStart(listOfDirs, checkDir, caseSensitive):
+    """return result from list if checkDir matches, mostly case insensitive
+    """
+    if not caseSensitive:
+        checkDir = checkDir.lower()
+    for l in listOfDirs:
+        if not caseSensitive:
+            ll = l.lower()
+        else:
+            ll = l
+        if ll.startswith(checkDir):
+            return l
+        
+        
+            
 
 def getExtendedEnv(var, envDict=None, displayMessage=1):
     """get from environ or windows CSLID
 
     HOME is environ['HOME'] or CSLID_PERSONAL
     ~ is HOME
+
+    DROPBOX added via getDropboxFolder is this module (QH, December 1, 2018)
 
     As envDict for recent results either a private (passed in) dict is taken, or
     the global recentEnv.
@@ -147,6 +206,12 @@ def getExtendedEnv(var, envDict=None, displayMessage=1):
     if var in os.environ:
         myEnvDict[var] = os.environ[var]
         return myEnvDict[var]
+
+    if var == 'DROPBOX':
+        result = getDropboxFolder()
+        if result:
+            return result
+        raise ValueError('getExtendedEnv, cannot find path for "DROPBOX"')
 
     if var == 'NOTEPAD':
         windowsDir = getExtendedEnv("WINDOWS")
@@ -326,11 +391,14 @@ def expandEnvVariables(filepath, envDict=None):
         List2 = []
         for part in List:
             if not part: continue
-            try:
-                folderpart = getExtendedEnv(part, envDict)
-            except ValueError:
-                folderpart = part
-            List2.append(folderpart)
+            if part == "~" or (part.startswith("%") and part.endswith("%")):
+                try:
+                    folderpart = getExtendedEnv(part, envDict)
+                except ValueError:
+                    folderpart = part
+                List2.append(folderpart)
+            else:
+                List2.append(part)
         filepath = ''.join(List2)
         return os.path.normpath(filepath)
     # no match
@@ -476,7 +544,7 @@ if __name__ == "__main__":
         expanded = expandEnvVariableAtStart(p)
         print 'expandEnvVariablesAtStart: %s: %s'% (p, expanded)
     print 'testing       expandEnvVariables'  
-    for p in ("D:\\%username%", "%NATLINK%\\unimacro", "%UNIMACROUSER%",
+    for p in ("%DROPBOX%/QuintijnHerold/jachthutten", "D:\\%username%", "%NATLINK%\\unimacro", "%UNIMACROUSER%",
               "%HOME%/personal", "%HOME%", "%personal%"
               "%WINDOWS%\\folder\\strange testfolder"):
         expanded = expandEnvVariables(p)
