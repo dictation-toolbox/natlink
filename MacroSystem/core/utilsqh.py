@@ -7,25 +7,44 @@ import six
 import sys
 import itertools
 import unicodedata
-
-# try:
-#     import checkpath
-#     checkpath.checkpath()
-# except:
-#     pass
-
 import io
-
-import types, string, os, shutil, copy, filecmp, pywintypes
-import glob, re, sys, traceback
-import time, filecmp
+import types
+import os
+import shutil
+import copy
+import filecmp
+import pywintypes
+import glob
+import re
+import sys
+import traceback
+import time
+import filecmp
 if sys.platform != 'linux2':
     import win32com.client
     from win32gui import GetClassName, EnumWindows, GetWindowText, GetWindow
-import urllib, difflib
+import urllib
+import difflib
 # from htmlentitydefs import codepoint2name
 # import locale
 # locale.setlocale(locale.LC_ALL, '')
+
+# define these string sequences here, so the module string can be discarded.
+import string
+if six.PY2:
+    ascii_lowercase = unicode(string.ascii_lowercase)
+    letters = unicode(string.letters)
+    lowercase = unicode(string.letters)
+    letters = unicode(string.letters)
+    digits = unicode(string.digits)
+else:
+    ascii_lowercase = string.ascii_lowercase
+    letters = string.letters
+    lowercase = string.letters
+    letters = string.letters
+    digits = string.digits
+    
+del string
 
 class QHError(Exception):
     pass
@@ -646,6 +665,21 @@ u''
     a, ext = os.path.splitext(fileName)
     return unicode(ext)
 
+def fileHasImageExtension(fileName):
+    """return True if fileName has extension .jpg, .jpeg or .png
+>>> fileHasImageExtension(u"a.JPG")
+True
+>>> fileHasImageExtension(u"yyy.JPEG")
+True
+>>> fileHasImageExtension(u"C:/a/b/d/e/xxx.png")
+True
+>>> fileHasImageExtension(u"a.txt")
+False
+
+    """
+    ext = getExt(fileName)
+    if not ext: return
+    return ext.lower() in [u".jpg", u".jpeg", u".png"]
 
 def removeFromStart(text, toRemove, ignoreCase=None):
     """returns the text with "toRemove" stripped from the start if it matches
@@ -1505,7 +1539,7 @@ def splitLongString(S, maxLen=70, prefix='', prefixOnlyFirstLine=0):
     [u'entry = foo bar and', u'        another set', u'        of words']
     """
     assert isinstance(S, six.text_type)
-    L = map(string.strip, S.split())
+    L = [t.strip() for t in S.split()]
     lOut = []
     for part in getSublists(L, maxLen=maxLen-len(prefix), sepLen=1):
         lOut.append(prefix + ' '.join(part))
@@ -1549,11 +1583,11 @@ u'foo\\nbar\\nlonger entry'
 >>> formatListColumns(['foo', 'bar', 'longer entry'], lineLen=5, sort=1)
 u'bar\\nfoo\\nlonger entry'
 >>> print formatListColumns(['afoo', 'bar', 'clonger', 'dmore', 'else', 'ftest'], lineLen=20, sort=1)
-afoo      dmore
-bar       else
-clonger   ftest
+afoo     dmore
+bar      else
+clonger  ftest
 >>> print formatListColumns(['foo', 'bar', 'longer entry'], lineLen=20)
-foo   longer entry
+foo  longer entry
 bar
 
     """
@@ -1589,7 +1623,8 @@ bar
         if maxLenTotal > lineLen:
             nRow += 1
         else:
-            return '\n'.join(map(string.strip, map(string.join, lines)))
+            # return '\n'.join(map(string.strip, map(string.join, lines)))            
+            return '\n'.join([u''.join(t).strip() for t in lines])
     else:
         # unexpected long list:
         return '\n'.join(List)
@@ -1637,7 +1672,7 @@ def convertToPythonArgsKwargs(text):
     textList = text.split(',')
     for arg in textList:
         if arg.find("=") > 0:
-            kw, arg2 = map(string.strip, arg.split("=", 1))
+            kw, arg2 = [t.strip() for t in arg.split("=", 1)]
             if kw.find(" ") == -1:
                 arg2 = _convertToPythonArg(arg2)
                 K[kw] = arg2
@@ -1691,7 +1726,7 @@ def caseIndependentSort(a,b):
 
     """
 
-    a, b = string.lower(a), string.lower(b)
+    a, b = a.lower(), b.lower()
     return cmp(a, b)
 
 def splitList(L, n):
@@ -2912,7 +2947,7 @@ u'F:/projects/unexisting'
         """
         if self.isfile():
             os.remove(unicode(self))
-        else:
+        elif self.exists():
             raise PathError('remove only for files, not for: %s'% (self))
 
     def rename(self, other):

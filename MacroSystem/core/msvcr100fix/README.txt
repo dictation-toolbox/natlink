@@ -2,6 +2,10 @@
 
 2. Also it can happen that the configure program runs correct, but after enabling NatLink, the GUID error shows up.
 
+3. I believe this fix is quite old, and should not be tried on Windows 10 any more. Please inform me if you have better information.
+(Quintijn, January 2019)
+-----------------------------------------------------
+
 When you disable NatLink, Dragon starts as usual.
 
 Solution (on Windows 7, 32 bits computer with Natspeak 10):

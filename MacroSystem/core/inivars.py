@@ -612,6 +612,18 @@ u'v'
     def getName(self):
         return self._name
 
+    def __contains__(self, key):
+        if type(key) == six.binary_type:
+            key = utilsqh.convertToUnicode(key)
+        if type(key) != six.text_type:
+            raise TypeError('inivars, __contains__ of IniVars expects str for key "%s", not: %s'% (key, type(key)))
+
+        if key.startswith == '__':
+            return key in self.__dict__
+        return UserDict.__contains__(self, key)
+
+
+
     def __getitem__(self, key):
         if type(key) == six.binary_type:
             key = utilsqh.convertToUnicode(key)
