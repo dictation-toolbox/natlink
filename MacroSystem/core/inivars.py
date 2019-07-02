@@ -1507,6 +1507,8 @@ u'v'
         3
         >>> ini.getInt('s', 'unknown')
         0
+        >>> ini.getInt('s', 'default', 11)
+        11
         
         """
         try:
@@ -1526,7 +1528,7 @@ u'v'
                     raise IniError('ini method getInt, value not a valid integer: %s (section: %s, key: %s)'%
                                    (section, key, i))
             else:
-                return 0
+                return default
         raise IniError('invalid type for getInt (probably intermediate set without write: %s)(section: %s, key: %s'%
                        (`i`, section, key))
 
