@@ -29,23 +29,6 @@ import difflib
 # import locale
 # locale.setlocale(locale.LC_ALL, '')
 
-# define these string sequences here, so the module string can be discarded.
-import string
-if six.PY2:
-    ascii_lowercase = unicode(string.ascii_lowercase)
-    letters = unicode(string.letters)
-    lowercase = unicode(string.letters)
-    letters = unicode(string.letters)
-    digits = unicode(string.digits)
-else:
-    ascii_lowercase = string.ascii_lowercase
-    letters = string.letters
-    lowercase = string.letters
-    letters = string.letters
-    digits = string.digits
-    
-del string
-
 class QHError(Exception):
     pass
 
@@ -131,14 +114,57 @@ def fixinivarskey(s):
     
 def normalizeaccentedchars(to_translate):
     """change acutechars to ascii 
-    
     (from Fluent Python)
     """
     norm_txt = unicodedata.normalize('NFD', to_translate)
     shaved = u''.join(c for c in norm_txt if not unicodedata.combining(c))
     return shaved
     
+def unifyaccentedchars(to_translate):
+    """convert to NFC form, e acute is now 1 char
+    """
+    norm_txt = unicodedata.normalize('NFC', to_translate)
+    return norm_txt
+        
+def doubleaccentedchars(to_translate):
+    """change acutechars to ascii, but double them e acute = ee
+    (from Fluent Python, adaptation QH)
     
+>>> doubleaccentedchars("cafe\u0301")
+# >>> doubleaccentedchars("Nestl?") ## this testing in utilsqh in core3 for python 3
+# >>> doubleaccentedchars("enqu?te")
+# >>> doubleaccentedchars("Cura?ao")
+# >>> doubleaccentedchars("h?h?")
+
+    """
+    norm_txt = unicodedata.normalize('NFD', to_translate) ## haal char en accent uit elkaar
+    shaved = []
+    last = ""
+    for c in norm_txt:
+        comb = unicodedata.combining(c)
+        if comb:
+            to_print = to_translate.encode('ascii', 'replace')
+            if comb == 230:
+                # accent aegu, accent grave, accent circonflex, decide in favour of accent aegu, double char
+                print('doubleaccentedchars, combining value %s, double char: %s (%s)'% (comb, last, to_print))
+                shaved.append(last)
+            elif comb == 202:
+                if last == "c":
+                    print('c cedilla, change to "s" (%s)'% to_print)
+                    shaved.pop()
+                    shaved.append("s")
+                else:
+                    print("c cedilla, but NO C, ignore (%s)"% to_print)
+            else:
+                print('(yet) unknown combining char %s in "%s", ignore'% (comb, to_print))
+            last = ""
+        else:
+            shaved.append(c)
+            last = c
+    return ''.join(shaved)
+    # shaved = ''.join(c for c in norm_txt if not unicodedata.combining(c))
+    # return shaved
+   
     
 ## function to make translation from e acute to e etc. goes into a translate function with translator
 # def isaccented(c):
@@ -285,6 +311,23 @@ def convertToUnicode(text):
             return result
     print('natlinkutilsqh, convertToUnicode: cannot decode string: %s'% text)
     return text
+
+# define these string sequences here, so the module string can be discarded.
+import string
+if six.PY2:
+    ascii_lowercase = unicode(string.ascii_lowercase)
+    letters = convertToUnicode(string.letters)
+    lowercase = convertToUnicode(string.letters)
+    digits = unicode(string.digits)
+else:
+    ascii_lowercase = string.ascii_lowercase
+    letters = string.letters
+    lowercase = string.letters
+    letters = string.letters
+    digits = string.digits
+    
+del string
+
 
 
 def curry(func, *args, **kwds):
