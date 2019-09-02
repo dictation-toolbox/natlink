@@ -7,7 +7,7 @@
 #
 # modeled on Joel Gould's "repeat that" grammar.
 #
-# $Id$
+# $Id: _voiceLogger.py 17 2005-07-28 17:58:05Z swein $
 
 import natlink, time, string
 from natlinkutils import *
