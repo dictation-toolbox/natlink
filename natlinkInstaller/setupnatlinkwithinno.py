@@ -145,7 +145,7 @@ class InnoScript:
         print >> ofi, r"DefaultGroupName=%s" % self.name
         print >> ofi, r"LicenseFile=..\Natlink\COPYRIGHT.txt"
 ##        print >> ofi, "DisableDirPage=yes"
-        print >> ofi, "UsePreviousAppDir=yes"
+        print >> ofi, "UsePreviousAppDir=no"
         print >> ofi, "ChangesAssociations=yes"
 
         print >> ofi
@@ -223,6 +223,10 @@ class InnoScript:
 ##              Path
         
     def compile(self):
+        print "The automatic compile stopped working correct (September 2019)"
+        print "Please start the Inno Compiler manually, IN ADMIN MODE"
+        print "And run the script %s\\%s"% (thisDir, self.pathname)
+        return
         try:
             import ctypes
         except ImportError:
