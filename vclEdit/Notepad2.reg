@@ -1,0 +1,145 @@
+REGEDIT4
+
+; Additional Settings for Notepad2
+;
+; Notepad2 must be restarted after the values have been
+; imported to the registry (press Ctrl+L from Notepad2).
+
+
+; Notepad2 Toolbar Button Customization
+;
+; The following settings can be used to customize the appearance of
+; the Notepad2 toolbar buttons.
+
+
+; Toolbar Strings
+;
+; Remove the ; in front of each button you would like to display a text
+; description in addition to the image.
+
+[-HKEY_CURRENT_USER\Software\Notepad2\Toolbar Strings]
+[HKEY_CURRENT_USER\Software\Notepad2\Toolbar Strings]
+;"01"="New"
+;"02"="Open"
+;"03"="metapath"
+;"04"="Save"
+;"05"="----------"
+;"06"="Undo"
+;"07"="Redo"
+;"08"="----------"
+;"09"="Cut"
+;"10"="Copy"
+;"11"="Paste"
+;"12"="----------"
+;"13"="Find"
+;"14"="Replace"
+;"15"="----------"
+;"16"="Word Wrap"
+;"17"="----------"
+;"18"="Zoom In"
+;"19"="Zoom Out"
+;"20"="----------"
+;"21"="Scheme"
+;"22"="Config"
+;"23"="----------"
+;"24"="Exit"
+;"25"="Save As"
+;"26"="Save Copy"
+;"27"="Copy All"
+;"28"="Clear"
+;"29"="Find Next"
+;"30"="Find Previous"
+;"31"="Print"
+
+
+; Toolbar Bitmaps
+;
+; It's possible to use custom bitmaps for the Notepad2 toolbar. See the
+; file Toolbar.bmp from the Notepad2 source code package as a template.
+; Note: if you have created a nice set of toolbar buttons and would like
+; to release it to others, please drop me a note: textview@bluewin.ch.
+
+[HKEY_CURRENT_USER\Software\Notepad2\Settings]
+;"ToolbarBitmap"="Tools.bmp"
+;"ToolbarBitmapHot"="ToolsHot.bmp"
+;"ToolbarBitmapDisabled"="ToolsDisabled.bmp"
+
+
+[HKEY_CURRENT_USER\Software\Notepad2\International]
+
+; International Support
+;
+; Specify default ANSI code page and character set. Experimental...!
+;
+; Code Pages (incomplete):                         Character Sets:
+; ------------------------                         ---------------
+;    0 Default                                       0 ANSI
+;  874 Thai                                          1 Default
+;  932 Japan                                         2 Symbol
+;  936 Chinese (PRC, Singapore)                     77 Mac
+;  949 Korean                                      128 Shift JIS
+;  950 Chinese (Taiwan; Hong Kong SAR, PRC)        129 Hangul
+; 1250 Windows 3.1 Eastern European                130 Johab
+; 1251 Windows 3.1 Cyrillic                        134 GB-2312
+; 1252 Windows 3.1 Latin 1 (U.S., Western Europe)  136 Chinese Big-5
+; 1253 Windows 3.1 Greek                           161 Greec
+; 1254 Windows 3.1 Turkish                         162 Turkish
+; 1255 Hebrew                                      163 Vietnamese
+; 1256 Arabic                                      177 Hebrew
+; 1257 Baltic                                      178 Arabic
+;                                                  186 Baltic
+;                                                  204 Russian
+;                                                  222 Thai
+;  NOTE: Convert to hexadecimal before using!      238 Eastern European
+;                                                  255 OEM
+
+"CodePage"=dword:00000000
+"CharSet"=dword:0000001
+
+
+; Miscellaneous Options
+
+
+[HKEY_CURRENT_USER\Software\Notepad2\Settings]
+
+; Default Extension
+; The file extension specified here is automatically added when you type
+; filenames without extensions in the open and save dialogs. The default
+; is "txt", and "" means no extension.
+
+"DefaultExtension"="txt"
+
+
+; Large File Warning
+; Set the limit in megabytes (hexadecimal) for the load warning message.
+; The default setting is to display a warning for files exceeding 1 MB.
+;
+; disable -> 00000000
+;  1 MB   -> 00000001
+;  2 MB   -> 00000002
+; 10 MB   -> 0000000A
+
+"FileLoadWarningMB"=dword:00000001
+
+
+; Opacity Level
+; Opacity level in transparent mode in %. The value must be
+; indicated in hexadecimal notation.
+; Note: transparent mode is activated by pressing Alt+U.
+;
+; 100% -> 00000064
+;  75% -> 0000004b
+;  50% -> 00000032
+;  33% -> 00000021
+
+"OpacityLevel"=dword:0000004b
+
+
+; No Fade Hidden
+; Disable faded appearance of hidden and system files in the "Open with"
+; and "Favorites" dialog boxes.
+;
+; enabled  -> 00000001
+; disabled -> 00000000
+
+"NoFadeHidden"=dword:00000000

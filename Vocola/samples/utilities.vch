@@ -1,0 +1,48 @@
+# ---------------------------------------------------------------------------
+# Place mouse using rectangular grid
+# 
+# These functions place the mouse using a grid of 15 pixels per unit.
+# That gives 1 unit per line in my text editor (emacs), and means
+# coordinates are below 100 (for reliable recognition). See the grid by
+# taping paper rulers along screen edges. Inspired by Kim Patch.
+
+ruler(pixel) := Eval(15*$pixel);
+moveTo(x,y) := SetMousePosition(0, ruler($x), ruler($y));
+moveBy(x,y) := SetMousePosition(2, ruler($x), ruler($y));
+touch(x,y) := moveTo($x,$y) ButtonClick();
+dragTo(x,y) := RememberPoint() moveTo($x,$y) DragToPoint();
+dragBy(x,y) := RememberPoint() moveBy($x,$y) DragToPoint();
+
+moveByPixels(x,y) := SetMousePosition(2, $x, $y);
+dragByPixels(x,y) := RememberPoint() SetMousePosition(2, $x, $y) DragToPoint();
+
+# ---------------------------------------------------------------------------
+# Place the mouse near a window edge using compass points rather than
+# Dragon edge codes. Top is n (north), bottom right is se (southeast)
+# etc. This bit of Python does the conversion:
+
+getEdgeCode(edgeName) := 
+    Eval('{"n":1, "e":2, "s":3, "w":4, "ne":5, "se":6, "sw":7, "nw":8}'
+         '[$edgeName]');
+
+moveToEdge(edge) := SetMousePosition(4, getEdgeCode($edge));
+moveNearEdge(edge,x,y) := moveToEdge($edge) moveBy($x,$y);
+touchNearEdge(edge,x,y) := moveNearEdge($edge,$x,$y) ButtonClick();
+
+dragNearScreenEdge(edge,x,y) :=
+    RememberPoint()
+    SetMousePosition(3, getEdgeCode($edge))
+    moveBy($x,$y)
+    DragToPoint()
+    ;
+
+# Make the current and previous applications tile the entire screen
+
+tileWindows(centerOffset) :=
+    moveToEdge(nw) dragNearScreenEdge(nw,-2,-2)
+    moveToEdge(se) dragNearScreenEdge(s, $centerOffset, 0)
+    SendSystemKeys({Alt+Tab})
+    moveToEdge(ne) dragNearScreenEdge(ne,2,-2)
+    moveToEdge(sw) dragNearScreenEdge(s, $centerOffset, 0)
+    ;
+

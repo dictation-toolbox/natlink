@@ -1,0 +1,111 @@
+New in 2.8.6:
+
+* As of DNS 13, <_anything> can no longer match nothing.  Accordingly,
+  [<_anything>], [[with] <_anything>], and the like are now permitted.
+  These were previously prohibited in an attempt to prohibit optional
+  parts whose contents could be empty.
+
+! Grammar rules are now [de]activated as infrequently as possible; this
+  improves performance with DNS 13/DPI 14, which take a long time to
+  deactivate grammars.
+
+* Fixed an error where include statements were not interpreted relative
+  to the file containing them.  For example, "include bar/baz.vch" in
+  foo/zeep.vcl now correctly refers to foo/zeep/bar/baz.vch.
+
+* Executables whose names contain underscores are now properly handled.
+  For example, a Vocola file named xyz_inc_edit__routines.vcl now
+  contains commands that work only with executables named
+  xyz_inc_edit__routines, xyz_inc_edit, xyz_inc, and xyz.
+
+
+New in 2.8.5:
+
+! Workaround for the doubling/dropping bug: key sequences are now
+  preceded by the current-language-appropriate version of {shift};
+  doubling or dropping of the initial shift key down event does not
+  affect later keystrokes.
+
+! Updating to a different version of Vocola is now much easier; just:
+    unzip it to a temporary location, say T
+    run (e.g., double click) T/install.bat
+    (re)start Dragon
+  Updating from source code is similar but you instead run
+    R/src/install.bat where R is the Vocola 2 repository root
+
+* New exception, VocolaRuntimeAbort, that Vocola extensions may raise to
+  abort the current utterance without error.
+
+
+New in 2.8.4:
+
+* Versions of Python earlier than 2.6 are no longer supported.
+
+* If the user's command folder C contains a subdirectory matching the
+  current language's short name (e.g., enx for English), use that
+  subdirectory (e.g., C/enx) as their command folder instead.  This
+  allows multilingual users to have separate commands for each language
+  they use.
+
+
+New in 2.8.3:
+
+* Source code converted to git, moved to github at
+  https://github.com/mdbridge/Vocola-2
+
+* Removed support for falling back to Simpscrp
+
+* Removed support for using Perl version of Vocola
+
+
+New in 2.8.2:
+
+* Fixed a bug where one command invoking another in the same grammar
+  (typically via HeardWord) caused errors.
+
+* Change to support non-backward-compatible NatLink interface change:
+  movement of some names from natlinkutils to natlink
+
+* Fixed handling of numbers option to allow missing numbers (e.g., $set
+  numbers "" or $set numbers ",one,,three") and handle leading or
+  trailing white space correctly.
+
+* Fixed handling of $set numbers so it applies to only the current
+  command file, not all files compiled afterwards.
+
+
+New in 2.8.1:
+
+! Any series of one or more terms at least one of which is not optional
+  or <_anything> can now be optional.
+
+* New built-ins, If and When.
+
+* Bug fix for list entries containing \'s with actions (produced invalid
+  Python code).
+
+* Bug fix for adjacent <_anything>'s in command sequences
+
+
+New in 2.8:
+
+* The Vocola 2 compiler has been ported from Perl to Python, mostly line
+  by line except for the parser.
+
+! The parser has been replaced with a new one that produces better error
+  messages, describing what was found versus what was expected and
+  visually pointing to the error.
+
+* Non-backward compatible parsing changes: 
+  * unquoted words may no longer end with ':' if they are not followed
+    by whitespace.
+  * whitespace may no longer be omitted between variables (e.g.,
+    <list><list>); the fact that this ever worked was a bug.
+
+* Some new command line arguments are available for the compiler; see
+  the comments at the start of vcl2py.py for details.
+
+* Fixed a bug whereby "load [global] commands" loaded only the first
+  relevant command file.
+
+* Versions of Python earlier than 2.5 are no longer supported.

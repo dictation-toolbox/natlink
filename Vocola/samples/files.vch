@@ -1,0 +1,7 @@
+# Interesting files 
+
+<file> := 
+ ( Temp             = C:\Temp\temp.txt
+ | Dot Emacs        = ~\.emacs
+ | Vocola Main      = C:\Programs\NatLink\MacroSystem\_vocola_main.py
+ );
