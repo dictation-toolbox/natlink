@@ -65,6 +65,7 @@
 
 ############################################################################
 # experiment Mark (Vocola Extension)
+# making this experiment final:
 useMarkSendInput = 1
 if useMarkSendInput:
     import ExtendedSendDragonKeys
@@ -72,11 +73,11 @@ if useMarkSendInput:
 
     from ExtendedSendDragonKeys import senddragonkeys_to_events
     from SendInput import send_input
-    print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is "
-    print "used for all normal playString calls!  If you do not want this,"
-    print "change the variable useMarkSendInput to 0 in line 65 of"
-    print "natlinkutils.py.  This file is located in the directory "
-    print "NatLink\MacroSystem\Core.  Then restart Dragon...\n======"
+    # print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is "
+    # print "used for all normal playString calls!  If you do not want this,"
+    # print "change the variable useMarkSendInput to 0 in line 65 of"
+    # print "natlinkutils.py.  This file is located in the directory "
+    # print "NatLink\MacroSystem\Core.  Then restart Dragon...\n======"
 # 
 import six
 import os, os.path, copy, types

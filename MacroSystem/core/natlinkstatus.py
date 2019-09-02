@@ -1,4 +1,4 @@
-__version__ = "4.1whiskey3"
+__version__ = "4.2"
 #
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
@@ -6,6 +6,8 @@ __version__ = "4.1whiskey3"
 #  (C) Copyright Quintijn Hoogenboom, February 2008/January 2018
 #
 #----------------------------------------------------------------------------
+#
+# 4.2 stable version, exit from subversion, end of python2.7 development.
 #
 # 4.1whiskey, minor changes, 12/11/2018
 # 4.1victor, changes for DPI15, nearly stable, waiting for Mark getting SendKeys implemented.
