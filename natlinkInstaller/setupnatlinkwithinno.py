@@ -10,12 +10,12 @@
 #  (C) Copyright Quintijn Hoogenboom, 2008-2009
 #  2011: change GrammarsToDisable to GrammarsToEnable
 #----------------------------------------------------------------------------
-# A setup script for NatLink/Vocola/Unimacro, with inno
+# A setup script for Natlink/Vocola/Unimacro, with inno
 # 1. choose new release name and change in __version__ of natlinkstatus
-# 2. Commit NatLink and Unimacro
-# 3. SVN export both NatLink and Unimacro to a new folder
-#     (eg D:\NatLink\releases\natlink3.2 if your release number is natlink3.2)
-# 4. run this utility FROM THAT FOLDER\NatLink\natlinkInstaller.
+# 2. Commit Natlink and Unimacro
+# 3. SVN export both Natlink and Unimacro to a new folder
+#     (eg D:\Natlink\releases\natlink3.2 if your release number is natlink3.2)
+# 4. run this utility FROM THAT FOLDER\Natlink\natlinkInstaller.
 # 5. the result will be in the "dist" subdirectory, also the .iss file
 #GrammarsToEnable = ['_control.py', '_folders.py', '_lines.py',
 #                     '_numberstest.py', 'firefox_browsing.py',
@@ -53,7 +53,7 @@ def getBaseFolder(globalsDict=None):
     return baseFolder
 
 def getCoreDir(thisDir):
-    """get the NatLink core folder, relative from the current folder
+    """get the Natlink core folder, relative from the current folder
 
     This folder should be relative to this with ../MacroSystem/core
     and should contain natlinkmain.py and natlink.dll and
@@ -85,7 +85,7 @@ def fatal_error(message, new_raise=None):
     print 'natlinkconfigfunctions fails because of fatal error:'
     print message
     print
-    print 'This can (hopefully) be solved by (re)installing NatLink'
+    print 'This can (hopefully) be solved by (re)installing Natlink'
     print 
     if new_raise:
         raise new_raise
@@ -122,7 +122,7 @@ class InnoScript:
                  dist_dir,
                  version = _version):
         self.dist_dir = dist_dir
-        self.name = name # NatLink
+        self.name = name # Natlink
         self.version = version # version from natlinkstatus
 
     def chop(self, pathname):
@@ -143,7 +143,7 @@ class InnoScript:
         print >> ofi, r"AppVerName=%s version %s (including Vocola 2.8.6 and Unimacro)" % (self.name, self.version)
         print >> ofi, r"DefaultDirName=C:\%s" % self.name
         print >> ofi, r"DefaultGroupName=%s" % self.name
-        print >> ofi, r"LicenseFile=..\NatLink\COPYRIGHT.txt"
+        print >> ofi, r"LicenseFile=..\Natlink\COPYRIGHT.txt"
 ##        print >> ofi, "DisableDirPage=yes"
         print >> ofi, "UsePreviousAppDir=yes"
         print >> ofi, "ChangesAssociations=yes"
@@ -162,16 +162,16 @@ class InnoScript:
 
         print >> ofi
         print >> ofi, r'[Languages]'
-        print >> ofi, r'Name: "en"; MessagesFile: "..\NatLink\natlinkInstaller\Natlink.isl"'
+        print >> ofi, r'Name: "en"; MessagesFile: "..\Natlink\natlinkInstaller\Natlink.isl"'
 
         print >> ofi
         print >> ofi, r"[Files]"
-        natlink_files = getAllFiles('NatLink')
+        natlink_files = getAllFiles('Natlink')
         unimacro_files = getAllFiles('Unimacro')
         ## adaptation for Jason Koller, Kaiser hospital Honolulu:
         #kaiser_files = getAllFiles('kaiser_dictation')
         for path in natlink_files:
-            print >> ofi, r'Source: "..\NatLink\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+            print >> ofi, r'Source: "..\Natlink\%s"; DestDir: "{app}\Natlink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         for path in unimacro_files:
             if filter(None, [path for ext in ExtensionsToIgnore if path.endswith(ext)]):
                 print 'ignoring because of extension: %s'% path
@@ -196,30 +196,30 @@ class InnoScript:
         
         ## will only be included if directory is present:
         #for path in kaiser_files:
-        #    print >> ofi, r'Source: "..\kaiser_dictation\%s"; DestDir: "{app}\NatLink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
+        #    print >> ofi, r'Source: "..\kaiser_dictation\%s"; DestDir: "{app}\Natlink\%s"; Flags: ignoreversion' % (path, os.path.dirname(path))
         
         print >> ofi
 
 
 
         print >> ofi, r"[Icons]"
-        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.py'
+        Path = r'..\Natlink\confignatlinkvocolaunimacro\start_configurenatlink.py'
         # back to above:
-        #Path = r'..\NatLink\confignatlinkvocolaunimacro\start_configurenatlink.bat'
-        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
-              ("Configure NatLink via GUI", Path)
-        Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.py'
+        #Path = r'..\Natlink\confignatlinkvocolaunimacro\start_configurenatlink.bat'
+        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\Natlink\%s"' % \
+              ("Configure Natlink via GUI", Path)
+        Path = r'..\Natlink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.py'
         # back to above:
-        #Path = r'..\NatLink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.bat'
-        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\NatLink\%s"' % \
-              ("Configure NatLink via command line interface", Path)
+        #Path = r'..\Natlink\confignatlinkvocolaunimacro\start_natlinkconfigfunctions.bat'
+        print >> ofi, r'Name: "{group}\%s"; Filename: "{app}\Natlink\%s"' % \
+              ("Configure Natlink via command line interface", Path)
 
 
         # run GUI after install:
         print >> ofi, r"[Run]"
-        Path = r'NatLink\confignatlinkvocolaunimacro\start_configurenatlink.py'
+        Path = r'Natlink\confignatlinkvocolaunimacro\start_configurenatlink.py'
 
-##        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch NatLink configuration GUI"; Flags: postinstall'% \
+##        print >> ofi, r'Filename: "{app}\%s"; Description: "Launch Natlink configuration GUI"; Flags: postinstall'% \
 ##              Path
         
     def compile(self):
@@ -259,7 +259,7 @@ def run():
     os.mkdir(dist_dir)
     # create the Installer, using the files py2exe has created.
     # uitleg is included in this generation of the exe file...
-    script = InnoScript("NatLink",
+    script = InnoScript("Natlink",
                         dist_dir)
                         
     print "*** creating the inno setup script***"
@@ -288,9 +288,9 @@ def getAllFiles(startDir):
 
 def _getallfiles(arg, dirname, filenames):
     if dirname.endswith("CVS"):
-        raise IOError("found a CVS folder, you should have released Unimacro and NatLink first!")
+        raise IOError("found a CVS folder, you should have released Unimacro and Natlink first!")
     if dirname.endswith(".svn"):
-        raise IOError("found a svn folder, you should have exported Unimacro and NatLink first!")
+        raise IOError("found a svn folder, you should have exported Unimacro and Natlink first!")
     for f in filenames:
         if f.endswith(".pyc"):
             continue
