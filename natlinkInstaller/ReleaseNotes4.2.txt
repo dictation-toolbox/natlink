@@ -1,5 +1,7 @@
 Release 4.2:
 
+git test
+
 A stable release at last, September 2, 2019.
 
 -This can be considered a stable release of Natlink for Python 2.7. Working on Dragon versions up to 15.
