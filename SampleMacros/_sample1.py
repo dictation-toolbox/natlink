@@ -30,10 +30,11 @@ class ThisGrammar(GrammarBase):
         self.activateAll()
 
     def gotResults_start(self,words,fullResults):
-        natlink.playString('Heard macro "sample one"{enter}')
+        natlink.displayText('Heard macro "sample one"{enter}',0)
         
 thisGrammar = ThisGrammar()
 thisGrammar.initialize()
+natlink.displayText("sample one",0)
 
 def unload():
     global thisGrammar
