@@ -14,15 +14,15 @@ project(${PROJECT_NAME})
 
 # Source Files
 set(SRC_FILES
-        ./appsupp.cpp
-        ./dictobj.cpp
+        COM/appsupp.cpp
+        DictationObject.cpp
         ./DragCode.cpp
-        ./excepts.cpp
-        ./GramObj.cpp
+        Exceptions.cpp
+        GrammarObject.cpp
         ./natlink.cpp
         ./pythwrap.cpp
-        ./ResObj.cpp
-        ./SecdThrd.cpp
+        ResultObject.cpp
+        MessageWindow.cpp
         StdAfx.cpp
         natlink.rc
         )
@@ -30,17 +30,17 @@ source_group("Sources" FILES ${SRC_FILES})
 
 # Header Files
 set(HEADERS_FILES
-        appsupp.h
-        comsupp.h
-        dictobj.h
+        COM/appsupp.h
+        COM/comsupp.h
+        DictationObject.h
         DragCode.h
-        dspeech.h
-        excepts.h
-        GramObj.h
-        resobj.h
-        resource.h
-        SecdThrd.h
-        SPEECH.H
+        COM/dspeech.h
+        Exceptions.h
+        GrammarObject.h
+        ResultObject.h
+        Resource.h
+        MessageWindow.h
+        COM/SPEECH.H
         StdAfx.h
         )
 source_group("Headers" FILES ${HEADERS_FILES})

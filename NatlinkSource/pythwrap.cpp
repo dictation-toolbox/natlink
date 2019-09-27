@@ -20,10 +20,10 @@ PyMem_DEL.  Changing these calls to PyObject_Del below eliminated the crashes.
 
 #include "stdafx.h"
 #include "DragCode.h"
-#include "GramObj.h"
-#include "ResObj.h"
-#include "dictobj.h"
-#include "Excepts.h"
+#include "GrammarObject.h"
+#include "ResultObject.h"
+#include "DictationObject.h"
+#include "Exceptions.h"
 
 #ifdef INHOUSE
 #include "inhouse.h"

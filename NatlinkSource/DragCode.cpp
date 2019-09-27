@@ -118,14 +118,14 @@
 
 
 #include "stdafx.h"
-#include "resource.h"
+#include "Resource.h"
 #include "DragCode.h"
-#include "GramObj.h"
-#include "ResObj.h"
-#include "dictobj.h"
-#include "appsupp.h"
-#include "SecdThrd.h"
-#include "Excepts.h"
+#include "GrammarObject.h"
+#include "ResultObject.h"
+#include "DictationObject.h"
+#include "COM/appsupp.h"
+#include "MessageWindow.h"
+#include "Exceptions.h"
 #include <cstring>
 
 // defined in PythWrap.cpp

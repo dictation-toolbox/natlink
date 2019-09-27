@@ -10,9 +10,9 @@
 #include "stdafx.h"
 #include <stdarg.h>
 #include "DragCode.h"
-#include "GramObj.h"
-#include "ResObj.h"
-#include "Excepts.h"
+#include "GrammarObject.h"
+#include "ResultObject.h"
+#include "Exceptions.h"
 
 // This is our set of error objects, one for each error listed in Excepts.h
 PyObject * ErrObjects[ ERROR_COUNT ];

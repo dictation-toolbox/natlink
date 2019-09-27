@@ -10,9 +10,9 @@
 
 #include "stdafx.h"
 #include "DragCode.h"
-#include "GramObj.h"
-#include "ResObj.h"
-#include "Excepts.h"
+#include "GrammarObject.h"
+#include "ResultObject.h"
+#include "Exceptions.h"
 #include <fstream>
 #include <vector>
 
