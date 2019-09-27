@@ -188,6 +188,7 @@ BOOL CGramObj::unload()
 
 BOOL CGramObj::load( BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHypothesis )
 {
+
 	HRESULT rc;
 
 	TCHAR szMsg[128] = {'\0'};
@@ -200,25 +201,10 @@ BOOL CGramObj::load( BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHypothe
 		MessageBox( 0, szMsg, L"GrammarLoad", MB_OK );
 	}
 */
-	std::streampos fileSize;
-    std::ifstream file(L"C:\\Users\\RW-NB\\Desktop\\BIN\\outputTest.bin", std::ios::binary);
 
-    // get its size:
-    file.seekg(0, std::ios::end);
-    fileSize = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // read the data:
-    std::vector<BYTE> fileData(fileSize);
-    file.read((char*) &fileData[0], fileSize);
-
-	/*std::vector <BYTE> bin;
-	for ( DWORD a = 0; a < dwSize; a++ )
-	{
-		bin.push_back( pData[a] );
-	}*/
-
-
+//    reportError( errNatError,
+//                 "test error call" );
+//    return FALSE;
 
 	if( m_pDragCode == NULL || m_pDragCode->pISRCentral() == NULL )
 	{
@@ -243,8 +229,7 @@ BOOL CGramObj::load( BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHypothe
 		return FALSE;
 	}
 
-	// create a grammar sink 
-
+	// create a grammar sink
 	CComObject<CSRGramNotifySink> * pGramSinkObj = 0;
 	ISRGramNotifySinkPtr pIGramSink;
 
@@ -260,11 +245,12 @@ BOOL CGramObj::load( BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHypothe
 	RETURNIFERROR( rc, "QueryInterface(ISRGramNotifySink)" );
 
 	// load the grammar
-
+    std::streampos fileSize;
 	SDATA sData;
-	//sData.pData = pData;
-	sData.pData = &fileData[0];
-	sData.dwSize = (DWORD)fileSize;
+	sData.pData = pData;
+//	sData.pData = &fileData[0];
+//	sData.dwSize = (DWORD)fileSize;
+    sData.dwSize = (DWORD)dwSize;
 
 	IUnknownPtr pUnknown;
 
@@ -302,7 +288,6 @@ BOOL CGramObj::load( BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHypothe
 
 	// now we add ourself to the CDragonCode linked list so all the grammars
 	// can be freed when we disconnect
-
 	m_pDragCode->addGramObj( this );
 
 	return TRUE;
