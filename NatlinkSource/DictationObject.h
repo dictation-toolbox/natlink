@@ -16,7 +16,7 @@ class CDragonCode;
 // since Python directly access this data structure (using the variables
 // defined in the PyObject_HEAD macro).
 
-struct CDictObj
+struct CDicationObject
 {
 	// this must be first, it is the Python header data
 	PyObject_HEAD
@@ -41,7 +41,7 @@ struct CDictObj
 	// the CDragonCode class keeps a linked list of all grammar objects
 	// which have active interfaces; this is the "next" pointer for that
 	// linked list
-	CDictObj * m_pNextDictObj;
+	CDicationObject * m_pNextDictObj;
 
 	// to make it easier to deal with the locking from Python, we keep an
 	// internal copy of the lock count

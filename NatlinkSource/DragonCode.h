@@ -9,19 +9,15 @@
 	which implement the export Python natlink functions.
 */
 
-struct CGramObj;
-struct CResObj;
-struct CDictObj;
+struct CGrammarObject;
+struct CResultObject;
+struct CDicationObject;
 class CDgnSRNotifySink;
 class CDgnAppSupport;
-class CSecondThread;
+class MessageWindow;
 class CMessageStack;
 
 typedef const char * PCCHAR;
-
-#ifdef INHOUSE
-#include "inhouse.h"
-#endif
 
 //---------------------------------------------------------------------------
 
@@ -112,18 +108,18 @@ class CDragonCode
 	void setAppClass( CDgnAppSupport * pAppClass ) { m_pAppClass = pAppClass; }
 	void setDuringInit( BOOL bState ) { m_bDuringInit = bState; }
 
-	// these functions are called from CGramObj
+	// these functions are called from CGrammarObject
 	ISRCentral * pISRCentral() { return m_pISRCentral; }
-	void addGramObj( CGramObj * pGramObj );
-	void removeGramObj( CGramObj * pGramObj );
+	void addGramObj(CGrammarObject * pGramObj );
+	void removeGramObj(CGrammarObject * pGramObj );
 
-	// these functions are called from CResObj
-	void addResObj( CResObj * pResObj );
-	void removeResObj( CResObj * pResObj );
+	// these functions are called from CResultObject
+	void addResObj(CResultObject * pResObj );
+	void removeResObj(CResultObject * pResObj );
 
-	// these functions are called from CDictObj
-	void addDictObj( CDictObj * pDictObj );
-	void removeDictObj( CDictObj * pDictObj );
+	// these functions are called from CDicationObject
+	void addDictObj(CDicationObject * pDictObj );
+	void removeDictObj(CDicationObject * pDictObj );
 
 	// when we need to post a message from a COM notify sink to the message
 	// window, make this call
@@ -195,19 +191,19 @@ class CDragonCode
 	// messages 
 	HWND m_hMsgWnd;
 
-	// The CGramObj instances are in a linked list and the head of that list
+	// The CGrammarObject instances are in a linked list and the head of that list
 	// is stored in the CDragonCode object.  This allows us to unload all
 	// grammars when we call natDisconnect
-	CGramObj * m_pFirstGramObj;
+	CGrammarObject * m_pFirstGramObj;
 
-	// The CResObj instances are also in a linked list for the same reason.
-	CResObj * m_pFirstResObj;
+	// The CResultObject instances are also in a linked list for the same reason.
+	CResultObject * m_pFirstResObj;
 
-	// And also the CDictObj instances
-	CDictObj * m_pFirstDictObj;
+	// And also the CDicationObject instances
+	CDicationObject * m_pFirstDictObj;
 
 	// this is a pointer to the second thread where we can display messages
-	CSecondThread * m_pSecdThrd;
+	MessageWindow * m_pSecdThrd;
 
 	// we remember a pointer to the CDgnAppSupport class so we can handle
 	// the reinitialization function
@@ -287,7 +283,5 @@ class CDragonCode
 	void TriggerMessage( UINT message, WPARAM wParam, LPARAM lParam );
 	BOOL IsMessageTriggered( UINT message, WPARAM wParam, LPARAM & lParam );
 
-#ifdef INHOUSE
-	INH_DRAGCODE_CLASS
-#endif
+
 };

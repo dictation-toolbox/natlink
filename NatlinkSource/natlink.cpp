@@ -12,7 +12,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 #include "initguid.h"
-#include "DragCode.h"
+#include "DragonCode.h"
 #include "COM/appsupp.h"
 
 CComModule _Module;

@@ -12,7 +12,7 @@
 
 #include "../StdAfx.h"
 #include "../Resource.h"
-#include "../DragCode.h"
+#include "../DragonCode.h"
 #include "appsupp.h"
 
 // from PythWrap.cpp

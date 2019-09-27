@@ -8,7 +8,7 @@
 */
 
 #include "stdafx.h"
-#include "DragCode.h"
+#include "DragonCode.h"
 #include "ResultObject.h"
 #include "Exceptions.h"
 #include "GrammarObject.h"
@@ -87,12 +87,12 @@ SRPHRASE * makePhrase( PCCHAR * ppWords )
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CResObj
+// CResultObject
 //
 
 //---------------------------------------------------------------------------
 
-BOOL CResObj::create( CDragonCode * pDragCode, LPUNKNOWN pIUnknown )
+BOOL CResultObject::create(CDragonCode * pDragCode, LPUNKNOWN pIUnknown )
 {
 	HRESULT rc;
 
@@ -130,7 +130,7 @@ BOOL CResObj::create( CDragonCode * pDragCode, LPUNKNOWN pIUnknown )
 
 //---------------------------------------------------------------------------
 
-void CResObj::destroy()
+void CResultObject::destroy()
 {
 	if( m_pISRResBasic )
 	{
@@ -143,7 +143,7 @@ void CResObj::destroy()
 
 //---------------------------------------------------------------------------
 
-PyObject * CResObj::getResults( int nChoice )
+PyObject * CResultObject::getResults(int nChoice )
 {
 	HRESULT rc;
 
@@ -210,7 +210,7 @@ PyObject * CResObj::getResults( int nChoice )
 // information because we only have to make one COM call instead one COM
 // call per word in the results.
 
-PyObject * CResObj::getWords( int nChoice )
+PyObject * CResultObject::getWords(int nChoice )
 {
 	HRESULT rc;
 
@@ -270,7 +270,7 @@ PyObject * CResObj::getWords( int nChoice )
 
 //---------------------------------------------------------------------------
 
-PyObject * CResObj::correction( PCCHAR * ppWords )
+PyObject * CResultObject::correction(PCCHAR * ppWords )
 {
 	HRESULT rc;
 
@@ -293,7 +293,7 @@ PyObject * CResObj::correction( PCCHAR * ppWords )
 
 //---------------------------------------------------------------------------
 
-PyObject * CResObj::getWave()
+PyObject * CResultObject::getWave()
 {
 	HRESULT rc;
 	
@@ -317,7 +317,7 @@ PyObject * CResObj::getWave()
 
 //---------------------------------------------------------------------------
 
-PyObject * CResObj::getWordInfo( int nChoice )
+PyObject * CResultObject::getWordInfo(int nChoice )
 {
 	HRESULT rc;
 
@@ -440,7 +440,7 @@ PyObject * CResObj::getWordInfo( int nChoice )
 
 //---------------------------------------------------------------------------
 
-PyObject * CResObj::getSelectInfo( CGramObj * pGrammar, int nChoice )
+PyObject * CResultObject::getSelectInfo(CGrammarObject * pGrammar, int nChoice )
 {
 	HRESULT rc;
 

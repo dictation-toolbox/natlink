@@ -7,14 +7,14 @@
 	Declarations for the second thread.  See SecdThrd.cpp for details.
 */
 
-class CSecondThread
+class MessageWindow
 {
  public:
 	// the constructor will create the thread
-	CSecondThread();
+	MessageWindow();
 
 	// the destructor will terminate the thread
-	~CSecondThread();
+	~MessageWindow();
 
 	// this will post a string to the output window in the second thread
 	void displayText( const char * pszText, BOOL bError );
