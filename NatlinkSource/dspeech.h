@@ -291,6 +291,7 @@ typedef struct
 #define RGYF_TWOPARAMS   ((WORD)0x2000)
 #define RGYF_THREEPARAMS ((WORD)0x3000)
 
+
 // for IDgnSRResGraph
 typedef struct {
 	DWORD   dwNextWordNode;
@@ -300,6 +301,7 @@ typedef struct {
 	DWORD   dwPhonemeNode;
 	QWORD   qwStartTime;
 	QWORD   qwEndTime;
+    QWORD   qwSilenceDuration;
 	DWORD   dwWordScore;
 	WORD      wVolume;
 	WORD      wPitch;

@@ -570,6 +570,7 @@ typedef struct {
    DWORD   dwPhonemeNode;
    QWORD   qwStartTime;
    QWORD   qwEndTime;
+   QWORD   qwSilenceDuration;
    DWORD   dwWordScore;
    WORD      wVolume;
    WORD      wPitch;
