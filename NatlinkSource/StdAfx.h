@@ -45,9 +45,9 @@ extern CComModule _Module;
 #include <stdio.h>
 #include <assert.h>
 
-#include "speech.h"
-#include "dspeech.h"
-#include "comsupp.h"
+#include "COM/SPEECH.H"
+#include "COM/dspeech.h"
+#include "COM/comsupp.h"
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

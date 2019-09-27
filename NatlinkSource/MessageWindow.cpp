@@ -16,8 +16,8 @@
 */
 
 #include "stdafx.h"
-#include "resource.h"
-#include "SecdThrd.h"
+#include "Resource.h"
+#include "MessageWindow.h"
 #include <richedit.h>
 
 // This is the message we send to the other thread to add text to the output

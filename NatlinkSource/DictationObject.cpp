@@ -10,9 +10,9 @@
 
 #include "stdafx.h"
 #include "DragCode.h"
-#include "DictObj.h"
-#include "ResObj.h"
-#include "Excepts.h"
+#include "DictationObject.h"
+#include "ResultObject.h"
+#include "Exceptions.h"
 
 // We use this macro to make sure the dictation object is usable
 #define MUSTBEUSABLE( func ) \

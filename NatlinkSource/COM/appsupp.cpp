@@ -10,9 +10,9 @@
 	decision simplifies the design somewhat.
 */
 
-#include "stdafx.h"
-#include "resource.h"
-#include "DragCode.h"
+#include "../StdAfx.h"
+#include "../Resource.h"
+#include "../DragCode.h"
 #include "appsupp.h"
 
 // from PythWrap.cpp

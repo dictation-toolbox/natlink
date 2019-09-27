@@ -9,9 +9,9 @@
 
 #include "stdafx.h"
 #include "DragCode.h"
-#include "ResObj.h"
-#include "Excepts.h"
-#include "GramObj.h"
+#include "ResultObject.h"
+#include "Exceptions.h"
+#include "GrammarObject.h"
 
 // This macro is used at the top of functions which can not be called
 // when no grammar has been loaded

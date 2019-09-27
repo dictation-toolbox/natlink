@@ -10,10 +10,10 @@
 */
 
 #include "stdafx.h"
-#include "resource.h"
+#include "Resource.h"
 #include "initguid.h"
 #include "DragCode.h"
-#include "appsupp.h"
+#include "COM/appsupp.h"
 
 CComModule _Module;
 
