@@ -119,7 +119,7 @@
 
 #include "stdafx.h"
 #include "Resource.h"
-#include "DragCode.h"
+#include "DragonCode.h"
 #include "GrammarObject.h"
 #include "ResultObject.h"
 #include "DictationObject.h"
@@ -129,7 +129,7 @@
 #include <cstring>
 
 // defined in PythWrap.cpp
-CResObj * resobj_new();
+CResultObject * resobj_new();
 
 // This macro is used at the top of functions which can not be called
 // during initialization
@@ -700,7 +700,7 @@ void CDragonCode::releaseObjects()
 	// linked list changes
 	while( m_pFirstGramObj )
 	{
-		CGramObj * pOldFirst = m_pFirstGramObj;
+		CGrammarObject * pOldFirst = m_pFirstGramObj;
 		
 		m_pFirstGramObj->unload();
 
@@ -715,7 +715,7 @@ void CDragonCode::releaseObjects()
 	// iterate over all results objects and free them
 	while( m_pFirstResObj )
 	{
-		CResObj * pOldFirst = m_pFirstResObj;
+		CResultObject * pOldFirst = m_pFirstResObj;
 		
 		m_pFirstResObj->destroy();
 
@@ -730,7 +730,7 @@ void CDragonCode::releaseObjects()
 	// iterate over all dictation objects and free them
 	while( m_pFirstDictObj )
 	{
-		CDictObj * pOldFirst = m_pFirstDictObj;
+		CDicationObject * pOldFirst = m_pFirstDictObj;
 		
 		m_pFirstDictObj->destroy();
 
@@ -803,7 +803,7 @@ void CDragonCode::doPausedProcessing( QWORD dwCookie )
 
 		// now we call the grammar callbacks
 
-		CGramObj * pGramObj;
+		CGrammarObject * pGramObj;
 		for( pGramObj = m_pFirstGramObj;
 			 pGramObj != NULL;
 			 pGramObj = pGramObj->m_pNextGramObj )
@@ -836,7 +836,7 @@ void CDragonCode::doPausedProcessing( QWORD dwCookie )
 
 //---------------------------------------------------------------------------
 
-void CDragonCode::addGramObj( CGramObj * pGramObj )
+void CDragonCode::addGramObj(CGrammarObject * pGramObj )
 {
 	assert( pGramObj != NULL );
 	assert( pGramObj->m_pNextGramObj == NULL );
@@ -847,7 +847,7 @@ void CDragonCode::addGramObj( CGramObj * pGramObj )
 
 //---------------------------------------------------------------------------
 
-void CDragonCode::removeGramObj( CGramObj * pGramObj )
+void CDragonCode::removeGramObj(CGrammarObject * pGramObj )
 {
 	assert( pGramObj != NULL );
 
@@ -870,7 +870,7 @@ void CDragonCode::removeGramObj( CGramObj * pGramObj )
 
 	// otherwise, we need to find the grammar object in the linked list
 	
-	CGramObj * pCur;
+	CGrammarObject * pCur;
 	for( pCur = m_pFirstGramObj;
 		 pCur->m_pNextGramObj != NULL;
 		 pCur = pCur->m_pNextGramObj )
@@ -888,7 +888,7 @@ void CDragonCode::removeGramObj( CGramObj * pGramObj )
 
 //---------------------------------------------------------------------------
 
-void CDragonCode::addResObj( CResObj * pResObj )
+void CDragonCode::addResObj(CResultObject * pResObj )
 {
 	assert( pResObj != NULL );
 	assert( pResObj->m_pNextResObj == NULL );
@@ -899,7 +899,7 @@ void CDragonCode::addResObj( CResObj * pResObj )
 
 //---------------------------------------------------------------------------
 
-void CDragonCode::removeResObj( CResObj * pResObj )
+void CDragonCode::removeResObj(CResultObject * pResObj )
 {
 	assert( pResObj != NULL );
 
@@ -922,7 +922,7 @@ void CDragonCode::removeResObj( CResObj * pResObj )
 
 	// otherwise, we need to find the results object in the linked list
 	
-	CResObj * pCur;
+	CResultObject * pCur;
 	for( pCur = m_pFirstResObj;
 		 pCur->m_pNextResObj != NULL;
 		 pCur = pCur->m_pNextResObj )
@@ -940,7 +940,7 @@ void CDragonCode::removeResObj( CResObj * pResObj )
 
 //---------------------------------------------------------------------------
 
-void CDragonCode::addDictObj( CDictObj * pDictObj )
+void CDragonCode::addDictObj(CDicationObject * pDictObj )
 {
 	assert( pDictObj != NULL );
 	assert( pDictObj->m_pNextDictObj == NULL );
@@ -951,7 +951,7 @@ void CDragonCode::addDictObj( CDictObj * pDictObj )
 
 //---------------------------------------------------------------------------
 
-void CDragonCode::removeDictObj( CDictObj * pDictObj )
+void CDragonCode::removeDictObj(CDicationObject * pDictObj )
 {
 	assert( pDictObj != NULL );
 
@@ -974,7 +974,7 @@ void CDragonCode::removeDictObj( CDictObj * pDictObj )
 
 	// otherwise, we need to find the dictation object in the linked list
 	
-	CDictObj * pCur;
+	CDicationObject * pCur;
 	for( pCur = m_pFirstDictObj;
 		 pCur->m_pNextDictObj != NULL;
 		 pCur = pCur->m_pNextDictObj )
@@ -1683,7 +1683,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 
 	if( pIDgnSite != NULL )
 	{
-		m_pSecdThrd = new CSecondThread();
+		m_pSecdThrd = new MessageWindow();
 	}
 
 	// Connect to NatSpeak

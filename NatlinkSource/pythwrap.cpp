@@ -19,15 +19,13 @@ PyMem_DEL.  Changing these calls to PyObject_Del below eliminated the crashes.
 */
 
 #include "stdafx.h"
-#include "DragCode.h"
+#include "DragonCode.h"
 #include "GrammarObject.h"
 #include "ResultObject.h"
 #include "DictationObject.h"
 #include "Exceptions.h"
 
-#ifdef INHOUSE
-#include "inhouse.h"
-#endif
+
 
 /*
  * Buffer size for error message string formatting.
@@ -1199,7 +1197,7 @@ gramobj_load( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->load( (BYTE *)pData, (DWORD)nData, bAllResults != 0, bHypothesis != 0 ) )
 	{
 		return NULL;
@@ -1222,7 +1220,7 @@ gramobj_unload( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->unload() )
 	{
 		return NULL;
@@ -1247,7 +1245,7 @@ gramobj_activate( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->activate( pName, hWnd ) )
 	{
 		return NULL;
@@ -1271,7 +1269,7 @@ gramobj_deactivate( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->deactivate( pName ) )
 	{
 		return NULL;
@@ -1301,7 +1299,7 @@ gramobj_setBeginCallback( PyObject *self, PyObject *args )
 		return NULL;        
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->setBeginCallback( pFunc ) )
 	{
 		return NULL;
@@ -1331,7 +1329,7 @@ gramobj_setResultsCallback( PyObject *self, PyObject *args )
 		return NULL;        
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->setResultsCallback( pFunc ) )
 	{
 		return NULL;
@@ -1361,7 +1359,7 @@ gramobj_setHypothesisCallback( PyObject *self, PyObject *args )
 		return NULL;        
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->setHypothesisCallback( pFunc ) )
 	{
 		return NULL;
@@ -1385,7 +1383,7 @@ gramobj_emptyList( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->emptyList( pName ) )
 	{
 		return NULL;
@@ -1410,7 +1408,7 @@ gramobj_appendList( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->appendList( pName, pWord ) )
 	{
 		return NULL;
@@ -1434,7 +1432,7 @@ gramobj_setExclusive( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->setExclusive( bState ) )
 	{
 		return NULL;
@@ -1459,7 +1457,7 @@ gramobj_setContext( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->setContext( beforeText, afterText ) )
 	{
 		return NULL;
@@ -1483,7 +1481,7 @@ gramobj_setSelectText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	if( !pObj->setSelectText( text ) )
 	{
 		return NULL;
@@ -1506,7 +1504,7 @@ gramobj_getSelectText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	return pObj->getSelectText();
 }
 
@@ -1550,7 +1548,7 @@ gramobj_getattr( PyObject *self, char *name )
 extern "C" static void
 gramobj_dealloc(PyObject *self)
 {
-	CGramObj * pObj = (CGramObj *)self;
+	CGrammarObject * pObj = (CGrammarObject *)self;
 	pObj->destroy();
 	
 	//PyMem_DEL( self );
@@ -1566,7 +1564,7 @@ static PyTypeObject gramobj_stackType = {
 	PyObject_HEAD_INIT(&PyType_Type)
 	0,						// ob_size
 	"GramObj",				// tp_name
-	sizeof(CGramObj),		// tp_basicsize
+	sizeof(CGrammarObject),		// tp_basicsize
 	0,						// tp_itemsize
 	gramobj_dealloc,		// tp_dealloc
 	0,						// tp_print
@@ -1585,7 +1583,7 @@ static PyTypeObject gramobj_stackType = {
 // gramObj = GramObj() from Python
 //
 // This function is called when we create a new GramObj instance.  We have
-// to call CGramObj::create to initialize the object since we can not rely
+// to call CGrammarObject::create to initialize the object since we can not rely
 // on the constructor being called.
 
 extern "C" PyObject *
@@ -1596,7 +1594,7 @@ gramobj_new( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGramObj * pObj = PyObject_NEW( CGramObj, &gramobj_stackType );
+	CGrammarObject * pObj = PyObject_NEW(CGrammarObject, &gramobj_stackType );
 	if( pObj == NULL )
 	{
 		return NULL;
@@ -1622,7 +1620,7 @@ resobj_getResults( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CResObj * pObj = (CResObj *)self;
+	CResultObject * pObj = (CResultObject *)self;
 	PyObject * pRetn = pObj->getResults( nChoice );
 	if( pRetn == NULL )
 	{
@@ -1646,7 +1644,7 @@ resobj_getWords( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CResObj * pObj = (CResObj *)self;
+	CResultObject * pObj = (CResultObject *)self;
 	PyObject * pRetn = pObj->getWords( nChoice );
 	if( pRetn == NULL )
 	{
@@ -1670,7 +1668,7 @@ resobj_correction( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CResObj * pObj = (CResObj *)self;
+	CResultObject * pObj = (CResultObject *)self;
 	PyObject * pRetn = pObj->correction( ppWords );
 	if( pRetn == NULL )
 	{
@@ -1694,7 +1692,7 @@ resobj_getWave( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CResObj * pObj = (CResObj *)self;
+	CResultObject * pObj = (CResultObject *)self;
 	PyObject * pRetn = pObj->getWave();
 	if( pRetn == NULL )
 	{
@@ -1715,7 +1713,7 @@ resobj_getWordInfo( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CResObj * pObj = (CResObj *)self;
+	CResultObject * pObj = (CResultObject *)self;
 	return pObj->getWordInfo( nChoice );
 }
 
@@ -1747,8 +1745,8 @@ resobj_getSelectInfo( PyObject *self, PyObject *args )
 		return NULL;
 	}
 	
-	CResObj * pObj = (CResObj *)self;
-	return pObj->getSelectInfo( (CGramObj *)pGrammar, nChoice );
+	CResultObject * pObj = (CResultObject *)self;
+	return pObj->getSelectInfo((CGrammarObject *)pGrammar, nChoice );
 }
 
 //---------------------------------------------------------------------------
@@ -1761,9 +1759,7 @@ static struct PyMethodDef resobj_methods[] = {
 	{ "getWave", resobj_getWave, METH_VARARGS },
 	{ "getWordInfo", resobj_getWordInfo, METH_VARARGS },
 	{ "getSelectInfo", resobj_getSelectInfo, METH_VARARGS },
-#ifdef INHOUSE
-	INH_RESOBJ_METHODS
-#endif
+
 	{ NULL, NULL }
 };
 
@@ -1787,7 +1783,7 @@ resobj_getattr( PyObject *self, char *name )
 extern "C" static void
 resobj_dealloc(PyObject *self)
 {
-	CResObj * pObj = (CResObj *)self;
+	CResultObject * pObj = (CResultObject *)self;
 	pObj->destroy();
 	
 	// PyMem_DEL( self );
@@ -1803,7 +1799,7 @@ static PyTypeObject resobj_stackType = {
 	PyObject_HEAD_INIT(&PyType_Type)
 	0,						// ob_size
 	"ResObj",				// tp_name
-	sizeof(CResObj),		// tp_basicsize
+	sizeof(CResultObject),		// tp_basicsize
 	0,						// tp_itemsize
 	resobj_dealloc,			// tp_dealloc
 	0,						// tp_print
@@ -1822,9 +1818,9 @@ static PyTypeObject resobj_stackType = {
 // Create a new ResObj.  This is not called from Python.  Instead it is
 // called from GramObj.cpp
 
-CResObj * resobj_new()
+CResultObject * resobj_new()
 {
-	return PyObject_NEW( CResObj, &resobj_stackType );
+	return PyObject_NEW(CResultObject, &resobj_stackType );
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1840,7 +1836,7 @@ dictobj_activate( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	if( !pObj->activate( hWnd ) )
 	{
 		return NULL;
@@ -1860,7 +1856,7 @@ dictobj_deactivate( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	if( !pObj->deactivate() )
 	{
 		return NULL;
@@ -1887,7 +1883,7 @@ dictobj_setBeginCallback( PyObject *self, PyObject *args )
 		return NULL;        
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	if( !pObj->setBeginCallback( pFunc ) )
 	{
 		return NULL;
@@ -1914,7 +1910,7 @@ dictobj_setChangeCallback( PyObject *self, PyObject *args )
 		return NULL;        
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	if( !pObj->setChangeCallback( pFunc ) )
 	{
 		return NULL;
@@ -1935,7 +1931,7 @@ dictobj_setLock( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	if( !pObj->setLock( nState != 0 ) )
 	{
 		return NULL;
@@ -1958,7 +1954,7 @@ dictobj_setText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	if( !pObj->setText( pText, nStart, nEnd ) )
 	{
 		return NULL;
@@ -1980,7 +1976,7 @@ dictobj_setTextSel( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	if( !pObj->setTextSel( nStart, nEnd ) )
 	{
 		return NULL;
@@ -2002,7 +1998,7 @@ dictobj_setVisibleText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	if( !pObj->setVisibleText( nStart, nEnd ) )
 	{
 		return NULL;
@@ -2022,7 +2018,7 @@ dictobj_getLength( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	PyObject * pRetn = pObj->getLength();
 	if( pRetn == NULL )
 	{
@@ -2044,7 +2040,7 @@ dictobj_getText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	PyObject * pRetn = pObj->getText( nStart, nEnd );
 	if( pRetn == NULL )
 	{
@@ -2064,7 +2060,7 @@ dictobj_getTextSel( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	PyObject * pRetn = pObj->getTextSel();
 	if( pRetn == NULL )
 	{
@@ -2084,7 +2080,7 @@ dictobj_getVisibleText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	PyObject * pRetn = pObj->getVisibleText();
 	if( pRetn == NULL )
 	{
@@ -2133,7 +2129,7 @@ dictobj_getattr( PyObject *self, char *name )
 extern "C" static void
 dictobj_dealloc(PyObject *self)
 {
-	CDictObj * pObj = (CDictObj *)self;
+	CDicationObject * pObj = (CDicationObject *)self;
 	pObj->destroy();
 	
 	// PyMem_DEL( self );
@@ -2149,7 +2145,7 @@ static PyTypeObject dictobj_stackType = {
 	PyObject_HEAD_INIT(&PyType_Type)
 	0,						// ob_size
 	"DictObj",				// tp_name
-	sizeof(CDictObj),		// tp_basicsize
+	sizeof(CDicationObject),		// tp_basicsize
 	0,						// tp_itemsize
 	dictobj_dealloc,		// tp_dealloc
 	0,						// tp_print
@@ -2168,7 +2164,7 @@ static PyTypeObject dictobj_stackType = {
 // dictObj = DictObj() from Python
 //
 // This function is called when we create a new DictObj instance.  We have
-// to call CDictObj::create to initialize the object since we can not rely
+// to call CDicationObject::create to initialize the object since we can not rely
 // on the constructor being called.
 
 extern "C" PyObject *
@@ -2179,7 +2175,7 @@ dictobj_new( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDictObj * pObj = PyObject_NEW( CDictObj, &dictobj_stackType );
+	CDicationObject * pObj = PyObject_NEW(CDicationObject, &dictobj_stackType );
 	if( pObj == NULL )
 	{
 		return NULL;
@@ -2239,9 +2235,7 @@ static struct PyMethodDef natlink_methods[] = {
 	{ "setTrayIcon", natlink_setTrayIcon, METH_VARARGS },
 	{ "GramObj", gramobj_new, METH_VARARGS },
 	{ "DictObj", dictobj_new, METH_VARARGS },
-#ifdef INHOUSE
-	INH_NATLINK_METHODS
-#endif
+
 	{ NULL, NULL }
 };
 

@@ -16,7 +16,7 @@ class CDragonCode;
 // since Python directly access this data structure (using the variables
 // defined in the PyObject_HEAD macro).
 
-struct CGramObj
+struct CGrammarObject
 {
 	// this must be first, it is the Python header data
 	PyObject_HEAD
@@ -49,7 +49,7 @@ struct CGramObj
 	// the CDragonCode class keeps a linked list of all grammar objects
 	// which have active interfaces; this is the "next" pointer for that
 	// linked list
-	CGramObj * m_pNextGramObj;
+	CGrammarObject * m_pNextGramObj;
 
 	//-----
 	// functions

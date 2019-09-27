@@ -16,7 +16,7 @@ project(${PROJECT_NAME})
 set(SRC_FILES
         COM/appsupp.cpp
         DictationObject.cpp
-        ./DragCode.cpp
+        DragonCode.cpp
         Exceptions.cpp
         GrammarObject.cpp
         ./natlink.cpp
@@ -33,7 +33,7 @@ set(HEADERS_FILES
         COM/appsupp.h
         COM/comsupp.h
         DictationObject.h
-        DragCode.h
+        DragonCode.h
         COM/dspeech.h
         Exceptions.h
         GrammarObject.h

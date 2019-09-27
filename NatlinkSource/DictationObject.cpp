@@ -4,12 +4,12 @@
 	Portions (c) Copyright 1999 by Dragon Systems, Inc.
 
  dictobj.cpp
-	Implementation of the CDictObj class which encapulates a VoiceDictation
+	Implementation of the CDicationObject class which encapulates a VoiceDictation
 	object and is exposed in Python as a DictObj.
 */
 
 #include "stdafx.h"
-#include "DragCode.h"
+#include "DragonCode.h"
 #include "DictationObject.h"
 #include "ResultObject.h"
 #include "Exceptions.h"
@@ -147,7 +147,7 @@ public:
 	STDMETHOD (SinkFlagsGet) (DWORD* );	// not inline
 
 	// this is our parent
-	CDictObj * m_pParent;
+	CDicationObject * m_pParent;
 };
 
 //---------------------------------------------------------------------------
@@ -232,12 +232,12 @@ STDMETHODIMP CVDct0NotifySink::JITPause()
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CDictObj
+// CDicationObject
 //
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::create( CDragonCode * pDragCode )
+BOOL CDicationObject::create(CDragonCode * pDragCode )
 {
 	m_nLockCount = 0;
 	m_pBeginCallback = NULL;
@@ -307,7 +307,7 @@ BOOL CDictObj::create( CDragonCode * pDragCode )
 
 //---------------------------------------------------------------------------
 
-void CDictObj::destroy()
+void CDicationObject::destroy()
 {
 	setBeginCallback( Py_None );
 	setChangeCallback( Py_None );
@@ -329,7 +329,7 @@ void CDictObj::destroy()
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::setBeginCallback( PyObject *pCallback )
+BOOL CDicationObject::setBeginCallback(PyObject *pCallback )
 {
 	if( pCallback == Py_None )
 	{
@@ -348,7 +348,7 @@ BOOL CDictObj::setBeginCallback( PyObject *pCallback )
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::setChangeCallback( PyObject *pCallback )
+BOOL CDicationObject::setChangeCallback(PyObject *pCallback )
 {
 	if( pCallback == Py_None )
 	{
@@ -367,7 +367,7 @@ BOOL CDictObj::setChangeCallback( PyObject *pCallback )
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::activate( HWND hWnd )
+BOOL CDicationObject::activate(HWND hWnd )
 {
 	HRESULT rc;
 	
@@ -388,7 +388,7 @@ BOOL CDictObj::activate( HWND hWnd )
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::deactivate()
+BOOL CDicationObject::deactivate()
 {
 	HRESULT rc;
 	
@@ -402,7 +402,7 @@ BOOL CDictObj::deactivate()
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::setLock( BOOL bState )
+BOOL CDicationObject::setLock(BOOL bState )
 {
 	HRESULT rc;
 
@@ -435,7 +435,7 @@ BOOL CDictObj::setLock( BOOL bState )
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::setText( const char * pText, int nStart, int nEnd )
+BOOL CDicationObject::setText(const char * pText, int nStart, int nEnd )
 {
 	HRESULT rc;
 	
@@ -467,7 +467,7 @@ BOOL CDictObj::setText( const char * pText, int nStart, int nEnd )
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::setTextSel( int nStart, int nEnd )
+BOOL CDicationObject::setTextSel(int nStart, int nEnd )
 {
 	HRESULT rc;
 	
@@ -490,7 +490,7 @@ BOOL CDictObj::setTextSel( int nStart, int nEnd )
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::setVisibleText( int nStart, int nEnd )
+BOOL CDicationObject::setVisibleText(int nStart, int nEnd )
 {
 	HRESULT rc;
 	
@@ -519,7 +519,7 @@ BOOL CDictObj::setVisibleText( int nStart, int nEnd )
 
 //---------------------------------------------------------------------------
 
-PyObject * CDictObj::getLength()
+PyObject * CDicationObject::getLength()
 {
 	MUSTBEUSABLE( "getLength" )
 
@@ -538,7 +538,7 @@ PyObject * CDictObj::getLength()
 
 //---------------------------------------------------------------------------
 
-PyObject * CDictObj::getText( int nStart, int nEnd )
+PyObject * CDicationObject::getText(int nStart, int nEnd )
 {
 	HRESULT rc;
 	
@@ -592,7 +592,7 @@ PyObject * CDictObj::getText( int nStart, int nEnd )
 
 //---------------------------------------------------------------------------
 
-PyObject * CDictObj::getTextSel()
+PyObject * CDicationObject::getTextSel()
 {
 	HRESULT rc;
 	
@@ -613,7 +613,7 @@ PyObject * CDictObj::getTextSel()
 
 //---------------------------------------------------------------------------
 
-PyObject * CDictObj::getVisibleText()
+PyObject * CDicationObject::getVisibleText()
 {
 	HRESULT rc;
 	
@@ -645,7 +645,7 @@ PyObject * CDictObj::getVisibleText()
 //
 // This function can only be called when a lock is in effect.
 
-BOOL CDictObj::computeLength( int & nCount )
+BOOL CDicationObject::computeLength(int & nCount )
 {
 	HRESULT rc;
 
@@ -684,7 +684,7 @@ BOOL CDictObj::computeLength( int & nCount )
 // pair.  In general we are very forgiving of the Python input mimicing the
 // behavior of the slicing operation.
 
-BOOL CDictObj::computeRange( int & nStart, int & nEndCount )
+BOOL CDicationObject::computeRange(int & nStart, int & nEndCount )
 {
 	// because computing the length can be slow, we only do it if necessary
 	
@@ -719,7 +719,7 @@ BOOL CDictObj::computeRange( int & nStart, int & nEndCount )
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::TextChanged( DWORD dwReason )
+BOOL CDicationObject::TextChanged(DWORD dwReason )
 {
 	HRESULT rc;
 
@@ -804,7 +804,7 @@ BOOL CDictObj::TextChanged( DWORD dwReason )
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::TextSelChanged()
+BOOL CDicationObject::TextSelChanged()
 {
 	HRESULT rc;
 
@@ -836,7 +836,7 @@ BOOL CDictObj::TextSelChanged()
 
 //---------------------------------------------------------------------------
 
-BOOL CDictObj::JITPause()
+BOOL CDicationObject::JITPause()
 {
 	// if there is no callback then there is nothing to do
 	if( !m_pBeginCallback )
@@ -845,7 +845,7 @@ BOOL CDictObj::JITPause()
 	}
 
 	// compute the callback information
-	m_pDragCode->logMessage("+ CDictObj::JITPause\n");
+	m_pDragCode->logMessage("+ CDicationObject::JITPause\n");
 	PyObject * pInfo = m_pDragCode->getCurrentModule();
 	if( pInfo == NULL )
 	{
@@ -853,11 +853,11 @@ BOOL CDictObj::JITPause()
 	}
 
 	// make the callback
-	m_pDragCode->logMessage("  CDictObj::JITPause making callback\n");
+	m_pDragCode->logMessage("  CDicationObject::JITPause making callback\n");
 	m_pDragCode->makeCallback( m_pBeginCallback, Py_BuildValue( "(O)", pInfo ) );
 
 	// clean up
 	Py_XDECREF( pInfo );
-	m_pDragCode->logMessage("- CDictObj::JITPause\n");
+	m_pDragCode->logMessage("- CDicationObject::JITPause\n");
 	return TRUE;
 }

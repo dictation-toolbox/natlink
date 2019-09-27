@@ -40,15 +40,15 @@
 BOOL CALLBACK dialogProc( 
 	HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	// This is the threads copy of the CSecondThread class pointer. I
+	// This is the threads copy of the MessageWindow class pointer. I
 	// supposed that this should not really be global but stored in some
 	// thread or windows storage instead. Oh, well.
-	static CSecondThread * s_pSecdThrd = NULL;
+	static MessageWindow * s_pSecdThrd = NULL;
 
 	switch( msg )
 	{
 	 case WM_INITDIALOG:
-		s_pSecdThrd = (CSecondThread *)lParam;
+		s_pSecdThrd = (MessageWindow *)lParam;
 		ShowWindow( hWnd, SW_HIDE );
 		return TRUE;
 
@@ -135,7 +135,7 @@ BOOL CALLBACK dialogProc(
 
 DWORD CALLBACK threadMain( void * pArg )
 {
-	CSecondThread * pThis = (CSecondThread *)pArg;
+	MessageWindow * pThis = (MessageWindow *)pArg;
 
 	// create a dialog box to display the messages
 
@@ -174,7 +174,7 @@ DWORD CALLBACK threadMain( void * pArg )
 
 //---------------------------------------------------------------------------
 
-CSecondThread::CSecondThread()
+MessageWindow::MessageWindow()
 {
 	// create the thread we use to display messages; we use an event to make
 	// sure that the thread has started before continuing
@@ -205,7 +205,7 @@ CSecondThread::CSecondThread()
 
 //---------------------------------------------------------------------------
 
-CSecondThread::~CSecondThread()
+MessageWindow::~MessageWindow()
 {
 	// terminate the output window then wait for the thread to terminate
 
@@ -223,7 +223,7 @@ CSecondThread::~CSecondThread()
 
 //---------------------------------------------------------------------------
 
-void CSecondThread::displayText( const char * pszText, BOOL bError )
+void MessageWindow::displayText(const char * pszText, BOOL bError )
 {
 	if( m_hOutWnd )
 	{

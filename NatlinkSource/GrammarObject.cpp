@@ -4,12 +4,12 @@
 	Portions (c) Copyright 1999 by Dragon Systems, Inc.
 
  gramobj.h
-	Implementation of the CGramObj class which encapulates a SAPI grammar
+	Implementation of the CGrammarObject class which encapulates a SAPI grammar
 	and is exposed in Python as a GramObj.
 */
 
 #include "stdafx.h"
-#include "DragCode.h"
+#include "DragonCode.h"
 #include "GrammarObject.h"
 #include "ResultObject.h"
 #include "Exceptions.h"
@@ -17,7 +17,7 @@
 #include <vector>
 
 // defined in PythWrap.cpp
-CResObj * resobj_new();
+CResultObject * resobj_new();
 
 // This macro is used at the top of functions which can not be called
 // when no grammar has been loaded
@@ -62,7 +62,7 @@ public:
 	STDMETHOD (SinkFlagsGet) (DWORD* );	// not inline
 
 	// this is our parent
-	CGramObj * m_pParent;
+	CGrammarObject * m_pParent;
 
 	// this flag is set when we want to receive all PhraseFinish messages,
 	// not just ones specific to this grammar.
@@ -144,12 +144,12 @@ STDMETHODIMP CSRGramNotifySink::PhraseHypothesis(
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// CGramObj
+// CGrammarObject
 //
 
 //---------------------------------------------------------------------------
 
-void CGramObj::create( CDragonCode * pDragCode )
+void CGrammarObject::create(CDragonCode * pDragCode )
 {
 	m_pBeginCallback = NULL;
 	m_pResultsCallback = NULL;
@@ -162,7 +162,7 @@ void CGramObj::create( CDragonCode * pDragCode )
 
 //---------------------------------------------------------------------------
 
-void CGramObj::destroy()
+void CGrammarObject::destroy()
 {
 	setBeginCallback( Py_None );
 	setResultsCallback( Py_None );
@@ -171,7 +171,7 @@ void CGramObj::destroy()
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::unload()
+BOOL CGrammarObject::unload()
 {
 	if( m_pISRGramCommon )
 	{
@@ -186,7 +186,7 @@ BOOL CGramObj::unload()
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::load( BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHypothesis )
+BOOL CGrammarObject::load(BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHypothesis )
 {
 
 	HRESULT rc;
@@ -295,7 +295,7 @@ BOOL CGramObj::load( BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHypothe
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::setBeginCallback( PyObject *pCallback )
+BOOL CGrammarObject::setBeginCallback(PyObject *pCallback )
 {
 	if( pCallback == Py_None )
 	{
@@ -314,7 +314,7 @@ BOOL CGramObj::setBeginCallback( PyObject *pCallback )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::setResultsCallback( PyObject *pCallback )
+BOOL CGrammarObject::setResultsCallback(PyObject *pCallback )
 {
 	if( pCallback == Py_None )
 	{
@@ -333,7 +333,7 @@ BOOL CGramObj::setResultsCallback( PyObject *pCallback )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::setHypothesisCallback( PyObject *pCallback )
+BOOL CGrammarObject::setHypothesisCallback(PyObject *pCallback )
 {
 	if( pCallback == Py_None )
 	{
@@ -352,7 +352,7 @@ BOOL CGramObj::setHypothesisCallback( PyObject *pCallback )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::activate( char * ruleName, HWND hWnd )
+BOOL CGrammarObject::activate(char * ruleName, HWND hWnd )
 {
 	HRESULT rc;
 
@@ -405,7 +405,7 @@ BOOL CGramObj::activate( char * ruleName, HWND hWnd )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::deactivate( char * ruleName )
+BOOL CGrammarObject::deactivate(char * ruleName )
 {
 	HRESULT rc;
 	
@@ -429,7 +429,7 @@ BOOL CGramObj::deactivate( char * ruleName )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::emptyList( char * listName )
+BOOL CGrammarObject::emptyList(char * listName )
 {
 	HRESULT rc;
 	
@@ -463,7 +463,7 @@ BOOL CGramObj::emptyList( char * listName )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::appendList( char * listName, char * word )
+BOOL CGrammarObject::appendList(char * listName, char * word )
 {
 	HRESULT rc;
 
@@ -514,7 +514,7 @@ BOOL CGramObj::appendList( char * listName, char * word )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::PhraseFinish(
+BOOL CGrammarObject::PhraseFinish(
 	DWORD dwFlags, PSRPHRASE pSRPhrase, LPUNKNOWN pIUnknown )
 {
 	// do nothing if there is no results object
@@ -544,7 +544,7 @@ BOOL CGramObj::PhraseFinish(
 
 	// here we create a results object which will be returned
 
-	CResObj * pObj = resobj_new();
+	CResultObject * pObj = resobj_new();
 	PyObject * pResObj = (PyObject*)pObj;
 	
 	if( pObj == NULL || !pObj->create( m_pDragCode, pIUnknown ) )
@@ -591,7 +591,7 @@ BOOL CGramObj::PhraseFinish(
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::PhraseHypothesis( DWORD dwFlags, PSRPHRASE pSRPhrase )
+BOOL CGrammarObject::PhraseHypothesis(DWORD dwFlags, PSRPHRASE pSRPhrase )
 {
 	// do nothing if we do not have a callback
 
@@ -649,7 +649,7 @@ BOOL CGramObj::PhraseHypothesis( DWORD dwFlags, PSRPHRASE pSRPhrase )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::setExclusive( BOOL bState )
+BOOL CGrammarObject::setExclusive(BOOL bState )
 {
 	HRESULT rc;
 
@@ -668,7 +668,7 @@ BOOL CGramObj::setExclusive( BOOL bState )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::setContext( char * beforeText, char * afterText )
+BOOL CGrammarObject::setContext(char * beforeText, char * afterText )
 {
 	HRESULT rc;
 
@@ -701,7 +701,7 @@ BOOL CGramObj::setContext( char * beforeText, char * afterText )
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::setSelectText( char * text )
+BOOL CGrammarObject::setSelectText(char * text )
 {
 	HRESULT rc;
 
@@ -741,7 +741,7 @@ BOOL CGramObj::setSelectText( char * text )
 
 //---------------------------------------------------------------------------
 
-PyObject * CGramObj::getSelectText()
+PyObject * CGrammarObject::getSelectText()
 {
 	HRESULT rc;
 
@@ -778,12 +778,12 @@ PyObject * CGramObj::getSelectText()
 
 //---------------------------------------------------------------------------
 
-BOOL CGramObj::getGrammarGuid( GUID * pGrammarGuid )
+BOOL CGrammarObject::getGrammarGuid(GUID * pGrammarGuid )
 {
 	HRESULT rc;
 
 	// Note this is not called from Python directly but as a side effect of
-	// calling getSelectText from CResObj.
+	// calling getSelectText from CResultObject.
 	NEEDGRAMMAR( "ResObj.getSelectInfo" );
 
 	IDgnSRGramCommonPtr pIDgnSRGramCommon;

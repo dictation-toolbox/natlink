@@ -4,23 +4,21 @@
 	Portions (c) Copyright 1999 by Dragon Systems, Inc.
 
  resobj.h
-	Implementation of the CResObj class which encapulates a SAPI result
+	Implementation of the CResultObject class which encapulates a SAPI result
 	and is exposed in Python as a ResObj.
 */
 
 class CDragonCode;
-struct CGramObj;
+struct CGrammarObject;
 
-#ifdef INHOUSE
-#include "inhouse.h"
-#endif
+
 
 //---------------------------------------------------------------------------
 // This is a struct not a class to make sure we are compatibile with Python
 // since Python directly access this data structure (using the variables
 // defined in the PyObject_HEAD macro).
 
-struct CResObj
+struct CResultObject
 {
 	// this must be first, it is the Python header data
 	PyObject_HEAD
@@ -36,7 +34,7 @@ struct CResObj
 	// the CDragonCode class keeps a linked list of all results objects
 	// which have active interfaces; this is the "next" pointer for that
 	// linked list
-	CResObj * m_pNextResObj;
+	CResultObject * m_pNextResObj;
 
 	//-----
 	// functions
@@ -59,9 +57,7 @@ struct CResObj
 	PyObject * correction( PCCHAR * ppWords );
 	PyObject * getWave();
 	PyObject * getWordInfo( int nChoice );
-	PyObject * getSelectInfo( CGramObj * pGrammar, int nChoice );
+	PyObject * getSelectInfo(CGrammarObject * pGrammar, int nChoice );
 	
-#ifdef INHOUSE
-	INH_RESOBJ_CLASS
-#endif
+
 };
