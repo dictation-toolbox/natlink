@@ -11,7 +11,7 @@ Currently only tested on windows
 - Install VisulStudio and ensure that you are also installing C++ support (Desktop Develpment with C++).
 - Install cmake
 - Install git and :
-``git clone https://gitlab.com/knork/minimalnatlink.git``
+``git clone https://gitlab.com/knork/natlink2.git``
 - Set msvc as you're compiler and ensure that you build in x86 mode. 
 
 I would recommend to use VStudio or Clion as your built environment. 
