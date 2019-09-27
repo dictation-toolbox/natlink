@@ -89,6 +89,8 @@ import natlink
 import gramparser
 import natlinkmain
 import utilsqh
+import sys
+import traceback
 DNSVersion = natlinkmain.DNSVersion
 # print 'DNSVersion (natlinkutils) %s'% DNSVersion
 debugLoad = natlinkmain.debugLoad
@@ -322,11 +324,17 @@ class GramClassBase(object):
     def __del__(self):
         self.gramObj.unload()
 
-    def load(self,grammar,allResults=0,hypothesis=0):        
-        self.gramObj.setBeginCallback(self.beginCallback)
-        self.gramObj.setResultsCallback(self.resultsCallback)
-        self.gramObj.setHypothesisCallback(self.hypothesisCallback)
-        self.gramObj.load(grammar,allResults,hypothesis)
+    def load(self,grammar,allResults=0,hypothesis=0):
+        pass
+        try:
+            self.gramObj.setBeginCallback(self.beginCallback)
+            self.gramObj.setResultsCallback(self.resultsCallback)
+            self.gramObj.setHypothesisCallback(self.hypothesisCallback)
+            self.gramObj.load(grammar,allResults,hypothesis)
+        except:
+            print("GramClassBase.load() ", sys.exc_info())
+            traceback.print_exc()
+            raise
 
     def unload(self):        
         self.gramObj.unload()
@@ -511,50 +519,54 @@ class GrammarBase(GramClassBase):
         self.doOnlyGotResultsObject = None # can rarely be set (QH, dec 2009)
 
     def load(self,gramSpec,allResults=0,hypothesis=0, grammarName=None):
-        # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
-        # code upper ascii characters with latin1 if they were in the process entered as unicode
-        if not type(gramSpec) in (six.text_type, six.binary_type, types.ListType):
-            raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
-        # print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
-        if type(gramSpec) == types.ListType:
-            for i, grampart in enumerate(gramSpec):
-                line = grampart
-                if type(line) == six.binary_type:
-                    line = utilsqh.convertToUnicode(line)
-                if type(line) == six.text_type:
-                    line = utilsqh.convertToBinary(line)
-                if line != grampart:
-                    gramSpec[i] = line
-        if type(gramSpec) == six.binary_type:
-            gramSpec = utilsqh.convertToUnicode(gramSpec)
-        if type(gramSpec) == six.text_type:
-            gramSpec = utilsqh.convertToBinary(gramSpec)
-            gramSpec = gramSpec.split('\n')
-            gramSpec = [g.rstrip() for g in gramSpec]
-            
-
-        gramparser.splitApartLines(gramSpec)
-        parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
-        parser.doParse()
-        parser.checkForErrors()
-        gramBin = gramparser.packGrammar(parser)
-        self.scanObj = parser.scanObj  # for later error messages.
         try:
-            GramClassBase.load(self,gramBin,allResults,hypothesis)
-        except natlink.BadGrammar:
-            print 'GrammarBase, cannot load grammar, BadGrammar:\n%s\n'% gramSpec
-            raise
-        # we want to keep a list of the rules which can be activated and the
-        # known lists so we can catch errors earlier
-        self.validRules = parser.exportRules.keys()
-        self.validLists = parser.knownLists.keys()
+            # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
+            # code upper ascii characters with latin1 if they were in the process entered as unicode
+            if not type(gramSpec) in (six.text_type, six.binary_type, types.ListType):
+                raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
+            # print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
+            if type(gramSpec) == types.ListType:
+                for i, grampart in enumerate(gramSpec):
+                    line = grampart
+                    if type(line) == six.binary_type:
+                        line = utilsqh.convertToUnicode(line)
+                    if type(line) == six.text_type:
+                        line = utilsqh.convertToBinary(line)
+                    if line != grampart:
+                        gramSpec[i] = line
+            if type(gramSpec) == six.binary_type:
+                gramSpec = utilsqh.convertToUnicode(gramSpec)
+            if type(gramSpec) == six.text_type:
+                gramSpec = utilsqh.convertToBinary(gramSpec)
+                gramSpec = gramSpec.split('\n')
+                gramSpec = [g.rstrip() for g in gramSpec]
 
-        # we reverse the rule dictionary so we can convert rule numbers back
-        # to rule names during recognition
-        self.ruleMap = {}
-        for x in parser.knownRules.keys():
-            self.ruleMap[ parser.knownRules[x] ] = x
-        return 1
+
+            gramparser.splitApartLines(gramSpec)
+            parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
+            parser.doParse()
+            parser.checkForErrors()
+            gramBin = gramparser.packGrammar(parser)
+            self.scanObj = parser.scanObj  # for later error messages.
+            try:
+                GramClassBase.load(self,gramBin,allResults,hypothesis)
+            except natlink.BadGrammar:
+                print 'GrammarBase, cannot load grammar, BadGrammar:\n%s\n'% gramSpec
+                raise
+            # we want to keep a list of the rules which can be activated and the
+            # known lists so we can catch errors earlier
+            self.validRules = parser.exportRules.keys()
+            self.validLists = parser.knownLists.keys()
+
+            # we reverse the rule dictionary so we can convert rule numbers back
+            # to rule names during recognition
+            self.ruleMap = {}
+            for x in parser.knownRules.keys():
+                self.ruleMap[ parser.knownRules[x] ] = x
+            return 1
+
+        except:
+            print(        "Unexpected error:", sys.exc_info()[0])
 
     # these are wrappers for the GramObj base methods.  We also keep track of
     # legal rules, lists and active rules so we can do some first level error
