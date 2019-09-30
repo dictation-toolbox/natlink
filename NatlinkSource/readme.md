@@ -9,6 +9,7 @@ Later on the python 3 port as well as x64 support may be added.
 # Compile instructions
 Currently only tested on windows 
 - Install VisulStudio and ensure that you are also installing C++ support (Desktop Develpment with C++).
+- Install python 2.7 and ``pip install pywin32 wxpython six future ``
 - Install cmake
 - Install git and :
 ``git clone https://gitlab.com/knork/natlink2.git``
@@ -19,6 +20,8 @@ We have to install msvc in order to get the necessary header files
  onto our system (e.g. altcom.h) and it is currently the ONLY working compiler
   (mostlikely due to missing include paths for the other compilers).
    x64 does compile fine but I haven't managed to convince Dragon to load a x64 support module.
+
+
 
 # Program flow
 
