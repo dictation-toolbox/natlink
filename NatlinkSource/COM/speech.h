@@ -570,8 +570,10 @@ typedef struct {
    DWORD   dwPhonemeNode;
    QWORD   qwStartTime;
    QWORD   qwEndTime;
-   QWORD   qwSilenceDuration;
-   DWORD   dwWordScore;
+#if DRAGON_VERSION >= 15
+    QWORD   qwSilenceDuration;
+#endif
+    DWORD   dwWordScore;
    WORD      wVolume;
    WORD      wPitch;
    VOICEPARTOFSPEECH   pos;

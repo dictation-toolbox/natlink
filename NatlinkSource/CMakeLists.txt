@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.12)
 # Project
-get_filename_component(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE)
-set(DEPENDENCIES_DIR ${PROJECT_DIR}/dependencies)
+#get_filename_component(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE)
+#set(DEPENDENCIES_DIR ${PROJECT_DIR}/dependencies)
 set(PROJECT_NAME natlink)
+set(CMAKE_CXX_STANDARD 14)
+
 
 # make binary python callable
-set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS  ON)
@@ -40,7 +41,7 @@ set(HEADERS_FILES
         ResultObject.h
         Resource.h
         MessageWindow.h
-        COM/SPEECH.H
+        COM/speech.h
         StdAfx.h
         )
 source_group("Headers" FILES ${HEADERS_FILES})
@@ -49,8 +50,10 @@ source_group("Headers" FILES ${HEADERS_FILES})
 include_directories("C:\\Python27_32bit\\include")
 link_directories("C:\\Python27_32bit\\libs")
 
+add_compile_definitions(DRAGON_VERSION=15)
 
-add_compile_definitions(UNICODE)
+# Ensures a Stable Application Binary Interface forpython 3.2+
+#add_compile_definitions(Py_LIMITED_API)
 
 # ensures that both the stdlib and vc runtime are statically linked into
 # the DLL -> fewer dependencies for the user
