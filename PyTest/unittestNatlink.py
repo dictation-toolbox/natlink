@@ -1090,7 +1090,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def tttestRecognitionMimicCommands(self):
+    def testRecognitionMimicCommands(self):
         """test different phrases with commands, from own grammar
         
         explore when the recognitionMimic fails
@@ -1326,7 +1326,7 @@ class UnittestNatlink(unittest.TestCase):
             # end of testing recognitionMimic for NatSpeak <= 10    
 
         
-    def testWordFuncs(self):
+    def tttestWordFuncs(self):
         """tests the different vocabulary word functions.
 
         These tests are a bit vulnerable and seem to have changed in more recent
@@ -1815,7 +1815,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testWordProns(self):
+    def tttestWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
