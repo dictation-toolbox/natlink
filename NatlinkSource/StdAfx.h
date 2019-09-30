@@ -7,27 +7,27 @@
 	Include file for standard system include files, or project specific
 	include files that are used frequently, but are changed infrequently.
 */
-#define _CRT_SECURE_NO_WARNINGS
-
-#if !defined(AFX_STDAFX_H__9A6ACE74_B9DB_11D2_B031_0060088DC929__INCLUDED_)
-#define AFX_STDAFX_H__9A6ACE74_B9DB_11D2_B031_0060088DC929__INCLUDED_
-
-#if _MSC_VER >= 1000
+//#define _CRT_SECURE_NO_WARNINGS
 #pragma once
-#endif // _MSC_VER >= 1000
+
+// Dragon 12 switched to unicode
+#if DRAGON_VERSION >= 12
+#define UNICODE
+#endif
 
 #define STRICT
-
 #define WINVER 0x0500
 #define _WIN32_WINNT 0x0500
 
 //#define _WIN32_WINNT 0x0403
 #define _ATL_APARTMENT_THREADED
 
-#include <atlbase.h>
+
 //You may derive a class from CComModule and use it if you want to override
 //something, but do not change the name of _Module
+#include <atlbase.h>
 extern CComModule _Module;
+
 #include <atlcom.h>
 #include <comdef.h>
 
@@ -45,11 +45,7 @@ extern CComModule _Module;
 #include <stdio.h>
 #include <assert.h>
 
-#include "COM/SPEECH.H"
+#include "COM/speech.h"
 #include "COM/dspeech.h"
 #include "COM/comsupp.h"
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_STDAFX_H__9A6ACE74_B9DB_11D2_B031_0060088DC929__INCLUDED)
