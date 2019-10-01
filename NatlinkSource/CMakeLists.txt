@@ -47,8 +47,8 @@ set(HEADERS_FILES
 source_group("Headers" FILES ${HEADERS_FILES})
 
 # TODO This should not be hard coded...
-include_directories("C:\\Python27_32bit\\include")
-link_directories("C:\\Python27_32bit\\libs")
+include_directories("C:\\Python37_32bit\\include")
+link_directories("C:\\Python37_32bit\\libs")
 
 add_compile_definitions(DRAGON_VERSION=15)
 

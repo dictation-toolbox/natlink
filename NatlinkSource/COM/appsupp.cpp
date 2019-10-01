@@ -59,6 +59,7 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 
 	// simulate calling natlink.natConnect() except share the site object
 	bSuccess = m_pDragCode->natConnect( pIDgnSite );
+    m_pDragCode->displayText("Hello from C++\n");
 
 	if( !bSuccess )
 	{

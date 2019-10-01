@@ -47,66 +47,68 @@ CDragonCode cDragon;
 // The caller must delete the array.  This function returns 0 on error (in
 // which case the array does not need to be deleted).
 
+
 PCCHAR * parseStringArray( const char * funcName, PyObject * args )
 {
 	char szBuffer[BUFFER_SIZE];
 
 	PCCHAR * ppWords = NULL;
-
-	// make sure that we have at least one parameter
-	
-	int len = PyTuple_Size( args );
-	if( len == 0 )
-	{
-		// sprintf( szBuffer, "%s requires at least 1 argument", funcName );
-		sprintf_s( szBuffer, BUFFER_SIZE, "%s requires at least 1 argument", funcName );
-		PyErr_SetString( PyExc_TypeError, szBuffer );
-		return NULL;
-	}
-
-	// if we are passed exactly one list then we use the contents of that
-	// list instead of the passed tuple
-
-	BOOL bList = FALSE;
-	
-	if( len == 1 )
-	{
-		PyObject * pFirst = PyTuple_GetItem( args, 0 );
-		if( PyList_Check( pFirst ) && PyList_Size( pFirst ) )
-		{
-			bList = TRUE;
-			args = pFirst;
-			len = PyList_Size( args );
-		}
-	}
-
-	// now we extract the strings
-
-	ppWords = new PCCHAR[ len + 1 ];
-	ppWords[len] = 0;
-
-	for( int i = 0; i < len; i++ )
-	{
-		PyObject * pyWord =
-			bList ? PyList_GetItem( args, i ) :
-					PyTuple_GetItem( args, i );
-					
-		if( !pyWord || !PyString_Check( pyWord ) )
-		{
-			//sprintf(
-			//	szBuffer, "all arguments passed to %s must be strings",
-			//	funcName );
-			sprintf_s(
-				szBuffer, BUFFER_SIZE, "all arguments passed to %s must be strings",
-				funcName );
-			PyErr_SetString( PyExc_TypeError, szBuffer );
-			delete [] ppWords;
-			ppWords = NULL;
-			return 0;
-		}
-		
-		ppWords[i] = PyString_AsString( pyWord );
-	}
+//	todo Fix str/unicode
+//
+//	// make sure that we have at least one parameter
+//
+//	int len = PyTuple_Size( args );
+//	if( len == 0 )
+//	{
+//		// sprintf( szBuffer, "%s requires at least 1 argument", funcName );
+//		sprintf_s( szBuffer, BUFFER_SIZE, "%s requires at least 1 argument", funcName );
+//		PyErr_SetString( PyExc_TypeError, szBuffer );
+//		return NULL;
+//	}
+//
+//	// if we are passed exactly one list then we use the contents of that
+//	// list instead of the passed tuple
+//
+//	BOOL bList = FALSE;
+//
+//	if( len == 1 )
+//	{
+//		PyObject * pFirst = PyTuple_GetItem( args, 0 );
+//		if( PyList_Check( pFirst ) && PyList_Size( pFirst ) )
+//		{
+//			bList = TRUE;
+//			args = pFirst;
+//			len = PyList_Size( args );
+//		}
+//	}
+//
+//	// now we extract the strings
+//
+//	ppWords = new PCCHAR[ len + 1 ];
+//	ppWords[len] = 0;
+//
+//	for( int i = 0; i < len; i++ )
+//	{
+//		PyObject * pyWord =
+//			bList ? PyList_GetItem( args, i ) :
+//					PyTuple_GetItem( args, i );
+//
+//		if( !pyWord || !PyString_Check( pyWord ) )
+//		{
+//			//sprintf(
+//			//	szBuffer, "all arguments passed to %s must be strings",
+//			//	funcName );
+//			sprintf_s(
+//				szBuffer, BUFFER_SIZE, "all arguments passed to %s must be strings",
+//				funcName );
+//			PyErr_SetString( PyExc_TypeError, szBuffer );
+//			delete [] ppWords;
+//			ppWords = NULL;
+//			return 0;
+//		}
+//
+//		ppWords[i] = PyString_AsString( pyWord );
+//	}
 
 	return ppWords;
 }
@@ -161,78 +163,78 @@ DWORD * parsePlayList(
 	}
 
 	DWORD * adwList = new DWORD[len*2];
-
-	// now we extract the integers
-
-	for( int i = 0; i < len; i++ )
-	{
-		PyObject * pyElement =
-			bList ? PyList_GetItem( pyList, i ) : PyTuple_GetItem( pyList, i );
-
-		// if the list element is a tuple of two integers then we parse out
-		// a range
-		
-		if( PyTuple_Check( pyElement ) && PyTuple_Size( pyElement ) == 2 )
-		{
-			PyObject * pyStart = PyTuple_GetItem( pyElement, 0 );
-			PyObject * pyEnd = PyTuple_GetItem( pyElement, 1 );
-			
-			if( !pyStart || !PyInt_Check( pyStart ) ||
-				!pyEnd || !PyInt_Check( pyEnd ) )
-			{
-				//sprintf(
-				//	szBuffer,
-				//	"the ranges in the play list passed to %s must contain integers",
-				//	funcName );
-				sprintf_s(
-					szBuffer, BUFFER_SIZE, 
-					"the ranges in the play list passed to %s must contain integers",
-					funcName );
-				PyErr_SetString( PyExc_TypeError, szBuffer );
-				delete [] adwList;
-				return 0;
-			}
-			
-			adwList[2*i] = PyInt_AsLong( pyStart );
-			adwList[2*i+1] = PyInt_AsLong( pyEnd );
-
-			if( adwList[2*i] > adwList[2*i+1] )
-			{
-				//sprintf(
-				//	szBuffer,
-				//	"end point less than start point in the play list passed to %s",
-				//	funcName );
-				sprintf_s(
-					szBuffer, BUFFER_SIZE, 
-					"end point less than start point in the play list passed to %s",
-					funcName );
-				PyErr_SetString( PyExc_TypeError, szBuffer );
-				delete [] adwList;
-				return 0;
-			}
-			
-			continue;
-		}
-
-		// otherwise we parse out a single integer
-		
-		if( !pyElement || !PyInt_Check( pyElement ) )
-		{
-			//sprintf(
-			//	szBuffer, "the play list passed to %s must contain integers",
-			//	funcName );
-			sprintf_s(
-				szBuffer, BUFFER_SIZE, "the play list passed to %s must contain integers",
-				funcName );
-			PyErr_SetString( PyExc_TypeError, szBuffer );
-			delete [] adwList;
-			return 0;
-		}
-		
-		adwList[2*i] = adwList[2*i+1] = PyInt_AsLong( pyElement );
-	}
-
-	*pdwCount = len;
+//	todo Fix str/unicode
+//	// now we extract the integers
+//
+//	for( int i = 0; i < len; i++ )
+//	{
+//		PyObject * pyElement =
+//			bList ? PyList_GetItem( pyList, i ) : PyTuple_GetItem( pyList, i );
+//
+//		// if the list element is a tuple of two integers then we parse out
+//		// a range
+//
+//		if( PyTuple_Check( pyElement ) && PyTuple_Size( pyElement ) == 2 )
+//		{
+//			PyObject * pyStart = PyTuple_GetItem( pyElement, 0 );
+//			PyObject * pyEnd = PyTuple_GetItem( pyElement, 1 );
+//
+//			if( !pyStart || !PyInt_Check( pyStart ) ||
+//				!pyEnd || !PyInt_Check( pyEnd ) )
+//			{
+//				//sprintf(
+//				//	szBuffer,
+//				//	"the ranges in the play list passed to %s must contain integers",
+//				//	funcName );
+//				sprintf_s(
+//					szBuffer, BUFFER_SIZE,
+//					"the ranges in the play list passed to %s must contain integers",
+//					funcName );
+//				PyErr_SetString( PyExc_TypeError, szBuffer );
+//				delete [] adwList;
+//				return 0;
+//			}
+//
+//			adwList[2*i] = PyInt_AsLong( pyStart );
+//			adwList[2*i+1] = PyInt_AsLong( pyEnd );
+//
+//			if( adwList[2*i] > adwList[2*i+1] )
+//			{
+//				//sprintf(
+//				//	szBuffer,
+//				//	"end point less than start point in the play list passed to %s",
+//				//	funcName );
+//				sprintf_s(
+//					szBuffer, BUFFER_SIZE,
+//					"end point less than start point in the play list passed to %s",
+//					funcName );
+//				PyErr_SetString( PyExc_TypeError, szBuffer );
+//				delete [] adwList;
+//				return 0;
+//			}
+//
+//			continue;
+//		}
+//
+//		// otherwise we parse out a single integer
+//
+//		if( !pyElement || !PyInt_Check( pyElement ) )
+//		{
+//			//sprintf(
+//			//	szBuffer, "the play list passed to %s must contain integers",
+//			//	funcName );
+//			sprintf_s(
+//				szBuffer, BUFFER_SIZE, "the play list passed to %s must contain integers",
+//				funcName );
+//			PyErr_SetString( PyExc_TypeError, szBuffer );
+//			delete [] adwList;
+//			return 0;
+//		}
+//
+//		adwList[2*i] = adwList[2*i+1] = PyInt_AsLong( pyElement );
+//	}
+//
+//	*pdwCount = len;
 	return adwList;
 }
 
@@ -577,60 +579,61 @@ natlink_execScript( PyObject *self, PyObject *args )
 	{
 		return NULL;
 	}
-
-	// if there is a second argument then it should be a list of strings
-
-	PCCHAR * ppWords = NULL;
-	
-	if( pList )
-	{
-		if( !PyList_Check( pList ) )
-		{
-			PyErr_SetString(
-				PyExc_TypeError,
-				"the second argument to execScript must be a list of words" );
-			return NULL;
-		}
-
-		int len = PyList_Size( pList );
-		ppWords = new PCCHAR[ len + 1 ];
-		ppWords[len] = 0;
-
-		for( int i = 0; i < len; i++ )
-		{
-			PyObject * pyWord = PyList_GetItem( pList, i );
-
-			if( !pyWord || !PyString_Check( pyWord ) )
-			{
-				PyErr_SetString(
-					PyExc_TypeError,
-					"the second argument to execScript must be a list of words" );
-				delete [] ppWords;
-				return NULL;
-			}
-
-			ppWords[i] = PyString_AsString( pyWord );
-		}
-	}
-
-	// here we perfomr the actual work
-	
-	if( !cDragon.execScript( pScript, ppWords, pComment ) )
-	{
-		if( ppWords )
-		{
-			delete [] ppWords;
-		}
-		return NULL;
-	}
-
-	if( ppWords )
-	{
-		delete [] ppWords;
-	}
-
-	Py_INCREF( Py_None );
-	return Py_None;
+	return NULL;
+//	todo Fix str/unicode
+//	// if there is a second argument then it should be a list of strings
+//
+//	PCCHAR * ppWords = NULL;
+//
+//	if( pList )
+//	{
+//		if( !PyList_Check( pList ) )
+//		{
+//			PyErr_SetString(
+//				PyExc_TypeError,
+//				"the second argument to execScript must be a list of words" );
+//			return NULL;
+//		}
+//
+//		int len = PyList_Size( pList );
+//		ppWords = new PCCHAR[ len + 1 ];
+//		ppWords[len] = 0;
+//
+//		for( int i = 0; i < len; i++ )
+//		{
+//			PyObject * pyWord = PyList_GetItem( pList, i );
+//
+//			if( !pyWord || !PyString_Check( pyWord ) )
+//			{
+//				PyErr_SetString(
+//					PyExc_TypeError,
+//					"the second argument to execScript must be a list of words" );
+//				delete [] ppWords;
+//				return NULL;
+//			}
+//
+//			ppWords[i] = PyString_AsString( pyWord );
+//		}
+//	}
+//
+//	// here we perfomr the actual work
+//
+//	if( !cDragon.execScript( pScript, ppWords, pComment ) )
+//	{
+//		if( ppWords )
+//		{
+//			delete [] ppWords;
+//		}
+//		return NULL;
+//	}
+//
+//	if( ppWords )
+//	{
+//		delete [] ppWords;
+//	}
+//
+//	Py_INCREF( Py_None );
+//	return Py_None;
 }
 
 //---------------------------------------------------------------------------
@@ -1536,7 +1539,7 @@ static struct PyMethodDef gramobj_methods[] = {
 extern "C" static PyObject *
 gramobj_getattr( PyObject *self, char *name )
 {
-	return Py_FindMethod( gramobj_methods, self, name );
+	return PyObject_GetAttrString( self, name );
 }
 
 //---------------------------------------------------------------------------
@@ -1561,8 +1564,7 @@ gramobj_dealloc(PyObject *self)
 // are not creating a number or sequence-type object.
 
 static PyTypeObject gramobj_stackType = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,						// ob_size
+    PyVarObject_HEAD_INIT(&PyType_Type,0) // 0 ob-size
 	"GramObj",				// tp_name
 	sizeof(CGrammarObject),		// tp_basicsize
 	0,						// tp_itemsize
@@ -1738,12 +1740,13 @@ resobj_getSelectInfo( PyObject *self, PyObject *args )
 		pyName = PyObject_GetAttr( pyType, strName );
 		Py_XDECREF( strName );
 	}
-	if( pyName == NULL || !PyString_Check( pyName ) ||
-		0 != strcmp( PyString_AsString( pyName ), "GramObj" ) )
-	{
-		PyErr_SetString( PyExc_TypeError, "first parameter must be a GramObj instance" );
-		return NULL;
-	}
+    //	todo Fix str/unicode
+//	if( pyName == NULL || !PyString_Check( pyName ) ||
+//		0 != strcmp( PyString_AsString( pyName ), "GramObj" ) )
+//	{
+//		PyErr_SetString( PyExc_TypeError, "first parameter must be a GramObj instance" );
+//		return NULL;
+//	}
 	
 	CResultObject * pObj = (CResultObject *)self;
 	return pObj->getSelectInfo((CGrammarObject *)pGrammar, nChoice );
@@ -1771,7 +1774,7 @@ static struct PyMethodDef resobj_methods[] = {
 extern "C" static PyObject *
 resobj_getattr( PyObject *self, char *name )
 {
-	return Py_FindMethod( resobj_methods, self, name );
+	return PyObject_GetAttrString( self, name );
 }
 
 //---------------------------------------------------------------------------
@@ -1796,8 +1799,7 @@ resobj_dealloc(PyObject *self)
 // are not creating a number or sequence-type object.
 
 static PyTypeObject resobj_stackType = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,						// ob_size
+        PyVarObject_HEAD_INIT(&PyType_Type, 0) //ob_size
 	"ResObj",				// tp_name
 	sizeof(CResultObject),		// tp_basicsize
 	0,						// tp_itemsize
@@ -1813,6 +1815,7 @@ static PyTypeObject resobj_stackType = {
 	
 	// remainder of fields are NULL
 };
+
 
 //---------------------------------------------------------------------------
 // Create a new ResObj.  This is not called from Python.  Instead it is
@@ -2117,7 +2120,7 @@ static struct PyMethodDef dictobj_methods[] = {
 extern "C" static PyObject *
 dictobj_getattr( PyObject *self, char *name )
 {
-	return Py_FindMethod( dictobj_methods, self, name );
+	return PyObject_GetAttrString( self, name );
 }
 
 //---------------------------------------------------------------------------
@@ -2142,8 +2145,7 @@ dictobj_dealloc(PyObject *self)
 // are not creating a number or sequence-type object.
 
 static PyTypeObject dictobj_stackType = {
-	PyObject_HEAD_INIT(&PyType_Type)
-	0,						// ob_size
+        PyVarObject_HEAD_INIT(&PyType_Type, 0)						// ob_size
 	"DictObj",				// tp_name
 	sizeof(CDicationObject),		// tp_basicsize
 	0,						// tp_itemsize
@@ -2204,7 +2206,7 @@ static struct PyMethodDef natlink_methods[] = {
 	{ "setBeginCallback", natlink_setBeginCallback, METH_VARARGS },
 	{ "waitForSpeech", natlink_waitForSpeech, METH_VARARGS },
 	{ "playString", natlink_playString, METH_VARARGS },
-	{ "displayText", natlink_displayText, METH_VARARGS },
+	{ "displayText", natlink_displayText, METH_VARARGS, "Documentation" },
 	{ "getClipboard", natlink_getClipboard, METH_VARARGS },
 	{ "getCurrentModule", natlink_getCurrentModule, METH_VARARGS },
 	{ "getCurrentUser", natlink_getCurrentUser, METH_VARARGS },
@@ -2243,21 +2245,29 @@ static struct PyMethodDef natlink_methods[] = {
 // import natlink from Python
 //
 // We tell Python about our functions and also create an error type.
+static struct PyModuleDef NatlinkModule = {
+        PyModuleDef_HEAD_INIT,
+        "natlink",   /* name of module */
+        "natlink with python3 compatability",
+        -1,
+        natlink_methods
+};
 
 extern "C"
-void initnatlink()
-{
+//void initnatlink()
+PyMODINIT_FUNC PyInit_natlink(void){
 	PyObject *pMod;
 
 	CoInitialize( NULL );
 
-	pMod = Py_InitModule( "natlink", natlink_methods );
+	pMod = PyModule_Create( &NatlinkModule );
 	initExceptions( pMod );
 
 	if( PyErr_Occurred() )
 	{
 		Py_FatalError( "Can't initialize natlink module" );
 	}
+	return pMod;
 }
 
 //---------------------------------------------------------------------------
@@ -2265,6 +2275,6 @@ void initnatlink()
 
 CDragonCode * initModule()
 {
-	initnatlink();
+    PyInit_natlink();
 	return &cDragon;
 }
