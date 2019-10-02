@@ -39,7 +39,7 @@ The compiled library natlink.pyd/natlink.dll is registered with natspeak as a CO
  ### Support module registration
  
  First we need to register our COM-Server with the windows registry. To do pass the dll/pyd to `regsvr32`. 
- Windows will associate the path of the libary with the GUID that we choose for Natlink (`dd990001-bb89-11d2-b031-0060088dc929`)
+ Windows will associate the path of the libary with the GUID that we choose for Natlink (`dd990001-bb89-11d2-b031-0060088dc929`) which will set the ``HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{dd990001-bb89-11d2-b031-0060088dc929}\InprocServer32``for x64 systems.
  
  Then we need to inform dragon of the new module. To do so we add
   ```

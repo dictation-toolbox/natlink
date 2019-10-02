@@ -48,7 +48,6 @@ CDgnAppSupport::~CDgnAppSupport()
 STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 {
 	BOOL bSuccess;
-
 	// load and initialize the Python system
 	Py_Initialize();
 
@@ -70,12 +69,9 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 		return S_OK;
 	}
 	
-	// now load the Python code which does most of the work
+	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit( TRUE );
 	m_pNatLinkMain = PyImport_ImportModule( "natlinkmain" );
-	
-	// until natlink has been loaded, we restrict some of the function
-	// callbacks into DragCode to avoid deadlock.
 	m_pDragCode->setDuringInit( FALSE );
 
 	if( m_pNatLinkMain == NULL )
@@ -84,8 +80,11 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 			TEXT( "NatLink: an exception occurred loading 'natlinkmain' module" ) ); // RW TEXT macro added
 		m_pDragCode->displayText(
 			"An exception occurred loading 'natlinkmain' module\r\n", TRUE );
+        PyObject *ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        const char *pStrErrorMessage = PyUnicode_AsUTF8(pvalue);
 		m_pDragCode->displayText(
-			"No more error information is available\r\n", TRUE );
+			pStrErrorMessage, TRUE );
 		return S_OK;
 	}
 
