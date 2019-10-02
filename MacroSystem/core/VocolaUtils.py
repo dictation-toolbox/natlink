@@ -96,20 +96,20 @@ def handle_error(filename, line, command, exception):
     if isinstance(exception, VocolaRuntimeAbort):
         return
 
-    print
-    print >> sys.stderr, "While executing the following Vocola command:"
-    print >> sys.stderr, "    " + command
-    print >> sys.stderr, "defined at line " + str(line) + " of " + filename +","
-    print >> sys.stderr, "the following error occurred:"
-    print >> sys.stderr, "    " + exception.__class__.__name__ + ": " \
-        + str(exception)
+    print()
+    print("While executing the following Vocola command:", file=sys.stderr)
+    print("    " + command, file=sys.stderr)
+    print("defined at line " + str(line) + " of " + filename +",", file=sys.stderr)
+    print("the following error occurred:", file=sys.stderr)
+    print("    " + exception.__class__.__name__ + ": " \
+        + str(exception), file=sys.stderr)
     #traceback.print_exc()
     #raise exception
 
 
 def to_long(string):
     try:
-        return long(string)
+        return int(string)
     except ValueError:
         raise VocolaRuntimeError("unable to convert '"
                                  + string.replace("'", "''")
@@ -210,12 +210,12 @@ def call_Dragon(function_name, argument_types, arguments):
             dragon_prefix = script + chr(10)
         else:
             natlink.execScript(script)
-    except Exception, e:
+    except Exception as e:
         m = "when Vocola called Dragon to execute:\n" \
             + '        ' + script + '\n' \
             + '    Dragon reported the following error:\n' \
             + '        ' + type(e).__name__ + ": " + str(e)
-        raise VocolaRuntimeError, m
+        raise VocolaRuntimeError(m)
 
 
 
@@ -239,7 +239,7 @@ def call_Unimacro(argumentString):
         #print '[' + argumentString + ']'
         try:
             actions.doAction(argumentString)
-        except Exception, e:
+        except Exception as e:
             # traceback.print_exc()
             m = "when Vocola called Unimacro to execute:\n" \
                 + '        Unimacro(' + argumentString + ')\n' \
@@ -280,7 +280,7 @@ def eval_template(template, *arguments):
     # is string the canonical representation of a long?
     def isCanonicalNumber(string):
         try:
-            return str(long(string)) == string
+            return str(int(string)) == string
         except ValueError:
             return 0
 
@@ -295,7 +295,7 @@ def eval_template(template, *arguments):
         elif descriptor == "%a":
             a = get_argument()
             if isCanonicalNumber(a):
-                return get_variable(long(a))
+                return get_variable(int(a))
             else:
                 return get_variable(str(a))
         else:
@@ -306,14 +306,14 @@ def eval_template(template, *arguments):
         return eval('str(' + expression + ')', variables.copy())
     except VocolaRuntimeAbort:
         raise
-    except Exception, e:
+    except Exception as e:
         m = "when Eval[Template] called Python to evaluate:\n" \
             + '        str(' + expression + ')\n' \
             + '    under the following bindings:\n'
-        names = variables.keys()
+        names = list(variables.keys())
         names.sort()
         for v in names:
             m += '        ' + str(v) + ' -> ' + repr(variables[v]) + '\n'
         m += '    Python reported the following error:\n' \
             + '        ' + type(e).__name__ + ": " + str(e)
-        raise VocolaRuntimeError, m
+        raise VocolaRuntimeError(m)

@@ -14,7 +14,7 @@ import natlinkstatus
 # loading grammars for the first time:
 #
 def start():
-    print '--- natlinkstartup starting...'
+    print('--- natlinkstartup starting...')
     updateUnimacroHeaderIfNeeded()
     create_new_language_subdirectory_if_needed()
 
@@ -40,7 +40,7 @@ def updateUnimacroHeaderIfNeeded():
                            vocolaGetModTime(destPath)
 
     if not (sourceTime or destTime):
-        print >> sys.stderr, """\n
+        print("""\n
 Error: The option "Vocola Takes Unimacro Actions" is switched on, but
 no file "Unimacro.vch" is found.
 
@@ -48,14 +48,14 @@ Please fix the configuration of NatLink/Vocola/Unimacro and restart
 Dragon.  Either ensure the source file is at:
     "%s",
 or switch off the option "Vocola Takes Unimacro Actions".
-"""% sourceDir
+"""% sourceDir, file=sys.stderr)
         return
         
     if destTime < sourceTime:
         try:
             shutil.copyfile(sourcePath, destPath)
         except IOError:
-            print >> sys.stderr, """\n
+            print("""\n
 Warning: Could not copy example "Unimacro.vch" to:
     "%s".
 
@@ -63,9 +63,9 @@ There is a valid "Unimacro.vch" available, but a newer file is
 available at: "%s".
 
 Please fix the configuration of NatLink/Vocola/Unimacro and restart
-Dragon, if you want to use the updated version of this file."""% (destDir, sourceDir)
+Dragon, if you want to use the updated version of this file."""% (destDir, sourceDir), file=sys.stderr)
         else:
-            print 'Succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s".'% (sourceDir, destDir)
+            print('Succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s".'% (sourceDir, destDir))
 
 # Returns the modification time of a file or 0 if the file does not exist:
 def vocolaGetModTime(file):
@@ -89,7 +89,7 @@ def create_new_language_subdirectory_if_needed():
             uDir  = commandFolder
             uDir2 = os.path.join(uDir, language)
             if not os.path.isdir(uDir2):
-                print 'creating Vocola command subfolder for language %s' % language
+                print('creating Vocola command subfolder for language %s' % language)
                 os.mkdir(uDir2)
                 copyToNewSubDirectory(uDir, uDir2)
 
@@ -111,7 +111,7 @@ def copyVclFileLanguageVersion(Input, Output):
     output    = open(Output, 'w')
     language      = natlinkstatus.NatlinkStatus().getLanguage()
     output.write("# vocola file for alternate language: %s\n"% language)
-    lines = map(string.strip, str(input).split('\n'))
+    lines = list(map(string.strip, str(input).split('\n')))
     for line in lines:
         m = reInclude.match(line)
         if m:

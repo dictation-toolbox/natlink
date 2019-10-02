@@ -53,6 +53,7 @@ import six
 from struct import pack
 import re, sys, os, os.path, traceback
 import utilsqh ## convertToBinary
+import importlib
 
 reAlphaNumeric = re.compile('\w+$')
 #
@@ -140,7 +141,7 @@ class GrammarParserError(Exception):
         try:
             open(filepath, 'w').write('\n'.join(L))
             return '(more info in file: %s)'% filepath
-        except IOError, message:
+        except IOError as message:
             return '(could not write more info to error file %s (%s))'% (filepath, message)
                          
 class SyntaxError(GrammarParserError):
@@ -383,14 +384,14 @@ class peek_ahead(object):
     """
     sentinel = object() #schildwacht
     def __init__(self, it):
-        self._nit = iter(it).next
+        self._nit = iter(it).__next__
         self.preview = None
         self.previous = None
         self.current = None
         self._step()
     def __iter__(self):
         return self
-    def next(self):
+    def __next__(self):
         self.previous = self.current
         result = self._step()
         if result is self.sentinel: raise StopIteration
@@ -449,11 +450,11 @@ class GramParser(object):
         ruleName = self.scanObj.value
         if not isValidListOrRulename(ruleName):
             raise SyntaxError('rulename may may only contain ascii letters, digits or - or _: "%s"'% ruleName, self.scanObj)
-        if self.ruleDefines.has_key(ruleName):
+        if ruleName in self.ruleDefines:
             raise SymbolError( "rule '%s' has already been defined" % ruleName, self.scanObj)
-        if self.importRules.has_key(ruleName):
+        if ruleName in self.importRules:
             raise SymbolError( "rule '%s' has already been defined as imported" % ruleName, self.scanObj)
-        if self.knownRules.has_key(ruleName):
+        if ruleName in self.knownRules:
             ruleNumber = self.knownRules[ruleName]
         else:
             ruleNumber = self.nextRule
@@ -511,7 +512,7 @@ class GramParser(object):
             wordName = self.scanObj.value
             if not wordName:
                 raise SyntaxError("empty word name", self.scanObj)
-            if self.knownWords.has_key(wordName):
+            if wordName in self.knownWords:
                 wordNumber = self.knownWords[wordName]
             else:
                 wordNumber = self.nextWord
@@ -526,7 +527,7 @@ class GramParser(object):
                 raise SyntaxError("empty word name", self.scanObj)
             if not isValidListOrRulename(listName):
                 raise SyntaxError('listname may may only contain ascii letters, digits or - or _: "%s"'% listName, self.scanObj)
-            if self.knownLists.has_key(listName):
+            if listName in self.knownLists:
                 listNumber = self.knownLists[listName]
             else:
                 listNumber = self.nextList
@@ -541,7 +542,7 @@ class GramParser(object):
                 raise SyntaxError("empty word name", self.scanObj)
             if not isValidListOrRulename(ruleName):
                 raise SyntaxError('rulename may may only contain ascii letters, digits or - or _: "%s"'% ruleName, self.scanObj)
-            if self.knownRules.has_key(ruleName):
+            if ruleName in self.knownRules:
                 ruleNumber = self.knownRules[ruleName]
             else:
                 ruleNumber = self.nextRule
@@ -568,17 +569,17 @@ class GramParser(object):
 
     def reportOptionalRule(self, definition):
         """print the words that are optional, for testing BestMatch V"""
-        wordsRev = dict([(v,k) for k,v in self.knownWords.items()])
+        wordsRev = dict([(v,k) for k,v in list(self.knownWords.items())])
 
         for w, number in definition:
             if w == 'word':
-                print 'optional word: %s'% wordsRev[number]
+                print('optional word: %s'% wordsRev[number])
 
     def checkForErrors(self):
         if not len(self.exportRules):
             raise GrammarError( "no rules were exported", self.scanObj)
-        for ruleName in self.knownRules.keys():
-            if not self.importRules.has_key(ruleName) and not self.ruleDefines.has_key(ruleName):
+        for ruleName in list(self.knownRules.keys()):
+            if ruleName not in self.importRules and ruleName not in self.ruleDefines:
                 raise GrammarError( "rule '%s' was not defined or imported" % ruleName, self.scanObj)
 
     def dumpString(self):
@@ -598,9 +599,9 @@ class GramParser(object):
         reverse numbers of rules and ruleDefines... must be identical in gramparserlexyacc...
         """
         L = []
-        rulesRev = dict([(v,k) for k,v in self.knownRules.items()])
-        wordsRev = dict([(v,k) for k,v in self.knownWords.items()])
-        listsRev = dict([(v,k) for k,v in self.knownLists.items()])
+        rulesRev = dict([(v,k) for k,v in list(self.knownRules.items())])
+        wordsRev = dict([(v,k) for k,v in list(self.knownWords.items())])
+        listsRev = dict([(v,k) for k,v in list(self.knownLists.items())])
         codeRev = {SeqCode:'SeqCode',
                    AltCode:'AltCode',
                    RepCode:'RepCode',
@@ -613,7 +614,7 @@ class GramParser(object):
         if self.ruleDefines:
             ruleDefinesNice = dict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev,codeRev) \
                                                 for item in ruleList]) \
-                                     for (rulename,ruleList) in self.ruleDefines.items()])
+                                     for (rulename,ruleList) in list(self.ruleDefines.items())])
                                     
             L.append(pprint.pformat(ruleDefinesNice))
         return '\n'.join(L)
@@ -626,9 +627,9 @@ class GramParser(object):
         reverse numbers of rules and ruleDefines... must be identical in gramparserlexyacc...
         """
         D = {}
-        rulesRev = dict([(v,k) for k,v in self.knownRules.items()])
-        wordsRev = dict([(v,k) for k,v in self.knownWords.items()])
-        listsRev = dict([(v,k) for k,v in self.knownLists.items()])
+        rulesRev = dict([(v,k) for k,v in list(self.knownRules.items())])
+        wordsRev = dict([(v,k) for k,v in list(self.knownWords.items())])
+        listsRev = dict([(v,k) for k,v in list(self.knownLists.items())])
         codeRev = {SeqCode:'SeqCode',
                    AltCode:'AltCode',
                    RepCode:'RepCode',
@@ -637,11 +638,11 @@ class GramParser(object):
         for name in ["exportRules","importRules"]:
             var = getattr(self, name)
             if var:
-                D[name] = var.keys()
+                D[name] = list(var.keys())
         if self.ruleDefines:
             ruleDefinesNice = dict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev,codeRev) \
                                                 for item in ruleList]) \
-                                     for (rulename,ruleList) in self.ruleDefines.items()])
+                                     for (rulename,ruleList) in list(self.ruleDefines.items())])
             D['ruleDefines'] = ruleDefinesNice       
         return D
 
@@ -659,27 +660,27 @@ class GramParser(object):
             raise ValueError('invalid item in nicenItem: %s'% i)
 
     def dumpContents(self):
-        print "Dumping GramParser object..."
-        print "  knownRules:"
-        for name in self.knownRules.keys():
-            print "    ", name, self.knownRules[name]
-        print "  knownLists:"
-        for name in self.knownLists.keys():
-            print "    ", name, self.knownLists[name]
-        print "  knownWords:"
-        for name in self.knownWords.keys():
-            print "    ", name, self.knownWords[name]
-        print "  exportRules:"
-        for name in self.exportRules.keys():
-            print "    ", name, self.exportRules[name]
-        print "  importRules:"
-        for name in self.importRules.keys():
-            print "    ", name, self.importRules[name]
-        print "  ruleDefines:"
-        for name in self.ruleDefines.keys():
-            print "    ", name
+        print("Dumping GramParser object...")
+        print("  knownRules:")
+        for name in list(self.knownRules.keys()):
+            print("    ", name, self.knownRules[name])
+        print("  knownLists:")
+        for name in list(self.knownLists.keys()):
+            print("    ", name, self.knownLists[name])
+        print("  knownWords:")
+        for name in list(self.knownWords.keys()):
+            print("    ", name, self.knownWords[name])
+        print("  exportRules:")
+        for name in list(self.exportRules.keys()):
+            print("    ", name, self.exportRules[name])
+        print("  importRules:")
+        for name in list(self.importRules.keys()):
+            print("    ", name, self.importRules[name])
+        print("  ruleDefines:")
+        for name in list(self.ruleDefines.keys()):
+            print("    ", name)
             for element in self.ruleDefines[name]:
-                print "      ", element[0], element[1]
+                print("      ", element[0], element[1])
 
 #
 # This function takes a GramParser class which contains the parse of a grammar
@@ -721,7 +722,7 @@ def packGrammarChunk(type,dict):
     output = ""
     totalLen = 0
 
-    for word in dict.keys():
+    for word in list(dict.keys()):
         # chunk data entry
         #   DWORD dwSize = number of bytes in entry
         #   DWORD dwNum  = ID number for this rule/word
@@ -741,7 +742,7 @@ def packGrammarRules(type,names,dict):
     totalLen = 0
     elemType = { 'start':1, 'end':2, 'word':3, 'rule':4, 'list':6 }
 
-    for word in dict.keys():
+    for word in list(dict.keys()):
         ruleDef = ""
         ruleLen = 0
 
@@ -844,7 +845,7 @@ def splitApartLines(lines):
         crlf = lines[x].find('\n')
         if crlf >= 0:
             if x > 0:
-                print 'insert lines at item %s: %s'% (x, lines[x])
+                print('insert lines at item %s: %s'% (x, lines[x]))
             lines[x:x+1] = lines[x].split('\n')
 
     # spacing at end of lines:
@@ -890,7 +891,7 @@ __test__ = dict(test = test
                 )
 def _test():
     import doctest, gramparser
-    reload(gramparser)
+    importlib.reload(gramparser)
     
     doctest.master = None
     return  doctest.testmod(gramparser)

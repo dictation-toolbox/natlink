@@ -332,7 +332,7 @@ class GramClassBase(object):
             self.gramObj.setHypothesisCallback(self.hypothesisCallback)
             self.gramObj.load(grammar,allResults,hypothesis)
         except:
-            print("GramClassBase.load() ", sys.exc_info())
+            print(("GramClassBase.load() ", sys.exc_info()))
             traceback.print_exc()
             raise
 
@@ -366,7 +366,7 @@ class GramClassBase(object):
         try: func = getattr(self, funcName)
         except AttributeError: pass
         else:
-            return apply(func, argList)
+            return func(*argList)
 
 #---------------------------------------------------------------------------
 # GrammarBase
@@ -522,10 +522,10 @@ class GrammarBase(GramClassBase):
         try:
             # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
             # code upper ascii characters with latin1 if they were in the process entered as unicode
-            if not type(gramSpec) in (six.text_type, six.binary_type, types.ListType):
+            if not type(gramSpec) in (six.text_type, six.binary_type, list):
                 raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
             # print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
-            if type(gramSpec) == types.ListType:
+            if type(gramSpec) == list:
                 for i, grampart in enumerate(gramSpec):
                     line = grampart
                     if type(line) == six.binary_type:
@@ -551,22 +551,22 @@ class GrammarBase(GramClassBase):
             try:
                 GramClassBase.load(self,gramBin,allResults,hypothesis)
             except natlink.BadGrammar:
-                print 'GrammarBase, cannot load grammar, BadGrammar:\n%s\n'% gramSpec
+                print('GrammarBase, cannot load grammar, BadGrammar:\n%s\n'% gramSpec)
                 raise
             # we want to keep a list of the rules which can be activated and the
             # known lists so we can catch errors earlier
-            self.validRules = parser.exportRules.keys()
-            self.validLists = parser.knownLists.keys()
+            self.validRules = list(parser.exportRules.keys())
+            self.validLists = list(parser.knownLists.keys())
 
             # we reverse the rule dictionary so we can convert rule numbers back
             # to rule names during recognition
             self.ruleMap = {}
-            for x in parser.knownRules.keys():
+            for x in list(parser.knownRules.keys()):
                 self.ruleMap[ parser.knownRules[x] ] = x
             return 1
 
         except:
-            print(        "Unexpected error:", sys.exc_info()[0])
+            print((        "Unexpected error:", sys.exc_info()[0]))
 
     # these are wrappers for the GramObj base methods.  We also keep track of
     # legal rules, lists and active rules so we can do some first level error
@@ -590,16 +590,16 @@ class GrammarBase(GramClassBase):
             raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
         if ruleName in self.activeRules:
             if window == self.activeRules[ruleName]:
-                print 'rule %s already active for window %s'% (ruleName, window)
+                print('rule %s already active for window %s'% (ruleName, window))
                 return
             else:
-                print 'change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window)
+                print('change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window))
                 self.gramObj.deactivate(ruleName)
-        if debugLoad: print 'activate rule %s (window: %s)'% (ruleName, window)
+        if debugLoad: print('activate rule %s (window: %s)'% (ruleName, window))
         self.gramObj.activate(ruleName,window)
         self.activeRules[ruleName] = window
         if not exclusive is None:
-            if debugLoad: print 'set exclusive mode to %s for rule %s'% (exclusive, ruleName)
+            if debugLoad: print('set exclusive mode to %s for rule %s'% (exclusive, ruleName))
             self.setExclusive(exclusive)
         pass            
 
@@ -609,13 +609,13 @@ class GrammarBase(GramClassBase):
         if ruleName not in self.validRules:
             if noError: return
         if type(ruleName) != six.binary_type:
-            print 'GrammarBase, deactivate, %s (%s)'% (ruleName, type(ruleName))
+            print('GrammarBase, deactivate, %s (%s)'% (ruleName, type(ruleName)))
             raise gramparser.GrammarError( "rule %s (%s) was not exported in the grammar" %
                                           ruleName, type(ruleName), self.scanObj)
         if ruleName not in self.activeRules:
             if noError: return
             raise gramparser.GrammarError( "rule %s is not active", self.scanObj)
-        if debugLoad: print 'deactivate rule %s'% ruleName
+        if debugLoad: print('deactivate rule %s'% ruleName)
         self.gramObj.deactivate(ruleName)
         del self.activeRules[ruleName]
 
@@ -624,14 +624,14 @@ class GrammarBase(GramClassBase):
 
         Try new strategy, based on the trick of Vocola. Natlink does not work completely correct here.        
         """
-        if type(ruleNames) == types.ListType:
+        if type(ruleNames) == list:
             rulenames = copy.copy(ruleNames) # so we can pop items
-        elif type(ruleNames) == types.TupleType:
+        elif type(ruleNames) == tuple:
             rulenames = list(ruleNames) # so we can pop items
         else:
             raise TypeError("activateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
                             (repr(ruleNames), type(ruleNames)))
-        activeKeys = self.activeRules.keys()
+        activeKeys = list(self.activeRules.keys())
         for x in activeKeys:
             if type(x) != six.binary_type:
                 raise TypeError('activateSet, rulename "%s" should be of binary_type, not: %s'% (x, type(x)))
@@ -640,9 +640,9 @@ class GrammarBase(GramClassBase):
             if x in rulenames:
                 if curWindow == window:
                     rulenames.remove(x)
-                    if debugLoad: print 'activateSet, rule %s already active for %s'% (x, window)
+                    if debugLoad: print('activateSet, rule %s already active for %s'% (x, window))
                 else:
-                    if debugLoad: print 'activateSet, rule %s, change from window %s to window %s'% (x, curWindow, window)
+                    if debugLoad: print('activateSet, rule %s, change from window %s to window %s'% (x, curWindow, window))
                     self.deactivate(x)
                     # self.activate(x, window)
                     # rulenames.remove(x)
@@ -650,28 +650,28 @@ class GrammarBase(GramClassBase):
                 # if same window, deactivate, otherwise just leave...
                 # deactivate direct to gramObj here:
                 if window == curWindow:
-                    if debugLoad: print 'activateSet, do not want %s, so deactivate, same window: %s'% (x, curWindow)
+                    if debugLoad: print('activateSet, do not want %s, so deactivate, same window: %s'% (x, curWindow))
                     self.deactivate(x)
                 elif window == 0:
-                    if debugLoad: print 'activateSet, deactivate rule %s (global), previous window: %s'% (x, curWindow)
+                    if debugLoad: print('activateSet, deactivate rule %s (global), previous window: %s'% (x, curWindow))
                     self.deactivate(x)
                 elif curWindow == 0:
-                    if debugLoad: print 'activateSet, deactivate global rule %s, new window window: %s'% (x, window)
+                    if debugLoad: print('activateSet, deactivate global rule %s, new window window: %s'% (x, window))
                     self.deactivate(x)
                 else:
-                    if debugLoad: print 'activateSet, deactivate not needed, different window: rule %s, previous window: %s new window: %s'% (x, curWindow, window)             
+                    if debugLoad: print('activateSet, deactivate not needed, different window: rule %s, previous window: %s new window: %s'% (x, curWindow, window))             
         for x in rulenames:
             self.activate(x, window)
         if not exclusive is None:
             self.setExclusive(exclusive)
 
     def deactivateSet(self, ruleNames, noError=0):
-        if not type(ruleNames ) in (types.ListType, types.TupleType):
+        if not type(ruleNames ) in (list, tuple):
             raise TypeError("deactivateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
                             (repr(ruleNames), type(ruleNames)))
         for x in ruleNames:
             if type(x) != six.binary_type:
-                print 'GrammarBase, deactivateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x))
+                print('GrammarBase, deactivateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x)))
             self.deactivate(x, noError=noError)
 
     def activateAll(self, window=0, exclusive=None, exceptlist=None):
@@ -683,7 +683,7 @@ class GrammarBase(GramClassBase):
         if exceptlist:
             for x in exceptlist:
                 allRules.remove(x)
-            if debugLoad: print 'activateAll except %s'% exceptlist
+            if debugLoad: print('activateAll except %s'% exceptlist)
             
         self.activateSet(allRules, window=window, exclusive=exclusive)
         if not exclusive is None:
@@ -692,7 +692,7 @@ class GrammarBase(GramClassBase):
     def _deactivateAll(self):
         """deactivate all rules, no change of exclusive state
         """
-        activeRules = self.activeRules.keys()
+        activeRules = list(self.activeRules.keys())
         
         for x in activeRules:
             self.deactivate(x)
@@ -770,7 +770,7 @@ class GrammarBase(GramClassBase):
         # if the allResults flag is set it is possible that the first
         # parameter will be a string instead of a data structure. We 
         # compute the recognition type from this parameter
-        if type(wordsAndNums) == types.StringType: 
+        if type(wordsAndNums) == bytes: 
             recogType = wordsAndNums
         else:
             recogType = 'self'
@@ -803,20 +803,20 @@ class GrammarBase(GramClassBase):
             try:
                 ruleName = self.ruleMap[ruleNumber]
             except KeyError:
-                if ruleNumber in (1000000, 1000001) and 'dgndictation' in self.ruleMap.values():
+                if ruleNumber in (1000000, 1000001) and 'dgndictation' in list(self.ruleMap.values()):
                     ruleName = 'dgndictation'
-                elif ruleNumber in (1000001, 1000002) and 'dgnletters' in self.ruleMap.values():
+                elif ruleNumber in (1000001, 1000002) and 'dgnletters' in list(self.ruleMap.values()):
                     ruleName = 'dgnletters'
                 elif ruleNumber == 0 and word == '\\noise\\?':
                     continue
                 else:
-                    print '='*50
-                    print 'word: %s, ruleNumber: %s'% (word, ruleNumber)
-                    print 'wordsAndNums: %s'% wordsAndNums
-                    print 'ruleMap: %s'% `self.ruleMap`
+                    print('='*50)
+                    print('word: %s, ruleNumber: %s'% (word, ruleNumber))
+                    print('wordsAndNums: %s'% wordsAndNums)
+                    print('ruleMap: %s'% repr(self.ruleMap))
                     mess =  'Invalid key %s for ruleMap'% ruleNumber
-                    print mess
-                    print '==============================='
+                    print(mess)
+                    print('===============================')
                     continue
 
             fullResults.append( ( word, ruleName ) )
@@ -1160,13 +1160,13 @@ def getBaseName(name):
 def convertResults(fullResults):
     dict = {}
     for x in fullResults:
-        if dict.has_key(x[1]): dict[x[1]].append(x[0])
+        if x[1] in dict: dict[x[1]].append(x[0])
         else: dict[x[1]] = [x[0]]
     return dict
 
 def testSendInput(keys):
     if useMarkSendInput == 0:
-        print 'warning cannot test SendInput, first set useMarkSendInput to 1'
+        print('warning cannot test SendInput, first set useMarkSendInput to 1')
     playString(keys)
 
 if __name__ == "__main__":

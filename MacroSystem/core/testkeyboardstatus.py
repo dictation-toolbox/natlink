@@ -31,14 +31,14 @@ def senddragonkeys_to_events(input, ignore_unknown_names=True):
     for c in chords:
         try:
             events += chord_to_events(c)
-        except LookupError, e:
+        except LookupError as e:
             if not ignore_unknown_names: 
                 raise
             if not c[0] and not c[2] and len(c[1])==1:
                 raise  # already a single key chord
             characters = c[3]
             if debug:
-                print "typing out bad chord: " + characters + ": " + repr(e)
+                print("typing out bad chord: " + characters + ": " + repr(e))
             for char in characters:
                 events += chord_to_events([None, char, None, char])
 
@@ -117,7 +117,7 @@ def chord_to_events(chord):
                 if m: mm = '+'.join(m) + "+"
                 bb = "<" + base + ">"
                 if ord(base[0])<32: bb = hex(ord(base[0]))
-                print "typing " + bb + " by {" + mm + describe_key(f) + "}"
+                print("typing " + bb + " by {" + mm + describe_key(f) + "}")
             modifiers += m
             base = "VK" + hex(f)
         except:
@@ -125,7 +125,7 @@ def chord_to_events(chord):
                 bb = "<" + base + ">"
                 if ord(base[0])<32:
                     bb = hex(ord(base[0]))
-                    print "can't type " + bb + " on current keyboard layout"
+                    print("can't type " + bb + " on current keyboard layout")
             pass
     
     events         = []
@@ -151,18 +151,18 @@ def chord_to_events(chord):
             raise
 
     if len(modifiers) != 0:
-        print "Warning: unable to use modifiers with character: " + base
+        print("Warning: unable to use modifiers with character: " + base)
     
     # Unicode?
     
     if release_count==0:
-        print "Warning: unable to independently hold character: " + base
+        print("Warning: unable to independently hold character: " + base)
     if hold_count==0:
-        print "Warning: unable to independently release character: " + base
+        print("Warning: unable to independently release character: " + base)
         return []
 
     if debug:
-        print "using numpad entry for: " + base
+        print("using numpad entry for: " + base)
     return windows1252_to_events(ord(base[0])) * hold_count
 
 
@@ -356,7 +356,7 @@ Key_name = {
 }
 
 Code_to_name = {}
-for name in Key_name.keys():
+for name in list(Key_name.keys()):
     Code_to_name[Key_name[name]] = name
 
 def describe_key(code):
@@ -494,9 +494,9 @@ Wheel_name = {
     }
 def _test():
     kbLayout = windll.user32.GetKeyboardLayout(0)
-    print('kbLayout: %x'% kbLayout)
+    print(('kbLayout: %x'% kbLayout))
     kbLayoutName = windll.user32.GetKeyboardLayoutNameW(kbLayout)
-    print('name: %s (%s)'% (kbLayoutName, type(kbLayoutName)))
+    print(('name: %s (%s)'% (kbLayoutName, type(kbLayoutName))))
 
 if __name__ == "__main__":
     _test()

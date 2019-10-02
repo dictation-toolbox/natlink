@@ -48,7 +48,7 @@ class Clipboard(object):
         as alias also Get_text can be used, so: text = Clipboard.Get_text()
         """
         if not OpenClipboardCautious():
-            print 'Clipboard, get_system_text: could not open clipboard'
+            print('Clipboard, get_system_text: could not open clipboard')
             return
         try:
             for format in cls.format_unicode, cls.format_text, cls.format_oemtext:
@@ -58,10 +58,10 @@ class Clipboard(object):
                 except:
                     continue
             else:
-                print 'Clipboard, get_system_text, no content found'
-                content = u""
+                print('Clipboard, get_system_text, no content found')
+                content = ""
             if content:
-                content = content.replace(u'\0', u'')
+                content = content.replace('\0', '')
                 if content.find('\r\n') >= 0:
                     content = content.replace('\r\n', '\n')
             return content
@@ -80,10 +80,10 @@ class Clipboard(object):
         
         As alias, you can also call: Clipboard.Set_text("abacadabra")
         """
-        print 'set to clipboard: %s'% content
+        print('set to clipboard: %s'% content)
         # content = unicode(content)
         if not OpenClipboardCautious():
-            print 'Clipboard, set_system_text: could not open clipboard'
+            print('Clipboard, set_system_text: could not open clipboard')
             return
         clipNum = win32clipboard.GetClipboardSequenceNumber()
         # print 'clipboard number: %s'% clipNum
@@ -96,11 +96,11 @@ class Clipboard(object):
             
             win32clipboard.SetClipboardData(format, content)
         except:
-            print 'Clipboard, cannot set text to clipboard: %s'% content
+            print('Clipboard, cannot set text to clipboard: %s'% content)
         finally:
             clipNum2 = win32clipboard.GetClipboardSequenceNumber()
             if clipNum2 == clipNum:
-                print 'Clipboard, did not increment clipboard number: %s'% clipNum
+                print('Clipboard, did not increment clipboard number: %s'% clipNum)
             win32clipboard.CloseClipboard()
     Set_text = set_system_text
 
@@ -111,7 +111,7 @@ class Clipboard(object):
         This is mainly meant for debugging purposes.
         """
         if not OpenClipboardCautious():
-            print 'get_clipboard_formats, could not open clipboard'
+            print('get_clipboard_formats, could not open clipboard')
             return
         try:
             # get proper format:
@@ -136,7 +136,7 @@ class Clipboard(object):
         
         """
         if not OpenClipboardCautious(waiting_time=waiting_time):
-            print 'Clipboard, get_system_folderinfo, could not open clipboard'
+            print('Clipboard, get_system_folderinfo, could not open clipboard')
             return
         try:
             for i in range(3):
@@ -147,12 +147,12 @@ class Clipboard(object):
                     time.sleep(0.1)                    
                     continue
                 else:
-                    print '%s folderinfo: %s'% (i, repr(folderinfo))
+                    print('%s folderinfo: %s'% (i, repr(folderinfo)))
                     if folderinfo:
-                        print 'got it!'
+                        print('got it!')
                         return folderinfo
             else:
-                print 'Clipboard, get_system_folderinfo: no folder info found.'
+                print('Clipboard, get_system_folderinfo: no folder info found.')
                 return
             return folderinfo
         finally:
@@ -179,10 +179,10 @@ class Clipboard(object):
         self._backup = None
         self.debug = debug
         if not OpenClipboardCautious():
-            if self.debug: print 'Warning Clipboard: at initialisation could not open the clipboard'
+            if self.debug: print('Warning Clipboard: at initialisation could not open the clipboard')
             return
         self.current_sequence_number = win32clipboard.GetClipboardSequenceNumber()
-        if self.debug > 1: print 'current_sequence_number: %s'% self.current_sequence_number
+        if self.debug > 1: print('current_sequence_number: %s'% self.current_sequence_number)
 
         # If requested, retrieve current system clipboard contents.
         if from_system:
@@ -194,12 +194,12 @@ class Clipboard(object):
         if contents:
             try:
                 self._contents = dict(contents)
-            except Exception, e:
+            except Exception as e:
                 raise TypeError("Clipboard: Invalid contents: %s (%r)" % (e, contents))
 
         # Handle special case of text content.
         if not text is None:
-            self._contents[self.format_unicode] = unicode(text)
+            self._contents[self.format_unicode] = str(text)
 
     def __del__(self):
         """restore clipboard if self._backup contains data
@@ -254,14 +254,14 @@ class Clipboard(object):
                If false contents are retrieved in self._contents
         """
         if not OpenClipboardCautious():
-            if self.debug: print 'Clipboard copy_from_system, could not open clipboard'
+            if self.debug: print('Clipboard copy_from_system, could not open clipboard')
             return
 
         try:                
         # Determine which formats to retrieve.
             if waiting_interval:
                 if not self._check_clipboard_changes(waiting_interval, waiting_iterations):
-                    if self.debug: print 'Clipboard, copy_from_system, clipboard did not change, no return value'
+                    if self.debug: print('Clipboard, copy_from_system, clipboard did not change, no return value')
                     return
             contents = {}
             
@@ -272,7 +272,7 @@ class Clipboard(object):
                     time.sleep(waiting_interval)
                 else:
                     waiting_time = waiting_interval*waiting_iterations
-                    if self.debug: print 'did not get contents from clipboard after %.3f seconds '% waiting_time
+                    if self.debug: print('did not get contents from clipboard after %.3f seconds '% waiting_time)
                     return contents
             else:
                 contents = self._get_clipboard_data_from_system(formats=formats)
@@ -281,7 +281,7 @@ class Clipboard(object):
             if save_clear:
                 if contents:
                     self._backup = copy.copy(contents)
-                    if self.debug > 1: print 'Clipboard, set backup to: %s'% repr(self._backup)
+                    if self.debug > 1: print('Clipboard, set backup to: %s'% repr(self._backup))
                 else:
                     self._backup = None
                 self._contents = None
@@ -315,7 +315,7 @@ class Clipboard(object):
 
         # Verify that the given formats are valid.
         if not formats:
-            if self.debug > 1: print 'Clipboard, _get_clipboard_data_from_system, no formats available, empty clipboard...'
+            if self.debug > 1: print('Clipboard, _get_clipboard_data_from_system, no formats available, empty clipboard...')
             return contents
 
         if formats:
@@ -338,7 +338,7 @@ class Clipboard(object):
 
         """
         if not OpenClipboardCautious():
-            print 'copy_to_system, could not open clipboard'
+            print('copy_to_system, could not open clipboard')
             return
         try:
             # Clear the system clipboard, if requested.
@@ -346,7 +346,7 @@ class Clipboard(object):
                 try:
                     win32clipboard.EmptyClipboard()
                 except:
-                    if self.debug > 1: print 'Clipboard, cannot EmptyClipboard, need more rights, can also not restore backup of clipboard'
+                    if self.debug > 1: print('Clipboard, cannot EmptyClipboard, need more rights, can also not restore backup of clipboard')
     
             # Transfer content to Windows system clipboard.
             data = data or self._contents
@@ -354,13 +354,13 @@ class Clipboard(object):
                 return
             elif isinstance(data, six.string_types):
                 self.get_text(data)
-            elif type(data) == types.DictType:
-                for format, content in data.items():
+            elif type(data) == dict:
+                for format, content in list(data.items()):
                     win32clipboard.SetClipboardData(format, content)
             else:
                 
-                if self.debug: print "Clipboard, copy_to_system, invalid type of data: %s"% type(data)
-                if self.debug > 1: print "data: %s\n========"% repr(data)
+                if self.debug: print("Clipboard, copy_to_system, invalid type of data: %s"% type(data))
+                if self.debug > 1: print("data: %s\n========"% repr(data))
                 return 
         finally:
             self.current_sequence_number = win32clipboard.GetClipboardSequenceNumber()
@@ -372,7 +372,7 @@ class Clipboard(object):
         if self._backup:
             self.copy_to_system(self._backup, clear=True)
         else:
-            if self.debug: print 'Clipboard restore, nothing to restore'
+            if self.debug: print('Clipboard restore, nothing to restore')
     
     def has_format(self, format):
         """Determine whether this instance has content for the given format
@@ -416,11 +416,11 @@ class Clipboard(object):
         If no text content available, return u""
         """
         self.copy_from_system(formats = [self.format_unicode, self.format_text], waiting_interval=waiting_interval, waiting_iterations=waiting_iterations)
-        text = u""
+        text = ""
         if self._contents:
             if self.format_unicode in self._contents:
                 text = self._contents[self.format_unicode]
-                text = text.replace(u'\0', u'')
+                text = text.replace('\0', '')
             elif self.format_text in self._contents:
                 text = self._contents[self.format_text]
         if text.find('\r\n') >= 0:
@@ -428,7 +428,7 @@ class Clipboard(object):
         return text
 
     def set_text(self, content):
-        self._contents[self.format_unicode] = unicode(content)
+        self._contents[self.format_unicode] = str(content)
 
     text    = property(
                        lambda self:    self.get_text(),
@@ -447,7 +447,7 @@ class Clipboard(object):
         self.copy_from_system(waiting_interval=waiting_interval, waiting_iterations=waiting_iterations)
         if self.format_hdrop in self._contents:
             result = self._contents[self.format_hdrop]
-            if type(result) == types.TupleType:
+            if type(result) == tuple:
                 return result
 
     def save_sequence_number(self):
@@ -474,7 +474,7 @@ class Clipboard(object):
         except ValueError:
             w_time = 0.1
         if w_time > 0.55:
-            print 'Clipboard, _check_clipboard_changes, waiting time too long, set to 0.1'% w_time
+            print('Clipboard, _check_clipboard_changes, waiting time too long, set to 0.1'% w_time)
             w_time = 0.1
         try:
             n_wait = int(waiting_iterations)
@@ -488,16 +488,16 @@ class Clipboard(object):
             if new_current_sequence_number > self.current_sequence_number:
                 self.current_sequence_number = new_current_sequence_number
                 if i:
-                    if self.debug: print 'Clipboard changed after %s steps of %s'% (i, waiting_interval)
+                    if self.debug: print('Clipboard changed after %s steps of %s'% (i, waiting_interval))
                 else:
-                    if self.debug > 1: print '_check_clipboard_changes, clipboard changed immediately'
+                    if self.debug > 1: print('_check_clipboard_changes, clipboard changed immediately')
                 time.sleep(w_time)
                 return True
             time.sleep(w_time)
 
         # no result:
         time_waited = n_wait*w_time
-        if self.debug: print 'Clipboard, no change in clipboard in %.3f seconds'% time_waited
+        if self.debug: print('Clipboard, no change in clipboard in %.3f seconds'% time_waited)
 
 
     
@@ -517,7 +517,7 @@ def OpenClipboardCautious(nToTry=4, waiting_time=0.1):
             continue
         else:
             wait = (i+2)*waiting_time
-            print 'extra wait OpenClipboardCautious: %s'% wait
+            print('extra wait OpenClipboardCautious: %s'% wait)
             time.sleep(wait)
             return True
     
