@@ -6,7 +6,7 @@ _UNICODE: these are the Dragon 12, 13, 14 versions for python 2.6 and 2.7 (Rudig
 
 _2.7_Ver15: Dragon 15 version for python 2.7 (Rudiger)
 
-_UNICODE_Knork: pyd for Dragon 12, 13, 14 and python 2.7 as compiled (Jan Scheffczyk)(knork)
+natlink2_2.7_UNICODE: pyd for Dragon 12, 13, 14 and python 2.7 as compiled (Jan Scheffczyk)(knork)
 
 
 
