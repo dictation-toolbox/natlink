@@ -1,0 +1,592 @@
+baseFolder from argv: C:\Natlink3\Natlink\PyTest
+UnimacroDirectory not found: C:\Natlink3\Unimacro, set empty string
+no valid UnimacroDirectory, Unimacro is disabled
+natlinkmain imported only, caller_name: C:\Program Files (x86)\ActiveState Komodo IDE 11\lib\support\dbgp\pythonlib\dbgp\client.py
+-- natlinkmain starting...
+start_natlink, do natConnect with option 0, no threading
+no valid UnimacroDirectory, Unimacro is disabled
+no valid UnimacroDirectory, Unimacro is disabled
+--- natlinkstartup starting...
+no valid UnimacroDirectory, Unimacro is disabled
+Vocola not active
+no valid UnimacroDirectory, Unimacro is disabled
+no valid UnimacroDirectory, Unimacro is disabled
+no valid UnimacroDirectory, Unimacro is disabled
+natlinkmain started from C:\Natlink3\Natlink\MacroSystem\core:
+  NatLink version: 4.2
+  DNS version: 15
+  Python version: 27
+  Windows Version: 10
+no valid UnimacroDirectory, Unimacro is disabled
+----------------------------------------
+baseFolder from argv: C:\Natlink3\Natlink\PyTest
+log messages to file: C:\Natlink3\Natlink\PyTest\testresult.txt
+starting unittestNatlink
+
+starting tests with threading: 0
+
+waiting for DragonPad: 1
+waiting for DragonPad: 2
+waiting for DragonPad: 3
+waiting for DragonPad: 4
+waiting for DragonPad: 5
+waiting for DragonPad: 6
+testDgndictationEtc
+no valid UnimacroDirectory, Unimacro is disabled
+==================================================
+word: DICTOOOTE, ruleNumber: 0
+wordsAndNums: [('DICTOOOTE', 0), ('letters', 0), ('b\\spelling-letter\\B', 0)]
+ruleMap: {1: 'dgnletters', 2: 'Start'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: letters, ruleNumber: 0
+wordsAndNums: [('DICTOOOTE', 0), ('letters', 0), ('b\\spelling-letter\\B', 0)]
+ruleMap: {1: 'dgnletters', 2: 'Start'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: b\spelling-letter\B, ruleNumber: 0
+wordsAndNums: [('DICTOOOTE', 0), ('letters', 0), ('b\\spelling-letter\\B', 0)]
+ruleMap: {1: 'dgnletters', 2: 'Start'}
+Invalid key 0 for ruleMap
+===============================
+Emod: natspeak
+testDictGram
+waiting for calc window 0
+waiting for calc window 1
+waiting for calc window 2
+waiting for calc window 3
+waiting for calc window 4
+waiting for calc window 5
+waiting for calc window 6
+waiting for calc window 7
+waiting for calc window 8
+waiting for calc window 9
+Eno valid UnimacroDirectory, Unimacro is disabled
+mod: natspeak
+no valid UnimacroDirectory, Unimacro is disabled
+testDictObj
+waiting for calc window 0
+waiting for calc window 1
+waiting for calc window 2
+waiting for calc window 3
+waiting for calc window 4
+waiting for calc window 5
+waiting for calc window 6
+waiting for calc window 7
+waiting for calc window 8
+waiting for calc window 9
+Eno valid UnimacroDirectory, Unimacro is disabled
+mod: natspeak
+no valid UnimacroDirectory, Unimacro is disabled
+testExecScript
+mod: natspeak
+.testGetAllUsersEtc
+all Users: ['Gebruiker', 'Qengels']
+mod: natspeak
+.testGrammarRecognitions
+loading gramSpec: <hello> exported = hello world;
+==================================================
+word: hello, ruleNumber: 0
+wordsAndNums: [('hello', 0), ('world', 0)]
+ruleMap: {1: 'hello'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: world, ruleNumber: 0
+wordsAndNums: [('hello', 0), ('world', 0)]
+ruleMap: {1: 'hello'}
+Invalid key 0 for ruleMap
+===============================
+got: hello world
+loading gramSpec: <hello> exported = hello | world;
+did not recognise (as expected): ['hello', 'world']
+==================================================
+word: hello, ruleNumber: 0
+wordsAndNums: [('hello', 0)]
+ruleMap: {1: 'hello'}
+Invalid key 0 for ruleMap
+===============================
+recognised: ['hello']
+==================================================
+word: world, ruleNumber: 0
+wordsAndNums: [('world', 0)]
+ruleMap: {1: 'hello'}
+Invalid key 0 for ruleMap
+===============================
+recognised: ['world']
+got: hello and world apart
+mod: natspeak
+.switching on mic
+switching to "off" mic
+switched to "off" mic
+create jMg1, seventeen
+time of change of C:\Natlink3\Natlink\MacroSystem\__jMg1.py: 1570118218
+Emod: natspeak
+mod: natspeak
+.testNatlinkutilsPlayString
+Fmod: natspeak
+testNestedMimics
+==================================================
+word: testtestrun, ruleNumber: 0
+wordsAndNums: [('testtestrun', 0), ('1', 0)]
+ruleMap: {1: 'run', 2: 'test1', 3: 'test2', 4: 'test3', 5: 'test4', 6: 'test5', 7: 'test6', 8: 'test7', 9: 'test8', 10: 'test9'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: 1, ruleNumber: 0
+wordsAndNums: [('testtestrun', 0), ('1', 0)]
+ruleMap: {1: 'run', 2: 'test1', 3: 'test2', 4: 'test3', 5: 'test4', 6: 'test5', 7: 'test6', 8: 'test7', 9: 'test8', 10: 'test9'}
+Invalid key 0 for ruleMap
+===============================
+Emod: natspeak
+testNextPrevRulesAndWords
+==================================================
+word: test, ruleNumber: 0
+wordsAndNums: [('test', 0), ('blue', 0), ('chair', 0)]
+ruleMap: {1: 'run', 2: 'optional', 3: 'extra'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: blue, ruleNumber: 0
+wordsAndNums: [('test', 0), ('blue', 0), ('chair', 0)]
+ruleMap: {1: 'run', 2: 'optional', 3: 'extra'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: chair, ruleNumber: 0
+wordsAndNums: [('test', 0), ('blue', 0), ('chair', 0)]
+ruleMap: {1: 'run', 2: 'optional', 3: 'extra'}
+Invalid key 0 for ruleMap
+===============================
+Fmod: natspeak
+testNextPrevRulesAndWordsRecursive
+Emod: natspeak
+testParser
+testGrammar
+waiting for calc window 0
+waiting for calc window 1
+waiting for calc window 2
+waiting for calc window 3
+waiting for calc window 4
+waiting for calc window 5
+waiting for calc window 6
+waiting for calc window 7
+waiting for calc window 8
+waiting for calc window 9
+Eno valid UnimacroDirectory, Unimacro is disabled
+mod: natspeak
+no valid UnimacroDirectory, Unimacro is disabled
+testPlayString
+Fmod: natspeak
+testRecognitionChangingRulesExclusive
+testing changing exclusive rules
+waiting for calc window 0
+waiting for calc window 1
+waiting for calc window 2
+waiting for calc window 3
+waiting for calc window 4
+waiting for calc window 5
+waiting for calc window 6
+waiting for calc window 7
+waiting for calc window 8
+waiting for calc window 9
+Eno valid UnimacroDirectory, Unimacro is disabled
+mod: natspeak
+no valid UnimacroDirectory, Unimacro is disabled
+test recognitionMimic, version: 15
+mod: natspeak
+Test recognition mimic of characters (adding up in the Dragonpad window)
+try to mimic ['a\\determiner'] (expect: A)
+try to mimic ['A\\letter'] (expect: A A)
+try to mimic ['a\\lowercase-letter\\lowercase A'] (expect: A A a)
+Fmod: natspeak
+test recognitionMimicCommands, version: 15
+mod: natspeak
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('runone', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: runone, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('runone', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('three', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: three, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('three', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: painting, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('three', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('four', 0), ('modern', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: four, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('four', 0), ('modern', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: modern, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('four', 0), ('modern', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: painting, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('four', 0), ('modern', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: seven, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tent, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: seven, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: eight, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: eight, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tent, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: eight, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tent, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: house, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tent, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: house, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: church, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+Fmod: natspeak
+testSelectGram
+waiting for calc window 0
+waiting for calc window 1
+waiting for calc window 2
+waiting for calc window 3
+waiting for calc window 4
+waiting for calc window 5
+waiting for calc window 6
+waiting for calc window 7
+waiting for calc window 8
+waiting for calc window 9
+Eno valid UnimacroDirectory, Unimacro is disabled
+mod: natspeak
+no valid UnimacroDirectory, Unimacro is disabled
+testTrayIcon
+Emod: natspeak
+testWordFuncs
+mod: natspeak
+.testWordProns
+Dragon 11 getWordProns seems not valid any more...
+mod: natspeak
+.
+======================================================================
+ERROR: testDgndictationEtc (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2458, in testDgndictationEtc
+    [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2418, in checkExperiment
+    raise TestError,'Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults))
+TestError: Unexpected result for GrammarBase.fullResults
+  Expected [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')]
+  Saw []
+
+======================================================================
+ERROR: testDictGram (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2926, in testDictGram
+    self.lookForCalc()
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+    raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+
+======================================================================
+ERROR: testDictObj (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 958, in testDictObj
+    calcWindow = self.lookForCalc()
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+    raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+
+======================================================================
+ERROR: testNatLinkMain (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1642, in testNatLinkMain
+    testRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seventeen'],recCmdDict, 0)
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1927, in doTestRecognition
+    natlink.recognitionMimic(words)
+MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
+
+======================================================================
+ERROR: testNestedMimics (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3542, in testNestedMimics
+    testGram.checkExperiment(['run','1'])
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3508, in checkExperiment
+    raise TestError("Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) ))
+TestError: Grammar failed to get recognized
+   Expected = ['run', '1']
+   Results = []
+
+======================================================================
+ERROR: testNextPrevRulesAndWordsRecursive (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3409, in testNextPrevRulesAndWordsRecursive
+    natlink.recognitionMimic(['recursivetest', 'green', 'extra'])
+MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
+
+======================================================================
+ERROR: testParser (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2107, in testParser
+    calcWindow = self.lookForCalc()
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+    raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+
+======================================================================
+ERROR: testRecognitionChangingRulesExclusive (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2765, in testRecognitionChangingRulesExclusive
+    self.lookForCalc()
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+    raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+
+======================================================================
+ERROR: testSelectGram (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3087, in testSelectGram
+    calcWindow = self.lookForCalc()
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+    raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+
+======================================================================
+ERROR: testTrayIcon (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3188, in testTrayIcon
+    natlink.setTrayIcon(icon)
+ValueError: Icon file right could not be loaded
+
+======================================================================
+FAIL: testNatlinkutilsPlayString (__main__.UnittestNatlink)
+this version captions accented and unicode characters (possibly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 784, in testNatlinkutilsPlayString
+    testWindowContents('Testing with only SendKeys\r\n','playString')
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
+    self.fail(mes)
+AssertionError: Contents of window did not match expected text
+expected: |Testing with only SendKeys
+|
+got: |Testing with only SendKeysTesting with only SendKeysx
+|
+testname playString
+
+======================================================================
+FAIL: testNextPrevRulesAndWords (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3276, in testNextPrevRulesAndWords
+    testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 622, in doTestEqualLists
+    self.fail("Fail in doTestEqualLists: %s\nexpected: %s\ngot: %s"% (message, expected, got))
+AssertionError: Fail in doTestEqualLists: first experiment, prev rules
+expected: [None, 'run', 'optional', 'run']
+got: []
+
+======================================================================
+FAIL: testPlayString (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 732, in testPlayString
+    testWindowContents('Testing dialog window')
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
+    self.fail(mes)
+AssertionError: Contents of window did not match expected text
+expected: |Testing dialog window|
+got: ||
+
+======================================================================
+FAIL: testRecognitionMimic (__main__.UnittestNatlink)
+test different phrases with spoken forms,
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1223, in testRecognitionMimic
+    testMimicResult(words, expected)
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2001, in doTestMimicResult
+    stripResult=1)
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
+    self.fail(mes)
+AssertionError: Contents of window did not match expected text
+expected: |A A a|
+got: |A Aa|
+testname TestMimicResult for words: ['a\\lowercase-letter\\lowercase A']
+
+======================================================================
+FAIL: testRecognitionMimicCommands (__main__.UnittestNatlink)
+test different phrases with commands, from own grammar
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1168, in testRecognitionMimicCommands
+    testCommandRecognition(['mimic', 'two', 'green'], shouldWork=1, testGram=testGram)
+  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1967, in doTestCommandRecognition
+    self.fail("recognition mimic succeeded, but got wrong recogType from testGram '%s', words: %s (expected 'self'"% (recogType, words))
+AssertionError: recognition mimic succeeded, but got wrong recogType from testGram 'other', words: ['mimic', 'two', 'green'] (expected 'self'
+
+----------------------------------------------------------------------
+Ran 21 tests in 80.900s
+
+FAILED (failures=5, errors=10)

@@ -1,0 +1,345 @@
+--- C:\Natlink3\Natlink\PyTest\problematic testresultwithcompile natlink2_2.7_15.txt
++++ C:\Natlink\Natlink\PyTest\testresults_natlinkpyd_knork.txt
+@@ -1,26 +1,17 @@
+-baseFolder from argv: C:\Natlink3\Natlink\PyTest
+-UnimacroDirectory not found: C:\Natlink3\Unimacro, set empty string
+-no valid UnimacroDirectory, Unimacro is disabled
++baseFolder from argv: C:\Natlink\Natlink\PyTest
+ natlinkmain imported only, caller_name: C:\Program Files (x86)\ActiveState Komodo IDE 11\lib\support\dbgp\pythonlib\dbgp\client.py
+ -- natlinkmain starting...
+ start_natlink, do natConnect with option 0, no threading
+-no valid UnimacroDirectory, Unimacro is disabled
+-no valid UnimacroDirectory, Unimacro is disabled
+ --- natlinkstartup starting...
+-no valid UnimacroDirectory, Unimacro is disabled
+ Vocola not active
+-no valid UnimacroDirectory, Unimacro is disabled
+-no valid UnimacroDirectory, Unimacro is disabled
+-no valid UnimacroDirectory, Unimacro is disabled
+-natlinkmain started from C:\Natlink3\Natlink\MacroSystem\core:
++natlinkmain started from C:\Natlink\Natlink\MacroSystem\core:
+   NatLink version: 4.2
+   DNS version: 15
+   Python version: 27
+   Windows Version: 10
+-no valid UnimacroDirectory, Unimacro is disabled
+ ----------------------------------------
+-baseFolder from argv: C:\Natlink3\Natlink\PyTest
+-log messages to file: C:\Natlink3\Natlink\PyTest\testresult.txt
++baseFolder from argv: C:\Natlink\Natlink\PyTest
++log messages to file: C:\Natlink\Natlink\PyTest\testresult.txt
+ starting unittestNatlink
+ 
+ starting tests with threading: 0
+@@ -31,8 +22,8 @@
+ waiting for DragonPad: 4
+ waiting for DragonPad: 5
+ waiting for DragonPad: 6
++waiting for DragonPad: 7
+ testDgndictationEtc
+-no valid UnimacroDirectory, Unimacro is disabled
+ ==================================================
+ word: DICTOOOTE, ruleNumber: 0
+ wordsAndNums: [('DICTOOOTE', 0), ('letters', 0), ('b\\spelling-letter\\B', 0)]
+@@ -63,9 +54,7 @@
+ waiting for calc window 7
+ waiting for calc window 8
+ waiting for calc window 9
+-Eno valid UnimacroDirectory, Unimacro is disabled
+-mod: natspeak
+-no valid UnimacroDirectory, Unimacro is disabled
++Emod: natspeak
+ testDictObj
+ waiting for calc window 0
+ waiting for calc window 1
+@@ -77,9 +66,7 @@
+ waiting for calc window 7
+ waiting for calc window 8
+ waiting for calc window 9
+-Eno valid UnimacroDirectory, Unimacro is disabled
+-mod: natspeak
+-no valid UnimacroDirectory, Unimacro is disabled
++Emod: natspeak
+ testExecScript
+ mod: natspeak
+ .testGetAllUsersEtc
+@@ -122,7 +109,45 @@
+ switching to "off" mic
+ switched to "off" mic
+ create jMg1, seventeen
+-time of change of C:\Natlink3\Natlink\MacroSystem\__jMg1.py: 1570118218
++time of change of C:\Natlink\Natlink\MacroSystem\__jMg1.py: 1570117329
++switching on mic
++switching to "off" mic
++switched to "off" mic
++create jMg1, one
++time of change of C:\Natlink\Natlink\MacroSystem\__jMg1.py: 1570117332
++
++toggle mic, to get jMg1 in loadedGrammars
++switching on mic
++switching to "off" mic
++switched to "off" mic
++
++next one should be recognised as a command, not text
++
++recognised: ['this', 'is', 'automated', 'testing', 'from', 'python', 'one']
++
++Now change grammar file jMg1 to 2, no recognise immediate, only after mic toggle
++time of change of C:\Natlink\Natlink\MacroSystem\__jMg1.py: 1570117337
++recognised: ['this', 'is', 'automated', 'testing', 'from', 'python', 'one']
++switching on mic
++switching to "off" mic
++switched to "off" mic
++recognised: ['this', 'is', 'automated', 'testing', 'from', 'python', 'two']
++now new grammar file: __jMg_$&^_abc
++time of change of __jMg_$&^_abc.py: 1570117342
++switching on mic
++switching to "off" mic
++switched to "off" mic
++now new grammar file: _with spaces
++time of change of _with spaces.py: 1570117346
++switching on mic
++switching to "off" mic
++switched to "off" mic
++this test cannot been done if there is no userDirectory
++now new grammar file (should not be recognised)... _.py
++time of change of _.py: 1570117350
++switching on mic
++switching to "off" mic
++switched to "off" mic
+ Emod: natspeak
+ mod: natspeak
+ .testNatlinkutilsPlayString
+@@ -175,9 +200,7 @@
+ waiting for calc window 7
+ waiting for calc window 8
+ waiting for calc window 9
+-Eno valid UnimacroDirectory, Unimacro is disabled
+-mod: natspeak
+-no valid UnimacroDirectory, Unimacro is disabled
++Emod: natspeak
+ testPlayString
+ Fmod: natspeak
+ testRecognitionChangingRulesExclusive
+@@ -192,9 +215,7 @@
+ waiting for calc window 7
+ waiting for calc window 8
+ waiting for calc window 9
+-Eno valid UnimacroDirectory, Unimacro is disabled
+-mod: natspeak
+-no valid UnimacroDirectory, Unimacro is disabled
++Emod: natspeak
+ test recognitionMimic, version: 15
+ mod: natspeak
+ Test recognition mimic of characters (adding up in the Dragonpad window)
+@@ -408,9 +429,7 @@
+ waiting for calc window 7
+ waiting for calc window 8
+ waiting for calc window 9
+-Eno valid UnimacroDirectory, Unimacro is disabled
+-mod: natspeak
+-no valid UnimacroDirectory, Unimacro is disabled
++Emod: natspeak
+ testTrayIcon
+ Emod: natspeak
+ testWordFuncs
+@@ -423,9 +442,9 @@
+ ERROR: testDgndictationEtc (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2458, in testDgndictationEtc
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 2458, in testDgndictationEtc
+     [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2418, in checkExperiment
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 2418, in checkExperiment
+     raise TestError,'Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults))
+ TestError: Unexpected result for GrammarBase.fullResults
+   Expected [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')]
+@@ -435,9 +454,9 @@
+ ERROR: testDictGram (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2926, in testDictGram
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 2926, in testDictGram
+     self.lookForCalc()
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+     raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+ TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+ 
+@@ -445,9 +464,9 @@
+ ERROR: testDictObj (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 958, in testDictObj
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 958, in testDictObj
+     calcWindow = self.lookForCalc()
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+     raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+ TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+ 
+@@ -455,9 +474,9 @@
+ ERROR: testNatLinkMain (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1642, in testNatLinkMain
+-    testRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','seventeen'],recCmdDict, 0)
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1927, in doTestRecognition
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 1716, in testNatLinkMain
++    testRecognition(['this', 'is', 'automated', 'testing', 'from', 'python','eight'],recCmdDict, 0)
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 1927, in doTestRecognition
+     natlink.recognitionMimic(words)
+ MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
+ 
+@@ -465,9 +484,9 @@
+ ERROR: testNestedMimics (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3542, in testNestedMimics
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 3542, in testNestedMimics
+     testGram.checkExperiment(['run','1'])
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3508, in checkExperiment
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 3508, in checkExperiment
+     raise TestError("Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) ))
+ TestError: Grammar failed to get recognized
+    Expected = ['run', '1']
+@@ -477,7 +496,7 @@
+ ERROR: testNextPrevRulesAndWordsRecursive (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3409, in testNextPrevRulesAndWordsRecursive
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 3409, in testNextPrevRulesAndWordsRecursive
+     natlink.recognitionMimic(['recursivetest', 'green', 'extra'])
+ MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
+ 
+@@ -485,9 +504,9 @@
+ ERROR: testParser (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2107, in testParser
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 2107, in testParser
+     calcWindow = self.lookForCalc()
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+     raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+ TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+ 
+@@ -495,9 +514,9 @@
+ ERROR: testRecognitionChangingRulesExclusive (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2765, in testRecognitionChangingRulesExclusive
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 2765, in testRecognitionChangingRulesExclusive
+     self.lookForCalc()
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+     raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+ TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+ 
+@@ -505,9 +524,9 @@
+ ERROR: testSelectGram (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3087, in testSelectGram
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 3087, in testSelectGram
+     calcWindow = self.lookForCalc()
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 325, in lookForCalc
+     raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
+ TestError: Not the correct application: ApplicationFrameHost is brought to the front, should be calc
+ 
+@@ -515,7 +534,7 @@
+ ERROR: testTrayIcon (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3188, in testTrayIcon
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 3188, in testTrayIcon
+     natlink.setTrayIcon(icon)
+ ValueError: Icon file right could not be loaded
+ 
+@@ -524,24 +543,22 @@
+ this version captions accented and unicode characters (possibly)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 784, in testNatlinkutilsPlayString
+-    testWindowContents('Testing with only SendKeys\r\n','playString')
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 757, in testNatlinkutilsPlayString
++    testWindowContents('This is a testThis i','playString')
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
+     self.fail(mes)
+ AssertionError: Contents of window did not match expected text
+-expected: |Testing with only SendKeys
+-|
+-got: |Testing with only SendKeysTesting with only SendKeysx
+-|
++expected: |This is a testThis i|
++got: |This |
+ testname playString
+ 
+ ======================================================================
+ FAIL: testNextPrevRulesAndWords (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 3276, in testNextPrevRulesAndWords
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 3276, in testNextPrevRulesAndWords
+     testEqualLists([None, 'run', 'optional', 'run'], testGram.allPrevRules, "first experiment, prev rules")
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 622, in doTestEqualLists
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 622, in doTestEqualLists
+     self.fail("Fail in doTestEqualLists: %s\nexpected: %s\ngot: %s"% (message, expected, got))
+ AssertionError: Fail in doTestEqualLists: first experiment, prev rules
+ expected: [None, 'run', 'optional', 'run']
+@@ -551,24 +568,27 @@
+ FAIL: testPlayString (__main__.UnittestNatlink)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 732, in testPlayString
+-    testWindowContents('Testing dialog window')
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 708, in testPlayString
++    testWindowContents('Testing again\r\n','playString')
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
+     self.fail(mes)
+ AssertionError: Contents of window did not match expected text
+-expected: |Testing dialog window|
+-got: ||
++expected: |Testing again
++|
++got: |Testing a
++|
++testname playString
+ 
+ ======================================================================
+ FAIL: testRecognitionMimic (__main__.UnittestNatlink)
+ test different phrases with spoken forms,
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1223, in testRecognitionMimic
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 1223, in testRecognitionMimic
+     testMimicResult(words, expected)
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 2001, in doTestMimicResult
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 2001, in doTestMimicResult
+     stripResult=1)
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 560, in doTestWindowContents
+     self.fail(mes)
+ AssertionError: Contents of window did not match expected text
+ expected: |A A a|
+@@ -580,13 +600,13 @@
+ test different phrases with commands, from own grammar
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1168, in testRecognitionMimicCommands
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 1168, in testRecognitionMimicCommands
+     testCommandRecognition(['mimic', 'two', 'green'], shouldWork=1, testGram=testGram)
+-  File "C:\Natlink3\Natlink\PyTest\unittestNatlink.py", line 1967, in doTestCommandRecognition
++  File "C:\Natlink\Natlink\PyTest\unittestNatlink.py", line 1967, in doTestCommandRecognition
+     self.fail("recognition mimic succeeded, but got wrong recogType from testGram '%s', words: %s (expected 'self'"% (recogType, words))
+ AssertionError: recognition mimic succeeded, but got wrong recogType from testGram 'other', words: ['mimic', 'two', 'green'] (expected 'self'
+ 
+ ----------------------------------------------------------------------
+-Ran 21 tests in 80.900s
++Ran 21 tests in 89.363s
+ 
+ FAILED (failures=5, errors=10)
