@@ -2,6 +2,10 @@
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 **/.idea
 **.pyc
+**/natlink.pyd
+**/natlinkstatus.ini
+MacroSystem/_**
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
