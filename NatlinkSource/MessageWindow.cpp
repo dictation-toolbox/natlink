@@ -47,7 +47,20 @@ BOOL CALLBACK dialogProc(
 
 	switch( msg )
 	{
+	    case WM_CREATE:
+
+            return TRUE;
 	 case WM_INITDIALOG:
+         HMENU hMenu, hSubMenu;
+
+            hMenu = CreateMenu();
+            hSubMenu = CreatePopupMenu();
+            AppendMenu(hSubMenu, MF_STRING, IDD_RELOAD, L"&Reload");
+            AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, L"&File");
+
+
+
+            SetMenu(hWnd, hMenu);
 		s_pSecdThrd = (MessageWindow *)lParam;
 		ShowWindow( hWnd, SW_HIDE );
 		return TRUE;
