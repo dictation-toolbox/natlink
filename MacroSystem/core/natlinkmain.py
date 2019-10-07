@@ -132,7 +132,6 @@ if True:
     #print "at start of natlinkmain, after redirect stderr and stdout"
 
 # put all inside a try block, so we can isolate a problem when natlinkmain loads.
-
 try:
     import time, copy
     import os, shutil       # access to file information
@@ -911,7 +910,7 @@ try:
             # automatic start of python macro system:toon alle grammatica's
             #sys.stdout = NewStdout()  # at start!!
             #sys.stderr = NewStderr()
-            # start_natlink()
+            start_natlink()
             pass
         else:
             print(('natlinkmain imported only, caller_name: %s'% caller_name))
