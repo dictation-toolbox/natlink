@@ -1,17 +1,28 @@
-# -*- coding: latin-1 -*-
-
 """contains class IniVars, that does inifiles
 
 """
 import six
-import win32api, types
-import os, os.path, sys, re, copy, string
+import win32api
+import types
+import os
+import os.path
+import sys
+import re
+import copy
+import string
 import utilsqh
-from utilsqh import path, peek_ahead
+from pathqh import path
+from utilsqh import peek_ahead
 import locale
 locale.setlocale(locale.LC_ALL, '')
 import readwritefile  # reading with encoding BOM mark
-from UserDict import UserDict
+
+try:
+    from collections import UserDict
+except ModuleNotFoundError:
+    ## python2 fallback
+    from UserDict import UserDict
+
 lineNum = 0
 fileName = ''
 class IniError(Exception):
@@ -36,9 +47,9 @@ DEBUG = 0
 # doctest at the bottom
 #reAllSections = re.compile(r'^\s*[([^]]+)\]\s*$', re.M)
 #reAllKeys = re.compile(r'(^[^=\n]+)[=]', re.M)
-reValidSection = re.compile(r'\[\b([- \.\w]+)]\s*$', re.L)
-reFindKeyValue = re.compile(r'\b([- \.\w]+)\s*=(.*)$', re.L)
-reValidKey = re.compile(r'(\w[\w \.\-]*)$', re.L)
+reValidSection = re.compile(r'\[\b([- \.\w]+)]\s*$')
+reFindKeyValue = re.compile(r'\b([- \.\w]+)\s*=(.*)$')
+reValidKey = re.compile(r'(\w[\w \.\-]*)$')
 reQuotes = re.compile(r'[\'"]')
 
 reListValueSplit = re.compile(r'[\n;]', re.M)
@@ -54,55 +65,55 @@ def quoteSpecial(t, extraProtect = None):
     also need to be protected with quotes
     
 >>> quoteSpecial("abc")
-u'abc'
+'abc'
 >>> quoteSpecial(" abc  ")
-u'" abc  "'
+'" abc  "'
 >>> quoteSpecial("'abc' ")
-u'"\\'abc\\' "'
+'"\\'abc\\' "'
 
 with newlines in text:
 >>> quoteSpecial("'abc'\\n ")
-u'"\\'abc\\'\\n "'
+'"\\'abc\\'\\n "'
 >>> quoteSpecial(' "ab"')
-u'\\' "ab"\\''
+'\\' "ab"\\''
 
 but singular quotes inside a string are kept as they were:
 
 >>> quoteSpecial('a" b "c')    
-u'a" b "c'
+'a" b "c'
 
 with both quotes:
 >>> quoteSpecial('a" \\'b "c')    
-u'a" \\'b "c'
+'a" \\'b "c'
 
 >>> quoteSpecial("'a\\" 'b \\"c'")    
-u'"\\'a&quot; \\'b &quot;c\\'"'
+'"\\'a&quot; \\'b &quot;c\\'"'
 
 >>> quoteSpecial('" \\'b "c\\' xyz')    
-u'"&quot; \\'b &quot;c\\' xyz"'
+'"&quot; \\'b &quot;c\\' xyz"'
 
 >>> quoteSpecial('ab"')
-u'ab"'
+'ab"'
 >>> quoteSpecial("ab' '")
-u"ab' '"
+"ab' '"
 >>> quoteSpecial("a' b 'c")    
-u"a' b 'c"
+"a' b 'c"
 
 now for the list possibility:
 
 >>> quoteSpecial("a;bc", ";\\n")
-u'"a;bc"'
->>> quoteSpecial(u"ab\xe9\\nc", ";\\n")
-u'"ab\\xe9\\nc"'
+'"a;bc"'
+>>> quoteSpecial("ab\xe9\\nc", ";\\n")
+'"ab\\xe9\\nc"'
 
 and for the dict possibility:
 
 >>> quoteSpecial("abc,", ",")
-u'"abc,"'
+'"abc,"'
 >>> quoteSpecial("a,bc", ",")
-u'"a,bc"'
+'"a,bc"'
 >>> quoteSpecial("a,bc", "'|;")
-u'a,bc'
+'a,bc'
     
     """
     if t is None:
@@ -157,15 +168,15 @@ def stripSpecial(t):
     new lines are preserved, BUT all lines are stripped    
 
 >>> stripSpecial('""')
-u''
+''
 >>> stripSpecial('abc')
-u'abc'
+'abc'
 >>> stripSpecial(" x ")
-u'x'
+'x'
 >>> stripSpecial("' a\xe9 '")
-u' a\\xe9 '
->>> stripSpecial(u'" a\xe9  "')
-u' a\\xe9  '
+' a\\xe9 '
+>>> stripSpecial('" a\xe9  "')
+' a\\xe9  '
 
     """
     
@@ -209,21 +220,21 @@ def getIniList(t, sep=(";", "\n")):
     space his met
 
     >>> list(getIniList("a; c"))
-    [u'a', u'c']
+    ['a', 'c']
     >>> list(getIniList("a;c"))
-    [u'a', u'c']
+    ['a', 'c']
     >>> list(getIniList("a; c;"))
-    [u'a', u'c', u'']
+    ['a', 'c', '']
     >>> list(getIniList("'a\\"b'; c"))
-    [u'a"b', u'c']
+    ['a"b', 'c']
     >>> list(getIniList('"a "; c'))
-    [u'a ', u'c']
+    ['a ', 'c']
     >>> list(getIniList("a ; ' c '"))
-    [u'a', u' c ']
+    ['a', ' c ']
     >>> list(getIniList("';a '; ' c '"))
-    [u';a ', u' c ']
+    [';a ', ' c ']
     >>> list(getIniList("'a '\\n' c '"))
-    [u'a ', u' c ']
+    ['a ', ' c ']
 
     """
     i =  0
@@ -301,23 +312,23 @@ def getIniDict(t):
     in different yield statements    
 
     >>> list(getIniDict("a"))
-    [(u'a', None)]
+    [('a', None)]
     >>> list(getIniDict("apricot:value of a"))
-    [(u'apricot', u'value of a')]
+    [('apricot', 'value of a')]
     >>> list(getIniDict("a: ' '"))
-    [(u'a', u' ')]
+    [('a', ' ')]
     >>> list(getIniDict('a: "with, comma"'))
-    [(u'a', u'with, comma')]
+    [('a', 'with, comma')]
     >>> list(getIniDict("a: 'with, comma'"))
-    [(u'a', u'with, comma')]
+    [('a', 'with, comma')]
     >>> list(getIniDict('a: more, "intricate, with, comma", example'))
-    [(u'a', [u'more', u'intricate, with, comma', u'example'])]
+    [('a', ['more', 'intricate, with, comma', 'example'])]
     >>> list(getIniDict("a: c, d"))
-    [(u'a', [u'c', u'd'])]
+    [('a', ['c', 'd'])]
     >>> list(getIniDict("a, b: c"))
-    [(u'a', u'c'), (u'b', u'c')]
+    [('a', 'c'), ('b', 'c')]
     >>> list(getIniDict("a,b : c, d"))
-    [(u'a', [u'c', u'd']), (u'b', [u'c', u'd'])]
+    [('a', ['c', 'd']), ('b', ['c', 'd'])]
     """
     if type(t) == six.binary_type:
         t = utilsqh.convertToUnicode(t)
@@ -354,24 +365,24 @@ def getIniDict(t):
         yield Keys, Values
         
             
-        
-def lensort(a, b):
-    """sorts two strings, longest first, if length is equal, normal sort
-
-    >>> lensort('a', 'b')
-    -1
-    >>> lensort('aaa', 'a')
-    -1
-    >>> lensort('zzz', 'zzzzz')
-    1
-
-    """    
-    la = len(a)
-    lb = len(b)
-    if la == lb:
-        return cmp(a, b)
-    else:
-        return -cmp(la, lb)
+# obsolete python3        
+# def lensort(a, b):
+#     """sorts two strings, longest first, if length is equal, normal sort
+# 
+#     >>> lensort('a', 'b')
+#     -1
+#     >>> lensort('aaa', 'a')
+#     -1
+#     >>> lensort('zzz', 'zzzzz')
+#     1
+# 
+#     """    
+#     la = len(a)
+#     lb = len(b)
+#     if la == lb:
+#         return cmp(a, b)
+#     else:
+#         return -cmp(la, lb)
 
 class IniSection(UserDict):
     """represents a section of an inivars instance"""
@@ -547,21 +558,21 @@ class IniVars(UserDict):
 >>> ini.write()
 >>> ini2 = IniVars('simple.ini')
 >>> ini2.get()
-[u's']
+['s']
 >>> ini2.get('s')
-[u'k2', u'k']
+['k', 'k2']
 >>> ini2.get('s', 'k')
-u'v'
+'v'
 >>> ini == ini2
 1
 >>> ini.getFilename()
-u'simple.ini'
+'simple.ini'
 >>> ini2 = IniVars('simple.ini', returnStrings=True)
 Warning inivars: returnStrings is Obsolete, inivars only returns Unicode
 >>> ini2.get('s', 'k')
-u'v'
+'v'
 >>> ini2.get('s')
-[u'k2', u'k']
+['k', 'k2']
     """
     _SKIgnorecase = None
     
@@ -713,18 +724,18 @@ u'v'
 # >>> ini = IniVars("returnunicode.ini")
 # >>> ini.set("section","string","value")
 # >>> ini.get("section")
-# [u'string']
+# ['string']
 # >>> ini.get("section", 'string')
-# u'value'
+# 'value'
 # >>> ini.set("section","number", 12)
 # >>> ini.get("section", 'number')
 # 12
 # >>> ini.set("section","none", None)
 # >>> ini.get("section", 'none')
 # >>> ini.get("section")
-# [u'none', u'string', u'number']
+# ['none', 'string', 'number']
 # >>> ini.get()
-# [u'section']
+# ['section']
 # 
 # 
 #  ## now returnString=True
@@ -1033,17 +1044,17 @@ u'v'
         >>> ini.get()
         []
         >>> ini.get("s", "k")
-        u''
+        ''
         >>> ini.get("s", "k", "v")
-        u'v'
+        'v'
 
         spaces in section or key name are stripped and made single:
         
         >>> ini.set(" s  t ", "a  k ", 'strange')
         >>> ini.get("s t", 'a k')
-        u'strange'
+        'strange'
         >>> ini.get("s  t ", 'a      k ')
-        u'strange'
+        'strange'
         
         >>> 
         """
@@ -1139,12 +1150,12 @@ u'v'
         >>> ini = IniVars("set.ini")
         >>> ini.set("section","key","value")
         >>> ini.get("section")
-        [u'key']
+        ['key']
         >>> ini.get("section","key")
-        u'value'
+        'value'
         >>> ini.set('empty section')
         >>> ini.get()
-        [u'section', u'empty section']
+        ['section', 'empty section']
         >>> ini.set(['empty 1', 'empty 2'])
         >>> ini.get('empty 1')
         []
@@ -1152,29 +1163,29 @@ u'v'
         >>> ini.get('not empty 1', 'empty key 1')
         >>> ini.set(['not empty 1'], ['key 1', 'key 2'], ' value ')
         >>> ini.get('not empty 1', 'key 1')
-        u' value '
+        ' value '
         >>> ini.set('quotes', 'double', '" a "')
         >>> ini.get('quotes', 'double')
-        u'" a "'
+        '" a "'
         >>> ini.set('quotes', 'single', "'  a  '")
         >>> ini.get('quotes', 'single')
-        u"'  a  '"
+        "'  a  '"
         >>> ini.close()
         >>> ini = IniVars("set.ini")
         >>> L = ini.get()
         >>> L.sort()
         >>> L
-        [u'empty 1', u'empty 2', u'empty section', u'not empty 1', u'quotes', u'section']
+        ['empty 1', 'empty 2', 'empty section', 'not empty 1', 'quotes', 'section']
         >>> ini.get('not empty 1', 'key 1')
-        u' value '
+        ' value '
         >>> ini.get('not empty 1', 'empty key 1')
-        u''
+        ''
         >>> ini.get('empty 1')
         []
         >>> ini.get('quotes', 'single')
-        u"'  a  '"
+        "'  a  '"
         >>> ini.get('quotes', 'double')
-        u'" a "'
+        '" a "'
         """
         # self._changed = 1
         if type(s) == list or type(k) == tuple:
@@ -1248,20 +1259,20 @@ u'v'
         >>> ini = IniVars("delete.ini")
         >>> ini.set("section","key","value")
         >>> ini.get("section","key")
-        u'value'
+        'value'
         >>> ini.delete("section","key")
         >>> ini.get("section","key")
-        u''
+        ''
         >>> ini.get("section")
         []
         >>> ini.set("section","key","value")
         >>> ini.get("section","key")
-        u'value'
+        'value'
         >>> ini.delete()
         >>> ini.get("section")
         []
         >>> ini.get("section", "key")
-        u''
+        ''
         >>> ini.close()
         >>>
         """
@@ -1372,13 +1383,13 @@ u'v'
         []
         >>> ini.set('s', 'one', 'value')
         >>> ini.getList('s', 'one')
-        [u'value']
+        ['value']
         >>> ini.set('s', 'two', 'value; value')
         >>> ini.getList('s', 'two')
-        [u'value', u'value']
+        ['value', 'value']
         >>> ini.set('s', 'three', 'value 1\\nvalue 2\\nvalue 3 and more')
         >>> ini.getList('s', 'three')
-        [u'value 1', u'value 2', u'value 3 and more']
+        ['value 1', 'value 2', 'value 3 and more']
         >>> 
         """
         if not self:
@@ -1421,7 +1432,7 @@ u'v'
         
         default if base empty
         >>> ini.getDict('s', 'empty', {'s': None})
-        {u's': None}
+        {'s': None}
 
         setting and getting a dict:
 
@@ -1430,37 +1441,37 @@ u'v'
         >>> ini.set('s', 'dict', d)
         >>> ini.set('s', 'empty value', e)
         >>> ini.getDict('s', 'dict')
-        {u'a': u'b'}
+        {'a': 'b'}
         >>> ini.getDict('s', 'empty value')
-        {u'empty': None}
+        {'empty': None}
         >>> ini.close()
         >>> ini = IniVars("getdict.ini")
         >>> ini.get('s', 'empty value')
-        u'empty'
+        'empty'
         >>> ini.get('s', 'dict')
-        u'a: b'
+        'a: b'
         >>> ini.getDict('s', 'empty value')
-        {u'empty': None}
+        {'empty': None}
         >>> ini.getDict('s', 'dict')
-        {u'a': u'b'}
+        {'a': 'b'}
         
         setting and getting through direct string values:
         
         >>> ini.set('s', 'one', 'value')
         >>> ini.getDict('s', 'one')
-        {u'value': None}
+        {'value': None}
         >>> ini.set('s', 'two', 'key: value 1\\n key2 : value 2')
         >>> ini.getDict('s', 'two')
-        {u'key2': u'value 2', u'key': u'value 1'}
+        {'key': 'value 1', 'key2': 'value 2'}
         >>> ini.set('s', 'three', 'keyempty\\nkey1: value 1\\nkey2, key3: value1, value2')
         >>> ini.getDict('s', 'three')
-        {u'key3': [u'value1', u'value2'], u'key2': [u'value1', u'value2'], u'key1': u'value 1', u'keyempty': None}
+        {'keyempty': None, 'key1': 'value 1', 'key2': ['value1', 'value2'], 'key3': ['value1', 'value2']}
 
         also the value of the value can be a list:
         
         >>> ini.set('s', 'list', 'key: a, b, c')
         >>> ini.getDict('s', 'list')
-        {u'key': [u'a', u'b', u'c']}
+        {'key': ['a', 'b', 'c']}
         >>> ini.close()
         
         """
@@ -1507,7 +1518,7 @@ u'v'
         3
         >>> ini.getInt('s', 'unknown')
         0
-        >>> ini.getInt('s', 'default', 11)
+        >>> ini.getInt('s', 'unknowndefault', 11)
         11
         
         """
@@ -1623,44 +1634,44 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         >>> ini.set('pref eggs', 'key', '5')
         >>> ini.set('pref eggs', 'k', '6')
         >>> ini.getSectionPostfixesWithPrefix('pref')
-        [u'eggs', u'faa', u'foo', u'f', u'']
+        ['eggs', 'faa', 'foo', 'f', '']
         >>> ini.getSectionPostfixesWithPrefix('pr')
         []
 
         
         Now go and search back, longest match first!
         >>> ini.getFromSectionsWithPrefix('pr', 'foo bar eggs', 'key')
-        u''
+        ''
  
         >>> ini.getFromSectionsWithPrefix('pref', 'foo bar eggs', 'key')
-        u'5'
+        '5'
         >>> ini.getFromSectionsWithPrefix('pref', 'egg foo bar', 'key')
-        u'4'
+        '4'
         >>> ini.getFromSectionsWithPrefix('pref', '', 'key')
-        u'1'
+        '1'
         >>> ini.getFromSectionsWithPrefix('pref', 'withfooandeggs', 'key')
-        u'5'
+        '5'
         >>> ini.getFromSectionsWithPrefix('pref', 'completely different', 'key')
-        u'2'
+        '2'
         >>> ini.getFromSectionsWithPrefix('pref', 'completely else', 'key')
-        u'1'
+        '1'
         >>> ini.getFromSectionsWithPrefix('pr', 'foo bar eggs', 'key')
-        u''
+        ''
         >>> ini.getFromSectionsWithPrefix('pref', 'foo bar eggs', 'l')
-        u'2'
+        '2'
         >>> ini.getFromSectionsWithPrefix('pref', 'foo bar eggs', 'm')
-        u'1'
+        '1'
 
         Get a list of sections that meeting the requirements:
 
         >>> ini.getSectionsWithPrefix('pref')
-        [u'pref eggs', u'pref faa', u'pref foo', u'pref f', u'pref']
+        ['pref eggs', 'pref faa', 'pref foo', 'pref f', 'pref']
         >>> ini.getSectionsWithPrefix('pref', 'abcd')
-        [u'pref']
+        ['pref']
         >>> ini.getSectionsWithPrefix('pref', 'foo')
-        [u'pref foo', u'pref f', u'pref']
+        ['pref foo', 'pref f', 'pref']
         >>> ini.getSectionsWithPrefix('pref', 'egg')
-        [u'pref']
+        ['pref']
         >>> ini.getSectionsWithPrefix('pr', 'egg')
         []
 
@@ -1668,7 +1679,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         >>> ini.getSectionsWithPrefix('pref', [])
         []
         >>> ini.getSectionsWithPrefix('pref', ['foo','eggs', ''])
-        [u'pref foo', u'pref eggs', u'pref']
+        ['pref foo', 'pref eggs', 'pref']
         
         These lists can be used with the next get call,
         so if the section is a list,
@@ -1677,53 +1688,53 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
 
         >>> L = ini.getSectionsWithPrefix('pref')
         >>> ini.get(L, 'key')
-        u'5'
+        '5'
         >>> L = ini.getSectionsWithPrefix('pref', 'this foo and another thing')
         >>> ini.get(L, 'key')
-        u'4'
+        '4'
         >>> ini.get([], 'key')
-        u''
+        ''
         >>> ini.get(['pref'], 'k')
-        u''
+        ''
         
         We can also extract a list of all possible keys,
         and also ordered in a dictionary, leaving out doubles.
         >>> L = ini.getSectionsWithPrefix('pref') # with all sections with prefix pref
         >>> ini.get(L)
-        [u'k', u'key', u'l', u'm']
+        ['key', 'k', 'l', 'm']
         >>> ini.getKeysOrderedFromSections(L)
-        {u'pref': [u'm'], u'pref foo': [], u'pref f': [u'l'], u'pref eggs': [u'k', u'key'], u'pref faa': []}
+        {'pref eggs': ['key', 'k'], 'pref faa': [], 'pref foo': [], 'pref f': ['l'], 'pref': ['m']}
         >>> L = ini.getSectionsWithPrefix('pref', 'this foo and another thing') # with selection
         >>> ini.get(L)
-        [u'key', u'l', u'm']
+        ['key', 'l', 'm']
         >>> ini.getKeysOrderedFromSections(L)
-        {u'pref': [u'm'], u'pref foo': [u'key'], u'pref f': [u'l']}
+        {'pref foo': ['key'], 'pref f': ['l'], 'pref': ['m']}
 
         And format this dictionary into a long string:
 
         >>> ini.formatKeysOrderedFromSections(L)
-        u'[pref foo]\\nkey\\n\\n[pref f]\\nl\\n\\n[pref]\\nm\\n'
+        '[pref foo]\\nkey\\n\\n[pref f]\\nl\\n\\n[pref]\\nm\\n'
 
         >>> ini.formatKeysOrderedFromSections(L, giveLength=True)
-        u'[pref foo] (1)\\nkey\\n\\n[pref f] (1)\\nl\\n\\n[pref] (1)\\nm\\n'
+        '[pref foo] (1)\\nkey\\n\\n[pref f] (1)\\nl\\n\\n[pref] (1)\\nm\\n'
 
 
         ## if you specify giveLength as int, only sections with more items than giveLength
         ## have the number added.
         >>> ini.formatKeysOrderedFromSections(L, giveLength=10)
-        u'[pref foo]\\nkey\\n\\n[pref f]\\nl\\n\\n[pref]\\nm\\n'
+        '[pref foo]\\nkey\\n\\n[pref f]\\nl\\n\\n[pref]\\nm\\n'
                 
         For debugging purposes the section that matches a key
         from a section list can be retrieved:
 
         >>> ini.getMatchingSection(L, 'key')
-        u'pref foo'
+        'pref foo'
         >>> ini.getMatchingSection(L, 'l')
-        u'pref f'
+        'pref f'
         >>> ini.getMatchingSection(L, 'm')
-        u'pref'
+        'pref'
         >>> ini.getMatchingSection(L, 'no valid key')
-        u'section not found'
+        'section not found'
 
 
         """
@@ -1738,7 +1749,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         l = []
         for s in self.get():
             if s.find(prefix) == 0:
-                L = list(map(string.strip, s.split(' ', 1)))
+                L = [item.strip() for item in s.split(' ', 1)]
                 if L[0] == prefix: # proceed:
                     if len(L) == 2:
                         if ' '.join(L) != s:
@@ -1748,8 +1759,8 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
                     else:
                         l.append('')   # section key identical prefix, adding ''
         if l:
-            l.sort(lensort)
-
+            l.sort(key=len)
+            l.reverse()
         self._sectionPostfixesWP[prefix] = l
 ##        print 'new entry of _sectionPostfixesWP,%s: %s'% (prefix, l)
         return self._sectionPostfixesWP[prefix]
@@ -1898,20 +1909,20 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         >>> ini.set('example', 'key-12', '3')
 
         >>> ini.getKeysWithPrefix('example', 'key', glue='-')
-        [u'key-4', u'key-12']
+        ['key-4', 'key-12']
         >>> ini.getKeysWithPrefix('example', 'key', glue='-')
-        [u'key-4', u'key-12']
+        ['key-4', 'key-12']
         >>> ini.set('mixed', 'foo', '1')
         >>> ini.set('mixed', 'foo 4', '2')
         >>> ini.set('mixed', 'foo 12', '3')
         >>> ini.set('mixed', 'foo text', '4')
         >>> ini.getKeysWithPrefix('mixed', 'foo', includePrefix=1)
-        [u'foo', u'foo 4', u'foo 12', u'foo text']
+        ['foo', 'foo 4', 'foo 12', 'foo text']
 
         # if no glue prefix takes anything and no numeric sort, so mostly you will prefer a glue character
         # like ' ' or '-'/
         >>> ini.getKeysWithPrefix('mixed', 'fo')
-        [u'foo', u'foo 12', u'foo 4', u'foo text']
+        ['foo', 'foo 12', 'foo 4', 'foo text']
 
         # mismatch, if glue prefix must exactly match first word:
         >>> ini.getKeysWithPrefix('mixed', 'fo', glue=' ')
@@ -1943,7 +1954,7 @@ empty, o, f, F, False, false, Onwaar, o, none -->> False
         for k in rawlist:
             if glue:
                 try:
-                    start, num = list(map(string.strip, k.rsplit(glue, 1)))
+                    start, num = [item.strip() for item in k.rsplit(glue, 1)]
                 except ValueError:
                     continue
             else:
@@ -1999,22 +2010,22 @@ def sortHyphenKeys(keys):
     nothing happens
 
 >>> sortHyphenKeys(['second', 'numbered-2', 'numbered-10'])
-[u'second', u'numbered-2', u'numbered-10']
+['second', 'numbered-2', 'numbered-10']
 
 >>> sortHyphenKeys(['a', 'bbb-ccc', 'x', 'bbb'])
-[u'a', u'bbb', u'bbb-ccc', u'x']
+['a', 'bbb', 'bbb-ccc', 'x']
 
 >>> sortHyphenKeys(['second', 'no sort'])
-[u'no sort', u'second']
+['no sort', 'second']
 >>> sortHyphenKeys(['single', 's', 'double', 'en-double'])
-[u's', u'single', u'double', u'en-double']
+['s', 'single', 'double', 'en-double']
 
->>> sortHyphenKeys([u'single', u's', u'double', u'en-double', u'double-2', u'en-double-2', u'double-10', u'en-double-10'])
-[u's', u'single', u'double', u'en-double', u'double-2', u'en-double-2', u'double-10', u'en-double-10']
+>>> sortHyphenKeys(['single', 's', 'double', 'en-double', 'double-2', 'en-double-2', 'double-10', 'en-double-10'])
+['s', 'single', 'double', 'en-double', 'double-2', 'en-double-2', 'double-10', 'en-double-10']
 
 
 >>> sortHyphenKeys(['triple', 'en-triple', 'fr-triple', 'en-triple-3', 'fr-triple-3', 'triple-13', 'fr-triple-13', 'single', 's', 'double', 'en-double', 'double-2', 'en-double-2', 'double-10', 'en-double-10'])
-[u's', u'single', u'double', u'en-double', u'triple', u'en-triple', u'fr-triple', u'double-2', u'en-double-2', u'triple-3', u'en-triple-3', u'fr-triple-3', u'double-10', u'en-double-10', u'triple-13', u'fr-triple-13']
+['s', 'single', 'double', 'en-double', 'triple', 'en-triple', 'fr-triple', 'double-2', 'en-double-2', 'triple-3', 'en-triple-3', 'fr-triple-3', 'double-10', 'en-double-10', 'triple-13', 'fr-triple-13']
 
 
     """
@@ -2154,13 +2165,13 @@ def listToString(valueList):
     third: in more lines: return join of lines, only right strip now
 
 >>> listToString([''])
-u''
+''
 >>> listToString(['   '])
-u''
+''
 >>> listToString(['', ' abc ', '', 'def    ', ''])
-u' abc\\n\\ndef'
+' abc\\n\\ndef'
 >>> listToString(['', '  stripped ', '', '', '  ', '\\t \\t'])
-u'stripped'
+'stripped'
 
     """
     if len(valueList) == 0:
