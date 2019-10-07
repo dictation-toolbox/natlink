@@ -156,30 +156,5 @@ STDMETHODIMP CDgnAppSupport::EndProcess( DWORD dwProcessID )
 
 void CDgnAppSupport::reloadPython()
 {
-	// free our reference to the Python modules
-	Py_XDECREF( m_pNatLinkMain );
-
-	// terminate the Python subsystem
-	Py_Finalize();
-
-	// load and initialize the Python system
-	Py_Initialize();
-
-	// load the natlink module into Python
-	initModule();
-
-	// load the Python code which does most of the work
-	m_pDragCode->setDuringInit( TRUE );
-	m_pNatLinkMain = PyImport_ImportModule( "natlinkmain" );
-	m_pDragCode->setDuringInit( FALSE );
-	
-	if( m_pNatLinkMain == NULL )
-	{
-		OutputDebugString(
-			TEXT( "NatLink: an exception occurred loading 'natlinkmain' module" ) ); // RW TEXT macro added
-		m_pDragCode->displayText(
-			"An exception occurred loading 'natlinkmain' module\r\n", TRUE );
-		m_pDragCode->displayText(
-			"No more error information is available\r\n", TRUE );
-	}
+    PyImport_ReloadModule(m_pNatLinkMain);
 }
