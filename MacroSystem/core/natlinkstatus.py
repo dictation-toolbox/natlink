@@ -76,7 +76,7 @@ __version__ = "4.2"
 # version 3.7: changed userDirectory to UserDirectory in the getNatlinkStatusDict function.
 #              no influence on the natlinkstatus.getUserDirectory() function.
 
-"""The following functions are provided in this module:
+r"""The following functions are provided in this module:
 (to be used by either natlinkmain.py or natlinkconfigfunctions.py)
 
 The functions below are put into the class NatlinkStatus.
@@ -194,9 +194,9 @@ import inivars
 
 # adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
-NSExt73Path  = "ScanSoft\NaturallySpeaking"
-NSExt8Path  = "ScanSoft\NaturallySpeaking8"
-NSExt9Path  = "Nuance\NaturallySpeaking9"
+NSExt73Path  = r"ScanSoft\NaturallySpeaking"
+NSExt8Path  = r"ScanSoft\NaturallySpeaking8"
+NSExt9Path  = r"Nuance\NaturallySpeaking9"
 # NSExt10Path  = "Nuance\NaturallySpeaking10"
 # NSExt11Path  = "Nuance\NaturallySpeaking11"
 # NSExt12Path  = "Nuance\NaturallySpeaking12"
@@ -207,7 +207,7 @@ DNSVersions = list(range(19,6,-1))
 for v in DNSVersions:
     varname = "NSExt%sPath"%v 
     if "NSExt%sPath"% v not in globals():
-        globals()[varname] = "Nuance\NaturallySpeaking%s"% v
+        globals()[varname] = "Nuance\\NaturallySpeaking%s"% v
     DNSPaths.append(globals()[varname])
 
 # utility functions: 
