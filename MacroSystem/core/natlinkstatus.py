@@ -3,7 +3,7 @@ __version__ = "4.2"
 # natlinkstatus.py
 #   This module gives the status of NatLink to natlinkmain
 #
-#  (C) Copyright Quintijn Hoogenboom, February 2008/January 2018
+#  (C) Copyright Quintijn Hoogenboom, February 2008/January 2018//with Jan Scheffczyk october 2019
 #
 #----------------------------------------------------------------------------
 #
@@ -278,17 +278,18 @@ class NatlinkStatus(object):
     ### this part is nearly obsolete, this registry section was used in version before 3.5 or so
     usergroup = "SOFTWARE"
 ##    lmgroup = "SOFTWARE\Natlink"
-    try:
-        userregnlOld = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup, flags=win32con.KEY_READ)
-    except:
-        userregnlOld = None
-    if not userregnlOld:
-        userregnlOld = None
-    else:
-        if 'NatLink' in list(userregnlOld.keys()):
-            userregnlOld = userregnlOld['NatLink']
-        else:
-            userregnlOld = None
+## declare obsolete, QH, 8-10-2019
+    # try:
+    #     userregnlOld = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup, flags=win32con.KEY_READ)
+    # except:
+    #     userregnlOld = None
+    # if not userregnlOld:
+    #     userregnlOld = None
+    # else:
+    #     if 'NatLink' in list(userregnlOld.keys()):
+    #         userregnlu = userregnlOld['NatLink']
+    #     else:
+    #         userregnlOld = None
             
         
 ##    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)
@@ -1741,8 +1742,8 @@ if __name__ == "__main__":
 
     print('\nExample: the Vocola compatibility folder in Unimacro:')
     voccompDir = natlinkcorefunctions.expandEnvVariableAtStart('%UNIMACRODIRECTORY%/vocola_compatibility')
-    print(('%%UNIMACRODIRECTORY%%/vocola_compatibility is expanded to: %s'% voccompDir))
-    print(('Is valid directory: %s'% os.path.isdir(voccompDir)))
+    print('%%UNIMACRODIRECTORY%%/vocola_compatibility is expanded to: %s'% voccompDir)
+    print('Is valid directory: %s'% os.path.isdir(voccompDir))
     
     
     
