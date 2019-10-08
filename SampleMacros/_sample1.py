@@ -16,6 +16,16 @@
 #
 # See also the variant _first_sample_docstring.py in the folder DisabledGrammars of Unimacro
 
+# run from MacroSystem:
+import sys
+import os
+thisPath = os.getcwd()
+coreDir = os.path.normpath(os.path.join(thisPath, "..", "MacroSystem", "Core"))
+if os.path.exists(coreDir):
+    print('inserting, just to be sure, in sys.path: %s'% coreDir)
+    sys.path.insert(0, coreDir)
+else:
+    print('failed to find coreDir (%s), hope it is in the path already'% coreDir)
 import natlink
 from natlinkutils import *
 
