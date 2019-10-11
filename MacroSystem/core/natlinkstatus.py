@@ -99,7 +99,7 @@ getDNSInstallDir:
     if the registry key NatspeakInstallDir exists(CURRENT_USER/Software/Natlink),
     this path is taken (if it points to a valid folder)
     Otherwise one of the default paths is taken,
-    %PROGRAMFILES%\Nuance\... or %PROGRAMFILES%\ScanSoft\...
+    %PROGRAMFILES%\Nuance\... 
     It must contain at least a Program subdirectory or App\Program subdirectory
 
 getDNSIniDir:
@@ -140,7 +140,7 @@ getUserDirectory: get the NatLink user directory, ##Unimacro will be there. If n
     (if run from natlinkconfigfunctions use getUserDirectoryFromIni, which checks inifile
      at each call...) 
 
-getUnimacroDirectory: get the directory, which should be in natlink\\Unimacro. 
+getUnimacroDirectory: get the directory, which should be in natlink/Unimacro. 
 
 getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
     (if run from natlinkconfigfunctions use getVocolaDirectoryFromIni, which checks inifile
@@ -179,8 +179,6 @@ getAhkExeDir: return the directory where AutoHotkey is found (only needed when n
 getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.
 
 """
-import six
-
 import os, re, win32api, win32con, sys, pprint, stat
 import RegistryDict
 import natlinkcorefunctions
@@ -207,7 +205,7 @@ DNSVersions = list(range(19,6,-1))
 for v in DNSVersions:
     varname = "NSExt%sPath"%v 
     if "NSExt%sPath"% v not in globals():
-        globals()[varname] = "Nuance\\NaturallySpeaking%s"% v
+        globals()[varname] = r"Nuance\NaturallySpeaking%s"% v
     DNSPaths.append(globals()[varname])
 
 # utility functions: 
@@ -397,7 +395,7 @@ class NatlinkStatus(object):
         then also include the Unimacro directory!
 
         (the registry is out of use, only the core directory is in the
-        PythonPath \ NatLink setting, for natlink be able to be started.
+        PythonPath \NatLink setting, for natlink be able to be started.
         
         Also set here the CoreDirectory and BaseDirectory
         """
