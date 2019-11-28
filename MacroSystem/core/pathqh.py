@@ -248,7 +248,10 @@ True
             return args[0]
         if type(args[0]) == list:
             args = ('/'.join(args[0]),)
-        input = '/'.join(args)
+        if args == (None,):    # vreemde fout bij HTMLgen BGsound
+            input = ""
+        else:            
+            input = '/'.join(args)
         if input.find("|") >= 0:
             validPath = getValidPath(input)
             if validPath:
@@ -278,8 +281,8 @@ True
                 # empty input, return working directory (??? TODOQH)
                 emptypath = self.resolve()
                 return emptypath
-            # relative:
-            if input.startswith("~"):
+            # relative, but not office temporary file:
+            if input.startswith("~") and not input.startswith("~$"):
                 expanded = self.expanduser()
                 expanded.path_prefix = "~"
                 homedir = str(expanded)[:(len(expanded)-len(input)+1)]
@@ -335,6 +338,17 @@ True
     
     def __len__(self):
         return len(str(self))
+
+    ## str operations on path:   
+    def find(self, searchstring):
+        """treat as string"""
+        return str(self).find(searchstring)
+    def endswith(self, searchstring):
+        """treat as string"""
+        return str(self).endswith(searchstring)
+    def startswith(self, searchstring):
+        """treat as string"""
+        return str(self).startswith(searchstring)
    
     def strdefaultstyle(self):
         """return the string with backslashes in windows,
@@ -1560,9 +1574,8 @@ def walkZfiles(directory):
                 yield os.path.join(Dir, f)
 
 def _test():
-    import doctest, pathqh
-    doctest.master = None
-    return  doctest.testmod(pathqh)
+    import doctest
+    return  doctest.testmod()
 
 if __name__ == "__main__":
     # p = path("C:/Natlink")
