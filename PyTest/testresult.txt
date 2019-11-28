@@ -1,0 +1,14 @@
+log messages to file: C:\NatlinkGIT\Natlink\PyTest\testresult.txt
+starting unittestNatlink
+
+starting tests with threading: 1
+
+testGrammarRecognitions
+loading gramSpec: <hello> exported = hello world;
+got: hello world
+loading gramSpec: <hello> exported = hello | world;
+did not recognise (as expected): ['hello', 'world']
+recognised: ['hello']
+recognised: ['world']
+got: hello and world apart
+all succesful
