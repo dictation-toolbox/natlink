@@ -345,9 +345,13 @@ True
         return str(self).find(searchstring)
     def endswith(self, searchstring):
         """treat as string"""
+        if isinstance(searchstring, self.__class__):
+            searchstring = str(searchstring)
         return str(self).endswith(searchstring)
     def startswith(self, searchstring):
         """treat as string"""
+        if isinstance(searchstring, self.__class__):
+            searchstring = str(searchstring)
         return str(self).startswith(searchstring)
    
     def strdefaultstyle(self):
@@ -564,14 +568,17 @@ True
 
 
 
-    # def mkdir(self, newpath=None):
-    #     """make new folder, only if it does not exist yet
-    # 
-    #     """
-    #     if newpath:
-    #         createFolderIfNotExistent(self/newpath)
-    #     else:
-    #         createFolderIfNotExistent(self)
+    def mkdir(self, newpath=None):
+        """make new folder, only if it does not exist yet
+    
+        """
+        if newpath:
+            New = self/newpath
+        else:
+            New = self
+        _ancestor.mkdir(New)
+        return New
+    
 
     def copy(self, out):
         """copy file"""
