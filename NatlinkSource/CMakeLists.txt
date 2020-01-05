@@ -48,6 +48,7 @@ source_group("Headers" FILES ${HEADERS_FILES})
 
 # TODO This should not be hard coded...
 include_directories("C:\\Python37_32bit\\include")
+include_directories("extern")
 link_directories("C:\\Python37_32bit\\libs")
 
 add_compile_definitions(DRAGON_VERSION=15)
