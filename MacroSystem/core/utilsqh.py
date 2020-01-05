@@ -1,4 +1,3 @@
-
 """utility functions from Quintijn, used in unimacro and in local programs.
    in python3 also the path module as subclass of the standard path class
 """
@@ -301,7 +300,6 @@ def convertToUnicode(text):
 #         return func(*(args+moreargs), **kw)
 #     return curried
 
-## TODOQH
 class peek_ahead:
     """ An iterator that supports a peek operation.
     
@@ -373,6 +371,8 @@ class peek_ahead:
     [1, 2]
     >>> p.peek(2) #doctest: +ELLIPSIS
     [3, <object object at ...>]
+    >>> p.peek(4) #doctest: +ELLIPSIS
+    [3, <object object at ...>, <object object at ...>, <object object at ...>]
     >>> p.peek(1)
     [3]
     >>> p.next(2)
@@ -421,11 +421,6 @@ class peek_ahead:
     ...         print(i, end=" ")
     ...
     a bb c dddd e 
-
-    
-    
-    
-    
     
     """
     ## schildwacht (guard)
@@ -523,14 +518,12 @@ class peek_ahead:
         else:
             result = [self._cache[i] for i in range(n)]
         return result
-
-
     # old name:
     # peek_ahead = peekable
 
 ## TODOQH
 class peek_ahead_stripped(peek_ahead):
-    """ Iterator that strips the lines of text, and returns (leftSpaces,strippedLine)
+    """ Iterator that strips lines of text, and returns (leftSpaces,strippedLine)
 
     sentinel is just False, such that peeking ahead can check for truth input
 
@@ -543,7 +536,7 @@ class peek_ahead_stripped(peek_ahead):
     >>> lines = ['line1', '', 'line2 (last)']
     >>> it = peek_ahead_stripped(lines)
     >>> for spaces, text in it:
-    ...     print('current line: |', text, '|',' ')
+    ...     print('current line: |', text, '|', end=' ')
     ...     if it.preview is it.sentinel:
     ...         print(', cannot preview, end of peek_ahead_stripped')
     ...     elif it.preview[1]:
@@ -555,20 +548,19 @@ class peek_ahead_stripped(peek_ahead):
     current line: | line2 (last) | , cannot preview, end of peek_ahead_stripped
 
     """
-    sentinel = peek_ahead.sentinel
-    
-    def __next__(self):
-        result = self._step()
-        if result is self.sentinel: raise StopIteration
-        else: return result
-    def _step(self):
-        """collect the line and do the processing"""
-        result = self.preview
-        try:
-            line = self._nit().rstrip()
-            self.preview = (len(line) - len(line.lstrip()), line.lstrip())
-        except StopIteration: self.preview = self.sentinel
-        return result
+    def _fillcache(self, n):
+        """fill _cache of items to come, special treatment for this stripped subclass
+        """
+        if n is None:
+            n = 1
+        while len(self._cache) < n+1:
+            try:
+                line = self._nit()
+                Next = (len(line) - len(line.lstrip()), line.lstrip())
+            except StopIteration:
+                # store sentinel, to identify end of iter:
+                Next = self.sentinel
+            self._cache.append(Next)
      
 def get_best_match(texts, match_against, ignore=' ', treshold=0.9):
     """Get the best matching from texts, none if treshold is not reached
@@ -2923,7 +2915,7 @@ def checkKnownTest(basis, known="known", test="test", **kw):
     ignore = kw.get("ignore", None)
     hide = kw.get("hide", None)
     if basis.find(' ') >= 0:
-        raise Exception('for windiff, no spaces in path allowed: %s'% basis)
+        raise ValueError('for windiff, no spaces in path allowed: %s'% basis)
 
     if not basis.isdir():
         raise IOError('not a folder: %s'% basis)
@@ -3093,10 +3085,8 @@ def revAbort(t):
     return
 
 def _test():
-    import doctest, utilsqh
-
-    doctest.master = None
-    return  doctest.testmod(utilsqh)
+    import doctest
+    return  doctest.testmod()
 
 def runPanel(frame, notebook):
     print('starting cp %s'% __name__)
@@ -3129,7 +3119,3 @@ if __name__ == "__main__":
     def revAbort(t):
         return
     _test()
-    ### werkt nog niet...
-    #runIsValidWindow(1234567)
-    #runGetProcIdFromWnd(461648)
-    #killProcIdFromWnd(461648)
