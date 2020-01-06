@@ -6,16 +6,16 @@ import sys
 import time
 
 if six.PY2: ModuleNotFoundError = ImportError
-
+#
 print('Starting start_configurenatlink.py,')
 print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')
 print()
 
 
-if not sys.version.startswith('2.'):
-    print('This script should start with python2, not with %s'% sys.version)
-    time.sleep(30)
-    sys.exit()
+# if not sys.version.startswith('2.'):
+#     print('This script should start with python2, not with %s'% sys.version)
+    # time.sleep(30)
+#     sys.exit()
 
 try:
     from future import standard_library
@@ -38,7 +38,7 @@ except (KeyError, ModuleNotFoundError):
     print()
     print('You can also try to run start_natlinkconfigfunctions.py,')
     print('via Start, Configure Natlink via Command Line Interface')
-    time.sleep(30)
+    # time.sleep(30)
     sys.exit()
 
 try:
@@ -54,7 +54,7 @@ except ImportError:
     print('You can then try to run the batch script "start_postinstallscript_pywin32.cmd" in')
     print('Admin mode, in order to finish the installation. Hopefully this helps.')
     print('This file can be found in the "confignatlinkvocolaunimacro" subdirectory of your NatLink directory.')
-    time.sleep(30)
+    # time.sleep(30)
     sys.exit()
 
 try:
@@ -68,8 +68,8 @@ except ImportError:
     print()
     import traceback
     traceback.print_exc()
-    
-    time.sleep(30)
+
+    # time.sleep(30)
     sys.exit()
 
 
@@ -81,17 +81,17 @@ try:
         openpar = "runas"
     else:
         openpar = "open"
-        
+
     pathToPythonW = os.path.join(sys.prefix, "pythonw.exe")
     if not os.path.isfile(pathToPythonW):
         print("cannot find the Pythonw exectutable: %s"% pathToPythonW)
-        time.sleep(30)
+        # time.sleep(30)
         sys.exit()
-        
+
     configPath = os.path.join(os.path.dirname(__file__), "configurenatlink.pyw")
     if not os.path.isfile(configPath):
         print("cannot find the NatLink/Unimacro/Vocola configuration program: %s"% configPath)
-        time.sleep(30)
+        # time.sleep(30)
         sys.exit()
 
 
@@ -99,6 +99,8 @@ try:
     #print('sys.version: ', sys.version
     #time.sleep(5)
     ShellExecute(0, openpar, pathToPythonW, configPath, "", 1)
+    import traceback
+    traceback.print_exc()
 except:
     import traceback
     traceback.print_exc()

@@ -20,8 +20,8 @@ set(SRC_FILES
         DragonCode.cpp
         Exceptions.cpp
         GrammarObject.cpp
-        ./natlink.cpp
-        ./pythwrap.cpp
+        natlink.cpp
+        pythwrap.cpp
         ResultObject.cpp
         MessageWindow.cpp
         StdAfx.cpp
@@ -47,8 +47,8 @@ set(HEADERS_FILES
 source_group("Headers" FILES ${HEADERS_FILES})
 
 # TODO This should not be hard coded...
-include_directories("C:\\Python37_32bit\\include")
-link_directories("C:\\Python37_32bit\\libs")
+include_directories("C:/Python38-32/include")
+link_directories("C:/Python38-32/libs")
 
 add_compile_definitions(DRAGON_VERSION=15)
 
