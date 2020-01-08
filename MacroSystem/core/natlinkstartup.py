@@ -111,7 +111,7 @@ def copyVclFileLanguageVersion(Input, Output):
     output    = open(Output, 'w')
     language      = natlinkstatus.NatlinkStatus().getLanguage()
     output.write("# vocola file for alternate language: %s\n"% language)
-    lines = list(map(string.strip, str(input).split('\n')))
+    lines = list(map(lambda s: s.strip(), str(input).split('\n')))
     for line in lines:
         m = reInclude.match(line)
         if m:

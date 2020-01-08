@@ -93,9 +93,9 @@ import types
 class NewStdout(object):
     softspace=1
     def write(self,text):
-        if text.find('\x00') >= 0:
-            text = text.replace('\x00', '')
-            text = "===Warning, text contains null bytes==\n" + text
+        # if text.find('\x00') >= 0:
+        #     text = text.replace('\x00', '')
+        #     text = "===Warning, text contains null bytes==\n" + text
         # if type(text) == str:
         #     text = text.encode('cp1252')
         natlink.displayText(text, 0)
@@ -105,9 +105,9 @@ class NewStdout(object):
 class NewStderr(object):
     softspace=1
     def write(self,text):
-        if text.find('\x00') >= 0:
-            text = text.replace('\x00', '')
-            text = "===Warning, text contains null bytes===\n" + text
+        # if text.find('\x00') >= 0:
+        #     text = text.replace('\x00', '')
+        #     text = "===Warning, text contains null bytes===\n" + text
         # if type(text) == str:
         #     text = text.encode('cp1252')
         natlink.displayText(text, 1)
@@ -172,9 +172,9 @@ try:
         debugLoad = status.getDebugLoad()
         debugCallback = status.getDebugCallback()
         if debugLoad:
-            print(('do extra output at (re)loading time: %s'% debugLoad))
+            print('do extra output at (re)loading time: %s'% debugLoad)
         if debugCallback:
-            print(('do extra output at callback time: %s'% debugCallback))
+            print('do extra output at callback time: %s'% debugCallback)
 
     # QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
     # otherwise no grammar change checking is performed, only at microphone toggle
