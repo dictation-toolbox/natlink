@@ -11,18 +11,18 @@
 try:
     import wx
 except ImportError:
-    print 'Unable to run the GUI installer because module wx was not found.  This probably'
-    print 'means that wxPython is not installed.'
+    print('Unable to run the GUI installer because module wx was not found.  This probably')
+    print('means that wxPython is not installed.')
 
-    print
-    print 'Either install wxPython (recommended) or use the CLI (Command Line Interface)'
-    print 'Natlink configuration program.'
-    print
-    print 'A version of wxPython suitable for use with Natlink can be obtained from'
-    print 'http://sourceforge.net/project/showfiles.php?group_id=70807&package_id=261793'
-    print '(each package there contains a version of wxPython; get the one appropriate'
-    print ' to the version of Python you have installed.)'
-    print
+    print()
+    print('Either install wxPython (recommended) or use the CLI (Command Line Interface)')
+    print('Natlink configuration program.')
+    print()
+    print('A version of wxPython suitable for use with Natlink can be obtained from')
+    print('http://sourceforge.net/project/showfiles.php?group_id=70807&package_id=261793')
+    print('(each package there contains a version of wxPython; get the one appropriate')
+    print(' to the version of Python you have installed.)')
+    print()
     while True:
         pass
     raise
@@ -279,11 +279,11 @@ class InfoPanel(wx.Panel):
         self.cpanel.warning("See the info from natlinkstatus in the log panel")
 
     def OnButtonHelpInfo(self, event):
-        print '---help on DNS Install Directory:'
-        print 'note the letters correspond to the commands in the self.cli (command line interface)'
+        print('---help on DNS Install Directory:')
+        print('note the letters correspond to the commands in the self.cli (command line interface)')
         cli = self.cpanel.cli
         cli.help_d()
-        print '---help on DNS INI files Directory:'
+        print('---help on DNS INI files Directory:')
         cli.help_c()
         text = \
 """This info panel has no undo function, like the config panel,
@@ -308,10 +308,10 @@ See more help information in the log panel"""
 
         """
         if len(args) < 1:
-            print 'empty command %s'% `args`
+            print('empty command %s'% repr(args))
             return
         if len(args) > 2:
-            print 'too many posional arguments: %s'% `args`
+            print('too many posional arguments: %s'% repr(args))
             return
         letter = args[0]
         if len(args) == 2:
@@ -324,7 +324,7 @@ See more help information in the log panel"""
 
         if not func:
             mess = 'invalid command: %s'% letter
-            print mess
+            print(mess)
             return mess
         try:
             result = func(pathName)
@@ -439,7 +439,7 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.DNSName = self.config.getDNSName()
 
     def warning(self, text, title='Message from Configure Natlink GUI'):
-        if isinstance(text, basestring):
+        if isinstance(text, str):
             Text = text
         else:
             Text = '\n'.join(text)
@@ -492,13 +492,13 @@ class ConfigureNatlinkPanel(wx.Panel):
 
     def error(self, text):
         """put error message on log panel and on status line"""
-        print text
-        print '-'*60
+        print(text)
+        print('-'*60)
         self.frame.SetStatusText(text + ' (see log)')
 
     def setstatus(self, text):
         """put message on log panel and on status line"""
-        print text
+        print(text)
         self.frame.SetStatusText(text)
 
     def setInfo(self, leaveStatus=None):
@@ -665,10 +665,10 @@ class ConfigureNatlinkPanel(wx.Panel):
 
         """
         if len(args) < 1:
-            print 'empty command %s'% `args`
+            print('empty command %s'% repr(args))
             return
         if len(args) > 2:
-            print 'too many posional arguments: %s'% `args`
+            print('too many posional arguments: %s'% repr(args))
             return
         letter = args[0]
         if len(args) == 2:
@@ -679,7 +679,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         func = getattr(self.cli, funcName, None)
         if not func:
             mess = 'invalid command: %s'% letter
-            print mess
+            print(mess)
             return mess
 
         try:
@@ -698,12 +698,12 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.setInfo()
             return result
         undoInfo = kw['undo']
-        if type(undoInfo) == types.TupleType and len(undoInfo) in [1,2]:
+        if type(undoInfo) == tuple and len(undoInfo) in [1,2]:
             undo = undoInfo
-        elif isinstance(undoInfo, basestring):
+        elif isinstance(undoInfo, str):
             undo = (undoInfo,)
         else:
-            print 'invalid undoInfo from button: %s'% `undoInfo`
+            print('invalid undoInfo from button: %s'% repr(undoInfo))
             return result
         self.undoList.append(undo)
         self.setInfo(leaveStatus=result)
@@ -833,7 +833,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         if answer:
             # print 'answer: %s'% answer
             if answer%2:
-                print "(re)copy Unimacro.vch file to Vocola user commands directory"
+                print("(re)copy Unimacro.vch file to Vocola user commands directory")
                 doLetter = 'l'
                 statustext = 'Copied Unimacro.vch file to Vocola user commands directory'
                 self.do_command(doLetter)
@@ -841,7 +841,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 self.setInfo()
                 answer -= 1
             if answer%4:
-                print 'remove "include Unimacro.vch" lines from all Vocola command files in your Vocola user commands directory'
+                print('remove "include Unimacro.vch" lines from all Vocola command files in your Vocola user commands directory')
                 doLetter = 'M'
                 undoLetter = "m"
                 statustext = 'Removed "include Unimacro.vch" lines from all Vocola command files in your Vocola user commands directory'
@@ -850,7 +850,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 self.setInfo()
                 answer -= 2
             if answer == 4:
-                print 'add "include Unimacro.vch" lines to all Vocola command files in your Vocola user commands directory'
+                print('add "include Unimacro.vch" lines to all Vocola command files in your Vocola user commands directory')
                 doLetter = 'm'
                 undoLetter = "M"
                 statustext = 'added "include Unimacro.vch" lines to all Vocola command files in your Vocola user commands directory'
@@ -858,7 +858,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 self.setstatus(statustext)
                 self.setInfo()
         else:
-            print 'nothing chosen'
+            print('nothing chosen')
 
     def OnButtonUnimacroEditor(self, event):
         D = self.config.getNatlinkStatusDict()
@@ -935,8 +935,8 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.warning("See log panel")
 
     def OnButtonHelp5(self, event):
-        print '---help on re(register) natlink.pyd'
-        print 'note the letters correspond to the commands in the self.cli (command line interface)'
+        print('---help on re(register) natlink.pyd')
+        print('note the letters correspond to the commands in the self.cli (command line interface)')
         self.cli.help_r()
         text = \
 """
@@ -972,8 +972,8 @@ Dragonfly users can use this option.
         self.warning(text)
 
     def OnButtonHelp3(self, event):
-        print '---help on Enable/Disable Unimacro:'
-        print 'note the letters correspond to the commands in the self.cli (command line interface)'
+        print('---help on Enable/Disable Unimacro:')
+        print('note the letters correspond to the commands in the self.cli (command line interface)')
         self.cli.help_n()
         self.cli.help_o()
         self.cli.help_p()
@@ -991,7 +991,7 @@ Vocola can use Unimacro features, by checking the checkbox in the Vocola section
 
 Via the dialog Vocola Compatibility, you can handle things around the include file, Unimacro.vch.
 
-This file is automatically copied from  (...)\Unimacro\vocola_compatibility into the VocolaUserDirectory when Vocola is started.
+This file is automatically copied from  (...)\\Unimacro\vocola_compatibility into the VocolaUserDirectory when Vocola is started.
 
 More about this in the "Vocola Compatibility" dialog.
 """
@@ -1211,11 +1211,11 @@ More about this in the "Vocola Compatibility" dialog.
 
 
     def OnButtonHelp2(self, event):
-        print '---help on Enable/disable Vocola:'
-        print 'note the letters correspond to the commands in the self.cli (command line interface)'
+        print('---help on Enable/disable Vocola:')
+        print('note the letters correspond to the commands in the self.cli (command line interface)')
         self.cli.help_b()
         self.cli.help_a()
-        print '---help on additional Vocola options:'
+        print('---help on additional Vocola options:')
         L = []
         L.append("Vocola is enabled by specifying a directory (VocolaUserDirectory)")
         L.append("where the Vocola Command files are/will be located.")
@@ -1230,10 +1230,10 @@ More about this in the "Vocola Compatibility" dialog.
         self.warning('\n'.join(L))
 
     def OnButtonHelp1(self, event):
-        print '---help on Enable Natlink and corresponding functions:'
-        print 'note the letters correspond to the commands in the self.cli (command line interface)'
+        print('---help on Enable Natlink and corresponding functions:')
+        print('note the letters correspond to the commands in the self.cli (command line interface)')
         self.cli.help_e()
-        print '---help on Natlink debug options:'
+        print('---help on Natlink debug options:')
         self.cli.help_x()
         text = """
 

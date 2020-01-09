@@ -20,8 +20,8 @@ set(SRC_FILES
         DragonCode.cpp
         Exceptions.cpp
         GrammarObject.cpp
-        ./natlink.cpp
-        ./pythwrap.cpp
+        natlink.cpp
+        pythwrap.cpp
         ResultObject.cpp
         MessageWindow.cpp
         StdAfx.cpp

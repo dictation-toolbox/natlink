@@ -53,10 +53,10 @@ class RegistryDict(object):
             pass
         # must not be there
         raise KeyError(key)
-    
+
     def has_key(self, key):
         return self.__contains__(key)
-    
+
     def __contains__(self, key):
         try:
             self.__getitem__(key)
@@ -79,13 +79,13 @@ class RegistryDict(object):
 
     def __hash__(self):
         raise TypeError("RegistryDict objects are unhashable")
-  
+
     def clear(self):
         keylist = list(self.keys())
         # Two-step to avoid changing the set while iterating over it
         for k in keylist:
             del self[k]
-    
+
     def iteritems_data(self):
         i = 0
         # yield data
@@ -106,14 +106,14 @@ class RegistryDict(object):
                 i += 1
         except:
             pass
-                
+
     def iteritems(self, access=win32con.KEY_ALL_ACCESS):
        # yield children
         for item in self.iteritems_data():
             yield item
         for item in self.iteritems_children(access):
             yield item
-            
+
     def iterkeys_data(self):
         for key, value in self.iteritems_data():
             yield key
@@ -139,14 +139,14 @@ class RegistryDict(object):
             yield value
 
     def items(self, access=win32con.KEY_ALL_ACCESS):
-        return list(self.items())
-              
+        return list(self.iteritems(access))
+
     def keys(self):
-        return list(self.keys())
+        return list(self.iterkeys())
 
     def values(self, access=win32con.KEY_ALL_ACCESS):
         return list(self.itervalues(access))
-        
+
     def __delitem__(self, key):
         # Delete a string value or a subkey, depending on the type
         try:
@@ -162,13 +162,13 @@ class RegistryDict(object):
             win32api.RegDeleteKey(self.keyhandle, key)
         else:
             raise ValueError("Unknown item type in RegistryDict")
-  
+
     def __len__(self):
         return len(list(self.items()))
 
     def __iter__(self):
         return iter(self.keys())
-  
+
     def popitem(self):
         try:
             k, v = next(iter(self.items()))
@@ -176,7 +176,7 @@ class RegistryDict(object):
             return k, v
         except StopIteration:
             raise KeyError("RegistryDict is empty")
-            
+
     def get(self,key,default=None):
         try:
             return self.__getitem__(key)
@@ -214,7 +214,7 @@ class RegistryDict(object):
                 valuetype = win32con.REG_BINARY
                 value = 'PyPickle' + pickle.dumps(value)
         win32api.RegSetValueEx(self.keyhandle, item, 0, valuetype, value)
-  
+
     def open(self, keyhandle, keypath, flags = None):
         if self.keyhandle:
             self.close()
@@ -244,7 +244,7 @@ if __name__=='__main__':
     ##    in case of doubt, follow this in the regedit program...
     ##
     lm = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software\TestRegistryDict", flags=None)
-        
+
     print('should start with empty dict: ', lm)
     lm['test'] = "abcd"
     print('should contain test/abcd: ', lm)
@@ -263,7 +263,6 @@ if __name__=='__main__':
     print('should be empty again: ', lm)
     ls = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software")
     del ls['TestRegistryDict']
-    
-    
-    
-    
+
+
+

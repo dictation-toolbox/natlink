@@ -31,6 +31,7 @@ import os.path
 import types
 import copy
 import sys
+import six
 
 def fixCrLf(tRaw):
     """replace crlf into lf
@@ -105,7 +106,7 @@ def writeAnything(filepath, encoding, bom, content):
     if type(content) in (list, tuple):
         content = '\n'.join(content)
 
-    if type(content) != str:
+    if not isinstance(content, six.string_types):
         raise TypeError("writeAnything, content should be Unicode, not %s (%s)"% (type(content), filepath))
     if encoding in [None, 'ascii']:
         encodings = ['ascii', 'latin-1']  # could change to cp1252, or utf-8
