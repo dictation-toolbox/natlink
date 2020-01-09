@@ -207,7 +207,7 @@ DNSVersions = list(range(19,6,-1))
 for v in DNSVersions:
     varname = "NSExt%sPath"%v
     if "NSExt%sPath"% v not in globals():
-        globals()[varname] = r"Nuance\NaturallySpeaking%s"% v
+        globals()[varname] = "Nuance\\NaturallySpeaking%s"% v
     DNSPaths.append(globals()[varname])
 
 # utility functions:

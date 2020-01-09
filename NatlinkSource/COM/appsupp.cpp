@@ -9,12 +9,12 @@
 	is designed to be a global client and not a app-specific client.  That
 	decision simplifies the design somewhat.
 */
-
+#include <string>
 #include "../StdAfx.h"
 #include "../Resource.h"
 #include "../DragonCode.h"
 #include "appsupp.h"
-
+#include <plog/Log.h>
 // from PythWrap.cpp
 CDragonCode * initModule();
 
@@ -35,6 +35,8 @@ CDgnAppSupport::~CDgnAppSupport()
 {
 }
 
+
+
 //---------------------------------------------------------------------------
 // Called by NatSpeak once when the compatibility module is first loaded.
 // This will never be called more than once in normal use.  (Although if one
@@ -51,14 +53,16 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	// load and initialize the Python system
 	Py_Initialize();
 
+
 	// load the natlink module into Python and return a pointer to the
 	// shared CDragonCode object
 	m_pDragCode = initModule();
 	m_pDragCode->setAppClass( this );
 
+
 	// simulate calling natlink.natConnect() except share the site object
 	bSuccess = m_pDragCode->natConnect( pIDgnSite );
-    m_pDragCode->displayText("Hello from C++\n");
+
 
 	if( !bSuccess )
 	{
@@ -68,11 +72,32 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 			"Failed to initialize NatSpeak interfaces\r\n", TRUE );
 		return S_OK;
 	}
-	
+    m_pDragCode->displayText("Before loading the module test \n");
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit( TRUE );
 	m_pNatLinkMain = PyImport_ImportModule( "natlinkmain" );
+
+
+    auto *path =PyObject_GetAttrString(m_pNatLinkMain,"__file__");
+    PyObject* repr = PyObject_Repr(path);
+    PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+    const char *bytes = PyBytes_AsString(str);
+
+
+    auto found=std::string(bytes).find_last_of("/\\");
+    auto folder= std::string(bytes).substr(0,found-1);
+    folder+="\\\\natlink_debug.txt";
+    char*charsToRemove="\'\"";
+    for ( unsigned int i = 0; i < strlen(charsToRemove); ++i ) {
+        folder.erase( remove(folder.begin(), folder.end(), charsToRemove[i]), folder.end() );
+    }
+    plog::init(plog::debug, folder.c_str());
+    PLOGD << "Hello log!";
+
+    m_pDragCode->displayText(folder.c_str());
 	m_pDragCode->setDuringInit( FALSE );
+    m_pDragCode->displayText("After loading the module \n");
+
 
 	if( m_pNatLinkMain == NULL )
 	{
@@ -80,12 +105,24 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 			TEXT( "NatLink: an exception occurred loading 'natlinkmain' module" ) ); // RW TEXT macro added
 		m_pDragCode->displayText(
 			"An exception occurred loading 'natlinkmain' module\r\n", TRUE );
-        PyObject *ptype, *pvalue, *ptraceback;
-        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-        const char *pStrErrorMessage = PyUnicode_AsUTF8(pvalue);
-		m_pDragCode->displayText(
-			pStrErrorMessage, TRUE );
+        if (PyErr_Occurred()) {
+            PyObject *ptype, *pvalue, *ptraceback;
+            PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+            const char *pStrErrorMessage = PyUnicode_AsUTF8(pvalue);
+            std::string string=pStrErrorMessage;
+            m_pDragCode->displayText("error message: ");
+            m_pDragCode->displayText(
+                    string.c_str(), TRUE);
+        }
 		return S_OK;
+	}else{
+
+        auto *path =PyObject_GetAttrString(m_pNatLinkMain,"__file__");
+        PyObject* repr = PyObject_Repr(path);
+        PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+        const char *bytes = PyBytes_AsString(str);
+        m_pDragCode->displayText(bytes);
+        m_pDragCode->displayText("\n--\n");
 	}
 
 	return S_OK;
