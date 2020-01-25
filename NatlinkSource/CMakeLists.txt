@@ -52,6 +52,9 @@ include_directories("extern")
 link_directories("C:\\Python37_32bit\\libs")
 
 add_compile_definitions(DRAGON_VERSION=15)
+# Asserts that Py_ssize_t is used in argument parsing,
+# see note at top of https://docs.python.org/3/c-api/arg.html
+add_compile_definitions(PY_SSIZE_T_CLEAN)
 
 # Ensures a Stable Application Binary Interface forpython 3.2+
 #add_compile_definitions(Py_LIMITED_API)
