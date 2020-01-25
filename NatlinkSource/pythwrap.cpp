@@ -12,7 +12,7 @@
 03.2008 djr: updated the code to work with Python 2.5 using Visual Studio 2005.
 
 Initial update was straightforward; however it exposed a bug that caused access
-violation error messages and a complete DNS crash.  The problem was that in 
+violation error messages and a complete DNS crash.  The problem was that in
 several places, objects were being created with PyObject_New but freed using
 PyMem_DEL.  Changing these calls to PyObject_Del below eliminated the crashes.
 
@@ -318,14 +318,14 @@ natlink_setBeginCallback( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
 	if( !cDragon.setBeginCallback( pFunc ) )
 	{
 		return NULL;
 	}
-	
+
 	Py_INCREF( Py_None );
 	return Py_None;
 }
@@ -347,14 +347,14 @@ natlink_setChangeCallback( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
 	if( !cDragon.setChangeCallback( pFunc ) )
 	{
 		return NULL;
 	}
-	
+
 	Py_INCREF( Py_None );
 	return Py_None;
 }
@@ -377,7 +377,7 @@ natlink_waitForSpeech( PyObject *self, PyObject *args )
 	{
 		return NULL;
 	}
-		
+
 	Py_INCREF( Py_None );
 	return Py_None;
 }
@@ -673,7 +673,7 @@ natlink_playEvents( PyObject *self, PyObject *args )
 	{
 		return NULL;
 	}
-	
+
 	if( !PyList_Check( pList ) )
 	{
 		PyErr_SetString(
@@ -714,7 +714,7 @@ natlink_playEvents( PyObject *self, PyObject *args )
 		pEvents[i].paramL = paramL;
 		pEvents[i].paramH = paramH;
 	}
-	
+
 	// here we perform the actual work
 
 	if( !cDragon.playEvents( dwCount, pEvents ) )
@@ -801,7 +801,7 @@ natlink_inputFromFile( PyObject *self, PyObject *args )
 			return NULL;
 		}
 	}
-	
+
 	if( !cDragon.inputFromFile(
 			pszFileName, bRealTime, dwPlayList, adwPlayList, nUttDetect ) )
 	{
@@ -832,14 +832,14 @@ natlink_setTimerCallback( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
 	if( !cDragon.setTimerCallback( pFunc, nMilliseconds ) )
 	{
 		return NULL;
 	}
-	
+
 	Py_INCREF( Py_None );
 	return Py_None;
 }
@@ -1092,7 +1092,7 @@ natlink_addWord( PyObject *self, PyObject *args )
 
 	// Decode the pronunciations which is either mussing, a single string or
 	// a list of strings.
-	
+
 	PCCHAR * ppProns = NULL;
 	if( pyProns )
 	{
@@ -1162,7 +1162,7 @@ natlink_setTrayIcon( PyObject *self, PyObject *args )
 	char * iconName = "";
 	char * toolTip = "NatLink Python macro system";
 	PyObject * pFunc = Py_None;
-	
+
 	if( !PyArg_ParseTuple( args, "|ssO:setTrayIcon", &iconName, &toolTip, &pFunc ) )
 	{
 		return NULL;
@@ -1171,7 +1171,7 @@ natlink_setTrayIcon( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "third parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
 	if( !cDragon.setTrayIcon( iconName, toolTip, pFunc ) )
@@ -1192,7 +1192,7 @@ extern "C" static PyObject *
 gramobj_load( PyObject *self, PyObject *args )
 {
 	char *pData;
-	int nData;
+	Py_ssize_t nData;
 	int bAllResults = 0;
 	int bHypothesis = 0;
 	if( !PyArg_ParseTuple( args, "s#|ii:load", &pData, &nData, &bAllResults, &bHypothesis ) )
@@ -1299,7 +1299,7 @@ gramobj_setBeginCallback( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
 	CGrammarObject * pObj = (CGrammarObject *)self;
@@ -1329,7 +1329,7 @@ gramobj_setResultsCallback( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
 	CGrammarObject * pObj = (CGrammarObject *)self;
@@ -1359,7 +1359,7 @@ gramobj_setHypothesisCallback( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
 	CGrammarObject * pObj = (CGrammarObject *)self;
@@ -1528,19 +1528,9 @@ static struct PyMethodDef gramobj_methods[] = {
 	{ "setContext", gramobj_setContext, METH_VARARGS },
 	{ "setSelectText", gramobj_setSelectText, METH_VARARGS },
 	{ "getSelectText", gramobj_getSelectText, METH_VARARGS },
-	{ NULL, NULL }
+	{ NULL }
 };
 
-//---------------------------------------------------------------------------
-// gramObj = natlink.GramObj(); gramObj.XXX from Python
-//
-// This looks up the function named XXX.
-
-extern "C" static PyObject *
-gramobj_getattr( PyObject *self, char *name )
-{
-	return PyObject_GetAttrString( self, name );
-}
 
 //---------------------------------------------------------------------------
 // Called from Python when the reference count on a GramObj reaches zero.
@@ -1553,10 +1543,11 @@ gramobj_dealloc(PyObject *self)
 {
 	CGrammarObject * pObj = (CGrammarObject *)self;
 	pObj->destroy();
-	
+
 	//PyMem_DEL( self );
 	PyObject_Del( self );
 }
+
 
 //---------------------------------------------------------------------------
 // This datastructure tells Python which methods for a new class (GramObj in
@@ -1564,20 +1555,34 @@ gramobj_dealloc(PyObject *self)
 // are not creating a number or sequence-type object.
 
 static PyTypeObject gramobj_stackType = {
-    PyVarObject_HEAD_INIT(&PyType_Type,0) // 0 ob-size
-	"GramObj",				// tp_name
-	sizeof(CGrammarObject),		// tp_basicsize
-	0,						// tp_itemsize
-	gramobj_dealloc,		// tp_dealloc
-	0,						// tp_print
-	gramobj_getattr,		// tp_getattr
-	0,						// tp_setattr
-	0,						// tp_compare
-	0,						// tp_repr
-	0,						// tp_as_number
-	0,						// tp_as_sequence
-	0,						// tp_as_mapping
-	
+    PyVarObject_HEAD_INIT(NULL, 0) // 0 ob-size
+	"GramObj",				        /* tp_name */
+	sizeof(CGrammarObject),	        /* tp_basicsize */
+	0,					          	/* tp_itemsize */
+	(destructor)gramobj_dealloc,    /* tp_dealloc */
+	0,                              /* tp_vectorcall_offset */
+    0,                              /* tp_getattr */
+    0,                              /* tp_setattr */
+    0,                              /* tp_as_async */
+    0,                              /* tp_repr */
+    0,                              /* tp_as_number */
+    0,                              /* tp_as_sequence */
+    0,                              /* tp_as_mapping */
+    0,                              /* tp_hash */
+    0,                              /* tp_call */
+    0,                              /* tp_str */
+    PyObject_GenericGetAttr,        /* tp_getattro */
+    0,                              /* tp_setattro */
+    0,                              /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,             /* tp_flags */
+    0,                              /* tp_doc */
+    0,                              /* tp_traverse */
+    0,                              /* tp_clear */
+    0,                              /* tp_richcompare */
+    0,                              /* tp_weaklistoffset */
+    0,                              /* tp_iter */
+    0,                              /* tp_iternext */
+    gramobj_methods,                /* tp_methods */
 	// remainder of fields are NULL
 };
 
@@ -1596,7 +1601,7 @@ gramobj_new( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CGrammarObject * pObj = PyObject_NEW(CGrammarObject, &gramobj_stackType );
+	CGrammarObject * pObj = PyObject_New(CGrammarObject, &gramobj_stackType );
 	if( pObj == NULL )
 	{
 		return NULL;
@@ -1628,7 +1633,6 @@ resobj_getResults( PyObject *self, PyObject *args )
 	{
 		return NULL;
 	}
-
 	return pRetn;
 }
 
@@ -1652,7 +1656,6 @@ resobj_getWords( PyObject *self, PyObject *args )
 	{
 		return NULL;
 	}
-
 	return pRetn;
 }
 
@@ -1676,7 +1679,6 @@ resobj_correction( PyObject *self, PyObject *args )
 	{
 		return NULL;
 	}
-
 	delete [] ppWords;
 	return pRetn;
 }
@@ -1700,7 +1702,6 @@ resobj_getWave( PyObject *self, PyObject *args )
 	{
 		return NULL;
 	}
-
 	return pRetn;
 }
 
@@ -1747,7 +1748,7 @@ resobj_getSelectInfo( PyObject *self, PyObject *args )
 		PyErr_SetString( PyExc_TypeError, "first parameter must be a GramObj instance" );
 		return NULL;
 	}
-	
+
 	CResultObject * pObj = (CResultObject *)self;
 	return pObj->getSelectInfo((CGrammarObject *)pGrammar, nChoice );
 }
@@ -1763,19 +1764,8 @@ static struct PyMethodDef resobj_methods[] = {
 	{ "getWordInfo", resobj_getWordInfo, METH_VARARGS },
 	{ "getSelectInfo", resobj_getSelectInfo, METH_VARARGS },
 
-	{ NULL, NULL }
+	{ NULL }
 };
-
-//---------------------------------------------------------------------------
-// resObj = natlink.ResObj(); resObj.XXX from Python
-//
-// This looks up the function named XXX.
-
-extern "C" static PyObject *
-resobj_getattr( PyObject *self, char *name )
-{
-	return PyObject_GetAttrString( self, name );
-}
 
 //---------------------------------------------------------------------------
 // Called from Python when the reference count on a ResObj reaches zero.
@@ -1788,7 +1778,7 @@ resobj_dealloc(PyObject *self)
 {
 	CResultObject * pObj = (CResultObject *)self;
 	pObj->destroy();
-	
+
 	// PyMem_DEL( self );
 	PyObject_Del( self );
 }
@@ -1799,20 +1789,36 @@ resobj_dealloc(PyObject *self)
 // are not creating a number or sequence-type object.
 
 static PyTypeObject resobj_stackType = {
-        PyVarObject_HEAD_INIT(&PyType_Type, 0) //ob_size
-	"ResObj",				// tp_name
-	sizeof(CResultObject),		// tp_basicsize
-	0,						// tp_itemsize
-	resobj_dealloc,			// tp_dealloc
-	0,						// tp_print
-	resobj_getattr,			// tp_getattr
-	0,						// tp_setattr
-	0,						// tp_compare
-	0,						// tp_repr
-	0,						// tp_as_number
-	0,						// tp_as_sequence
-	0,						// tp_as_mapping
-	
+	PyVarObject_HEAD_INIT(&PyType_Type, 0) //ob_size
+	"ResObj",				        /* tp_name */
+	sizeof(CResultObject),	        /* tp_basicsize */
+	0,					          	/* tp_itemsize */
+	(destructor)resobj_dealloc,     /* tp_dealloc */
+	0,                              /* tp_vectorcall_offset */
+    0,                              /* tp_getattr */
+    0,                              /* tp_setattr */
+    0,                              /* tp_as_async */
+    0,                              /* tp_repr */
+    0,                              /* tp_as_number */
+    0,                              /* tp_as_sequence */
+    0,                              /* tp_as_mapping */
+    0,                              /* tp_hash */
+    0,                              /* tp_call */
+    0,                              /* tp_str */
+    PyObject_GenericGetAttr,        /* tp_getattro */
+    0,                              /* tp_setattro */
+    0,                              /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,             /* tp_flags */
+    0,                              /* tp_doc */
+    0,                              /* tp_traverse */
+    0,                              /* tp_clear */
+    0,                              /* tp_richcompare */
+    0,                              /* tp_weaklistoffset */
+    0,                              /* tp_iter */
+    0,                              /* tp_iternext */
+    resobj_methods,                 /* tp_methods */
+
+
 	// remainder of fields are NULL
 };
 
@@ -1839,7 +1845,7 @@ dictobj_activate( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	if( !pObj->activate( hWnd ) )
 	{
 		return NULL;
@@ -1859,7 +1865,7 @@ dictobj_deactivate( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	if( !pObj->deactivate() )
 	{
 		return NULL;
@@ -1883,10 +1889,10 @@ dictobj_setBeginCallback( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	if( !pObj->setBeginCallback( pFunc ) )
 	{
 		return NULL;
@@ -1910,10 +1916,10 @@ dictobj_setChangeCallback( PyObject *self, PyObject *args )
 	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
 	{
 		PyErr_SetString( PyExc_TypeError, "parameter must be callable" );
-		return NULL;        
+		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	if( !pObj->setChangeCallback( pFunc ) )
 	{
 		return NULL;
@@ -1934,7 +1940,7 @@ dictobj_setLock( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	if( !pObj->setLock( nState != 0 ) )
 	{
 		return NULL;
@@ -1957,7 +1963,7 @@ dictobj_setText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	if( !pObj->setText( pText, nStart, nEnd ) )
 	{
 		return NULL;
@@ -1979,7 +1985,7 @@ dictobj_setTextSel( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	if( !pObj->setTextSel( nStart, nEnd ) )
 	{
 		return NULL;
@@ -2001,7 +2007,7 @@ dictobj_setVisibleText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	if( !pObj->setVisibleText( nStart, nEnd ) )
 	{
 		return NULL;
@@ -2021,7 +2027,7 @@ dictobj_getLength( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	PyObject * pRetn = pObj->getLength();
 	if( pRetn == NULL )
 	{
@@ -2043,7 +2049,7 @@ dictobj_getText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	PyObject * pRetn = pObj->getText( nStart, nEnd );
 	if( pRetn == NULL )
 	{
@@ -2063,7 +2069,7 @@ dictobj_getTextSel( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	PyObject * pRetn = pObj->getTextSel();
 	if( pRetn == NULL )
 	{
@@ -2083,7 +2089,7 @@ dictobj_getVisibleText( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	PyObject * pRetn = pObj->getVisibleText();
 	if( pRetn == NULL )
 	{
@@ -2109,19 +2115,8 @@ static struct PyMethodDef dictobj_methods[] = {
 	{ "getText", dictobj_getText, METH_VARARGS },
 	{ "getTextSel", dictobj_getTextSel, METH_VARARGS },
 	{ "getVisibleText", dictobj_getVisibleText, METH_VARARGS },
-	{ NULL, NULL }
+	{ NULL }
 };
-
-//---------------------------------------------------------------------------
-// dictObj = natlink.DictObj(); dictObj.XXX from Python
-//
-// This looks up the function named XXX.
-
-extern "C" static PyObject *
-dictobj_getattr( PyObject *self, char *name )
-{
-	return PyObject_GetAttrString( self, name );
-}
 
 //---------------------------------------------------------------------------
 // Called from Python when the reference count on a DictObj reaches zero.
@@ -2132,9 +2127,9 @@ dictobj_getattr( PyObject *self, char *name )
 extern "C" static void
 dictobj_dealloc(PyObject *self)
 {
-	CDicationObject * pObj = (CDicationObject *)self;
+	CDictationObject * pObj = (CDictationObject *)self;
 	pObj->destroy();
-	
+
 	// PyMem_DEL( self );
 	PyObject_Del( self );
 }
@@ -2145,20 +2140,34 @@ dictobj_dealloc(PyObject *self)
 // are not creating a number or sequence-type object.
 
 static PyTypeObject dictobj_stackType = {
-        PyVarObject_HEAD_INIT(&PyType_Type, 0)						// ob_size
-	"DictObj",				// tp_name
-	sizeof(CDicationObject),		// tp_basicsize
-	0,						// tp_itemsize
-	dictobj_dealloc,		// tp_dealloc
-	0,						// tp_print
-	dictobj_getattr,		// tp_getattr
-	0,						// tp_setattr
-	0,						// tp_compare
-	0,						// tp_repr
-	0,						// tp_as_number
-	0,						// tp_as_sequence
-	0,						// tp_as_mapping
-	
+	PyVarObject_HEAD_INIT(&PyType_Type, 0) // ob_size
+	"DictObj",				        /* tp_name */
+	sizeof(CDictationObject),	    /* tp_basicsize */
+	0,					          	/* tp_itemsize */
+	(destructor)dictobj_dealloc,    /* tp_dealloc */
+	0,                              /* tp_vectorcall_offset */
+    0,                              /* tp_getattr */
+    0,                              /* tp_setattr */
+    0,                              /* tp_as_async */
+    0,                              /* tp_repr */
+    0,                              /* tp_as_number */
+    0,                              /* tp_as_sequence */
+    0,                              /* tp_as_mapping */
+    0,                              /* tp_hash */
+    0,                              /* tp_call */
+    0,                              /* tp_str */
+    PyObject_GenericGetAttr,        /* tp_getattro */
+    0,                              /* tp_setattro */
+    0,                              /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,             /* tp_flags */
+    0,                              /* tp_doc */
+    0,                              /* tp_traverse */
+    0,                              /* tp_clear */
+    0,                              /* tp_richcompare */
+    0,                              /* tp_weaklistoffset */
+    0,                              /* tp_iter */
+    0,                              /* tp_iternext */
+    dictobj_methods,                /* tp_methods */
 	// remainder of fields are NULL
 };
 
@@ -2166,7 +2175,7 @@ static PyTypeObject dictobj_stackType = {
 // dictObj = DictObj() from Python
 //
 // This function is called when we create a new DictObj instance.  We have
-// to call CDicationObject::create to initialize the object since we can not rely
+// to call CDictationObject::create to initialize the object since we can not rely
 // on the constructor being called.
 
 extern "C" PyObject *
@@ -2177,7 +2186,7 @@ dictobj_new( PyObject *self, PyObject *args )
 		return NULL;
 	}
 
-	CDicationObject * pObj = PyObject_NEW(CDicationObject, &dictobj_stackType );
+	CDictationObject * pObj = PyObject_NEW(CDictationObject, &dictobj_stackType );
 	if( pObj == NULL )
 	{
 		return NULL;
@@ -2190,7 +2199,7 @@ dictobj_new( PyObject *self, PyObject *args )
 		PyObject_Del( self );
 		return NULL;
 	}
-	
+
 	return (PyObject *)pObj;
 }
 
@@ -2237,8 +2246,7 @@ static struct PyMethodDef natlink_methods[] = {
 	{ "setTrayIcon", natlink_setTrayIcon, METH_VARARGS },
 	{ "GramObj", gramobj_new, METH_VARARGS },
 	{ "DictObj", dictobj_new, METH_VARARGS },
-
-	{ NULL, NULL }
+	{ NULL }
 };
 
 //---------------------------------------------------------------------------
