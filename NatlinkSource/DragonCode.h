@@ -11,7 +11,7 @@
 
 struct CGrammarObject;
 struct CResultObject;
-struct CDicationObject;
+struct CDictationObject;
 class CDgnSRNotifySink;
 class CDgnAppSupport;
 class MessageWindow;
@@ -24,7 +24,7 @@ typedef const char * PCCHAR;
 class CDragonCode
 {
  public:
-	
+
 	CDragonCode() {
 		m_hMsgWnd = NULL;
 		m_dwKey = 0;
@@ -49,7 +49,7 @@ class CDragonCode
 		m_pTrayIconCallback = NULL;
 		m_pMessageStack = NULL;
 	}
-	
+
 	~CDragonCode() {
 		natDisconnect();
 	}
@@ -83,7 +83,7 @@ class CDragonCode
 	BOOL deleteWord( char * wordName );
 	BOOL setWordInfo( char * wordName, DWORD wordInfo );
 	BOOL setTrayIcon( char * iconName, char * toolTip, PyObject * pCallback );
-		
+
 	PyObject * getCurrentModule();
 	PyObject * getCurrentUser();
 	PyObject * getMicState();
@@ -103,7 +103,7 @@ class CDragonCode
 	// Python object.  We do this so this same routine can be called
 	// internally in natConnect.
 	BOOL isNatSpeakRunning();
-	
+
 	// this is called from CDgnAppSupport at initialization time
 	void setAppClass( CDgnAppSupport * pAppClass ) { m_pAppClass = pAppClass; }
 	void setDuringInit( BOOL bState ) { m_bDuringInit = bState; }
@@ -117,18 +117,18 @@ class CDragonCode
 	void addResObj(CResultObject * pResObj );
 	void removeResObj(CResultObject * pResObj );
 
-	// these functions are called from CDicationObject
-	void addDictObj(CDicationObject * pDictObj );
-	void removeDictObj(CDicationObject * pDictObj );
+	// these functions are called from CDictationObject
+	void addDictObj(CDictationObject * pDictObj );
+	void removeDictObj(CDictationObject * pDictObj );
 
 	// when we need to post a message from a COM notify sink to the message
 	// window, make this call
 	void postMessage( UINT wMsg, WPARAM wParam, LPARAM lParam ) {
 		PostMessage( m_hMsgWnd, wMsg, wParam, lParam );
 	}
-	
+
 	// these functions are called when a message is posted to our message
-	// window 
+	// window
 	void onMenuCommand( WPARAM wParam );
 	void onPaused( WPARAM wParam );
 	void onAttribChanged( WPARAM wParam );
@@ -188,7 +188,7 @@ class CDragonCode
 	PyObject *m_pChangeCallback;
 
 	// we keep a hidden window in this thread to which we can send windows
-	// messages 
+	// messages
 	HWND m_hMsgWnd;
 
 	// The CGrammarObject instances are in a linked list and the head of that list
@@ -199,8 +199,8 @@ class CDragonCode
 	// The CResultObject instances are also in a linked list for the same reason.
 	CResultObject * m_pFirstResObj;
 
-	// And also the CDicationObject instances
-	CDicationObject * m_pFirstDictObj;
+	// And also the CDictationObject instances
+	CDictationObject * m_pFirstDictObj;
 
 	// this is a pointer to the second thread where we can display messages
 	MessageWindow * m_pSecdThrd;
@@ -256,7 +256,7 @@ class CDragonCode
 
 	// This is what we call when we are ready to recume recognition
 	void doPausedProcessing( QWORD dwCookie );
-	
+
 	// this is called when we shutdown or when we reload Python to release
 	// all COM pointer which may be lost
 	void releaseObjects();
