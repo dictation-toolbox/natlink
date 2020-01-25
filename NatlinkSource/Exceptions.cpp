@@ -24,7 +24,7 @@ void createException( PyObject * pDict, int errorType, char * errorName )
 	char * fullName = new char[ 10+strlen(errorName) ];
 	strcpy( fullName, "natlink." );
 	strcat( fullName, errorName );
-			
+
     ErrObjects[errorType] = PyErr_NewException( fullName, ErrObjects[0], NULL );
     PyDict_SetItemString( pDict, errorName, ErrObjects[errorType] );
 }
@@ -172,14 +172,14 @@ void reportComError(
 void reportError( int errorType, const char * pszFormat, ... )
 {
 	assert( errorType >= 0 && errorType < ERROR_COUNT );
-	
+
 	char szErrorMsg[ 512 ];
-	
+
 	va_list pArgs;
 	va_start( pArgs, pszFormat );
 	vsprintf( szErrorMsg, pszFormat, pArgs );
 	va_end( pArgs );
-	
+
 	PyErr_SetString( ErrObjects[errorType], szErrorMsg );
 }
 
@@ -208,7 +208,7 @@ void reportError(
 	TCHAR szNatSpeakErr[ 512 ];
 	DWORD dwSizeNeeded;
 	rc = pIDgnError->ErrorMessageGet( szNatSpeakErr, 512, &dwSizeNeeded );
-	
+
 	if( rc != E_BUFFERTOOSMALL && FAILED(rc) )
 	{
 		reportError( errorType, pszMessage );
@@ -218,9 +218,9 @@ void reportError(
 	char szErrorMsg[ 1024 ];
 
 	#ifdef UNICODE
-		int size_needed = ::WideCharToMultiByte( CP_ACP, 0, szNatSpeakErr, -1, NULL, 0,  NULL, NULL);
+		int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, szNatSpeakErr, -1, NULL, 0,  NULL, NULL);
 		char * szNatSpeakErrA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, szNatSpeakErr, -1, szNatSpeakErrA, size_needed, NULL, NULL );
+		::WideCharToMultiByte( CP_UTF8, 0, szNatSpeakErr, -1, szNatSpeakErrA, size_needed, NULL, NULL );
 
 		sprintf( szErrorMsg, "%s (%s)", pszMessage, szNatSpeakErrA );
 		if ( szNatSpeakErrA )

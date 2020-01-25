@@ -452,9 +452,9 @@ BOOL CDictationObject::setText(const char * pText, int nStart, int nEnd )
 
 	// the last parameter is the dwReason which is ignored
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pText, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pText, -1, NULL, 0 );
 		CPointerChar pTextW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pText, -1, pTextW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pText, -1, pTextW, size_needed );*/
 		CComBSTR bstrText( pText );
 		rc = m_pIVDctText->TextSet( nStart, nEnd, bstrText, 0 );
 	#else
@@ -573,9 +573,9 @@ PyObject * CDictationObject::getText(int nStart, int nEnd )
 	else
 	{
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, (wchar_t *)sData.pData, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, (wchar_t *)sData.pData, -1, NULL, 0,  NULL, NULL);
 			char * pDataA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, (wchar_t *)sData.pData, -1, pDataA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, (wchar_t *)sData.pData, -1, pDataA, size_needed, NULL, NULL );
 
 			PyObject * pRetn = Py_BuildValue( "s", pDataA );
 
@@ -770,9 +770,9 @@ BOOL CDictationObject::TextChanged(DWORD dwReason )
 		else
 		{
 			#ifdef UNICODE
-				int size_needed = ::WideCharToMultiByte( CP_ACP, 0, (wchar_t *)sData.pData, -1, NULL, 0,  NULL, NULL);
+				int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, (wchar_t *)sData.pData, -1, NULL, 0,  NULL, NULL);
 				char * pDataA = new char[ size_needed ];
-				::WideCharToMultiByte( CP_ACP, 0, (wchar_t *)sData.pData, -1, pDataA, size_needed, NULL, NULL );
+				::WideCharToMultiByte( CP_UTF8, 0, (wchar_t *)sData.pData, -1, pDataA, size_needed, NULL, NULL );
 
 				pArgs = Py_BuildValue( "(iisii)",
 					dwOldStart, dwOldEnd, pDataA,

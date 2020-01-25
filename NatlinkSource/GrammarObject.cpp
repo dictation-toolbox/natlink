@@ -42,7 +42,7 @@ class CSRGramNotifySink :
 {
 public:
 	CSRGramNotifySink() { m_pParent = 0; m_bAllResults = FALSE; m_bHypothesis = FALSE; }
-	
+
 BEGIN_COM_MAP(CSRGramNotifySink)
 	COM_INTERFACE_ENTRY_IID(__uuidof(ISRGramNotifySink), ISRGramNotifySink)
 	COM_INTERFACE_ENTRY_IID(__uuidof(IDgnGetSinkFlags), IDgnGetSinkFlags)
@@ -85,7 +85,7 @@ STDMETHODIMP CSRGramNotifySink::SinkFlagsGet( DWORD * pdwFlags )
 	// notifications we want.  This interface is optional.  Without it we
 	// return the normal set (PhraseState, PhraseFinish, etc.) but with this
 	// interface we can reduce the notification traffic.
-	
+
 	if( pdwFlags )
 	{
 		*pdwFlags =
@@ -106,7 +106,7 @@ STDMETHODIMP CSRGramNotifySink::SinkFlagsGet( DWORD * pdwFlags )
 				DGNSRGRAMSINKFLAG_SENDPHRASEHYPO;
 		}
 	}
-	
+
 	return S_OK;
 }
 
@@ -117,12 +117,12 @@ STDMETHODIMP CSRGramNotifySink::PhraseFinish(
 {
 	// This is the standard SAPI PhraseFinish call; call our parent with the
 	// information and the special parameter
-	
+
 	if( m_pParent )
 	{
 		m_pParent->PhraseFinish( dwFlags, pSRPhrase, pIUnknown );
 	}
-	
+
 	return S_OK;
 }
 
@@ -133,12 +133,12 @@ STDMETHODIMP CSRGramNotifySink::PhraseHypothesis(
 {
 	// This is the standard SAPI PhraseHypothesis call; call our parent with
 	// the information.  Note that a results object is not available.
-	
+
 	if( m_pParent )
 	{
 		m_pParent->PhraseHypothesis( dwFlags, pSRPhrase );
 	}
-	
+
 	return S_OK;
 }
 
@@ -214,7 +214,7 @@ BOOL CGrammarObject::load(BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHy
 	}
 
 	m_bAllResults = bAllResults;
-	
+
 	if( m_pISRGramCommon )
 	{
 		reportError( errNatError,
@@ -308,7 +308,7 @@ BOOL CGrammarObject::setBeginCallback(PyObject *pCallback )
 		Py_XDECREF( m_pBeginCallback );
 		m_pBeginCallback = pCallback;
 	}
-	
+
 	return TRUE;
 }
 
@@ -327,7 +327,7 @@ BOOL CGrammarObject::setResultsCallback(PyObject *pCallback )
 		Py_XDECREF( m_pResultsCallback );
 		m_pResultsCallback = pCallback;
 	}
-	
+
 	return TRUE;
 }
 
@@ -346,7 +346,7 @@ BOOL CGrammarObject::setHypothesisCallback(PyObject *pCallback )
 		Py_XDECREF( m_pHypothesisCallback );
 		m_pHypothesisCallback = pCallback;
 	}
-	
+
 	return TRUE;
 }
 
@@ -371,13 +371,13 @@ BOOL CGrammarObject::activate(char * ruleName, HWND hWnd )
 	{
 		ruleName = NULL;
 	}
-	
+
 	#ifdef UNICODE
 		if ( ruleName )
 		{
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, ruleName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, ruleName, -1, NULL, 0 );
 			CPointerChar ruleNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, ruleName, -1, ruleNameW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, ruleName, -1, ruleNameW, size_needed );*/
 			CComBSTR bstrRuleName( ruleName );
 			rc = m_pISRGramCommon->Activate(
 				hWnd,		// window handle, NULL for global command
@@ -399,7 +399,7 @@ BOOL CGrammarObject::activate(char * ruleName, HWND hWnd )
     onGRAMMARTOOCOMPLEX( rc, "The grammar is too complex to be recognized" );
 	onRULEALREADYACTIVE( rc, "The rule %s is already active", ruleName );
 	RETURNIFERROR( rc, "GramObj.activate" );
-		
+
 	return TRUE;
 }
 
@@ -408,13 +408,13 @@ BOOL CGrammarObject::activate(char * ruleName, HWND hWnd )
 BOOL CGrammarObject::deactivate(char * ruleName )
 {
 	HRESULT rc;
-	
+
 	NEEDGRAMMAR( "GramObj.deactivate" );
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, ruleName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, ruleName, -1, NULL, 0 );
 		CPointerChar ruleNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, ruleName, -1, ruleNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, ruleName, -1, ruleNameW, size_needed );*/
 		CComBSTR bstrRuleName( ruleName );
 		rc = m_pISRGramCommon->Deactivate( bstrRuleName );
 	#else
@@ -423,7 +423,7 @@ BOOL CGrammarObject::deactivate(char * ruleName )
 
 	onRULENOTACTIVE( rc, "The rule %s is not active", ruleName );
 	RETURNIFERROR( rc, "GramObj.deactivate" );
-	
+
 	return TRUE;
 }
 
@@ -432,7 +432,7 @@ BOOL CGrammarObject::deactivate(char * ruleName )
 BOOL CGrammarObject::emptyList(char * listName )
 {
 	HRESULT rc;
-	
+
 	NEEDGRAMMAR( "GramObj.emptyList" );
 
 	// to empty the list, we will set the list to be a set of no words
@@ -447,9 +447,9 @@ BOOL CGrammarObject::emptyList(char * listName )
 	RETURNIFERROR( rc, "QueryInterface(ISRGramCFG)" );
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, listName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, listName, -1, NULL, 0 );
 		CPointerChar listNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, listName, -1, listNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, listName, -1, listNameW, size_needed );*/
 		CComBSTR bstrListName( listName );
 		rc = pISRGramCFG->ListSet( bstrListName, sData );
 	#else
@@ -481,9 +481,9 @@ BOOL CGrammarObject::appendList(char * listName, char * word )
 	pWord->dwSize = sData.dwSize;
 	pWord->dwWordNum = 0;
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, word, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, word, -1, NULL, 0 );
 		CPointerChar wordW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, word, -1, wordW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, word, -1, wordW, size_needed );*/
 		CComBSTR bstrWord( word );
 		wcscpy( pWord->szWord, bstrWord );
 	#else
@@ -497,9 +497,9 @@ BOOL CGrammarObject::appendList(char * listName, char * word )
 	RETURNIFERROR( rc, "QueryInterface(ISRGramCFG)" );
 
 	#ifdef UNICODE
-		/*size_needed = ::MultiByteToWideChar( CP_ACP, 0, listName, -1, NULL, 0 );
+		/*size_needed = ::MultiByteToWideChar( CP_UTF8, 0, listName, -1, NULL, 0 );
 		CPointerChar listNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, listName, -1, listNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, listName, -1, listNameW, size_needed );*/
 		CComBSTR bstrListName( listName );
 		rc = pISRGramCFG->ListAppend( bstrListName, sData );
 	#else
@@ -518,12 +518,12 @@ BOOL CGrammarObject::PhraseFinish(
 	DWORD dwFlags, PSRPHRASE pSRPhrase, LPUNKNOWN pIUnknown )
 {
 	// do nothing if there is no results object
-	
+
 	if( pIUnknown == NULL )
 	{
 		return TRUE;
 	}
-	
+
 	// do nothing if we do not have a callback
 
 	if( m_pResultsCallback == NULL )
@@ -546,7 +546,7 @@ BOOL CGrammarObject::PhraseFinish(
 
 	CResultObject * pObj = resobj_new();
 	PyObject * pResObj = (PyObject*)pObj;
-	
+
 	if( pObj == NULL || !pObj->create( m_pDragCode, pIUnknown ) )
 	{
 		// can't create results object
@@ -619,9 +619,9 @@ BOOL CGrammarObject::PhraseHypothesis(DWORD dwFlags, PSRPHRASE pSRPhrase )
     {
 		// add the word to the list
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
 			char * szWordA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
 
 			PyObject * pyWord = Py_BuildValue( "s", szWordA );
 
@@ -654,7 +654,7 @@ BOOL CGrammarObject::setExclusive(BOOL bState )
 	HRESULT rc;
 
 	NEEDGRAMMAR( "GramObj.setExclusive" );
-	
+
 	IDgnSRGramCommonPtr pIDgnSRGramCommon;
 	rc = m_pISRGramCommon->QueryInterface(
 		__uuidof(IDgnSRGramCommon), (void **)&pIDgnSRGramCommon );
@@ -681,13 +681,13 @@ BOOL CGrammarObject::setContext(char * beforeText, char * afterText )
 	RETURNIFERROR( rc, "QueryInterface(ISRGramDictation)" );
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, beforeText, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, beforeText, -1, NULL, 0 );
 		CPointerChar beforeTextW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, beforeText, -1, beforeTextW, size_needed );
+		::MultiByteToWideChar( CP_UTF8, 0, beforeText, -1, beforeTextW, size_needed );
 
-		size_needed = ::MultiByteToWideChar( CP_ACP, 0, afterText, -1, NULL, 0 );
+		size_needed = ::MultiByteToWideChar( CP_UTF8, 0, afterText, -1, NULL, 0 );
 		CPointerChar afterTextW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, afterText, -1, afterTextW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, afterText, -1, afterTextW, size_needed );*/
 		CComBSTR bstrBeforeText( beforeText );
 		CComBSTR bstrAfterText( afterText );
 		rc = pISRGramDictation->Context( bstrBeforeText, bstrAfterText );
@@ -695,7 +695,7 @@ BOOL CGrammarObject::setContext(char * beforeText, char * afterText )
 		rc = pISRGramDictation->Context( beforeText, afterText );
 	#endif
 	RETURNIFERROR( rc, "ISRGramDictation::Context" );
-	
+
 	return TRUE;
 }
 
@@ -720,10 +720,10 @@ BOOL CGrammarObject::setSelectText(char * text )
 	#endif
 	sData.pData = new TCHAR[ sData.dwSize ];
 	#ifdef UNICODE
-		int size_needed = ::MultiByteToWideChar( CP_ACP, 0, text, -1, NULL, 0 );
+		int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, text, -1, NULL, 0 );
 		CPointerChar textW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, text, -1, textW, size_needed );
-		
+		::MultiByteToWideChar( CP_UTF8, 0, text, -1, textW, size_needed );
+
 		memcpy( sData.pData, textW, wcslen(textW)+1 );
 
 		if ( textW )
@@ -735,7 +735,7 @@ BOOL CGrammarObject::setSelectText(char * text )
 	rc = pIDgnSRGramSelect->WordsSet( sData );
 	delete sData.pData;
 	RETURNIFERROR( rc, "IDgnSRGramSelect::WordsSet" );
-	
+
 	return TRUE;
 }
 
@@ -752,27 +752,27 @@ PyObject * CGrammarObject::getSelectText()
 		__uuidof(IDgnSRGramSelect), (void **)&pIDgnSRGramSelect );
 	onINVALIDINTERFACE( rc, "setSelectText not support for this type of grammar" )
 	RETURNIFERROR( rc, "QueryInterface(IDgnSRGramSelect)" );
-	
+
 	SDATA sData;
 
 	rc = pIDgnSRGramSelect->WordsGet( &sData );
 	RETURNIFERROR( rc, "IDgnSRGramSelect::WordsGet" );
 
 	#ifdef UNICODE
-		int size_needed = ::WideCharToMultiByte( CP_ACP, 0, (const wchar_t*)sData.pData, -1, NULL, 0,  NULL, NULL);
+		int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, (const wchar_t*)sData.pData, -1, NULL, 0,  NULL, NULL);
 		char * pDataA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, (const wchar_t*)sData.pData, -1, pDataA, size_needed, NULL, NULL );
+		::WideCharToMultiByte( CP_UTF8, 0, (const wchar_t*)sData.pData, -1, pDataA, size_needed, NULL, NULL );
 
 		PyObject * pRetn = Py_BuildValue( "s", pDataA );
 
 		if ( pDataA )
 			delete [] pDataA;
-	#else	
+	#else
 		PyObject * pRetn = Py_BuildValue( "s", sData.pData );
 	#endif
 
 	CoTaskMemFree( sData.pData );
-		
+
 	return pRetn;
 }
 
@@ -790,7 +790,7 @@ BOOL CGrammarObject::getGrammarGuid(GUID * pGrammarGuid )
 	rc = m_pISRGramCommon->QueryInterface(
 		__uuidof(IDgnSRGramCommon), (void **)&pIDgnSRGramCommon );
 	RETURNIFERROR( rc, "QueryInterface(IDgnSRGramCommon)" );
-	
+
 	rc = pIDgnSRGramCommon->Identify( pGrammarGuid );
 	RETURNIFERROR( rc, "IDgnSRGramCommon::Identify" );
 

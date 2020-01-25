@@ -47,7 +47,7 @@ SRPHRASE * makePhrase( PCCHAR * ppWords )
 	}
 
 	// now we can build the SRPHRASE
-	
+
 	DWORD dwSize = nLength + nCount * sizeof(SRWORD) + sizeof(SRPHRASE);
 
 	SRPHRASE * pSRPhrase = (SRPHRASE *) new BYTE[ dwSize ];
@@ -57,16 +57,16 @@ SRPHRASE * makePhrase( PCCHAR * ppWords )
 	for( int i = 0; i < nCount; i++ )
 	{
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, ppWords[i], -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, ppWords[i], -1, NULL, 0 );
 			CPointerChar ppWordsW = new TCHAR[ size_needed ];*/
 			CComBSTR bstrWord( ppWords[i] );
-			//::MultiByteToWideChar( CP_ACP, 0, ppWords[i], -1, ppWordsW, size_needed );
+			//::MultiByteToWideChar( CP_UTF8, 0, ppWords[i], -1, ppWordsW, size_needed );
 
 			wcscpy( pWord->szWord, bstrWord );
 		#else
 			strcpy( pWord->szWord, ppWords[i] );
 		#endif
-		
+
 		int length = strlen( ppWords[i] ) + 1;
 		#ifdef UNICODE
 			length = length * 2;
@@ -82,7 +82,7 @@ SRPHRASE * makePhrase( PCCHAR * ppWords )
 
 	return pSRPhrase;
 
-	
+
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ BOOL CResultObject::create(CDragonCode * pDragCode, LPUNKNOWN pIUnknown )
 	m_pNextResObj = NULL;
 
 	m_pDragCode->addResObj( this );
-	
+
 	// here we get the ResBasic interface
 	if( pIUnknown == NULL )
 	{
@@ -148,7 +148,7 @@ PyObject * CResultObject::getResults(int nChoice )
 	HRESULT rc;
 
 	MUSTBETINITED( "ResObj.getResults" );
-	
+
 	// our goal is to produce a Python array of tuples where each tuple is
 	// the recognized word (string) and the rule number which contains that
 	// word (integer).
@@ -162,7 +162,7 @@ PyObject * CResultObject::getResults(int nChoice )
 
 	// we preallocate 512 words for the best path and hope the grammar does
 	// not include something larger
-	
+
 	DWORD aPath[ 512 ];
 	DWORD pathSize;
 	rc = pGraph->BestPathWord( nChoice, aPath, sizeof(aPath), &pathSize );
@@ -185,9 +185,9 @@ PyObject * CResultObject::getResults(int nChoice )
 			aPath[i], &node, pWord, sizeof(aBuffer), &sizeNeeded );
 		RETURNIFERROR( rc, "ISRResGraph::GetWordNode" );
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
 			char * szWordA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
 
 			PyObject * pTuple =
 				Py_BuildValue( "(si)", szWordA, node.dwCFGParse );
@@ -246,9 +246,9 @@ PyObject * CResultObject::getWords(int nChoice )
     {
 		// add the word to the list
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
 			char * szWordA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
 
 			PyObject * pyWord = Py_BuildValue( "s", szWordA );
 
@@ -296,7 +296,7 @@ PyObject * CResultObject::correction(PCCHAR * ppWords )
 PyObject * CResultObject::getWave()
 {
 	HRESULT rc;
-	
+
 	ISRResAudioPtr pIResAudio;
 	rc = m_pISRResBasic->QueryInterface(
 		__uuidof(ISRResAudio), (void**)&pIResAudio );
@@ -321,11 +321,11 @@ PyObject * CResultObject::getWordInfo(int nChoice )
 {
 	HRESULT rc;
 
-	if( m_pISRResBasic == NULL ) 
-	{ 
-		reportError( errNatError, 
-			"This results object is no longer usable (calling %s)", "getWordInfo" ); 
-		return FALSE; 
+	if( m_pISRResBasic == NULL )
+	{
+		reportError( errNatError,
+			"This results object is no longer usable (calling %s)", "getWordInfo" );
+		return FALSE;
 	}
 
 	// our goal is to produce a Python array of tuples where each tuple is
@@ -359,7 +359,7 @@ PyObject * CResultObject::getWordInfo(int nChoice )
 
 	// we preallocate 512 words for the best path and hope the grammar does
 	// not include something larger
-	
+
 	DWORD aPath[ 512 ];
 	DWORD pathSize;
 	rc = pGraph->BestPathWord( nChoice, aPath, sizeof(aPath), &pathSize );
@@ -401,13 +401,13 @@ PyObject * CResultObject::getWordInfo(int nChoice )
 		RETURNIFERROR( rc, "ILexPronounce::Get" )
 
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
 			char * szWordA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
 
-			size_needed = ::WideCharToMultiByte( CP_ACP, 0, pronBuf, -1, NULL, 0,  NULL, NULL);
+			size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pronBuf, -1, NULL, 0,  NULL, NULL);
 			char * pronBufA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pronBuf, -1, pronBufA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pronBuf, -1, pronBufA, size_needed, NULL, NULL );
 
 			PyObject * pTuple =
 				Py_BuildValue(
@@ -444,11 +444,11 @@ PyObject * CResultObject::getSelectInfo(CGrammarObject * pGrammar, int nChoice )
 {
 	HRESULT rc;
 
-	if( m_pISRResBasic == NULL ) 
-	{ 
-		reportError( errNatError, 
-			"This results object is no longer usable (calling %s)", "getWordInfo" ); 
-		return FALSE; 
+	if( m_pISRResBasic == NULL )
+	{
+		reportError( errNatError,
+			"This results object is no longer usable (calling %s)", "getWordInfo" );
+		return FALSE;
 	}
 
 	// The recognizer call to the select information requires that you pass
@@ -474,6 +474,6 @@ PyObject * CResultObject::getSelectInfo(CGrammarObject * pGrammar, int nChoice )
 	onNOTASELECTGRAMMAR( rc, "Result number %d was not from a Select grammar", nChoice );
 	onDOESNOTMATCHGRAMMAR( rc, "Result number %d was not from the indicated grammar", nChoice );
 	RETURNIFERROR( rc, "IDgnSRResSelect::GetInfo" );
-	
+
 	return Py_BuildValue( "(ii)", dwStart, dwEnd );
 }

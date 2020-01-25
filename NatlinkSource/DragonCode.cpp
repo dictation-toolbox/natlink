@@ -1295,9 +1295,9 @@ DWORD CDragonCode::testFileName( const char * pszFileName )
 
 	#ifdef UNICODE
 
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszFileName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszFileName, -1, NULL, 0 );
 		CPointerChar pszFileNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pszFileName, -1, pszFileNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pszFileName, -1, pszFileNameW, size_needed );*/
 		CComBSTR bstrFileName( pszFileName );
 
 		HANDLE hFile = CreateFile(
@@ -1950,9 +1950,9 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 
 	DWORD dwNumUndo;
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszKeys, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, NULL, 0 );
 		CPointerChar pszKeysW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pszKeys, -1, pszKeysW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, pszKeysW, size_needed );*/
 		CComBSTR bstrKeys( pszKeys );
 		rc = m_pIDgnSSvcOutputEvent->PlayString(
 			bstrKeys,	// string to send
@@ -2074,13 +2074,13 @@ PyObject * CDragonCode::getCurrentModule()
 	logMessage("  CDragonCode::getCurrentModule 5\n");
 
 	#ifdef UNICODE
-		int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pModule, -1, NULL, 0,  NULL, NULL);
+		int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pModule, -1, NULL, 0,  NULL, NULL);
 		char * pModuleA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, pModule, -1, pModuleA, size_needed, NULL, NULL );
+		::WideCharToMultiByte( CP_UTF8, 0, pModule, -1, pModuleA, size_needed, NULL, NULL );
 
-		size_needed = ::WideCharToMultiByte( CP_ACP, 0, pTitle, -1, NULL, 0,  NULL, NULL);
+		size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pTitle, -1, NULL, 0,  NULL, NULL);
 		char * pTitleA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, pTitle, -1, pTitleA, size_needed, NULL, NULL );
+		::WideCharToMultiByte( CP_UTF8, 0, pTitle, -1, pTitleA, size_needed, NULL, NULL );
 
 		return Py_BuildValue( "(ssi)",	pModuleA, pTitleA, hWnd );
 
@@ -2153,13 +2153,13 @@ PyObject * CDragonCode::getCurrentUser()
 	// return the Python information
 
 	#ifdef UNICODE
-		int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pUser, -1, NULL, 0,  NULL, NULL);
+		int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pUser, -1, NULL, 0,  NULL, NULL);
 		char * pUserA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, pUser, -1, pUserA, size_needed, NULL, NULL );
+		::WideCharToMultiByte( CP_UTF8, 0, pUser, -1, pUserA, size_needed, NULL, NULL );
 
-		size_needed = ::WideCharToMultiByte( CP_ACP, 0, pPath, -1, NULL, 0,  NULL, NULL);
+		size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pPath, -1, NULL, 0,  NULL, NULL);
 		char * pPathA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, pPath, -1, pPathA, size_needed, NULL, NULL );
+		::WideCharToMultiByte( CP_UTF8, 0, pPath, -1, pPathA, size_needed, NULL, NULL );
 
 		return Py_BuildValue( "(ss)", pUserA, pPathA );
 
@@ -2285,9 +2285,9 @@ TCHAR * packString( PCCHAR * ppWords, DWORD * pdwSize, DWORD * pdwCount )
 	for( int i = 0; ppWords[i]; i++ )
 	{
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, ppWords[i], -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, ppWords[i], -1, NULL, 0 );
 			CPointerChar ppWordsW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, ppWords[i], -1, ppWordsW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, ppWords[i], -1, ppWordsW, size_needed );*/
 			CComBSTR bstrWord( ppWords[i] );
 			wcscpy( pszList + offset, bstrWord );
 		#else
@@ -2329,9 +2329,9 @@ BOOL CDragonCode::execScript(
 	DWORD dwLineNumber;
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszScript, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszScript, -1, NULL, 0 );
 		CPointerChar pszScriptW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pszScript, -1, pszScriptW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pszScript, -1, pszScriptW, size_needed );*/
 		CComBSTR bstrScript( pszScript );
 
 		rc = m_pIDgnSSvcInterpreter->CheckScript(
@@ -2360,9 +2360,9 @@ BOOL CDragonCode::execScript(
 	if( ppWords == NULL )
 	{
 		#ifdef UNICODE
-			/*size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszComment, -1, NULL, 0 );
+			/*size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszComment, -1, NULL, 0 );
 			CPointerChar pszCommentW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszComment, -1, pszCommentW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszComment, -1, pszCommentW, size_needed );*/
 			CComBSTR bstrComment( pszComment );
 
 			rc = m_pIDgnSSvcInterpreter->ExecuteScript(
@@ -2383,9 +2383,9 @@ BOOL CDragonCode::execScript(
 		TCHAR * pszList = packString( ppWords, &dwListSize, &dwCount );
 
 		#ifdef UNICODE
-			/*size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszComment, -1, NULL, 0 );
+			/*size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszComment, -1, NULL, 0 );
 			CPointerChar pszCommentW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszComment, -1, pszCommentW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszComment, -1, pszCommentW, size_needed );*/
 			CComBSTR bstrComment( pszComment );
 
 			rc = m_pIDgnSSvcInterpreter->ExecuteScriptWithListResults(
@@ -2612,9 +2612,9 @@ BOOL CDragonCode::inputFromFile(
 	}
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszFileName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszFileName, -1, NULL, 0 );
 		CPointerChar pszFileNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pszFileName, -1, pszFileNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pszFileName, -1, pszFileNameW, size_needed );*/
 		CComBSTR bstrFileName( pszFileName );
 
 		rc = pIDgnSRAudioFileSource->FileNameSet( dwFlags, bstrFileName );
@@ -2818,9 +2818,9 @@ BOOL CDragonCode::createUser(
 		RETURNIFERROR( rc, "ISRCentral::QueryInterface(ISRSpeaker)" );
 
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, NULL, 0 );
 			CPointerChar pszUserNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, pszUserNameW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, pszUserNameW, size_needed );*/
 			CComBSTR bstrUserName( pszUserName );
 			rc = pISRSpeaker->New( bstrUserName );
 		#else
@@ -2843,13 +2843,13 @@ BOOL CDragonCode::createUser(
 		RETURNIFERROR( rc, "ISRCentral::QueryInterface(IDgnSRSpeaker)" );
 
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, NULL, 0 );
 			CPointerChar pszUserNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, pszUserNameW, size_needed );
+			::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, pszUserNameW, size_needed );
 
-			size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszBaseModel, -1, NULL, 0 );
+			size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszBaseModel, -1, NULL, 0 );
 			CPointerChar pszBaseModelW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszBaseModel, -1, pszBaseModelW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszBaseModel, -1, pszBaseModelW, size_needed );*/
 			CComBSTR bstrUserName( pszUserName );
 			CComBSTR bstrBaseModel( pszBaseModel );
 
@@ -2880,13 +2880,13 @@ BOOL CDragonCode::createUser(
 		// This matches the behavior of the NatSpeak new user wizard
 
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, NULL, 0 );
 			CPointerChar pszUserNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, pszUserNameW, size_needed );
+			::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, pszUserNameW, size_needed );
 
-			size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszBaseTopic, -1, NULL, 0 );
+			size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszBaseTopic, -1, NULL, 0 );
 			CPointerChar pszBaseTopicW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszBaseTopic, -1, pszBaseTopicW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszBaseTopic, -1, pszBaseTopicW, size_needed );*/
 			CComBSTR bstrUserName( pszUserName );
 			CComBSTR bstrBaseTopic( pszBaseTopic );
 			rc = pIDgnSRTopic2->New( bstrUserName, bstrBaseTopic, bstrBaseTopic );
@@ -3068,9 +3068,9 @@ PyObject * CDragonCode::getAllUsers()
 	while( *pName )
 	{
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pName, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pName, -1, NULL, 0,  NULL, NULL);
 			char * pNameA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pName, -1, pNameA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pName, -1, pNameA, size_needed, NULL, NULL );
 			PyObject * pyName = Py_BuildValue( "s", pNameA );
 			delete [] pNameA;
 		#else
@@ -3132,9 +3132,9 @@ PyObject * CDragonCode::getWordInfo( char * wordName, int flags )
 	BOOL bExists;
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 		CPointerChar wordNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 		CComBSTR bstrWordName( wordName );
 		rc = pDgnSRLexicon->WordTest( dwFlags, bstrWordName, &bExists );
 	#else
@@ -3200,9 +3200,9 @@ BOOL CDragonCode::deleteWord( char * wordName )
 	RETURNIFERROR( rc, "QueryInterface(IDgnLexWord)" );
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 		CPointerChar wordNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 		CComBSTR bstrWordName( wordName );
 		rc = pDgnLexWord->Remove( bstrWordName );
 	#else
@@ -3243,9 +3243,9 @@ PyObject * CDragonCode::addWord(
 	if( ppProns == NULL )
 	{
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 			CPointerChar wordNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 			CComBSTR bstrWordName( wordName );
 			rc = pLexPron->Add(
 				CHARSET_ENGINEPHONETIC, bstrWordName, L"",
@@ -3269,13 +3269,13 @@ PyObject * CDragonCode::addWord(
 		for( int i = 0; ppProns[i] != NULL; i++ )
 		{
 			#ifdef UNICODE
-				/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+				/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 				CPointerChar wordNameW = new TCHAR[ size_needed ];
-				::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );
+				::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );
 
-				size_needed = ::MultiByteToWideChar( CP_ACP, 0, ppProns[i], -1, NULL, 0 );
+				size_needed = ::MultiByteToWideChar( CP_UTF8, 0, ppProns[i], -1, NULL, 0 );
 				CPointerChar ppPronsW = new TCHAR[ size_needed ];
-				::MultiByteToWideChar( CP_ACP, 0, ppProns[i], -1, ppPronsW, size_needed );*/
+				::MultiByteToWideChar( CP_UTF8, 0, ppProns[i], -1, ppPronsW, size_needed );*/
 				CComBSTR bstrWordName( wordName );
 				CComBSTR bstrPron( ppProns[i] );
 				rc = pLexPron->Add(
@@ -3323,9 +3323,9 @@ BOOL CDragonCode::setWordInfo( char * wordName, DWORD wordInfo )
 	BOOL bExists;
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 		CPointerChar wordNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 		CComBSTR bstrWordName( wordName );
 		rc = pDgnSRLexicon->WordTest( dwFlags, bstrWordName, &bExists );
 	#else
@@ -3416,9 +3416,9 @@ PyObject * CDragonCode::getWordProns( char * wordName )
 	BOOL bExists;
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 		CPointerChar wordNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 		CComBSTR bstrWordName( wordName );
 		rc = pDgnSRLexicon->WordTest( dwFlags, bstrWordName, &bExists );
 	#else
@@ -3474,9 +3474,9 @@ PyObject * CDragonCode::getWordProns( char * wordName )
 
 		// add the word to the list
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pronBuf, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pronBuf, -1, NULL, 0,  NULL, NULL);
 			char * pronBufA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pronBuf, -1, pronBufA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pronBuf, -1, pronBufA, size_needed, NULL, NULL );
 
 			PyObject * pText = Py_BuildValue( "s", pronBufA );
 
@@ -3563,9 +3563,9 @@ BOOL CDragonCode::setTrayIcon(
 	else
 	{
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, iconName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, iconName, -1, NULL, 0 );
 			CPointerChar iconNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, iconName, -1, iconNameW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, iconName, -1, iconNameW, size_needed );*/
 			CComBSTR bstrIconName( iconName );
 			hIcon = (HICON) LoadImage(
 				hInstance, bstrIconName, IMAGE_ICON, 0, 0,
@@ -3596,9 +3596,9 @@ BOOL CDragonCode::setTrayIcon(
 	iconData.uCallbackMessage = WM_TRAYICON;
 	iconData.hIcon = hIcon;
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, toolTip, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, toolTip, -1, NULL, 0 );
 		CPointerChar toolTipW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, toolTip, -1, toolTipW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, toolTip, -1, toolTipW, size_needed );*/
 		CComBSTR bstrToolTip( toolTip );
 		wcsncpy_s( iconData.szTip, bstrToolTip, sizeof(iconData.szTip) );
 	#else
