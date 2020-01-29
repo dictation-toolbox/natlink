@@ -14,7 +14,7 @@
 #include "../Resource.h"
 #include "../DragonCode.h"
 #include "appsupp.h"
-#include <plog/Log.h>
+// #include <plog/Log.h>
 // from PythWrap.cpp
 CDragonCode * initModule();
 
@@ -72,57 +72,55 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 			"Failed to initialize NatSpeak interfaces\r\n", TRUE );
 		return S_OK;
 	}
-    m_pDragCode->displayText("Before loading the module test \n");
+
+	/*
+	* https://www.python.org/dev/peps/pep-0514/
+	* According to PEP514 python should scan this registry location when
+	* it builds sys.path when the interpreter is initialised. At least on
+	* my system this is not happening correctly, and natlinkmain is not being
+	* found. This code pulls the value (set by the config scripts) from the
+	* registry manually and adds it to the module search path.
+	*
+	* Exceptions raised here will not cause a crash, so the worst case scenario
+	* is that we add a value to the path which is already there.
+	*/
+	PyRun_SimpleString("import winreg, sys");
+	PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Python\\\\PythonCore\\\\{str(sys.winver)}\\\\PythonPath\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
+	// PyRun_SimpleString returns 0 on success and -1 if an exception is raised.
+	if (PyRun_SimpleString("natlink_key = winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags)")) {
+		m_pDragCode->displayText("Failed to find Natlink key in Windows registry.\r\n");
+	}
+	if (PyRun_SimpleString("core_path = winreg.QueryValue(natlink_key, \"\")")) {
+		m_pDragCode->displayText("Failed to extract value from Natlink key.\r\n");
+	}
+	PyRun_SimpleString("sys.path.append(core_path)");
+	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
+
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit( TRUE );
 	m_pNatLinkMain = PyImport_ImportModule( "natlinkmain" );
-
-
-    auto *path =PyObject_GetAttrString(m_pNatLinkMain,"__file__");
-    PyObject* repr = PyObject_Repr(path);
-    PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
-    const char *bytes = PyBytes_AsString(str);
-
-
-    auto found=std::string(bytes).find_last_of("/\\");
-    auto folder= std::string(bytes).substr(0,found-1);
-    folder+="\\\\natlink_debug.txt";
-    char*charsToRemove="\'\"";
-    for ( unsigned int i = 0; i < strlen(charsToRemove); ++i ) {
-        folder.erase( remove(folder.begin(), folder.end(), charsToRemove[i]), folder.end() );
-    }
-    plog::init(plog::debug, folder.c_str());
-    PLOGD << "Hello log!";
-
-    m_pDragCode->displayText(folder.c_str());
 	m_pDragCode->setDuringInit( FALSE );
-    m_pDragCode->displayText("After loading the module \n");
 
 
-	if( m_pNatLinkMain == NULL )
-	{
+	if( m_pNatLinkMain == NULL ) {
 		OutputDebugString(
 			TEXT( "NatLink: an exception occurred loading 'natlinkmain' module" ) ); // RW TEXT macro added
 		m_pDragCode->displayText(
 			"An exception occurred loading 'natlinkmain' module\r\n", TRUE );
-        if (PyErr_Occurred()) {
-            PyObject *ptype, *pvalue, *ptraceback;
-            PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-            const char *pStrErrorMessage = PyUnicode_AsUTF8(pvalue);
-            std::string string=pStrErrorMessage;
-            m_pDragCode->displayText("error message: ");
-            m_pDragCode->displayText(
-                    string.c_str(), TRUE);
-        }
-		return S_OK;
-	}else{
-
-        auto *path =PyObject_GetAttrString(m_pNatLinkMain,"__file__");
-        PyObject* repr = PyObject_Repr(path);
-        PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
-        const char *bytes = PyBytes_AsString(str);
-        m_pDragCode->displayText(bytes);
-        m_pDragCode->displayText("\n--\n");
+		if (PyErr_Occurred()) {
+			PyObject *ptype, *pvalue, *ptraceback;
+			PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+			if(pvalue) {
+				PyObject *pstr = PyObject_Str(pvalue);
+				if(pstr) {
+					const char* pStrErrorMessage = PyUnicode_AsUTF8(pstr);
+					m_pDragCode->displayText("Error message:\r\n");
+					m_pDragCode->displayText(pStrErrorMessage, TRUE);
+				}
+				Py_XDECREF(pstr);
+			}
+			PyErr_Restore(ptype, pvalue, ptraceback);
+		}
 	}
 
 	return S_OK;
@@ -156,18 +154,18 @@ STDMETHODIMP CDgnAppSupport::UnRegister()
 
 #ifdef UNICODE
 	STDMETHODIMP CDgnAppSupport::AddProcess(
-		DWORD dwProcessID, 
-		const wchar_t * pszModuleName, 
-		const wchar_t * pszRegistryKey, 
+		DWORD dwProcessID,
+		const wchar_t * pszModuleName,
+		const wchar_t * pszRegistryKey,
 		DWORD lcid )
 	{
 		return S_OK;
 	}
 #else
 	STDMETHODIMP CDgnAppSupport::AddProcess(
-		DWORD dwProcessID, 
-		const char * pszModuleName, 
-		const char * pszRegistryKey, 
+		DWORD dwProcessID,
+		const char * pszModuleName,
+		const char * pszRegistryKey,
 		DWORD lcid )
 	{
 		return S_OK;
@@ -193,5 +191,5 @@ STDMETHODIMP CDgnAppSupport::EndProcess( DWORD dwProcessID )
 
 void CDgnAppSupport::reloadPython()
 {
-    PyImport_ReloadModule(m_pNatLinkMain);
+	PyImport_ReloadModule(m_pNatLinkMain);
 }
