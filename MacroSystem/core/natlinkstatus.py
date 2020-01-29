@@ -522,11 +522,12 @@ Please try to correct this by running the NatLink Config Program (with administr
         KEY_ALL_ACCESS, so key can be created)
 
         """
-        version = self.getPythonVersion()
-        if not version:
-            fatal_error("no valid Python version available")
-            return None, None
-        dottedVersion = version[0] + "." + version[1]
+        # version = self.getPythonVersion()
+        # if not version:
+        #     fatal_error("no valid Python version available")
+        #     return None, None
+        # dottedVersion = version[0] + "." + version[1]
+        dottedVersion = sys.winver
         pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
         # key MUST already exist (ensure by passing flags=...:
         try:
@@ -1002,6 +1003,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         if int(version) < 25:
             raise ValueError('getPythonVersion, version is: "%s" versions before "25" (Python 2.5) are not any more supported by NatLink'% version)
         return version
+
         #regSection = "SOFTWARE\Python\PythonCore"
         #try:
         #    r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, regSection)

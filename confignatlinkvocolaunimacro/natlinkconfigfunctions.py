@@ -356,7 +356,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if not version:
             fatal_error("no valid Python version available")
             return None, None
-        dottedVersion = version[0] + "." + version[1]
+        # dottedVersion = version[0] + "." + version[1]
+        dottedVersion = sys.winver
         pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
         # key MUST already exist (ensure by passing flags=...:
         #try:
@@ -409,10 +410,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             print("checking PythonPathAndRegistry")
         try:
              result = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+             print(result)
              if result is None:
                 pass
              lmPythonPathDict, PythonPathSectionName = result
-        except (pywintypes.error, KeyError):
+        except Exception:
             mess =  'The section "NatLink" does not exist and cannot be created in the registry. You probably should run this program with administrator rights'
             self.warning(mess)
             self.checkedUrgent = 1

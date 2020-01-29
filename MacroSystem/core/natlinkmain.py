@@ -64,8 +64,8 @@ __version__ = ""   #changed with SVN
 #
 # natlinkmain
 #
-# This Python module comprises the core of the Python based command and 
-# control subsystem for Dragon NaturallySpeaking.  Python programs should 
+# This Python module comprises the core of the Python based command and
+# control subsystem for Dragon NaturallySpeaking.  Python programs should
 # should not import this module.  Instead, this module is automatically
 # imported when the Python compatibility module starts.
 #
@@ -205,7 +205,6 @@ try:
         else:
             if debugCallback:
                 print(('natlinkmain starting, global variable: %s: %s'% (name, globals()[name])))
-    del name
     # set in findAndLoadFiles:
     try:
         searchImportDirs
@@ -305,7 +304,8 @@ try:
     ##                    print 'not changed: %s (%s, %s)'% (fndName, sourceDate, objectDate)
                     fndFile.close()
                     return origName
-            if debugLoad: print(("Reloading", modName))
+            if debugLoad:
+                print(("Reloading", modName))
 
             # if we know we are reloading a module, we call the unload function
             # in that module first to release all objects
@@ -407,13 +407,15 @@ try:
             userDirFiles = [x for x in os.listdir(userDirectory) if x.endswith('.py')]
             for x in userDirFiles:
                 res = pat.match(x)
-                if res: addToFilesToLoad( filesToLoad, res.group(1), userDirectory, moduleHasDot )
+                if res:
+                    addToFilesToLoad( filesToLoad, res.group(1), userDirectory, moduleHasDot )
         ## unimacro:
         if status.UnimacroIsEnabled():
             unimacroDirFiles = [x for x in os.listdir(unimacroDirectory) if x.endswith('.py')]
             for x in unimacroDirFiles:
                 res = pat.match(x)
-                if res: addToFilesToLoad( filesToLoad, res.group(1), unimacroDirectory, moduleHasDot )
+                if res:
+                    addToFilesToLoad( filesToLoad, res.group(1), unimacroDirectory, moduleHasDot )
         else:
             unimacroDirFiles = []
 
@@ -844,7 +846,7 @@ try:
 
             # init things identical to when user changes:
             #   [MDL: this calls findAndLoadFiles()!]
-            changeCallback('user', natlink.getCurrentUser())
+            # changeCallback('user', natlink.getCurrentUser())
 
         ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
 
@@ -852,8 +854,8 @@ try:
             findAndLoadFiles()
 
             # initialize our callbacks
-            natlink.setBeginCallback(beginCallback)
-            natlink.setChangeCallback(changeCallback)
+            # natlink.setBeginCallback(beginCallback)
+            # natlink.setChangeCallback(changeCallback)
 
             print(('natlinkmain started from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
                       (status.getCoreDirectory(), status.getInstallVersion(),
