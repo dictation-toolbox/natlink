@@ -50,27 +50,19 @@ CDragonCode cDragon;
 
 PCCHAR * parseStringArray( const char * funcName, PyObject * args )
 {
-	char szBuffer[BUFFER_SIZE];
-
 	PCCHAR * ppWords = NULL;
 
-// todo check
 	// make sure that we have at least one parameter
-
 	int len = PyTuple_Size( args );
 	if( len == 0 )
 	{
-		// sprintf( szBuffer, "%s requires at least 1 argument", funcName );
-		sprintf_s( szBuffer, BUFFER_SIZE, "%s requires at least 1 argument", funcName );
-		PyErr_SetString( PyExc_TypeError, szBuffer );
+		PyErr_Format( PyExc_TypeError, "%s requires at least 1 argument", funcName );
 		return NULL;
 	}
 
 	// if we are passed exactly one list then we use the contents of that
 	// list instead of the passed tuple
-
 	BOOL bList = FALSE;
-
 	if( len == 1 )
 	{
 		PyObject * pFirst = PyTuple_GetItem( args, 0 );
@@ -83,10 +75,8 @@ PCCHAR * parseStringArray( const char * funcName, PyObject * args )
 	}
 
 	// now we extract the strings
-
 	ppWords = new PCCHAR[ len + 1 ];
 	ppWords[len] = 0;
-
 	for( int i = 0; i < len; i++ )
 	{
 		PyObject * pyWord =
@@ -95,19 +85,21 @@ PCCHAR * parseStringArray( const char * funcName, PyObject * args )
 
 		if( !pyWord || !PyUnicode_Check( pyWord ) )
 		{
-			//sprintf(
-			//	szBuffer, "all arguments passed to %s must be strings",
-			//	funcName );
-			sprintf_s(
-				szBuffer, BUFFER_SIZE, "all arguments passed to %s must be strings",
-				funcName );
-			PyErr_SetString( PyExc_TypeError, szBuffer );
+			PyErr_Format( PyExc_TypeError, "all arguments passed to %s must be strings", funcName );
 			delete [] ppWords;
-			ppWords = NULL;
 			return 0;
 		}
 
-		ppWords[i] = PyUnicode_AsUTF8( pyWord );
+		PyObject *encoded = PyUnicode_AsEncodedString(pyWord, "windows-1252", NULL);
+		if (encoded == NULL) {
+			PyErr_SetString(PyExc_UnicodeEncodeError, "Failed to encode input string using windows-1252 codec.");
+			Py_XDECREF(encoded);
+			delete [] ppWords;
+			return NULL;
+		}
+		// TODO: Should be calling DECREF here, but PyBytes_AsString
+		// returns a pointer to internal data
+		ppWords[i] = PyBytes_AsString(encoded);
 	}
 
 	return ppWords;
