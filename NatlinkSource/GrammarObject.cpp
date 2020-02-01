@@ -245,12 +245,12 @@ BOOL CGrammarObject::load(BYTE * pData, DWORD dwSize, BOOL bAllResults, BOOL bHy
 	RETURNIFERROR( rc, "QueryInterface(ISRGramNotifySink)" );
 
 	// load the grammar
-    std::streampos fileSize;
+	std::streampos fileSize;
 	SDATA sData;
 	sData.pData = pData;
 //	sData.pData = &fileData[0];
 //	sData.dwSize = (DWORD)fileSize;
-    sData.dwSize = (DWORD)dwSize;
+	sData.dwSize = (DWORD)dwSize;
 
 	IUnknownPtr pUnknown;
 
@@ -396,7 +396,7 @@ BOOL CGrammarObject::activate(char * ruleName, HWND hWnd )
 			ruleName );
 	#endif
 	onINVALIDRULE( rc, "The rule %s is not defined in the grammar", ruleName );
-    onGRAMMARTOOCOMPLEX( rc, "The grammar is too complex to be recognized" );
+	onGRAMMARTOOCOMPLEX( rc, "The grammar is too complex to be recognized" );
 	onRULEALREADYACTIVE( rc, "The rule %s is already active", ruleName );
 	RETURNIFERROR( rc, "GramObj.activate" );
 
@@ -612,11 +612,11 @@ BOOL CGrammarObject::PhraseHypothesis(DWORD dwFlags, PSRPHRASE pSRPhrase )
 
 	PyObject * pList = PyList_New( 0 );
 
-    SRWORD * pWord = (SRWORD *) pSRPhrase->abWords;
-    DWORD dwRemaining = pSRPhrase->dwSize - sizeof( SRPHRASE );
+	SRWORD * pWord = (SRWORD *) pSRPhrase->abWords;
+	DWORD dwRemaining = pSRPhrase->dwSize - sizeof( SRPHRASE );
 
-    while( dwRemaining > 0 )
-    {
+	while( dwRemaining > 0 )
+	{
 		// add the word to the list
 		#ifdef UNICODE
 			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
@@ -633,10 +633,10 @@ BOOL CGrammarObject::PhraseHypothesis(DWORD dwFlags, PSRPHRASE pSRPhrase )
 		PyList_Append( pList, pyWord );
 		Py_DECREF( pyWord );
 
-        // move to the next word
-        dwRemaining -= pWord->dwSize;
-        pWord = (PSRWORD) ((BYTE*) pWord + pWord->dwSize);
-    }
+		// move to the next word
+		dwRemaining -= pWord->dwSize;
+		pWord = (PSRWORD) ((BYTE*) pWord + pWord->dwSize);
+	}
 
 	// now make the callback
 
@@ -713,7 +713,7 @@ BOOL CGrammarObject::setSelectText(char * text )
 	onINVALIDINTERFACE( rc, "setSelectText not support for this type of grammar" )
 	RETURNIFERROR( rc, "QueryInterface(IDgnSRGramSelect)" );
 
-    SDATA sData;
+	SDATA sData;
 	sData.dwSize = ( strlen(text) + 4 ) & ~3;
 	#ifdef UNICODE
 		sData.dwSize = sData.dwSize * 2;

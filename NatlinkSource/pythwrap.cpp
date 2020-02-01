@@ -1547,34 +1547,34 @@ gramobj_dealloc(PyObject *self)
 // are not creating a number or sequence-type object.
 
 static PyTypeObject gramobj_stackType = {
-    PyVarObject_HEAD_INIT(NULL, 0) // 0 ob-size
+	PyVarObject_HEAD_INIT(NULL, 0) // 0 ob-size
 	"GramObj",				        /* tp_name */
 	sizeof(CGrammarObject),	        /* tp_basicsize */
 	0,					          	/* tp_itemsize */
 	(destructor)gramobj_dealloc,    /* tp_dealloc */
 	0,                              /* tp_vectorcall_offset */
-    0,                              /* tp_getattr */
-    0,                              /* tp_setattr */
-    0,                              /* tp_as_async */
-    0,                              /* tp_repr */
-    0,                              /* tp_as_number */
-    0,                              /* tp_as_sequence */
-    0,                              /* tp_as_mapping */
-    0,                              /* tp_hash */
-    0,                              /* tp_call */
-    0,                              /* tp_str */
-    PyObject_GenericGetAttr,        /* tp_getattro */
-    0,                              /* tp_setattro */
-    0,                              /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,             /* tp_flags */
-    0,                              /* tp_doc */
-    0,                              /* tp_traverse */
-    0,                              /* tp_clear */
-    0,                              /* tp_richcompare */
-    0,                              /* tp_weaklistoffset */
-    0,                              /* tp_iter */
-    0,                              /* tp_iternext */
-    gramobj_methods,                /* tp_methods */
+	0,                              /* tp_getattr */
+	0,                              /* tp_setattr */
+	0,                              /* tp_as_async */
+	0,                              /* tp_repr */
+	0,                              /* tp_as_number */
+	0,                              /* tp_as_sequence */
+	0,                              /* tp_as_mapping */
+	0,                              /* tp_hash */
+	0,                              /* tp_call */
+	0,                              /* tp_str */
+	PyObject_GenericGetAttr,        /* tp_getattro */
+	0,                              /* tp_setattro */
+	0,                              /* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,             /* tp_flags */
+	0,                              /* tp_doc */
+	0,                              /* tp_traverse */
+	0,                              /* tp_clear */
+	0,                              /* tp_richcompare */
+	0,                              /* tp_weaklistoffset */
+	0,                              /* tp_iter */
+	0,                              /* tp_iternext */
+	gramobj_methods,                /* tp_methods */
 	// remainder of fields are NULL
 };
 
@@ -1733,7 +1733,7 @@ resobj_getSelectInfo( PyObject *self, PyObject *args )
 		pyName = PyObject_GetAttr( pyType, strName );
 		Py_XDECREF( strName );
 	}
-    //	todo Fix str/unicode
+	//	todo Fix str/unicode
 	if( pyName == NULL || !PyUnicode_Check( pyName ) ||
 		0 != strcmp( PyUnicode_AsUTF8( pyName ), "GramObj" ) )
 	{
@@ -1787,28 +1787,28 @@ static PyTypeObject resobj_stackType = {
 	0,					          	/* tp_itemsize */
 	(destructor)resobj_dealloc,     /* tp_dealloc */
 	0,                              /* tp_vectorcall_offset */
-    0,                              /* tp_getattr */
-    0,                              /* tp_setattr */
-    0,                              /* tp_as_async */
-    0,                              /* tp_repr */
-    0,                              /* tp_as_number */
-    0,                              /* tp_as_sequence */
-    0,                              /* tp_as_mapping */
-    0,                              /* tp_hash */
-    0,                              /* tp_call */
-    0,                              /* tp_str */
-    PyObject_GenericGetAttr,        /* tp_getattro */
-    0,                              /* tp_setattro */
-    0,                              /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,             /* tp_flags */
-    0,                              /* tp_doc */
-    0,                              /* tp_traverse */
-    0,                              /* tp_clear */
-    0,                              /* tp_richcompare */
-    0,                              /* tp_weaklistoffset */
-    0,                              /* tp_iter */
-    0,                              /* tp_iternext */
-    resobj_methods,                 /* tp_methods */
+	0,                              /* tp_getattr */
+	0,                              /* tp_setattr */
+	0,                              /* tp_as_async */
+	0,                              /* tp_repr */
+	0,                              /* tp_as_number */
+	0,                              /* tp_as_sequence */
+	0,                              /* tp_as_mapping */
+	0,                              /* tp_hash */
+	0,                              /* tp_call */
+	0,                              /* tp_str */
+	PyObject_GenericGetAttr,        /* tp_getattro */
+	0,                              /* tp_setattro */
+	0,                              /* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,             /* tp_flags */
+	0,                              /* tp_doc */
+	0,                              /* tp_traverse */
+	0,                              /* tp_clear */
+	0,                              /* tp_richcompare */
+	0,                              /* tp_weaklistoffset */
+	0,                              /* tp_iter */
+	0,                              /* tp_iternext */
+	resobj_methods,                 /* tp_methods */
 
 
 	// remainder of fields are NULL
@@ -2138,28 +2138,28 @@ static PyTypeObject dictobj_stackType = {
 	0,					          	/* tp_itemsize */
 	(destructor)dictobj_dealloc,    /* tp_dealloc */
 	0,                              /* tp_vectorcall_offset */
-    0,                              /* tp_getattr */
-    0,                              /* tp_setattr */
-    0,                              /* tp_as_async */
-    0,                              /* tp_repr */
-    0,                              /* tp_as_number */
-    0,                              /* tp_as_sequence */
-    0,                              /* tp_as_mapping */
-    0,                              /* tp_hash */
-    0,                              /* tp_call */
-    0,                              /* tp_str */
-    PyObject_GenericGetAttr,        /* tp_getattro */
-    0,                              /* tp_setattro */
-    0,                              /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,             /* tp_flags */
-    0,                              /* tp_doc */
-    0,                              /* tp_traverse */
-    0,                              /* tp_clear */
-    0,                              /* tp_richcompare */
-    0,                              /* tp_weaklistoffset */
-    0,                              /* tp_iter */
-    0,                              /* tp_iternext */
-    dictobj_methods,                /* tp_methods */
+	0,                              /* tp_getattr */
+	0,                              /* tp_setattr */
+	0,                              /* tp_as_async */
+	0,                              /* tp_repr */
+	0,                              /* tp_as_number */
+	0,                              /* tp_as_sequence */
+	0,                              /* tp_as_mapping */
+	0,                              /* tp_hash */
+	0,                              /* tp_call */
+	0,                              /* tp_str */
+	PyObject_GenericGetAttr,        /* tp_getattro */
+	0,                              /* tp_setattro */
+	0,                              /* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,             /* tp_flags */
+	0,                              /* tp_doc */
+	0,                              /* tp_traverse */
+	0,                              /* tp_clear */
+	0,                              /* tp_richcompare */
+	0,                              /* tp_weaklistoffset */
+	0,                              /* tp_iter */
+	0,                              /* tp_iternext */
+	dictobj_methods,                /* tp_methods */
 	// remainder of fields are NULL
 };
 
@@ -2246,11 +2246,11 @@ static struct PyMethodDef natlink_methods[] = {
 //
 // We tell Python about our functions and also create an error type.
 static struct PyModuleDef NatlinkModule = {
-        PyModuleDef_HEAD_INIT,
-        "natlink",   /* name of module */
-        "natlink with python3 compatability",
-        -1,
-        natlink_methods
+		PyModuleDef_HEAD_INIT,
+		"natlink",   /* name of module */
+		"natlink with python3 compatability",
+		-1,
+		natlink_methods
 };
 
 extern "C"
@@ -2275,6 +2275,6 @@ PyMODINIT_FUNC PyInit_natlink(void){
 
 CDragonCode * initModule()
 {
-    PyInit_natlink();
+	PyInit_natlink();
 	return &cDragon;
 }
