@@ -169,7 +169,7 @@ CResultObject * resobj_new();
 class CInFunction
 {
  public:
-	CInFunction( BOOL * pbFlag ) { 
+	CInFunction( BOOL * pbFlag ) {
 		m_pbFlag = pbFlag;
 		m_bOldVal = *m_pbFlag;
 		*m_pbFlag = TRUE;
@@ -203,7 +203,7 @@ class CLockPython
 			PyEval_ReleaseThread( m_pThreadState );
 		}
 	}
-	
+
  protected:
 	PyThreadState * m_pThreadState;
 };
@@ -273,7 +273,7 @@ class CDgnSRNotifySink :
 {
 public:
 	CDgnSRNotifySink() { m_pParent = 0; }
-	
+
 BEGIN_COM_MAP(CDgnSRNotifySink)
 	COM_INTERFACE_ENTRY_IID(__uuidof(IDgnSREngineNotifySink), IDgnSREngineNotifySink)
 	COM_INTERFACE_ENTRY_IID(__uuidof(ISRNotifySink), ISRNotifySink)
@@ -299,7 +299,7 @@ public:
   	STDMETHOD (UtteranceBegin) ( QWORD ) { return S_OK; }
   	STDMETHOD (UtteranceEnd)   ( QWORD, QWORD ) { return S_OK; }
   	STDMETHOD (VUMeter)        ( QWORD, WORD ) { return S_OK; }
-   
+
 	STDMETHOD (SinkFlagsGet) (DWORD* ); // not inline
 
 	// this is our parent
@@ -392,13 +392,13 @@ class CDgnSSvcActionNotifySink :
 {
 public:
 	CDgnSSvcActionNotifySink() { m_pParent = 0; }
-	
+
 BEGIN_COM_MAP(CDgnSSvcActionNotifySink)
 	COM_INTERFACE_ENTRY_IID(__uuidof(IDgnSSvcActionNotifySink), IDgnSSvcActionNotifySink)
 END_COM_MAP()
 
 public:
-	
+
 	STDMETHOD (PlaybackDone)     ( DWORD );
 	STDMETHOD (PlaybackAborted)  ( DWORD, HRESULT );
 	STDMETHOD (ExecutionDone)    ( DWORD );
@@ -512,10 +512,10 @@ class CMessageStack
 	CMessageStack( UINT message, WPARAM wParam, CMessageStack * pNext ) :
 		m_message(message), m_wParam(wParam), m_pNext(pNext),
 		m_lParam(0), m_bTriggered(FALSE) { }
-		
+
 	UINT m_message;
 	WPARAM m_wParam;
-	
+
 	LPARAM m_lParam;
 	BOOL m_bTriggered;
 	CMessageStack * m_pNext;
@@ -545,7 +545,7 @@ BOOL CDragonCode::IsMessageTriggered(
 	UINT message, WPARAM wParam, LPARAM & lParam )
 {
 	CMessageStack ** ppMessage = &m_pMessageStack;
-	
+
 	for( ; *ppMessage; ppMessage = &( (*ppMessage)->m_pNext ) )
 	{
 		if( (*ppMessage)->m_message == message &&
@@ -570,7 +570,7 @@ BOOL CDragonCode::IsMessageTriggered(
 //---------------------------------------------------------------------------
 // Note when a posted message comes in, the Python interpreter should be
 // unlocked so we first have to establish a thread state and lock the
-// interpreter. 
+// interpreter.
 
 LRESULT CALLBACK hiddenWndProc(
 	HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
@@ -590,7 +590,7 @@ LRESULT CALLBACK hiddenWndProc(
 		}
 		pDragCode->logMessage("- hiddenWndProc WM_COMMAND\n");
 		return 0;
-		
+
 	 case WM_ATTRIBCHANGED:
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
 		pDragCode->logMessage("+ hiddenWndProc WM_ATTRIBCHANGED\n");
@@ -643,7 +643,7 @@ LRESULT CALLBACK hiddenWndProc(
 		pDragCode->logMessage("- hiddenWndProc WM_TIMER\n");
 		return 0;
 
-	 case WM_TRAYICON:		
+	 case WM_TRAYICON:
 		pDragCode = (CDragonCode *)GetWindowLong( hwnd, 0 );
 		pDragCode->logMessage("+ hiddenWndProc WM_TRAYICON\n");
 		if( pDragCode )
@@ -654,7 +654,7 @@ LRESULT CALLBACK hiddenWndProc(
 		pDragCode->logMessage("- hiddenWndProc WM_TRAYICON\n");
 		return 0;
 	}
-	
+
 	return DefWindowProc( hwnd, uMsg, wParam, lParam );
 }
 
@@ -667,7 +667,7 @@ BOOL CDragonCode::isNatSpeakRunning()
 	// set to a value of zero (so our wait will timeout)
 
 	HANDLE hSem = CreateSemaphore(
-		NULL, 1, 1, 
+		NULL, 1, 1,
 		TEXT( "Dragon NaturallySpeaking 1.0 -> Server Semaphore") ); // RW TEXT macro added
 	if( hSem == NULL )
 	{
@@ -701,7 +701,7 @@ void CDragonCode::releaseObjects()
 	while( m_pFirstGramObj )
 	{
 		CGrammarObject * pOldFirst = m_pFirstGramObj;
-		
+
 		m_pFirstGramObj->unload();
 
 		// this should never happen
@@ -716,7 +716,7 @@ void CDragonCode::releaseObjects()
 	while( m_pFirstResObj )
 	{
 		CResultObject * pOldFirst = m_pFirstResObj;
-		
+
 		m_pFirstResObj->destroy();
 
 		// this should never happen
@@ -726,12 +726,12 @@ void CDragonCode::releaseObjects()
 			break;
 		}
 	}
-	
+
 	// iterate over all dictation objects and free them
 	while( m_pFirstDictObj )
 	{
-		CDicationObject * pOldFirst = m_pFirstDictObj;
-		
+		CDictationObject * pOldFirst = m_pFirstDictObj;
+
 		m_pFirstDictObj->destroy();
 
 		// this should never happen
@@ -765,7 +765,7 @@ void CDragonCode::onPaused( WPARAM wParam )
 		doPausedProcessing( *pCookie );
 		logMessage("- CDragonCode::onPaused doPausedProcessing\n");
 	}
-	
+
 	delete pCookie;
 }
 
@@ -840,7 +840,7 @@ void CDragonCode::addGramObj(CGrammarObject * pGramObj )
 {
 	assert( pGramObj != NULL );
 	assert( pGramObj->m_pNextGramObj == NULL );
-	
+
 	pGramObj->m_pNextGramObj = m_pFirstGramObj;
 	m_pFirstGramObj = pGramObj;
 }
@@ -869,7 +869,7 @@ void CDragonCode::removeGramObj(CGrammarObject * pGramObj )
 	}
 
 	// otherwise, we need to find the grammar object in the linked list
-	
+
 	CGrammarObject * pCur;
 	for( pCur = m_pFirstGramObj;
 		 pCur->m_pNextGramObj != NULL;
@@ -892,7 +892,7 @@ void CDragonCode::addResObj(CResultObject * pResObj )
 {
 	assert( pResObj != NULL );
 	assert( pResObj->m_pNextResObj == NULL );
-	
+
 	pResObj->m_pNextResObj = m_pFirstResObj;
 	m_pFirstResObj = pResObj;
 }
@@ -921,7 +921,7 @@ void CDragonCode::removeResObj(CResultObject * pResObj )
 	}
 
 	// otherwise, we need to find the results object in the linked list
-	
+
 	CResultObject * pCur;
 	for( pCur = m_pFirstResObj;
 		 pCur->m_pNextResObj != NULL;
@@ -940,18 +940,18 @@ void CDragonCode::removeResObj(CResultObject * pResObj )
 
 //---------------------------------------------------------------------------
 
-void CDragonCode::addDictObj(CDicationObject * pDictObj )
+void CDragonCode::addDictObj(CDictationObject * pDictObj )
 {
 	assert( pDictObj != NULL );
 	assert( pDictObj->m_pNextDictObj == NULL );
-	
+
 	pDictObj->m_pNextDictObj = m_pFirstDictObj;
 	m_pFirstDictObj = pDictObj;
 }
 
 //---------------------------------------------------------------------------
 
-void CDragonCode::removeDictObj(CDicationObject * pDictObj )
+void CDragonCode::removeDictObj(CDictationObject * pDictObj )
 {
 	assert( pDictObj != NULL );
 
@@ -973,8 +973,8 @@ void CDragonCode::removeDictObj(CDicationObject * pDictObj )
 	}
 
 	// otherwise, we need to find the dictation object in the linked list
-	
-	CDicationObject * pCur;
+
+	CDictationObject * pCur;
 	for( pCur = m_pFirstDictObj;
 		 pCur->m_pNextDictObj != NULL;
 		 pCur = pCur->m_pNextDictObj )
@@ -1058,7 +1058,7 @@ LPARAM CDragonCode::messageLoop( UINT message, WPARAM wParam )
 		{
 			continue;
 		}
-		
+
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 
@@ -1099,7 +1099,7 @@ void CDragonCode::onAttribChanged( WPARAM wParam )
 	DWORD dwCode = wParam;
 
 	// do nothing if there is no callback installed
-	
+
 	if( !m_pChangeCallback )
 	{
 		return;
@@ -1109,10 +1109,10 @@ void CDragonCode::onAttribChanged( WPARAM wParam )
 
 	const char * pszCode = "";
 	PyObject * pInfo;
-	
+
 	switch( dwCode )
 	{
-		
+
 	 case ISRNSAC_SPEAKER:
 		if( m_nCallbackDepth || m_bDuringInit )
 		{
@@ -1167,7 +1167,7 @@ void CDragonCode::onAttribChanged( WPARAM wParam )
 void CDragonCode::onTimer()
 {
 	// if there is no timer callback, reset the timer
-	
+
 	if( !m_pTimerCallback )
 	{
 		if( m_nTimer )
@@ -1203,9 +1203,9 @@ void CDragonCode::onMenuCommand( WPARAM wParam )
 		// to do about the thread state
 		if( m_pThreadState )
 		{
-			return;	
+			return;
 		}
-		
+
 		// reload the Python subsystem
 		displayText( "Reloading Python subsystem...\r\n", FALSE, FALSE );
 
@@ -1250,7 +1250,7 @@ void CDragonCode::onSendResults( WPARAM wParam, LPARAM lParam )
 
 	// makeCallback calls DECREF on pArgs
 	makeCallback( pFunc, pArgs );
-	
+
 	// now that results are processed, we can resume recognitions
 	resetPauseRecog();
 }
@@ -1262,7 +1262,7 @@ void CDragonCode::makeResultsCallback( PyObject *pFunc, PyObject *pArgs )
 	// setting this will delay recognition at the start of the next
 	// utterance until results are processed
 	m_nPauseRecog += 1;
-	
+
 	postMessage( WM_SENDRESULTS, (WPARAM)pFunc, (LPARAM)pArgs );
 }
 
@@ -1275,7 +1275,7 @@ void CDragonCode::resetPauseRecog()
 	{
 		m_nPauseRecog -= 1;
 	}
-	
+
 	if( m_nPauseRecog == 0 && m_deferredCookie )
 	{
 		doPausedProcessing( m_deferredCookie );
@@ -1290,14 +1290,14 @@ DWORD CDragonCode::testFileName( const char * pszFileName )
 {
 	if ( !pszFileName )
 		return 0;
-	
+
 	// first see if the file exists by trying to open it
-	
+
 	#ifdef UNICODE
 
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszFileName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszFileName, -1, NULL, 0 );
 		CPointerChar pszFileNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pszFileName, -1, pszFileNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pszFileName, -1, pszFileNameW, size_needed );*/
 		CComBSTR bstrFileName( pszFileName );
 
 		HANDLE hFile = CreateFile(
@@ -1319,7 +1319,7 @@ DWORD CDragonCode::testFileName( const char * pszFileName )
 			0,						// file attributes
 			NULL );					// handle to file with attributes to copy
 	#endif
-	
+
 	if( hFile == INVALID_HANDLE_VALUE )
 	{
 		reportError( errValueError,
@@ -1331,13 +1331,13 @@ DWORD CDragonCode::testFileName( const char * pszFileName )
 	CloseHandle( hFile );
 
 	// then test the extension of the filename
-	
+
 	int len = strlen( pszFileName );
-	
+
 	char pszExtension[5];
 	strcpy( pszExtension, len < 4 ? "" : pszFileName + len-4 );
 	_strlwr( pszExtension );
-	
+
 	if( 0 == strcmp( pszExtension, ".utd" ) )
 	{
 		return DGNUTTTYP_COMBINED;
@@ -1399,11 +1399,11 @@ void CDragonCode::logMessage( const char * pszText )
 //---------------------------------------------------------------------------
 // Called when a message is sent to the waitForSpeech dialog box.
 
-BOOL CALLBACK waitDialogProc( 
+BOOL CALLBACK waitDialogProc(
 	HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	int nTimeout;
-	
+
 	switch( msg )
 	{
 	 case WM_INITDIALOG:
@@ -1423,7 +1423,7 @@ BOOL CALLBACK waitDialogProc(
 		{
 			SetTimer( hWnd, 1, nTimeout, NULL );
 		}
-		
+
 		return TRUE;
 
 	 case WM_HIDEWINDOW:
@@ -1435,7 +1435,7 @@ BOOL CALLBACK waitDialogProc(
 		KillTimer( hWnd, 1 );
 		EndDialog( hWnd, IDCANCEL );
 		return TRUE;
-		
+
 	 case WM_CLOSE:
 		EndDialog( hWnd, IDCANCEL );
 		return TRUE;
@@ -1507,7 +1507,7 @@ BOOL CDragonCode::initSecondWindow()
 	WNDCLASSEX regCls;
 	memset( &regCls, 0, sizeof(WNDCLASSEX) );
 	regCls.cbSize = sizeof(WNDCLASSEX);
-	regCls.lpfnWndProc = hiddenWndProc; 
+	regCls.lpfnWndProc = hiddenWndProc;
     regCls.hInstance = hInstance;
     regCls.lpszClassName = TEXT( "natlink") ; // RW TEXT macro added
 	regCls.cbWndExtra = 4;
@@ -1574,14 +1574,14 @@ SDATA makeEmptyGrammar()
 
 	DWORD dwListChunkSize = sizeof(SRCFGLIST) + dwEmptyWordSize;
 
-	DWORD dwSize = 
+	DWORD dwSize =
 		sizeof(SRHEADER) + 3 * sizeof(SRCHUNK) +
 		dwRuleChunkSize + dwExportChunkSize + dwListChunkSize;
 
 	// allocate a buffer which can hold everything
 
 	BYTE * pTemp = new BYTE[ dwSize ];
-	
+
 	SDATA sData;
 	sData.dwSize = dwSize;
 	sData.pData = pTemp;
@@ -1609,11 +1609,11 @@ SDATA makeEmptyGrammar()
 	pSymbol[0].wType = SRCFG_STARTOPERATION;
 	pSymbol[0].wProbability = 0;
 	pSymbol[0].dwValue = SRCFGO_SEQUENCE;
-	
+
 	pSymbol[1].wType = SRCFG_LIST;
 	pSymbol[1].wProbability = 0;
 	pSymbol[1].dwValue = 1;
-	
+
 	pSymbol[2].wType = SRCFG_ENDOPERATION;
 	pSymbol[2].wProbability = 0;
 	pSymbol[2].dwValue = SRCFGO_SEQUENCE;
@@ -1634,7 +1634,7 @@ SDATA makeEmptyGrammar()
 	pTemp += dwExportChunkSize + sizeof(SRCHUNK);
 
 	// create the import chunk
-	
+
 	pChunk = (SRCHUNK *)pTemp;
 	pChunk->dwChunkID = SRCKCFG_LISTS;
 	pChunk->dwChunkSize = dwListChunkSize;
@@ -1657,7 +1657,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 
 	NOTDURING_INIT( "natConnect" );
 	NOTDURING_PAUSED( "natConnect" );
-	
+
 	if( m_pISRCentral )
 	{
 		natDisconnect();
@@ -1702,7 +1702,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	RETURNIFERROR( rc, "IServiceProvider::QueryService(DgnDictate)" );
 
 	// This interface contains the microphone logic
-	
+
 	rc = m_pISRCentral->QueryInterface(
 		__uuidof(IDgnSREngineControl), (void**)&m_pIDgnSREngineControl );
 	RETURNIFERROR( rc, "ISRCentral::QueryInterface(IDgnSREngineControl)" );
@@ -1718,7 +1718,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	rc = pSpchSvc->QueryInterface(
 		__uuidof(IDgnSSvcOutputEvent), (void**)&m_pIDgnSSvcOutputEvent);
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(DgnSSvcOutputEvent)" );
-	
+
 	rc = m_pIDgnSSvcOutputEvent->QueryInterface(
 		__uuidof(IDgnSSvcInterpreter), (void**)&m_pIDgnSSvcInterpreter );
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(IDgnSSvcInterpreter)" );
@@ -1754,7 +1754,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	RETURNIFERROR( rc, "IDgnExtModSupErrors::GetLogFileName" );*/
 
 	// create an engine sink and register it
-	
+
 	IDgnSREngineNotifySinkPtr pIEngSink;
 	CComObject<CDgnSRNotifySink> * pEngSinkObj;
 
@@ -1903,7 +1903,7 @@ BOOL CDragonCode::setBeginCallback( PyObject *pCallback )
 		Py_XDECREF( m_pBeginCallback );
 		m_pBeginCallback = pCallback;
 	}
-	
+
 	return TRUE;
 }
 
@@ -1922,7 +1922,7 @@ BOOL CDragonCode::setChangeCallback( PyObject *pCallback )
 		Py_XDECREF( m_pChangeCallback );
 		m_pChangeCallback = pCallback;
 	}
-	
+
 	return TRUE;
 }
 
@@ -1950,9 +1950,9 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 
 	DWORD dwNumUndo;
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszKeys, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, NULL, 0 );
 		CPointerChar pszKeysW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pszKeys, -1, pszKeysW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, pszKeysW, size_needed );*/
 		CComBSTR bstrKeys( pszKeys );
 		rc = m_pIDgnSSvcOutputEvent->PlayString(
 			bstrKeys,	// string to send
@@ -1987,7 +1987,7 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 			"natlink.playString" );
 		return FALSE;
 	}
-	
+
 	return TRUE;
 }
 
@@ -2015,7 +2015,7 @@ PyObject * CDragonCode::getCurrentModule()
 	CPointerChar pTitle = new TCHAR[ length ];
 	logMessage("  CDragonCode::getCurrentModule 1\n");
 	GetWindowText( hWnd, pTitle, length );
-	
+
 	// get the module name of the current foreground window; note that this
 	// operation is very complicated under Win32.  Fortunately, Dragon
 	// NaturallySpeaking has worked out all the details and has exposed the
@@ -2029,7 +2029,7 @@ PyObject * CDragonCode::getCurrentModule()
 
 	rc = m_pIDgnExtModSupStrings->GetWindowModuleFileName(
 				hWnd, pModule, dwLength, &dwNeeded );
-	
+
 	logMessage("  CDragonCode::getCurrentModule 3\n");
 
 	if( rc == E_BUFFERTOOSMALL )
@@ -2065,23 +2065,23 @@ PyObject * CDragonCode::getCurrentModule()
 		// window is no longer valis and we did not catch this earlier.
 		logMessage("  CDragonCode::getCurrentModule 3d\n");
 		return Py_BuildValue( "(ssi)", "", "", 0 );
-	}		
+	}
 	logMessage("  CDragonCode::getCurrentModule 4\n");
 	RETURNIFERROR( rc, "IDgnExtModSupStrings::GetWindowModuleFileName" );
 
 	// build the result tuple and return
-	
+
 	logMessage("  CDragonCode::getCurrentModule 5\n");
 
 	#ifdef UNICODE
-		int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pModule, -1, NULL, 0,  NULL, NULL);
+		int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pModule, -1, NULL, 0,  NULL, NULL);
 		char * pModuleA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, pModule, -1, pModuleA, size_needed, NULL, NULL );
+		::WideCharToMultiByte( CP_UTF8, 0, pModule, -1, pModuleA, size_needed, NULL, NULL );
 
-		size_needed = ::WideCharToMultiByte( CP_ACP, 0, pTitle, -1, NULL, 0,  NULL, NULL);
+		size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pTitle, -1, NULL, 0,  NULL, NULL);
 		char * pTitleA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, pTitle, -1, pTitleA, size_needed, NULL, NULL );
-		
+		::WideCharToMultiByte( CP_UTF8, 0, pTitle, -1, pTitleA, size_needed, NULL, NULL );
+
 		return Py_BuildValue( "(ssi)",	pModuleA, pTitleA, hWnd );
 
 		if ( pModuleA )
@@ -2101,7 +2101,7 @@ PyObject * CDragonCode::getCurrentUser()
 	HRESULT rc;
 
 	NOTBEFORE_INIT( "getCurrentUser" );
-	
+
 	// first we get the name of the speaker.  If there is no speaker loaded
 	// we return empty strings
 
@@ -2126,8 +2126,8 @@ PyObject * CDragonCode::getCurrentUser()
 	}
 	RETURNIFERROR( rc, "ISRSpeaker::Query" );
 
-	// now we get the speaker directory 
-		
+	// now we get the speaker directory
+
 	IDgnSRSpeakerPtr pIDgnSRSpeaker;
 	rc = m_pISRCentral->QueryInterface(
 		__uuidof(IDgnSRSpeaker), (void**)&pIDgnSRSpeaker );
@@ -2135,13 +2135,13 @@ PyObject * CDragonCode::getCurrentUser()
 
 	dwLength = _MAX_PATH + 11;
 	CPointerChar pPath = new TCHAR[ dwLength ];
-	rc = pIDgnSRSpeaker->GetSpeakerDirectory( 
+	rc = pIDgnSRSpeaker->GetSpeakerDirectory(
 		pUser, pPath, dwLength, &dwNeeded );
 	if( rc == E_BUFFERTOOSMALL )
 	{
 		dwLength = dwNeeded + 11;
 		pPath = new TCHAR[ dwLength ];
-		rc = pIDgnSRSpeaker->GetSpeakerDirectory( 
+		rc = pIDgnSRSpeaker->GetSpeakerDirectory(
 			pUser, pPath, dwLength, &dwNeeded );
 	}
 	RETURNIFERROR( rc, "IDgnSRSpeaker::GetSpeakerDirectory" );
@@ -2153,21 +2153,21 @@ PyObject * CDragonCode::getCurrentUser()
 	// return the Python information
 
 	#ifdef UNICODE
-		int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pUser, -1, NULL, 0,  NULL, NULL);
+		int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pUser, -1, NULL, 0,  NULL, NULL);
 		char * pUserA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, pUser, -1, pUserA, size_needed, NULL, NULL );
+		::WideCharToMultiByte( CP_UTF8, 0, pUser, -1, pUserA, size_needed, NULL, NULL );
 
-		size_needed = ::WideCharToMultiByte( CP_ACP, 0, pPath, -1, NULL, 0,  NULL, NULL);
+		size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pPath, -1, NULL, 0,  NULL, NULL);
 		char * pPathA = new char[ size_needed ];
-		::WideCharToMultiByte( CP_ACP, 0, pPath, -1, pPathA, size_needed, NULL, NULL );
-		
+		::WideCharToMultiByte( CP_UTF8, 0, pPath, -1, pPathA, size_needed, NULL, NULL );
+
 		return Py_BuildValue( "(ss)", pUserA, pPathA );
 
 		if ( pUserA )
 			delete [] pUserA;
 		if ( pPathA )
 			delete [] pPathA;
-		
+
 	#else
 		return Py_BuildValue( "(ss)", pUser, pPath );
 	#endif
@@ -2220,9 +2220,9 @@ BOOL CDragonCode::setMicState( const char * pState )
 	WORD wState;
 
 	NOTBEFORE_INIT( "setMicState" );
-	
+
 	// decode the parameter, converting the string into a code
-	
+
 	if( 0 == _stricmp( pState, "on" ) )
 	{
 		wState = DGNMIC_ON;
@@ -2239,7 +2239,7 @@ BOOL CDragonCode::setMicState( const char * pState )
 	}
 	else
 	{
-		reportError( errValueError, 
+		reportError( errValueError,
 			"Invalid parameter (calling %s)", "setMicState" );
 		return FALSE;
 	}
@@ -2285,9 +2285,9 @@ TCHAR * packString( PCCHAR * ppWords, DWORD * pdwSize, DWORD * pdwCount )
 	for( int i = 0; ppWords[i]; i++ )
 	{
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, ppWords[i], -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, ppWords[i], -1, NULL, 0 );
 			CPointerChar ppWordsW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, ppWords[i], -1, ppWordsW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, ppWords[i], -1, ppWordsW, size_needed );*/
 			CComBSTR bstrWord( ppWords[i] );
 			wcscpy( pszList + offset, bstrWord );
 		#else
@@ -2329,9 +2329,9 @@ BOOL CDragonCode::execScript(
 	DWORD dwLineNumber;
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszScript, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszScript, -1, NULL, 0 );
 		CPointerChar pszScriptW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pszScript, -1, pszScriptW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pszScript, -1, pszScriptW, size_needed );*/
 		CComBSTR bstrScript( pszScript );
 
 		rc = m_pIDgnSSvcInterpreter->CheckScript(
@@ -2360,9 +2360,9 @@ BOOL CDragonCode::execScript(
 	if( ppWords == NULL )
 	{
 		#ifdef UNICODE
-			/*size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszComment, -1, NULL, 0 );
+			/*size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszComment, -1, NULL, 0 );
 			CPointerChar pszCommentW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszComment, -1, pszCommentW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszComment, -1, pszCommentW, size_needed );*/
 			CComBSTR bstrComment( pszComment );
 
 			rc = m_pIDgnSSvcInterpreter->ExecuteScript(
@@ -2383,9 +2383,9 @@ BOOL CDragonCode::execScript(
 		TCHAR * pszList = packString( ppWords, &dwListSize, &dwCount );
 
 		#ifdef UNICODE
-			/*size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszComment, -1, NULL, 0 );
+			/*size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszComment, -1, NULL, 0 );
 			CPointerChar pszCommentW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszComment, -1, pszCommentW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszComment, -1, pszCommentW, size_needed );*/
 			CComBSTR bstrComment( pszComment );
 
 			rc = m_pIDgnSSvcInterpreter->ExecuteScriptWithListResults(
@@ -2427,7 +2427,7 @@ BOOL CDragonCode::execScript(
 BOOL CDragonCode::recognitionMimic( PCCHAR * ppWords )
 {
 	HRESULT rc;
-	
+
 	NOTBEFORE_INIT( "recognitionMimic" );
 	NOTDURING_INIT( "recognitionMimic" );
 	NOTDURING_PAUSED( "recognitionMimic" );
@@ -2455,14 +2455,14 @@ BOOL CDragonCode::recognitionMimic( PCCHAR * ppWords )
 
 	// if an error occurred then we will have a pIUnknown interface.  From
 	// this interface we can display an error message
-	
+
 	if( pIUnknown != NULL )
 	{
 		reportError( errMimicFailed, pIUnknown, "recognitionMimic call failed" );
 		pIUnknown->Release();
 		return FALSE;
 	}
-	
+
 	return TRUE;
 }
 
@@ -2510,7 +2510,7 @@ BOOL CDragonCode::playEvents( DWORD dwCount, HOOK_EVENTMSG * pEvents )
 	DWORD dwClientCode = ++dwUnique;
 
 	rc = m_pIDgnSSvcOutputEvent->PlayEvents(
-		dwCount, pEvents, 
+		dwCount, pEvents,
 		0xFFFFFFFF,   	// delay (-1 for app specific delay)
 		dwClientCode ); // to identify which WM_PLAYBACK is ours
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::PlayEvents" );
@@ -2531,7 +2531,7 @@ BOOL CDragonCode::playEvents( DWORD dwCount, HOOK_EVENTMSG * pEvents )
 			"natlink.playEvents" );
 		return FALSE;
 	}
-	
+
 	return TRUE;
 }
 
@@ -2547,7 +2547,7 @@ BOOL CDragonCode::waitForSpeech( int nTimeout )
 	// pass in the timeout as the parameter
 
 	MY_BEGIN_ALLOW_THREADS
-	
+
 	HINSTANCE hInstance = _Module.GetModuleInstance();
 	DialogBoxParam(
 		hInstance, MAKEINTRESOURCE( IDD_WAITFOR ),
@@ -2578,13 +2578,13 @@ BOOL CDragonCode::inputFromFile(
 	if( cInFunction.wasAlreadySet() )
 	{
 		reportError( errNatError,
-			"inputFromFile can not be reentered, input is already active (calling %s)", 
+			"inputFromFile can not be reentered, input is already active (calling %s)",
 			"natlink.inputFromFile" );
 		return FALSE;
 	}
-	
+
 	// make sure the file exists before continuing
-	
+
 	DWORD dwFileType = testFileName( pszFileName );
 	if( dwFileType == INVALID_WAVEFILE )
 	{
@@ -2592,7 +2592,7 @@ BOOL CDragonCode::inputFromFile(
 	}
 
 	// open the audio source and start playback
-	
+
 	IDgnSRAudioFileSourcePtr pIDgnSRAudioFileSource;
 	rc = m_pISRCentral->QueryInterface(
 		__uuidof(IDgnSRAudioFileSource), (void**)&pIDgnSRAudioFileSource );
@@ -2612,16 +2612,16 @@ BOOL CDragonCode::inputFromFile(
 	}
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszFileName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszFileName, -1, NULL, 0 );
 		CPointerChar pszFileNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, pszFileName, -1, pszFileNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, pszFileName, -1, pszFileNameW, size_needed );*/
 		CComBSTR bstrFileName( pszFileName );
 
 		rc = pIDgnSRAudioFileSource->FileNameSet( dwFlags, bstrFileName );
 	#else
 		rc = pIDgnSRAudioFileSource->FileNameSet( dwFlags, pszFileName );
 	#endif
-	
+
 	RETURNIFERROR( rc, "IDgnSRAudioFileSource::FileNameSet" );
 
 	if( dwPlayList )
@@ -2641,7 +2641,7 @@ BOOL CDragonCode::inputFromFile(
 
 	rc = pIDgnSRAudioFileSource->EnableSet( FALSE );
 	RETURNIFERROR( rc, "IDgnSRAudioFileSource::EnableSet(FALSE)" );
-	
+
     rc = pIDgnSRAudioFileSource->FileClose();
 	RETURNIFERROR( rc, "IDgnSRAudioFileSource::FileClose" );
 
@@ -2670,7 +2670,7 @@ BOOL CDragonCode::setTimerCallback( PyObject * pCallback, int nMilliseconds )
 		m_pTimerCallback = pCallback;
 		m_nTimer = SetTimer( m_hMsgWnd, 2, nMilliseconds, NULL );
 	}
-	
+
 	return TRUE;
 }
 
@@ -2750,7 +2750,7 @@ BOOL CDragonCode::startTraining( char * pMode )
 	}
 	else
 	{
-		reportError( errValueError, 
+		reportError( errValueError,
 			"Invalid parameter (calling %s)", "startTraining" );
 		return FALSE;
 	}
@@ -2793,7 +2793,7 @@ BOOL CDragonCode::finishTraining( BOOL bNoCancel )
 		return FALSE;
 	}
 	RETURNIFERROR( rc, "IDgnSRTraining::TrainingPerform" );
-	
+
 	return TRUE;
 }
 
@@ -2818,9 +2818,9 @@ BOOL CDragonCode::createUser(
 		RETURNIFERROR( rc, "ISRCentral::QueryInterface(ISRSpeaker)" );
 
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, NULL, 0 );
 			CPointerChar pszUserNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, pszUserNameW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, pszUserNameW, size_needed );*/
 			CComBSTR bstrUserName( pszUserName );
 			rc = pISRSpeaker->New( bstrUserName );
 		#else
@@ -2843,13 +2843,13 @@ BOOL CDragonCode::createUser(
 		RETURNIFERROR( rc, "ISRCentral::QueryInterface(IDgnSRSpeaker)" );
 
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, NULL, 0 );
 			CPointerChar pszUserNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, pszUserNameW, size_needed );
+			::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, pszUserNameW, size_needed );
 
-			size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszBaseModel, -1, NULL, 0 );
+			size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszBaseModel, -1, NULL, 0 );
 			CPointerChar pszBaseModelW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszBaseModel, -1, pszBaseModelW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszBaseModel, -1, pszBaseModelW, size_needed );*/
 			CComBSTR bstrUserName( pszUserName );
 			CComBSTR bstrBaseModel( pszBaseModel );
 
@@ -2880,24 +2880,24 @@ BOOL CDragonCode::createUser(
 		// This matches the behavior of the NatSpeak new user wizard
 
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, NULL, 0 );
 			CPointerChar pszUserNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszUserName, -1, pszUserNameW, size_needed );
+			::MultiByteToWideChar( CP_UTF8, 0, pszUserName, -1, pszUserNameW, size_needed );
 
-			size_needed = ::MultiByteToWideChar( CP_ACP, 0, pszBaseTopic, -1, NULL, 0 );
+			size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszBaseTopic, -1, NULL, 0 );
 			CPointerChar pszBaseTopicW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, pszBaseTopic, -1, pszBaseTopicW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, pszBaseTopic, -1, pszBaseTopicW, size_needed );*/
 			CComBSTR bstrUserName( pszUserName );
 			CComBSTR bstrBaseTopic( pszBaseTopic );
 			rc = pIDgnSRTopic2->New( bstrUserName, bstrBaseTopic, bstrBaseTopic );
 		#else
 			rc = pIDgnSRTopic2->New( pszUserName, pszBaseTopic, pszBaseTopic );
 		#endif
-		
+
 		onVALUEOUTOFRANGE( rc, "The base topic '%s' does not exist", pszBaseTopic );
 		RETURNIFERROR( rc, "IDgnSRTopic2::New" );
 	}
-	
+
 	return TRUE;
 }
 
@@ -2919,7 +2919,7 @@ BOOL CDragonCode::openUser( char * pszUserName )
 	TCHAR * pBuffer;
 	DWORD dwSize;
 	rc = pISRSpeaker->Enum( &pBuffer, &dwSize );
-	
+
 	RETURNIFERROR( rc, "ISRSpeaker::Enum" );
 
 	PyObject * pList = PyList_New( 0 );
@@ -2973,7 +2973,7 @@ BOOL CDragonCode::saveUser()
 
 	rc = m_pIDgnSREngineControl->SaveSpeaker( FALSE /*bBackup*/ );
 	RETURNIFERROR( rc, "IDgnSREngineControl::SaveSpeaker" );
-	
+
 	return TRUE;
 }
 
@@ -3063,14 +3063,14 @@ PyObject * CDragonCode::getAllUsers()
 	RETURNIFERROR( rc, "ISRSpeaker::Enum" );
 
 	PyObject * pList = PyList_New( 0 );
-	
+
 	TCHAR * pName = pBuffer;
 	while( *pName )
 	{
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pName, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pName, -1, NULL, 0,  NULL, NULL);
 			char * pNameA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pName, -1, pNameA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pName, -1, pNameA, size_needed, NULL, NULL );
 			PyObject * pyName = Py_BuildValue( "s", pNameA );
 			delete [] pNameA;
 		#else
@@ -3081,7 +3081,7 @@ PyObject * CDragonCode::getAllUsers()
 		Py_DECREF( pyName );
 		pName += _tcslen( pName ) + 1;
 	}
-	
+
 	CoTaskMemFree( pBuffer );
 
 	return pList;
@@ -3128,13 +3128,13 @@ PyObject * CDragonCode::getWordInfo( char * wordName, int flags )
 	{
 		dwFlags |= DGNWORDTESTFLAG_CASESENSITIVE;
 	}
-	
+
 	BOOL bExists;
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 		CPointerChar wordNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 		CComBSTR bstrWordName( wordName );
 		rc = pDgnSRLexicon->WordTest( dwFlags, bstrWordName, &bExists );
 	#else
@@ -3200,9 +3200,9 @@ BOOL CDragonCode::deleteWord( char * wordName )
 	RETURNIFERROR( rc, "QueryInterface(IDgnLexWord)" );
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 		CPointerChar wordNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 		CComBSTR bstrWordName( wordName );
 		rc = pDgnLexWord->Remove( bstrWordName );
 	#else
@@ -3243,9 +3243,9 @@ PyObject * CDragonCode::addWord(
 	if( ppProns == NULL )
 	{
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 			CPointerChar wordNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 			CComBSTR bstrWordName( wordName );
 			rc = pLexPron->Add(
 				CHARSET_ENGINEPHONETIC, bstrWordName, L"",
@@ -3269,13 +3269,13 @@ PyObject * CDragonCode::addWord(
 		for( int i = 0; ppProns[i] != NULL; i++ )
 		{
 			#ifdef UNICODE
-				/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+				/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 				CPointerChar wordNameW = new TCHAR[ size_needed ];
-				::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );
+				::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );
 
-				size_needed = ::MultiByteToWideChar( CP_ACP, 0, ppProns[i], -1, NULL, 0 );
+				size_needed = ::MultiByteToWideChar( CP_UTF8, 0, ppProns[i], -1, NULL, 0 );
 				CPointerChar ppPronsW = new TCHAR[ size_needed ];
-				::MultiByteToWideChar( CP_ACP, 0, ppProns[i], -1, ppPronsW, size_needed );*/
+				::MultiByteToWideChar( CP_UTF8, 0, ppProns[i], -1, ppPronsW, size_needed );*/
 				CComBSTR bstrWordName( wordName );
 				CComBSTR bstrPron( ppProns[i] );
 				rc = pLexPron->Add(
@@ -3290,7 +3290,7 @@ PyObject * CDragonCode::addWord(
 			RETURNIFERROR( rc, "ILexPronounce::Add" )
 		}
 	}
-	
+
 	// word was successfully added
 	return Py_BuildValue( "i", 1 );
 }
@@ -3302,7 +3302,7 @@ BOOL CDragonCode::setWordInfo( char * wordName, DWORD wordInfo )
 	HRESULT rc;
 
 	NOTBEFORE_INIT( "setWordInfo" );
-	
+
 	IDgnSRLexiconPtr pDgnSRLexicon;
 	rc = m_pISRCentral->QueryInterface(
 		__uuidof(IDgnSRLexicon), (void**)&pDgnSRLexicon);
@@ -3319,13 +3319,13 @@ BOOL CDragonCode::setWordInfo( char * wordName, DWORD wordInfo )
 		DGNWORDTESTFLAG_ACTIVEVOCONLY |
 		DGNWORDTESTFLAG_DICTONLY |
 		DGNWORDTESTFLAG_CASESENSITIVE;
-	
+
 	BOOL bExists;
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 		CPointerChar wordNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 		CComBSTR bstrWordName( wordName );
 		rc = pDgnSRLexicon->WordTest( dwFlags, bstrWordName, &bExists );
 	#else
@@ -3395,7 +3395,7 @@ BOOL CDragonCode::setWordInfo( char * wordName, DWORD wordInfo )
 PyObject * CDragonCode::getWordProns( char * wordName )
 {
 	HRESULT rc;
-	
+
 	IDgnSRLexiconPtr pDgnSRLexicon;
 	rc = m_pISRCentral->QueryInterface(
 		__uuidof(IDgnSRLexicon), (void**)&pDgnSRLexicon);
@@ -3412,13 +3412,13 @@ PyObject * CDragonCode::getWordProns( char * wordName )
 		DGNWORDTESTFLAG_ACTIVEVOCONLY |
 		DGNWORDTESTFLAG_DICTONLY |
 		DGNWORDTESTFLAG_CASESENSITIVE;
-	
+
 	BOOL bExists;
 
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, wordName, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, NULL, 0 );
 		CPointerChar wordNameW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, wordName, -1, wordNameW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, wordName, -1, wordNameW, size_needed );*/
 		CComBSTR bstrWordName( wordName );
 		rc = pDgnSRLexicon->WordTest( dwFlags, bstrWordName, &bExists );
 	#else
@@ -3441,7 +3441,7 @@ PyObject * CDragonCode::getWordProns( char * wordName )
 
 	// There is no SAPI call which gets all the word prons, we have to
 	// iterate over all the possible pronunciations.
-	
+
 	PyObject * pList = PyList_New( 0 );
 
 	for( WORD wSense = 0; wSense < 100; wSense++ )
@@ -3451,7 +3451,7 @@ PyObject * CDragonCode::getWordProns( char * wordName )
 		TCHAR pronBuf[64];
 		DgnEngineInfo info;
 		VOICEPARTOFSPEECH partSpeech;
-		
+
 		#ifdef UNICODE
 			rc = pLexPron->Get(
 				CHARSET_ENGINEPHONETIC, bstrWordName, wSense,
@@ -3474,9 +3474,9 @@ PyObject * CDragonCode::getWordProns( char * wordName )
 
 		// add the word to the list
 		#ifdef UNICODE
-			int size_needed = ::WideCharToMultiByte( CP_ACP, 0, pronBuf, -1, NULL, 0,  NULL, NULL);
+			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pronBuf, -1, NULL, 0,  NULL, NULL);
 			char * pronBufA = new char[ size_needed ];
-			::WideCharToMultiByte( CP_ACP, 0, pronBuf, -1, pronBufA, size_needed, NULL, NULL );
+			::WideCharToMultiByte( CP_UTF8, 0, pronBuf, -1, pronBufA, size_needed, NULL, NULL );
 
 			PyObject * pText = Py_BuildValue( "s", pronBufA );
 
@@ -3503,8 +3503,8 @@ BOOL CDragonCode::setTrayIcon(
 
 	Py_XDECREF( m_pTrayIconCallback );
 	m_pTrayIconCallback = NULL;
-	
-	// It is always safe to delete the icon. This could 
+
+	// It is always safe to delete the icon. This could
 	// be called when we shutdown.
 	if( iconName == NULL || *iconName == '\0' )
 	{
@@ -3519,9 +3519,9 @@ BOOL CDragonCode::setTrayIcon(
 		}
 		return TRUE;
 	}
-	
+
 	NOTBEFORE_INIT( "setTrayIcon" );
-	
+
 	// Figure out what icon to use
 
 	if( 0 == _stricmp(iconName,"right") )
@@ -3563,9 +3563,9 @@ BOOL CDragonCode::setTrayIcon(
 	else
 	{
 		#ifdef UNICODE
-			/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, iconName, -1, NULL, 0 );
+			/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, iconName, -1, NULL, 0 );
 			CPointerChar iconNameW = new TCHAR[ size_needed ];
-			::MultiByteToWideChar( CP_ACP, 0, iconName, -1, iconNameW, size_needed );*/
+			::MultiByteToWideChar( CP_UTF8, 0, iconName, -1, iconNameW, size_needed );*/
 			CComBSTR bstrIconName( iconName );
 			hIcon = (HICON) LoadImage(
 				hInstance, bstrIconName, IMAGE_ICON, 0, 0,
@@ -3583,7 +3583,7 @@ BOOL CDragonCode::setTrayIcon(
 			"Icon file %s could not be loaded", iconName );
 		return FALSE;
 	}
-	
+
 	// Here we do the actual work
 
 	DWORD action = m_bHasTrayIcon ? NIM_MODIFY : NIM_ADD;
@@ -3596,9 +3596,9 @@ BOOL CDragonCode::setTrayIcon(
 	iconData.uCallbackMessage = WM_TRAYICON;
 	iconData.hIcon = hIcon;
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_ACP, 0, toolTip, -1, NULL, 0 );
+		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, toolTip, -1, NULL, 0 );
 		CPointerChar toolTipW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_ACP, 0, toolTip, -1, toolTipW, size_needed );*/
+		::MultiByteToWideChar( CP_UTF8, 0, toolTip, -1, toolTipW, size_needed );*/
 		CComBSTR bstrToolTip( toolTip );
 		wcsncpy_s( iconData.szTip, bstrToolTip, sizeof(iconData.szTip) );
 	#else
@@ -3621,7 +3621,7 @@ BOOL CDragonCode::setTrayIcon(
 		Py_XINCREF( pCallback );
 		m_pTrayIconCallback = pCallback;
 	}
-	
+
 	return TRUE;
 }
 

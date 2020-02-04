@@ -60,7 +60,7 @@ void reportError(
 		return FALSE; \
 	}
 
-// These macros handle specific error codes	
+// These macros handle specific error codes
 #define onINVALIDCHAR( rc, interface, message ) \
 	if( rc == SRERR_INVALIDCHAR ) \
 	{ \
@@ -81,7 +81,7 @@ void reportError(
 		reportError( errUnknownName, message, param ); \
 		return FALSE; \
 	}
-	
+
 #define onVALUEOUTOFRANGE( rc, message, param ) \
 	if( rc == SRERR_VALUEOUTOFRANGE ) \
 	{ \
@@ -95,7 +95,7 @@ void reportError(
 		reportError( errBadGrammar, interface, message ); \
 		return FALSE; \
 	}
-	
+
 #define onGRAMMARTOOCOMPLEX( rc, message ) \
 	if( rc == SRERR_GRAMMARTOOCOMPLEX ) \
 	{ \
@@ -209,7 +209,7 @@ template<class T> class CPointer
 	operator T*() { return (T*)m_ptr; }
 	T* operator->() { return m_ptr; }
 	T* operator=(T* ptr) { if( m_ptr ) delete m_ptr; return m_ptr = ptr; }
-	
+
  private:
 	T * m_ptr;
 };
@@ -222,7 +222,7 @@ class CPointerChar
 	CPointerChar(TCHAR* ptr) { m_ptr = ptr; }
 	operator TCHAR*() { return (TCHAR*)m_ptr; }
 	TCHAR* operator=(TCHAR* ptr) { if( m_ptr ) delete m_ptr; return m_ptr = ptr; }
-	
+
  private:
 	TCHAR * m_ptr;
 };
@@ -231,7 +231,7 @@ class CPointerChar
 inline void Unicode2Char( char *to, PTCHAR from, int tosize )
 {
 #ifdef _UNICODE
-	WideCharToMultiByte(CP_ACP, 0, from, -1, to, tosize, NULL, NULL );
+	WideCharToMultiByte(CP_UTF8, 0, from, -1, to, tosize, NULL, NULL );
 #else
 	strcpy( to, from );
 #endif
@@ -241,7 +241,7 @@ inline void Unicode2Char( char *to, PTCHAR from, int tosize )
 inline void Char2Unicode( PTCHAR to, char *from, int tosize )
 {
 #ifdef _UNICODE
-	MultiByteToWideChar(CP_ACP, 0, from, -1, to, tosize );
+	MultiByteToWideChar(CP_UTF8, 0, from, -1, to, tosize );
 #else
 	strcpy( to, from );
 #endif
