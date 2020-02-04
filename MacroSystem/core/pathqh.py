@@ -14,6 +14,7 @@ import glob
 import re
 import copy
 import unicodedata
+import win32file
 # for extended environment variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
 
@@ -84,7 +85,7 @@ class path(_ancestor):
     
     p.splitall (dirpart, trunk, ext) ??
     
-    p.isabs (absolute path), p.mtime (modification time),
+    p.isabs (absolute path, p.is_absolute), p.mtime (modification time),
     
     p.basename (filepart without directory),
     
@@ -113,6 +114,14 @@ True
 True
 >>> p.isfile()    # equivalent to is_file
 False
+>>> p.exists()
+True
+
+>>> x = path("X:") 
+>>> x.exists()
+False
+>>> x.isdrive()
+False
 
 ## PurePaths, non existing files:
 >>> root = path("C:/")
@@ -121,8 +130,18 @@ False
 'C:/subfolder/subsub/trunc.txt'
 >>> repr(file)
 "path('C:/subfolder/subsub/trunc.txt')"
+
+## split methods:
 >>> file.split()
 (path('C:/subfolder/subsub'), 'trunc.txt')
+>>> file.splitall()
+['C:', 'subfolder', 'subsub', 'trunc.txt']
+>>> file.splitdirtrunkext()
+(path('C:/subfolder/subsub'), 'trunc', '.txt')
+>>> file.splitdirslisttrunkext()
+(['C:', 'subfolder', 'subsub'], 'trunc', '.txt')
+
+## properties:
 >>> file.name
 'trunc.txt'
 >>> file.suffix
@@ -130,9 +149,7 @@ False
 >>> file.stem
 'trunc'
 
->>> file.as_uri()
-'file:///C:/subfolder/subsub/trunc.txt'
-
+## parent property is ok, parents property is not fully implemented:
 >>> file.parent
 path('C:/subfolder/subsub')
 >>> file.parents[0]
@@ -159,14 +176,6 @@ path('folder/subfolder/trunc.txt')
 >>> joinedfolder = folder.joinpath('joinedfolder', 'another', 'file.jpg')
 >>> repr(joinedfolder)
 "path('folder/joinedfolder/another/file.jpg')"
->>> windir = path("C:/Windows")
->>> windir.exists()
-True
->>> windir.isdir()
-True
->>> windir.isfile()
-False
-
 
 ### old, now user suffix!
 >>> file.splitext()
@@ -174,33 +183,13 @@ False
 >>> file.suffix
 '.txt'
 
-# >>> isStringLike(root)
-# 1
 
-
-# drive tests only first letter (Windows)
->>> path("C").isdrive()
-True
->>> path("S").isdrive() # not existent
-False
->>> path("C:/abacadabra").isdrive()
-True
->>> path("C:/").isdrive()
-True
->>> path("S:/abacadabra").isdrive()
-False
-
-# automatically try getValidPath if ( and ) are found:
->>> path("(C:|D:)").isdrive()
-True
->>> path("(C|D):\\projects").isdir()
-True
     """
     _flavour = pathlib._windows_flavour if os.name == 'nt' else pathlib._posix_flavour
     # if _flavour.sep == "\\" and _flavour.altsep == "/":
     #     _flavour.sep, _flavour.altsep = "/", "\\"
 
-    def __new__(cls, *args):
+    def __new__(cls, *args, **kwargs):
         """this is the constructor for a new instance!
 
 ### construct from list:
@@ -212,7 +201,7 @@ small cases:
 >>> path('.') == workingdirectory
 True
 >>> path('') == workingdirectory
-True
+False
 >>> path('/')
 path('/')
 >>> path('../..')
@@ -224,12 +213,66 @@ path('../..')
 'C:/nonexistingdir/acties'
 >>> p.is_dir()
 False
->>> hometrick = path("~/.ssh/id_rsa.pub")
 
-# # >>> str(hometrick)
-# # 'C:/Users/Gebruiker/Documents/.ssh/id_rsa.pub'  
->>> hometrick.isfile()
-True
+## "~" is in Windows the Documents directory:
+# >>> hometrick = path("~/.ssh/id_rsa.pub")
+# >>> str(hometrick)
+# 'C:/Users/Gebruiker/Documents/.ssh/id_rsa.pub'
+# >>> hometrick.isfile()
+# True
+# >>> hometrick.prefix
+# '~'
+# >>> hometrick.resolvedprefix
+# 'C:/Users/Gebruiker/Documents'
+# 
+# ## If ".." in path after "~", no prefix is preserved, but the absolute path is returned all-right:
+# >>> dropboxtrick = path("~/../Dropbox")
+# >>> str(dropboxtrick)
+# 'C:/Users/Gebruiker/Dropbox'
+# >>> dropboxtrick.isdir()
+# True
+# >>> dropboxtrick.prefix
+# ''
+# >>> dropboxtrick.resolvedprefix
+# ''
+
+# ## working directory trick:
+# >>> wdtrick = path(".")
+# >>> wdtrick
+# path('C:/projects/core')
+# >>> wdtrick.isdir()
+# True
+# >>> wdtrick.prefix
+# '.'
+# >>> wdtrick.resolvedprefix
+# 'C:/projects/core'
+# 
+# 
+# ## subdirectory of working directory
+# >>> wdtrick = path("./subdir")
+# >>> wdtrick
+# path('C:/projects/core/subdir')
+# >>> wdtrick.isdir()
+# False
+# >>> wdtrick.prefix
+# '.'
+# >>> wdtrick.resolvedprefix
+# 'C:/projects/core'
+# 
+# ## subdirectory of working directory but going up with ".."
+# ## prefix and resolvedprefix are empty strings...
+# >>> wdtrick = path("./../miscqh")
+# >>> wdtrick
+# path('C:/projects/miscqh')
+# >>> wdtrick.isdir()
+# True
+# >>> wdtrick.prefix
+# ''
+# >>> wdtrick.resolvedprefix
+# ''
+
+
+
 
 ## without slashes the working directory is taken in Windows:
 >>> workingdirectory = os.getcwd()
@@ -240,12 +283,13 @@ True
 # # >>> str(p)
 # # 'C:/NatlinkGIT/Natlink/MacroSystem/faunabescherming'
 
-
-    
         """
         self = object.__new__(cls)
+        self.prefix = self.resolvedprefix = ""
         if args and len(args) == 1 and type(args[0]) == cls:
             return args[0]
+        if args and args[0] is None:
+            input = ""
         if type(args[0]) == list:
             args = ('/'.join(args[0]),)
         if args == (None,):    # vreemde fout bij HTMLgen BGsound
@@ -269,35 +313,88 @@ True
         # for Path objects, (init == True)
         self._parts = parts
         self._root = root
-        self.path_prefix = ""
-        self.path_resolve_prefix = ""
+        if 'prefix' in kwargs:
+            self.prefix = kwargs['prefix']
+        if 'resolvedprefix' in kwargs:
+            self.resolvedprefix = kwargs['resolvedprefix']
 
         self._init()
         if drv:
-            # assume absolute
-            return self.resolve()
-        else:
-            if not input:
-                # empty input, return working directory (??? TODOQH)
-                emptypath = self.resolve()
-                return emptypath
-            # relative, but not office temporary file:
-            if input.startswith("~") and not input.startswith("~$"):
-                expanded = self.expanduser()
-                expanded.path_prefix = "~"
-                homedir = str(expanded)[:(len(expanded)-len(input)+1)]
-                expanded.path_resolve_prefix = homedir
-                return expanded
-            elif input == "." or (input[0] == '.' and input[1] in "/\\"):
-                # expand "." to working directory
-                # remember path_prefix and path_resolve_prefix
-                abspath = self.resolve()
-                if abspath.is_absolute():
-                    abspath.path_prefix = "."
-                    abspath.path_resolve_prefix = str(abspath)
-                    return abspath
+            isready = (win32file.GetLogicalDrives() >> (ord(drv[0].upper()) - 65) & 1) != 0
+            if isready:
+                try:
+                    resolve = self.resolve()
+                    # resolve.prefix = self.prefix  ## this is done in resolve itself
+                    # resolve.resolvedprefix = self.resolvedprefix
+                    return resolve
+                except PermissionError:
+                    pass
+            # with a drive, but not resolved:
+            return self
+        # relative path:
+        if not input:
+            # empty input, return empty path (relative)
+            return self
+            # emptypath = self.resolve()
+            # return emptypath
+        # relative, but not office temporary file:
+        if input == "~":
+            homedir = self.expanduser()
+            homedir.prefix = "~"
+            homedir.resolvedprefix = str(homedir)
+            return homedir
+        elif input.startswith("~") and not input.startswith("~$"):
+            expanded = path(self.expanduser().normpath())
+            homedir = str(path("~"))
+            if str(expanded).startswith(str(homedir)):
+                expanded.prefix = "~"
+                expanded.resolvedprefix = homedir
+            else:
+                expanded.prefix = expanded.resolvedprefix = ""
+            return expanded
+        elif input == ".":
+            curdir = path(os.getcwd())
+            curdir.prefix = "."
+            curdir.resolvedprefix = str(curdir)
+            return curdir
+        elif input.startswith(".") and input[1] in "/\\":
+            curdir = path(".")
+            expanded = path(curdir/input[2:])
+            expanded = path(expanded.normpath())
+            if str(expanded).startswith(str(curdir)):
+                expanded.prefix = "."
+                expanded.resolvedprefix = str(curdir)
+            else:
+                expanded.prefix = expanded.resolvedprefix = ""
+            return expanded
         # all other cases:
         return self
+
+    def resolve(self):
+        """Empty string should not resolve to working directory
+        
+        Really, the resolve step is done in initiatlisation, and is unneeded (and unwanted) as additional call
+        
+        By default of pathlib, othher relative paths remain unchanged, but the empty string resolves to wd by default.
+        This is overridden here at initialisation time of this class.
+        
+>>> p = path("")
+>>> p.resolve()
+path('')
+>>> p = path("relative")
+>>> p.resolve()
+path('relative')
+>>> p = path("C:/temp")
+>>> p.resolve()
+path('C:/temp')
+        """
+        if str(self) == "":
+            return self
+        resolved = _ancestor.resolve(self)
+        resolved.prefix = self.prefix
+        resolved.resolvedprefix = self.resolvedprefix
+        return resolved
+        
 
     # @classmethod
     # def _from_parsed_parts(cls, drv, root, parts, init=True):
@@ -320,7 +417,10 @@ True
         """
         if type(key) in (list, tuple):
             key = '/'.join(key)
-        return self._make_child((key,))
+        child = self._make_child((key,))
+        child.prefix = self.prefix
+        child.resolvedprefix = self.resolvedprefix
+        return child
 
     def __eq__(self, other):
         """compare paths
@@ -334,25 +434,122 @@ True
         return super().__eq__(other)
     
     def __str__(self):
-        return super().__str__().replace("\\", "/")
+        """Return the string representation of the path, empty if input was empty"""
+        try:
+            return self._str
+        except AttributeError:
+            result  = self._format_parsed_parts(self._drv, self._root,
+                                                  self._parts)
+            self._str = result.replace("\\", "/")
+        return self._str
+  
+    def __repr__(self):
+        short = self.nicestr()
+        return "path('%s')"% short
+    
     
     def __len__(self):
         return len(str(self))
 
-    ## str operations on path:   
+    def __getitem__(self, i):
+        return str(self)[i]
+
+    def nicestr(self):
+        """give return the shorthands in the path
+>>> p = path("~")
+>>> str(p)
+'C:/Users/Gebruiker/Documents'
+>>> p.nicestr()
+'~'
+
+        """
+        s = str(self)
+        try:
+            if self.prefix and self.resolvedprefix:
+                if s.startswith(self.resolvedprefix):
+                    s = s.replace(self.resolvedprefix, self.prefix)
+        except AttributeError:
+            ## when calling internal functions, this might go wrong
+            ## for example when calling parents().
+            ## the .parent property is allright
+            pass
+            # print("problem with nicestr: %s"% s)
+        return s
+
+
+## make methods and properties match with prefix and resolvedprefix
+##
+    def joinpath(self, *kw):
+        """overload to pathlib, and insert prefix and resolvedprefix
+        
+        """
+        joined = _ancestor.joinpath(self, *kw)
+        joined.prefix = self.prefix
+        joined.resolvedprefix = self.resolvedprefix
+        return joined
+
+    @property
+    def parent(self):
+        """The logical parent of the path."""
+        drv = self._drv
+        root = self._root
+        parts = self._parts
+        if len(parts) == 1 and (drv or root):
+            return self
+        P = self._from_parsed_parts(drv, root, parts[:-1])
+        P.prefix, P.resolvedprefix = self.prefix, self.resolvedprefix
+        return P
+
+    ## this one is too deep for me to tackle:
+    # @property
+    # def parents(self):
+    #     """A sequence of this path's logical parents."""
+    #     PP = pathlib._PathParents(self)
+    #     return PP
+        
+
+    ## str operations on path:  
     def find(self, searchstring):
         """treat as string"""
-        return str(self).find(searchstring)
+        if isinstance(searchstring, self.__class__):
+            searchstring = str(searchstring)
+        return str(self).find(str(searchstring))
+    
     def endswith(self, searchstring):
         """treat as string"""
         if isinstance(searchstring, self.__class__):
             searchstring = str(searchstring)
         return str(self).endswith(searchstring)
+
     def startswith(self, searchstring):
         """treat as string"""
         if isinstance(searchstring, self.__class__):
             searchstring = str(searchstring)
         return str(self).startswith(searchstring)
+    
+    def strip(self):
+        """treat as a string"""
+        return str(self).strip()
+    def lower(self):
+        """returns a string"""
+        return str(self).lower()
+    def upper(self):
+        """returns a string"""
+        return str(self).upper()
+
+    def __add__(self, other):
+        """implement addition
+        """
+        return path(str(self)+str(other), prefix=self.prefix, resolvedprefix=self.resolvedprefix)
+
+    def __radd__(self, other):
+        """implement right addition
+        
+        can happen if start with a relative path and add "." or drive in front of it.
+        see unittest
+        """
+        start = path(other)
+        return path(str(other) + str(self), prefix=start.prefix, resolvedprefix=start.resolvedprefix)
    
     def strdefaultstyle(self):
         """return the string with backslashes in windows,
@@ -431,7 +628,11 @@ True
         return path(s[0]), s[1]
     
     def splitdirslisttrunkext(self):
-        """split into a list of directory parts, the file trunk and the file extension
+        """split into a list of directory parts, the file trunk and the file extension>>> startpath = "C:/this/is/a/test/file.txt)"
+>>> startpath = "C:/this/is/a/test/file.txt"
+>>> path(startpath).splitdirslisttrunkext()
+(['C:', 'this', 'is', 'a', 'test'], 'file', '.txt')
+        
         """
         L = self.splitall()
         if not L:
@@ -442,6 +643,25 @@ True
         else:
             trunk, ext = os.path.splitext(L[-1])
             return L[:-1], trunk, ext
+
+
+    def splitdirtrunkext(self):
+        """split into directory part, the file trunk and the file extension
+>>> startpath = "C:/this/is/a/test/file.txt)"
+>>> path(startpath).splitdirtrunkext()
+(path('C:/this/is/a/test'), 'file', '.txt)')
+>>> path('abstract.txt').splitdirtrunkext()
+('', 'abstract', '.txt')
+        """
+        L = self.splitall()
+        if not L:
+            return "", "", ""
+        if len(L) == 1:
+            trunk, ext = os.path.splitext(L[0])
+            return "", trunk, ext
+        else:
+            trunk, ext = os.path.splitext(L[-1])
+            return path(L[:-1]), trunk, ext
             
     def splitext(self):
         return os.path.splitext(str(self))
@@ -468,7 +688,7 @@ True
     def basename(self):
         """gives basename, identical to property "name"
 
->>> p = path(u"C:/dropbox/19.jpg")
+>>> p = path("C:/dropbox/19.jpg")
 >>> p.basename()
 '19.jpg'
 >>> p.name
@@ -478,12 +698,18 @@ True
 
     def relpath(self, startPath):
         """get relative path, starting with startPath
+        
+        compare with utilsqh/relpathdirs and relpathfiles
+        TODOQH
+                
 >>> testpath = path("(C|D):/projects/unittest")
 >>> startpath = path("(C|D):/projects")
 >>> testpath.relpath("C:\projects")
 'unittest'
->>> testpath.relpath(startpath)
-'unittest'
+
+
+# >>> testpath.relpath(startpath)
+# 'unittest'
 
         """
         if not isinstance(startPath, self.__class__):
@@ -498,10 +724,14 @@ True
     def relpathto(self, newPath):
         """get relative path of newPath, truncating self
         
+        see above, TODOQH
+        
 >>> testpath = path("(C|D):/projects/unittest")
 >>> startpath = path("(C|D):/projects")
 >>> startpath.relpathto(testpath)
 'unittest'
+>>> testpath.relpathto(startpath)
+'C:/projects'
 >>> startpath.relpathto(u"F:/projects/unexisting")
 'F:/projects/unexisting'
 
@@ -955,54 +1185,53 @@ path('C:/_-3d/_-4a.txt')
         Folder, File = self.split()
         return '%s (%s)'% (File, Folder)
 
-    # TODOQH!!! 
-    # def decodePath(self):
-    #     """decode to path (file or dir)
-    # >>> 
-    # >>> decodePath('b.txt (C:/a)')
-    # path('C:/a/b.txt')
-    # >>> decodePath('b.txt ()')
-    # path('b.txt')
-    # >>> decodePath(' (C:/)')
-    # path('C:/')
-    # 
-    # 
-    #         Return a path instance
-    #     """
-    #     if '(' not in text:
-    #         return str(text)
-    # 
-    #     t = str(text)
-    #     File, Folder = t.split('(', 1)
-    #     Folder = Folder.rstrip(')')
-    #     Folder = Folder.strip()
-    #     File = File.strip()
-    #     return path(Folder)/File
+##    TODOQH!!! 
+def decodePath(text):
+    """decode to path (file or dir)
+>>> 
+>>> decodePath('b.txt (C:/a)')
+path('C:/a/b.txt')
+>>> decodePath('b.txt ()')
+path('b.txt')
+>>> decodePath(' (C:/)')
+path('C:/')
+
+
+Return a path instance
+    """
+    if '(' not in text:
+        return str(text)
+
+    t = str(text)
+    File, Folder = t.split('(', 1)
+    Folder = Folder.rstrip(')')
+    Folder = Folder.strip()
+    File = File.strip()
+    return path(Folder)/File
     
-    ### TODOQH
-    # def decodePathTuple(text):
-    #     """decode to path (file or dir) Total, Folder, File
-    # 
-    # >>> decodePathTuple('b.txt (C:/a)')
-    # (path('C:/a/b.txt'), path('C:/a'), path('b.txt'))
-    # >>> decodePathTuple('b.txt ()')
-    # (path('b.txt'), path('.'), path('b.txt'))
-    # >>> decodePathTuple(' (C:/)')
-    # (path('C:/'), path('C:/'), path('.'))
-    # 
-    # 
-    #         Return a path instance
-    #     """
-    #     if '(' not in text:
-    #         return str(text)
-    # 
-    #     t = str(text)
-    #     File, Folder = t.split('(', 1)
-    #     Folder = Folder.rstrip(')')
-    #     Folder = Folder.strip()
-    #     File = File.strip()
-    #     return path(Folder)/File, path(Folder), path(File)
-    # 
+# ##TODOQH
+# def decodePathTuple(text):
+#     """decode to path (file or dir) Total, Folder, File
+# 
+# >>> decodePathTuple('b.txt (C:/a)')
+# (path('C:/a/b.txt'), path('C:/a'), path('b.txt'))
+# >>> decodePathTuple('b.txt ()')
+# (path('b.txt'), path('.'), path('b.txt'))
+# >>> decodePathTuple(' (C:/)')
+# (path('C:/'), path('C:/'), path('.'))
+# 
+# Return a path instance
+#     """
+#     if '(' not in text:
+#         return str(text)
+# 
+#     t = str(text)
+#     File, Folder = t.split('(', 1)
+#     Folder = Folder.rstrip(')')
+#     Folder = Folder.strip()
+#     File = File.strip()
+#     return path(Folder)/File, path(Folder), path(File)
+
 
 # keep track of found env variables, fill, if you wish, with
 # getAllFolderEnvironmentVariables.
@@ -1345,7 +1574,7 @@ def expandEnvVariables(filepath, envDict=None):
 
 def printAllEnvVariables():
     for k in sorted(recentEnv.keys()):
-        print(("%s\t%s"% (k, recentEnv[k])))
+        print("%s\t%s"% (k, recentEnv[k]))
 
 reUnix=re.compile(r'[^\w-]')
 def toUnixName(t, glueChar="", lowercase=1, canHaveExtension=1, canHaveFolders=1, mayBeEmpty=False):
@@ -1495,6 +1724,37 @@ ValueError: toUnixName, name has no valid characters
 
 str2unix = toUnixName
 
+
+# helper string functions:
+def replaceExt(fileName, ext):
+    """change extension of file
+
+>>> replaceExt("a.psd", ".jpg")
+'a.jpg'
+>>> replaceExt("a/b/c/d.psd", "jpg")
+'a/b/c/d.jpg'
+    """
+    if not ext.startswith("."):
+        ext = "." + ext
+    fileName = str(fileName)
+    a, extOld = os.path.splitext(fileName)
+    return a + ext
+
+def getExt(fileName):
+    """return the extension of a file
+
+>>> getExt(u"a.psd")
+'.psd'
+>>> getExt("a/b/c/d.psd")
+'.psd'
+>>> getExt("abcd")
+''
+>>> getExt("a/b/xyz")
+''
+    """
+    a, ext = os.path.splitext(fileName)
+    return str(ext)
+
 ## 
 def fixdotslash(to_translate):
     """quick find and replace function
@@ -1507,6 +1767,9 @@ def fixdotslash(to_translate):
     translate_to = '_'
     translate_table = dict((ord(char), translate_to) for char in dotslash)
     return to_translate.translate(translate_table)
+
+
+
 
 def fixdotslashspace(to_translate):
     """quick find and replace functions, used by toUnixName
@@ -1582,13 +1845,9 @@ def walkZfiles(directory):
 
 def _test():
     import doctest
-    return  doctest.testmod()
+    doctest.testmod()
 
 if __name__ == "__main__":
-    # p = path("C:/Natlink")
-    # print(p)
-    # print(str(p))
-    # print(repr(p))
     # print("is_dir: %s"% p.is_dir())
     # print("isdir: %s"% p.isdir())
     # envvars = EnvVariable()

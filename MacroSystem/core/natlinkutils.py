@@ -79,8 +79,10 @@ if useMarkSendInput:
     # print "natlinkutils.py.  This file is located in the directory "
     # print "NatLink\MacroSystem\Core.  Then restart Dragon...\n======"
 # 
-import six
-import os, os.path, copy, types
+import os
+import os.path
+import copy
+import types
 import struct
 import time
 #from natlink import *
@@ -271,9 +273,9 @@ def getModifierKeyCodes(modifiers):
                          menu=vk_menu,
                          alt=vk_menu)   # added alt  == menu
     if not modifiers: return
-    if type(modifiers) == six.text_type:
+    if type(modifiers) == str:
         modifiers = utilsqh.convertToBinary(modifiers)
-    if type(modifiers) == six.binary_type:
+    if type(modifiers) == bytes:
         modifiers = modifiers.replace("+", " ").split()
     return [modifier_dict[m] for m in modifiers]
 
@@ -300,8 +302,8 @@ def playString(keys, hooks=None):
     """
     if not keys:
         return
-    if type(keys) == six.text_type:
-        keys = utilsqh.convertToBinary(keys)
+    # if type(keys) == str:
+    #     keys = utilsqh.convertToBinary(keys)
     if hooks is None and useMarkSendInput:
         SendInput.send_input(
             ExtendedSendDragonKeys.senddragonkeys_to_events(keys))
@@ -316,7 +318,7 @@ def playString(keys, hooks=None):
 # (internal use) shared base class for all Grammar base classes.  Do not use
 # this class directly.  See GrammarBase, DictGramBase or SelectGramBase.
 
-class GramClassBase(object):
+class GramClassBase:
 
     def __init__(self):
         self.gramObj = natlink.GramObj()
@@ -332,7 +334,7 @@ class GramClassBase(object):
             self.gramObj.setHypothesisCallback(self.hypothesisCallback)
             self.gramObj.load(grammar,allResults,hypothesis)
         except:
-            print(("GramClassBase.load() ", sys.exc_info()))
+            print("GramClassBase.load() ", sys.exc_info())
             traceback.print_exc()
             raise
 
@@ -522,21 +524,21 @@ class GrammarBase(GramClassBase):
         try:
             # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
             # code upper ascii characters with latin1 if they were in the process entered as unicode
-            if not type(gramSpec) in (six.text_type, six.binary_type, list):
+            if not type(gramSpec) in (str, bytes, list):
                 raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
             # print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
             if type(gramSpec) == list:
                 for i, grampart in enumerate(gramSpec):
                     line = grampart
-                    if type(line) == six.binary_type:
+                    if type(line) == bytes:
                         line = utilsqh.convertToUnicode(line)
-                    if type(line) == six.text_type:
+                    if type(line) == str:
                         line = utilsqh.convertToBinary(line)
                     if line != grampart:
                         gramSpec[i] = line
-            if type(gramSpec) == six.binary_type:
+            if type(gramSpec) == bytes:
                 gramSpec = utilsqh.convertToUnicode(gramSpec)
-            if type(gramSpec) == six.text_type:
+            if type(gramSpec) == str:
                 gramSpec = utilsqh.convertToBinary(gramSpec)
                 gramSpec = gramSpec.split('\n')
                 gramSpec = [g.rstrip() for g in gramSpec]
@@ -566,7 +568,7 @@ class GrammarBase(GramClassBase):
             return 1
 
         except:
-            print((        "Unexpected error:", sys.exc_info()[0]))
+            print(        "Unexpected error:", sys.exc_info()[0])
 
     # these are wrappers for the GramObj base methods.  We also keep track of
     # legal rules, lists and active rules so we can do some first level error
@@ -582,11 +584,11 @@ class GrammarBase(GramClassBase):
         self.exclusiveState = 0
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
-        if type(ruleName) == six.text_type:
+        if type(ruleName) == str:
             ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
             raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
-        if type(ruleName) != six.binary_type:
+        if type(ruleName) != bytes:
             raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
         if ruleName in self.activeRules:
             if window == self.activeRules[ruleName]:
@@ -604,11 +606,11 @@ class GrammarBase(GramClassBase):
         pass            
 
     def deactivate(self, ruleName, noError=0):
-        if type(ruleName) == six.text_type:
+        if type(ruleName) == str:
             ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
             if noError: return
-        if type(ruleName) != six.binary_type:
+        if type(ruleName) != bytes:
             print('GrammarBase, deactivate, %s (%s)'% (ruleName, type(ruleName)))
             raise gramparser.GrammarError( "rule %s (%s) was not exported in the grammar" %
                                           ruleName, type(ruleName), self.scanObj)
@@ -633,7 +635,7 @@ class GrammarBase(GramClassBase):
                             (repr(ruleNames), type(ruleNames)))
         activeKeys = list(self.activeRules.keys())
         for x in activeKeys:
-            if type(x) != six.binary_type:
+            if type(x) != bytes:
                 raise TypeError('activateSet, rulename "%s" should be of binary_type, not: %s'% (x, type(x)))
 
             curWindow = self.activeRules[x]
@@ -670,7 +672,7 @@ class GrammarBase(GramClassBase):
             raise TypeError("deactivateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
                             (repr(ruleNames), type(ruleNames)))
         for x in ruleNames:
-            if type(x) != six.binary_type:
+            if type(x) != bytes:
                 print('GrammarBase, deactivateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x)))
             self.deactivate(x, noError=noError)
 
@@ -739,7 +741,7 @@ class GrammarBase(GramClassBase):
         return False
     
     def emptyList(self, listName):
-        if type(listName) == six.text_type:
+        if type(listName) == str:
             listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
@@ -749,17 +751,17 @@ class GrammarBase(GramClassBase):
         listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
-        if type(words) in (six.binary_type, six.text_type):
+        if type(words) in (bytes, str):
             words = utilsqh.convertToBinary(words)
             self.gramObj.appendList(listName,words)
         else:
             for x in words:
-                if type(x) == six.text_type:
+                if type(x) == str:
                     x = utilsqh.convertToBinary(x)
                 self.gramObj.appendList(listName,x)
     
     def setList(self, listName, words):
-        if type(listName) == six.text_type:
+        if type(listName) == str:
             listName = utilsqh.convertToBinary(listName)
         self.emptyList(listName)
         self.appendList(listName, words) # other way around?

@@ -4,7 +4,7 @@
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
 # testnatlink.py
-#   This script performs some basic tests of the NatLink system.
+#   / performs some basic tests of the NatLink system.
 #
 # run from a (preferably clean) US user profile, easiest from IDLE.
 # do not run from pythonwin. See also README.txt in PyTest folder
@@ -49,12 +49,12 @@
 # April 1, 2000
 #   - added testParser, testGramimar, testDictGram, testSelectGram
 #
-import six
-import sys, unittest, types
+import sys
+import unittest
+import types
 import os
 import os.path
 import time
-import string
 import traceback        # for printing exceptions
 from struct import pack
 
@@ -70,10 +70,10 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-        print 'baseFolder from argv: %s'% baseFolder
+        print('baseFolder from argv: %s'% baseFolder)
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print 'baseFolder from __file__: %s'% baseFolder
+        print('baseFolder from __file__: %s'% baseFolder)
     if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
     return baseFolder
@@ -89,7 +89,7 @@ def getCoreDir(thisDir):
     """
     coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
     if not os.path.isdir(coreFolder):
-        print 'not a directory: %s'% coreFolder
+        print('not a directory: %s'% coreFolder)
         return thisDir
 ##    dllPath = os.path.join(coreFolder, 'natlink.dll')
     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
@@ -98,10 +98,10 @@ def getCoreDir(thisDir):
 ##        print 'natlink.dll not found in core directory: %s'% coreFolder
 ##        return thisDir
     if not os.path.isfile(mainPath):
-        print 'natlinkmain.py not found in core directory: %s'% coreFolder
+        print('natlinkmain.py not found in core directory: %s'% coreFolder)
         return thisDir
     if not os.path.isfile(statusPath):
-        print 'natlinkstatus.py not found in core directory: %s'% coreFolder
+        print('natlinkstatus.py not found in core directory: %s'% coreFolder)
         return thisDir
     return coreFolder
 
@@ -111,7 +111,7 @@ if thisDir == coreDir:
     raise IOError('unittestNatlink cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(coreDir) in sys.path:
-    print 'inserting %s to pythonpath...'% coreDir
+    print('inserting %s to pythonpath...'% coreDir)
     sys.path.insert(0, coreDir)
 
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
@@ -152,13 +152,13 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-        print 'baseFolder from argv: %s'% baseFolder
+        print('baseFolder from argv: %s'% baseFolder)
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print 'baseFolder from __file__: %s'% baseFolder
+        print('baseFolder from __file__: %s'% baseFolder)
     if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
-        print 'baseFolder was empty, take wd: %s'% baseFolder
+        print('baseFolder was empty, take wd: %s'% baseFolder)
     return baseFolder
 
 thisDir = getBaseFolder(globals())
@@ -253,9 +253,9 @@ class UnittestNatlink(unittest.TestCase):
             time.sleep(0.2)
             mod, title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
-            print 'mod: %s'% mod
+            print('mod: %s'% mod)
             if mod == 'winword':
-                print 'got word after %s steps'% i
+                print('got word after %s steps'% i)
                 break
             i += 1
         natlink.playString("{ctrl+a}{ctrl+c}")
@@ -286,7 +286,7 @@ class UnittestNatlink(unittest.TestCase):
             # print 'mod: %s'% mod
             if mod == "natspeak": break
             i += 1
-            print 'waiting for DragonPad: %s'% i
+            print('waiting for DragonPad: %s'% i)
         else:
             self.fail("Not the correct application: %s is brought to the front, should be natspeak"% mod)
         self.DragonPadMod = mod
@@ -302,7 +302,7 @@ class UnittestNatlink(unittest.TestCase):
 ##         ??? Start instead of start ???
         mod, title, hndle = natlink.getCurrentModule()
         mod = getBaseName(mod)
-        print 'mod: %s'% mod
+        print('mod: %s'% mod)
         if mod != "natspeak":
             raise TestError("clearDragonPad: DragonPad should be in the foreground, not: %s"% mod)
         natlink.playString("{ctrl+a}{del}")
@@ -335,7 +335,7 @@ class UnittestNatlink(unittest.TestCase):
         
 
     def killDragonPad(self):
-        print 'going to kill DragonPad'
+        print('going to kill DragonPad')
         try:
             hndle = self.DragonPadHndle
         except AttributeError:
@@ -363,7 +363,7 @@ class UnittestNatlink(unittest.TestCase):
             raise TestError("in killDragonPad, could not get back to DragonPad window, have: %s"% mod)
 
         natlink.playString("{alt+f4}")
-        print 'closing dragonpad'
+        print('closing dragonpad')
         # wait for the window to disappear (possibly get child window y n dialog)
         i = 0
         while i < 10:
@@ -410,7 +410,7 @@ class UnittestNatlink(unittest.TestCase):
         else:
             raise TestError("in killCalc, could not get back to Calc window")
         if i:
-            print 'got calc after %s steps'
+            print('got calc after %s steps')
         natlink.playString("{alt+f4}", 0x200)
         time.sleep(0.5)
 
@@ -479,7 +479,7 @@ class UnittestNatlink(unittest.TestCase):
 
         if actual is None:
             self.fail('doTestFuncPronsReturn: word does not exist: command; "%s"'% command)
-        if type(expected) == types.TupleType:
+        if type(expected) == tuple:
             for e in expected:
                 if actual == e:
                     return
@@ -495,9 +495,9 @@ class UnittestNatlink(unittest.TestCase):
         """gram must be a grammar instance, sort the rules to be expected and got
         """
         got = gram.activeRules
-        if type(got) != types.DictType:
+        if type(got) != dict:
             raise TestError('doTestActiveRules, activeRules should be a dict, not: %s (%s)'% (repr(got), type(got)))
-        if type(expected) != types.DictType:
+        if type(expected) != dict:
             raise TestError('doTestActiveRules, expected should be a dict, not: %s (%s)'% (repr(expected), type(expected)))
         
         self.assertEqual(expected, got,
@@ -508,9 +508,9 @@ class UnittestNatlink(unittest.TestCase):
         """gram must be a grammar instance, sort the rules to be expected and got
         """
         got = gram.validRules
-        if type(got) != types.ListType:
+        if type(got) != list:
             raise TestError('doTestValidRules, activeRules should be a list: %s (%s)'% (repr(got), type(got)))
-        if type(expected) != types.ListType:
+        if type(expected) != list:
             raise TestError('doTestValidRules, expected should be a list, not: %s (%s)'% (repr(expected), type(expected)))
         got.sort()
         expected.sort()
@@ -522,7 +522,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
     # This utility subroutine will returns the contents of the NatSpeak window as
-    # a string.  It works by using playString to select the contents of the 
+    # a string.  It works by using playString to select the contents of the
     # window and copy it to the clipboard.  We have to also add the character 'x'
     # to the end of the window to handle the case that the window is empty.
 
@@ -542,7 +542,7 @@ class UnittestNatlink(unittest.TestCase):
         if contents == '':
             return ''
         if contents[-1:] !='x':
-            raise TestError,'Failed to read the contents of the NatSpeak window: |%s|'% repr(contents)
+            raise TestError('Failed to read the contents of the NatSpeak window: |%s|'% repr(contents))
         return contents[:-1]
 
     def doTestWindowContents(self, expected,testName=None, stripResult=None):
@@ -571,7 +571,7 @@ class UnittestNatlink(unittest.TestCase):
 
         if actual != expected:
             time.sleep(1)
-        self.assertEquals(expected, actual, 'Function call "%s" returned unexpected result\nExpected: %s, got: %s'%
+        self.assertEqual(expected, actual, 'Function call "%s" returned unexpected result\nExpected: %s, got: %s'%
                           (command, expected, actual))
     
     def doTestFuncReturnAlternatives(self, expected,command,localVars=None):
@@ -583,14 +583,14 @@ class UnittestNatlink(unittest.TestCase):
         else:
             actual = eval(command, globals(), localVars)
 
-        if type(expected) != types.TupleType:
-            raise TestError("doTestFuncReturnAlternatives, invalid input %s, tuple expected"% `expected`)
+        if type(expected) != tuple:
+            raise TestError("doTestFuncReturnAlternatives, invalid input %s, tuple expected"% repr(expected))
         for exp in expected:
             if actual == exp:
                 break
         else:
             self.fail('Function call "%s" returned unexpected result\nnot one of expected values: %s\ngot: %s'%
-                          (command, `expected`, actual))
+                          (command, repr(expected), actual))
 
     def doTestFuncReturnWordFlag(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
@@ -647,7 +647,7 @@ class UnittestNatlink(unittest.TestCase):
 ##
 ##        # This should find the NatSpeak window.  If the NatSpeak window is not
 ##        # available (because, for example, NatSpeak was not started before 
-##        # running this script) then we will get the error:
+##        # running /) then we will get the error:
 ##        #   NatError: Error 62167 executing script execScript (line 1)
 ##
 ##        try:
@@ -667,14 +667,14 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test extra functions of NatLink (getUser, getAllUsers)
 
-    def tttestGetAllUsersEtc(self):
+    def ttestGetAllUsersEtc(self):
         self.log("testGetAllUsersEtc", 0) # not to DragonPad!
         currentUser = natlink.getCurrentUser()[0]
         
         allUsers = natlink.getAllUsers()
-        print 'all Users: %s'% allUsers
+        print('all Users: %s'% allUsers)
         
-        self.assert_(currentUser in allUsers, "currentUser should be in allUsers list")
+        self.assertTrue(currentUser in allUsers, "currentUser should be in allUsers list")
         
         
 ##        try:
@@ -682,7 +682,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def tttestPlayString(self):
+    def ttestPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -736,7 +736,7 @@ class UnittestNatlink(unittest.TestCase):
 
 
 
-    def tttestNatlinkutilsPlayString(self):
+    def ttestNatlinkutilsPlayString(self):
         """this version captions accented and unicode characters (possibly)
         
         Can also work around the double or drop first character by using the shift key trick
@@ -796,7 +796,7 @@ class UnittestNatlink(unittest.TestCase):
         testWindowContents('','empty window playString')        
 
 
-        natlinkutils.playString(u'\u0041-xyz-\u00e9-abc-')
+        natlinkutils.playString('\u0041-xyz-\u00e9-abc-')
         testWindowContents('A-xyz-\xe9-abc-','natlinkutils.playString')
 
 
@@ -810,7 +810,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestExecScript(self):
+    def ttestExecScript(self):
         self.log("testExecScript", 1)
 
         testForException = self.doTestForException
@@ -820,7 +820,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestDictObj(self):
+    def ttestDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = natlink.DictObj()
@@ -1090,7 +1090,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def testRecognitionMimicCommands(self):
+    def ttestRecognitionMimicCommands(self):
         """test different phrases with commands, from own grammar
         
         explore when the recognitionMimic fails
@@ -1170,7 +1170,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
        
-    def tttestRecognitionMimic(self):
+    def ttestRecognitionMimic(self):
         """test different phrases with spoken forms,
         
         since Dragon 11, lots of things have changed here, so it seems good to make a special
@@ -1213,7 +1213,7 @@ class UnittestNatlink(unittest.TestCase):
                          ([r'I\pronoun'], 'A A a A I I'),
                          ([r'X\letter', r'I\pronoun', r'Y\letter'], 'A A a A I I X I Y'),
                          ]:
-                if type(word) in (six.text_type, six.binary_type):
+                if type(word) in (str, bytes):
                     words = [word]
                     total.append(word)
                 else:
@@ -1238,7 +1238,7 @@ class UnittestNatlink(unittest.TestCase):
                          (['two', 'three', 'four', 'five'], '2345'), 
                          (['six', 'seven', 'eight', 'nine'], '6789')]:
             
-                if type(word) in (six.text_type, six.binary_type):
+                if type(word) in (str, bytes):
                     words = [word]
                     total.append(word)
                 else:
@@ -1253,7 +1253,7 @@ class UnittestNatlink(unittest.TestCase):
                         (r',\comma\comma', ','),
                         ([r'\caps-on\caps on', 'hello', 'world'], 'Hello World'),
                         ([r'\all-caps-on\all caps on', 'hello', 'world'], 'HELLO WORLD')]:
-                if type(word) in (six.text_type, six.binary_type):
+                if type(word) in (str, bytes):
                     words = [word]
                 else:
                     words = word[:]
@@ -1264,7 +1264,7 @@ class UnittestNatlink(unittest.TestCase):
             for word, expected in [
                         ([r'\caps-on', 'hello', 'world'], 'Hello World'),
                         ([r'\all-caps-on', 'hello', 'world'], 'HELLO WORLD')]:
-                if type(word) in (six.text_type, six.binary_type):
+                if type(word) in (str, bytes):
                     words = [word]
                 else:
                     words = word[:]
@@ -1280,7 +1280,7 @@ class UnittestNatlink(unittest.TestCase):
                          (r'a\alpha', 'A A. a'),
                          ([r'I.', r'i\india'], 'A A. a I. i'),
                          ]:
-                if type(word) in (six.text_type, six.binary_type):
+                if type(word) in (str, bytes):
                     words = [word]
                     total.append(word)
                 else:
@@ -1302,7 +1302,7 @@ class UnittestNatlink(unittest.TestCase):
                          (['two', 'three', 'four', 'five'], '2345'), 
                          (['six', 'seven', 'eight', 'nine'], '6789')]:
             
-                if type(word) in (six.text_type, six.binary_type):
+                if type(word) in (str, bytes):
                     words = [word]
                     total.append(word)
                 else:
@@ -1317,7 +1317,7 @@ class UnittestNatlink(unittest.TestCase):
                         (r',\comma', ','),
                         ([r'\Caps-On', 'hello', 'world'], 'Hello World'),
                         ([r'\All-Caps-On', 'hello', 'world'], 'HELLO WORLD')]:
-                if type(word) in (six.text_type, six.binary_type):
+                if type(word) in (str, bytes):
                     words = [word]
                 else:
                     words = word[:]
@@ -1326,7 +1326,7 @@ class UnittestNatlink(unittest.TestCase):
             # end of testing recognitionMimic for NatSpeak <= 10    
 
         
-    def tttestWordFuncs(self):
+    def ttestWordFuncs(self):
         """tests the different vocabulary word functions.
 
         These tests are a bit vulnerable and seem to have changed in more recent
@@ -1472,7 +1472,7 @@ class UnittestNatlink(unittest.TestCase):
         #
         testWord = 'Szymanskii'
         if not natlink.getWordInfo(testWord) is None:
-            print 'word not in active vocabulary'
+            print('word not in active vocabulary')
             natlink.deleteWord(testWord)
         testFuncReturn(None, "natlink.getWordInfo('%s',0)"% testWord)
 
@@ -1578,7 +1578,7 @@ class UnittestNatlink(unittest.TestCase):
     # September 2015: add unimacroDirectory in between baseDirectory and userDirectory
     # Febr 2018: convert to binary added (QH)
 
-    def tttestNatlinkUtilsFunctions(self):
+    def ttestNatlinkUtilsFunctions(self):
         """test utility functions of natlinkutils
      
         getModifierKeyCodes: transforms modifiers ctrl alt (or menu) and shift into
@@ -1609,7 +1609,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException(KeyError, "getModifierKeyCodes('typo')")
 
-    def tttestNatLinkMain(self):
+    def ttestNatLinkMain(self):
 
         # through this grammar we get the recogtype:
         recCmdDict = RecordCommandOrDictation()
@@ -1815,7 +1815,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestWordProns(self):
+    def ttestWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
@@ -1836,7 +1836,7 @@ class UnittestNatlink(unittest.TestCase):
 
         if DNSVersion >= 11:
             natlink.playString('Dragon 11 getWordProns seems not valid any more...')
-            print 'Dragon 11 getWordProns seems not valid any more...'
+            print('Dragon 11 getWordProns seems not valid any more...')
             time.sleep(1)
             return
 
@@ -1869,14 +1869,14 @@ class UnittestNatlink(unittest.TestCase):
         pronFor = natlink.getWordProns('for')
         for pron in pronFour:
             if pron not in pronFor:
-                raise TestError,'getWordProns returned unexpected pronunciation list for For/Four'
+                raise TestError('getWordProns returned unexpected pronunciation list for For/Four')
             
         # same thing for 'two' and 'to'                                
         pronTwo = natlink.getWordProns('two')
         pronTo = natlink.getWordProns('to')
         for pron in pronTwo:
             if pron not in pronTo:
-                raise TestError,'getWordProns returned unexpected pronunciation list for To/Two'
+                raise TestError('getWordProns returned unexpected pronunciation list for To/Two')
 
         # check errors
         testForException(TypeError,"natlink.addWord('FrotzBlatz',0,0)")
@@ -2004,7 +2004,7 @@ class UnittestNatlink(unittest.TestCase):
     # Test the splitApartLines function of gramparser
     # has to be developed (QH, 2018)
     
-    # def tttestSplitApartLines(self):
+    # def ttestSplitApartLines(self):
     #     self.log("testSplitApartLines", 1)
     #     func = gramparser.splitApartLines
     #     self.doTestSplitApartLines(func, 'hello', ['hello', '\x00'])
@@ -2014,17 +2014,17 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
-    def tttestParser(self):
+    def ttestParser(self):
         self.log("testParser", 1)
 
-        def tttestGrammarError(exceptionType,gramSpec):
+        def ttestGrammarError(exceptionType,gramSpec):
             try:
                 parser = gramparser.GramParser([gramSpec])
                 parser.doParse()
                 parser.checkForErrors()
             except exceptionType:
                 return
-            raise TestError,'Expecting an exception parsing grammar '+gramSpec
+            raise TestError('Expecting an exception parsing grammar '+gramSpec)
 
         # here we try a few illegal grammars to make sure we catch the errors
         # 
@@ -2087,15 +2087,15 @@ class UnittestNatlink(unittest.TestCase):
 
             def checkExperiment(self,sawBegin,recogType,words,fullResults):
                 if self.error:
-                    raise TestError,self.error
+                    raise TestError(self.error)
                 if self.sawBegin != sawBegin:
-                    raise TestError,'Unexpected result for GrammarBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
+                    raise TestError('Unexpected result for GrammarBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin))
                 if self.recogType != recogType:
-                    raise TestError,'Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
+                    raise TestError('Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType))
                 if self.words != words:
-                    raise TestError,'Unexpected result for GrammarBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
+                    raise TestError('Unexpected result for GrammarBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words)))
                 if self.fullResults != fullResults:
-                    raise TestError,'Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults))
+                    raise TestError('Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults)))
                 self.resetExperiment()
 
         testGram = TestGrammar()
@@ -2305,7 +2305,8 @@ class UnittestNatlink(unittest.TestCase):
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
 
-    def tttestGrammarRecognitions(self):
+    def testGrammarRecognitions(self):
+
         self.log("testGrammarRecognitions", 1)
 
         # Create a lot of grammars to test the actual recognition results
@@ -2366,7 +2367,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         
 
-    def tttestDgndictationEtc(self):
+    def ttestDgndictationEtc(self):
         self.log("testDgndictationEtc", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -2407,15 +2408,15 @@ class UnittestNatlink(unittest.TestCase):
 
             def checkExperiment(self,sawBegin,recogType,words,fullResults):
                 if self.error:
-                    raise TestError,self.error
+                    raise TestError(self.error)
                 if self.sawBegin != sawBegin:
-                    raise TestError,'Unexpected result for GrammarBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
+                    raise TestError('Unexpected result for GrammarBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin))
                 if self.recogType != recogType:
-                    raise TestError,'Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
+                    raise TestError('Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType))
                 if self.words != words:
-                    raise TestError,'Unexpected result for GrammarBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
+                    raise TestError('Unexpected result for GrammarBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words)))
                 if self.fullResults != fullResults:
-                    raise TestError,'Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults))
+                    raise TestError('Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults)))
                 self.resetExperiment()
         
         testGram = TestGrammar()
@@ -2613,7 +2614,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         testGram.resetExperiment()
 
-    def tttestRecognitionChangingRulesExclusive(self):
+    def ttestRecognitionChangingRulesExclusive(self):
         self.log("testRecognitionChangingRulesExclusive", 1)
 
         # Create a simple command grammar.
@@ -2661,9 +2662,9 @@ class UnittestNatlink(unittest.TestCase):
         # grammar not loaded yet
         testActiveRules(testGram, dict())
         testValidRules(testGram, [])
-        self.assertEquals(testGram.isExclusive(), False)
-        self.assertEquals(testGram.isActive(), False)
-        self.assertEquals(testGram.isLoaded(), False)
+        self.assertEqual(testGram.isExclusive(), False)
+        self.assertEqual(testGram.isActive(), False)
+        self.assertEqual(testGram.isLoaded(), False)
         
         gramSpec = """
             <one> exported = xclusaif rule one;
@@ -2794,7 +2795,7 @@ class UnittestNatlink(unittest.TestCase):
         expActRules = dict(one=dragonpadHndle, four=self.komodoHndle)
         # expActRules = dict(one=dragonpadHndle)
         testActiveRules(testGram, expActRules)
-        self.assertEquals(testGram.isExclusive(), False)
+        self.assertEqual(testGram.isExclusive(), False)
 
         # from here it goes wrong:
         ## nothing exclusive here, but only for dragonpad window:
@@ -2872,7 +2873,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase
 
-    def tttestDictGram(self):
+    def ttestDictGram(self):
         self.log("testDictGram")
 
         # Create a dictation grammar.  This grammar simply gets the results of
@@ -2909,13 +2910,13 @@ class UnittestNatlink(unittest.TestCase):
 
             def checkExperiment(self,sawBegin,recogType,words):
                 if self.error:
-                    raise TestError,self.error
+                    raise TestError(self.error)
                 if self.sawBegin != sawBegin:
-                    raise TestError,'Unexpected result for DictGramBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
+                    raise TestError('Unexpected result for DictGramBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin))
                 if self.recogType != recogType:
-                    raise TestError,'Unexpected result for DictGramBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
+                    raise TestError('Unexpected result for DictGramBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType))
                 if self.words != words:
-                    raise TestError,'Unexpected result for DictGramBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
+                    raise TestError('Unexpected result for DictGramBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words)))
                 self.resetExperiment()
 
         testGram = TestDictGram()
@@ -2984,19 +2985,19 @@ class UnittestNatlink(unittest.TestCase):
             testGram.checkExperiment(1,'other',[])
         except TestError:
             # This failure sometimes happens when NatText is enabled
-            print
-            print 'Warning'
-            print
-            print 'One of the minor tests failed.  This test failure occurs if'
-            print 'NaturalText is enabled.  If NaturalText is disabled, this test'
-            print 'should work.  If you know that NaturalText is disabled and you'
-            print 'get this message then you will need to track down or report the'
-            print 'selftest failure.'
-            print ''
-            print 'If you have no idea what NaturalText is, or you do not know how'
-            print 'to determine whether it is enabled or disables then you can safely'
-            print 'ignore this message.'
-            print
+            print()
+            print('Warning')
+            print()
+            print('One of the minor tests failed.  This test failure occurs if')
+            print('NaturalText is enabled.  If NaturalText is disabled, this test')
+            print('should work.  If you know that NaturalText is disabled and you')
+            print('get this message then you will need to track down or report the')
+            print('selftest failure.')
+            print('')
+            print('If you have no idea what NaturalText is, or you do not know how')
+            print('to determine whether it is enabled or disables then you can safely')
+            print('ignore this message.')
+            print()
         
         testGram.resetExperiment()
 
@@ -3023,7 +3024,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
 
-    def tttestSelectGram(self):
+    def ttestSelectGram(self):
         self.log("testSelectGram")
 
         # Create a selection grammar.  This grammar simply gets the results of
@@ -3064,17 +3065,17 @@ class UnittestNatlink(unittest.TestCase):
 
             def checkExperiment(self,sawBegin,recogType,words,start,end):
                 if self.error:
-                    raise TestError,self.error
+                    raise TestError(self.error)
                 if self.sawBegin != sawBegin:
-                    raise TestError,'Unexpected result for SelectGramBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
+                    raise TestError('Unexpected result for SelectGramBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin))
                 if self.recogType != recogType:
-                    raise TestError,'Unexpected result for SelectGramBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
+                    raise TestError('Unexpected result for SelectGramBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType))
                 if self.words != words:
-                    raise TestError,'Unexpected result for SelectGramBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
+                    raise TestError('Unexpected result for SelectGramBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words)))
                 if self.start != start:
-                    raise TestError,'Unexpected range start for SelectGramBase.words\n  Expected %d\n  Saw %d'%(start, self.start)
+                    raise TestError('Unexpected range start for SelectGramBase.words\n  Expected %d\n  Saw %d'%(start, self.start))
                 if self.end != end:
-                    raise TestError,'Unexpected range end for SelectGramBase.words\n  Expected %d\n  Saw %d'%(end, self.end)
+                    raise TestError('Unexpected range end for SelectGramBase.words\n  Expected %d\n  Saw %d'%(end, self.end))
                 self.resetExperiment()            
 
         testGram = TestSelectGram()
@@ -3173,7 +3174,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def tttestTrayIcon(self):
+    def ttestTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -3211,7 +3212,7 @@ class UnittestNatlink(unittest.TestCase):
     # QH, april 2010:
     # Added test for self.rulesByName dict...
 
-    def tttestNextPrevRulesAndWords(self):
+    def ttestNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3234,7 +3235,7 @@ class UnittestNatlink(unittest.TestCase):
 
             def checkExperiment(self,expected):
                 if self.results != expected:
-                    raise TestError, "Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) )
+                    raise TestError("Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) ))
                 self.resetExperiment()
         
             def initialize(self):
@@ -3337,7 +3338,7 @@ class UnittestNatlink(unittest.TestCase):
     ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
     ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
 
-    def tttestNextPrevRulesAndWordsRecursive(self):
+    def ttestNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3359,7 +3360,7 @@ class UnittestNatlink(unittest.TestCase):
 
             def checkExperiment(self,expected):
                 if self.results != expected:
-                    raise TestError, "Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) )
+                    raise TestError("Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) ))
                 self.resetExperiment()
         
             def initialize(self):
@@ -3482,7 +3483,7 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched to "%s" mic'% micState)
             time.sleep(w)
 
-    def tttestNestedMimics(self):
+    def ttestNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -3757,7 +3758,7 @@ def log(t):
     I have no complete insight is this, but checking the logfile afterwards
     always works (QH)
     """
-    print t
+    print(t)
     if logFile:
         logFile.write(t + '\n')
     
@@ -3806,7 +3807,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def tttest....
+    # the test names to her example def ttest....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')

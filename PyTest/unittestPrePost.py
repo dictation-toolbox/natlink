@@ -20,11 +20,11 @@
 #   - added testParser, testGrammar, testDictGram, testSelectGram
 #
 
-import sys, unittest
+import sys
+import unittest
 import os
 import os.path
 import time
-import string
 import traceback        # for printing exceptions
 from struct import pack
 
@@ -139,16 +139,16 @@ class UnittestNatlink(unittest.TestCase):
             exec(command,globals(),localVars)
         except exceptionType:
             return
-        raise TestError,'Expecting an exception to be raised calling '+command
+        raise TestError('Expecting an exception to be raised calling '+command)
 
     #---------------------------------------------------------------------------
     # This utility subroutine will returns the contents of the NatSpeak window as
-    # a string.  It works by using playString to select the contents of the 
+    # a string.  It works by using playString to select the contents of the
     # window and copy it to the clipboard.  We have to also add the character 'x'
     # to the end of the window to handle the case that the window is empty.
 
 def run():
-    print 'starting unittestPrePost'
+    print('starting unittestPrePost')
     unittest.main()
     
 

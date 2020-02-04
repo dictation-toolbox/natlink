@@ -31,7 +31,6 @@ import os.path
 import types
 import copy
 import sys
-import six
 
 def fixCrLf(tRaw):
     """replace crlf into lf
@@ -63,6 +62,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
     if os.path.isfile(sourceslash):
         with open(sourceslash, mode='rb') as file: # b is important -> binary
             tRaw = file.read()
+        ## TODOQH handle utf-16le (wiht null characters...)
         tRaw = fixCrLf(tRaw)
 
         if filetype:
@@ -97,7 +97,7 @@ def readAnything(source, filetype=None, tryAlternatives=True):
         return None, None, source
 
 def writeAnything(filepath, encoding, bom, content):
-    """write unicode or list of unicode to file
+    """write str or list of str to file
     use any of the encodings eg ['ascii', 'utf-8'],
     if they all fail, use xmlcharrefreplace in order to output all
     take "ASCII" if encoding is None
@@ -106,8 +106,8 @@ def writeAnything(filepath, encoding, bom, content):
     if type(content) in (list, tuple):
         content = '\n'.join(content)
 
-    if not isinstance(content, six.string_types):
-        raise TypeError("writeAnything, content should be Unicode, not %s (%s)"% (type(content), filepath))
+    if type(content) != str:
+        raise TypeError("writeAnything, content should be str, not %s (%s)"% (type(content), filepath))
     if encoding in [None, 'ascii']:
         encodings = ['ascii', 'latin-1']  # could change to cp1252, or utf-8
                                           # this is only if the encoding is new or read as ascii, and accented characters are introduced
@@ -135,7 +135,7 @@ def writeAnything(filepath, encoding, bom, content):
         tRaw = tRaw.replace(b'\r\r\n', b'\r\n')
         
     if bom:
-        print('add bom for tRaw')
+        # print('add bom for tRaw')
         tRaw = bom + tRaw 
     outfile = open(filepath, 'wb')
     # what difference does a bytearray make? (QH)
@@ -184,6 +184,7 @@ if __name__ == '__main__':
         else:
             print('file: %s, no result')
 
+    ## TODOQH see if this is still relevant. Probably a utf-16be ????
     testfile = r'C:/natlink/rudiger/acoustic.ini'
     result = readAnything(testfile)
     if result:

@@ -1,9 +1,6 @@
-
-#$Revision: 522 $, $Date: 2013-11-22 19:06:06 +0100 (vr, 22 nov 2013) $, $Author: quintijn $
-#misc utility functions from Quintijn, used in unimacro and in
-#local programs.
-#copyright Quintijn Hoogenboom,  QH software, training & advies
-import six
+"""utility functions from Quintijn, used in unimacro and in local programs.
+   in python3 also the path module as subclass of the standard path class
+"""
 import sys
 import itertools
 import unicodedata
@@ -20,15 +17,30 @@ import sys
 import traceback
 import time
 import filecmp
-import importlib
+import collections
+# path moved to pathqh.py
+from pathqh import path
+
 if sys.platform != 'linux2':
     import win32com.client
     from win32gui import GetClassName, EnumWindows, GetWindowText, GetWindow
-# import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import difflib
 # from htmlentitydefs import codepoint2name
 # import locale
 # locale.setlocale(locale.LC_ALL, '')
+
+# define these string sequences here, so the module string can be discarded.
+import string   # to be discarde again...
+ascii_lowercase = string.ascii_lowercase
+letters = string.ascii_letters
+uppercase = string.ascii_uppercase
+lowercase = string.ascii_lowercase
+digits = string.digits
+    
+del string
 
 class QHError(Exception):
     pass
@@ -45,49 +57,36 @@ else:
 # _allchars = string.maketrans('', '')
 
 
-## unicode translator function:
-def translate_non_alphanumerics(to_translate, translate_to='_'):
-    """bijna alle non letters or digits to _
-
-    let op - blijft gehandhaafd!!!!
-    gebruik NA de split van een padnaam en evt na splitext van de extensie.
-
-    """
-    not_letters_or_digits = '!"#%\'()*+,./:;<=>?@[\]^_`{|}&~$'
-    translate_table = dict((ord(char), translate_to) for char in not_letters_or_digits if char != translate_to)
-    translate_table[8217] = translate_to
-    translate_table[8364] = translate_to
-    return to_translate.translate(translate_table)
 
 # ## string translator functions:
 # def translator(frm=b'', to=b'', delete=b'', keep=None):
 #     """closure function to implement the string.translate functie
 #     python cookbook (2), ch 1 recipe 9
 # obsolete, test for doctest unicode functions...
-#
+# 
 # # functions below, see also testUtilsqh.py in unittest.
 # >>> fixwordquotes(b'\x91aa\x92')
 # b"'aa'"
 # >>> fixwordquotes(b'\x93bb\x94')
 # b'"bb"'
-#
+# 
 # ## do these via unicode:
-# >>> normalizeaccentedchars(u'd\\u00e9sir\\u00e9 //\u00ddf..# -..e.')
-# u'desire //Yf..# -..e.'
-#
+# >>> normalizeaccentedchars('d\\u00e9sir\\u00e9 //\u00ddf..# -..e.')
+# 'desire //Yf..# -..e.'
+# 
 # # this one should go before normalizeaccentedchars
 # #(and after splitting of the extension and folder parts)
 # >>> fixdotslash('abc/-.def this is no extension.')
-# u'abc_-_def this is no extension_'
-#
+# 'abc_-_def this is no extension_'
+# 
 # ## do via unicode:
 # ## normalise a inivars key (or section)
 # >>> fixinivarskey('abcd')
-# u'abcd'
+# 'abcd'
 # >>> fixinivarskey("abcd e'f  g")
-# u'abcd e_f g'
+# 'abcd e_f g'
 # >>> fixinivarskey("##$$abcd)e'f  g*")
-# u'abcd_e_f g'
+# 'abcd_e_f g'
 # """
 #     if len(to) == 1:
 #         to = to * len(frm)
@@ -97,7 +96,7 @@ def translate_non_alphanumerics(to_translate, translate_to='_'):
 #     def translate(s):
 #         return s.translate(trans)
 #     return translate
-#
+# 
 # fixwordquotes = translator(b'\x91\x92\x93\x94\x95\x96', b"''\"\"  ")
 
 ###removenoncharacters = translator('
@@ -105,37 +104,46 @@ def fixinivarskey(s):
     """remove all non letters to underscore, remove leading underscore
     remove double spaces
     """
-    if isinstance(s, six.text_type):
+    if isinstance(s, str):
         s = str(s)
     t = translate_non_alphanumerics(s)
     t = t.strip("_ ")
     while '  ' in t:
         t = t.replace('  ', ' ')
     return t
-
+    
 def normalizeaccentedchars(to_translate):
-    """change acutechars to ascii
+    """change acutechars to ascii 
+    
+>>> s1 = "cafnon\u00e9"   # single char e acute
+>>> normalizeaccentedchars(s1)  
+'cafnone'
+>>> s2 = "CafCombe\u0301"   # combining char e acute   0301 is the combining code
+>>> normalizeaccentedchars(s2)   # combining char e acute
+'CafCombe'
+>>> len(s1), len(s2)
+(7, 9)
+
     (from Fluent Python)
     """
     norm_txt = unicodedata.normalize('NFD', to_translate)
     shaved = ''.join(c for c in norm_txt if not unicodedata.combining(c))
     return shaved
 
-def unifyaccentedchars(to_translate):
-    """convert to NFC form, e acute is now 1 char
-    """
-    norm_txt = unicodedata.normalize('NFC', to_translate)
-    return norm_txt
-
 def doubleaccentedchars(to_translate):
     """change acutechars to ascii, but double them e acute = ee
     (from Fluent Python, adaptation QH)
+    
 
->>> doubleaccentedchars("cafe\u0301")
-# >>> doubleaccentedchars("Nestl?") ## this testing in utilsqh in core3 for python 3
-# >>> doubleaccentedchars("enqu?te")
-# >>> doubleaccentedchars("Cura?ao")
-# >>> doubleaccentedchars("h?h?")
+>>> s1 = "double caf\\u00e9"   # single char e acute
+>>> doubleaccentedchars(s1)
+'double cafee'
+>>> s2 = "Double Cafe\\u0301"   # combining char e acute
+>>> doubleaccentedchars(s2)
+'Double Cafee'
+
+>>> doubleaccentedchars("enqu\N{LATIN SMALL LETTER E}\N{COMBINING CIRCUMFLEX ACCENT}te")
+'enqueete'
 
     """
     norm_txt = unicodedata.normalize('NFD', to_translate) ## haal char en accent uit elkaar
@@ -144,20 +152,21 @@ def doubleaccentedchars(to_translate):
     for c in norm_txt:
         comb = unicodedata.combining(c)
         if comb:
-            to_print = to_translate.encode('ascii', 'replace')
             if comb == 230:
                 # accent aegu, accent grave, accent circonflex, decide in favour of accent aegu, double char
-                print(('doubleaccentedchars, combining value %s, double char: %s (%s)'% (comb, last, to_print)))
+                # print('doubleaccentedchars, combining value %s, double char: %s (%s)'% (comb, last, to_translate))
                 shaved.append(last)
             elif comb == 202:
                 if last == "c":
-                    print(('c cedilla, change to "s" (%s)'% to_print))
+                    # print('c cedilla, change to "s" (%s)'% to_translate)
                     shaved.pop()
                     shaved.append("s")
                 else:
-                    print(("c cedilla, but NO C, ignore (%s)"% to_print))
+                    # print("c cedilla, but NO C, ignore (%s)"% to_translate)
+                    pass
             else:
-                print(('(yet) unknown combining char %s in "%s", ignore'% (comb, to_print)))
+                print('(yet) unknown combining char %s in "%s", ignore'% (comb, to_translate))
+                pass
             last = ""
         else:
             shaved.append(c)
@@ -165,100 +174,51 @@ def doubleaccentedchars(to_translate):
     return ''.join(shaved)
     # shaved = ''.join(c for c in norm_txt if not unicodedata.combining(c))
     # return shaved
-
-
-## function to make translation from e acute to e etc. goes into a translate function with translator
-# def isaccented(c):
-#     t = chr(c)
-#     try:
-#         name = codepoint2name[c]
-#     except KeyError:
-#         return
-#     if name == t:
-#         return
-#     if len(name) > 1:
-#         return name[0]
-
-# fast translator functions:
-# accented = [(chr(c), isaccented(c)) for c in range(192,256) if isaccented(c)]
-# ffrom = ''.join([c for (c,d) in accented])
-# tto = ''.join([d.lower() for (c,d) in accented])
-# normalizeaccentedchars = translator(ffrom, tto, keep=ffrom + string.letters + string.digits + "-_")
-# ffrom = './'
-# tto = '__'
-# fixdotslash = translator(ffrom, tto)
-# ffrom = './ '
-# tto = '___'
-# fixdotslashspace = translator(ffrom, tto)
-def fixdotslash(to_translate):
-    """for paths, . and / to _
-    """
-    if isinstance(to_translate, six.text_type):
-        to_translate = str(to_translate)
-
-    if not to_translate:
-        return to_translate
-    dotslash = './'
-    translate_to = '_'
-    translate_table = dict((ord(char), translate_to) for char in dotslash)
-    return to_translate.translate(translate_table)
-
-def fixdotslashspace(to_translate):
-    """for paths, . and / to _, also space to _
-    """
-    dotslash = './ '
-    translate_to = '_'
-    translate_table = dict((ord(char), translate_to) for char in dotslash)
-    return to_translate.translate(translate_table)
-
-def fixdotslashspacehyphen(to_translate):
-    """for paths, . and / to _, also space to _
-    """
-    dotslash = './ '
-    translate_to = '-'
-    translate_table = dict((ord(char), translate_to) for char in dotslash)
-    return to_translate.translate(translate_table)
-
+    
 def convertToBinary(unicodeString, encoding=None):
-    """convert a unicode string to str (python 2.7).
+    """convert a str (unicodeString) to bytes
+    
     encode encoding (list of strings or string).
     when encoding is None: take ['ascii', 'cp1252', 'latin-1']
-
+    
 ## \u0041 is A
 ##unichr(233) or \u00e9 is e accent acute
-
-# >>> t = u'\u0041-xyz-' + unichr(233) + u'-abc-'
->>> t = u'\u0041-xyz-\u00e9-abc-'
+    
+# >>> t = '\u0041-xyz-' + unichr(233) + '-abc-'
+>>> t = '\u0041-xyz-\u00e9-abc-'
 >>> convertToBinary(t)
-'A-xyz-\\xe9-abc-'
+b'A-xyz-\\xe9-abc-'
 >>> convertToBinary(t+'ascii', 'ascii')
-convertToBinary, cannot convert to printable string with encoding: [u'ascii']
-return with "?": A-xyz-?-abc-ascii
-'A-xyz-?-abc-ascii'
+convertToBinary, cannot convert to printable string with encoding: ['ascii']
+return with "?": b'A-xyz-?-abc-ascii'
+b'A-xyz-?-abc-ascii'
 >>> convertToBinary(t+'cp1252', 'cp1252')
-'A-xyz-\\xe9-abc-cp1252'
->>> convertToBinary(t+'latin-1', 'latin-1')
-'A-xyz-\\xe9-abc-latin-1'
->>> convertToBinary(t+'utf-8', 'utf-8')
-'A-xyz-\\xc3\\xa9-abc-utf-8'
+b'A-xyz-\\xe9-abc-cp1252'
+>>> byteslatin1 = convertToBinary(t+'latin-1', 'latin-1')
+>>> byteslatin1
+b'A-xyz-\\xe9-abc-latin-1'
+>>> bytesutf8 = convertToBinary(t+'utf-8', 'utf-8')
+>>> bytesutf8
+b'A-xyz-\\xc3\\xa9-abc-utf-8'
 >>> convertToBinary(t+'ascii + cp1252', ['ascii', 'cp1252'])
-'A-xyz-\\xe9-abc-ascii + cp1252'
+b'A-xyz-\\xe9-abc-ascii + cp1252'
 >>> convertToBinary(convertToBinary(t+'double convert'))
-'A-xyz-\\xe9-abc-double convert'
->>> tbinary = '\xe9\xe9n binaire string'
->>> convertToBinary(convertToBinary(tbinary))
-'\\xe9\\xe9n binaire string'
+b'A-xyz-\\xe9-abc-double convert'
+>>> convertToBinary(byteslatin1)
+b'A-xyz-\\xe9-abc-latin-1'
+>>> convertToBinary(bytesutf8)
+b'A-xyz-\\xe9-abc-utf-8'
 
-## \x92 (PU2) is from cp1252 (windows convention):
->>> convertToBinary(u'fondationnimba rapportsd\x92archive index.html')
-'fondationnimba rapportsd\\x92archive index.html'
+## \x92 (PU2) is from cp1252 (windows convention): 
+>>> convertToBinary('fondationnimba rapportsd\x92archive index.html')
+b'fondationnimba rapportsd\\x92archive index.html'
     """
     # a binary string can hold accented characters:
-    if type(unicodeString) == six.binary_type:
+    if type(unicodeString) == bytes:
         unicodeString = convertToUnicode(unicodeString)
     if encoding is None:
         encoding = ['ascii', 'cp1252', 'latin-1']
-    elif encoding and type(encoding) in (six.text_type, six.binary_type):
+    elif encoding and type(encoding) in (str, bytes):
         encoding = [encoding]
     res = ''
     for enc in encoding:
@@ -269,14 +229,14 @@ return with "?": A-xyz-?-abc-ascii
             pass
     else:
         res = unicodeString.encode('ascii', 'replace')
-        print(('convertToBinary, cannot convert to printable string with encoding: %s\nreturn with "?": %s'% (encoding, res)))
+        print('convertToBinary, cannot convert to printable string with encoding: %s\nreturn with "?": %s'% (encoding, res))
     return res
-
-
+                                 
+                                 
 def DecodeEncode(tRaw, filetype):
     """return the decoded string or False
 
-    copy from readwritefile, in order to prevent another import statement.
+    copy from readwritefile, in order to prevent another import statement.    
     used by readAnything, also see testreadanything in miscqh/test scripts
     """
     try:
@@ -289,174 +249,62 @@ def DecodeEncode(tRaw, filetype):
     else:
         return False
 
-
+                                 
 def convertToUnicode(text):
     """take a string and guess the conversion type
-
-    for use in all sorts of python modules, inivars, actions (Unimacro)
-
-    """
-    codingschemes = ['utf-8', 'cp1252',  'latin-1']
-    if type(text) != six.binary_type:
+    
+    for use in all sorts of python modules, inivars, actions (Unimacro) 
+    
+    """    
+    codingschemes = ['ascii', 'utf-8', 'cp1252',  'latin-1']
+    if type(text) != bytes:
         return text
-    try:
-        result = str(text)
-        return result
-    except UnicodeDecodeError:
-        pass
     for codingscheme in codingschemes:
         result = DecodeEncode(text, codingscheme)
         if not result is False:
             if result and ord(result[0]) == 65279:  # BOM, remove
                 result = result[1:]
             return result
-    print(('natlinkutilsqh, convertToUnicode: cannot decode string: %s'% text))
+    print('utilsqh, convertToUnicode: cannot decode string: %s'% text)
     return text
 
-# define these string sequences here, so the module string can be discarded.
-# import string
-# if six.PY2:
-#     ascii_lowercase = str(string.ascii_lowercase)
-#     letters = convertToUnicode(string.letters)
-#     lowercase = convertToUnicode(string.letters)
-#     digits = str(string.digits)
-# else:
-#     ascii_lowercase = string.ascii_lowercase
-#     letters = string.letters
-#     lowercase = string.letters
-#     letters = string.letters
-#     digits = string.digits
+### cross over to sitegen, test later, TODOQH
+# def curry(func, *args, **kwds):
+#     """curry from python cookbook, example 15.7,
+# 
+#     and python cookbook two: example 16.4.
+# 
+#     used for example for class FullTable, which is curried from TableLite
+# 
+#     >>> from HTMLgen import TableLite
+#     >>> str(TableLite())
+#     '\\n<table cellspacing="0"></table>'
+#     >>> FullTable = curry(TableLite, border=0, cellpadding=0, cellspacing=0, width = '100%')
+#     >>> str(FullTable())
+#     '\\n<table border="0" cellpadding="0" cellspacing="0" width="100%"></table>'
+# 
+#     """
+#     def curried(*moreargs, **morekwds):
+#         kw = kwds.copy()
+#         kw.update(morekwds)
+#         return func(*(args+moreargs), **kw)
+#     return curried
 
-# del string
-
-
-
-def curry(func, *args, **kwds):
-    """curry from python cookbook, example 15.7,
-
-    and python cookbook two: example 16.4.
-
-    used for example for class FullTable, which is curried from TableLite
-
-    >>> from HTMLgen import TableLite
-    >>> unicode(TableLite())
-    u'\\n<table cellspacing="0"></table>'
-    >>> FullTable = curry(TableLite, border=0, cellpadding=0, cellspacing=0, width = '100%')
-    >>> unicode(FullTable())
-    u'\\n<table border="0" cellpadding="0" cellspacing="0" width="100%"></table>'
-
-    """
-    def curried(*moreargs, **morekwds):
-        kw = kwds.copy()
-        kw.update(morekwds)
-        return func(*(args+moreargs), **kw)
-    return curried
-
-class peek_ahead(object):
-    """Iterator that can look ahead one step
-
-    From example 16.7 from python cookbook 2.
-
-    The preview can be inspected through it.preview
-
-    ignoring duplicates:
-    >>> it = peek_ahead('122345567')
-    >>> for i in it:
-    ...     if it.preview == i:
-    ...         continue
-    ...     print i,
-    1 2 3 4 5 6 7
-
-    getting duplicates together:
-    >>> it = peek_ahead('abbcdddde')
-    >>> for i in it:
-    ...     if it.preview == i:
-    ...         dup = 1
-    ...         while 1:
-    ...             i = it.next()
-    ...             dup += 1
-    ...             if i != it.preview:
-    ...                 print i*dup,
-    ...                 break
-    ...     else:
-    ...         print i,
-    ...
-    a bb c dddd e
-
-    """
-    sentinel = object() #schildwacht
-    def __init__(self, it):
-        self._nit = iter(it).__next__
-        self.preview = None
-        self._step()
-    def __iter__(self):
-        return self
-    def __next__(self):
-        result = self._step()
-        if result is self.sentinel: raise StopIteration
-        else: return result
-    def _step(self):
-        result = self.preview
-        try: self.preview = self._nit()
-        except StopIteration: self.preview = self.sentinel
-        return result
-
-class peek_ahead_stripped(peek_ahead):
-    """ Iterator that strips the lines of text, and returns (leftSpaces,strippedLine)
-
-    sentinel is just False, such that peeking ahead can check for truth input
-
-    >>> lines = '\\n'.join(['line1', '', ' one space ahead','', '   three spaces ahead, 1 empty line before'])
-    >>> import StringIO
-    >>> list(peek_ahead_stripped(StringIO.StringIO(lines)))
-    [(0, u'line1'), (0, u''), (1, u'one space ahead'), (0, u''), (3, u'three spaces ahead, 1 empty line before')]
-
-    example of testing look ahead
-
-    >>> lines = '\\n'.join(['line1', '', 'line2 (last)'])
-    >>> it = peek_ahead_stripped(StringIO.StringIO(lines))
-    >>> for spaces, text in it:
-    ...     print 'current line: |', text, '|',
-    ...     if it.preview is it.sentinel:
-    ...         print ', cannot preview, end of peek_ahead_stripped'
-    ...     elif it.preview[1]:
-    ...         print ', non empty preview: |', it.preview[1], '|'
-    ...     else:
-    ...         print ', empty preview'
-    current line: | line1 | , empty preview
-    current line: |  | , non empty preview: | line2 (last) |
-    current line: | line2 (last) | , cannot preview, end of peek_ahead_stripped
-
-    """
-    sentinel = peek_ahead.sentinel
-
-    def __next__(self):
-        result = self._step()
-        if result is self.sentinel: raise StopIteration
-        else: return result
-    def _step(self):
-        """collect the line and do the processing"""
-        result = self.preview
-        try:
-            line = self._nit().rstrip()
-            self.preview = (len(line) - len(line.lstrip()), line.lstrip())
-        except StopIteration: self.preview = self.sentinel
-        return result
-
-import collections
-class peekable(object):
+class peek_ahead:
     """ An iterator that supports a peek operation.
-
+    
+    Improved for python3 after QH's example: Adapted for python 3 by Paulo Roma.
+    
     this is a merge of example 19.18 of python cookbook part 2, peek ahead more steps
     and the simpler example 16.7, which peeks ahead one step and stores it in
     the self.preview variable.
-
+    
     Adapted so the peek function never raises an error, but gives the
     self.sentinel value in order to identify the exhaustion of the iter object.
-
-    Example usage:
-
-    >>> p = peekable(range(4))
+    
+    Example usage (Paulo):
+    
+    >>> p = peek_ahead(range(4))
     >>> p.peek()
     0
     >>> p.next(1)
@@ -493,18 +341,102 @@ class peekable(object):
     <object object at ...>
     >>> p.isLast()  # after the iter process p.isLast remains True
     True
+    
+    ### my old unittests, QH:
+    
+        >>> p = peek_ahead(range(4))
+    >>> p.peek()
+    0
+    >>> p.next(1)
+    [0]
+    >>> p.isFirst()
+    True
+    >>> p.preview
+    1
+    >>> p.isFirst()
+    True
+    >>> p.peek(3)
+    [1, 2, 3]
+    >>> p.next(2)
+    [1, 2]
+    >>> p.peek(2) #doctest: +ELLIPSIS
+    [3, <object object at ...>]
+    >>> p.peek(4) #doctest: +ELLIPSIS
+    [3, <object object at ...>, <object object at ...>, <object object at ...>]
+    >>> p.peek(1)
+    [3]
+    >>> p.next(2)
+    Traceback (most recent call last):
+    StopIteration
+    >>> p.next()
+    3
+    >>> p.isLast()
+    True
+    >>> p.next()
+    Traceback (most recent call last):
+    StopIteration
+    >>> p.next(0)
+    []
+    >>> p.peek()  #doctest: +ELLIPSIS
+    <object object at ...>
+    >>> p.preview #doctest: +ELLIPSIS
+    <object object at ...>
+    >>> p.isLast()  # after the iter process p.isLast remains True
+    True
+
+    From example 16.7 from python cookbook 2.
+
+    The preview can be inspected through it.preview
+
+    ignoring duplicates:
+    >>> it = peek_ahead('122345567')
+    >>> for i in it:
+    ...     if it.preview == i:
+    ...         continue
+    ...     print(i, end=" ")
+    1 2 3 4 5 6 7 
+
+    getting duplicates together:
+    >>> it = peek_ahead('abbcdddde')
+    >>> for i in it:
+    ...     if it.preview == i:
+    ...         dup = 1
+    ...         while 1:
+    ...             i = it.next()
+    ...             dup += 1
+    ...             if i != it.preview:
+    ...                 print(i*dup, end=" ")
+    ...                 break
+    ...     else:
+    ...         print(i, end=" ")
+    ...
+    a bb c dddd e 
+    
     """
-    sentinel = object() #schildwacht
+    ## schildwacht (guard)
+    sentinel = object()
     def __init__(self, iterable):
-        self._nit = iter(iterable).__next__  # for speed
+        ## iterator
         self._iterable = iter(iterable)
+        try:
+           ## next method hold for speed
+           self._nit = self._iterable.next
+        except AttributeError:
+           self._nit = self._iterable.__next__
+        ## deque object initialized left-to-right (using append())
         self._cache = collections.deque()
-        self._fillcache(1)          # initialize the first preview already
+        ## initialize the first preview already
+        self._fillcache(1)
+        ## peek at leftmost item
         self.preview = self._cache[0]
-        self.count = -1  # keeping the count, possible to check
-                         # isFirst and isLast status
+        ## keeping the count allows checking isFirst and isLast status
+        self.count = -1
+
     def __iter__(self):
+        """return an iterator
+        """
         return self
+
     def _fillcache(self, n):
         """fill _cache of items to come, with one extra for the preview variable
         """
@@ -517,9 +449,10 @@ class peekable(object):
                 # store sentinel, to identify end of iter:
                 Next = self.sentinel
             self._cache.append(Next)
-    def next(self, n=None):
-        """gives next item of the iter, or a list of n items
 
+    def __next__(self, n=None):
+        """gives next item of the iter, or a list of n items
+        
         raises StopIteration if the iter is exhausted (self.sentinel is found),
         but in case of n > 1 keeps the iter alive for a smaller "next" calls
         """
@@ -543,6 +476,11 @@ class peekable(object):
         self.preview = self._cache[0]
         return result
 
+    def next(self,n=None):
+        """python2 compatibility
+        """
+        return self.__next__(n)
+    
     def isFirst(self):
         """returns true if iter is at first position
         """
@@ -553,9 +491,14 @@ class peekable(object):
         """
         return self.preview == self.sentinel
 
+    def hasNext(self):
+        """returns true if iter is not at last position
+        """
+        return not self.isLast()
+        
     def peek(self, n=None):
         """gives next item, without exhausting the iter, or a list of 0 or more next items
-
+        
         with n == None, you can also use the self.preview variable, which is the first item
         to come.
         """
@@ -565,15 +508,59 @@ class peekable(object):
         else:
             result = [self._cache[i] for i in range(n)]
         return result
+    # old name:
+    # peekable = peek_ahead
 
+## TODOQH
+class peek_ahead_stripped(peek_ahead):
+    """ Iterator that strips lines of text, and returns (leftSpaces,strippedLine)
+
+    sentinel is just False, such that peeking ahead can check for truth input
+
+    >>> lines = ['line1', '', ' one space ahead','', '   three spaces ahead, 1 empty line before']
+    >>> list(peek_ahead_stripped(lines))
+    [(0, 'line1'), (0, ''), (1, 'one space ahead'), (0, ''), (3, 'three spaces ahead, 1 empty line before')]
+
+    example of testing look ahead
+
+    >>> lines = ['line1 ', '', 'line2 (last)']
+    >>> it = peek_ahead_stripped(lines)
+    >>> for spaces, text in it:
+    ...     print('current line: |', text, '|', end=' ')
+    ...     if it.preview is it.sentinel:
+    ...         print(', cannot preview, end of peek_ahead_stripped')
+    ...     elif it.preview[1]:
+    ...         print(', non empty preview: |', it.preview[1], '|')
+    ...     else:
+    ...         print(', empty preview')
+    current line: | line1 | , empty preview
+    current line: |  | , non empty preview: | line2 (last) |
+    current line: | line2 (last) | , cannot preview, end of peek_ahead_stripped
+
+    """
+    def _fillcache(self, n):
+        """fill _cache of items to come, special treatment for this stripped subclass
+        """
+        if n is None:
+            n = 1
+        while len(self._cache) < n+1:
+            try:
+                line = self._nit()
+                line = line.rstrip()
+                Next = (len(line) - len(line.lstrip()), line.lstrip())
+            except StopIteration:
+                # store sentinel, to identify end of iter:
+                Next = self.sentinel
+            self._cache.append(Next)
+     
 def get_best_match(texts, match_against, ignore=' ', treshold=0.9):
     """Get the best matching from texts, none if treshold is not reached
-
+    
     texts: list of texts to choose from
     match_against: text wanted
     ignore: junk characters (set eg to "_ ")
     treshold: best match must be at least this value.
-
+    
     """
     # JUNK =  space _
     # now time to figre out the matching
@@ -626,28 +613,28 @@ def isSubList(largerList, smallerList):
         slice = largerList[start:start+lenSmaller]
         if slice == smallerList:
             return 1
+    
 
-
-
-
-def ifelse(var, ifyes, ifno):
-    """ternary operator simulated, if var: True else: False
-
-    idea from "learning python"
-
-    >>> x = []
-    >>> print ifelse(x, 'a', 'b')
-    b
-    >>> y = 'yes'
-    >>> print ifelse(y, 12, 23)
-    12
-    """
-    if var:
-        return ifyes
-    else:
-        return ifno
-
-
+## should be new syntax python3
+# 
+# def ifelse(var, ifyes, ifno):
+#     """ternary operator simulated, if var: True else: False
+# 
+#     idea from "learning python"
+# 
+#     >>> x = []
+#     >>> print(ifelse(x, 'a', 'b))
+#     b
+#     >>> y = 'yes'
+#     >>> print(ifelse(y, 12, 23))
+#     12
+#     """
+#     if var:
+#         return ifyes
+#     else:
+#         return ifno
+# 
+# 
 def isSubList(largerList, smallerList):
     """returns 1 if smallerList is a sub list of largerList
 
@@ -676,7 +663,7 @@ for use in voicecode...
         slice = largerList[start:start+lenSmaller]
         if slice == smallerList:
             return 1
-
+    
 
 
 
@@ -685,9 +672,9 @@ def replaceExt(fileName, ext):
     """change extension of file
 
 >>> replaceExt("a.psd", ".jpg")
-u'a.jpg'
+'a.jpg'
 >>> replaceExt("a/b/c/d.psd", "jpg")
-u'a/b/c/d.jpg'
+'a/b/c/d.jpg'
     """
     ext = addToStart(ext, ".")
     fileName = str(fileName)
@@ -698,13 +685,13 @@ def getExt(fileName):
     """return the extension of a file
 
 >>> getExt(u"a.psd")
-u'.psd'
+'.psd'
 >>> getExt("a/b/c/d.psd")
-u'.psd'
+'.psd'
 >>> getExt("abcd")
-u''
+''
 >>> getExt("a/b/xyz")
-u''
+''
     """
     a, ext = os.path.splitext(fileName)
     return str(ext)
@@ -728,18 +715,18 @@ False
 def removeFromStart(text, toRemove, ignoreCase=None):
     """returns the text with "toRemove" stripped from the start if it matches
 >>> removeFromStart('abcd', 'a')
-u'bcd'
+'bcd'
 >>> removeFromStart('abcd', 'not')
-u'abcd'
+'abcd'
 
 working of ignoreCase:
 
 >>> removeFromStart('ABCD', 'a')
-u'ABCD'
+'ABCD'
 >>> removeFromStart('ABCD', 'ab', ignoreCase=1)
-u'CD'
+'CD'
 >>> removeFromStart('abcd', 'ABC', ignoreCase=1)
-u'd'
+'d'
 
     """
     if ignoreCase:
@@ -756,18 +743,18 @@ def removeFromEnd(text, toRemove, ignoreCase=None):
     """returns the text with "toRemove" stripped from the end if it matches
 
 >>> removeFromEnd('a.jpg', '.jpg')
-u'a'
+'a'
 >>> removeFromEnd('b.jpg', '.gif')
-u'b.jpg'
+'b.jpg'
 
 working of ignoreCase:
 
 >>> removeFromEnd('C.JPG', '.jpg')
-u'C.JPG'
+'C.JPG'
 >>> removeFromEnd('D.JPG', '.jpg', ignoreCase=1)
-u'D'
+'D'
 >>> removeFromEnd('d.jpg', '.JPG', ignoreCase=1)
-u'd'
+'d'
 
     """
     if ignoreCase:
@@ -787,18 +774,18 @@ def addToStart(text, toAdd, ignoreCase=None):
         return the start of the string with the case as in "toAdd"
 
 >>> addToStart('a-text', 'a-')
-u'a-text'
+'a-text'
 >>> addToStart('text', 'b-')
-u'b-text'
+'b-text'
 >>> addToStart('B-text', 'b-')
-u'b-B-text'
+'b-B-text'
 
 working of ignoreCase:
 
 >>> addToStart('C-Text', 'c-', ignoreCase=1)
-u'c-Text'
+'c-Text'
 >>> addToStart('d-Text', 'D-', ignoreCase=1)
-u'D-Text'
+'D-Text'
 
     """
     if ignoreCase:
@@ -819,16 +806,16 @@ def addToEnd(text, toAdd, ignoreCase=None):
         return the end of the string with the case as in "toAdd"
 
 >>> addToEnd('a.jpg', '.jpg')
-u'a.jpg'
+'a.jpg'
 >>> addToEnd('b', '.jpg')
-u'b.jpg'
+'b.jpg'
 
 working of ignoreCase:
 
 >>> addToEnd('Cd.JPG', '.jpg', ignoreCase=1)
-u'Cd.jpg'
+'Cd.jpg'
 >>> addToEnd('Ef.jpg', '.JPG', ignoreCase=1)
-u'Ef.JPG'
+'Ef.JPG'
 
     """
     if ignoreCase:
@@ -853,11 +840,11 @@ def firstLetterCapitalize(t):
 def extToLower(fileName):
     """leave name part intact, but change extension to lowercase
 >>> extToLower("aBc.jpg")
-u'aBc.jpg'
+'aBc.jpg'
 >>> extToLower("ABC.JPG")
-u'ABC.jpg'
+'ABC.jpg'
 >>> extToLower("D:/a/B/ABC.JPG")
-u'D:/a/B/ABC.jpg'
+'D:/a/B/ABC.jpg'
 
 
 
@@ -870,9 +857,9 @@ def appendBeforeExt(text, toAppend):
     """append text just before the extension of the filename part
 
 >>> appendBeforeExt("short.html", '__t')
-u'short__t.html'
+'short__t.html'
 >>> appendBeforeExt("http://a/b/c/d/long.html", '__b')
-u'http://a/b/c/d/long__b.html'
+'http://a/b/c/d/long__b.html'
     """
     base, ext = os.path.splitext(text)
     return base + toAppend + ext
@@ -899,7 +886,7 @@ Classes = ('ExploreWClass', 'CabinetWClass')
 
 def partition_range(max_range):
     """partition for milla website in lengths of 3 or 4
-
+    
 >>> partition_range(3)
 [[0], [1], [2]]
 >>> partition_range(5)
@@ -925,15 +912,15 @@ def partition_range(max_range):
         return [[0, 1], [2, 3], [4, 5], [6, 7]]
     else:
         return [lst] # alle images achter elkaar, scrollen afhankelijk van de browser
+    
 
 
 
-
-
+        
 
 def unravelList(menu):
     """unravel from menu list to dropdown list order
-
+    
 >>> unravelList([1, [2, [3, 4, 5], 6], 7, 8])
 [[1, 7, 8], [2, 6], [3, 4, 5]]
 
@@ -950,162 +937,21 @@ def unravelList(menu):
     else:
         return [L]
 
-reUnix=re.compile(r'[^\w-]')
-def toUnixName(t, glueChar="", lowercase=1, canHaveExtension=1, canHaveFolders=1, mayBeEmpty=False):
-    """get rid of unwanted characters, only letters and '-'
-    leading numbers get a _ in front
-
-    default: all to lowercase, if lowercase = 0: convert extension to lowercase anyway
-
-    default: file can have extension and folders. If set to 0, also \\, / and . are removed from name.
-
-    split into folder/file parts if needed.
-
-    glueChar can be "_" or "-" as well ("_" for avp, michel)
-
-    mayBeEmpty: by default False, can be set True (jva, auteur, isbn)
-
->>> toUnixName("Test ( met haakjes (en streepjes))", canHaveExtension=0, glueChar="-")
-u'test-met-haakjes-en-streepjes'
-
->>> toUnixName("Test. Met een punt", canHaveExtension=0)
-u'testmeteenpunt'
-
->>> toUnixName("Test. Met een punt", canHaveExtension=0, glueChar="_")
-u'test_met_een_punt'
-
->>> toUnixName(u'')
-Traceback (most recent call last):
-ValueError: toUnixName, name has no valid characters
->>> toUnixName(u'-abcd')
-u'_-abcd'
-
-Unicode and diacritical characters:
->>> toUnixName(u'D:/abc.def/Thaddeus M\\u00fcller.html', glueChar="-")
-u'D:/abc-def/thaddeus-muller.html'
-
->>> toUnixName(u'niet aan elkaar', glueChar="_")
-u'niet_aan_elkaar'
->>> toUnixName(u'wel aan elkaar')
-u'welaanelkaar'
-
->>> toUnixName(u'a.b-99? .d')
-u'ab-99.d'
->>> toUnixName(u'a.b-99? .d', canHaveExtension=0)
-u'ab-99d'
->>> toUnixName(u'.a^.jpg')
-u'a.jpg'
->>> toUnixName(u'6-barge.txt')
-u'_6-barge.txt'
->>> toUnixName(u'-6-barge.html')
-u'_-6-barge.html'
-
->>> toUnixName(u'D:/abc.def/-6-barge.html')
-u'D:/abcdef/_-6-barge.html'
-
->>> toUnixName(u'') # doctest: +IGNORE_EXCEPTION_DETAIL
-Traceback (most recent call last):
-ValueError: toUnixName, name has no valid characters
-
->>> toUnixName(u'', mayBeEmpty=True)
-u''
-
-    """
-    if glueChar == '-':
-         pass
-    inputT = t
-    t = t.strip()
-    if t.strip() in ('', ''):
-        if mayBeEmpty:
-            return ''
-        raise ValueError("toUnixName, name has no valid characters")
-    t = os.path.normpath(t)
-    t = t.replace('\\', '/')
-    if canHaveFolders and t.find('/') >= 0:
-        L  = []
-        parts = t.split('/')
-        for part in parts:
-
-            if part  != parts[ - 1]:
-                canHaveExtension2 = 0 # folder parts never extension
-            else:
-                canHaveExtension2 = canHaveExtension
-            if lowercase and not (len(part) == 2 \
-                               and part[-1] == ":"):
-                part = part.lower()
-            sofar = path('/'.join(L))/part
-            if sofar.isdir():
-                # prevent "website name" from being converted
-                L.append(part)
-                continue
-            L.append(toUnixName(part,lowercase=lowercase, canHaveFolders=0, glueChar=glueChar,
-                                canHaveExtension=canHaveExtension2))
-        return '/'.join(L)
-
-    if len(t) == 2 and t.endswith(":"):
-        return t.upper()
-    if t == "..":
-        return t
-    if t == ".":
-        return t
-    # now for the dir/file part:
-    if canHaveExtension:
-        trunk, ext = os.path.splitext(t)
-    else:
-        # also remove . and / (and \)
-        trunk, ext = t, ''
-    if glueChar == "_":
-        trunk = fixdotslashspace(trunk) # . --> _ and / -->> _ also space to "_"
-    elif glueChar == "-":
-        trunk = fixdotslashspacehyphen(trunk) # . --> _ and / -->> _ also space to "-"
-    elif glueChar:
-        raise ValueError('toUnixName, glueChar may only be "" or "_" or "-", not "%s"'% glueChar)
-    else:
-        trunk = fixdotslash(trunk) # . --> _ and / -->> _
-        trunk = trunk.replace(' ', '')
-
-    if glueChar == '-':
-        pass
-    trunk = normalizeaccentedchars(trunk)
-    trunk = translate_non_alphanumerics(trunk, translate_to=glueChar)
-    if lowercase:
-        trunk = trunk.lower()
-    trunk = trunk.replace("__", "_")
-    trunk = trunk.replace("_.", ".")
-
-
-    if glueChar:
-        doubleGlue = glueChar*2
-        while trunk.find(doubleGlue) > 0:
-            trunk = trunk.replace(doubleGlue, glueChar)
-        trunk = trunk.rstrip(glueChar)
-    pass
-
-    # remove possible invalid chars from extension:
-    if ext and ext[0] == ".":
-        ext = "." + normalizeaccentedchars(ext[1:])
-        ext = ext.lower()  # always to lowercase
-
-    if not trunk:
-        raise ValueError("toUnixName, name has no valid characters: |%s|"% trunk)
-    if trunk[0] in '-0123456789':
-        trunk = "_" + trunk
-    return trunk + ext
-
-str2unix = toUnixName
-
+## to pathqh:
+## def toUnixName(t, glueChar="", lowercase=1, canHaveExtension=1, canHaveFolders=1, mayBeEmpty=False):
+    
 def sendkeys_escape(str):
     """escape with {} keys that have a special meaning in sendkeys
     + ^ % ~ { } [ ]
 
 >>> sendkeys_escape('abcd')
-u'abcd'
+'abcd'
 >>> sendkeys_escape('+bcd')
-u'{+}bcd'
+'{+}bcd'
 >>> sendkeys_escape('+a^b%c~d{f}g[h]i')
-u'{+}a{^}b{%}c{~}d{{}f{}}g{[}h{]}i'
+'{+}a{^}b{%}c{~}d{{}f{}}g{[}h{]}i'
 >>> sendkeys_escape('+^%~{}[]')
-u'{+}{^}{%}{~}{{}{}}{[}{]}'
+'{+}{^}{%}{~}{{}{}}{[}{]}'
 
     """
     ## make str, for python 2 for the time being:
@@ -1126,10 +972,10 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
                    specials=None):
     """ Print the usual traceback information, followed by a listing of
     all the local variables in each frame.
-
-
+    
+    
     """
-    #print 'specials:', specials
+    #print('specials:', specials')
     # normal traceback:
     traceback.print_exc()
     tb = sys.exc_info()[2]
@@ -1178,7 +1024,7 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
                     pagename = value.name
                     push('page name: %s'% pagename)
 
-            # we must _absolutely_ avoid propagating exceptions, and unicode(value)
+            # we must _absolutely_ avoid propagating exceptions, and value
             # COULD cause any exception, so we MUST catch any...:
             v = v.replace('\n', '|')
             values.append(v)
@@ -1191,7 +1037,7 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
                 if v.startswith('<built-in method'):
                     continue
                 if len(v) > allowedlength:
-                    half = allowedlength/2
+                    half = allowedlength//2
                     v = v[:half] + " ... " + v[-half:]
                 push(k.rjust(maxlenkeys) + " = " + v)
     if specials:
@@ -1213,10 +1059,10 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
                         continue
                     # specials for eg sitegen
                     if specials and key in specials:
-                        #print 'found specialskey: %s: %s'% (key, v)
+                        #print('found specialskey: %s: %s'% (key, v)')
                         specialsDict[key] = v
                     keys.append(key)
-                    # we must _absolutely_ avoid propagating exceptions, and unicode(value)
+                    # we must _absolutely_ avoid propagating exceptions, and value
                     # COULD cause any exception, so we MUST catch any...:
                     v = v.replace('\n', '|')
                     values.append(v)
@@ -1225,10 +1071,10 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
                 maxlenkeys = max(15, max(list(map(len, keys))))
                 allowedlength = 80-maxlenkeys
                 for k,v in zip(keys, values):
-                    if len(v) > allowedlength:
-                        half = allowedlength/2
+                    if v and len(v) > allowedlength:
+                        half = allowedlength//2
                         v = v[:half] + " ... " + v[-half:]
-                    push(k.rjust(maxlenkeys) + " = " + v)
+                    push(k.rjust(maxlenkeys) + " = " + str(v))
                 break
             else:
                 print('no self of HTMLDoc found')
@@ -1241,7 +1087,7 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
     elif pagename == 'index':
         push('menu: top')
         callback.append('menu: top')
-
+        
     if pagename:
         push('page: %s'% pagename)
         callback.append('page: %s'% pagename)
@@ -1254,7 +1100,7 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
 
     sys.stderr.write('\n'.join(L))
     sys.stderr.write(callback)
-    #print 'result specialsDict: %s'% specialsDict
+    #print('result specialsDict: %s'% specialsDict')
     return callback, specialsDict
 
 def cleanTraceback(tb, filesToSkip=None):
@@ -1303,49 +1149,43 @@ def cleanTraceback(tb, filesToSkip=None):
     # calculate the relative path, if ffrom and fto are files (not directoryies)
 def relpathdirs(ffrom, fto):
     """calculate the relative directory's
+    
+    Return a string, in order to prevent merging in the current directory
 
     >>> relpathdirs('a/b/c', 'a/d')
-    u'../../d'
+    '../../d'
     >>> relpathdirs(path('a/b/c'), 'a/d')
-    u'../../d'
+    '../../d'
     >>> relpathdirs(path('a/b/c'), path('a/d'))
-    u'../../d'
+    '../../d'
     >>> relpathdirs(path('a'), path('a'))
-    u''
-    >>> relpathdirs(path(''), path('a'))
-    u'a'
-    >>> relpathdirs(path('a'), path(''))
-    u'..'
-    >>> relpathdirs(path('.'), path('a'))
-    u'a'
-    >>> relpathdirs(path('a'), path('.'))
-    u'..'
+    ''
 
 
     """
-    if isinstance(ffrom, six.text_type):
+    if isinstance(ffrom, str):
         ffrom = path(ffrom)
-    if isinstance(fto, six.text_type):
+    if isinstance(fto, str):
         fto = path(fto)
     fromList = [_f for _f in ffrom.splitall() if _f]
     toList = [_f for _f in fto.splitall() if _f]
     if not toList:
-        relpath = path(('../')*len(fromList))
+        relpath = '../'*len(fromList)
         return relpath
     while fromList and toList and fromList[0] == toList[0]:
         fromList.pop(0)
         toList.pop(0)
-    relpath = path('../'*len(fromList))/toList
+    relpath = '../'*len(fromList) + "/".join(toList)
     return relpath
 
 def commonprefix(ffrom, fto):
     """collate the commonprefix of two folders
     >>> commonprefix('a/b/c', 'a/d')
-    u'a'
+    'a'
     >>> commonprefix(path('a'), path('a'))
-    u'a'
+    'a'
     >>> commonprefix(path(''), path('a'))
-    u''
+    ''
 
     """
     if type(ffrom) in (bytes, str):
@@ -1367,21 +1207,25 @@ def relpathfiles(ffrom, fto):
     ffrom and fto are (if necessary) converted to path instances
 
 >>> relpathfiles('a/b/c/t.txt', 'a/d/a.txt')
-u'../../d/a.txt'
+'../../d/a.txt'
 >>> relpathfiles('a/t.txt', 'a/a.txt')
-u'a.txt'
+'a.txt'
 
 
     """
-    if isinstance(ffrom, six.text_type):
+    if isinstance(ffrom, str):
         ffrom = path(ffrom)
-    if isinstance(fto, six.text_type):
+    if isinstance(fto, str):
         fto = path(fto)
 
     head1, tail1 = ffrom.split()
     head2, tail2 = fto.split()
     if tail1 and tail2:
-        return relpathdirs(head1,head2)/tail2
+        reldirs = relpathdirs(head1,head2)
+        if reldirs:
+            return  reldirs + "/" + tail2
+        else:
+            return tail2
     else:
         return 'fout, tail1 of tail2 leeg'
 
@@ -1437,14 +1281,11 @@ def killProcess(pHndle):
 
 def lookForWindowTextEnd(hwnd, text):
     global foundHandle
-
+    
     getwindowtext = GetWindowText(hwnd).strip()
     if not getwindowtext:
         return 1
-    getwindowtext = getwindowtext.decode('ascii', errors='ignore')
-    ## weet niet hoe dit werkt unicode conversie later nog checken!!
-    t2 = text.encode('ascii', errors='ignore')
-    if getwindowtext.endswith(t2):
+    if getwindowtext.endswith(text):
         foundHandle = hwnd
         return
     return 1
@@ -1463,46 +1304,39 @@ if sys.platform != 'linux2':
     def getIEProcesses(filterClasses=None):
         """get running IE, my computer and explorer processes
         ### getIEProcesses() return something like:
-
+    
         [('projects', 'file:///D:/projects', 262740, 'CabinetWClass'),
         ('Google', 'http://www.google.nl/', 394500, 'IEFrame'),
         ('Google', 'http://www.google.nl/', 2360846, 'IEFrame'),
         ('My Documents', 'file:///D:/Mijn%20documenten', 198480, 'ExploreWClass')]
-
+    
         each tuple being (LocationName, LocationURL, hwnd, ClassName)
-
+    
         ClassName:
-            CabinetWClass == my computer
-            ExploreWClass == Windows Explorer
-            IEFrame == Internet Explorer
-
-    ###>>> getIEProcesses()
-    ###>>> getIEProcesses(filterClasses=['IEFrame'])
-
+            CabinetWClass == My Computer  ## now the default!!
+            ExploreWClass == Windows Explorer  ## seems to be obsolete
+            IEFrame == Internet Explorer  ## seems to be obsolete
+    
+>>> getIEProcesses()
+>>> getIEProcesses(filterClasses=['IEFrame'])
+[]
         """
+        filterClasses = filterClasses or ['CabinetWClass']
         ShellWindowsCLSID = '{9BA05972-F6A8-11CF-A442-00A0C90A8F39}'
         ShellWindows = win32com.client.Dispatch(ShellWindowsCLSID)
         L = []
         for s in ShellWindows :
-            if str(s).startswith('Microsoft Internet Explorer'):
-    ##            print '-'*40
-    ##            print s
-    ##            print s.LocationName
-    ##            print s.LocationURL
-    ##            print s.HWND
-    ##            print GetClassName(s.HWND)
-                ClassName = GetClassName(s.HWND)
-                if filterClasses and ClassName not in filterClasses:
-                    continue
-                try:
-                    L.append((str(s.LocationName), str(s.LocationURL), s.HWND, ))
-                except UnicodeEncodeError:
-                    pass # leave these alone
+            ClassName = GetClassName(s.HWND)
+            if ClassName in ['CabinetWClass', 'ExploreWClass', 'IEFrame']:
+                if ClassName in filterClasses:
+                    L.append((str(s.LocationName), str(s.LocationURL), s.HWND, ClassName))
+            else:
+                print("getIEProcesses, unexpected ClassName: %s"% ClassName)
         return L
 
     def getIEProcessByHndle(hndle):
         """get ShellWindow with handle
-
+    
         """
         ShellWindowsCLSID = '{9BA05972-F6A8-11CF-A442-00A0C90A8F39}'
         ShellWindows = win32com.client.Dispatch(ShellWindowsCLSID)
@@ -1540,13 +1374,13 @@ def getSublists(L, maxLen, sepLen):
 def getWordsUntilLength(t, maxLength):
     """take words until maxLength is reached
 >>> getWordsUntilLength('this is a test', 60)
-u'this is a test'
+'this is a test'
 >>> getWordsUntilLength('this is a test', 7)
-u'this is'
+'this is'
 >>> getWordsUntilLength('this is a test', 2)
-u'this'
-
-
+'this'
+    
+    
     """
     t = t.replace(',', '')
     t = t.replace('.', '')
@@ -1572,17 +1406,17 @@ def splitLongString(S, maxLen=70, prefix='', prefixOnlyFirstLine=0):
     prefix = text that is inserted in front of each line, default ''
     prefixOnlyFirstLine = 1: following lines as blank prefix, default 0
     >>> splitLongString('foo', 80)
-    [u'foo']
+    ['foo']
     >>> splitLongString(' foo   bar and another set of  words  ', 80)
-    [u'foo bar and another set of words']
+    ['foo bar and another set of words']
     >>> splitLongString(' foo   bar and another set of  words  ', 20,
     ... prefix='    # ')
-    [u'    # foo bar and', u'    # another set of', u'    # words']
+    ['    # foo bar and', '    # another set of', '    # words']
     >>> splitLongString(' foo   bar and another set of  words  ', 20,
     ... prefix='entry = ', prefixOnlyFirstLine=1)
-    [u'entry = foo bar and', u'        another set', u'        of words']
+    ['entry = foo bar and', '        another set', '        of words']
     """
-    assert isinstance(S, six.text_type)
+    assert isinstance(S, str)
     L = [t.strip() for t in S.split()]
     lOut = []
     for part in getSublists(L, maxLen=maxLen-len(prefix), sepLen=1):
@@ -1598,13 +1432,13 @@ def cleanString(s):
     intermittent whitespace into a string that is stripped
     and has only single spaces between words
 >>> cleanString('foo bar')
-u'foo bar'
+'foo bar'
 >>> cleanString('foo  bar')
-u'foo bar'
+'foo bar'
 >>> cleanString('\\n foo \\n\\n  bar ')
-u'foo bar'
+'foo bar'
 >>> cleanString('')
-u''
+''
 
     """
     return ' '.join([x.strip() for x in s.split()])
@@ -1619,24 +1453,24 @@ def formatListColumns(List, lineLen = 70, sort = 0):
     can be placed on one line, the list is comma separated
 
 >>> formatListColumns([''])
-u''
+''
 >>> formatListColumns(['a','b'])
-u'a, b'
+'a, b'
 >>> formatListColumns(['foo', 'bar', 'longer entry'], lineLen=5)
-u'foo\\nbar\\nlonger entry'
+'foo\\nbar\\nlonger entry'
 >>> formatListColumns(['foo', 'bar', 'longer entry'], lineLen=5, sort=1)
-u'bar\\nfoo\\nlonger entry'
->>> print formatListColumns(['afoo', 'bar', 'clonger', 'dmore', 'else', 'ftest'], lineLen=20, sort=1)
+'bar\\nfoo\\nlonger entry'
+>>> print(formatListColumns(['afoo', 'bar', 'clonger', 'dmore', 'else', 'ftest'], lineLen=20, sort=1))
 afoo     dmore
 bar      else
 clonger  ftest
->>> print formatListColumns(['foo', 'bar', 'longer entry'], lineLen=20)
+>>> print(formatListColumns(['foo', 'bar', 'longer entry'], lineLen=20))
 foo  longer entry
 bar
 
     """
     if sort:
-        List.sort(caseIndependentSort)
+        List = sorted(List, key=str.casefold)
     s = ', '.join(List)
 
     # short list, simply join with comma space:
@@ -1650,11 +1484,11 @@ bar
         return '\n'.join(List)
 
 
-    nRow = len(s)/lineLen + 1
+    nRow = len(s)//lineLen + 1
     lenList = len(List)
 
     # try for successive number of rows:
-    while nRow < lenList/2 + 2:
+    while nRow < lenList//2 + 2:
         lines = []
         for i in range(nRow):
             lines.append([])
@@ -1680,9 +1514,9 @@ def convertToPythonArgs(text):
     """convert to numbers and strings,
 
     IF argument is enclosed in " " or ' ' it is kept as a string.
+    
 
-
-    """
+    """    
     text = text.strip()
     if not text:
         return    # None
@@ -1699,13 +1533,13 @@ def convertToPythonArgsKwargs(text):
 >>> convertToPythonArgsKwargs('')
 ((), {})
 >>> convertToPythonArgsKwargs('hello')
-((u'hello',), {})
+(('hello',), {})
 >>> convertToPythonArgsKwargs('width=50')
-((), {u'width': 50})
+((), {'width': 50})
 >>> convertToPythonArgsKwargs('"hello", width=50')
-((u'hello',), {u'width': 50})
+(('hello',), {'width': 50})
 
-
+    
 
     """
     L = []
@@ -1751,7 +1585,7 @@ def _convertToPythonArg(t):
     except ValueError:
         pass
 
-    # now proceeding with strings:
+    # now proceeding with strings:    
     if hasDoubleQuotes.match(t):
         return t[1:-1]
     elif hasSingleQuotes.match(t):
@@ -1762,16 +1596,16 @@ def _convertToPythonArg(t):
 ##        return "'%s'"% t
 ##    else:
 ##        return '"%s"'% t
+        
 
-
-
-def caseIndependentSort(a,b):
-    """sort alphabetically, all converted to lower case
-
-    """
-
-    a, b = a.lower(), b.lower()
-    return cmp(a, b)
+# now str.casefold!
+# def caseIndependentSort(a,b):
+#     """sort alphabetically, all converted to lower case
+# 
+#     """
+# 
+#     a, b = a.lower(), b.lower()
+#     return cmp(a, b)
 
 def splitList(L, n):
     """generator function that splits a list in sublists of length n
@@ -1786,50 +1620,51 @@ def splitList(L, n):
     if O:
         yield O
 
-def opj(*args):
-    """smart os.path.join function, can accept also list/tuple
+# def opj(*args):
+#     """smart os.path.join function, can accept also list/tuple
+# 
+#     always returns "/" instead of os.sep
+#     and returns a path instance!
+# 
+# >>> opj('')
+# ''
+# >>> opj('a')
+# path('a')
+# >>> opj('a', 'b')
+# path('a/b')
+# >>> opj(['a', 'b'])
+# path('a/b')
+# >>> opj(['a', ('..', 'b', '..', 'c'), 'b'])
+# 'c/b'
+# >>> opj(['a', ('..', 'b', '..', 'c'), 'b'])
+# 'c/b'
+# >>> p = opj(['a', 'b', '..', '.'], 'd/e/f/.././g')
+# >>> p
+# 'a/d/e/g'
+#     """
+#     if not args:
+#         return ''
+#     l = []
+#     for a in args:
+#         if not a:
+#             continue
+#         elif isStringLike(a):
+#             a = convertToUnicode(a)
+#             l.append(a)
+#         elif type(a) == list:
+#             l.append(opj(*tuple(a)))
+#         elif type(a) == tuple:
+#             l.append(opj(*a))
+#         else:
+#             raise SitegenError('invalid type for opj: %s'% repr(a))
+#     if not l:
+#         return ''
+#     return path('/'.join(l))
+# ##    if os.sep == '\\' and p.find('\\'):
+# ##        return p.replace('\\', '/')
+# ##    else:
+# ##        return p
 
-    always returns "/" instead of os.sep
-    and returns a path instance!
-
->>> opj('')
-u''
->>> opj('a')
-u'a'
->>> opj('a', 'b')
-u'a/b'
->>> opj(['a', 'b'])
-u'a/b'
->>> unicode(opj(['a', ('..', 'b', '..', 'c'), 'b']))
-u'c/b'
->>> opj(['a', ('..', 'b', '..', 'c'), 'b'])
-u'c/b'
->>> p = opj(['a', 'b', '..', '.'], 'd/e/f/.././g')
->>> p
-u'a/d/e/g'
-    """
-    if not args:
-        return ''
-    l = []
-    for a in args:
-        if not a:
-            continue
-        elif isStringLike(a):
-            a = convertToUnicode(a)
-            l.append(a)
-        elif type(a) == list:
-            l.append(opj(*tuple(a)))
-        elif type(a) == tuple:
-            l.append(opj(*a))
-        else:
-            raise SitegenError('invalid type for opj: %s'% repr(a))
-    if not l:
-        return ''
-    return path('/'.join(l))
-##    if os.sep == '\\' and string.find(p, '\\'):
-##        return string.replace(p, '\\', '/')
-##    else:
-##        return p
 reNumberLike = re.compile(r'^[0-9.,]+$')
 def looksLikeNumber(t):
     """string looks like int or float, return 1
@@ -1881,7 +1716,7 @@ def isStringLike(anobj):
     >>> isStringLike(['a'])
     0
     """
-    if type(anobj) in (six.text_type, six.binary_type):
+    if type(anobj) in (str, bytes):
         return 1
     elif isinstance(anobj, path):
         return 1
@@ -1999,9 +1834,9 @@ def makeEmptyFolder(*args):
             pass
             continue
         if isStringLike(a):
-            if type(a) == six.binary_type:
+            if type(a) == bytes:
                 a = convertToUnicode(a)
-            a = a.replace('\\', '/') # make outside path instances!
+            a = str(a).replace('\\', '/') # make outside path instances!
         if isStringLike(a):
             if os.path.isdir(a):
                 if os.path.isdir(a):
@@ -2020,10 +1855,10 @@ def makeEmptyFolder(*args):
 
 def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minSize=None, reachMax=0, checkTime=None):
     """file is to be created, and needs an optional minimum file size
-
+    
     (.exe is created small and filled at the end of a long process)
     in kontrol.pyw, with the creation of sitegen.....exe
-
+    
     """
     if checkTime:
         now  = time.time()
@@ -2049,29 +1884,29 @@ def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minS
     if fileexists and filechanged and filelargeenough:
         if not filesizechecking:
             return
-
+    
     filesize = 0
     prevSize = 0
     nEqual = 0
 
     for i in range(60):  # max 3 minutes
         time.sleep(sleepTime)
-        if not silent: print(i)
+        if not silent: print(i) ###, end=' ') 
 
         exetime = getFileDate(filepath)
         filesize = getFileSize(filepath)
-
+        
         if not fileexists:
             if exetime:
                 fileexists = 1
-                if not silent: print('file now exists... ')
-            continue
+                if not silent: print('file now exists... ') ####, end=' ')
+            continue        
         if not filechanged:
             if exetime > checkTime:
                 filechanged = 1
                 if not silent:  print('file is changed... ')
             continue
-
+        
         if not filelargeenough:
             if filesize > minSize:
                 filelargeenough = 1
@@ -2088,7 +1923,7 @@ def waitForFileToComplete(filepath, sleepTime=5, extraTime=10, silent=None, minS
         if not silent:  print(('filesize stable: %s'% filesize))
         time.sleep(extraTime)
         return filepath
-
+                    
     time.sleep(sleepTime)
     if not silent: print(('waiting time expired, did not find file: %s\nfileexists: %s, filechanged: %s, filelargeenough: %s'% (filepath, fileexists, filechanged, filelargeenough)))
 
@@ -2108,7 +1943,7 @@ def createFolderIfNotExistent(*args):
     ... except OSError: pass
     >>> createFolderIfNotExistent(folderName)
     >>> folderName
-    u'C:/natlink/natlink/pytest/testutilsqh/qhtemp'
+    path('C:/Natlink/Natlink/PyTest/testutilsqh/qhtemp')
     >>> path(folderName).isdir()
     True
     >>> os.path.isdir(folderName)
@@ -2122,14 +1957,14 @@ def createFolderIfNotExistent(*args):
     """
     for a in args:
         if isStringLike(a):
-            if type(a) == six.binary_type:
+            if type(a) == bytes:
                 a = convertToUnicode(a)
             if isinstance(a, path):
                 a = str(a)
                 pass
         if not a:
             continue
-        elif type(a) == six.text_type:
+        elif type(a) == str:
             if os.path.isdir(a):
                 continue
             elif os.path.exists(a):
@@ -2172,21 +2007,21 @@ def touch(folder, *args):
     >>> makeEmptyFolder(folderName)
     >>> touch(folderName, 'a.ini')
     >>> os.listdir(folderName)
-    [u'a.ini']
+    ['a.ini']
     >>> touch(folderName, ['a.ini'])
     >>> os.listdir(folderName)
-    [u'a.ini']
+    ['a.ini']
     >>> touch(folderName, ('a.ini', 'b.ini'))
     >>> os.listdir(folderName)
-    [u'a.ini', u'b.ini']
+    ['a.ini', 'b.ini']
     >>> listOfNames = [os.path.join(folderName, 'a.ini'), os.path.join(folderName, 'c.ini')]
     >>> touch(listOfNames)
     >>> sorted(os.listdir(folderName))
-    [u'a.ini', u'b.ini', u'c.ini']
+    ['a.ini', 'b.ini', 'c.ini']
 
     """
     if isStringLike(folder):
-        if type(folder) == six.binary_type:
+        if type(folder) == bytes:
             folder = convertToUnicode(folder)
             folder = folder.replace('\\', '/')
 
@@ -2209,7 +2044,7 @@ def touch(folder, *args):
     for a in args:
         if not a:
             continue
-        if isinstance(a, six.text_type):
+        if isinstance(a, str):
             p = os.path.join(folder, a)
             touch(p)
 
@@ -2322,14 +2157,14 @@ def copyIfOutOfDate(inf, out, reverse=None):
             raise QHError('Cannot copy file %s to %s\n\nMogelijk is de uitvoerfile geopend. Soms moet je de computer opnieuw starten om deze melding kwijt te raken.\n\nMessage: %s' % (inf, out, exc_value))
         print('copied file %s to %s' % (inf, out))
     else:   # dateOut > dateIn!!
-        if filecmp.cmp(inf, out):
+        if filecmp.cmp(str(inf), str(out)):
             print('dateOut > dateIn, but equal, changing timestamps to "now" of \n%s and \n%s'% (inf, out))
             touch(out)
             touch(inf)
             return
-
+        
         if type(reverse) in (types.FunctionType, types.MethodType):
-##            print 'func reverse: %s'% reverse
+##            print('func reverse: %s'% reverse')
             p, shortname = os.path.split(inf)
             pr = 'file: %s\n\ntarget %s is newer than source: %s\n\ncopy target to source?\n\nDit is soms gevaarlijk. Kies "Nee" in twijfelgevallen en vraag zonodig QH.\n'% (shortname, out, inf)
             res = reverse(*(pr,))
@@ -2338,7 +2173,7 @@ def copyIfOutOfDate(inf, out, reverse=None):
                     shutil.copy2(out, inf)
                 except (IOError, OSError):
                     raise QHError('Cannot copy (back) file %s to %s\n\nWaarschijnlijk is de invoerfile geopend. Soms moet je de computer opnieuw starten om deze melding kwijt te raken.\n' % (inf, out))
-        ##                print 'answer was y'
+        ##                print('answer was y'')
             else:
                 return
         elif reverse:
@@ -2411,7 +2246,7 @@ def getFileSize(fileName):
     >>> #getFileDate(testdrive + "\\sites/qh/qhhtml.rc")
     # 1072694718 (not testable, changes all the time!)
     """
-
+    
     2138
     try:
         return int(round(os.path.getmtime(str(fileName))))
@@ -2447,7 +2282,7 @@ def compare_f2f(f1, f2):
             fp2.close()
     finally:
         fp1.close()
-
+        
 def IsIdenticalFiles(*files):
     if not files:
         return
@@ -2476,7 +2311,7 @@ def GetNewestFile(*files):
     return files[maxitem]
 
 
-
+    
 
 
 def splitall(path):
@@ -2484,27 +2319,27 @@ def splitall(path):
     see python cookbook 4.15
 
     >>> splitall('a/b/c')
-    [u'a', u'b', u'c']
+    ['a', 'b', 'c']
     >>> splitall ('/a/b/c/')
-    [u'/', u'a', u'b', u'c']
+    ['/', 'a', 'b', 'c']
     >>> splitall('')
     []
     >>> splitall('C:')
-    [u'C:']
-    >>> splitall(u'C:' + '\\\\')
-    [u'C:']
-    >>> splitall(u'C:' + '\\\\a')
-    [u'C:', u'a']
+    ['C:']
+    >>> splitall('C:' + '\\\\')
+    ['C:']
+    >>> splitall('C:' + '\\\\a')
+    ['C:', 'a']
     >>> splitall('C:/a')
-    [u'C:', u'a']
+    ['C:', 'a']
     >>> splitall('a\\\\b')
-    [u'a', u'b']
+    ['a', 'b']
     """
     allparts =[]
     path = path.replace('\\', '/')
     while 1:
         parts = os.path.split(path)
-
+        
         if parts[0] == path:
             toInsert = cleanupDrive(path)
             allparts.insert(0, toInsert)
@@ -2526,949 +2361,50 @@ def cleanupDrive(path):
         if path.endswith(':\\') or path.endswith(':/'):
             return path[:-1]
     return path
-
-## functions for generating alternative paths in virtual drives
-## uses reAltenativePaths, defined in the top of this module
-## put in utilsqh.py! used in sitegen AND in _folders.py grammar of Unimacro:
-# for alternatives in virtual drive definitions:
-reAltenativePaths = re.compile(r"(\([^|()]+?(\|[^|()]+?)+\))")
-
-def generate_alternatives(s):
-    m = reAltenativePaths.match(s)
-    if m:
-        alternatives = s[1:-1].split("|")
-        for item in alternatives:
-            yield item
-    else:
-        yield s
-
-def cross_loop_alternatives(*sequences):
-    if sequences:
-        for x in generate_alternatives(sequences[0]):
-            for y in cross_loop_alternatives(*sequences[1:]):
-                yield (x,) + y
-    else:
-        yield ()
-
-def loop_through_alternative_paths(pathdefinition):
-    """can hold alternatives (a|b)
->>> list(loop_through_alternative_paths("(C|D):/xxxx/yyyy"))
-[u'C:/xxxx/yyyy', u'D:/xxxx/yyyy']
->>> list(loop_through_alternative_paths("(C:|D:|E:)\Document(s|en)"))
-[u'C:\\\\Documents', u'C:\\\\Documenten', u'D:\\\\Documents', u'D:\\\\Documenten', u'E:\\\\Documents', u'E:\\\\Documenten']
-
-    so "(C|D):/natlink" returns first "C:/natlink" and then "D:/natlink".
-    with more alternatives more items are returned "(C:|D:|E:)\Document(s|en)"
-    """
-    m = reAltenativePaths.search(pathdefinition)
-    if m:
-        result = reAltenativePaths.split(pathdefinition)
-        result = [x for x in result if x and not x.startswith("|")]
-        for pathdef in cross_loop_alternatives(*result):
-            yield ''.join(pathdef)
-    else:
-        # no alternatives, simply yield the pathdefinition:
-        yield pathdefinition
-
-## for sitegen, also used in Unimacro, folders grammar (for sites, QH specific) and virtualdrive mechanism
-def getValidPath(variablePathDefinition):
-    """check the different alternatives of the definition
-
-    return the first valid path, None if not found
-    """
-    for p in loop_through_alternative_paths(variablePathDefinition):
-        if os.path.exists(p):
-            return path(p)
-def getValidPathUnicode(variablePathDefinition):
-    """check the different alternatives of the definition
-
-    return the first valid path, in unicode
-    """
-    for p in loop_through_alternative_paths(variablePathDefinition):
-        if os.path.exists(p):
-            resultP = p
-            break
-        else:
-            resultP = p
-    return resultP
-
-class PathError(Exception): pass
-
-class path(str):
-    """helper class for path functions
-
-    p.isdir, p.isfile, p.exists, p.isabs (absolute path), p.mtime (modification time),
-    p.split (in dirpart, filepart),    p.splitext (trunk, extension), p.splitall (dirpart, trunk, ext)
-    p.basename (filepart without directory),    p.normpath, p.remove,
-    p.rename,   p.rmtree (folder), p.mkdir,  p.copy, p.touch,
-    p.chdir, p.getcwd (changing and getting the working directory),
-    p.glob(pattern="*", keepAbs=1, makePath=1)
-    p.listdir(makePath=0) (giving all files in folder p)
-    p.walk(functionToDo, keepAbs=1, makePath=0)
-    p.internetformat, p.unix (for internet filenames)
-
-    p.encodePath, p.decodePath: file (dir)  (for gui)
-
-    See python cookbook 4.16
-    >>> import sys
-    >>> root = path(sys.prefix)
-    >>> sitepkgs = root/u'lib'/u'site-packages'
-    >>> sitepkgs
-    u'C:/python27/lib/site-packages'
-    >>> unicode(sitepkgs)
-    u'C:/python27/lib/site-packages'
-    >>> len(sitepkgs)
-    29
-
-    >>> sitepkgs.exists()
-    True
-    >>> sitepkgs.isdir()
-    True
-    >>> sitepkgs.isfile()
-    False
-    >>> file = root/'subfolder'/'trunc.txt'
-    >>> file.split()
-    (u'C:/python27/subfolder', u'trunc.txt')
-    >>> file.splitext()
-    (u'C:/python27/subfolder/trunc', u'.txt')
-    >>> file.splitall()
-    [u'C:', u'python27', u'subfolder', u'trunc.txt']
-    >>> file = root/'subfolder/trunc.txt'
-    >>> file.split()
-    (u'C:/python27/subfolder', u'trunc.txt')
-    >>> file.splitext()
-    (u'C:/python27/subfolder/trunc', u'.txt')
-    >>> L = file.splitall()
-    >>> L
-    [u'C:', u'python27', u'subfolder', u'trunc.txt']
-    >>> path(L)
-    u'C:/python27/subfolder/trunc.txt'
-    >>> path(L[0])/L[1:]
-    u'C:/python27/subfolder/trunc.txt'
-
-    >>> type(root)
-    <class 'utilsqh.path'>
-    >>> isStringLike(root)
-    1
-    >>> type(root/'test.txt')
-    <class 'utilsqh.path'>
-    >>> (root/'test.txt').isfile()
-    False
-
-
-    when a list is the constructor, the path is joined again:
-
-    >>> L = path('C:/a/b/c.txt').splitall()
-    >>> m = path(L)
-    >>> m
-    u'C:/a/b/c.txt'
-
-    # drive tests only first letter (Windows)
-    >>> path("C").isdrive()
-    True
-    >>> path("S").isdrive() # not existent
-    False
-    >>> path("C:/abacadabra").isdrive()
-    True
-    >>> path("C:/").isdrive()
-    True
-    >>> path("S:/abacadabra").isdrive()
-    False
-
-    # automatically try getValidPath if ( and ) are found:
-    >>> path("(C:|D:)").isdrive()
-    True
-    >>> path("(C|D):\\projects").isdir()
-    True
-
-
-
-    """
-    def __new__(self, val):
-        """this is the constructor for in new instance!
-
-        Perform the additional checks and only work with "/"
-
-        try all unicode:
-        >>> path([u'C:', u'projects'])
-        u'C:/projects'
-
-        small cases:
-
-        >>> path(u'')
-        u''
-        >>> path('.')
-        u''
-        >>> path('/')
-        u'/'
-        >>> path('../..')
-        u'../..'
-        >>> path('../../')
-        u'../..'
-        >>> path('C:/')
-        u'C:/'
-        >>> path('C:')
-        u'C:/'
-
-
-        """
-        if type(val) == list or type(val) == tuple:
-            v = '/'.join(val).replace('//', '/')
-            v = os.path.normpath(v).replace('\\', '/')
-        else:
-            if not val:
-                v = ''
-            else:
-                v = os.path.normpath(str(val)).replace('\\', '/')
-        while v.endswith('/.'):
-            v = v[:-2]
-        while v.startswith('./'):
-            v = v[2:]
-        if v == '.':
-            v = ''
-        if v.endswith(":"):
-            v += "/"
-        if len(v) > 1 and v[1] == ':':
-            v = v[0].upper() + v[1:]
-        if v.find("(") >= 0 and v.find(")") > 0:
-            if v.find('aba') > 0:
-
-                pass
-            v = getValidPathUnicode(v)
-        if type(v) == six.binary_type:
-            v = convertToUnicode(v)
-        return str.__new__(self, v)
-
-
-    # def __unicode__(self):
-    #     return unicode.__unicode__(self)
-    # def __repr__(self):
-    #     return unicode.__repr__(self)
-
-    def __eq__(self, other):
-        """compare normalised paths
->>> path(testdrive + r"\\abd\\def.ini") == testdrive + r"\\abd\\def.ini"
-True
->>> path(testdrive + r"\\abd\\def.ini") == path(testdrive + r"/abd/def.ini")
-True
->>> path(testdrive + r"\\abd\\def.ini") == path(testdrive + r"/other")
-False
-
-
-        """
-        if not isinstance(other, self.__class__):
-            if type(other) in (six.text_type, six.binary_type):
-                other = path(other)
-        return str(self).lower() == str(other).lower()
-
-
-    def __div__(self, other):
-        """make new instance with "/" operator
-
-        >>> v = path('c:/f')
-        >>> v/''
-        u'C:/f'
-        >>> v/'a/b/'
-        u'C:/f/a/b'
-        >>> v/'.'
-        u'C:/f'
-        >>> v/u'unicodepath.jpg'
-        u'C:/f/unicodepath.jpg'
-
-        side cases, in use with relpathdirs and relpathfiles:
-
-        >>> path('../'*1)/['a', 'b']
-        u'../a/b'
-        >>> path('../'*2)/[]
-        u'../..'
-        >>> path('../'*1)/['']
-        u'..'
-        >>> path('../'*0)/[]
-        u''
-        >>> path('../'*0)/['a','b']
-        u'a/b'
-
-        """
-        if not self:
-##            print 'path div, not self or .: return other'
-            return path(other)
-        elif other:
-            if type(other) == list or type(other) == tuple:
-                com = os.path.join(str(self), '/'.join(other))
-            else:
-                com = os.path.join(str(self), str(other))
-            return path(com)
-        else:
-            return self
-    ## for old fashioned division and new style:
-    __truediv__ = __div__
-
-    def __add__(self, other):
-        """make new instance just adding the string
-
-        >>> v = path('abc')
-        >>> v += 'd'
-        >>> v
-        u'abcd'
-
-        but only in the last part of the path. If "/" is found in 2nd part, then error
-        >>> path('a/b/c') + 'd'
-        u'a/b/cd'
-        >>> path('a/b') + 'd/e.txt'
-        Traceback (most recent call last):
-        PathError: no addition in path parts allowed a/b + d/e.txt
-
-        >>> v + 'xyz'
-        u'abcdxyz'
-        >>> type(v)
-        <class 'utilsqh.path'>
-
-
-        """
-        if other.find('/') >= 0 or other.find('\\') >= 0:
-            raise PathError('no addition in path parts allowed %s + %s'% (self, path(other)))
-        return path(str(self) + str(other))
-
-    def replace(self, tin, tout):
-        """replace function works on strings
->>> v = path('abc')
->>> b = path('b')
->>> x = path('xxx')
->>> v.replace(b, x)
-u'axxxc'
-
-
-        """
-        V = str(self).replace(str(tin), str(tout))
-        return path(V)
-
-    def mtime(self):
-        """give mod time"""
-        return getFileDate(str(self))
-
-    def isdir(self):
-        """wrapper for os.path functions"""
-        return os.path.isdir(self)
-
-    def isdrive(self, ):
-        """test if letter is a valid drive"""
-        if self:
-            return os.path.isdir(self[0]+":/")
-
-    def exists(self):
-        """wrapper for os.path functions"""
-        return os.path.exists(self)
-    def isfile(self):
-        """wrapper for os.path functions"""
-        return os.path.isfile(self)
-    def isabs(self):
-        """wrapper for os.path functions"""
-        return os.path.isabs(self)
-    def split(self):
-        """wrapper for os.path.split, returns path(first) and unicode(second)
-        """
-        s = os.path.split(str(self))
-        return path(s[0]), s[1]
-    def splitdirslisttrunkext(self):
-        """split into a list of directory parts, the file trunk and the file extension
-        """
-        L = self.splitall()
-        if not L:
-            return [], "", ""
-        if len(L) == 1:
-            trunk, ext = os.path.splitext(L[0])
-            return [], trunk, ext
-        else:
-            trunk, ext = os.path.splitext(L[-1])
-            return L[:-1], trunk, ext
-
-    def splitext(self):
-        return os.path.splitext(str(self))
-    def splitall(self):
-        """return list of all parts"""
-        L = str(self).split('/')
-        return L
-    def basename(self):
-        """gives basename
-
-        >>> path(u"C:/dropbox/website avp/invoer/1_informatie/t_Mijn gedicht/c_Gedicht 'littekens' juni 2013 (19).jpg").basename()
-        u"c_Gedicht 'littekens' juni 2013 (19).jpg"
-        >>> path(testdrive + r"/a/bcd.txt").basename()
-        u'bcd.txt'
-        """
-        fp = str(self)
-        basen = os.path.basename(fp)
-        return path(basen)
-
-    def getValidDirectory(self):
-        """return the first valid directory and the rest going steps back
-
-        a two length tuple (valid, rest) is returned.
-        if the directory is valid, the rest is ""
-
-        if not valid path is found, return (u'', input)
-
->>> path(testdrive).getValidDirectory()
-(u'C:/natlink/natlink/pytest/testutilsqh', u'')
->>> path(testdrive + r"/a/bcd.txt").getValidDirectory()
-(u'C:/natlink/natlink/pytest/testutilsqh', u'a/bcd.txt')
-
-# this one needs attention!!!  also see below:
->>> path("(C:|D:)/aba/cada/bra").getValidDirectory()
-(u'', u'D:/aba/cada/bra')
-
-## does not take C: drive here, but the "fall off" of the possibilities:
->>> path("(C|D):/testfile with (19) brackets.jpg").getValidDirectory()
-(u'', u'D:/testfile with (19) brackets.jpg')
-
->>> path("testfile with (19) brackets.jpg").getValidDirectory()
-(u'', u'testfile with (19) brackets.jpg')
-
-        """
-        if self.isdir():
-            return self, ""
-        parts = self.splitall()
-        popped = []
-        while parts:
-            popped.insert(0, parts.pop())
-            newdir = '/'.join(parts)
-            if os.path.isdir(newdir):
-                return path(newdir), "/".join(popped)
-            else:
-                validP = getValidPath(newdir)
-                if validP:
-                    return validP, "/".join(popped)
-
-        return path(""), "/".join(popped)
-
-    def relpath(self, startPath):
-        """get relative path, starting with startPath
->>> testpath = path("(C|D):/projects/unittest")
->>> startpath = path("(C|D):/projects")
->>> testpath.relpath(ur"C:\projects\\\\")
-u'unittest'
->>> testpath.relpath(startpath)
-u'unittest'
-
-        """
-        if not isinstance(startPath, self.__class__):
-            startPath = path(startPath)
-        startString, selfString =str(startPath), str(self)
-        lenStart = len(startString) + 1 # 1 for the / or \
-        if selfString.startswith(startString):
-            return selfString[lenStart:]
-        else:
-            return self
-
-    def relpathto(self, newPath):
-        """get relative path of newPath, truncating self
-
->>> testpath = path("(C|D):/projects/unittest")
->>> startpath = path("(C|D):/projects")
->>> startpath.relpathto(testpath)
-u'unittest'
->>> startpath.relpathto(u"F:/projects/unexisting")
-u'F:/projects/unexisting'
-
-        """
-        if not isinstance(newPath, self.__class__):
-            newPath = path(newPath)
-        startString, newString =str(self), str(newPath)
-        lenStart = len(startString) + 1 # 1 for the / or \
-        if newString.startswith(startString):
-            return newString[lenStart:]
-        else:
-            return newString
-
-    def normpath(self):
-        """ return normalised path as string
-        """
-        return os.path.normpath(str(self))
-
-    def remove(self):
-        """removal of file
-
-        """
-        if self.isfile():
-            os.remove(str(self))
-        elif self.exists():
-            raise PathError('remove only for files, not for: %s'% (self))
-
-    def rename(self, other):
-        """rename
-        """
-        os.rename(str(self), str(other))
-
-    def rmtree(self, ignore=None):
-        """remove whole folder tree
-        possibly ignoring items from a list ([".svn"]) as folder names
-
-
-        """
-        if self.isdir():
-            if ignore:
-                for f in self.listdir():
-                    f2 = self/f
-                    if f2.isdir():
-                        if f in ignore:
-                            continue
-                        else:
-                            f2.rmtree(ignore=ignore)
-                    else:
-                        f2.remove()
-            else:
-                shutil.rmtree(str(self))
-        elif self.exists():
-            raise PathError('rmtree only for folders, not for: %s'% (self))
-        else:
-            raise PathError('output folder does not exist: %s'% (self))
-
-    def mkdir(self, newpath=None):
-        """make new folder, only if it does not exist yet
-
-        """
-        if newpath:
-            createFolderIfNotExistent(self/newpath)
-        else:
-            createFolderIfNotExistent(self)
-
-    def copy(self, out):
-        """copy file"""
-        if self.isfile():
-            try:
-                shutil.copy2(str(self), str(out))
-            except OSError:
-                raise PathError('cannot copy file %s to %s' % (self, out))
-        elif self.isdir():
-            if path(out).isdir():
-                try:
-                    shutil.rmtree(str(out))
-                except OSError:
-                    raise PathError('cannot remove previous dir: %s' % out)
-            try:
-                shutil.copytree(str(self), str(out))
-            except OSError:
-                raise PathError('cannot copy folder %s to %s' % (self, out))
-    def move(self, out):
-        """move file"""
-        if self.isfile():
-            if path(out).isdir():
-                try:
-                    shutil.move(str(self), str(out))
-                except OSError:
-                    raise PathError('cannot move file %s to %s' % (self, out))
-            elif path(out).exists():
-                raise PathError('cannot move file %s to %s, not a directory' % (self, out))
-            else:
-                try:
-                    shutil.move(str(self), str(out))
-                except OSError:
-                    raise PathError('cannot move file %s to %s' % (self, out))
-        elif not self.exists():
-            raise PathError('sourcefile of move does not exist: %s'% self)
-
-        elif self.isdir():
-            raise PathError('move not implemented for source directories')
-        else:
-            raise PathError('move not implemented for else clause')
-
-
-    def copywithoutsvn(self, outPath):
-        """copy file, leave svn intact"""
-        outPath = path(outPath)
-        if outPath.isdir():
-            outPath.rmtree(ignore=[".svn"])
-        else:
-            outPath.mkdir()
-
-        allFiles = self.listdir()
-        for f in allFiles:
-            if (self/f).isdir():
-                if f == '.svn':
-                    continue
-                subdir = self/f
-                subOut = outPath/f
-                subdir.copywithoutsvn(subOut)
-            else:
-                (self/f).copy(outPath/f)
-
-    def touch(self):
-        """mark file or touch date
-
-        # >>> p = path(getValidPath('(C|D)/projects/unittest/aaa.txt'))
-        # >>> p.touch()
-        # >>> p.isfile()
-        # True
-        # >>> p.remove()
-        # >>> p.isfile()
-        # False
-        """
-        touch(self)
-
-    def chdir(self):
-        """change directory
-
->>> makeEmptyFolder('C:/temp')
->>> p = path('c:/temp')
->>> p.chdir()
->>> p.getcwd()
-u'C:/temp'
-
-
-        """
-        os.chdir(str(self))
-
-    def getcwd(self):
-        """get working directory
-
-        see above"""
-        return path(os.getcwd())
-
-    def glob(self, pattern="*", keepAbs=1, makePath=1):
-        """glob a path, default = "*"
-
-        default options: give absolute paths as path instances
-        Use listdir if you want all files relative to the path
-
-
->>> folderName = path(testdrive + '/qhtemp')
->>> makeEmptyFolder(folderName)
->>> touch(folderName, 'a.ini', 'b.txt')
->>> g = folderName.glob()
->>> [f.replace(testdrive, 'XXX') for f in g]
-[u'XXX/qhtemp/a.ini', u'XXX/qhtemp/b.txt']
->>> type(g[0])
-<class 'utilsqh.path'>
->>> g = folderName.glob('*.txt', keepAbs=0)
->>> g
-[u'b.txt']
->>> type(g[0])
-<class 'utilsqh.path'>
->>> g = folderName.glob('*.txt', keepAbs=0, makePath=0)
->>> g
-[u'b.txt']
->>> type(g[0])
-<type 'unicode'>
-
-
-        """
-        if not self.isdir():
-            raise PathError("glob must start with folder, not with: %s"% self)
-        L = glob.glob(str(self/pattern))
-        return self._manipulateList(L, keepAbs, makePath)
-
-    def listdir(self):
-        """give list relative to self, default unicodes, not path instances!
-
-        >>> folderName = path(testdrive + '/qhtemp')
-        >>> makeEmptyFolder(folderName)
-        >>> touch(folderName, 'a.ini', 'b.txt')
-        >>> L = path(folderName).listdir()
-        >>> L
-        [u'a.ini', u'b.txt']
-        >>> type(L[0])
-        <type 'unicode'>
-
-        """
-        if not self.isdir():
-            raise PathError("listdir only works on folders, not with: %s"% self)
-        L = os.listdir(self)
-        # note keepAbs is a formality here, listdir gives relative files only:
-        return L
-
-
-    def walk(self, functionToDo, keepAbs=1, makePath=0):
-        """return the arg list when walking self
-
-        assume arg is a list,
-        functionToDo must use exactly 3 parameters,
-        1 list "arg"
-        2 dirname
-        3 list of filenames
-        path(testdrive + "/projects").walk(testWalk, keepAbs=1, makePath=0)
-
-        optional parameters:
-        keepAbs: 1 (default) do nothing with the resulting paths
-                 0: strip off the prefix, being the calling instance
-        makePath 0 (default) do not to do this
-                 1: make the resulting items path instances
-
-        setting up the files:
-#
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> makeEmptyFolder(folderName/"afolder")
-# >>> makeEmptyFolder(folderName/"bfolder")
-# >>> touch(folderName, 'f.ini', 'ff.txt')
-# >>> touch(folderName/"afolder", 'aa.ini')
-# >>> touch(folderName/"bfolder", 'b.ini', 'bb.txt')
-#
-# trying the first test walk:
-#
-# >>> L = folderName.walk(testWalk)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# [u'XXX/qhtemp', u'afolder', u'bfolder', u'f.ini', u'ff.txt', u'XXX/qhtemp/afolder', u'aa.ini', u'XXX/qhtemp/bfolder', u'b.ini', u'bb.txt']
-# >>> L = folderName.walk(testWalk, keepAbs=0)
-# Traceback (most recent call last):
-# PathError: path._manipulateList with keepAbs: 0, 7 items of the list do not have XXX/qhtemp as start
-# >>> L = folderName.walk(testWalk, keepAbs=1, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# [u'XXX/qhtemp', u'afolder', u'bfolder', u'f.ini', u'ff.txt', u'XXX/qhtemp/afolder', u'aa.ini', u'XXX/qhtemp/bfolder', u'b.ini', u'bb.txt']
-#
-# trying the second test walk:
-#
-# >>> L = folderName.walk(testWalk2, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# [u'XXX/qhtemp/afolder', u'XXX/qhtemp/bfolder', u'XXX/qhtemp/f.ini', u'XXX/qhtemp/ff.txt', u'XXX/qhtemp/afolder/aa.ini', u'XXX/qhtemp/bfolder/b.ini', u'XXX/qhtemp/bfolder/bb.txt']
-# >>> L = folderName.walk(testWalk2, keepAbs=0, makePath=1)
-#
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# [u'afolder', u'bfolder', u'f.ini', u'ff.txt', u'afolder/aa.ini', u'bfolder/b.ini', u'bfolder/bb.txt']
-#
-# third test, skip folders, note the list is path instances now,
-# converted back to strings or not by the parameter makePath:
-#
-# >>> L = folderName.walk(walkOnlyFiles, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# [u'XXX/qhtemp/f.ini', u'XXX/qhtemp/ff.txt', u'XXX/qhtemp/afolder/aa.ini', u'XXX/qhtemp/bfolder/b.ini', u'XXX/qhtemp/bfolder/bb.txt']
-# >>> folderName.walk(walkOnlyFiles, keepAbs=0, makePath=1)
-# [u'f.ini', u'ff.txt', u'afolder/aa.ini', u'bfolder/b.ini', u'bfolder/bb.txt']
-#
-
-        """
-        arg = []
-        if not self.isdir():
-            raise PathError("walk must start with folder, not with: %s"% self)
-        os.path.walk(str(self), functionToDo, arg)
-        return self._manipulateList(arg, keepAbs, makePath)
-
-    def _manipulateList(self, List, keepAbs, makePath):
-        """helper function for treating a result of listdir or glob
-
->>> folderName = path(testdrive + '/qhtemp')
->>> makeEmptyFolder(folderName)
->>> touch(folderName, 'a.ini', 'b.txt')
->>> L = [folderName/'a.ini', folderName/'b.txt']
->>> F = folderName._manipulateList(L, keepAbs=1, makePath=0)
->>> [f.replace(testdrive, 'XXX') for f in F]
-[u'XXX/qhtemp/a.ini', u'XXX/qhtemp/b.txt']
->>> type(F[0])
-<type 'unicode'>
->>> F = folderName._manipulateList(L, keepAbs=1, makePath=1)
->>> [f.replace(testdrive, 'XXX') for f in F]
-[u'XXX/qhtemp/a.ini', u'XXX/qhtemp/b.txt']
-
->>> type(F[0])
-<class 'utilsqh.path'>
->>> F = folderName._manipulateList(L, keepAbs=0, makePath=0)
->>> F
-[u'a.ini', u'b.txt']
->>> type(F[0])
-<type 'unicode'>
->>> F = folderName._manipulateList(L, keepAbs=0, makePath=1)
->>> F
-[u'a.ini', u'b.txt']
->>> type(F[0])
-<class 'utilsqh.path'>
->>> L = [folderName/'a.ini', 'b.txt']
->>> F = folderName._manipulateList(L, keepAbs=1, makePath=1)
->>> [f.replace(testdrive, 'XXX') for f in F]
-[u'XXX/qhtemp/a.ini', u'b.txt']
-
-        """
-        if not List:
-            return List
-        L = List[:]
-        if not keepAbs:
-            # make relative:
-            length = len(self)
-            unicodePath = str(self)
-            if not self.endswith("/"):
-                length += 1
-            L = [k[length:] for k in L if k.find(unicodePath) == 0]
-            if len(L) !=len(List):
-                raise PathError("path._manipulateList with keepAbs: %s, %s items of the list do not have %s as start"%
-                                (keepAbs, len(List)-len(L), self))
-
-        if makePath:
-            return list(map(path, L))
-        else:
-            return list(map(str, list(map(path, L))))
-
-    def internetformat(self):
-        """convert to file:/// and fill with %20 etc
->>> p =  path(testdrive + "/a/b.html").internetformat()
->>> p.replace(testdrive, "XXX")
-u'file:///XXX/a/b.html'
->>> p = path(testdrive + "/a/a b.html").internetformat()
->>> p.replace(testdrive, "XXX")
-u'file:///XXX/a/a%20b.html'
->>> path("a/b c.html").internetformat()
-u'a/b%20c.html'
->>> p = path(testdrive + "\").internetformat()
->>> p.replace(testdrive, "XXX")
-u'file:///XXX'
-
-seems to happen too:
-
->>> path('file:/C:/a/b.html').internetformat()
-u'file:///C:/a/b.html'
-
-        see testing in testPath
-
-        """
-        if self.startswith("file:///"):
-            return str(self)
-        elif len(self) > 2 and self[1:3] == ":/":
-            start, rest = self[0], self[3:]
-            return 'file:///'+start.upper() + ":/" + self._quote_rest(rest)
-        elif self.startswith("file:/") and len(self) > 9:
-            start, letter, colonslash, rest = self[:5], self[6], self[7:9], self[9:]
-            if str(letter).isalpha() and colonslash == ':/':
-                return 'file:///' + letter.upper() + colonslash + self._quote_rest(rest)
-            else:
-                return str(self)
-        else:
-            return self._quote_rest(str(self))
-
-    def _quote_rest(self, restofurl):
-        """for internetformat above"""
-
-        restList = restofurl.split("/")
-        quotedList = list(map(urllib.parse.quote, restList))
-        return "/".join(quotedList)
-
-    def unix(self, glueChar="", lowercase=1, canHaveExtension=1, canHaveFolders=1):
-        """convert to unixlike name
-
-        no leading - or 0-9, put a _ in front
-        no other characters than [a-zA-Z0-9_] allowed
-
-        with lowercase = 0 uppercase is preserved. (Default = 1,
-                           convert all to lowercase
-
-        if there are folders (and canHaveFolders=1), the folder parts are always
-        converted with canHaveExtension=0
-
-        the extension is always converted to lowercase.
-        also see toUnixName above.
-
-# with e acute and a with dots acute \\ for doctest!!
->>> p = path(testdrive + u'/zzz \\u00E9U\\u00e4df').unix()
->>> p.replace(testdrive, "XXX")
-u'XXX/zzzeuadf'
-
-
->>> path('aap').unix()
-u'aap'
->>> path('aap.jpg').unix()
-u'aap.jpg'
->>> path('AAP.jpg').unix()
-u'aap.jpg'
->>> path('AAP.JPG').unix(lowercase=0)      # extension is always converted
-u'AAP.jpg'
->>> path('A 800-34.jpg').unix()
-u'a800-34.jpg'
->>> p = path(testdrive + "/A?Bc/C- - +    98/A .txt").unix()
->>> p.replace(testdrive, "XXX")
-u'XXX/abc/c--98/a.txt'
-
-
-# path starting with a digit:
->>> p = path(testdrive + "/3d/4a.txt").unix()
->>> p.replace(testdrive, "XXX")
-u'XXX/_3d/_4a.txt'
-
->>> p = path(testdrive + "/-3d/-4a.txt").unix()
->>> p.replace(testdrive, "XXX")
-u'XXX/_-3d/_-4a.txt'
-
-        """
-        visible = str(self)
-        return path(toUnixName(str(self), glueChar=glueChar,
-                               lowercase=lowercase,
-                               canHaveExtension=canHaveExtension,
-                               canHaveFolders=canHaveFolders))
-
-
-    def replaceExt(self, ext):
-        """replace extension, sometimes because of uppercase
-
-        """
-        return path(replaceExt(self, ext))
-
-    def getExt(self):
-        """return the extension (including the .) or empty string if no extension
-        """
-        return getExt(self)
-
-    def hasExt(self):
-        """return true if name has an extension
-        """
-        return getExt(self) != ""
-
-    def encodePath(self):
-        """encode to file (dir)
-
-        used in gui inputoutput and kontrol (minimal)
-
->>> path(testdrive + "/a/b.txt").encodePath()
-u'b.txt (C:/natlink/natlink/pytest/testutilsqh/a)'
->>> path("b.txt").encodePath()
-u'b.txt ()'
-
-        """
-        Folder, File = self.split()
-        return '%s (%s)'% (File, Folder)
-
-def decodePath(text):
-    """decode to path (file or dir)
-
->>> decodePath('b.txt (C:/a)')
-u'C:/a/b.txt'
->>> decodePath('b.txt ()')
-u'b.txt'
->>> decodePath(' (C:/)')
-u'C:/'
-
-
-        Return a path instance
-    """
-    if '(' not in text:
-        return str(text)
-
-    t = str(text)
-    File, Folder = t.split('(', 1)
-    Folder = Folder.rstrip(')')
-    Folder = Folder.strip()
-    File = File.strip()
-    return path(Folder)/File
-
-def decodePathTuple(text):
-    """decode to path (file or dir) Total, Folder, File
-
->>> decodePathTuple('b.txt (C:/a)')
-(u'C:/a/b.txt', u'C:/a', u'b.txt')
->>> decodePathTuple('b.txt ()')
-(u'b.txt', u'', u'b.txt')
->>> decodePathTuple(' (C:/)')
-(u'C:/', u'C:/', u'')
-
-
-        Return a path instance
-    """
-    if '(' not in text:
-        return str(text)
-
-    t = str(text)
-    File, Folder = t.split('(', 1)
-    Folder = Folder.rstrip(')')
-    Folder = Folder.strip()
-    File = File.strip()
-    return path(Folder)/File, path(Folder), path(File)
-
-
-
+# 
+# ## functions for generating alternative paths in virtual drives
+# ## uses reAltenativePaths, defined in the top of this module
+# ## put in utilsqh.py! used in sitegen AND in _folders.py grammar of Unimacro:
+# # for alternatives in virtual drive definitions:
+# reAltenativePaths = re.compile(r"(\([^|()]+?(\|[^|()]+?)+\))")
+# 
+# def generate_alternatives(s):
+#     m = reAltenativePaths.match(s)
+#     if m:
+#         alternatives = s[1:-1].split("|")
+#         for item in alternatives:
+#             yield item
+#     else:
+#         yield s
+#         
+# def cross_loop_alternatives(*sequences):
+#     if sequences:
+#         for x in generate_alternatives(sequences[0]):
+#             for y in cross_loop_alternatives(*sequences[1:]):
+#                 yield (x,) + y
+#     else:
+#         yield ()
+# 
+# def loop_through_alternative_paths(pathdefinition):
+#     """can hold alternatives (a|b)
+# >>> list(loop_through_alternative_paths("(C|D):/xxxx/yyyy"))
+# ['C:/xxxx/yyyy', 'D:/xxxx/yyyy']
+# >>> list(loop_through_alternative_paths("(C:|D:|E:)\Document(s|en)"))
+# ['C:\\\\Documents', 'C:\\\\Documenten', 'D:\\\\Documents', 'D:\\\\Documenten', 'E:\\\\Documents', 'E:\\\\Documenten']
+# 
+#     so "(C|D):/natlink" returns first "C:/natlink" and then "D:/natlink".
+#     with more alternatives more items are returned "(C:|D:|E:)\Document(s|en)"
+#     """
+#     m = reAltenativePaths.search(pathdefinition)
+#     if m:
+#         result = reAltenativePaths.split(pathdefinition)
+#         result = [x for x in result if x and not x.startswith("|")]
+#         for pathdef in cross_loop_alternatives(*result):
+#             yield ''.join(pathdef)
+#     else:
+#         # no alternatives, simply yield the pathdefinition:
+#         yield pathdefinition
+#         
 
 class intarray(dict):
     """array of something, for counting totals
@@ -3479,8 +2415,8 @@ class intarray(dict):
     are made!
     ??? where used??? QH
 >>> a = intarray()
->>> unicode(a)
-u'{}'
+>>> a
+{}
 >>> print(a.strarray())
    -
 >>> print(a.strarray(a.totalsarray()))
@@ -3490,14 +2426,14 @@ u'{}'
        0   0
 
 >>> a[3][2] = 1
->>> unicode(a)
-u'{0: {}, 3: {2: 1}}'
->>> unicode(a[3])
-u'{2: 1}'
->>> unicode(a[0])
-u'{}'
->>> unicode(a[2][1])
-u'None'
+>>> a
+{0: {}, 3: {2: 1}}
+>>> a[3]
+{2: 1}
+>>> a[0]
+{}
+>>> print(a[2][1])
+None
 
 valid entry checking:
 >>> a.hasvalue(5,0)
@@ -3669,15 +2605,20 @@ def justify(s):
 def emptyFolders(arg, dirname, filenames):
     """return a list of empty folders through path.walk()
 
-    ignore .svn folders...
-
 >>> makeEmptyFolder(testdrive + r"\\empty")
->>> makeEmptyFolder(testdrive + r"\\empty\\empty2")
->>> makeEmptyFolder(testdrive + r"\\empty\\empty2\\empty3")
->>> makeEmptyFolder(testdrive + r"\\empty\\notempty")
->>> touch(testdrive + r"\\empty\\notempty\\a.txt")
->>> print path(testdrive + r"\\empty").walk(emptyFolders)
-[u'C:/natlink/natlink/pytest/testutilsqh/empty/empty2', u'C:/natlink/natlink/pytest/testutilsqh/empty/empty2/empty3']
+
+# >>> makeEmptyFolder(testdrive + r"\\empty\\empty2")
+# >>> makeEmptyFolder(testdrive + r"\\empty\\empty2\\empty3")
+# >>> makeEmptyFolder(testdrive + r"\\empty\\notempty")
+# >>> touch(testdrive + r"\\empty\\notempty\\a.txt")
+
+>>> testpath = path(testdrive + "/empty")
+>>> testpath.isdir()
+True
+
+## walk must be examined again: (QH)
+# >>> print(testpath.walk(emptyFolders))
+# ['C:/natlink/natlink/pytest/testutilsqh/empty/empty2', 'C:/natlink/natlink/pytest/testutilsqh/empty/empty2/empty3']
 
 """
     if not filenames:
@@ -3720,7 +2661,7 @@ def walkOnlyFiles(arg, dir, files):
         if dirplusf.isdir():
             continue
         arg.append(dirplusf)
-
+        
 def collectPsdFiles(arg, dir, files):
     """collect only .psd files"""
     ext = '.psd'
@@ -3762,10 +2703,10 @@ def getRoot(*rootList):
     note: the double \\ is here needed for doctest only!
 
     >>> getRoot(u"C:\\program files", r'd:\\sites', '/usr/lib')
-    u'C:/program files'
+    path('C:/Program Files')
     >>> p = getRoot(testdrive, testdrive + r'\\temp', testdrive + r'\\windows\\temp', r'c:\\winnt\\temp', testdrive + '/projects')
-    >>> p.replace(testdrive, 'XXX')
-    u'XXX'
+    >>> p
+    path('C:/Natlink/Natlink/PyTest/testutilsqh')
 
     """
     for d in rootList:
@@ -3787,13 +2728,13 @@ def fixCrLf(tRaw):
         print('readAnything, fixCrLf: fix crcrlf')
         tRaw = tRaw.replace(b'\r\r\n', b'\r\n')
     if b'\r' in tRaw:
-        # print 'readAnything, fixCrLf, remove cr'
+        # print('readAnything, fixCrLf, remove cr'')
         tRaw = tRaw.replace(b'\r', b'')
     return tRaw
 
 def makeReadable(t):
     """squeeze text for readability
-
+    
     helper for print lines...
     """
     t = t.strip()
@@ -3802,16 +2743,16 @@ def makeReadable(t):
         return t[:50] + ' ... ' + t[-50:]
     else:
         return t
-
+        
 # def openAnything(source, filetype=None, tryAlternatives=True):
 #     """URI, filename, or string --> stream
-#
+# 
 #     This function lets you define parsers that take any input source
 #     (URL, pathname to local or network file, or actual data as a string)
 #     and deal with it in a uniform manner.  Returned object is guaranteed
 #     to have all the basic stdio read methods (read, readline, readlines).
 #     Just .close() the object when you're done with it.
-#
+# 
 # Taken from Mark Pilgrim, book dive into python!
 # >>> sock = openAnything('hello world')
 # >>> print sock.read()
@@ -3820,60 +2761,60 @@ def makeReadable(t):
 # >>> for l in sock:
 # ...     print l
 # hello world
-#
+# 
 # Make a short testfile and read it back:
-#
+# 
 # >>> sock = open(testdrive + r'\\temp\\test.txt', 'w')
 # >>> sock.write('one\\ntwo\\n    three')
 # >>> sock.close()
 # >>> sock = openAnything(testdrive + r'\\temp\\test.txt')
-#
+# 
 # Read back:
-#
+# 
 # >>> for l in sock:
 # ...     print l.rstrip()
 # one
 # two
 #     three
-#
+# 
 # Or in a one liner:
-#
+# 
 # >>> for l in openAnything(testdrive + r'\\temp\\test.txt'):
 # ...     print l.rstrip()
 # one
 # two
 #     three
-#
+# 
 # now just a string:
-#
+# 
 # >>> for l in openAnything('just a string'):
 # ...     print l.rstrip()
 # just a string
-#
-#
+# 
+# 
 #     """
 #     try:
 #         sourceslash = source.replace('\\', '/')
 #     except AttributeError:
 #         sourceslash = source
-#
+#         
 #     if hasattr(source, "read"):
 #         return source
-#
+# 
 #     if source == "-":
 #         import sys
 #         return sys.stdin
-#
+# 
 #     # try to open with urllib (if source is http, ftp, or file URL)
 #     import urllib
 #     try:
 #         return urllib.urlopen(sourceslash)
 #     except (IOError, OSError):
 #         pass
-#
+# 
 #     # if not ascii, it seems that sometimes a file is recognised as ISO-8859-2, while it is
 #     # utf-8. Therefore more filetypes are tried in this case:
-#
+# 
 #     # try to open with native open function (if source is pathname)
 #     try:
 #         fopen = open(sourceslash)
@@ -3884,12 +2825,12 @@ def makeReadable(t):
 #             try:
 #                 tDecoded = t.decode(filetype)
 #             except UnicodeDecodeError:
-#                 print 'not a %s type file: %s'% (filetype, sourceslash)
+#                 print('not a %s type file: %s'% (filetype, sourceslash)')
 #                 if filetype != 'utf-8':
-#                     print '---try utf-8 instead---'
+#                     print('---try utf-8 instead---'')
 #                     return openAnything(sourceslash, filetype='utf-8')
 #                 else:
-#                     print 'continue with %s decoded text for file %s'% ('utf-8', sourceslash)
+#                     print('continue with %s decoded text for file %s'% ('utf-8', sourceslash)')
 #             tout = []
 #             alternativeFiletypes = ['latin-1', 'utf-8', 'ascii']
 #             alternativeFiletypes = [a for a in alternativeFiletypes if a != filetype]
@@ -3899,38 +2840,38 @@ def makeReadable(t):
 #                         try:
 #                             tout.append(htmlencode.htmlencode(c))
 #                             if c == '&' and reportAmpersand:
-#                                 print '& found, possibly a double encoding, please check file'
+#                                 print('& found, possibly a double encoding, please check file'')
 #                                 reportAmpersand = False
 #                         except (UnicodeEncodeError, KeyError):
 #                             if tryAlternatives:
-#                                 print 'Encoding error, possibly wrong guess of filetype for decoding: %s,\n  file: %s'% (filetype, sourceslash)
+#                                 print('Encoding error, possibly wrong guess of filetype for decoding: %s,\n  file: %s'% (filetype, sourceslash)')
 #                                 for alternativeFiletype in alternativeFiletypes:
 #                                     try:
 #                                         tDecoded = t.decode(alternativeFiletype)
 #                                     except UnicodeDecodeError:
-#                                         print '--- Alternative decoding %s does not work, skip character %s'% (alternativeFiletype, repr(c))
+#                                         print('--- Alternative decoding %s does not work, skip character %s'% (alternativeFiletype, repr(c))')
 #                                     else:
-#                                         print '--- Go on with alternative filetype "%s" instead of filetype: "%s"\n    (file: %s)'% (
+#                                         print('--- Go on with alternative filetype "%s" instead of filetype: "%s"\n    (file: %s)'% (')
 #                                             alternativeFiletype, filetype, sourceslash)
 #                                         return openAnything(sourceslash, filetype=alternativeFiletype, tryAlternatives=False)
-#                                 print 'no alternative coding found, continue with errors'
+#                                 print('no alternative coding found, continue with errors'')
 #                                 tryAlternatives = False
 #                                 fragment = ''.join(tout[:-20])
-#                                 print 'skip character at position %s, could not be encoded: %s (fragment left: %s)' (i, repr(c), fragment)
+#                                 print('skip character at position %s, could not be encoded: %s (fragment left: %s)' (i, repr(c), fragment)')
 #                     source = ''.join(tout)
 #     except OSError:
-#         # print 'OSError'
+#         # print('OSError'')
 #         pass
 #     except IOError:
 #         # print "IOError"
 #         pass
 #     # treat source as string, so now always return as a stri
 #     import StringIO
-#     return StringIO.StringIO(unicode(source))
+#     return StringIO.StringIO(source)
 
 
 def checkKnownTest(basis, known="known", test="test", **kw):
-
+    
     """test a test folder against a known folder, interactive decisions
 
     Give the basis, "test" must exist as sub folder, "known" is created
@@ -3954,8 +2895,8 @@ def checkKnownTest(basis, known="known", test="test", **kw):
     basis = path(basis)
     ignore = kw.get("ignore", None)
     hide = kw.get("hide", None)
-    if basis.find(' ') >= 0:
-        raise Exception('for windiff, no spaces in path allowed: %s'% basis)
+    if str(basis).find(' ') >= 0:
+        raise ValueError('for windiff, no spaces in path allowed: %s'% basis)
 
     if not basis.isdir():
         raise IOError('not a folder: %s'% basis)
@@ -4071,8 +3012,8 @@ def checkKnownTestFiles(known, test, **kw):
 
 
 
-## keep locale characters intact...
-reCharsSpaces = re.compile(r'[^\w -]')
+## keep locale characters intact... not LOCALE any more?
+reCharsSpaces = re.compile(r'[^\w -]') ###, re.L)
 
 def normaliseLabel(label):
     """lowercase if input is lowercase or capitalized or all uppercase
@@ -4080,19 +3021,19 @@ def normaliseLabel(label):
     remove double spaces and invalid character is
 
 >>> normaliseLabel(' hello      there  ')
-u'hello there'
+'hello there'
 >>> normaliseLabel('Hello there')
-u'hello there'
+'hello there'
 >>> normaliseLabel('hello There')
-u'hello there'
+'hello there'
 >>> normaliseLabel('15 - 30m')
-u'15 - 30m'
+'15 - 30m'
 >>> normaliseLabel('<15m')
-u'15m'
+'15m'
 >>> normaliseLabel('Prijs:')
-u'prijs'
+'prijs'
 >>> normaliseLabel('idee\\xebn:')
-u'idee\\xebn'
+'idee\\xebn'
 
     """
     L = ' '.join(label.strip().split())
@@ -4100,6 +3041,12 @@ u'idee\\xebn'
     L = reCharsSpaces.sub('', L).strip()
     return L
 
+def opj(*args):
+    """shorthand for os.path.join:
+>>> opj("C:", "test", "aap.txt")
+'C:test\\\\aap.txt'
+    """
+    return os.path.join(*args)
 
 def YesNo(prompt, frame=None):
     if frame:
@@ -4125,11 +3072,8 @@ def revAbort(t):
     return
 
 def _test():
-    import doctest, utilsqh
-    importlib.reload(utilsqh)
-
-    doctest.master = None
-    return  doctest.testmod(utilsqh)
+    import doctest
+    return  doctest.testmod()
 
 def runPanel(frame, notebook):
     print('starting cp %s'% __name__)
@@ -4140,7 +3084,7 @@ def runPanel(frame, notebook):
     return cp
 
 #def runIsValidWindow(h):
-#    print 'isValidWindow: %s, %s'% (h, isValidWindow(h))
+#    print('isValidWindow: %s, %s'% (h, isValidWindow(h))')
 def runGetProcIdFromWnd(h):
     print('whndle:%s, processid: %s'% (h, GetProcIdFromWnd(h)))
 
@@ -4165,4 +3109,16 @@ if __name__ == "__main__":
     ### werkt nog niet...
     #runIsValidWindow(1234567)
     #runGetProcIdFromWnd(461648)
-    #killProcIdFromWnd(461648)
+    #killProcIdFromWnd(461648
+    # lines = ['line1', '', 'line2 (last)']
+    # it = peek_ahead_stripped(lines)
+    # for spaces, text in it:
+    #     print('current line: |', text, '|', end=' ')
+    #     if it.preview is it.sentinel:
+    #         print(', cannot preview, end of peek_ahead_stripped')
+    #     elif it.preview[1]:
+    #         print(', non empty preview: |', it.preview[1], '|')
+    #     else:
+    #         print(', empty preview')
+    #     peekone = it.peek(1)
+    #     print('peekone', peekone)

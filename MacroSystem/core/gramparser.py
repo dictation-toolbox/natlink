@@ -49,13 +49,17 @@
 #       noise words is filtered out from any results reported to clients.
 # 
 ########################################################################
-import six
 from struct import pack
-import re, sys, os, os.path, traceback
+import re
+import sys
+import os
+import os.path
+import traceback
 import utilsqh ## convertToBinary
 import importlib
 
 reAlphaNumeric = re.compile('\w+$')
+reValidName = re.compile('^[a-z0-9-_]+$')
 #
 # This is the lexical scanner.
 #
@@ -65,7 +69,8 @@ reAlphaNumeric = re.compile('\w+$')
 # and value will contain the details about the next token in the input stream.
 #
 
-import string, pprint, copy
+import pprint
+import copy
 
 class GrammarParserError(Exception):
     """these exceptions all expect the scanObj as second parameter
@@ -211,13 +216,13 @@ class GramScanner(object):
         while 1:
             ln = self.text[self.line]
             lnLen = len(ln)
-            while ch < lnLen and ln[ch] in string.whitespace:
+            while ch < lnLen and not ln[ch].strip():  ##in string.whitespac:
                 ch = ch + 1
             if ch < lnLen and ln[ch] != '#':
                 break
             self.line = self.line + 1
-            self.text[self.line] = string.replace(self.text[self.line],'\t',' ')
-            self.text[self.line] = string.replace(self.text[self.line],'\n',' ')
+            self.text[self.line] = self.text[self.line].replace('\t', ' ')
+            self.text[self.line] = self.text[self.line].replace('\n', ' ')
             ch = 0
         self.char = ch
         if self.line == oldLine:
@@ -783,17 +788,14 @@ def parseGrammarAndSave(inName,outName):
     outFile.close()
 
 def isCharOrDigit(ch):
-    """test if ch is in string.letters, or in string.digits, or an acuted char
+    """test if ch is letter or digit or - or _
     
     this is for the gramparser, which can contain words for the recogniser
     
-    acuted is with ascii value (ord) >= 192
     """
-    if ch in string.letters:
+    if ch.isalpha():
         return 1
-    if ch in string.digits:
-        return 1
-    if ord(ch) >= 192:
+    if ch.isdigit():
         return 1
     # else false
 
@@ -802,14 +804,17 @@ def isValidListOrRulename(word):
     
     so asciiletters, digitis, - and _ are allowed
     """
-    allowed = string.ascii_letters + string.digits + '-_'
-    if not word:
-        return
-    for w in word:
-        if not w in allowed:
-            return
-    # passed:
-    return 1
+    if reValidName.match(word):
+        return 1
+    # 
+    # allowed = string.ascii_letters + string.digits + '-_'
+    # if not word:
+    #     return
+    # for w in word:
+    #     if not w in allowed:
+    #         return
+    # # passed:
+    # return 1
 
 #
 # This utility routine will split apart strings at linefeeds in a list of
@@ -825,7 +830,7 @@ def isValidListOrRulename(word):
 #def splitApartLines(lines):
 #    x = 0
 #    while x < len(lines):
-#        crlf = string.find(lines[x],'\n')
+#        crlf = lines[x].find('\n')
 #        if crlf >= 0:
 #            lines[x:x+1] = [ lines[x][:crlf+1], lines[x][crlf+1:] ] 
 #        x = x + 1
@@ -836,9 +841,9 @@ def splitApartLines(lines):
     """
     for x in range(len(lines)-1, -1, -1):
         line = lines[x]
-        if type(line) == six.binary_type:
+        if type(line) == bytes:
             line = utilsqh.convertToUnicode(line)
-        if type(line) == six.text_type:
+        if type(line) == str:
             line = utilsqh.convertToBinary(line)
             lines[x] = line
         lines[x] = lines[x].rstrip()
@@ -890,11 +895,10 @@ ruleDefines:
 __test__ = dict(test = test
                 )
 def _test():
-    import doctest, gramparser
-    importlib.reload(gramparser)
+    import doctest
     
     doctest.master = None
-    return  doctest.testmod(gramparser)
+    return  doctest.testmod()
             
 if __name__ == "__main__":
     _test()

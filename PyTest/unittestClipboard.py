@@ -7,7 +7,6 @@
 # improved and augmented by Quintijn Hoogenboom 2019.
 #
 #
-import six
 import sys
 import unittest
 import types
@@ -34,13 +33,13 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-        print 'baseFolder from argv: %s'% baseFolder
+        print('baseFolder from argv: %s'% baseFolder)
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print 'baseFolder from __file__: %s'% baseFolder
+        print('baseFolder from __file__: %s'% baseFolder)
     if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
-        print 'baseFolder was empty, take wd: %s'% baseFolder
+        print('baseFolder was empty, take wd: %s'% baseFolder)
     return baseFolder
 
 thisDir = getBaseFolder(globals())
@@ -48,11 +47,11 @@ logFileName = os.path.join(thisDir, "testresult.txt")
 unimacroDir = os.path.normpath(os.path.join(thisDir, "..", "..", "Unimacro"))
 if os.path.isdir(unimacroDir):
     if not unimacroDir in sys.path:
-        print 'inserting %s to pythonpath...'% unimacroDir
+        print('inserting %s to pythonpath...'% unimacroDir)
         sys.path.insert(0, unimacroDir)
         create_files()
 else:
-    print 'error, wrong unimacroDir: %s'% unimacroDir
+    print('error, wrong unimacroDir: %s'% unimacroDir)
 
 
 #---------------------------------------------------------------------------
@@ -61,26 +60,26 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
     def setUp(self):
         self.connect()
         self.thisHndle = natlink.getCurrentModule()[2]
-        self.org_text = u"Xyz"*3
+        self.org_text = "Xyz"*3
         natlinkclipboard.Clipboard.set_system_text(self.org_text)
         # self.setupWindows()
         # self.setupTextFiles() # should be done "by hand"
-        print 'thisHndle: %s'% self.thisHndle
+        print('thisHndle: %s'% self.thisHndle)
         # take txt files from test_clipboardfile subdirectory, a sorted list of txt files, see at bottom of module
         # take docx files etc. 
         self.allWindows = {}
             
 
     def tearDown(self):
-        print '----------- tearDown'
+        print('----------- tearDown')
         natlinkutilsqh.SetForegroundWindow(self.thisHndle)
         # close if they were opened in the start of a test:
         for hndle in self.allWindows: 
-            print 'closing: %s (allWindows: %s)'% (hndle, self.allWindows[hndle])
+            print('closing: %s (allWindows: %s)'% (hndle, self.allWindows[hndle]))
             if hndle:
                 self.closeWindow(hndle)
             else:
-                print 'how can this be? hndle %s of window: %s'% (hndle, self.allWindows[hndle])
+                print('how can this be? hndle %s of window: %s'% (hndle, self.allWindows[hndle]))
         self.disconnect()
         pass
 
@@ -102,18 +101,18 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
         natlinkutilsqh.rememberWindow()
         # app = r"C:\Program Files (x86)\Frescobaldi\frescobaldi.exe"
         # app = r"C:\Program Files (x86)\ActiveState Komodo IDE 11\komodo.exe"
-        print 'opening %s (app: %s) sleeptime: %s'% (filePath, app, waitingTime)
+        print('opening %s (app: %s) sleeptime: %s'% (filePath, app, waitingTime))
         result = actions.UnimacroBringUp(app=app, filepath=filePath)
         natlinkutilsqh.waitForNewWindow(debug=True, waitingTime=waitingTime)
         # time.sleep(2)
         fileName = os.path.split(filePath)[-1]
         if not natlinkutilsqh.waitForWindowTitle(fileName, waitingTime=waitingTime):
-            print 'could not fileName in window title: %s'% fileName
+            print('could not fileName in window title: %s'% fileName)
             natlinkutilsqh.returnToWindow()
             return
         
         curmod = natlinkutilsqh.getCurrentModuleSafe() # try a few times if it fails first
-        print 'opened %s: %s'% (curmod[2], filePath)
+        print('opened %s: %s'% (curmod[2], filePath))
         natlinkutilsqh.returnToWindow()
         return curmod[2]
 
@@ -136,13 +135,13 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
             if hndle:
                 self.allWindows[hndle] = txtFile
             else:
-                print 'could not open %s'% txtFile
+                print('could not open %s'% txtFile)
 
         cb = natlinkclipboard.Clipboard(save_clear=True)
 
         ## empty file:
         expTextPrev = ""
-        for hndle, txtFile in self.allWindows.iteritems():
+        for hndle, txtFile in self.allWindows.items():
             filePath = os.path.join(thisDir, 'test_clipboardfiles', txtFile)
             encoding, bom, expText = readwritefile.readAnything(filePath)
             if txtFile == "emptytest.txt":
@@ -177,14 +176,14 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
             if hndle:
                 self.allWindows[hndle] = txtFile
             else:
-                print 'did not open testfile: %s'% txtFile
+                print('did not open testfile: %s'% txtFile)
 
 
         cb = natlinkclipboard.Clipboard(save_clear=True)
 
         ## empty file:
         expTextPrev = ""
-        for hndle, txtFile in self.allWindows.iteritems():
+        for hndle, txtFile in self.allWindows.items():
             filePath = os.path.join(thisDir, 'test_clipboardfiles', txtFile)
             encoding, bom, expText = readwritefile.readAnything(filePath)
             if txtFile == "emptytest.txt":
@@ -216,7 +215,7 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
             if hndle:
                 self.allWindows[hndle] = docxFile
             else:
-                print 'could not open test file %s'% docxFile
+                print('could not open test file %s'% docxFile)
 
         cb = natlinkclipboard.Clipboard(save_clear=True)
 
@@ -224,8 +223,8 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
         expTextPrev = ""
         nCycles = 2   # make it 10 or 50 to do a longer test
         for i in range(nCycles):
-            for hndle, docxFile in self.allWindows.iteritems():
-                print 'trying %s (%s) (cycle %s)'% (hndle, docxFile, i+1)
+            for hndle, docxFile in self.allWindows.items():
+                print('trying %s (%s) (cycle %s)'% (hndle, docxFile, i+1))
                 natlinkutilsqh.SetForegroundWindow(hndle)
                 time.sleep(0.2)  # word needs a little time before keystrokes are accepted...
                 natlink.playString("{ctrl+home}{shift+end}{shift+down 3}{ctrl+c}")
@@ -234,9 +233,9 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
                 gotall = cb.get_text(waiting_interval=0.05)
                 lengotall = len(gotall)
                 got = gotall
-                expText = u"A small word document.\n\nWith only a few lines\n\n"
+                expText = "A small word document.\n\nWith only a few lines\n\n"
                 if not got:
-                    print 'no text, file: %s'% docxFile
+                    print('no text, file: %s'% docxFile)
                 self.assert_equal(expText, got, "testing docx file %s, result not as expected"% docxFile)
 
                 # also test the class method (direct call)
@@ -253,7 +252,7 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
         nCycles can be adapted to make test quicker or slower
         """
         ## open the txtFiles (are closed in tearDown)
-        print '------------ testSwitchingWindows----------------------------------'
+        print('------------ testSwitchingWindows----------------------------------')
 
         for explDir in explDirectories:
             hndle = self.openTestFile(explDir)
@@ -266,25 +265,25 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
             if hndle:
                 self.allWindows[hndle] = txtFile
             else:
-                print 'could not open %s'% txtFile
+                print('could not open %s'% txtFile)
         for docxFile in docxFiles:
             hndle = self.openTestFile(os.path.join(thisDir, 'test_clipboardfiles', docxFile), waitingTime=0.5)
             if hndle:
                 self.allWindows[hndle] = docxFile
             else:
-                print 'could not open %s'% docxFile
+                print('could not open %s'% docxFile)
 
         allKeys = sorted(self.allWindows.keys())
-        print 'go with allKeys: %s'% allKeys
+        print('go with allKeys: %s'% allKeys)
 
         nCycles = 20
         for i in range(nCycles):
             for hndle in allKeys:
                 target = self.allWindows[hndle]
-                print 'try to get %s (%s)'% (hndle, target)
+                print('try to get %s (%s)'% (hndle, target))
                 result = natlinkutilsqh.SetForegroundWindow(hndle, debug=True)
                 if not result:
-                    print 'failed to set foreground window %s'% hndle
+                    print('failed to set foreground window %s'% hndle)
                     continue
                 curMod = natlinkutilsqh.getCurrentModuleSafe()
                 self.assert_equal(hndle, curMod[2], "hndle not as expected after SetForegroundWindow %s (got: %s) (target is: %s)"% (hndle, curMod[2], target))
@@ -316,16 +315,16 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
 
         nCycles = 2
         for i in range(nCycles):
-            for hndle in self.allWindows.keys():
+            for hndle in list(self.allWindows.keys()):
                 steps = (i % 4) + 2
                 expDir = self.allWindows[hndle]
-                print 'try to get %s (%s) (cycle %s)'% (hndle, expDir, i+1)
+                print('try to get %s (%s) (cycle %s)'% (hndle, expDir, i+1))
                 result = natlinkutilsqh.SetForegroundWindow(hndle, debug=True)
                 if not result:
-                    print 'could not get %s in the foreground after SetForegroundWindow %s'% (expDir, hndle)
+                    print('could not get %s in the foreground after SetForegroundWindow %s'% (expDir, hndle))
                     continue
                 curMod = natlinkutilsqh.getCurrentModuleSafe()
-                print 'doing %s lines of directory'% (steps+1,)
+                print('doing %s lines of directory'% (steps+1,))
                 expDNr = self.allWindows[hndle]
                 if hndle != curMod[2]:
                     pass
@@ -368,8 +367,8 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
                 gotclassmethod = natlinkclipboard.Clipboard.Get_folderinfo()
 
 
-                print 'got: %s'% repr(got)
-                print 'gotclassmethod: %s'% repr(gotclassmethod)
+                print('got: %s'% repr(got))
+                print('gotclassmethod: %s'% repr(gotclassmethod))
                 if got is None:
                     pass
                 self.assert_equal(got, gotclassmethod, "getting folderinfo should be the same from class method and instance method")
@@ -377,7 +376,7 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
                 self.assert_equal(lenexp, len(got), "expect length of 2, but: %s, testChild is: %s"% (repr(got), testChild))
 
                 formats = natlinkclipboard.Clipboard.Get_clipboard_formats()
-                self.assert_(type(formats) == types.ListType, "list of formats should be a list, not: %s"% repr(formats))
+                self.assertTrue(type(formats) == list, "list of formats should be a list, not: %s"% repr(formats))
                 gotclassmethod = natlinkclipboard.Clipboard.Get_folderinfo()
                 self.assert_equal(got, gotclassmethod, "getting folderinfo should be the same from class method and instance method")
 
@@ -390,21 +389,21 @@ testDirName = 'test_clipboardfiles'
 testFilesDir = os.path.join(thisDir, 'test_clipboardfiles')
 if not os.path.isdir(testFilesDir):
     os.path.mkdir(testFilesDir)
-    print 'Created test directory: %s'% testFilesDir
-    print 'Please put test files in this directory! .txt, .docx'
+    print('Created test directory: %s'% testFilesDir)
+    print('Please put test files in this directory! .txt, .docx')
     sys.exit()
 
 testFiles = os.listdir(testFilesDir)
 if testFiles:
-    print 'testFiles: ', testFiles
+    print('testFiles: ', testFiles)
     txtFiles = sorted([f for f in testFiles if f.endswith(".txt")])
     docxFiles = sorted([f for f in testFiles if f.endswith(".docx") and not f.startswith("~")])
-    print '%s txtFiles: %s'% (len(txtFiles), repr(txtFiles))
-    print '%s docxFiles: %s'% (len(docxFiles), repr(docxFiles))
+    print('%s txtFiles: %s'% (len(txtFiles), repr(txtFiles)))
+    print('%s docxFiles: %s'% (len(docxFiles), repr(docxFiles)))
 explDirectories = [testFilesDir, os.path.normpath(os.path.join(testFilesDir, "..", "..", "MiscScripts"))]
 
 def log(t):
-    print t
+    print(t)
 
 def run():
     log('starting UnittestClipboard')
@@ -414,7 +413,7 @@ def run():
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestClipboard, 'test')
     result = unittest.TextTestRunner().run(suite)
-    print result
+    print(result)
 if __name__ == "__main__":
     natlink.natConnect()
     run()

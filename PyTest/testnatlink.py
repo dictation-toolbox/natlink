@@ -24,7 +24,6 @@ import sys
 import os
 import os.path
 import time
-import string
 import traceback        # for printing exceptions
 from struct import pack
 
@@ -68,7 +67,7 @@ def switchToNatSpeak():
 def preTests():
     # make sure that NatSpeak is loaded into memory
     if not natlink.isNatSpeakRunning():
-        raise TestError,'NatSpeak is not currently running'
+        raise TestError('NatSpeak is not currently running')
 
     # these function should all fail before natConnect is called
     testForException( natlink.NatError, "natlink.playString('')" )
@@ -108,7 +107,7 @@ def preTests():
 def postTests():
     # make sure that NatSpeak is still loaded into memory
     if not natlink.isNatSpeakRunning():
-        raise TestError,'NatSpeak is not currently running'
+        raise TestError('NatSpeak is not currently running')
 
     # make sure we get exceptions again assessing our functions
     testForException( natlink.NatError, "natlink.playString('')" )
@@ -124,11 +123,11 @@ def testForException(exceptionType,command,localVars={}):
         exec(command,globals(),localVars)
     except exceptionType:
         return
-    raise TestError,'Expecting an exception to be raised calling '+command
+    raise TestError('Expecting an exception to be raised calling '+command)
 
 #---------------------------------------------------------------------------
 # This utility subroutine will returns the contents of the NatSpeak window as
-# a string.  It works by using playString to select the contents of the 
+# a string.  It works by using playString to select the contents of the
 # window and copy it to the clipboard.  We have to also add the character 'x'
 # to the end of the window to handle the case that the window is empty.
 
@@ -136,13 +135,13 @@ def getWindowContents():
     natlink.playString('{ctrl+end}x{ctrl+a}{ctrl+c}{ctrl+end}{backspace}')
     contents = natlink.getClipboard()
     if contents == '' or contents[-1:] !='x':
-        raise TestError,'Failed to read the contents of the NatSpeak window'
+        raise TestError('Failed to read the contents of the NatSpeak window')
     return contents[:-1]
 
 def testWindowContents(expected,testName):
     contents = getWindowContents()
     if contents != expected:
-        raise TestError,'Contents of window did not match expected text, testing '+testName
+        raise TestError('Contents of window did not match expected text, testing '+testName)
 
 #---------------------------------------------------------------------------
 # Utility function which calls a routine and tests the return value
@@ -150,7 +149,7 @@ def testWindowContents(expected,testName):
 def testFuncReturn(expected,command,localVars={}):
     actual = eval(command,globals(),localVars)
     if actual != expected:
-        raise TestError,"Function call: %s\n  returned: %s\n  expected %s"%(command,repr(actual),repr(expected))
+        raise TestError("Function call: %s\n  returned: %s\n  expected %s"%(command,repr(actual),repr(expected)))
 
 #---------------------------------------------------------------------------
 # This types the keysequence {alt+esc}.  Since this is a sequence trapped
@@ -172,7 +171,7 @@ def lookForNatSpeak():
         natlink.execScript('HeardWord "Start","DragonPad"')
         time.sleep(1)
     except natlink.NatError:
-        raise TestError,'The NatSpeak user interface is not running'
+        raise TestError('The NatSpeak user interface is not running')
 
     # This will make sure that the NatSpeak window is empty.  If the NatSpeak
     # window is not empty we raise an exception to avoid possibily screwing
@@ -180,7 +179,7 @@ def lookForNatSpeak():
 
     switchToNatSpeak()
     if getWindowContents():
-        raise TestError,'The NatSpeak window is not empty'
+        raise TestError('The NatSpeak window is not empty')
 
 #---------------------------------------------------------------------------
 # Note 1: testWindowContents will clobber the clipboard.
@@ -198,17 +197,17 @@ def testPlayString():
         testWindowContents('This is a test','playString')
     except KeyboardInterrupt:
         # This failure sometimes happens on Windows 2000
-        print
-        print '*******'
-        print 'One of the NatLink tests has failed.'
-        print
-        print 'This particular failure has been seen on Windows 2000 when'
-        print 'there is a problem switching to Dragon NaturallySpeaking.'
-        print
-        print 'To fix this:'
-        print '(1) Switch to the Dragon NaturallySpeaking window'
-        print '(2) Switch back to Python'
-        print '(3) Try this selftest again - testnatlink.run()'
+        print()
+        print('*******')
+        print('One of the NatLink tests has failed.')
+        print()
+        print('This particular failure has been seen on Windows 2000 when')
+        print('there is a problem switching to Dragon NaturallySpeaking.')
+        print()
+        print('To fix this:')
+        print('(1) Switch to the Dragon NaturallySpeaking window')
+        print('(2) Switch back to Python')
+        print('(3) Try this selftest again - testnatlink.run()')
         raise ExitQuietly
 
     natlink.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
@@ -518,20 +517,20 @@ class CallbackTester:
     # values
     def testTextChange(self,moduleInfo,textChange):
         if self.sawBegin != moduleInfo:
-            raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
+            raise TestError("Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo)))
         if self.sawTextChange != textChange:
-            raise TestError,"Wrong results from change callback\n  saw: %s\n  expecting: %s"%(repr(self.sawTextChange),repr(textChange))
+            raise TestError("Wrong results from change callback\n  saw: %s\n  expecting: %s"%(repr(self.sawTextChange),repr(textChange)))
         self.reset()
     
     # Tests the contents of the object.  For this test we assume that we saw
     # both a begin callback and a results callback with the indicated values
     def testResults(self,moduleInfo,results):
         if self.sawBegin != moduleInfo:
-            raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
+            raise TestError("Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo)))
         if self.sawResults == None and results != None:
-            raise TestError,"Did not see results callback"
+            raise TestError("Did not see results callback")
         if self.sawResults != None and self.sawResults[0] != results:
-            raise TestError,"Wrong results from results callback\n  saw: %s\n  expecting: %s "%(repr(self.sawResults[0]),repr(results))
+            raise TestError("Wrong results from results callback\n  saw: %s\n  expecting: %s "%(repr(self.sawResults[0]),repr(results)))
         self.reset()
 
 #---------------------------------------------------------------------------
@@ -758,14 +757,14 @@ def testWordProns():
     pronFor = natlink.getWordProns('for')
     for pron in pronFour:
         if pron not in pronFor:
-            raise TestError,'getWordProns returned unexpected pronunciation list for For/Four'
+            raise TestError('getWordProns returned unexpected pronunciation list for For/Four')
         
     # same thing for 'two' and 'to'                                
     pronTwo = natlink.getWordProns('two')
     pronTo = natlink.getWordProns('to')
     for pron in pronTwo:
         if pron not in pronTo:
-            raise TestError,'getWordProns returned unexpected pronunciation list for To/Two'
+            raise TestError('getWordProns returned unexpected pronunciation list for To/Two')
 
     # check errors
     testForException(TypeError,"natlink.addWord('FrotzBlatz',0,0)")
@@ -869,7 +868,7 @@ def testParser():
             parser.checkForErrors()
         except exceptionType:
             return
-        raise TestError,'Expecting an exception parsing grammar '+gramSpec
+        raise TestError('Expecting an exception parsing grammar '+gramSpec)
 
     # here we try a few illegal grammars to make sure we catch the errors
     # 
@@ -932,15 +931,15 @@ def testGrammar():
 
         def checkExperiment(self,sawBegin,recogType,words,fullResults):
             if self.error:
-                raise TestError,self.error
+                raise TestError(self.error)
             if self.sawBegin != sawBegin:
-                raise TestError,'Unexpected result for GrammarBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
+                raise TestError('Unexpected result for GrammarBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin))
             if self.recogType != recogType:
-                raise TestError,'Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
+                raise TestError('Unexpected result for GrammarBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType))
             if self.words != words:
-                raise TestError,'Unexpected result for GrammarBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
+                raise TestError('Unexpected result for GrammarBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words)))
             if self.fullResults != fullResults:
-                raise TestError,'Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults))
+                raise TestError('Unexpected result for GrammarBase.fullResults\n  Expected %s\n  Saw %s'%(repr(fullResults),repr(self.fullResults)))
             self.resetExperiment()
 
     testGram = TestGrammar()
@@ -948,7 +947,7 @@ def testGrammar():
     # load the calculator again
     time.sleep(5) # let the calculator recover from last test
     natlink.execScript('AppBringUp "calc"')
-    print natlink.getCurrentModule()
+    print(natlink.getCurrentModule())
     calcWindow = natlink.getCurrentModule()[2]
     
     # Activate the grammar and try a test recognition
@@ -1088,13 +1087,13 @@ def testDictGram():
 
         def checkExperiment(self,sawBegin,recogType,words):
             if self.error:
-                raise TestError,self.error
+                raise TestError(self.error)
             if self.sawBegin != sawBegin:
-                raise TestError,'Unexpected result for DictGramBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
+                raise TestError('Unexpected result for DictGramBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin))
             if self.recogType != recogType:
-                raise TestError,'Unexpected result for DictGramBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
+                raise TestError('Unexpected result for DictGramBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType))
             if self.words != words:
-                raise TestError,'Unexpected result for DictGramBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
+                raise TestError('Unexpected result for DictGramBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words)))
             self.resetExperiment()
 
     testGram = TestDictGram()
@@ -1103,7 +1102,7 @@ def testDictGram():
     time.sleep(5) # let the calculator recover from last test
     natlink.execScript('AppBringUp "calc"')
     calcWindow = natlink.getCurrentModule()[2]
-    print natlink.getCurrentModule()
+    print(natlink.getCurrentModule())
     
     # Activate the grammar and try a test recognition
     testGram.load()
@@ -1154,19 +1153,19 @@ def testDictGram():
         testGram.checkExperiment(1,'other',[])
     except TestError:
         # This failure sometimes happens when NatText is enabled
-        print
-        print 'Warning'
-        print
-        print 'One of the minor tests failed.  This test failure occurs if'
-        print 'NaturalText is enabled.  If NaturalText is disabled, this test'
-        print 'should work.  If you know that NaturalText is disabled and you'
-        print 'get this message then you will need to track down or report the'
-        print 'selftest failure.'
-        print ''
-        print 'If you have no idea what NaturalText is, or you do not know how'
-        print 'to determine whether it is enabled or disables then you can safely'
-        print 'ignore this message.'
-        print
+        print()
+        print('Warning')
+        print()
+        print('One of the minor tests failed.  This test failure occurs if')
+        print('NaturalText is enabled.  If NaturalText is disabled, this test')
+        print('should work.  If you know that NaturalText is disabled and you')
+        print('get this message then you will need to track down or report the')
+        print('selftest failure.')
+        print('')
+        print('If you have no idea what NaturalText is, or you do not know how')
+        print('to determine whether it is enabled or disables then you can safely')
+        print('ignore this message.')
+        print()
     
     testGram.resetExperiment()
 
@@ -1232,17 +1231,17 @@ def testSelectGram():
 
         def checkExperiment(self,sawBegin,recogType,words,start,end):
             if self.error:
-                raise TestError,self.error
+                raise TestError(self.error)
             if self.sawBegin != sawBegin:
-                raise TestError,'Unexpected result for SelectGramBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin)
+                raise TestError('Unexpected result for SelectGramBase.sawBegin\n  Expected %d\n  Saw %d'%(sawBegin,self.sawBegin))
             if self.recogType != recogType:
-                raise TestError,'Unexpected result for SelectGramBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType)
+                raise TestError('Unexpected result for SelectGramBase.recogType\n  Expected %s\n  Saw %s'%(recogType,self.recogType))
             if self.words != words:
-                raise TestError,'Unexpected result for SelectGramBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words))
+                raise TestError('Unexpected result for SelectGramBase.words\n  Expected %s\n  Saw %s'%(repr(words),repr(self.words)))
             if self.start != start:
-                raise TestError,'Unexpected range start for SelectGramBase.words\n  Expected %d\n  Saw %d'%(start, self.start)
+                raise TestError('Unexpected range start for SelectGramBase.words\n  Expected %d\n  Saw %d'%(start, self.start))
             if self.end != end:
-                raise TestError,'Unexpected range end for SelectGramBase.words\n  Expected %d\n  Saw %d'%(end, self.end)
+                raise TestError('Unexpected range end for SelectGramBase.words\n  Expected %d\n  Saw %d'%(end, self.end))
             self.resetExperiment()            
 
     testGram = TestSelectGram()
@@ -1346,7 +1345,7 @@ def testNestedMimics():
 
         def checkExperiment(self,expected):
             if self.results != expected:
-                raise TestError, "Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) )
+                raise TestError("Grammar failed to get recognized\n   Expected = %s\n   Results = %s"%( str(expected), str(self.results) ))
             self.resetExperiment()
     
         def initialize(self):
@@ -1411,21 +1410,21 @@ def run():
         mainTests()
         natlink.natDisconnect()
         postTests()
-        print
-        print 'All tests passed!'
-        print
-        print 'Please shutdown NatSpeak before rerunning this script'
-        print 'or saving your user files.  This is because the test'
-        print 'script will leave some state around which will make it'
-        print 'fail if run again.'
-        print
-        print 'Do *not* save your speech files right now.'
+        print()
+        print('All tests passed!')
+        print()
+        print('Please shutdown NatSpeak before rerunning this script')
+        print('or saving your user files.  This is because the test')
+        print('script will leave some state around which will make it')
+        print('fail if run again.')
+        print()
+        print('Do *not* save your speech files right now.')
     except ExitQuietly:
         natlink.natDisconnect()
-        print ''
+        print('')
     except:
         natlink.natDisconnect()
-        print ''
+        print('')
         traceback.print_exc()
 
 if __name__=='__main__':

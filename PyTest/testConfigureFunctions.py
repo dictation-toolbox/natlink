@@ -8,7 +8,13 @@
 #----------------------------------------------------------------------------
 
 
-import sys, unittest, win32api, os, win32con, copy, shutil
+import sys
+import unittest
+import win32api
+import os
+import win32con
+import copy
+import shutil
 
 ##Accessories = 'Accessories'
 ## for Dutch windows system:
@@ -46,19 +52,19 @@ def getCoreDir(thisDir):
     """
     coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'macrosystem', 'core') )
     if not os.path.isdir(coreFolder):
-        print 'not a directory: %s'% coreFolder
+        print('not a directory: %s'% coreFolder)
         return thisDir
     pydPath = os.path.join(coreFolder, 'natlink.pyd')
     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
     statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
     if not os.path.isfile(pydPath):
-        print 'natlink.pyd not found in core directory: %s'% coreFolder
+        print('natlink.pyd not found in core directory: %s'% coreFolder)
         return thisDir
     if not os.path.isfile(mainPath):
-        print 'natlinkmain.py not found in core directory: %s'% coreFolder
+        print('natlinkmain.py not found in core directory: %s'% coreFolder)
         return thisDir
     if not os.path.isfile(statusPath):
-        print 'natlinkstatus.py not found in core directory: %s'% coreFolder
+        print('natlinkstatus.py not found in core directory: %s'% coreFolder)
         return thisDir
     return coreFolder
 #-----------------------------------------------------
@@ -74,13 +80,12 @@ if not os.path.normpath(coreDir) in sys.path:
 configDir = os.path.normpath(os.path.join(thisDir, '..', 'confignatlinkvocolaunimacro'))
 if not os.path.normpath(configDir) in sys.path:
     sys.path.append(configDir)
-import natlinkconfigfunctions, natlinkstatus
+import natlinkconfigfunctions
+import natlinkstatus
 from natlinkstatus import isValidPath ## used a lot in the test procedures!
-reload(natlinkconfigfunctions)
 from natlinkcorefunctions import InifileSection  # to test own inifile data
 
 import natlinkcorefunctions  # not RegistryDict any more
-reload(natlinkcorefunctions)
 
 
 defaultFilename = "natlinkstatustest.ini"
@@ -165,7 +170,7 @@ class TestConfigureFunctions(unittest.TestCase):
             raise TestError("home directory not defined: %s")
                 
             
-        self.assert_(os.path.isdir(tmpTest), "Could not make test folder: %s"% tmpTest)
+        self.assertTrue(os.path.isdir(tmpTest), "Could not make test folder: %s"% tmpTest)
         # self.tmpTest to test directory things safely:
         self.tmpTest = tmpTest
         self.cli = natlinkconfigfunctions.CLI()
@@ -198,7 +203,7 @@ class TestConfigureFunctions(unittest.TestCase):
         if value and value != "0":
             if key in self.testinisection:
                 actual = self.testinisection[key]
-                self.assert_(value == actual, "testinisection has not expected result for key: %s, expected: %s, got %s\n%s"%
+                self.assertTrue(value == actual, "testinisection has not expected result for key: %s, expected: %s, got %s\n%s"%
                              (key, value, actual, mess))
             else:
                 self.fail("testinisection does not have expected key: %s\n%s"% (key, mess))
@@ -220,17 +225,17 @@ class TestConfigureFunctions(unittest.TestCase):
         functionOn = getattr(cli, functionNameSetOn)
         functionOff = getattr(cli, functionNameSetOff)
         functionGet = getattr(config, functionNameGet)
-        self.assert_(functionGet, "should be a function: %s"% functionNameGet)
-        self.assert_(functionOn, "should be a function: %s"%functionNameSetOn)
-        self.assert_(functionOff, "should be a function: %s"%functionNameSetOff)
+        self.assertTrue(functionGet, "should be a function: %s"% functionNameGet)
+        self.assertTrue(functionOn, "should be a function: %s"%functionNameSetOn)
+        self.assertTrue(functionOff, "should be a function: %s"%functionNameSetOff)
         functionOn('dummy')        
         self.checkusertestinifile(key, 1, "setting option in inifile: %s"% key)
         shouldBeOn = functionGet()
-        self.assert_(expectedOn == shouldBeOn, "should be on: getting option from config instance, method: %s (%s)"% (functionNameGet, key))
+        self.assertTrue(expectedOn == shouldBeOn, "should be on: getting option from config instance, method: %s (%s)"% (functionNameGet, key))
         functionOff('dummy')        
         self.checkusertestinifile(key, None, "clearing option in inifile: %s"% key)
         shouldBeOff = functionGet()
-        self.assert_(expectedOff == shouldBeOff, "should be off, getting option from config instance, method: %s (%s)"% (functionNameGet, key))
+        self.assertTrue(expectedOff == shouldBeOff, "should be off, getting option from config instance, method: %s (%s)"% (functionNameGet, key))
         pass
 
 
@@ -245,32 +250,32 @@ class TestConfigureFunctions(unittest.TestCase):
         func = isValidPath
         
         result = func(self.tmpTest)
-        self.assert_( result == self.tmpTest, "should exist")
+        self.assertTrue( result == self.tmpTest, "should exist")
         result = func(self.tmpTest, wantDirectory=1)
-        self.assert_( result == self.tmpTest, "should exist")
+        self.assertTrue( result == self.tmpTest, "should exist")
         result = func(self.tmpTest, wantFile=1)
-        self.assert_( result == None, "should fail, exists but is not a file")
+        self.assertTrue( result == None, "should fail, exists but is not a file")
         
         result = func("notValid")
-        self.assert_( result == None, "should fail all the time")
+        self.assertTrue( result == None, "should fail all the time")
         
         testinifile = os.path.join(self.tmpTest, 'nsapps.ini')
         f1 = open(testinifile, 'w')
         f1.close()
     
         result = func(testinifile)
-        self.assert_( result == testinifile, "should exist")
+        self.assertTrue( result == testinifile, "should exist")
         result = func(testinifile, wantDirectory=1)
-        self.assert_( result == None, "should fail, is not a directory")
+        self.assertTrue( result == None, "should fail, is not a directory")
         result = func(testinifile, wantFile=1)
-        self.assert_( result == testinifile,  "should exist and should be a file")
+        self.assertTrue( result == testinifile,  "should exist and should be a file")
     
         # now ~ (HOME)
         homedirectory = "~"
         result = func(homedirectory)
-        self.assert_( result != None, "should hold some value")
+        self.assertTrue( result != None, "should hold some value")
         result = func(homedirectory, wantDirectory=1)
-        self.assert_( result != None,  "should hold some value")
+        self.assertTrue( result != None,  "should hold some value")
         
         pass
 
@@ -290,13 +295,13 @@ class TestConfigureFunctions(unittest.TestCase):
         win32api.WriteProfileVal('s2', 'kk1','vv1', testinifile)
         section = win32api.GetProfileSection('s1', testinifile)
         expected = ['k1=v1', 'k2=v2']
-        self.assert_(expected == section, "section |%s| not as expected: |%s|"% (section, expected))
+        self.assertTrue(expected == section, "section |%s| not as expected: |%s|"% (section, expected))
 
         # this call deletes a key:::::    
         win32api.WriteProfileVal('s1', 'k2',None, testinifile)
         section = win32api.GetProfileSection('s1', testinifile)
         expected = ['k1=v1']
-        self.assert_(expected == section, "section |%s| after deleted keys is not as expected: |%s|"% (section, expected))
+        self.assertTrue(expected == section, "section |%s| after deleted keys is not as expected: |%s|"% (section, expected))
         pass        
         
     def tttest_getExtendedEnv(self):
@@ -309,9 +314,9 @@ class TestConfigureFunctions(unittest.TestCase):
         """
         # get HOME from os.environ, or CSLID: PERSONAL, ~ taken as HOME...
         home = natlinkcorefunctions.getExtendedEnv("HOME")
-        self.assert_(os.path.isdir(home), "home should be a folder, not: |%s|"% home)
+        self.assertTrue(os.path.isdir(home), "home should be a folder, not: |%s|"% home)
         home2 = natlinkcorefunctions.getExtendedEnv("~")
-        self.assert_(home == home2, "home2 (~) should be same as HOME (%s), not: |%s|"%
+        self.assertTrue(home == home2, "home2 (~) should be same as HOME (%s), not: |%s|"%
                      (home,home2))
 
         # check spaces and erroneous spaces around such a variable:        
@@ -319,11 +324,11 @@ class TestConfigureFunctions(unittest.TestCase):
         personal2 = natlinkcorefunctions.getExtendedEnv("%PERSONAL%")  # erroneous call, but allowed
         personal3 = natlinkcorefunctions.getExtendedEnv("  PERSONAL     ")  # erroneous call, but allowed
         personal4 = natlinkcorefunctions.getExtendedEnv(" % PERSONAL %    ")  # erroneous call, but allowed
-        self.assert_(personal == home, "PERSONAL should be same as HOME (%s), not: |%s|"%
+        self.assertTrue(personal == home, "PERSONAL should be same as HOME (%s), not: |%s|"%
                      (home,personal))
-        self.assert_(personal2 == personal, "PERSONAL should allow %% signs in it")
-        self.assert_(personal3 == personal, "PERSONAL should allow spaces signs around it")
-        self.assert_(personal4 == personal, "PERSONAL should allow spaces and %% signs around it")
+        self.assertTrue(personal2 == personal, "PERSONAL should allow %% signs in it")
+        self.assertTrue(personal3 == personal, "PERSONAL should allow spaces signs around it")
+        self.assertTrue(personal4 == personal, "PERSONAL should allow spaces and %% signs around it")
 
         # unknown CSIDL_ variable should give ValueError:
         self.assertRaises(ValueError, natlinkcorefunctions.getExtendedEnv, 'ABACADABRA')
@@ -343,15 +348,15 @@ class TestConfigureFunctions(unittest.TestCase):
         filename = '~/speech/index.html'
         expanded = natlinkcorefunctions.expandEnvVariableAtStart(filename)
         squeezed = natlinkcorefunctions.substituteEnvVariableAtStart(expanded)
-        self.assert_(expanded != filename, "expandEnvVariableAtStart did not work on: %s"% filename)
-        self.assert_(squeezed == os.path.normpath(filename), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(expanded != filename, "expandEnvVariableAtStart did not work on: %s"% filename)
+        self.assertTrue(squeezed == os.path.normpath(filename), "substitute back does not produce identical result: %s, %s"%
                      (filename, squeezed))
         # %HOME% should be brought back to ~:
         filename2 = '%HOME%/speech/index.html'
         expanded = natlinkcorefunctions.expandEnvVariableAtStart(filename2)
         squeezed = natlinkcorefunctions.substituteEnvVariableAtStart(expanded)
-        self.assert_(expanded != filename2, "expandEnvVariableAtStart did not work on: %s"% filename2)
-        self.assert_(squeezed == os.path.normpath(filename), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(expanded != filename2, "expandEnvVariableAtStart did not work on: %s"% filename2)
+        self.assertTrue(squeezed == os.path.normpath(filename), "substitute back does not produce identical result: %s, %s"%
                      (filename, squeezed))
 
         # try expanding paths and putting back, using a local envDict:
@@ -359,15 +364,15 @@ class TestConfigureFunctions(unittest.TestCase):
         envDict = {}
         expanded = natlinkcorefunctions.expandEnvVariableAtStart(filename, envDict)
         squeezed = natlinkcorefunctions.substituteEnvVariableAtStart(expanded, envDict)
-        self.assert_(expanded != filename, "expandEnvVariableAtStart did not work on: %s"% filename)
-        self.assert_(squeezed == os.path.normpath(filename), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(expanded != filename, "expandEnvVariableAtStart did not work on: %s"% filename)
+        self.assertTrue(squeezed == os.path.normpath(filename), "substitute back does not produce identical result: %s, %s"%
                      (filename, squeezed))
         # %HOME% should be brought back to ~:
         filename2 = '%HOME%/speech/index.html'
         expanded = natlinkcorefunctions.expandEnvVariableAtStart(filename2, envDict)
         squeezed = natlinkcorefunctions.substituteEnvVariableAtStart(expanded, envDict)
-        self.assert_(expanded != filename2, "expandEnvVariableAtStart did not work on: %s"% filename2)
-        self.assert_(squeezed == os.path.normpath(filename), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(expanded != filename2, "expandEnvVariableAtStart did not work on: %s"% filename2)
+        self.assertTrue(squeezed == os.path.normpath(filename), "substitute back does not produce identical result: %s, %s"%
                      (filename, squeezed))
 
         # try with COMMON_PROGRAMS, which is a subdirectory of COMMON_STARTMENU
@@ -379,11 +384,11 @@ class TestConfigureFunctions(unittest.TestCase):
         expandedStartmenu = natlinkcorefunctions.expandEnvVariableAtStart(filenameStartmenu)
         squeezedPrograms = natlinkcorefunctions.substituteEnvVariableAtStart(expandedPrograms)
         squeezedStartmenu = natlinkcorefunctions.substituteEnvVariableAtStart(expandedStartmenu)
-        self.assert_(expandedPrograms != filenamePrograms, "expandEnvVariableAtStart did not work on: %s"% filenamePrograms)
-        self.assert_(expandedStartmenu != filenameStartmenu, "expandEnvVariableAtStart did not work on: %s"% filenameStartmenu)
-        self.assert_(squeezedPrograms == os.path.normpath(filenamePrograms), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(expandedPrograms != filenamePrograms, "expandEnvVariableAtStart did not work on: %s"% filenamePrograms)
+        self.assertTrue(expandedStartmenu != filenameStartmenu, "expandEnvVariableAtStart did not work on: %s"% filenameStartmenu)
+        self.assertTrue(squeezedPrograms == os.path.normpath(filenamePrograms), "substitute back does not produce identical result: %s, %s"%
                      (filenamePrograms, squeezedPrograms))
-        self.assert_(squeezedStartmenu == os.path.normpath(filenameStartmenu), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(squeezedStartmenu == os.path.normpath(filenameStartmenu), "substitute back does not produce identical result: %s, %s"%
                      (filenameStartmenu, squeezedStartmenu))
 
         # try above with private envDict:
@@ -394,11 +399,11 @@ class TestConfigureFunctions(unittest.TestCase):
         expandedStartmenu = natlinkcorefunctions.expandEnvVariableAtStart(filenameStartmenu, envDict)
         squeezedPrograms = natlinkcorefunctions.substituteEnvVariableAtStart(expandedPrograms, envDict)
         squeezedStartmenu = natlinkcorefunctions.substituteEnvVariableAtStart(expandedStartmenu, envDict)
-        self.assert_(expandedPrograms != filenamePrograms, "expandEnvVariableAtStart did not work on: %s"% filenamePrograms)
-        self.assert_(expandedStartmenu != filenameStartmenu, "expandEnvVariableAtStart did not work on: %s"% filenameStartmenu)
-        self.assert_(squeezedPrograms == os.path.normpath(filenamePrograms), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(expandedPrograms != filenamePrograms, "expandEnvVariableAtStart did not work on: %s"% filenamePrograms)
+        self.assertTrue(expandedStartmenu != filenameStartmenu, "expandEnvVariableAtStart did not work on: %s"% filenameStartmenu)
+        self.assertTrue(squeezedPrograms == os.path.normpath(filenamePrograms), "substitute back does not produce identical result: %s, %s"%
                      (filenamePrograms, squeezedPrograms))
-        self.assert_(squeezedStartmenu == os.path.normpath(filenameStartmenu), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(squeezedStartmenu == os.path.normpath(filenameStartmenu), "substitute back does not produce identical result: %s, %s"%
                      (filenameStartmenu, squeezedStartmenu))
         
         # substituting back should fail when  private envDict is cleared halfway!
@@ -412,38 +417,38 @@ class TestConfigureFunctions(unittest.TestCase):
         squeezedPrograms = natlinkcorefunctions.substituteEnvVariableAtStart(expandedPrograms, envDict)
         squeezedStartmenu = natlinkcorefunctions.substituteEnvVariableAtStart(expandedStartmenu, envDict)
         # squeeze did not succed
-        self.assert_(expandedPrograms != filenamePrograms, "expandEnvVariableAtStart did not work on: %s"% filenamePrograms)
-        self.assert_(expandedStartmenu != filenameStartmenu, "expandEnvVariableAtStart did not work on: %s"% filenameStartmenu)
-        self.assert_(squeezedPrograms == expandedPrograms, "substitute back did not work, envDict was cleared: %s, %s"%
+        self.assertTrue(expandedPrograms != filenamePrograms, "expandEnvVariableAtStart did not work on: %s"% filenamePrograms)
+        self.assertTrue(expandedStartmenu != filenameStartmenu, "expandEnvVariableAtStart did not work on: %s"% filenameStartmenu)
+        self.assertTrue(squeezedPrograms == expandedPrograms, "substitute back did not work, envDict was cleared: %s, %s"%
                      (filenamePrograms, expandedPrograms))
-        self.assert_(squeezedStartmenu == expandedStartmenu, "substitute back did not work, envDict was cleared: %s, %s"%
+        self.assertTrue(squeezedStartmenu == expandedStartmenu, "substitute back did not work, envDict was cleared: %s, %s"%
                      (filenameStartmenu, expandedStartmenu))
         
         # clear recentEnv, no result:
         natlinkcorefunctions.clearRecentEnv()
         squeezedPrograms = natlinkcorefunctions.substituteEnvVariableAtStart(expandedPrograms)
         squeezedStartmenu = natlinkcorefunctions.substituteEnvVariableAtStart(expandedStartmenu)
-        self.assert_(squeezedPrograms == expandedPrograms, "substitute back did not work, envDict was cleared: %s, %s"%
+        self.assertTrue(squeezedPrograms == expandedPrograms, "substitute back did not work, envDict was cleared: %s, %s"%
                      (filenamePrograms, expandedPrograms))
-        self.assert_(squeezedStartmenu == expandedStartmenu, "substitute back did not work, envDict was cleared: %s, %s"%
+        self.assertTrue(squeezedStartmenu == expandedStartmenu, "substitute back did not work, envDict was cleared: %s, %s"%
                      (filenameStartmenu, expandedStartmenu))
 
         # fill recentEnv again, all is well again:
         natlinkcorefunctions.getAllFolderEnvironmentVariables(fillRecentEnv=1)
         squeezedPrograms = natlinkcorefunctions.substituteEnvVariableAtStart(expandedPrograms)
         squeezedStartmenu = natlinkcorefunctions.substituteEnvVariableAtStart(expandedStartmenu)
-        self.assert_(squeezedPrograms == os.path.normpath(filenamePrograms), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(squeezedPrograms == os.path.normpath(filenamePrograms), "substitute back does not produce identical result: %s, %s"%
                      (filenamePrograms, squeezedPrograms))
-        self.assert_(squeezedStartmenu == os.path.normpath(filenameStartmenu), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(squeezedStartmenu == os.path.normpath(filenameStartmenu), "substitute back does not produce identical result: %s, %s"%
                      (filenameStartmenu, squeezedStartmenu))
 
 
         # again with private envDict, should NOT produce result:        
         squeezedPrograms = natlinkcorefunctions.substituteEnvVariableAtStart(expandedPrograms, envDict)
         squeezedStartmenu = natlinkcorefunctions.substituteEnvVariableAtStart(expandedStartmenu, envDict)
-        self.assert_(squeezedPrograms == expandedPrograms, "substitute back did not work, envDict was cleared: %s, %s"%
+        self.assertTrue(squeezedPrograms == expandedPrograms, "substitute back did not work, envDict was cleared: %s, %s"%
                      (filenamePrograms, expandedPrograms))
-        self.assert_(squeezedStartmenu == expandedStartmenu, "substitute back did not work, envDict was cleared: %s, %s"%
+        self.assertTrue(squeezedStartmenu == expandedStartmenu, "substitute back did not work, envDict was cleared: %s, %s"%
                      (filenameStartmenu, expandedStartmenu))
 
 
@@ -451,9 +456,9 @@ class TestConfigureFunctions(unittest.TestCase):
         envDict = natlinkcorefunctions.getAllFolderEnvironmentVariables()
         squeezedPrograms = natlinkcorefunctions.substituteEnvVariableAtStart(expandedPrograms, envDict)
         squeezedStartmenu = natlinkcorefunctions.substituteEnvVariableAtStart(expandedStartmenu, envDict)
-        self.assert_(squeezedPrograms == os.path.normpath(filenamePrograms), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(squeezedPrograms == os.path.normpath(filenamePrograms), "substitute back does not produce identical result: %s, %s"%
                      (filenamePrograms, squeezedPrograms))
-        self.assert_(squeezedStartmenu == os.path.normpath(filenameStartmenu), "substitute back does not produce identical result: %s, %s"%
+        self.assertTrue(squeezedStartmenu == os.path.normpath(filenameStartmenu), "substitute back does not produce identical result: %s, %s"%
                      (filenameStartmenu, squeezedStartmenu))
 
     # now for the real work, the install functions:
@@ -572,7 +577,7 @@ class TestConfigureFunctions(unittest.TestCase):
             ("UnimacroIniFilesEditor", "p", wordpadexe), 
             ("AhkExeDir", "h", self.tmpTest),
             ("AhkUserDir", "k", self.tmpTest)]:
-                print '---- start testing "%s", letter: "%s"'% (key, functionLetter)
+                print('---- start testing "%s", letter: "%s"'% (key, functionLetter))
 
                 oldKey = "Old" + key
                 cli = self.cli
@@ -629,7 +634,7 @@ class TestConfigureFunctions(unittest.TestCase):
                 funcSet(testFolder)
                 self.checkusertestinifile(key, testFolder, "%s, should again be set now to: %s"% (key,  testFolder))
                 self.checkusertestinifile(oldKey, "", "Old%s, should be cleared again"% key)
-                print '==== end of testing "%s", letter: "%s"'% (key, functionLetter)
+                print('==== end of testing "%s", letter: "%s"'% (key, functionLetter))
 
 
         
@@ -687,9 +692,9 @@ class TestConfigureFunctions(unittest.TestCase):
         keyOld = "OldUnimacroUserDirectory"
         cli = self.cli
         old = cli.config.userregnl[key]
-        self.assert_(old == "", "key %s should not be set at start of test: %s"% (key, testName))
+        self.assertTrue(old == "", "key %s should not be set at start of test: %s"% (key, testName))
         old = cli.config.userregnl[keyOld]
-        self.assert_(old == "", "key %s should not be set at start of test: %s"% (keyOld, testName))
+        self.assertTrue(old == "", "key %s should not be set at start of test: %s"% (keyOld, testName))
 
         # not a valid folder:
         cli.do_o("notAValidFolder")
