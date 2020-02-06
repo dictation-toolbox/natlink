@@ -3,20 +3,17 @@ starting unittestNatlink
 
 starting tests with threading: 0
 
-test recognitionMimic, version: 15
+testParser
+testGrammar
 
 --------------- errors -----------------
 
+---------- testParser (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "<string>", line 2136, in testParser
+  File "<string>", line 2110, in checkExperiment
+TestError: Unexpected result for GrammarBase.sawBegin
+  Expected 1
+  Saw 0
+
 --------------- failures -----------------
-
----------- testRecognitionMimic (__main__.UnittestNatlink) --------
-Traceback (most recent call last):
-  File "<string>", line 2014, in doTestMimicResult
-natlink.MimicFailed: recognitionMimic call failed (De spraakengine retourneerde de volgende fout: MimicNoResults)
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "<string>", line 1216, in testRecognitionMimic
-  File "<string>", line 2016, in doTestMimicResult
-AssertionError: TestMimicResult, recognitionMimic failed for words: "['hello', 'testing']"

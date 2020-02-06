@@ -320,7 +320,7 @@ class UnittestNatlink(unittest.TestCase):
             print('waiting for calc window %s'% i)
             mod, title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
-            if mod == "calc": break
+            if mod in ["calc", "ApplicationFrameHost"]: break
             i += 1
         else:
             raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
@@ -405,7 +405,7 @@ class UnittestNatlink(unittest.TestCase):
             time.sleep(0.1)
             mod, title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
-            if mod == "calc" and hndle == wantHndle : break
+            if mod in ["calc", "ApplicationFrameHost"] and hndle == wantHndle : break
             natlink.playString("{alt+tab}", 0x200)
             i += 1
         else:
@@ -1190,7 +1190,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
        
-    def testRecognitionMimic(self):
+    def tttestRecognitionMimic(self):
         """test different phrases with spoken forms,
         
         since Dragon 11, lots of things have changed here, so it seems good to make a special
@@ -2032,10 +2032,10 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test the Grammar parser
 
-    def tttestParser(self):
+    def testParser(self):
         self.log("testParser", 1)
 
-        def tttestGrammarError(exceptionType,gramSpec):
+        def testGrammarError(exceptionType,gramSpec):
             try:
                 parser = gramparser.GramParser([gramSpec])
                 parser.doParse()

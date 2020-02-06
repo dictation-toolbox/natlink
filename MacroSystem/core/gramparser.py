@@ -57,6 +57,9 @@ import os.path
 import traceback
 import utilsqh ## convertToBinary
 import importlib
+import locale
+
+preferredencoding =  locale.getpreferredencoding()
 
 reAlphaNumeric = re.compile('\w+$')
 reValidName = re.compile('^[a-z0-9-_]+$')
@@ -702,55 +705,57 @@ class GramParser(object):
 #
 
 def packGrammar(parseObj):
-    output = b""
+    output = []
 
     # header:
     #   DWORD dwType  = 0
     #   DWORD dwFlags = 0
-    output = output + pack(b"LL", 0, 0)
+    output.append(pack("LL", 0, 0))
 
     # various chunks
     if len(parseObj.exportRules):
-        output = output + packGrammarChunk(4, parseObj.exportRules)
+        output.append(packGrammarChunk(4, parseObj.exportRules))
     if len(parseObj.importRules):
-        output = output + packGrammarChunk(5, parseObj.importRules)
+        output.append(packGrammarChunk(5, parseObj.importRules))
     if len(parseObj.knownLists):
-        output = output + packGrammarChunk(6, parseObj.knownLists)
+        output.append(packGrammarChunk(6, parseObj.knownLists))
     if len(parseObj.knownWords):
-        output = output + packGrammarChunk(2, parseObj.knownWords)
+        output.append(packGrammarChunk(2, parseObj.knownWords))
     if len(parseObj.ruleDefines):
-        output = output + packGrammarRules(3, parseObj.knownRules, parseObj.ruleDefines)
-    return output
+        output.append(packGrammarRules(3, parseObj.knownRules, parseObj.ruleDefines))
+    return b"".join(output)
 
 
 def packGrammarChunk(chunktype,chunkdict):
-    output = b""
+    output = []
     totalLen = 0
 
     for word, value in chunkdict.items():
-        if type(word) == str: word = word.encode()
+        if type(word) == str:
+            word = word.encode(preferredencoding)
         # if type(value) == str: value = value.encode()
         # chunk data entry
         #   DWORD dwSize = number of bytes in entry
         #   DWORD dwNum  = ID number for this rule/word
         #   DWORD szName = name of rule/word, zero-term'd and padded to dword
         paddedLen = ( len(word) + 4 ) & 0xFFFC
-        output = output + pack(b"LL%ds" % paddedLen, paddedLen+8, value, word )
+        output.append(pack("LL%ds" % paddedLen, paddedLen+8, value, word ))
         totalLen = totalLen + paddedLen+8
 
     # chunk header
     #   DWORD dwChunkID = type
     #   DWORD dwChunkSize = number of bytes in chunk not including this header
-    return pack( b"LL", chunktype, totalLen ) + output
+    output.insert(0, pack("LL", chunktype, totalLen ))
+    return b"".join(output)
 
 
 def packGrammarRules(chunktype,names,chunkdict):
-    output = b""
+    output = []
     totalLen = 0
     elemType = { 'start':1, 'end':2, 'word':3, 'rule':4, 'list':6 }
 
     for word in chunkdict:
-        ruleDef = b""
+        ruleDef = ""
         ruleLen = 0
 
         for element in chunkdict[word]:
@@ -758,20 +763,20 @@ def packGrammarRules(chunktype,names,chunkdict):
             #   WORD wType    = element type
             #   WORD wProb    = 0
             #   DWORD dwValue = element value
-            ruleDef = ruleDef + pack( b"HHL", elemType[element[0]], 0, element[1] )
+            output.append(pack("HHL", elemType[element[0]], 0, element[1]))
             ruleLen = ruleLen + 8
         
         # rule definition:
         #   DWORD dwSize = number of bytes in rule definition
         #   DWORD dwnum  = ID number of rule
-        output = output + pack( b"LL", ruleLen+8, names[word] ) + ruleDef
+        output.insert(0, pack("LL", ruleLen+8, names[word] ))
         totalLen = totalLen + ruleLen+8
 
     # chunk header:
     #   DWORD dwChunkID = type
     #   DWORD dwChunkSize = number of bytes in chunk not including this header
-    return pack( b"LL", chunktype, totalLen ) + output
-
+    output.insert(0, pack("LL", chunktype, totalLen ))
+    return b"".join(output)
 #
 # This is a routine which was included for testing but can also be used to 
 # compile grammar files.  It takes an input file name containing a grammar 
@@ -899,8 +904,7 @@ ruleDefines:
 ## manual inspection:
 >>> packGrammar(parser)
 
-
-'\x00\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00rule\x00\x00\x00\x00\x02\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00action\x00\x00\x03\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x00'
+ '\x00\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00rule\x00\x00\x00\x00\x02\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00action\x00\x00\x03\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x00'
 
 
 """
