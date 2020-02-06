@@ -25,6 +25,7 @@ debug = False
 # raising a KeyError; e.g., "{bad}" sends {, b, a, d, }.
 #
 def senddragonkeys_to_events(input, ignore_unknown_names=True):
+
     chords = parse_into_chords(input)
 
     events = []

@@ -273,9 +273,8 @@ def getModifierKeyCodes(modifiers):
                          menu=vk_menu,
                          alt=vk_menu)   # added alt  == menu
     if not modifiers: return
+
     if type(modifiers) == str:
-        modifiers = utilsqh.convertToBinary(modifiers)
-    if type(modifiers) == bytes:
         modifiers = modifiers.replace("+", " ").split()
     return [modifier_dict[m] for m in modifiers]
 
@@ -524,25 +523,25 @@ class GrammarBase(GramClassBase):
         try:
             # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
             # code upper ascii characters with latin1 if they were in the process entered as unicode
-            if not type(gramSpec) in (str, bytes, list):
+            if not type(gramSpec) in (str, list):
                 raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
             # print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
             if type(gramSpec) == list:
-                for i, grampart in enumerate(gramSpec):
-                    line = grampart
-                    if type(line) == bytes:
-                        line = utilsqh.convertToUnicode(line)
-                    if type(line) == str:
-                        line = utilsqh.convertToBinary(line)
-                    if line != grampart:
-                        gramSpec[i] = line
-            if type(gramSpec) == bytes:
-                gramSpec = utilsqh.convertToUnicode(gramSpec)
+                pass
+                # for i, grampart in enumerate(gramSpec):
+                #     line = grampart
+                    # if type(line) == bytes:
+                    #     line = utilsqh.convertToUnicode(line)
+                    # if type(line) == str:
+                    #     line = utilsqh.convertToBinary(line)
+                    # if line != grampart:
+                    #     gramSpec[i] = line
+            # if type(gramSpec) == bytes:
+            #     gramSpec = utilsqh.convertToUnicode(gramSpec)
             if type(gramSpec) == str:
-                gramSpec = utilsqh.convertToBinary(gramSpec)
+                # gramSpec = utilsqh.convertToBinary(gramSpec)
                 gramSpec = gramSpec.split('\n')
                 gramSpec = [g.rstrip() for g in gramSpec]
-
 
             gramparser.splitApartLines(gramSpec)
             parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
@@ -568,7 +567,8 @@ class GrammarBase(GramClassBase):
             return 1
 
         except:
-            print(        "Unexpected error:", sys.exc_info()[0])
+            print("Unexpected error load GramClassBase:", sys.exc_info())
+            print(traceback.print_exc())
 
     # these are wrappers for the GramObj base methods.  We also keep track of
     # legal rules, lists and active rules so we can do some first level error
@@ -584,12 +584,13 @@ class GrammarBase(GramClassBase):
         self.exclusiveState = 0
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
-        if type(ruleName) == str:
-            ruleName = utilsqh.convertToBinary(ruleName)
+        # print('ruleName: %s, validRules: %s'% (ruleName, self.validRules))
+        # if type(ruleName) == str:
+        #     ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
             raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
-        if type(ruleName) != bytes:
-            raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
+        # if type(ruleName) != bytes:
+        #     raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
         if ruleName in self.activeRules:
             if window == self.activeRules[ruleName]:
                 print('rule %s already active for window %s'% (ruleName, window))
@@ -606,8 +607,8 @@ class GrammarBase(GramClassBase):
         pass            
 
     def deactivate(self, ruleName, noError=0):
-        if type(ruleName) == str:
-            ruleName = utilsqh.convertToBinary(ruleName)
+        # if type(ruleName) == str:
+        #     ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
             if noError: return
         if type(ruleName) != bytes:
@@ -741,28 +742,28 @@ class GrammarBase(GramClassBase):
         return False
     
     def emptyList(self, listName):
-        if type(listName) == str:
-            listName = utilsqh.convertToBinary(listName)
+        # if type(listName) == str:
+        #     listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
         self.gramObj.emptyList(listName)
 
     def appendList(self, listName, words):
-        listName = utilsqh.convertToBinary(listName)
+        # listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
-        if type(words) in (bytes, str):
-            words = utilsqh.convertToBinary(words)
+        if type(words) == str:
+            # words = utilsqh.convertToBinary(words)
             self.gramObj.appendList(listName,words)
         else:
             for x in words:
-                if type(x) == str:
-                    x = utilsqh.convertToBinary(x)
+                # if type(x) == str:
+                #     x = utilsqh.convertToBinary(x)
                 self.gramObj.appendList(listName,x)
     
     def setList(self, listName, words):
-        if type(listName) == str:
-            listName = utilsqh.convertToBinary(listName)
+        # if type(listName) == str:
+        #     listName = utilsqh.convertToBinary(listName)
         self.emptyList(listName)
         self.appendList(listName, words) # other way around?
 
@@ -772,7 +773,7 @@ class GrammarBase(GramClassBase):
         # if the allResults flag is set it is possible that the first
         # parameter will be a string instead of a data structure. We 
         # compute the recognition type from this parameter
-        if type(wordsAndNums) == bytes: 
+        if type(wordsAndNums) == str:
             recogType = wordsAndNums
         else:
             recogType = 'self'

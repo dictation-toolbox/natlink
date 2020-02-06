@@ -702,12 +702,12 @@ class GramParser(object):
 #
 
 def packGrammar(parseObj):
-    output = ""
+    output = b""
 
     # header:
     #   DWORD dwType  = 0
     #   DWORD dwFlags = 0
-    output = output + pack("LL", 0, 0)
+    output = output + pack(b"LL", 0, 0)
 
     # various chunks
     if len(parseObj.exportRules):
@@ -723,52 +723,54 @@ def packGrammar(parseObj):
     return output
 
 
-def packGrammarChunk(type,dict):
-    output = ""
+def packGrammarChunk(chunktype,chunkdict):
+    output = b""
     totalLen = 0
 
-    for word in list(dict.keys()):
+    for word, value in chunkdict.items():
+        if type(word) == str: word = word.encode()
+        # if type(value) == str: value = value.encode()
         # chunk data entry
         #   DWORD dwSize = number of bytes in entry
         #   DWORD dwNum  = ID number for this rule/word
         #   DWORD szName = name of rule/word, zero-term'd and padded to dword
         paddedLen = ( len(word) + 4 ) & 0xFFFC
-        output = output + pack( "LL%ds" % paddedLen, paddedLen+8, dict[word], word )
+        output = output + pack(b"LL%ds" % paddedLen, paddedLen+8, value, word )
         totalLen = totalLen + paddedLen+8
 
     # chunk header
     #   DWORD dwChunkID = type
     #   DWORD dwChunkSize = number of bytes in chunk not including this header
-    return pack( "LL", type, totalLen ) + output
+    return pack( b"LL", chunktype, totalLen ) + output
 
 
-def packGrammarRules(type,names,dict):
-    output = ""
+def packGrammarRules(chunktype,names,chunkdict):
+    output = b""
     totalLen = 0
     elemType = { 'start':1, 'end':2, 'word':3, 'rule':4, 'list':6 }
 
-    for word in list(dict.keys()):
-        ruleDef = ""
+    for word in chunkdict:
+        ruleDef = b""
         ruleLen = 0
 
-        for element in dict[word]:
+        for element in chunkdict[word]:
             # repeated element:
             #   WORD wType    = element type
             #   WORD wProb    = 0
             #   DWORD dwValue = element value
-            ruleDef = ruleDef + pack( "HHL", elemType[element[0]], 0, element[1] )
+            ruleDef = ruleDef + pack( b"HHL", elemType[element[0]], 0, element[1] )
             ruleLen = ruleLen + 8
         
         # rule definition:
         #   DWORD dwSize = number of bytes in rule definition
         #   DWORD dwnum  = ID number of rule
-        output = output + pack( "LL", ruleLen+8, names[word] ) + ruleDef
+        output = output + pack( b"LL", ruleLen+8, names[word] ) + ruleDef
         totalLen = totalLen + ruleLen+8
 
     # chunk header:
     #   DWORD dwChunkID = type
     #   DWORD dwChunkSize = number of bytes in chunk not including this header
-    return pack( "LL", type, totalLen ) + output
+    return pack( b"LL", chunktype, totalLen ) + output
 
 #
 # This is a routine which was included for testing but can also be used to 
@@ -839,12 +841,16 @@ def splitApartLines(lines):
     
     see  unittest still problems here!!
     """
+    report = 1
     for x in range(len(lines)-1, -1, -1):
         line = lines[x]
         if type(line) == bytes:
+            if report:
+                print("line in bytes type, should be unicode: %s"% line)
+                report = 0
             line = utilsqh.convertToUnicode(line)
-        if type(line) == str:
-            line = utilsqh.convertToBinary(line)
+        # if type(line) == str:
+        #     line = utilsqh.convertToBinary(line)
             lines[x] = line
         lines[x] = lines[x].rstrip()
         crlf = lines[x].find('\n')
@@ -879,15 +885,23 @@ test = """
 >>> parser = GramParser(gramSpec)
 >>> parser.doParse()
 >>> parser.checkForErrors()
->>> print parser.dumpString()
-knownRules: 
+>>> print(parser.dumpString())
+knownRules:
 {'rule': 1}
-knownWords: 
+knownWords:
 {'action': 1}
-exportRules: 
+exportRules:
 {'rule': 1}
-ruleDefines: 
+ruleDefines:
 {'rule': [('word', 1)]}
+
+
+## manual inspection:
+>>> packGrammar(parser)
+
+
+'\x00\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00rule\x00\x00\x00\x00\x02\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00action\x00\x00\x03\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x00'
+
 
 """
 

@@ -3,21 +3,20 @@ starting unittestNatlink
 
 starting tests with threading: 0
 
-testGrammarRecognitions
-loading gramSpec: <hello> exported = hello world;
+test recognitionMimic, version: 15
 
 --------------- errors -----------------
 
----------- testGrammarRecognitions (__main__.UnittestNatlink) --------
-Traceback (most recent call last):
-  File "<string>", line 2336, in testGrammarRecognitions
-  File "<string>", line 2317, in loadAndActivate
-  File "C:\NatlinkGIT3\Natlink\MacroSystem\core\natlinkutils.py", line 690, in activateAll
-    self.activateSet(allRules, window=window, exclusive=exclusive)
-  File "C:\NatlinkGIT3\Natlink\MacroSystem\core\natlinkutils.py", line 668, in activateSet
-    self.setExclusive(exclusive)
-  File "C:\NatlinkGIT3\Natlink\MacroSystem\core\natlinkutils.py", line 718, in setExclusive
-    self.gramObj.setExclusive(value)
-natlink.NatError: Need to call GramObj.load before calling GramObj.setExclusive
-
 --------------- failures -----------------
+
+---------- testRecognitionMimic (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "<string>", line 2014, in doTestMimicResult
+natlink.MimicFailed: recognitionMimic call failed (De spraakengine retourneerde de volgende fout: MimicNoResults)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<string>", line 1216, in testRecognitionMimic
+  File "<string>", line 2016, in doTestMimicResult
+AssertionError: TestMimicResult, recognitionMimic failed for words: "['hello', 'testing']"
