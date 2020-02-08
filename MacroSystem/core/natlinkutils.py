@@ -331,9 +331,14 @@ class GramClassBase:
             self.gramObj.setBeginCallback(self.beginCallback)
             self.gramObj.setResultsCallback(self.resultsCallback)
             self.gramObj.setHypothesisCallback(self.hypothesisCallback)
+        except:
+            print("GramClassBase.load(), Error at setting Callback functions ", sys.exc_info())
+            traceback.print_exc()
+            raise
+        try:
             self.gramObj.load(grammar,allResults,hypothesis)
         except:
-            print("GramClassBase.load() ", sys.exc_info())
+            print("GramClassBase.load(), Error at loading the grammar ", sys.exc_info())
             traceback.print_exc()
             raise
 
@@ -764,6 +769,7 @@ class GrammarBase(GramClassBase):
     def setList(self, listName, words):
         # if type(listName) == str:
         #     listName = utilsqh.convertToBinary(listName)
+        print('listName: %s, validLists: %s'% (listName, self.validLists))
         self.emptyList(listName)
         self.appendList(listName, words) # other way around?
 

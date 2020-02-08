@@ -3,11 +3,14 @@
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
-# testnatlink.py
+# testnatlink.py -> unittestNatlink
 #   / performs some basic tests of the NatLink system.
 #
 # run from a (preferably clean) US user profile, easiest from IDLE.
 # do not run from pythonwin. See also README.txt in PyTest folder
+#
+# February 2020, testing with Python3 version of natlink.pyd (QH)
+#
 #
 # February 2018, QH:
 # with DPI15 a thorough testing again.
@@ -54,6 +57,7 @@ import unittest
 import types
 import os
 import os.path
+import glob
 import time
 import traceback        # for printing exceptions
 from struct import pack
@@ -668,7 +672,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Test extra functions of NatLink (getUser, getAllUsers)
 
-    def tttestGetAllUsersEtc(self):
+    def testGetAllUsersEtc(self):
         self.log("testGetAllUsersEtc", 0) # not to DragonPad!
         currentUser = natlink.getCurrentUser()[0]
         
@@ -683,7 +687,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def tttestPlayString(self):
+    def testPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -737,7 +741,7 @@ class UnittestNatlink(unittest.TestCase):
 
 
 
-    def tttestNatlinkutilsPlayString(self):
+    def testNatlinkutilsPlayString(self):
         """this version captions accented and unicode characters (possibly)
         
         The str with accented characters are NOT handled correct with SendInput(mdl)
@@ -830,7 +834,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestExecScript(self):
+    def testExecScript(self):
         self.log("testExecScript", 1)
 
         testForException = self.doTestForException
@@ -840,7 +844,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestDictObj(self):
+    def testDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = natlink.DictObj()
@@ -1110,7 +1114,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def tttestRecognitionMimicCommands(self):
+    def testRecognitionMimicCommands(self):
         """test different phrases with commands, from own grammar
         
         explore when the recognitionMimic fails
@@ -1190,7 +1194,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
        
-    def tttestRecognitionMimic(self):
+    def testRecognitionMimic(self):
         """test different phrases with spoken forms,
         
         since Dragon 11, lots of things have changed here, so it seems good to make a special
@@ -1214,137 +1218,124 @@ class UnittestNatlink(unittest.TestCase):
         words = ['hello', 'testing']
         expected = 'Test hello testing'
         testMimicResult(words, expected)
-        return
 
-        if DNSVersion >= 11:
-            # spelling letters (also see voicecode/sr_interface)
-            total = []
-            self.log("Test recognition mimic of characters (adding up in the Dragonpad window)")
-            for word, expected in [(r'a\determiner', 'A'),
-                         (r'A\letter', 'A A'),
-                         # (r'A\letter\alpha', 'A AA'), ## not in DPI15 (any more)
-                         (r'a\lowercase-letter\lowercase A', 'A A a'),
-                         # (r'a\lowercase-letter\lowercase alpha', 'A AAaa'), # not in DPI 15
-                         (r'A\uppercase-letter\uppercase A', 'A A a A'),
-                         # (r'A\uppercase-letter\uppercase alpha', 'A AAaaAA'), ## not in DPI15 (any more)
-                         ([r'I\letter'], 'A A a A I'),
-                         ([r'I\pronoun'], 'A A a A I I'),
-                         ([r'X\letter', r'I\pronoun', r'Y\letter'], 'A A a A I I X I Y'),
-                         ]:
-                if type(word) in (str, bytes):
-                    words = [word]
-                    total.append(word)
-                else:
-                    words = word[:]
-                    total.extend(words)
-                self.log("try to mimic %s (expect: %s)"% (words, expected))
-                testMimicResult(words, expected)
+        # spelling letters (also see voicecode/sr_interface)
+        total = []
+        self.log("Test recognition mimic of characters (adding up in the Dragonpad window)", 1)
+        self.wait(1)
+        self.clearDragonPad()
+        self.doTestWindowContents("")
+        
+        for word, expected in [(r'a\determiner', 'A'),
+                     (r'A\letter', 'A A'),
+                     (r'a\lowercase-letter\lowercase A', 'A Aa'),
+                     (r'A\uppercase-letter\uppercase A', 'A AaA'),
+                     ([r'I\letter'], 'A AaAI'),
+                     ([r'I\pronoun'], 'A AaAI I'),
+                     ([r'X\letter', r'I\pronoun', r'Y\letter'], 'A AaAI I X I Y'),
+                     ]:
+            if type(word) == str:
+                words = [word]
+                total.append(word)
+            else:
+                words = word[:]
+                total.extend(words)
+            self.log("try to mimic %s (expect: %s)"% (words, expected))
+            testMimicResult(words, expected)
             
-            time.sleep(0.5)
+        time.sleep(0.5)
+        self.clearDragonPad()
+        # total string in once:
+        self.log('testing total: %s (expecting: %s)'% (total, expected))
+        # the letters stick together if pronounced in one utterance: 
+        expected = 'A AaAI I X I Y' 
+        testMimicResult(total, expected)
+        self.clearDragonPad()
+            
+            
+        ## numbers:
+        total = []
+        for word, expected in [(r'one\pronoun', 'One'),
+                     (r'one\number', 'One'),
+                     (['two', 'three', 'four', 'five'], '2345'), 
+                     (['six', 'seven', 'eight', 'nine'], '6789')]:
+        
+            if type(word) == str:
+                words = [word]
+                total.append(word)
+            else:
+                words = word[:]
+                total.extend(words)
+            testMimicResult(words, expected)
             self.clearDragonPad()
-            # total string in once:
-            self.log('testing total: %s (expecting: %s)'% (total, expected))
-            # the letters stick together if pronounced in one utterance: 
-            expected = 'A AaAI I X I Y' 
-            testMimicResult(total, expected)
-            self.clearDragonPad()
-            
-            
-            ## numbers:            
-            for word, expected in [(r'one\pronoun', 'One'),
-                         (r'one\number', 'One'),
-                         (['two', 'three', 'four', 'five'], '2345'), 
-                         (['six', 'seven', 'eight', 'nine'], '6789')]:
-            
-                if type(word) in (str, bytes):
-                    words = [word]
-                    total.append(word)
-                else:
-                    words = word[:]
-                    total.extend(words)
-                testMimicResult(words, expected)
-                self.clearDragonPad()
 
-            # control characters:
-            for word, expected in [(r'.\period\full stop', '.'),
-                        (r'.\dot\dot', '.'), 
-                        (r',\comma\comma', ','),
-                        ([r'\caps-on\caps on', 'hello', 'world'], 'Hello World'),
-                        ([r'\all-caps-on\all caps on', 'hello', 'world'], 'HELLO WORLD')]:
-                if type(word) in (str, bytes):
-                    words = [word]
-                else:
-                    words = word[:]
-                testMimicResult(words, expected)
-                self.clearDragonPad()
+        ## total numbers:
+        time.sleep(0.5)
+        self.clearDragonPad()
+        # total string in once:
+        self.log('testing total: %s (expecting: %s)'% (total, expected))
+        # the letters stick together if pronounced in one utterance: 
+        expected = 'One 123456789' 
+        testMimicResult(total, expected)
+        self.clearDragonPad()
 
-            # try shorter forms:
-            for word, expected in [
-                        ([r'\caps-on', 'hello', 'world'], 'Hello World'),
-                        ([r'\all-caps-on', 'hello', 'world'], 'HELLO WORLD')]:
-                if type(word) in (str, bytes):
-                    words = [word]
-                else:
-                    words = word[:]
-                testMimicResult(words, expected)
-                self.clearDragonPad()
-                
-        else:
-            # NatSpeak <= 10:
-            # spelling letters (also see voicecode/sr_interface)
-            total = []
-            for word, expected in [(r'a', 'A'),
-                         (r'A.', 'A A.'),
-                         (r'a\alpha', 'A A. a'),
-                         ([r'I.', r'i\india'], 'A A. a I. i'),
-                         ]:
-                if type(word) in (str, bytes):
-                    words = [word]
-                    total.append(word)
-                else:
-                    words = word[:]
-                    total.extend(words)
-                testMimicResult(words, expected)
-            
-            time.sleep(0.5)
-            self.clearDragonPad()
-            # total string in once:
-            expected = 'A A. a I. i' # not clear why now a space at end of result.
-            testMimicResult(total, expected)
-            self.clearDragonPad()
-            
-            
-            ## numbers:            
-            for word, expected in [(r'one', 'One'),
-                         #(r'1\one', 'One'),
-                         (['two', 'three', 'four', 'five'], '2345'), 
-                         (['six', 'seven', 'eight', 'nine'], '6789')]:
-            
-                if type(word) in (str, bytes):
-                    words = [word]
-                    total.append(word)
-                else:
-                    words = word[:]
-                    total.extend(words)
-                testMimicResult(words, expected)
-                self.clearDragonPad()
 
-            # control characters:
-            for word, expected in [(r'.\full-stop', '.'),
-                        (r'.\dot', '.'), 
-                        (r',\comma', ','),
-                        ([r'\Caps-On', 'hello', 'world'], 'Hello World'),
-                        ([r'\All-Caps-On', 'hello', 'world'], 'HELLO WORLD')]:
-                if type(word) in (str, bytes):
-                    words = [word]
-                else:
-                    words = word[:]
-                testMimicResult(words, expected)
-                self.clearDragonPad()
-            # end of testing recognitionMimic for NatSpeak <= 10    
+
+        # control characters:
+        total = []
+        for word, expected in [(r'.\period\full stop', '.'),
+                    (r'.\dot\dot', '.'), 
+                    (r',\comma\comma', ','),
+                    ([r'\caps-on\caps on', 'hello', 'world'], 'Hello World'),
+                    ([r'\all-caps-on\all caps on', 'hello', 'world'], 'HELLO WORLD')]:
+            if type(word) in (str, bytes):
+                words = [word]
+                total.append(word)
+            else:
+                words = word[:]
+                total.extend(word)
+            testMimicResult(words, expected)
+            self.clearDragonPad()
+
+        ## total punctuation:
+        time.sleep(0.5)
+        self.clearDragonPad()
+        # total string in once:
+        self.log('testing total: %s (expecting: %s)'% (total, expected))
+        # the letters stick together if pronounced in one utterance: 
+        expected = '.., Hello World HELLO WORLD' 
+        testMimicResult(total, expected)
+        self.clearDragonPad()
+
+
+
+        # try shorter forms:
+        total = []
+        for word, expected in [
+                    ([r'\caps-on', 'hello', 'world'], 'Hello World'),
+                    ([r'\all-caps-on', 'hello', 'world'], 'HELLO WORLD')]:
+            if type(word) in (str, bytes):
+                words = [word]
+                total.append(word)
+            else:
+                words = word[:]
+                total.extend(word)
+            testMimicResult(words, expected)
+            self.clearDragonPad()
+            
+        ## total shorter forms (???)
+        time.sleep(0.5)
+        self.clearDragonPad()
+        # total string in once:
+        self.log('testing total: %s (expecting: %s)'% (total, expected))
+        # the letters stick together if pronounced in one utterance: 
+        expected = 'Hello World HELLO WORLD' 
+        testMimicResult(total, expected)
+        self.clearDragonPad()
+
 
         
-    def tttestWordFuncs(self):
+    def testWordFuncs(self):
         """tests the different vocabulary word functions.
 
         These tests are a bit vulnerable and seem to have changed in more recent
@@ -1596,7 +1587,7 @@ class UnittestNatlink(unittest.TestCase):
     # September 2015: add unimacroDirectory in between baseDirectory and userDirectory
     # Febr 2018: convert to binary added (QH)
 
-    def tttestNatlinkUtilsFunctions(self):
+    def testNatlinkUtilsFunctions(self):
         """test utility functions of natlinkutils
      
         getModifierKeyCodes: transforms modifiers ctrl alt (or menu) and shift into
@@ -1627,7 +1618,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException(KeyError, "getModifierKeyCodes('typo')")
 
-    def tttestNatLinkMain(self):
+    def testNatLinkMain(self):
 
         # through this grammar we get the recogtype:
         recCmdDict = RecordCommandOrDictation()
@@ -1833,7 +1824,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestWordProns(self):
+    def testWordProns(self):
         """Tests word pronunciations
 
         This test is very vulnerable for different versions of NatSpeak etc.
@@ -2022,7 +2013,7 @@ class UnittestNatlink(unittest.TestCase):
     # Test the splitApartLines function of gramparser
     # has to be developed (QH, 2018)
     
-    # def tttestSplitApartLines(self):
+    # def testSplitApartLines(self):
     #     self.log("testSplitApartLines", 1)
     #     func = gramparser.splitApartLines
     #     self.doTestSplitApartLines(func, 'hello', ['hello', '\x00'])
@@ -2063,6 +2054,11 @@ class UnittestNatlink(unittest.TestCase):
         testGrammarError(gramparser.SyntaxError,'<rule> exported = hello | | goodbye;')
         testGrammarError(gramparser.SyntaxError,'<rule> exported = hello ( ) goodbye;')
         testGrammarError(gramparser.SyntaxError,'<rule> exported = hello "" goodbye;')
+        
+        ## accented characters: e accent aigu
+        testGrammarError(gramparser.SyntaxError,'<rul\xe9> exported = hello Cap;')
+        testGrammarError(gramparser.SyntaxError,'<ruleCap> exported = hello {list\xe9} accented;')
+        
         
     #---------------------------------------------------------------------------
     # Here we test recognition of command grammars using GrammarBase    
@@ -2130,9 +2126,9 @@ class UnittestNatlink(unittest.TestCase):
 ##        calcWindow = natlink.getCurrentModule()[2]
         
         # Activate the grammar and try a test recognition
-        testGram.load('<Start> exported = hello there;')
+        testGram.load('<Start> exported = hello;')
         testGram.activateAll(window=calcWindow)
-        testRecognition(['hello','there'])
+        testRecognition(['hello'])
         testGram.checkExperiment(1,'self',['hello','there'],[('hello','Start'),('there','Start')])
 
         # With the grammar deactivated, we should see nothing.  But to make this
@@ -2323,7 +2319,61 @@ class UnittestNatlink(unittest.TestCase):
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
 
-    def tttestGrammarRecognitions(self):
+    def testSampleMacros(self):
+        """test the sample macro's scripts
+        
+        In order to test these, copy the _sample#.py macro's into the MacroSystem directory
+        """
+        self.log("testSampleMacros", 1)
+        testRecognition = self.doTestRecognition
+        
+        MacroSystemDir = os.path.normpath(os.path.join(coreDir, '..'))
+        # globline = r'%s\_s*.py'% MacroSystemDir
+        # PyFiles = glob.glob(globline)
+        PyFiles = [f for f in os.listdir(MacroSystemDir) if f.endswith('.py')]
+        self.log('PyFiles: %s'% PyFiles)
+        
+        # _sample1
+        pyfile = '_sample1.py'
+        if pyfile in PyFiles:
+            self.log('testing %s'% pyfile)
+            testRecognition(['d\xe9mo', 'sample', 'one'], 1, log=1)
+        else:
+            self.log('skipping %s, not in MacroSystem folder'% pyfile)
+            
+        # _sample2    demo sample two [ help ]   (alternatives)     
+        pyfile = '_sample2.py'
+        if pyfile in PyFiles:
+            self.log('testing %s'% pyfile)
+            testRecognition(['d\xe9mo', 'sample', 'two'], 1, log=1)
+            testRecognition(['d\xe9mo', 'sample', 'two', 'help'], 1, log=1)
+            testRecognition(['d\xe9mo', 'sample', 'two', 'black'], 1, log=1)
+        else:
+            self.log('skipping %s, not in MacroSystem folder'% pyfile)
+
+
+
+        # _sample6  same as demo two but now with a list of colors  demo sample six [ help ]   (alternatives)     
+        pyfile = '_sample6.py'
+        if pyfile in PyFiles:
+            self.log('testing %s'% pyfile)
+            testRecognition(['d\xe9mo', 'sample', 'six'], 1, log=1)
+            testRecognition(['d\xe9mo', 'sample', 'six', 'help'], 1, log=1)
+            testRecognition(['d\xe9mo', 'sample', 'six', 'black'], 1, log=1)
+        else:
+            self.log('skipping %s, not in MacroSystem folder'% pyfile)
+
+        # _sample3 demo sample three now please (subrule)
+        pyfile = '_sample3.py'
+        if pyfile in PyFiles:
+            self.log('testing %s'% pyfile)
+            testRecognition(['d\xe9mo', 'sample', 'three', 'now', 'please'], 1, log=1)
+        else:
+            self.log('skipping %s, not in MacroSystem folder'% pyfile)
+
+
+
+    def testGrammarRecognitions(self):
 
         self.log("testGrammarRecognitions", 1)
 
@@ -2385,7 +2435,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         
 
-    def tttestDgndictationEtc(self):
+    def testDgndictationEtc(self):
         self.log("testDgndictationEtc", 1)
 
         # Create a simple command grammar.  This grammar simply gets the results
@@ -2632,7 +2682,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         testGram.resetExperiment()
 
-    def tttestRecognitionChangingRulesExclusive(self):
+    def testRecognitionChangingRulesExclusive(self):
         self.log("testRecognitionChangingRulesExclusive", 1)
 
         # Create a simple command grammar.
@@ -2891,7 +2941,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of dictation grammars using DictGramBase
 
-    def tttestDictGram(self):
+    def testDictGram(self):
         self.log("testDictGram")
 
         # Create a dictation grammar.  This grammar simply gets the results of
@@ -3042,7 +3092,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
 
-    def tttestSelectGram(self):
+    def testSelectGram(self):
         self.log("testSelectGram")
 
         # Create a selection grammar.  This grammar simply gets the results of
@@ -3192,7 +3242,7 @@ class UnittestNatlink(unittest.TestCase):
     # Testing the tray icon is hard since we can not conviently interact with
     # the UI from this test script.  But I test what I can.    
 
-    def tttestTrayIcon(self):
+    def testTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -3230,7 +3280,7 @@ class UnittestNatlink(unittest.TestCase):
     # QH, april 2010:
     # Added test for self.rulesByName dict...
 
-    def tttestNextPrevRulesAndWords(self):
+    def testNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3356,7 +3406,7 @@ class UnittestNatlink(unittest.TestCase):
     ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
     ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
 
-    def tttestNextPrevRulesAndWordsRecursive(self):
+    def testNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3501,7 +3551,7 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched to "%s" mic'% micState)
             time.sleep(w)
 
-    def tttestNestedMimics(self):
+    def testNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -3825,7 +3875,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def tttest....
+    # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')

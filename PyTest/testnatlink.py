@@ -4,12 +4,15 @@
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
 # testnatlink.py
+#
+### This is the original test program of NatLink. Now converted to unittestNatlink.py (QH)
+#
 #   This script performs some basic tests of the NatLink system.
 #    Restart NatSpeak before rerunning this script. This is because the test
 #    script will leave some state around which will make it fail if run again
 #
 #    Do *not* save your speech files after a test
-# 
+#
 #
 # April 16, 2005 - sw
 # got many, not all test working w/ v 8

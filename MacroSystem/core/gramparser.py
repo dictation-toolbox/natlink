@@ -58,11 +58,12 @@ import traceback
 import utilsqh ## convertToBinary
 import importlib
 import locale
+from collections import OrderedDict
 
 preferredencoding =  locale.getpreferredencoding()
 
 reAlphaNumeric = re.compile('\w+$')
-reValidName = re.compile('^[a-z0-9-_]+$')
+reValidName = re.compile('^[a-zA-Z0-9-_]+$')
 #
 # This is the lexical scanner.
 #
@@ -170,7 +171,7 @@ AltCode = 2     # alternative
 RepCode = 3     # repeat
 OptCode = 4     # optional
 
-class GramScanner(object):
+class GramScanner:
 
     def __init__(self,text=None, grammarName=None):
         self.token = None
@@ -372,7 +373,7 @@ class GramScannerReverse(GramScanner):
     def mergeReturnList(self):
         return ''.join(self.returnList)
 
-class peek_ahead(object):
+class peek_ahead:
     """Iterator that can look ahead one step
 
     From example 16.7 from python cookbook 2.
@@ -421,19 +422,19 @@ class peek_ahead(object):
 # type and element value
 #
 
-class GramParser(object):
+class GramParser:
 
-    def __init__(self,text=[''], grammarName=None):
+    def __init__(self,text, grammarName=None):
         self.scanObj = GramScanner(text, grammarName=grammarName)
-        self.knownRules = {}
-        self.knownWords = {}
-        self.knownLists = {}
+        self.knownRules = OrderedDict()
+        self.knownWords = OrderedDict()
+        self.knownLists = OrderedDict()
         self.nextRule = 1
         self.nextWord = 1
         self.nextList = 1
-        self.exportRules = {}
-        self.importRules = {}
-        self.ruleDefines = {}
+        self.exportRules = OrderedDict()
+        self.importRules = OrderedDict()
+        self.ruleDefines = OrderedDict()
         self.grammarName = grammarName or ""
 
     def doParse(self,*text):
@@ -577,7 +578,7 @@ class GramParser(object):
 
     def reportOptionalRule(self, definition):
         """print the words that are optional, for testing BestMatch V"""
-        wordsRev = dict([(v,k) for k,v in list(self.knownWords.items())])
+        wordsRev = OrderedDict([(v,k) for k,v in self.knownWords.items()])
 
         for w, number in definition:
             if w == 'word':
@@ -607,9 +608,9 @@ class GramParser(object):
         reverse numbers of rules and ruleDefines... must be identical in gramparserlexyacc...
         """
         L = []
-        rulesRev = dict([(v,k) for k,v in list(self.knownRules.items())])
-        wordsRev = dict([(v,k) for k,v in list(self.knownWords.items())])
-        listsRev = dict([(v,k) for k,v in list(self.knownLists.items())])
+        rulesRev = OrderedDict([(v,k) for k,v in list(self.knownRules.items())])
+        wordsRev = OrderedDict([(v,k) for k,v in list(self.knownWords.items())])
+        listsRev = OrderedDict([(v,k) for k,v in list(self.knownLists.items())])
         codeRev = {SeqCode:'SeqCode',
                    AltCode:'AltCode',
                    RepCode:'RepCode',
@@ -620,7 +621,7 @@ class GramParser(object):
             if var:
                 L.append('%s: %s'% (name, ', '.join(var)))
         if self.ruleDefines:
-            ruleDefinesNice = dict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev,codeRev) \
+            ruleDefinesNice = OrderedDict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev,codeRev) \
                                                 for item in ruleList]) \
                                      for (rulename,ruleList) in list(self.ruleDefines.items())])
                                     
@@ -635,9 +636,9 @@ class GramParser(object):
         reverse numbers of rules and ruleDefines... must be identical in gramparserlexyacc...
         """
         D = {}
-        rulesRev = dict([(v,k) for k,v in list(self.knownRules.items())])
-        wordsRev = dict([(v,k) for k,v in list(self.knownWords.items())])
-        listsRev = dict([(v,k) for k,v in list(self.knownLists.items())])
+        rulesRev = OrderedDict([(v,k) for k,v in list(self.knownRules.items())])
+        wordsRev = OrderedDict([(v,k) for k,v in list(self.knownWords.items())])
+        listsRev = OrderedDict([(v,k) for k,v in list(self.knownLists.items())])
         codeRev = {SeqCode:'SeqCode',
                    AltCode:'AltCode',
                    RepCode:'RepCode',
@@ -666,30 +667,6 @@ class GramParser(object):
             return (i, codeRev[v])
         else:
             raise ValueError('invalid item in nicenItem: %s'% i)
-
-    def dumpContents(self):
-        print("Dumping GramParser object...")
-        print("  knownRules:")
-        for name in list(self.knownRules.keys()):
-            print("    ", name, self.knownRules[name])
-        print("  knownLists:")
-        for name in list(self.knownLists.keys()):
-            print("    ", name, self.knownLists[name])
-        print("  knownWords:")
-        for name in list(self.knownWords.keys()):
-            print("    ", name, self.knownWords[name])
-        print("  exportRules:")
-        for name in list(self.exportRules.keys()):
-            print("    ", name, self.exportRules[name])
-        print("  importRules:")
-        for name in list(self.importRules.keys()):
-            print("    ", name, self.importRules[name])
-        print("  ruleDefines:")
-        for name in list(self.ruleDefines.keys()):
-            print("    ", name)
-            for element in self.ruleDefines[name]:
-                print("      ", element[0], element[1])
-
 #
 # This function takes a GramParser class which contains the parse of a grammar
 # and returns a "string" object which contains the binary representation of
@@ -754,8 +731,8 @@ def packGrammarRules(chunktype,names,chunkdict):
     totalLen = 0
     elemType = { 'start':1, 'end':2, 'word':3, 'rule':4, 'list':6 }
 
-    for word in chunkdict:
-        ruleDef = ""
+    for word, element in chunkdict.items():
+        ruleDef = []
         ruleLen = 0
 
         for element in chunkdict[word]:
@@ -763,13 +740,14 @@ def packGrammarRules(chunktype,names,chunkdict):
             #   WORD wType    = element type
             #   WORD wProb    = 0
             #   DWORD dwValue = element value
-            output.append(pack("HHL", elemType[element[0]], 0, element[1]))
+            ruleDef.append(pack("HHL", elemType[element[0]], 0, element[1]))
             ruleLen = ruleLen + 8
         
         # rule definition:
         #   DWORD dwSize = number of bytes in rule definition
         #   DWORD dwnum  = ID number of rule
-        output.insert(0, pack("LL", ruleLen+8, names[word] ))
+        output.append(pack("LL", ruleLen+8, names[word] ))
+        output.append(b"".join(ruleDef))
         totalLen = totalLen + ruleLen+8
 
     # chunk header:
@@ -813,15 +791,6 @@ def isValidListOrRulename(word):
     """
     if reValidName.match(word):
         return 1
-    # 
-    # allowed = string.ascii_letters + string.digits + '-_'
-    # if not word:
-    #     return
-    # for w in word:
-    #     if not w in allowed:
-    #         return
-    # # passed:
-    # return 1
 
 #
 # This utility routine will split apart strings at linefeeds in a list of
@@ -886,32 +855,70 @@ def splitApartLines(lines):
 
 
 test = """
+
+## testing the result of the packGrammar function for simple grammars:
+
 >>> gramSpec = ['<rule> exported = action;']
 >>> parser = GramParser(gramSpec)
 >>> parser.doParse()
 >>> parser.checkForErrors()
 >>> print(parser.dumpString())
 knownRules:
-{'rule': 1}
+OrderedDict([('rule', 1)])
 knownWords:
-{'action': 1}
+OrderedDict([('action', 1)])
 exportRules:
-{'rule': 1}
+OrderedDict([('rule', 1)])
 ruleDefines:
-{'rule': [('word', 1)]}
+OrderedDict([('rule', [('word', 1)])])
 
+>>> repr(packGrammar(parser))
+"b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00rule\\\\x00\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
 
-## manual inspection:
->>> packGrammar(parser)
+>>> gramSpec = ['<ruleList> exported = action {List};']
+>>> parser = GramParser(gramSpec)
+>>> parser.doParse()
+>>> parser.checkForErrors()
+>>> print(parser.dumpString())
+knownRules:
+OrderedDict([('ruleList', 1)])
+knownLists:
+OrderedDict([('List', 1)])
+knownWords:
+OrderedDict([('action', 1)])
+exportRules:
+OrderedDict([('ruleList', 1)])
+ruleDefines:
+OrderedDict([('ruleList',
+              [('start', 1), ('word', 1), ('list', 1), ('end', 1)])])
+>>> repr(packGrammar(parser))
+"b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00\\\\x14\\\\x00\\\\x00\\\\x00\\\\x14\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00ruleList\\\\x00\\\\x00\\\\x00\\\\x00\\\\x06\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00List\\\\x00\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x06\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
 
- '\x00\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00rule\x00\x00\x00\x00\x02\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00action\x00\x00\x03\x00\x00\x00\x10\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x00'
+## two lines:
+>>> gramSpec = ['<rule1> exported = action one;', '<rule2> exported = action two;']
+>>> parser = GramParser(gramSpec)
+>>> parser.doParse()
+>>> parser.checkForErrors()
+>>> print(parser.dumpString())
+knownRules:
+OrderedDict([('rule1', 1), ('rule2', 2)])
+knownWords:
+OrderedDict([('action', 1), ('one', 2), ('two', 3)])
+exportRules:
+OrderedDict([('rule1', 1), ('rule2', 2)])
+ruleDefines:
+OrderedDict([('rule1', [('start', 1), ('word', 1), ('word', 2), ('end', 1)]),
+             ('rule2', [('start', 1), ('word', 1), ('word', 3), ('end', 1)])])
 
+>>> repr(packGrammar(parser))
+"b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00 \\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00rule1\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00rule2\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x0c\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00one\\\\x00\\\\x0c\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00two\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00P\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
 
 """
 
 ###doctest handling:
 __test__ = dict(test = test
-                )
+               )
+
 def _test():
     import doctest
     
