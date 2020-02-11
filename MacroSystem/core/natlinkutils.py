@@ -326,7 +326,6 @@ class GramClassBase:
         self.gramObj.unload()
 
     def load(self,grammar,allResults=0,hypothesis=0):
-        pass
         try:
             self.gramObj.setBeginCallback(self.beginCallback)
             self.gramObj.setResultsCallback(self.resultsCallback)
@@ -530,25 +529,7 @@ class GrammarBase(GramClassBase):
             # code upper ascii characters with latin1 if they were in the process entered as unicode
             if not type(gramSpec) in (str, list):
                 raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
-            # print 'loading %s, type: %s'% (grammarName, type(gramSpec) )
-            if type(gramSpec) == list:
-                pass
-                # for i, grampart in enumerate(gramSpec):
-                #     line = grampart
-                    # if type(line) == bytes:
-                    #     line = utilsqh.convertToUnicode(line)
-                    # if type(line) == str:
-                    #     line = utilsqh.convertToBinary(line)
-                    # if line != grampart:
-                    #     gramSpec[i] = line
-            # if type(gramSpec) == bytes:
-            #     gramSpec = utilsqh.convertToUnicode(gramSpec)
-            if type(gramSpec) == str:
-                # gramSpec = utilsqh.convertToBinary(gramSpec)
-                gramSpec = gramSpec.split('\n')
-                gramSpec = [g.rstrip() for g in gramSpec]
 
-            gramparser.splitApartLines(gramSpec)
             parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
             parser.doParse()
             parser.checkForErrors()
@@ -562,13 +543,14 @@ class GrammarBase(GramClassBase):
             # we want to keep a list of the rules which can be activated and the
             # known lists so we can catch errors earlier
             self.validRules = list(parser.exportRules.keys())
+            # print('validRules: ', self.validRules)
             self.validLists = list(parser.knownLists.keys())
 
             # we reverse the rule dictionary so we can convert rule numbers back
             # to rule names during recognition
             self.ruleMap = {}
-            for x in list(parser.knownRules.keys()):
-                self.ruleMap[ parser.knownRules[x] ] = x
+            for ruleNum, knownRule in parser.knownRules.items():
+                self.ruleMap[ knownRule ] = ruleNum
             return 1
 
         except:
@@ -769,7 +751,6 @@ class GrammarBase(GramClassBase):
     def setList(self, listName, words):
         # if type(listName) == str:
         #     listName = utilsqh.convertToBinary(listName)
-        print('listName: %s, validLists: %s'% (listName, self.validLists))
         self.emptyList(listName)
         self.appendList(listName, words) # other way around?
 
@@ -1180,7 +1161,5 @@ def testSendInput(keys):
 
 if __name__ == "__main__":
     # testSendInput('abc#(){}zz')
-    testSendInput('\xe9\xe9n example')
-    # testSendInput(u';ydebug(lLoO9)::::')
-    # testSendInput(u'U\u00e9\u0106\u00D6 character')
-    #
+    # testSendInput('\xe9\xe9n example')
+    pass

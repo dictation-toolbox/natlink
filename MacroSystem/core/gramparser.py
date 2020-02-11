@@ -425,19 +425,20 @@ class peek_ahead:
 class GramParser:
 
     def __init__(self,text, grammarName=None):
+        text = splitApartLines(text)
         self.scanObj = GramScanner(text, grammarName=grammarName)
-        self.knownRules = OrderedDict()
-        self.knownWords = OrderedDict()
-        self.knownLists = OrderedDict()
+        self.knownRules = dict()
+        self.knownWords = dict()
+        self.knownLists = dict()
         self.nextRule = 1
         self.nextWord = 1
         self.nextList = 1
-        self.exportRules = OrderedDict()
-        self.importRules = OrderedDict()
-        self.ruleDefines = OrderedDict()
+        self.exportRules = dict()
+        self.importRules = dict()
+        self.ruleDefines = dict()
         self.grammarName = grammarName or ""
 
-    def doParse(self,*text):
+    def doParse(self, *text):
         self.scanObj.phase = "scanning"
         if text:
             self.scanObj.newText(text[0])
@@ -802,55 +803,102 @@ def isValidListOrRulename(word):
 #
 #   [ "This is line one\n", "This is line two", "This is line three" ]
 #
-
-#def splitApartLines(lines):
-#    x = 0
-#    while x < len(lines):
-#        crlf = lines[x].find('\n')
-#        if crlf >= 0:
-#            lines[x:x+1] = [ lines[x][:crlf+1], lines[x][crlf+1:] ] 
-#        x = x + 1
+# newly written, Quintijn Hoogenboom, february 2020:
+#
 def splitApartLines(lines):
     """split apart the lines of a grammar and clean up unwanted spacing
     
-    see  unittest still problems here!!
+    all lines are rstripped (in _splitApartLinesSpacing)
+    input is either a str or a list of str.
+    the left spacing is analysed: of each list item, if present,
+    the first line is ignored, because of triple quotes strings, which can indent following lines.
+
+>>> splitApartLines("\\n     <start> exported = d\xe9mo sample one; \\n")
+['<start> exported = démo sample one;']
+
+## First line does not influence the stripping of the other ones:
+>>> splitApartLines(["This is line one\\n This is line two, one space", "  This is line three, one more space"])
+['This is line one', 'This is line two, one space', ' This is line three, one more space']
+
+## But only if first line has no spaces at start.
+## result, indent of one space in the second line:
+>>> splitApartLines([" This is line one, one space\\n  This is line two, two spaces"])
+['This is line one, one space', ' This is line two, two spaces']
+
+## Initial lines of each of the two strings have no indent. So the left stripping is 4 here:
+>>> splitApartLines(["Initial line\\n    This is line two indented\\n        This is line three extra indented", "Second string no indent\\n    But second line indented four"])
+['Initial line', 'This is line two indented', '    This is line three extra indented', 'Second string no indent', 'But second line indented four']
+
+
     """
-    report = 1
-    for x in range(len(lines)-1, -1, -1):
-        line = lines[x]
-        if type(line) == bytes:
-            if report:
-                print("line in bytes type, should be unicode: %s"% line)
-                report = 0
-            line = utilsqh.convertToUnicode(line)
-        # if type(line) == str:
-        #     line = utilsqh.convertToBinary(line)
-            lines[x] = line
-        lines[x] = lines[x].rstrip()
-        crlf = lines[x].find('\n')
-        if crlf >= 0:
-            if x > 0:
-                print('insert lines at item %s: %s'% (x, lines[x]))
-            lines[x:x+1] = lines[x].split('\n')
+    ## lines can be str or list, each list item can hold str or list
+    List = list(_splitApartLinesSpacing(lines))
+    ## last item of List is the value to left strip all lines...
+    leftStrip = List.pop()
+    
+    ## ignore empty lines at end:
+    while not List[-1]: List.pop()
 
-    # spacing at end of lines:
-    for i, line in enumerate(lines):
-        if line != line.rstrip():
-            lines[i] = line.rstrip()
-
-    leftSpacing = [len(l) - len(l.lstrip()) for l in lines]
-    if len(leftSpacing) == 0:
-        raise ValueError("splitApartLines, empty grammar: %s"% repr(lines))
-
-    if len(leftSpacing) > 1:
-        minLeftSpacing = min(leftSpacing[1:])
-    for i, line in enumerate(lines):
-        if i == 0:
-            if line != line.lstrip():
-                lines[i] = line.lstrip()
+    if not leftStrip:
+        return List
+    LList = []
+    leftStringStr = ' '*leftStrip
+    for line in List:
+        if line.startswith(leftStringStr):
+            LList.append(line[leftStrip:])
         else:
-            if minLeftSpacing:
-                lines[i] = line[minLeftSpacing:]
+            LList.append(line)
+    return LList
+
+def _splitApartLinesSpacing(lines):
+    """yield line by line, last item is minimum left spacing of lines
+    
+    each yielded line is rstripped, and the number of left spaced is recorded.
+    If the first line is empty lines (or only whitespace) is is not yielded
+    The mimimum value is yielded as last item
+    """
+    minSpacing = 99
+    firstLine = True
+    if type(lines) == str:
+        for line in _splitApartStr(lines):
+            lSpaces = len(line) - len(line.strip())
+            if firstLine:
+                if lSpaces:
+                    minSpacing = min(minSpacing, lSpaces)
+                firstLine = False
+                ## first line empty or whitespace, ignore:
+                if line.strip():
+                    yield line
+            else:
+                if line.strip():
+                    # empty lines inside and at end ignore for minSpacing, but yield
+                    minSpacing = min(minSpacing, lSpaces)
+                yield line
+    else:
+        for part in lines:
+            if type(part) != str:
+                raise ValueError("_splitApartLinesSpacing, item of list should be str, not %s\n(%s)"% (type(part), part))
+            firstLine = True
+            for line in _splitApartStr(part):
+                lSpaces = len(line) - len(line.strip())
+                if firstLine:
+                    if lSpaces:
+                        minSpacing = min(minSpacing, lSpaces)
+                    firstLine = False
+                else:
+                    minSpacing = min(minSpacing, lSpaces)
+                yield line
+    yield minSpacing or 0
+                
+            
+def _splitApartStr(lines):
+    """yield the lines of a str of input, rstrip each lines
+    """
+    assert type(lines) == str
+    # Lines = lines.split('\n')
+    for line in lines.split('\n'):
+        yield line.rstrip()
+    
         
 
 
@@ -916,8 +964,8 @@ OrderedDict([('rule1', [('start', 1), ('word', 1), ('word', 2), ('end', 1)]),
 """
 
 ###doctest handling:
-__test__ = dict(test = test
-               )
+__test__ = dict() #test = test
+               # )
 
 def _test():
     import doctest

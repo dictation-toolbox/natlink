@@ -1,19 +1,29 @@
 log messages to file: C:\NatlinkGIT3\Natlink\PyTest\testresult.txt
 starting unittestNatlink
 
-starting tests with threading: 0
+starting tests with threading: 1
 
-testParser
-testGrammar
+test recognitionMimicCommands, version: 15
+testSampleMacros
 
 --------------- errors -----------------
 
----------- testParser (__main__.UnittestNatlink) --------
+---------- testSampleMacros (__main__.UnittestNatlink) --------
 Traceback (most recent call last):
-  File "<string>", line 2136, in testParser
-  File "<string>", line 2110, in checkExperiment
-TestError: Unexpected result for GrammarBase.sawBegin
-  Expected 1
-  Saw 0
+  File "<string>", line 2337, in testSampleMacros
+  File "<string>", line 1966, in doTestRecognition
+natlink.MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
 
 --------------- failures -----------------
+
+---------- testRecognitionMimicCommands (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "<string>", line 1990, in doTestCommandRecognition
+natlink.MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<string>", line 1191, in testRecognitionMimicCommands
+  File "<string>", line 1995, in doTestCommandRecognition
+AssertionError: ===test failed: MimicFailed, but expected 1 (words: ['mimic', 'two', 'bllackk'])

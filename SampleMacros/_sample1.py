@@ -37,7 +37,6 @@ class ThisGrammar(GrammarBase):
         
 thisGrammar = ThisGrammar()
 thisGrammar.initialize()
-natlink.displayText("sample one",0)
 
 def unload():
     global thisGrammar

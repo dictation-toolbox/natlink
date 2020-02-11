@@ -1150,7 +1150,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         UnimacroDir = self.getUnimacroDirectory()
         UnimacroUserDir = self.getUnimacroUserDirectory()
         if not UnimacroDir:
-            print('no valid UnimacroDirectory, Unimacro is disabled')
+            # print('no valid UnimacroDirectory, Unimacro is disabled')
             return
         if UnimacroUserDir and os.path.isdir(UnimacroUserDir):
             files = os.listdir(UnimacroDir)
@@ -1180,7 +1180,7 @@ Please try to correct this by running the NatLink Config Program (with administr
                 pass
                 # print 'UnimacroDirectory: %s'% uDir
             else:
-                print(('UnimacroDirectory not found: %s, set empty string'% uDir))
+                # print(('UnimacroDirectory not found: %s, set empty string'% uDir))
                 uDir = ''
 
         self.__class__.UnimacroDirectory = uDir # meaning path is invalid!!

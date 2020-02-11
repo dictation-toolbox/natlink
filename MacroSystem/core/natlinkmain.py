@@ -126,7 +126,7 @@ if True:
     # apparently called from natlink.pyd:
     # redirect stdout and stderr
     # automatic start of python macro system:toon alle grammatica's
-    natlink.displayText("Redirect", 0)
+    # natlink.displayText("Redirect", 0)
     sys.stdout = NewStdout()
     sys.stderr = NewStderr()
     #print "at start of natlinkmain, after redirect stderr and stdout"
@@ -765,7 +765,7 @@ try:
         """do the startup of the python macros system
         """
         global userDirectory, DNSVersion, coreDirectory, baseDirectory, WindowsVersion, unimacroDirectory
-        print('-- natlinkmain starting...')
+        print('--')
         if natlinkmainPrintsAtStart:
             print('-- natlinkmain starting...')
         try:
@@ -854,8 +854,8 @@ try:
             findAndLoadFiles()
 
             # initialize our callbacks
-            # natlink.setBeginCallback(beginCallback)
-            # natlink.setChangeCallback(changeCallback)
+            natlink.setBeginCallback(beginCallback)
+            natlink.setChangeCallback(changeCallback)
 
             print(('natlinkmain started from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
                       (status.getCoreDirectory(), status.getInstallVersion(),
