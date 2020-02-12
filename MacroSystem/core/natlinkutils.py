@@ -93,6 +93,10 @@ import natlinkmain
 import utilsqh
 import sys
 import traceback
+import locale
+
+preferredencoding =  locale.getpreferredencoding()
+
 DNSVersion = natlinkmain.DNSVersion
 # print 'DNSVersion (natlinkutils) %s'% DNSVersion
 debugLoad = natlinkmain.debugLoad
@@ -732,8 +736,9 @@ class GrammarBase(GramClassBase):
         # if type(listName) == str:
         #     listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
-            raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
-        self.gramObj.emptyList(listName)
+            raise gramparser.GrammarError( "list %s was not defined in the grammar\nvalidLists: %s" % (listName, repr(self.validLists)) , self.scanObj)
+        bListName = listName.encode(preferredencoding)
+        self.gramObj.emptyList(bListName)
 
     def appendList(self, listName, words):
         # listName = utilsqh.convertToBinary(listName)
@@ -741,7 +746,8 @@ class GrammarBase(GramClassBase):
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
         if type(words) == str:
             # words = utilsqh.convertToBinary(words)
-            self.gramObj.appendList(listName,words)
+            bListName = listName.encode(preferredencoding)
+            self.gramObj.appendList(bListName, words)
         else:
             for x in words:
                 # if type(x) == str:

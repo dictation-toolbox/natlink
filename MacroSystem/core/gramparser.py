@@ -373,46 +373,6 @@ class GramScannerReverse(GramScanner):
     def mergeReturnList(self):
         return ''.join(self.returnList)
 
-class peek_ahead:
-    """Iterator that can look ahead one step
-
-    From example 16.7 from python cookbook 2.
-
-    The preview can be inspected through it.preview
-    
-    Here used for the gramscannergen in GramScannerReverse
-
-    #ignoring duplicates:
-    #>>> it = peek_ahead('122345567')
-    #>>> for i in it:
-    #...     if it.preview == i:
-    #...         continue
-    #...     print i,
-    #1 2 3 4 5 6 7
-
-    """
-    sentinel = object() #schildwacht
-    def __init__(self, it):
-        self._nit = iter(it).__next__
-        self.preview = None
-        self.previous = None
-        self.current = None
-        self._step()
-    def __iter__(self):
-        return self
-    def __next__(self):
-        self.previous = self.current
-        result = self._step()
-        if result is self.sentinel: raise StopIteration
-        else:
-            self.current = result
-            return result
-    def _step(self):
-        self.current = self.preview
-        try: self.preview = self._nit()
-        except StopIteration: self.preview = self.sentinel
-        return self.current
-        
 #
 # This is a rule parser.  It builds up data structures which contain details
 # about the rules in the parsed text.
