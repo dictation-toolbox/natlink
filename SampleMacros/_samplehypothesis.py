@@ -14,7 +14,7 @@ from natlinkutils import *
 class ThisGrammar(GrammarBase):
  
     gramSpec = """
-        <dummy> exported = demo gothypothesis;
+        <dummy> exported = d\xe9mo gothypothesis;
     """
     def initialize(self):
         self.load(self.gramSpec, hypothesis=1, allResults=1)

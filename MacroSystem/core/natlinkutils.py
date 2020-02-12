@@ -547,7 +547,6 @@ class GrammarBase(GramClassBase):
             # we want to keep a list of the rules which can be activated and the
             # known lists so we can catch errors earlier
             self.validRules = list(parser.exportRules.keys())
-            # print('validRules: ', self.validRules)
             self.validLists = list(parser.knownLists.keys())
 
             # we reverse the rule dictionary so we can convert rule numbers back
@@ -737,8 +736,8 @@ class GrammarBase(GramClassBase):
         #     listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise gramparser.GrammarError( "list %s was not defined in the grammar\nvalidLists: %s" % (listName, repr(self.validLists)) , self.scanObj)
-        bListName = listName.encode(preferredencoding)
-        self.gramObj.emptyList(bListName)
+        # bListName = listName.encode()   # no accented characters anyway preferredencoding)
+        self.gramObj.emptyList(listName)
 
     def appendList(self, listName, words):
         # listName = utilsqh.convertToBinary(listName)
@@ -746,8 +745,8 @@ class GrammarBase(GramClassBase):
             raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
         if type(words) == str:
             # words = utilsqh.convertToBinary(words)
-            bListName = listName.encode(preferredencoding)
-            self.gramObj.appendList(bListName, words)
+            # bListName = listName.encode()    # no accented characters anyway  (preferredencoding)
+            self.gramObj.appendList(listName, words)
         else:
             for x in words:
                 # if type(x) == str:
@@ -793,13 +792,16 @@ class GrammarBase(GramClassBase):
         for x in wordsAndNums:
             word, ruleNumber = x
             words.append( word )
+            # the numbering of some rules appears to be different in NatSpeak10, catch with try:
+            # if DNSVersion >= 15:
+            #     ruleNumber += 1
             try:
                 ruleName = self.ruleMap[ruleNumber]
             except KeyError:
                 if ruleNumber in (1000000, 1000001) and 'dgndictation' in list(self.ruleMap.values()):
                     ruleName = 'dgndictation'
-                # elif ruleNumber in (1000001, 1000002) and 'dgnletters' in list(self.ruleMap.values()):
-                #     ruleName = 'dgnletters'
+                elif ruleNumber in (1000001, 1000002) and 'dgnletters' in list(self.ruleMap.values()):
+                    ruleName = 'dgnletters'
                 elif ruleNumber == 0 and word == '\\noise\\?':
                     continue
                 else:
@@ -1149,7 +1151,7 @@ def getBaseName(name):
 #   [ ('red','color'), ('flower','object'), ('and','conj'), ('green','color') ]
 # Becomes:
 #   { 'color':['red','green'], 'object':['flower'], 'conj':['and'] }
-# Probably obsolete... otherwise change with setdefault...
+
 def convertResults(fullResults):
     dict = {}
     for x in fullResults:

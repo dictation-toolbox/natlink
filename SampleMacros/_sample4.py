@@ -4,16 +4,18 @@
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
 # _sample4.py
-#   Sample macro file demostrating mouse movement.
+#   Sample macro file d\xe9mostrating mouse movement.
 #
-
+# Put in MacroSystem folder and toggle the microphone.
+# Write "d\xe9mo" to force command recognition.
+#
 import natlink
 from natlinkutils import *
 
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <start> exported = demo sample four;
+        <start> exported = d\xe9mo sample four;
     """
 
     def gotResults_start(self,words,fullResults):

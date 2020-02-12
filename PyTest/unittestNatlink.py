@@ -1185,6 +1185,7 @@ class UnittestNatlink(unittest.TestCase):
         testCommandRecognition = self.doTestCommandRecognition
         testGram = TestGrammar()
         testGram.initialize()
+        self.log("validLists: %s"% testGram.validLists)
 
         ## ruletwo  fails DPI15 strange;
         # testGram.testNum = 2
@@ -2334,10 +2335,7 @@ class UnittestNatlink(unittest.TestCase):
         self.log("testSampleMacros", 1)
         testRecognition = self.doTestRecognition
         
-        testRecognition(['hello', 'these', 'are', 'the',' things'], 1, log=1)
-        testRecognition(['command', 'mode', 'on'], 1, log=1)
-        testRecognition(['hello', 'these', 'are', 'the',' things'], 0, log=1)
-        
+        # self.setCommandMode(1)         ## fails ??? because of d\xe9mo, commands should be caught anyway
         
         MacroSystemDir = os.path.normpath(os.path.join(coreDir, '..'))
         # globline = r'%s\_s*.py'% MacroSystemDir
@@ -2365,13 +2363,13 @@ class UnittestNatlink(unittest.TestCase):
 
 
 
-        # _sample6  same as demo two but now with a list of colors  demo sample six [ help ]   (alternatives)     
+        # _sample6  same as demo two but now with a list of colors  de\xe9mo sample six [ help ]   (alternatives)     
         pyfile = '_sample6.py'
         if pyfile in PyFiles:
             self.log('testing %s'% pyfile)
             testRecognition(['d\xe9mo', 'sample', 'six'], 1, log=1)
             testRecognition(['d\xe9mo', 'sample', 'six', 'help'], 1, log=1)
-            testRecognition(['d\xe9mo', 'sample', 'six', 'black'], 1, log=1)
+            testRecognition(['d\xe9mo', 'sample', 'six', 'purple'], 1, log=1)
         else:
             self.log('skipping %s, not in MacroSystem folder'% pyfile)
 

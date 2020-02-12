@@ -10,7 +10,7 @@
 #
 # Example of using OLE Automation to control Excel from Python macros. Start
 # Excel and put the names of colors (in lower case) in some of the cells.
-# Then say "demo sample seven" and all the cells in your spreadsheet which
+# Then say "d\xe9mo sample seven" and all the cells in your spreadsheet which
 # contain a color which change to that color.
 #
 # The OLE automation code uses the Win32com package.  It allows you to
@@ -56,7 +56,7 @@ colorMap = {
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <start> exported = demo sample seven;
+        <start> exported = d\xe9mo sample seven;
     """
 
     def initialize(self):

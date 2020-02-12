@@ -8,9 +8,9 @@
 #
 # natspeak_sample6.py
 #
-# This macro file demonstrates how to write application specific code.  We
-# define two commands.  "demo sample six" can only be spoken to the NatSpeak
-# main window.  "demo sample six font" can only be spoken to the NatSpeak
+# This macro file d\xe9monstrates how to write application specific code.  We
+# define two commands.  "d\xe9mo sample six" can only be spoken to the NatSpeak
+# main window.  "d\xe9mo sample six font" can only be spoken to the NatSpeak
 # font dialog.  We make the second command exclusive so that all other
 # commands are disabled when thefont dialog is active.
 #
@@ -21,8 +21,8 @@ from natlinkutils import *
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <mainRule> exported = demo sample six [ main ];
-        <fontRule> exported = demo sample six font;
+        <mainRule> exported = d\xe9mo sample six [ main ];
+        <fontRule> exported = d\xe9mo sample six font;
     """
 
     def gotBegin(self,moduleInfo):

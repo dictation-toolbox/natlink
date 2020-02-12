@@ -9,12 +9,16 @@
 # _sample6.py
 #
 # This is a sample macro file with a two commands.  When NatSpeak has the
-# focus, say "demo sample six".  It should recognize the command and type:
-#   Say "demo sample six color     (the word color will be in italics)
+# focus, say "d\xe9mo sample six".  It should recognize the command and type:
+#   Say "d\xe9mo sample six color     (the word color will be in italics)
 #
-# Say "demo sample six red" and it would recognize the command and type:
+# Say "d\xe9mo sample six red" and it would recognize the command and type:
 #   The color is red               (it types the name of the color you say)
 #
+# Put in MacroSystem folder and toggle the microphone.
+# Write "d\xe9mo" to force command recognition.
+#
+
 
 import natlink
 from natlinkutils import *
@@ -22,19 +26,23 @@ from natlinkutils import *
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <firstRule> exported = demo sample six [ help ];
-        <secondRule> exported = second sample six;
+        <firstRule> exported = d\xe9mo sample six [ help ];
+        <secondRule> exported = d\xe9mo sample six {color};
     """
     
     def gotResults_firstRule(self,words,fullResults):
-        natlink.playString('Say "demo sample six {ctrl+i}color{ctrl+i}"{enter}')
+        natlink.playString('Say "d\xe9mo sample six {ctrl+i}color{ctrl+i}"{enter}')
 
     def gotResults_secondRule(self,words,fullResults):
-        natlink.playString('The color is "%s"{enter}'%words[3])
+        natlink.playString('The color is "%s"{enter}'% words[-1])
         
     def initialize(self):
+        print('.... _sample6 loading')
         self.load(self.gramSpec)
-        self.setList('color', ['red', 'blue', 'green', 'purple', 'black', 'white', 'yellow', 'orange', 'magenta', 'cyan', 'gray'])
+        print('validLists: ', self.validLists)
+        print('validRules: ', self.validRules)
+        self.setList('color', ['red', 'blue', 'green', 'purple', 'white', 'yellow', 'orange', 'magenta', 'cyan', 'gray'])
+        print("list color set, loading ready....")
         self.activateAll()
 
 thisGrammar = ThisGrammar()

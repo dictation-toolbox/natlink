@@ -3,6 +3,10 @@
 #   (c) Copyright 2000 by Joel Gould
 #   Portions (c) Copyright 2000 by Dragon Systems, Inc.
 #
+# <dgletters> does not work any more (2020)
+# Put in MacroSystem folder and toggle the microphone.
+# Write "d\xe9mo" to force command recognition.
+#
 
 import string
 import natlink
@@ -13,8 +17,8 @@ class ThisGrammar(GrammarBase):
     gramSpec = """
         <dgndictation> imported;
         <dgnletters> imported;
-        <ruleOne> exported = demo sample eight <dgndictation> [ stop ];
-        <ruleTwo> exported = demo sample eight spell <dgnletters> [ stop ];
+        <ruleOne> exported = d\xe9mo sample eight <dgndictation> [ stop ];
+        <ruleTwo> exported = d\xe9mo sample eight spell <dgnletters> [ stop ];
     """
 
     def gotResults_dgndictation(self,words,fullResults):

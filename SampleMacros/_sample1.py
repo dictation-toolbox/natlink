@@ -15,8 +15,9 @@
 # This file represents the simplest possible example of a NatLink macro.
 #
 # See also the variant _first_sample_docstring.py in the folder DisabledGrammars of Unimacro
-
-# run from MacroSystem:
+# Put in MacroSystem folder and toggle the microphone.
+# Write "d\xe9mo" to force command recognition.
+#
 import sys
 import os
 import natlink
@@ -25,7 +26,7 @@ from natlinkutils import *
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <start> exported = demo sample one;
+        <start> exported = d\xe9mo sample one;
     """
     
     def initialize(self):

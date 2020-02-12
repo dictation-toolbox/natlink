@@ -4,26 +4,34 @@ starting unittestNatlink
 starting tests with threading: 1
 
 test recognitionMimicCommands, version: 15
+validLists: ['colors', 'furniture']
 testSampleMacros
+PyFiles: ['_sample1.py', '_sample2.py', '_sample3.py', '_sample4.py', '_sample5.py', '_sample6.py', '_vocola_main.py']
+testing _sample1.py
+recognised: ['démo', 'sample', 'one']
+testing _sample2.py
+recognised: ['démo', 'sample', 'two']
+recognised: ['démo', 'sample', 'two', 'help']
+recognised: ['démo', 'sample', 'two', 'black']
+testing _sample6.py
+recognised: ['démo', 'sample', 'six']
+recognised: ['démo', 'sample', 'six', 'help']
+recognised: ['démo', 'sample', 'six', 'purple']
+testing _sample3.py
+recognised: ['démo', 'sample', 'three', 'now', 'please']
 
 --------------- errors -----------------
-
----------- testSampleMacros (__main__.UnittestNatlink) --------
-Traceback (most recent call last):
-  File "<string>", line 2337, in testSampleMacros
-  File "<string>", line 1966, in doTestRecognition
-natlink.MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
 
 --------------- failures -----------------
 
 ---------- testRecognitionMimicCommands (__main__.UnittestNatlink) --------
 Traceback (most recent call last):
-  File "<string>", line 1990, in doTestCommandRecognition
+  File "<string>", line 1991, in doTestCommandRecognition
 natlink.MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
 
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "<string>", line 1191, in testRecognitionMimicCommands
-  File "<string>", line 1995, in doTestCommandRecognition
+  File "<string>", line 1192, in testRecognitionMimicCommands
+  File "<string>", line 1996, in doTestCommandRecognition
 AssertionError: ===test failed: MimicFailed, but expected 1 (words: ['mimic', 'two', 'bllackk'])

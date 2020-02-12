@@ -8,13 +8,13 @@
 #
 # _sample5.py
 #
-# This sample file demonstrates how to use the clipboard to communicate
+# This sample file d\xe9monstrates how to use the clipboard to communicate
 # between your application and Python code.  To use this macro, make sure
 # that NatSpeak is active and that there is text in the window.  Position
-# the caret inside a word on the screen and say "demo sample five".  This
+# the caret inside a word on the screen and say "d\xe9mo sample five".  This
 # code will then reverse the letters in the word containing the caret.
 #
-# You can say "demo sample five 3 words" and this code will reverse three
+# You can say "d\xe9mo sample five 3 words" and this code will reverse three
 # words ending with the word which contains the caret.
 #
 # Notice that we send keystrokes to select the words in NatSpeak.  Then we
@@ -22,14 +22,16 @@
 # function natlink.getClipboard() give this code access to the clipboard. We
 # reverse the text and send it back to the application (by typing it).
 #
-
+# Put in MacroSystem folder and toggle the microphone.
+# Write "d\xe9mo" to force command recognition.
+#
 import natlink
 from natlinkutils import *
 
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <start> exported = demo sample five
+        <start> exported = d\xe9mo sample five
             [ (1 | 2 | 3 | 4) words ];
     """
 

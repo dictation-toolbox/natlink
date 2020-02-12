@@ -8,12 +8,12 @@
 #
 # _sample3.py
 #
-# This is a sample macro file used to demonstrate how NatLink calls result
+# This is a sample macro file used to d\xe9monstrate how NatLink calls result
 # functions (gotResults_xxx) based on which words were recognized.
 #
-# When NatSpeak has the focus, say "demo sample three now please".  When the
+# When NatSpeak has the focus, say "d\xe9mo sample three now please".  When the
 # command is recognized, this code should type:
-#   Saw <ruleOne> = ['demo']
+#   Saw <ruleOne> = ['d\xe9mo']
 #   Saw <ruleTwo> = ['sample','three']
 #   Saw <ruleOne> = ['now','please']
 #
@@ -22,7 +22,9 @@
 # rule.  gotResults_mainRule is never called because that rule has no words.
 # See natlinkutils.py for more documentation.
 #
-
+# Put in MacroSystem folder and toggle the microphone.
+# Write "d\xe9mo" to force command recognition.
+#
 import natlink
 from natlinkutils import *
 
@@ -30,7 +32,7 @@ class ThisGrammar(GrammarBase):
 
     gramSpec = """
         <mainRule> exported = <ruleOne>;
-        <ruleOne> = demo <ruleTwo> now please;
+        <ruleOne> = d\xe9mo <ruleTwo> now please;
         <ruleTwo> = sample three;
     """
 
