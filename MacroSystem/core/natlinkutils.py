@@ -601,13 +601,12 @@ class GrammarBase(GramClassBase):
         #     ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
             if noError: return
-        if type(ruleName) != bytes:
-            print('GrammarBase, deactivate, %s (%s)'% (ruleName, type(ruleName)))
             raise gramparser.GrammarError( "rule %s (%s) was not exported in the grammar" %
-                                          ruleName, type(ruleName), self.scanObj)
+                                          (ruleName, type(ruleName)), self.scanObj)
         if ruleName not in self.activeRules:
             if noError: return
-            raise gramparser.GrammarError( "rule %s is not active", self.scanObj)
+            raise gramparser.GrammarError( "rule %s is not active (activeRules: %s)"% (ruleName, self.activeRules),
+                                            self.scanObj)
         if debugLoad: print('deactivate rule %s'% ruleName)
         self.gramObj.deactivate(ruleName)
         del self.activeRules[ruleName]
@@ -688,6 +687,7 @@ class GrammarBase(GramClassBase):
         activeRules = list(self.activeRules.keys())
         
         for x in activeRules:
+            # print("deactivate rule %s (%s)"% (x, type(x)))
             self.deactivate(x)
 
     def deactivateAll(self):
@@ -798,10 +798,13 @@ class GrammarBase(GramClassBase):
             try:
                 ruleName = self.ruleMap[ruleNumber]
             except KeyError:
-                if ruleNumber in (1000000, 1000001) and 'dgndictation' in list(self.ruleMap.values()):
+                print("KeyError, %s"% ruleNumber)
+                if ruleNumber == 1000000 and 'dgndictation' in list(self.ruleMap.values()):
                     ruleName = 'dgndictation'
-                elif ruleNumber in (1000001, 1000002) and 'dgnletters' in list(self.ruleMap.values()):
+                elif ruleNumber == 1000001 and 'dgnletters' in list(self.ruleMap.values()):
                     ruleName = 'dgnletters'
+                elif ruleNumber == 1000002 and 'dgnwords' in list(self.ruleMap.values()):
+                    ruleName = 'dgnwords'
                 elif ruleNumber == 0 and word == '\\noise\\?':
                     continue
                 else:
