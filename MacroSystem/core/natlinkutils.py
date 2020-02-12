@@ -787,16 +787,13 @@ class GrammarBase(GramClassBase):
         for x in wordsAndNums:
             word, ruleNumber = x
             words.append( word )
-            # the numbering of some rules appears to be different in NatSpeak10, catch with try:
-            # if DNSVersion >= 15:
-            #     ruleNumber += 1
             try:
                 ruleName = self.ruleMap[ruleNumber]
             except KeyError:
                 if ruleNumber in (1000000, 1000001) and 'dgndictation' in list(self.ruleMap.values()):
                     ruleName = 'dgndictation'
-                elif ruleNumber in (1000001, 1000002) and 'dgnletters' in list(self.ruleMap.values()):
-                    ruleName = 'dgnletters'
+                # elif ruleNumber in (1000001, 1000002) and 'dgnletters' in list(self.ruleMap.values()):
+                #     ruleName = 'dgnletters'
                 elif ruleNumber == 0 and word == '\\noise\\?':
                     continue
                 else:
@@ -1146,7 +1143,7 @@ def getBaseName(name):
 #   [ ('red','color'), ('flower','object'), ('and','conj'), ('green','color') ]
 # Becomes:
 #   { 'color':['red','green'], 'object':['flower'], 'conj':['and'] }
-
+# Probably obsolete... otherwise change with setdefault...
 def convertResults(fullResults):
     dict = {}
     for x in fullResults:
