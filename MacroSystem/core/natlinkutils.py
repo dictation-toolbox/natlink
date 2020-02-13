@@ -625,8 +625,8 @@ class GrammarBase(GramClassBase):
                             (repr(ruleNames), type(ruleNames)))
         activeKeys = list(self.activeRules.keys())
         for x in activeKeys:
-            if type(x) != bytes:
-                raise TypeError('activateSet, rulename "%s" should be of binary_type, not: %s'% (x, type(x)))
+            # if type(x) != str:
+            #     raise TypeError('activateSet, rulename "%s" should be of str type, not: %s'% (x, type(x)))
 
             curWindow = self.activeRules[x]
             if x in rulenames:
@@ -981,7 +981,9 @@ class DictGramBase(GramClassBase):
     # This makes a raw dictation grammar.  The grammar is in SAPI binary
     # format as defined by Microsoft.
     def makeGrammar(self):
-        return struct.pack("LL", 2, 0)
+        output = []
+        output.append(struct.pack("LL", 2, 0))
+        return b"".join(output)
 
 #---------------------------------------------------------------------------
 # SelectGramBase
@@ -1129,19 +1131,24 @@ class SelectGramBase(GramClassBase):
     # command grammars.
     # throughWords is a list of words:
     def makeGrammar(self,selectWords,throughWords):
-        output = struct.pack("LL", 10, 0)
+        output = []
+        output.append(struct.pack("LL", 10, 0))
+        if type(selectWords) == str:
+            selectWords = [selectWords]
         if selectWords:
             wordDict = {}
             for word in selectWords:
                 wordDict[word] = 0
-            output = output + gramparser.packGrammarChunk(0x1017,wordDict)
+            output.append(gramparser.packGrammarChunk(0x1017,wordDict))
         # throughWords maybe more words now:
         if throughWords:
+            if type(throughWords) == str:
+                throughWords = [throughWords]
             wordDict = {}
             for word in throughWords:
                 wordDict[word] = 0
-            output = output + gramparser.packGrammarChunk(0x1018,wordDict)
-        return output            
+            output.append(gramparser.packGrammarChunk(0x1018,wordDict))
+        return b"".join(output)
         
 #---------------------------------------------------------------------------        
 

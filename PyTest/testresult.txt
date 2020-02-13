@@ -1,37 +1,18 @@
 log messages to file: C:\NatlinkGIT3\Natlink\PyTest\testresult.txt
 starting unittestNatlink
 
-starting tests with threading: 1
+starting tests with threading: 0
 
-test recognitionMimicCommands, version: 15
-validLists: ['colors', 'furniture']
-testSampleMacros
-PyFiles: ['_sample1.py', '_sample2.py', '_sample3.py', '_sample4.py', '_sample5.py', '_sample6.py', '_vocola_main.py']
-testing _sample1.py
-recognised: ['démo', 'sample', 'one']
-testing _sample2.py
-recognised: ['démo', 'sample', 'two']
-recognised: ['démo', 'sample', 'two', 'help']
-recognised: ['démo', 'sample', 'two', 'black']
-testing _sample6.py
-recognised: ['démo', 'sample', 'six']
-recognised: ['démo', 'sample', 'six', 'help']
-recognised: ['démo', 'sample', 'six', 'purple']
-testing _sample3.py
-recognised: ['démo', 'sample', 'three', 'now', 'please']
+testSelectGram
+testWordProns
 
 --------------- errors -----------------
 
+---------- testWordProns (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "<string>", line 1910, in testWordProns
+  File "<string>", line 601, in doTestFuncReturnAlternatives
+  File "<string>", line 1, in <module>
+natlink.NatError: An error occurred calling ILexPronounce::Get from DragonCode.cpp 3477.  The error code was 0x800706f5 (-2147023115).
+
 --------------- failures -----------------
-
----------- testRecognitionMimicCommands (__main__.UnittestNatlink) --------
-Traceback (most recent call last):
-  File "<string>", line 1991, in doTestCommandRecognition
-natlink.MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "<string>", line 1192, in testRecognitionMimicCommands
-  File "<string>", line 1996, in doTestCommandRecognition
-AssertionError: ===test failed: MimicFailed, but expected 1 (words: ['mimic', 'two', 'bllackk'])

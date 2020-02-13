@@ -286,10 +286,16 @@ try:
         else:
             print(('loading module %s failed, put in "wrongFiles"'% modName))
 
-    def loadFile(modName, origName=None):
+    def loadFile(modName, origName=None, origDate=None):
         global wrongFiles  # keep track of non edited files with errors
         try: fndFile,fndName,fndDesc = imp.find_module(modName, searchImportDirs)
         except ImportError: return None     # module not found
+        
+        sourceDate = getFileDate(fndName)
+        
+        if debugLoad:
+            print('loadFile if changed modName %s, fndName: %s, origName: %s'% (modName, fndName, origName))
+
         if origName:
             if fndName[-3:] != ".py":
                 # not a Python source file
@@ -297,13 +303,11 @@ try:
                 safelyCall(modName,'unload')
                 return None
             if origName == fndName:
-                sourceDate = getFileDate(fndName)
-                objectDate = getFileDate(fndName+'c')
-                if objectDate >= sourceDate:
-    ##                if debugLoad:
-    ##                    print 'not changed: %s (%s, %s)'% (fndName, sourceDate, objectDate)
+                if debugLoad:
+                    print('not changed: %s (%s, %s)'% (fndName, sourceDate, origDate))
+                if origDate >= sourceDate:
                     fndFile.close()
-                    return origName
+                    return origName, origDate
             if debugLoad:
                 print(("Reloading", modName))
 
@@ -315,7 +319,7 @@ try:
                 # not a Python source file
                 fndFile.close()
                 return None
-            if debugLoad: print(("Loading", modName))
+            if debugLoad: print(("Loading", modName)) 
 
         if fndName in wrongFiles:
             sourceDate = getFileDate(fndName)
@@ -325,14 +329,14 @@ try:
                 return
             elif sourceDate <= wrongFiles[fndName]:
                 print(('-- skip unchanged wrong grammar file: %s'% fndName))
-                return
+                return 
 
         try:
             imp.load_module(modName,fndFile,fndName,fndDesc)
             fndFile.close()
             if fndName in wrongFiles:
                 del wrongFiles[fndName]  # release that
-            return fndName
+            return fndName, sourceDate
         except:
             fndFile.close()
             sys.stderr.write('Error loading '+modName+' from '+fndName+'\n' )
@@ -381,8 +385,9 @@ try:
 
     def findAndLoadFiles(curModule=None):
         global loadedFiles, vocolaIsLoaded, vocolaModule, vocolaEnabled
-        if curModule == 'calc':
-            pass
+        if curModule == 'ApplicationFrameHost':
+            print("findAndLoadFiles, change module %s to %s"% (curModule, 'calc'))
+            curModule = 'calc'
         moduleHasDot = None
         if curModule:
             # special case, encountered with Vocola modules with . in name:
@@ -408,14 +413,16 @@ try:
             for x in userDirFiles:
                 res = pat.match(x)
                 if res:
-                    addToFilesToLoad( filesToLoad, res.group(1), userDirectory, moduleHasDot )
+                    modName = res.group(1)
+                    addToFilesToLoad( filesToLoad, modName, UserDirectory, moduleHasDot )
         ## unimacro:
         if status.UnimacroIsEnabled():
             unimacroDirFiles = [x for x in os.listdir(unimacroDirectory) if x.endswith('.py')]
             for x in unimacroDirFiles:
                 res = pat.match(x)
                 if res:
-                    addToFilesToLoad( filesToLoad, res.group(1), unimacroDirectory, moduleHasDot )
+                    modName = res.group(1)
+                    addToFilesToLoad( filesToLoad, modName, unimacroDirectory, moduleHasDot )
         else:
             unimacroDirFiles = []
 
@@ -433,8 +440,12 @@ try:
             print(('vocolaEnabled: %s'% vocolaEnabled))
         if vocolaEnabled and not vocolaIsLoaded:
             x = doVocolaFirst
-            origName = loadedFiles.get(x, None)
-            loadedFiles[x] = loadFile(x, origName)
+            loadedFile = loadedFiles.get(x, None)
+            if loadedFile:
+                origName, origDate = loadedFile
+                loadedFiles[x] = loadFile(x, origName, origDate)
+            else:
+                loadedFiles[x] = loadFile(x)
             vocolaIsLoaded = 1
             if doVocolaFirst:
                 if not doVocolaFirst in sys.modules:
@@ -449,10 +460,20 @@ try:
                         if debugLoad: print('Vocola is disabled...')
             # repeat the base directory, as Vocola just had the chance to rebuild Python grammar files:
             baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
+        if debugLoad and curModule:
+            print("loading base directory with curModule: %s"% curModule)
+
         for x in baseDirFiles:
             res = pat.match(x)
-            if res: addToFilesToLoad( filesToLoad, res.group(1), baseDirectory, moduleHasDot )
-
+            if res:
+                modName = res.group(1)
+                if debugLoad and curModule:
+                    print("application specific, baseDirFile MATCH: %s, group1: %s"% (x, modName))
+                addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
+            # else:
+            #     if debugLoad and curModule:
+            #         print("baseDirFile NO MATCH: %s"% x)
+    
         # Try to (re)load any files we find
         # to Unimacro grammar control last:
         controlModule = None
@@ -464,12 +485,20 @@ try:
         for x in keysToLoad:
             if x == doVocolaFirst:
                 continue
-            origName = loadedFiles.get(x, None)
-            loadedFiles[x] = loadFile(x, origName)
+            loadedFile = loadedFiles.get(x, None)
+            if loadedFile:
+                origName, origDate = loadedFile
+                loadedFiles[x] = loadFile(x, origName, origDate)
+            else:
+                loadedFiles[x] = loadFile(x)
 
         # Unload any files which have been deleted
-        for name, path in list(loadedFiles.items()):
-            if path and not getFileDate(path):
+        for name, loadedFile in list(loadedFiles.items()):
+            if loadedFile:
+                origName, origDate = loadedFile
+            if origName and not getFileDate(origName):
+                if debugLoad:
+                    print("natlinkmain, file is deleted, unload %s"% origName)
                 safelyCall(name,'unload')
                 del loadedFiles[name]
 
@@ -477,6 +506,9 @@ try:
         """here is the chance to influence the order of loading
 
         for Unimacro do _control last and _tasks first
+        
+        and doVocolaFirst is excluded here, because it has a special treatment anyway...
+
         """
         L = copy.copy(modulesKeys)
         gramsLast = ['_control']
@@ -489,7 +521,8 @@ try:
             if g in L:
                 L.remove(g)
                 L.append(g)
-        #print 'list of grammars to load: %s'% L
+        if debugLoad:
+            print('list of grammars to load: %s'% L)
         return L
 
     def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
@@ -623,8 +656,12 @@ try:
         if checkAll or checkForGrammarChanges:
             if debugCallback:
                 print('check for changed files (all files)...')
-            for x in list(loadedFiles.keys()):
-                loadedFiles[x] = loadFile(x, loadedFiles[x])
+            for x, loadedFile in loadedFiles.items():
+                if loadedFile:
+                    origName, origDate = loadedFile
+                    loadedFiles[x] = loadFile(x, origName, origDate)
+                else:
+                    loadedFiles[x] = loadFile(x)
             loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
         else:
             if debugCallback:
@@ -700,11 +737,6 @@ try:
             BaseModel = status.getBaseModel()
             # BaseTopic = status.getBaseTopic(userTopic=userTopic)
             BaseTopic = status.getBaseTopic()
-            if DNSVersion == 12 and BaseModel.find("BestMatch V") > 0:
-                print('\n--- WARNING: Speech Model BestMatch V is used for this User Profile')
-                print('The performance of many NatLink grammars is not good with this model.')
-                print('Please choose another User Profile with for example Speech Model BestMatch IV.')
-                print('See http://unimacro.antenna.nl/installation/speechmodel.html\n----')
             if debugCallback:
                 print(('language: %s (%s)'% (language, type(language))))
                 print(('userLanguage: %s (%s)'% (userLanguage, type(userLanguage))))
@@ -714,7 +746,7 @@ try:
                 if language != 'enx':
                     print(('--- userLanguage: %s\n'% language))
 
-        #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself
+        #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself (around 2002)
         # the grammar should include a function like:
         #def changeCallback():
         #    if thisGrammar:
@@ -722,9 +754,7 @@ try:
         # and the grammar should have a cancelMode function that finishes exclusive mode.
         # see _oops, _repeat, _control for examples
         changeCallbackLoadedModules(Type,args)
-    ##    else:
-    ##        # possibility to do things when changeCallBack with mic on: (experiment)
-    ##        changeCallbackLoadedModulesMicOn(type, args)
+
         if debugCallback:
             print('=== debugCallback info ===')
             for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
@@ -751,15 +781,15 @@ try:
     ##                print 'call changeCallback for: %s'% x
                     func(*[Type,args])
 
-    ### try here a adapted recognitionMimic function
-    def recognitionMimic(mimicList):
-        """for Dragon 12, try execScript HeardWord
-        """
-        if DNSVersion >= 12:
-            script = 'HeardWord "%s"'% '", "'.join(mimicList)
-            natlink.execScript(script)
-        else:
-            natlink.recognitionMimic(mimicList)
+    # ### try here a adapted recognitionMimic function
+    # def recognitionMimic(mimicList):
+    #     """for Dragon 12, try execScript HeardWord
+    #     """
+    #     if DNSVersion >= 12:
+    #         script = 'HeardWord "%s"'% '", "'.join(mimicList)
+    #         natlink.execScript(script)
+    #     else:
+    #         natlink.recognitionMimic(mimicList)
 
     def start_natlink(doNatConnect=None):
         """do the startup of the python macros system
