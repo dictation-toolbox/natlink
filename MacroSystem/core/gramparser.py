@@ -80,13 +80,16 @@ class GrammarParserError(Exception):
     """these exceptions all expect the scanObj as second parameter
     in order to produce the correct message info
     """
-    def __init__(self, message, scanObj):
+    def __init__(self, message, scanObj=None):
         self.message = message
         self.scanObj = scanObj
         
     def __str__(self):
         """return special info for scanner or parser exceptions.
         """
+        if self.scanObj is None:
+            return message
+        
         gramName = self.scanObj.grammarName or ""
         L = []
         if self.scanObj.phase == 'scanning':
@@ -131,9 +134,13 @@ class GrammarParserError(Exception):
             L.append('Info about scanner/parser error of NatLink grammar "%s"\n'% gramName)
         else:
             L.append('Info about scanner/parser error of NatLink grammar\n')
-        
-        tbstr = '\n'.join(traceback.format_exc().split('\n')[:-2])
-        L.append(tbstr)
+    
+        # does not work:
+        # excType, excValue, tb = sys.exc_info()
+        # excName = str(excType).split("'")[1]
+        # L.append('%s: %s'% (excName, excValue))
+        # L.extend(traceback.format_tb(tb, limit=-2))
+        # print(''.join(t))
 
         L.append('\nThe complete grammar:\n')
         if self.scanObj.phase == 'scanning':
@@ -385,8 +392,6 @@ class GramScannerReverse(GramScanner):
 class GramParser:
 
     def __init__(self,text, grammarName=None):
-        text = splitApartLines(text)
-        self.scanObj = GramScanner(text, grammarName=grammarName)
         self.knownRules = dict()
         self.knownWords = dict()
         self.knownLists = dict()
@@ -397,6 +402,9 @@ class GramParser:
         self.importRules = dict()
         self.ruleDefines = dict()
         self.grammarName = grammarName or ""
+        text = splitApartLines(text)
+        
+        self.scanObj = GramScanner(text, grammarName=grammarName)
 
     def doParse(self, *text):
         self.scanObj.phase = "scanning"
@@ -547,10 +555,10 @@ class GramParser:
 
     def checkForErrors(self):
         if not len(self.exportRules):
-            raise GrammarError( "no rules were exported", self.scanObj)
+            raise GrammarError("no rules were exported")
         for ruleName in list(self.knownRules.keys()):
             if ruleName not in self.importRules and ruleName not in self.ruleDefines:
-                raise GrammarError( "rule '%s' was not defined or imported" % ruleName, self.scanObj)
+                raise GrammarError( "rule '%s' was not defined or imported" % ruleName)
 
     def dumpString(self):
         """returns the parts that are non empty
@@ -858,9 +866,6 @@ def _splitApartStr(lines):
     # Lines = lines.split('\n')
     for line in lines.split('\n'):
         yield line.rstrip()
-    
-        
-
 
 test = """
 
@@ -872,13 +877,13 @@ test = """
 >>> parser.checkForErrors()
 >>> print(parser.dumpString())
 knownRules:
-OrderedDict([('rule', 1)])
+{'rule': 1}
 knownWords:
-OrderedDict([('action', 1)])
+{'action': 1}
 exportRules:
-OrderedDict([('rule', 1)])
+{'rule': 1}
 ruleDefines:
-OrderedDict([('rule', [('word', 1)])])
+{'rule': [('word', 1)]}
 
 >>> repr(packGrammar(parser))
 "b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00rule\\\\x00\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
@@ -889,16 +894,16 @@ OrderedDict([('rule', [('word', 1)])])
 >>> parser.checkForErrors()
 >>> print(parser.dumpString())
 knownRules:
-OrderedDict([('ruleList', 1)])
+{'ruleList': 1}
 knownLists:
-OrderedDict([('List', 1)])
+{'List': 1}
 knownWords:
-OrderedDict([('action', 1)])
+{'action': 1}
 exportRules:
-OrderedDict([('ruleList', 1)])
+{'ruleList': 1}
 ruleDefines:
-OrderedDict([('ruleList',
-              [('start', 1), ('word', 1), ('list', 1), ('end', 1)])])
+{'ruleList': [('start', 1), ('word', 1), ('list', 1), ('end', 1)]}
+
 >>> repr(packGrammar(parser))
 "b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00\\\\x14\\\\x00\\\\x00\\\\x00\\\\x14\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00ruleList\\\\x00\\\\x00\\\\x00\\\\x00\\\\x06\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00List\\\\x00\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x06\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
 
@@ -909,23 +914,148 @@ OrderedDict([('ruleList',
 >>> parser.checkForErrors()
 >>> print(parser.dumpString())
 knownRules:
-OrderedDict([('rule1', 1), ('rule2', 2)])
+{'rule1': 1, 'rule2': 2}
 knownWords:
-OrderedDict([('action', 1), ('one', 2), ('two', 3)])
+{'action': 1, 'one': 2, 'two': 3}
 exportRules:
-OrderedDict([('rule1', 1), ('rule2', 2)])
+{'rule1': 1, 'rule2': 2}
 ruleDefines:
-OrderedDict([('rule1', [('start', 1), ('word', 1), ('word', 2), ('end', 1)]),
-             ('rule2', [('start', 1), ('word', 1), ('word', 3), ('end', 1)])])
+{'rule1': [('start', 1), ('word', 1), ('word', 2), ('end', 1)],
+ 'rule2': [('start', 1), ('word', 1), ('word', 3), ('end', 1)]}
 
 >>> repr(packGrammar(parser))
 "b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00 \\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00rule1\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00rule2\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x0c\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00one\\\\x00\\\\x0c\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00two\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00P\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
 
 """
 
+    
+testRecognitionMimicGrammar = """
+
+>>> gramSpec = '''
+...                <runone> exported = mimic runone;
+...                <runtwo> exported = mimic two {colors};
+...                <runthree> exported = mimic three <extraword>;
+...                <runfour> exported = mimic four <extrawords>;
+...                <runfive> exported = mimic five <extralist>;
+...                <runsix> exported = mimic six {colors}+;
+...                <runseven> exported = mimic seven <wordsalternatives>;
+...                <runeight> exported = mimic eight <wordsalternatives> [<wordsalternatives>+];
+...                <optional>  = very | small | big;
+...                <extralist> = {furniture};
+...                <extraword> = painting ;
+...                <extrawords> = modern painting ;
+...                <wordsalternatives> = house | tent | church | tower;
+...            '''
+>>> parser = GramParser(gramSpec)
+>>> parser.doParse()
+>>> parser.checkForErrors()
+>>> print(parser.dumpString())
+knownRules:
+{'extralist': 8,
+ 'extraword': 4,
+ 'extrawords': 6,
+ 'optional': 13,
+ 'runeight': 12,
+ 'runfive': 7,
+ 'runfour': 5,
+ 'runone': 1,
+ 'runseven': 10,
+ 'runsix': 9,
+ 'runthree': 3,
+ 'runtwo': 2,
+ 'wordsalternatives': 11}
+knownLists:
+{'colors': 1, 'furniture': 2}
+knownWords:
+{'big': 12,
+ 'church': 17,
+ 'eight': 9,
+ 'five': 6,
+ 'four': 5,
+ 'house': 15,
+ 'mimic': 1,
+ 'modern': 14,
+ 'painting': 13,
+ 'runone': 2,
+ 'seven': 8,
+ 'six': 7,
+ 'small': 11,
+ 'tent': 16,
+ 'three': 4,
+ 'tower': 18,
+ 'two': 3,
+ 'very': 10}
+exportRules:
+{'runeight': 12,
+ 'runfive': 7,
+ 'runfour': 5,
+ 'runone': 1,
+ 'runseven': 10,
+ 'runsix': 9,
+ 'runthree': 3,
+ 'runtwo': 2}
+ruleDefines:
+{'extralist': [('list', 2)],
+ 'extraword': [('word', 13)],
+ 'extrawords': [('start', 1), ('word', 14), ('word', 13), ('end', 1)],
+ 'optional': [('start', 2),
+              ('word', 10),
+              ('word', 11),
+              ('word', 12),
+              ('end', 2)],
+ 'runeight': [('start', 1),
+              ('word', 1),
+              ('word', 9),
+              ('rule', 11),
+              ('start', 4),
+              ('start', 3),
+              ('rule', 11),
+              ('end', 3),
+              ('end', 4),
+              ('end', 1)],
+ 'runfive': [('start', 1), ('word', 1), ('word', 6), ('rule', 8), ('end', 1)],
+ 'runfour': [('start', 1), ('word', 1), ('word', 5), ('rule', 6), ('end', 1)],
+ 'runone': [('start', 1), ('word', 1), ('word', 2), ('end', 1)],
+ 'runseven': [('start', 1), ('word', 1), ('word', 8), ('rule', 11), ('end', 1)],
+ 'runsix': [('start', 1),
+            ('word', 1),
+            ('word', 7),
+            ('start', 3),
+            ('list', 1),
+            ('end', 3),
+            ('end', 1)],
+ 'runthree': [('start', 1), ('word', 1), ('word', 4), ('rule', 4), ('end', 1)],
+ 'runtwo': [('start', 1), ('word', 1), ('word', 3), ('list', 1), ('end', 1)],
+ 'wordsalternatives': [('start', 2),
+                       ('word', 15),
+                       ('word', 16),
+                       ('word', 17),
+                       ('word', 18),
+                       ('end', 2)]}
+
+
+"""
+
+testError = r"""
+
+>>> gramSpec = "badvalue;"
+>>> parser = GramParser(gramSpec)
+>>> parser.doParse()
+Traceback (most recent call last):
+SyntaxError: in grammar, line 1, position 1-9:
+expecting rule name to start rule definition
+=> badvalue;
+=> ^^^^^^^^
+<BLANKLINE>
+(more info in file: C:\NatlinkGIT3\Natlink\MacroSystem\core\error_info_natlink_grammar.txt)
+        """
+
+
 ###doctest handling:
-__test__ = dict() #test = test
-               # )
+__test__ = {'test': test,
+            'testRecognitionMimicGrammar': testRecognitionMimicGrammar,
+            'testError': testError
+            }
 
 def _test():
     import doctest

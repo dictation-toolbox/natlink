@@ -3,16 +3,21 @@ starting unittestNatlink
 
 starting tests with threading: 0
 
-testSelectGram
-testWordProns
+test recognitionMimicCommands, version: 15
+validLists: ['colors']
 
 --------------- errors -----------------
 
----------- testWordProns (__main__.UnittestNatlink) --------
-Traceback (most recent call last):
-  File "<string>", line 1910, in testWordProns
-  File "<string>", line 601, in doTestFuncReturnAlternatives
-  File "<string>", line 1, in <module>
-natlink.NatError: An error occurred calling ILexPronounce::Get from DragonCode.cpp 3477.  The error code was 0x800706f5 (-2147023115).
-
 --------------- failures -----------------
+
+---------- testRecognitionMimicCommands (__main__.UnittestNatlink) --------
+Traceback (most recent call last):
+  File "<string>", line 2009, in doTestCommandRecognition
+natlink.MimicFailed: recognitionMimic call failed (The speech engine returned the following error: MimicNoResults)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<string>", line 1207, in testRecognitionMimicCommands
+  File "<string>", line 2014, in doTestCommandRecognition
+AssertionError: ===test failed: MimicFailed, but expected 1 (words: ['mimic', 'two', 'bllackk'])

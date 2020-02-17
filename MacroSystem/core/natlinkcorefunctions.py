@@ -27,7 +27,10 @@ Note: for extension with %NATLINK% etc. see natlinkstatus.py
     (call getAllEnv, this one first takes NatLink variables and then these extended env variables)
 
 """ 
-import os, sys, re, copy
+import os
+import sys
+import re
+import copy
 from win32com.shell import shell, shellcon
 # import win32api
 # for extended environment variables:
@@ -406,7 +409,7 @@ def expandEnvVariables(filepath, envDict=None):
 
 def printAllEnvVariables():
     for k in sorted(recentEnv.keys()):
-        print(("%s\t%s"% (k, recentEnv[k])))
+        print("%s\t%s"% (k, recentEnv[k]))
 
 class InifileSection(object):
     """simulate a part of the registry through inifiles

@@ -526,6 +526,7 @@ class GrammarBase(GramClassBase):
         self.validRules = []
         self.validLists = []
         self.doOnlyGotResultsObject = None # can rarely be set (QH, dec 2009)
+        # self.scanObj = None  # in case gramparser goes wrong and error messages fail to print
 
     def load(self,gramSpec,allResults=0,hypothesis=0, grammarName=None):
         try:
@@ -538,7 +539,8 @@ class GrammarBase(GramClassBase):
             parser.doParse()
             parser.checkForErrors()
             gramBin = gramparser.packGrammar(parser)
-            self.scanObj = parser.scanObj  # for later error messages.
+            # self.scanObj = parser.scanObj  # for later error messages 
+            #              no mention to GrammarError after the loading now..
             try:
                 GramClassBase.load(self,gramBin,allResults,hypothesis)
             except natlink.BadGrammar:
@@ -548,7 +550,6 @@ class GrammarBase(GramClassBase):
             # known lists so we can catch errors earlier
             self.validRules = list(parser.exportRules.keys())
             self.validLists = list(parser.knownLists.keys())
-
             # we reverse the rule dictionary so we can convert rule numbers back
             # to rule names during recognition
             self.ruleMap = {}
@@ -578,7 +579,7 @@ class GrammarBase(GramClassBase):
         # if type(ruleName) == str:
         #     ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
-            raise gramparser.GrammarError( "rule %s was not exported in the grammar" % ruleName , self.scanObj)
+            raise ValueError( "rule %s was not exported in the grammar" % ruleName)
         # if type(ruleName) != bytes:
         #     raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
         if ruleName in self.activeRules:
@@ -601,12 +602,10 @@ class GrammarBase(GramClassBase):
         #     ruleName = utilsqh.convertToBinary(ruleName)
         if ruleName not in self.validRules:
             if noError: return
-            raise gramparser.GrammarError( "rule %s (%s) was not exported in the grammar" %
-                                          (ruleName, type(ruleName)), self.scanObj)
+            raise ValueError( "rule %s (%s) was not exported in the grammar" % (ruleName, type(ruleName)))
         if ruleName not in self.activeRules:
             if noError: return
-            raise gramparser.GrammarError( "rule %s is not active (activeRules: %s)"% (ruleName, self.activeRules),
-                                            self.scanObj)
+            raise ValueError( "rule %s is not active (activeRules: %s)"% (ruleName, self.activeRules))
         if debugLoad: print('deactivate rule %s'% ruleName)
         self.gramObj.deactivate(ruleName)
         del self.activeRules[ruleName]
@@ -735,14 +734,14 @@ class GrammarBase(GramClassBase):
         # if type(listName) == str:
         #     listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
-            raise gramparser.GrammarError( "list %s was not defined in the grammar\nvalidLists: %s" % (listName, repr(self.validLists)) , self.scanObj)
+            raise ValueError( 'list "%s" was not defined in the grammar, validLists: %s' % (listName, self.validLists))
         # bListName = listName.encode()   # no accented characters anyway preferredencoding)
         self.gramObj.emptyList(listName)
 
     def appendList(self, listName, words):
         # listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
-            raise gramparser.GrammarError( "list %s was not defined in the grammar" % listName , self.scanObj)
+            raise ValueError( "list %s was not defined in the grammar" % listName)
         if type(words) == str:
             # words = utilsqh.convertToBinary(words)
             # bListName = listName.encode()    # no accented characters anyway  (preferredencoding)

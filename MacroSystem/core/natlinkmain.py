@@ -204,7 +204,7 @@ try:
             globals()[name] = ''
         else:
             if debugCallback:
-                print(('natlinkmain starting, global variable: %s: %s'% (name, globals()[name])))
+                print('natlinkmain starting, global variable: %s: %s'% (name, globals()[name]))
     # set in findAndLoadFiles:
     try:
         searchImportDirs
@@ -284,7 +284,7 @@ try:
         if result:
             loadedFiles[modName] = result
         else:
-            print(('loading module %s failed, put in "wrongFiles"'% modName))
+            print('loading module %s failed, put in "wrongFiles"'% modName)
 
     def loadFile(modName, origName=None, origDate=None):
         global wrongFiles  # keep track of non edited files with errors
@@ -309,7 +309,7 @@ try:
                     fndFile.close()
                     return origName, origDate
             if debugLoad:
-                print(("Reloading", modName))
+                print("Reloading", modName)
 
             # if we know we are reloading a module, we call the unload function
             # in that module first to release all objects
@@ -324,12 +324,15 @@ try:
         if fndName in wrongFiles:
             sourceDate = getFileDate(fndName)
             if not sourceDate:
-                print(('-- wrong grammar file removed: %s'% fndName))
+                print('-- wrong grammar file removed: %s'% fndName)
                 del wrongFiles[fndName]
                 return
             elif sourceDate <= wrongFiles[fndName]:
-                print(('-- skip unchanged wrong grammar file: %s'% fndName))
-                return 
+                print('-- skip unchanged wrong grammar file: %s'% fndName)
+                return
+            else:
+                wrongFiles[fndName] = sourceDate
+                print('-- retry changed grammar: %s'% fndName)
 
         try:
             imp.load_module(modName,fndFile,fndName,fndDesc)
@@ -437,7 +440,7 @@ try:
         # before proceeding:
         vocolaEnabled = (vocolaEnabled and doVocolaFirst and doVocolaFirst+'.py' in baseDirFiles)
         if debugLoad:
-            print(('vocolaEnabled: %s'% vocolaEnabled))
+            print('vocolaEnabled: %s'% vocolaEnabled)
         if vocolaEnabled and not vocolaIsLoaded:
             x = doVocolaFirst
             loadedFile = loadedFiles.get(x, None)
@@ -496,6 +499,8 @@ try:
         for name, loadedFile in list(loadedFiles.items()):
             if loadedFile:
                 origName, origDate = loadedFile
+            else:
+                continue
             if origName and not getFileDate(origName):
                 if debugLoad:
                     print("natlinkmain, file is deleted, unload %s"% origName)
@@ -588,7 +593,7 @@ try:
         try:
             curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
         except:
-            print(("loadModSpecific: invalid modulename, skipping (moduleInfo): %s"% repr(moduleInfo)))
+            print("loadModSpecific: invalid modulename, skipping (moduleInfo): %s"% repr(moduleInfo))
             curModule = ''
 
         if curModule and not (onlyIfChanged and curModule==lastModule):
@@ -630,7 +635,7 @@ try:
         global loadedFiles, prevModInfo
         cbd = natlink.getCallbackDepth()
         if debugCallback:
-            print(('beginCallback, cbd: %s'% cbd))
+            print('beginCallback, cbd: %s'% cbd)
             # print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
             #       (cbd, checkAll, checkForGrammarChanges)
         # maybe should be 1...
@@ -668,7 +673,7 @@ try:
                 print('check for changed files (only specific)')
             loadModSpecific(moduleInfo, 1)  # only if changed module
         if debugTiming:
-            print(('checked all grammar files: %.6f'% (time.time()-t0,)))
+            print('checked all grammar files: %.6f'% (time.time()-t0,))
 
     #
     # This callback is called when the user changes or when the microphone
@@ -683,7 +688,7 @@ try:
                 BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
 
         if debugCallback:
-            print(('changeCallback, Type: %s, args: %s'% (Type, args)))
+            print('changeCallback, Type: %s, args: %s'% (Type, args))
         if Type == 'mic' and args == 'on':
             if debugCallback:
                 print('findAndLoadFiles...')
@@ -695,13 +700,13 @@ try:
         ## user: at start and at user switch:
         if Type == 'user' and userName != args[0]:
             if debugCallback:
-                print(('callback user, args: %s'% repr(args)))
+                print('callback user, args: %s'% repr(args))
             moduleInfo = natlink.getCurrentModule()
             if debugCallback:
-                print(("---------changeCallback, User changed to", args[0]))
+                print("---------changeCallback, User changed to", args[0])
             elif not changeCallbackUserFirst:
                 # first time, no print message, but next time do...
-                print(("\n--- user changed to: %s"% args[0]))
+                print("\n--- user changed to: %s"% args[0])
 
             unloadEverything()
     ## this is not longer needed here, as we fixed the userDirectory
@@ -717,10 +722,10 @@ try:
             userName = status.getUserName()
             shiftkey = status.getShiftKey()
             if debugCallback:
-                print(('setting shiftkey to: %s (language: %s)'% (shiftkey, language)))
+                print('setting shiftkey to: %s (language: %s)'% (shiftkey, language))
 
             if debugCallback:
-                print(('usercallback, language: %s'% language))
+                print('usercallback, language: %s'% language)
 
             # initialize recentEnv in natlinkcorefunctions (new 2018, 4.1uniform)
             natlinkstatus.AddExtendedEnvVariables()
@@ -738,13 +743,13 @@ try:
             # BaseTopic = status.getBaseTopic(userTopic=userTopic)
             BaseTopic = status.getBaseTopic()
             if debugCallback:
-                print(('language: %s (%s)'% (language, type(language))))
-                print(('userLanguage: %s (%s)'% (userLanguage, type(userLanguage))))
-                print(('DNSuserDirectory: %s (%s)'% (DNSuserDirectory, type(DNSuserDirectory))))
+                print('language: %s (%s)'% (language, type(language)))
+                print('userLanguage: %s (%s)'% (userLanguage, type(userLanguage)))
+                print('DNSuserDirectory: %s (%s)'% (DNSuserDirectory, type(DNSuserDirectory)))
             else:
                 ## end of user info message:
                 if language != 'enx':
-                    print(('--- userLanguage: %s\n'% language))
+                    print('--- userLanguage: %s\n'% language)
 
         #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself (around 2002)
         # the grammar should include a function like:
@@ -762,9 +767,9 @@ try:
              'WindowsVersion', 'BaseModel', 'BaseTopic',
              'language', 'userLanguage', 'userTopic']:
                 if not name in globals():
-                    print(('natlinkmain, changeCallback, not in globals: %s'% name))
+                    print('natlinkmain, changeCallback, not in globals: %s'% name)
                 else:
-                    print(('natlinkmain changeCallback, global variable: %s: %s'% (name, globals()[name])))
+                    print('natlinkmain changeCallback, global variable: %s: %s'% (name, globals()[name]))
 
     def changeCallbackLoadedModules(Type,args):
         """BJ added, in order to intercept in a grammar (oops, repeat, control) in eg mic changed
@@ -831,7 +836,7 @@ try:
             if not baseDirectory in sys.path:
                 sys.path.insert(0,baseDirectory)
                 if debugLoad:
-                    print(('insert baseDirectory: %s to sys.path!'% baseDirectory))
+                    print('insert baseDirectory: %s to sys.path!'% baseDirectory)
             if debugLoad: print(("NatLink base dir" + baseDirectory))
 
             # get the current user information from the NatLink module
@@ -840,10 +845,10 @@ try:
                 if not userDirectory in sys.path:
                     sys.path.insert(0,userDirectory)
                     if debugLoad:
-                        print(('insert userDirectory: %s to sys.path!'% userDirectory))
+                        print('insert userDirectory: %s to sys.path!'% userDirectory)
                 else:
                     if debugLoad:
-                        print(('userDirectory: %s'% userDirectory))
+                        print('userDirectory: %s'% userDirectory)
             else:
                 if debugLoad:
                     print('no userDirectory')
@@ -855,10 +860,10 @@ try:
                     if not unimacroDirectory in sys.path:
                         sys.path.insert(0,unimacroDirectory)
                         if debugLoad:
-                            print(('insert unimacroDirectory: %s to sys.path!'% unimacroDirectory))
+                            print('insert unimacroDirectory: %s to sys.path!'% unimacroDirectory)
                     else:
                         if debugLoad:
-                            print(('unimacroDirectory: %s'% unimacroDirectory))
+                            print('unimacroDirectory: %s'% unimacroDirectory)
                 else:
                     if debugLoad:
                         print('Unimacro not enabled')
@@ -896,22 +901,22 @@ try:
             traceback.print_exc()
 
         if debugLoad:
-            print(("userDirectory: %s\nbaseDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, baseDirectory, unimacroDirectory)))
+            print("userDirectory: %s\nbaseDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, baseDirectory, unimacroDirectory))
             print("natlinkmain imported-----------------------------------")
         elif natlinkmainPrintsAtEnd:
             if status.UnimacroIsEnabled():
-                print(('Unimacro enabled, user directory: %s'% status.getUnimacroUserDirectory()))
+                print('Unimacro enabled, user directory: %s'% status.getUnimacroUserDirectory())
             if status.VocolaIsEnabled():
-                print(('Vocola enabled, user directory: %s'% status.getVocolaUserDirectory()))
+                print('Vocola enabled, user directory: %s'% status.getVocolaUserDirectory())
             if userDirectory:
-                print(("User defined macro's (UserDirectory) enabled: %s"% userDirectory))
-            print(('-'*40))
+                print("User defined macro's (UserDirectory) enabled: %s"% userDirectory)
+            print('-'*40)
         #else:
         #    natlinkLogMessage('natlinkmain started (imported)\n')
         if status.hadWarning:
-            print(('='*30))
-            print((status.getWarningText()))
-            print(('='*30))
+            print('='*30)
+            print(status.getWarningText())
+            print('='*30)
             status.emptyWarning()
 
     # try to establish here only one automatic startup of start_natlink:
@@ -945,7 +950,7 @@ try:
             start_natlink()
             pass
         else:
-            print(('natlinkmain imported only, caller_name: %s'% caller_name))
+            print('natlinkmain imported only, caller_name: %s'% caller_name)
     else:
         print('Cannot start Natlink')
 except:

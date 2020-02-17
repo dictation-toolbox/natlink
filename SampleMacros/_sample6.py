@@ -11,7 +11,7 @@
 # This is a sample macro file with a two commands.  When NatSpeak has the
 # focus, say "d\xe9mo sample six".  It should recognize the command and type:
 #   Say "d\xe9mo sample six color     (the word color will be in italics)
-#
+# or "d\xe9mo sample six color1 color2 .... (the colors will be shown)
 # Say "d\xe9mo sample six red" and it would recognize the command and type:
 #   The color is red               (it types the name of the color you say)
 #
@@ -27,15 +27,20 @@ class ThisGrammar(GrammarBase):
 
     gramSpec = """
         <firstRule> exported = d\xe9mo sample six [ help ];
-        <secondRule> exported = d\xe9mo sample six {color};
+        <secondRule> exported = d\xe9mo sample six {color}+; 
     """
     
     def gotResults_firstRule(self,words,fullResults):
         natlink.playString('Say "d\xe9mo sample six {ctrl+i}color{ctrl+i}"{enter}')
 
     def gotResults_secondRule(self,words,fullResults):
-        natlink.playString('The color is "%s"{enter}'% words[-1])
-        
+        colors = words[3:]
+        if len(colors) == 1:
+            color = colors[0]
+            natlink.playString('The color is "%s"{enter}'% color)
+        else:
+            natlink.playString('The color are "%s"{enter}'% ', '.join(colors))
+            
     def initialize(self):
         print('.... _sample6 loading')
         self.load(self.gramSpec)
@@ -47,6 +52,8 @@ class ThisGrammar(GrammarBase):
 
 thisGrammar = ThisGrammar()
 thisGrammar.initialize()
+
+
 
 def unload():
     global thisGrammar
