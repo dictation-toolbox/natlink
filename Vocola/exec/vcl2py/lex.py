@@ -93,7 +93,7 @@ def initialize_tokenizer(token_properties):
     global Token_properties
 
     properties = token_properties
-    for i in xrange(0,256):
+    for i in range(0,256):
         c = chr(i)
         token_properties[c + ':']  = token_properties[':']
         token_properties[c + '"']  = token_properties['"']

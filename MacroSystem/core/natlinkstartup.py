@@ -3,7 +3,6 @@ import os               # access to file information
 import os.path          # to parse filenames
 import re
 import shutil
-import string
 import sys
 
 import natlinkstatus

@@ -3,7 +3,9 @@
 # A backwards compatible enhancement has been made to allow full access to registry types still through the dictionary metaphor
 
 """Slightly magical Win32api Registry -> Dictionary-like-object wrapper"""
-import win32api, win32con, pickle
+import win32api
+import win32con
+import pickle
 
 class RegistryDict(object):
     def __init__(self, keyhandle = win32con.HKEY_LOCAL_MACHINE, keypath = [], flags = None):

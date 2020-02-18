@@ -4,9 +4,14 @@
 ### Version: 0.1
 ### 
 
-import win32gui, win32api, win32process, win32con
-import ctypes, ctypes.wintypes
-import re, os.path
+import win32gui
+import win32api
+import win32process
+import win32con
+import ctypes
+import ctypes.wintypes
+import re
+import os.path
 import traceback     #<<<>>>
 
 

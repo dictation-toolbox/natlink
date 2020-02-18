@@ -1,4 +1,3 @@
-__version__ = "$Revision: 105 $, $Date: 2008-12-04 12:47:13 +0100 (do, 04 dec 2008) $, $Author: quintijn $"
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
@@ -11,7 +10,8 @@ __version__ = "$Revision: 105 $, $Date: 2008-12-04 12:47:13 +0100 (do, 04 dec 20
 # adapted for Dragon 11, oct 2011, Quintijn
 #
 
-import string, types, copy
+import types
+import copy
 import natlink
 import natlinkmain
 
@@ -300,7 +300,7 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     elif flag_uppercase_all in stateFlags:
         wordName = wordName.upper()
     elif flag_cap_all in stateFlags and not flag_title_mode in wordFlags:
-        words = string.split(wordName)
+        words = wordName.split()
         words = [w.capitalize() for w in wordName.split()]
         wordName = ' '.join(words)
     elif flag_passive_cap_next in stateFlags:
@@ -467,9 +467,9 @@ def showStateFlags(state):
 
 def testSubroutine(state,input,output):
 
-    words = string.split(input)
+    words = input.split()
     for i in range(len(words)):
-        words[i] = string.replace(words[i],'_',' ')
+        words[i] = words[i].replace('_', ' ')
     actual,state = formatWords(words,state)
     if actual != output:
         print('Expected "%s"'%output)

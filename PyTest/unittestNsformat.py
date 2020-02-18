@@ -39,7 +39,27 @@ ExitQuietly = 'ExitQuietly'
 nTries = 10
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # with spurious error (if set to 1), missing gotBegin and all that...
-logFileName = r"D:\natlink\natlink\PyTest\testresult.txt"
+def getBaseFolder(globalsDict=None):
+    """get the folder of the calling module.
+
+    either sys.argv[0] (when run direct) or
+    __file__, which can be empty. In that case take the working directory
+    """
+    globalsDictHere = globalsDict or globals()
+    baseFolder = ""
+    if globalsDictHere['__name__']  == "__main__":
+        baseFolder = os.path.split(sys.argv[0])[0]
+        print('baseFolder from argv: %s'% baseFolder)
+    elif globalsDictHere['__file__']:
+        baseFolder = os.path.split(globalsDictHere['__file__'])[0]
+        print('baseFolder from __file__: %s'% baseFolder)
+    if not baseFolder or baseFolder == '.':
+        baseFolder = os.getcwd()
+    return baseFolder
+
+thisDir = getBaseFolder(globals())
+
+logFileName = os.path.join(thisDir, "nsformattestresult.txt")
 
 # make different versions testing possible:
 import natlinkstatus
@@ -146,10 +166,9 @@ class UnittestNsformat(unittest.TestCase):
         
         .\point results in ' .'
         """
-        if DNSVersion <= 10:
-            words =             ['.', r'.\period', r'.\point', r',\comma', r':\colon', r'-\hyphen', 'normal']
-        else:
-            words =             ['.', r'.\period\period', r'.\dot\dot', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
+        self.log('testFormatWord')
+
+        words =             ['.', r'.\period\period', r'.\dot\dot', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
         formattedExpected = [' .', '.',        '.',       ',',        ':',        '-', ' normal']
         stateExpected =      [(), (9, 4),      (8, 10),    (),       (),           (8,), ()]
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
@@ -168,30 +187,23 @@ class UnittestNsformat(unittest.TestCase):
         
         .\point results in ' .'
         """
+        self.log('testFormatLetters')
+
         testFunc = self.doTestFormatLetters
-        if DNSVersion <= 10:
-            words = r'x\xray\h y\yankee\h !\exclamation-mark'
-        else:
-            words =   r'x\spelling-letter\X_ray y\spelling-letter\Yankee !\spelling-exclamation-mark\exclamation_mark'
+        words =   r'x\spelling-letter\X_ray y\spelling-letter\Yankee !\spelling-exclamation-mark\exclamation_mark'
         state=testFunc(words, 'xy!')
+        pass
        
     def testFlagsLike(self):
         """tests the different predefined flags in nsformat"""
-        if DNSVersion <= 10:
-            gwi = getWordInfo10
-            wfList = [(r'.\period', 'period'),
-                    (r',\comma', 'comma'),
-                    (r'-\hyphen', 'hyphen'),
-                    ( (10,), 'number'),
-                      ]
-            
-        else:
-            gwi = getWordInfo11
-            wfList = [(r'.\period\period', 'period'),
-                    (r',\comma\comma', 'comma'),
-                    (r'-\hyphen\hyphen', 'hyphen'),
-                    #( (10,), 'number'),  ## testing number later
-                      ]
+        self.log('testFlagsLike')
+        
+        gwi = getWordInfo11
+        wfList = [(r'.\period\period', 'period'),
+                (r',\comma\comma', 'comma'),
+                (r'-\hyphen\hyphen', 'hyphen'),
+                #( (10,), 'number'),  ## testing number later
+                  ]
             
         for w,t in wfList:
             varInNsformat = 'flags_like_%s'% t
@@ -209,6 +221,8 @@ class UnittestNsformat(unittest.TestCase):
             
     def testInitializeStateFlags(self):
         """test helper functions of nsformat"""
+        self.log('testInitializeStateFlags')
+        
         result = initializeStateFlags()
         expected = set()
         self.assertTrue(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
@@ -236,12 +250,12 @@ class UnittestNsformat(unittest.TestCase):
         needs testing again, oct 2010 QH
         
         """
-        if DNSVersion < 10:
-            words =             [r'3\three', r'.\point', r'5\five', r'by', r'4\four', 'centimeter',
-                                 r',\comma', 'proceeding']
-        else:
-            # does not work for Dragon 11
-            return
+        self.log('testFormatNumbers')
+        
+
+        words =             [r'3\three', r'.\point', r'5\five', r'by', r'4\four', 'centimeter',
+                             r',\comma', 'proceeding']
+
         formattedExpected = [' 3', '.',        '5', ' by', ' 4', ' centimeter', ',', ' proceeding']
         wordInfos = [(flag_cond_no_space,), None, (flag_cond_no_space,), None, (flag_cond_no_space,), None, None, None]
         stateExpected = [(10,), (8, 10), (10,), (), (10,), (), (), (), ()]
@@ -258,6 +272,7 @@ class UnittestNsformat(unittest.TestCase):
             expectedState = set(expectedState)  # changes QH oct 2011
             self.assertTrue(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
                          (word, formattedResult, repr(newState), repr(expectedState)))
+            pass
         expected = " 3.5 by 4 centimeter, proceeding"
         actual = ''.join(totalResult)
         self.assertTrue(expected == actual, "total result of first test not as expected\nActual: |%s|, expected: |%s|"%
@@ -315,42 +330,28 @@ class UnittestNsformat(unittest.TestCase):
     def testSpacebar(self):
         """spacebar with dicate is handled ok, spacebar alone should produce a single space
         """
+        self.log('testSpacebar')
+
         testSubroutine = self.doTestFormatting
         
-        if DNSVersion <= 10:
-            state = -1
-            state=testSubroutine(state,
-                r'\space-bar',
-                ' ')
-            state = -1
-            state=testSubroutine(state,
-                r'\space-bar hello',
-                ' hello')
-            state = -1
-            state=testSubroutine(state,
-                r'hello \space-bar',
-                'hello ')
-        else:
-            state = -1
-            state=testSubroutine(state,
-                r'\space-bar\space-bar',
-                ' ')
+        state = -1
+        state=testSubroutine(state,
+            r'\space-bar\space-bar',
+            ' ')
 
-            state = -1
-            state=testSubroutine(state,
-                r'\space-bar\space-bar hello',
-                ' hello')
-            state = -1
-            state=testSubroutine(state,
-                r'hello \space-bar\space-bar',
-                'hello ')
-            state = -1
-            state=testSubroutine(state,
-                r'space hello space',
-                '  hello ')
-        
-
-
+        state = -1
+        state=testSubroutine(state,
+            r'\space-bar\space-bar hello',
+            ' hello')
+        state = -1
+        state=testSubroutine(state,
+            r'hello \space-bar\space-bar',
+            'hello ')
+        state = -1
+        state=testSubroutine(state,
+            r'space hello space',
+            '  hello ')
+    
             
     def testStartConditionsFormatWords(self):
         """testing the initial states that can be passed
@@ -361,6 +362,8 @@ class UnittestNsformat(unittest.TestCase):
         0: empty set (continue with a space in front)
         -1: special, no capping, but no space in front: set(flag_no_space_next) or ([8])
         """
+        self.log('testStartConditionsFormatWords')
+
         testFunc = self.doTestFormatting
         
         testFunc(None, 'hello', 'Hello')
@@ -385,97 +388,13 @@ class UnittestNsformat(unittest.TestCase):
         # and special, go to lowercase
         testFunc(set([7, 8]), 'Dakar', 'dakar')  # lowercase next...
 
-
-
-    def testFormatting10(self):
-        """these are a lot of tests for Dragon 10 (and before)
-        
-        study the words tested below!
-        """
-
-        if DNSVersion >= 11:
-            return # for Dragon 11 and beyond
-    
-        state = None
-        state=testSubroutine(state,
-            r'this is a test sentence .\period',
-            'This is a test sentence.')
-    
-        state=testSubroutine(state,
-            r'\Caps-On as you can see ,\comma this yours_truly seems to work \Caps-Off well',
-            '  As You Can See, This Yours Truly Seems to Work well')
-        state=testSubroutine(state,
-            r'an "\open-quote example of testing .\period "\close-quote hello',
-            ' an "example of testing."  Hello')
-        state = None
-        
-        # special signs:
-        state=testSubroutine(state,
-            r'an example with many signs :\colon ;\semicolon and @\at-sign and [\left-bracket',
-            r'An example with many signs:; and@and [')
-            
-        state = None
-        state=testSubroutine(state,
-            r'and continuing with ]\right-bracket and -\hyphen and -\minus-sign .\period',
-            'And continuing with] and-and -.')
-        state=testSubroutine
-    
-        # capping and spacing:
-        state = None
-        # after the colon is incorrect (at least different actual dictate result)!
-        state=testSubroutine(state,
-            r'hello \No-Space there and no spacing :\colon \No-Space-On Daisy Dakar and more \No-Space-Off and normal Daila_Lama again .\period',
-            'Hellothere and no spacing:DaisyDakarandmore and normal Daila Lama again.')
-        state=testSubroutine
-    
-        state = None
-        state=testSubroutine(state,
-            r'\No-Caps Daisy Dakar lowercase example \No-Caps-On Daisy DAL Daila_Lama and Dakar \No-Caps-Off and Dakar and Dalai_Lama again .\period',
-            'daisy Dakar lowercase example daisy dal daila lama and dakar and Dakar and Dalai Lama again.')
-        state=testSubroutine
-    
-        state = None
-        state=testSubroutine(state,
-            r'\Cap uppercase example and normal and \Caps-On and continuing with an uppercase example and \Caps-Off ,\comma normal again .\period',
-            'Uppercase example and normal and and Continuing with an Uppercase Example and, normal again.')
-        state=testSubroutine
-    
-        state = None
-        state=testSubroutine(state,
-            r'\All-Caps examples and normal and \All-Caps-On and continuing with \All-Caps-Off ,\comma normal again .\period',
-            'EXAMPLES and normal and AND CONTINUING WITH, normal again.')
-        state=testSubroutine
-    
-        state = None
-        state=testSubroutine(state,
-            r'combined \All-Caps-On hello \No-Space there and \No-Space-On back again and \All-Caps-Off continuing no spacing \No-Space-Off now normal again .\period',
-            'Combined HELLOTHERE ANDBACKAGAINANDcontinuingnospacing now normal again.')
-    
-        # propagating the properties:
-        state = None
-        state=testSubroutine(state,
-            r'\All-Caps-On this is a test',
-            'THIS IS A TEST')
-        state=testSubroutine(state,
-            r'continuing in the next phrase \No-Space-On with no \All-Caps-Off spacing',
-            ' CONTINUING IN THE NEXT PHRASEWITHNOspacing')
-        state=testSubroutine(state,
-            r'and resuming like that .\period this  \No-Space-Off is now at last normal .\period',
-            'andresuminglikethat.This is now at last normal.')
-    
-        # new line, new paragraph:
-        state = None
-        state=testSubroutine(state,
-            r'Now for the \New-Line and for the \New-Paragraph testing .\period',
-            'Now for the\r\nand for the\r\n\r\nTesting.')
-        
     def testFormatting11(self):
         """these are a lot of tests for Dragon 11 (and possibly beyond)
         
         study the words tested below!
         """
-        if DNSVersion <= 10:
-            return # for Dragon 11 and beyond
+        self.log('testFormatting11')
+
         testSubroutine = self.doTestFormatting
     
         state=None
@@ -574,11 +493,7 @@ class UnittestNsformat(unittest.TestCase):
         state=testSubroutine(state,
             r'Now for the \new-line\new_line and for the \new-paragraph\new_paragraph testing .\period\period',
             'Now for the\r\nand for the\r\n\r\nTesting.')
-    
 
-
-            
-            
    
 def log(t):
     """log to print and file if present

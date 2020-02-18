@@ -712,8 +712,10 @@ try:
     ## this is not longer needed here, as we fixed the userDirectory
     ##        changeUserDirectory()
             status.clearUserInfo()
+            # if debugLoad: print('setUserInfo of natlinkstatus to: %s"'% repr(args))
             status.setUserInfo(args)
             language = status.getLanguage()
+            
             DNSuserDirectory = status.getDNSuserDirectory()
             userLanguage = status.getUserLanguage()
             userTopic = status.getUserTopic()
@@ -881,7 +883,7 @@ try:
 
             # init things identical to when user changes:
             #   [MDL: this calls findAndLoadFiles()!]
-            # changeCallback('user', natlink.getCurrentUser())
+            changeCallback('user', natlink.getCurrentUser())
 
         ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
 

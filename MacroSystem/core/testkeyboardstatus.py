@@ -494,9 +494,9 @@ Wheel_name = {
     }
 def _test():
     kbLayout = windll.user32.GetKeyboardLayout(0)
-    print(('kbLayout: %x'% kbLayout))
+    print('kbLayout: %x'% kbLayout)
     kbLayoutName = windll.user32.GetKeyboardLayoutNameW(kbLayout)
-    print(('name: %s (%s)'% (kbLayoutName, type(kbLayoutName))))
+    print('name: %s (%s)'% (kbLayoutName, type(kbLayoutName)))
 
 if __name__ == "__main__":
     _test()

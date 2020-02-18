@@ -11,7 +11,6 @@
 This file implements an interface to the Windows system clipboard.
 """
 
-import six
 import copy
 import types
 import time
@@ -81,7 +80,7 @@ class Clipboard(object):
         As alias, you can also call: Clipboard.Set_text("abacadabra")
         """
         print('set to clipboard: %s'% content)
-        # content = unicode(content)
+        # content = str(content)
         if not OpenClipboardCautious():
             print('Clipboard, set_system_text: could not open clipboard')
             return
@@ -89,9 +88,9 @@ class Clipboard(object):
         # print 'clipboard number: %s'% clipNum
         try:
             win32clipboard.EmptyClipboard()
-            if type(content) == six.binary_type:
+            if type(content) == bytes:
                 format = cls.format_text
-            elif type(content) == six.text_type:
+            elif type(content) == str:
                 format = cls.format_unicode
             
             win32clipboard.SetClipboardData(format, content)
@@ -352,7 +351,7 @@ class Clipboard(object):
             data = data or self._contents
             if data is None:
                 return
-            elif isinstance(data, six.string_types):
+            elif isinstance(data, str):
                 self.get_text(data)
             elif type(data) == dict:
                 for format, content in list(data.items()):

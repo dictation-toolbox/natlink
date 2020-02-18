@@ -898,6 +898,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def setVocolaUserDir(self, v):
         key = 'VocolaUserDirectory'
+        v = os.path.normpath(os.path.expanduser(v))
         if self.isValidPath(v, wantDirectory=1):
             print(("Setting VocolaUserDirectory %s and enable Vocola"% v))
             self.userregnl.set(key, v)
@@ -930,6 +931,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def setAhkExeDir(self, v):
         key = 'AhkExeDir'
+        v = os.path.normpath(os.path.expanduser(v))
         ahkexedir = self.isValidPath(v, wantDirectory=1)
 
         if ahkexedir:
@@ -993,7 +995,9 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def setUnimacroUserDir(self, v):
         key = 'UnimacroUserDirectory'
+
         oldDir = self.getUnimacroUserDir()
+        # v = os.path.normpath(os.path.expanduser(v))
         unimacrouserdir = self.isValidPath(v, wantDirectory=1)
         if unimacrouserdir:
             oldDir = self.isValidPath(oldDir, wantDirectory=1)

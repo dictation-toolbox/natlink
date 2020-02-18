@@ -29,7 +29,6 @@
 ###
 
 import re
-import string
 import sys
 from   types import *
 import traceback  # for debugging traceback code in handle_error
@@ -41,8 +40,10 @@ import natlinkutils
 ## Global variables:
 ##
 
-# DNS short name of current language being used, set by _vocola_main.py:
-Language = None
+# DNS short name of current SystemLanguage being used, set by _vocola_main.py:
+SystemLanguage = None
+Language = "enx"  ## for the moment QH
+
 
 
 
@@ -62,7 +63,7 @@ def combineDictationWords(fullResults):
             # This word came from a "recognize anything" rule.
             # Convert to written form if necessary, e.g. "@\at-sign" --> "@"
             word = fullResults[i][0]
-            backslashPosition = string.find(word, "\\")
+            backslashPosition = word.find("\\")
             if backslashPosition > 0:
                 word = word[:backslashPosition]
             if inDictation:
@@ -112,7 +113,7 @@ def to_long(string):
         return int(string)
     except ValueError:
         raise VocolaRuntimeError("unable to convert '"
-                                 + string.replace("'", "''")
+                                 + "'".replace("''")
                                  + "' into an integer")
 
 def do_flush(functional_context, buffer):
@@ -144,7 +145,7 @@ def convert_keys(keys):
                       [ _]
                       (\d+) \}""", r'{\1 \2}', keys)
 
-    # prefix with current language appropriate version of {shift}
+    # prefix with current SystemLanguage appropriate version of {shift}
     # to prevent doubling/dropping bug:
     shift = name_for_shift()
     if shift:
@@ -153,17 +154,17 @@ def convert_keys(keys):
     return keys
 
 def name_for_shift():
-    if Language == "enx":
+    if SystemLanguage == "enx":
         return "shift"
-    elif Language == "nld":
+    elif SystemLanguage == "nld":
         return "shift"
-    elif Language == "fra":
+    elif SystemLanguage == "fra":
         return "Maj"
-    elif Language == "deu":
+    elif SystemLanguage == "deu":
         return "Umschalt"
-    elif Language == "ita":
+    elif SystemLanguage == "ita":
         return "MAIUSC"
-    elif Language == "esp":
+    elif SystemLanguage == "esp":
         return "MAYÚS"
     else:
         return None
@@ -173,9 +174,9 @@ def call_Dragon(function_name, argument_types, arguments):
 
     def quoteAsVisualBasicString(argument):
         q = argument
-        q = string.replace(q, '"', '""')
-        q = string.replace(q, "\n", '" + chr$(10) + "')
-        q = string.replace(q, "\r", '" + chr$(13) + "')
+        q = q.replace('"', '""')
+        q = q.replace("\n", '" + chr$(10) + "')
+        q = q.replace("\r", '" + chr$(13) + "')
         return '"' + q + '"'
 
     script = ""
