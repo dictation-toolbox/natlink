@@ -417,7 +417,7 @@ try:
                 res = pat.match(x)
                 if res:
                     modName = res.group(1)
-                    addToFilesToLoad( filesToLoad, modName, UserDirectory, moduleHasDot )
+                    addToFilesToLoad( filesToLoad, modName, userDirectory, moduleHasDot )
         ## unimacro:
         if status.UnimacroIsEnabled():
             unimacroDirFiles = [x for x in os.listdir(unimacroDirectory) if x.endswith('.py')]
