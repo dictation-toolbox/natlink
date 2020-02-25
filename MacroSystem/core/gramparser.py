@@ -330,7 +330,8 @@ class GramScanner:
 ## and put back the results exactly the same:
 class GramScannerReverse(GramScanner):
     def __init__(self, text=None):
-        GramScanner.__init__(self, text)
+        text2 = splitApartLines(text)
+        GramScanner.__init__(self, text2)
         self.returnList = []        
             
     def gramscannergen(self):

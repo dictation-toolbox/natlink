@@ -801,8 +801,17 @@ try:
     def start_natlink(doNatConnect=None):
         """do the startup of the python macros system
         """
-        global userDirectory, DNSVersion, coreDirectory, baseDirectory, WindowsVersion, unimacroDirectory
+        global userDirectory, DNSVersion, coreDirectory, baseDirectory, WindowsVersion, unimacroDirectory, loadedFiles
         print('--')
+        nGrammarsLoaded = len(loadedFiles)
+        if nGrammarsLoaded:
+            if debugLoad:
+                print("unload everything, %s grammars loaded"% nGrammarsLoaded)
+            unloadEverything()
+        else:
+            if debugLoad:
+                print("no grammars loaded yet")
+
         if natlinkmainPrintsAtStart:
             print('-- natlinkmain starting...')
         try:

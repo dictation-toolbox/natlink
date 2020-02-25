@@ -246,8 +246,7 @@ def emit_number_words():
         emit(2, "return word\n\n")
         return
     elif_keyword = "if  "
-    numbers = Number_words.keys()
-    numbers.sort()
+    numbers = sorted(Number_words.keys())
     for number in numbers:
         emit(2, elif_keyword + " word == '" + Number_words[number]+ "':\n")
         emit(3, "return '" + str(number) + "'\n")

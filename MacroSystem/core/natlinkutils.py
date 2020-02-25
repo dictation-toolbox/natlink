@@ -797,7 +797,7 @@ class GrammarBase(GramClassBase):
             try:
                 ruleName = self.ruleMap[ruleNumber]
             except KeyError:
-                print("KeyError, %s"% ruleNumber)
+                # print("KeyError, %s"% ruleNumber)
                 if ruleNumber == 1000000 and 'dgndictation' in list(self.ruleMap.values()):
                     ruleName = 'dgndictation'
                 elif ruleNumber == 1000001 and 'dgnletters' in list(self.ruleMap.values()):

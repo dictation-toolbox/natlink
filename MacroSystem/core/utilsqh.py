@@ -112,6 +112,34 @@ def fixinivarskey(s):
         t = t.replace('  ', ' ')
     return t
     
+def unifyaccentedchars(to_translate):
+    """change acuted characters with combining code to single characters
+    
+The combining variant (s3) is converted into the one character shorter variant s1, apart from the capitals.
+This is done by the NFC variant of the normalize function
+    
+>>> s1 = "cafcomb\u00e9"   # single char e acute no change
+>>> s2 = unifyaccentedchars(s1)
+>>> s2
+'cafcombé'
+
+## this one changes to s1:
+>>> s3 = "CafCombe\u0301"   # combining char e acute   0301 is the combining code
+>>> s4 = unifyaccentedchars(s3)   # combining char e acute
+>>> s4
+'CafCombé'
+>>> len(s1), len(s2), len(s3), len(s4)
+(8, 8, 9, 8)
+>>> s1 == s3.lower()
+False
+>>> s2 == s4.lower()
+True
+
+    (from Fluent Python)
+    """
+    norm_txt = unicodedata.normalize('NFC', to_translate)
+    return norm_txt
+
 def normalizeaccentedchars(to_translate):
     """change acutechars to ascii 
     
