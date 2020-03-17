@@ -1,4 +1,7 @@
-import sys, os, shutil
+import sys, os, shutil, re, subprocess
+
+from cli_install.install_script_functions import *
+
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -61,3 +64,4 @@ def onerror(func, path, exc_info):
         func(path)
     else:
         raise
+
