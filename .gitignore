@@ -75,3 +75,8 @@ fabric.properties
 cli_install/build
 cli_install/dist
 cli_install/*.spec
+# Natlink MacroSystem
+MacroSystem/*_vcl.py
+/MacroSystem/core/error_info_natlink_grammar.txt
+/PyTest/nsformattestresult.txt
+/Vocola/extensions/extensions.csv
