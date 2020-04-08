@@ -11,7 +11,7 @@ print('Starting start_natlinkconfigfunctions.py,')
 print('Try to run natlinkconfigfunctions.py in Elevated mode...')
 print()
 
-if not sys.version.startswith('2.'):
+if not sys.version.startswith('3.'):
     print('This script should start with python3, not with %s'% sys.version)
     time.sleep(30)
     sys.exit()
