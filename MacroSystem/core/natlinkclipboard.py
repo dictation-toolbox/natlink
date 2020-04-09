@@ -5,7 +5,7 @@
 #
 # It is now improved and augmented for the Natlink project
 # by Quintijn Hoogenboom for wider use 15/7/2019.
-# See also unittestClipboard.py in PyTest
+# See also unittestClipboard.py in Unimacro/unimacro_test
 
 """
 This file implements an interface to the Windows system clipboard.
@@ -19,7 +19,7 @@ import win32con
 
 #===========================================================================
 
-class Clipboard(object):
+class Clipboard:
 
     #-----------------------------------------------------------------------
 
