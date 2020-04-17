@@ -23,5 +23,5 @@ def nsformatcapitalize(name):
 # Vocola function: String.Capitalize
 def capitalize(name):
     formattedOutput, outputState = nsformat.formatWords(words, state=None)  # no space, cap next
-    print "String.Capitalize: %s"% name.capitalize
+    print("String.Capitalize: %s"% name.capitalize)
     return name.capitalize()

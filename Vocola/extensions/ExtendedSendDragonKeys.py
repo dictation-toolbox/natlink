@@ -94,14 +94,14 @@ def chord_to_events(chord):
                 if m: mm = '+'.join(m) + "+"
                 bb = "<" + base + ">"
                 if ord(base[0])<32: bb = hex(ord(base[0]))
-                print "typing " + bb + " by {" + mm + describe_key(f) + "}"
+                print("typing " + bb + " by {" + mm + describe_key(f) + "}")
             modifiers += m
             base = "VK" + hex(f)
         except:
             if debug and ord(base[0])<128:
                 bb = "<" + base + ">"
                 if ord(base[0])<32: bb = hex(ord(base[0]))
-                print "can't type " + bb + " on current keyboard layout"
+                print("can't type " + bb + " on current keyboard layout")
             pass
     
     events         = []
@@ -127,18 +127,18 @@ def chord_to_events(chord):
             raise
 
     if len(modifiers) != 0:
-        print "Warning: unable to use modifiers with character: " + base
+        print("Warning: unable to use modifiers with character: " + base)
     
     # Unicode?
     
     if release_count==0:
-        print "Warning: unable to independently hold character: " + base
+        print("Warning: unable to independently hold character: " + base)
     if hold_count==0:
-        print "Warning: unable to independently release character: " + base
+        print("Warning: unable to independently release character: " + base)
         return []
 
     if debug:
-        print "using numpad entry for: " + base
+        print("using numpad entry for: " + base)
     return windows1252_to_events(ord(base[0])) * hold_count
 
 
@@ -332,7 +332,7 @@ Key_name = {
 }
 
 Code_to_name = {}
-for name in Key_name.keys():
+for name in list(Key_name.keys()):
     Code_to_name[Key_name[name]] = name
 
 def describe_key(code):
