@@ -12,15 +12,20 @@ class Configuration:
         15: ("C:/Program Files (x86)/Nuance/NaturallySpeaking15","C:/ProgramData/Nuance/NaturallySpeaking15")
     }
 
-    # These values can change
-    dragon = {
-        "version":None,
-        "program_path":None,
-        "data_path": None,
-    }
+
 
 
     def __init__(self, path):
+
+        # These values can change
+        self.dragon = {
+            "version": None,
+            "program_path": None,
+            "data_path": None,
+        }
+
+        self.used_python_version = None
+
         if os.path.isfile(path):
             with open('example.json', 'r') as myfile:
                 data = myfile.read()
@@ -28,6 +33,7 @@ class Configuration:
             obj = json.loads(data)
         else:
             self._find_dragon_installation()
+
 
     def _find_dragon_installation(self):
         if os.path.isdir(self.DRAGON_DEFAULT_PATHS[15][0]) and\

@@ -75,6 +75,7 @@ class Installation_Routines:
         path = self.config.NATLINK_INSTALL_DIR
         self._check_for_previous_natlink_installations(path)
         self._download_and_extract_natlink_files()
+        self.config.dragon["version"]
 
 
     def _download_and_extract_natlink_files(self):
