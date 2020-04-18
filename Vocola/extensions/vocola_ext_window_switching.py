@@ -192,7 +192,7 @@ def find_windows(matcher, max_count=1):
 
     try:
         win32gui.EnumWindows(callback, None)
-    except Exception, e:
+    except Exception as e:
         # EnumWindows raises an exception when the enumeration is
         # terminated early :-(
         #print "EnumWindows exception: " + repr(e)
@@ -229,11 +229,11 @@ def switch_to(window_ID):
 
 
 def switch_to2(window_ID):
-    print "moving"
+    print("moving")
     if win32gui.IsIconic(window_ID):
-        print "undoing"
-        print win32gui.ShowWindow(window_ID, win32con.SW_RESTORE)
-    print win32gui.SetForegroundWindow(window_ID)
+        print("undoing")
+        print(win32gui.ShowWindow(window_ID, win32con.SW_RESTORE))
+    print(win32gui.SetForegroundWindow(window_ID))
     return True
 
 
@@ -261,10 +261,10 @@ def window_go_(specification):
     success = False
     windows = find_windows(make_matcher(specification))
     if len(windows)==0:
-        print "NOT FOUND: " + specification   # <<<>>>
+        print("NOT FOUND: " + specification)   # <<<>>>
         return
     window = windows[-1]
-    print "-> "+ format_ID(window)            # <<<>>>
+    print("-> "+ format_ID(window))            # <<<>>>
     success = switch_to(window)
 
 
@@ -283,7 +283,7 @@ def window_go(specification):
     if not success:
         m = ("Unable to switch to a window with specification '" + 
              specification + "'")
-        raise WindowError, m
+        raise WindowError(m)
 
 
 
@@ -298,12 +298,12 @@ def window_go(specification):
 #
 # Vocola procedure: Window.ListWindows,0-1
 def list_windows(specification="never match anything 24328#45348932453"):
-    print
+    print()
     foreground_window = win32gui.GetForegroundWindow()
     try:
         results = find_windows(make_matcher(".*"), 1000000)
-    except Exception, e:
-        print "find_windows failed: " + repr(e)
+    except Exception as e:
+        print("find_windows failed: " + repr(e))
         traceback.print_exc()
         return
 
@@ -323,8 +323,8 @@ def list_windows(specification="never match anything 24328#45348932453"):
             out += "|" + executable_for_window(w)
         except:
             out += "|FAILED"
-        print out
-    print
+        print(out)
+    print()
 
 def matches(window_handle, specification):
     return make_matcher(specification)(window_handle)

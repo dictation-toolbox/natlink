@@ -916,11 +916,11 @@ try:
             print("natlinkmain imported-----------------------------------")
         elif natlinkmainPrintsAtEnd:
             if status.UnimacroIsEnabled():
-                print('Unimacro enabled, user directory: %s'% status.getUnimacroUserDirectory())
+                print('Unimacro enabled, UnimacroUserDirectory:\n  %s'% status.getUnimacroUserDirectory())
             if status.VocolaIsEnabled():
-                print('Vocola enabled, user directory: %s'% status.getVocolaUserDirectory())
+                print('Vocola enabled, VocolaUserDirectory:\n  %s'% status.getVocolaUserDirectory())
             if userDirectory:
-                print("User defined macro's (UserDirectory) enabled: %s"% userDirectory)
+                print("User defined macro's enabled, UserDirectory:\n  %s"% userDirectory)
             print('-'*40)
         #else:
         #    natlinkLogMessage('natlinkmain started (imported)\n')
