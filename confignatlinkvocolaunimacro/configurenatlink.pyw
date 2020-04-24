@@ -1,4 +1,4 @@
-#!/bin/env python
+#! python3
 #
 # confignatlinkvocolaunimacro.py
 #   This module does the natlinkconfigfunctions through a

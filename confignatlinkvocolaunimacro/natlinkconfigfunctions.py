@@ -1,3 +1,4 @@
+#! python3
 # coding=latin-1
 #
 # natlinkconfigfunctions.py
