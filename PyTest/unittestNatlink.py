@@ -1151,7 +1151,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def tttestRecognitionMimicCommands(self):
+    def testRecognitionMimicCommands(self):
         """test different phrases with commands, from own grammar
         
         explore when the recognitionMimic fails
@@ -1163,7 +1163,7 @@ class UnittestNatlink(unittest.TestCase):
             gramSpec = """
                 <runone> exported = mimic runone;
                 <runtwo> exported = mimic two {colors};
-                <runfour> exported = mimic four <extraword> [{colors}]+;
+                <runthree> exported = mimic four <extraword> [{colors}]+;
                 <runsix> exported = mimic six {colors}+;
                 <runseven> exported = mimic seven <wordsalternatives>;
                 <runeight> exported = mimic eight <wordsalternatives>+;
@@ -1204,7 +1204,7 @@ class UnittestNatlink(unittest.TestCase):
         ## this one was already a problem with python2.7 since Dragon 15.
         ## interactively it works (_sample7.py copied into MacroSystem directory)
         ## would be great if you could tackle this "detail"
-        testCommandRecognition(['mimic', 'two', 'bllackk'], shouldWork=1, testGram=testGram)  
+        # testCommandRecognition(['mimic', 'two', 'bllackk'], shouldWork=1, testGram=testGram)  
 
         ## ruleone:
         testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)  
@@ -3590,13 +3590,15 @@ class UnittestNatlink(unittest.TestCase):
             self.log('switched %s again mic'% micState)
             time.sleep(w)
 
+    ## TODO
     def tttestNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
 
             gramSpec = """
-                <run> exported = testtestrun ( 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 ) ;
+                <run> exported = testtestrun ; # ( one |  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 ) ;
+                <testone> exported = test test one ;
                 <test1> exported = test test 1 ;
                 <test2> exported = test test 2 ;
                 <test3> exported = test test 3 ;
@@ -3623,7 +3625,14 @@ class UnittestNatlink(unittest.TestCase):
 
             def gotResults_run(self,words,fullResults):
                 self.results.append('run')
-                natlink.recognitionMimic(['test','test',words[1]])
+                mimicWord = words[1]
+                self.log("do mimictest with mimicWord: %s"% mimicWord)
+                # natlink.execScript('HeardWord "test","test","one"')
+                natlink.recognitionMimic(['test','test', mimicWord])
+                pass
+
+            def gotResults_testone(self,words,fullResults):
+                self.results.append('one')
 
             def gotResults_test1(self,words,fullResults):
                 self.results.append('1')
@@ -3646,21 +3655,24 @@ class UnittestNatlink(unittest.TestCase):
 
         testGram = TestGrammar()
         testGram.initialize()
-        natlink.recognitionMimic(['testtestrun','1'])
-        testGram.checkExperiment(['run','1'])
         
-        natlink.recognitionMimic(['testtestrun','2'])
-        testGram.checkExperiment(['run','2','1'])
-
-        natlink.recognitionMimic(['testtestrun','3'])
-        testGram.checkExperiment(['run','3','1'])
-        
-        natlink.recognitionMimic(['testtestrun','4'])
-        testGram.checkExperiment(['run','4','3','1'])
-        
-        if DNSVersion < 12:
-            natlink.recognitionMimic(['test','test','run','5'])
-            testGram.checkExperiment(['run','5'])
+        # first check one of the rules that are going to be mimiced:
+        testGram.resetExperiment()
+        natlink.recognitionMimic(['test','test', 'one'])
+        testGram.checkExperiment(['one'])
+        # 
+        # natlink.recognitionMimic(['testtestrun','2'])
+        # testGram.checkExperiment(['run','2','1'])
+        # 
+        # natlink.recognitionMimic(['testtestrun','3'])
+        # testGram.checkExperiment(['run','3','1'])
+        # 
+        # natlink.recognitionMimic(['testtestrun','4'])
+        # testGram.checkExperiment(['run','4','3','1'])
+        # 
+        # if DNSVersion < 12:
+        #     natlink.recognitionMimic(['test','test','run','5'])
+        #     testGram.checkExperiment(['run','5'])
 
         testGram.unload()
 

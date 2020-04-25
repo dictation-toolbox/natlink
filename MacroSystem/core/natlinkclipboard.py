@@ -128,8 +128,6 @@ class Clipboard:
         win32con.CF_HDROP is the parameter for calling this type of clipboard data
         
         """
-        if waiting_time:
-            nTimes = self._wait_
         if not OpenClipboardCautious(waiting_time=waiting_time):
             print('Clipboard, get_system_folderinfo, could not open clipboard')
             return
