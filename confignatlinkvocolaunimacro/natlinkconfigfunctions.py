@@ -157,8 +157,9 @@ def fatal_error(message, new_raise=None):
                 '', message, '',
                 'So if Dragon is running, close it and then rerun this program (in elevated mode).']
         mess = '\n'.join(mess)
-        windowsMessageBox(mess)
         print(mess)
+        print("\n\n*** See also (and close messageBox)")
+        windowsMessageBox(mess)
     if message not in hadFatalErrors:
         hadFatalErrors.append(message)
     if new_raise:
@@ -307,7 +308,6 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         if not self.isElevated: raise ElevationError("needed for removing your previous natlink.pyd. Also close Dragon.")
         # if self.isNatSpeakRunning(): raise NatSpeakRunningError("needed for removing your previous natlink.pyd")
-
         coreDir = self.getCoreDirectory()
         currentPydFile = os.path.join(coreDir, 'natlink.pyd')
         if os.path.isfile(currentPydFile):
