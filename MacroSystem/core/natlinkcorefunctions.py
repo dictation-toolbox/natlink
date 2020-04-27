@@ -24,7 +24,7 @@ getAllFolderEnvironmentVariables: get a dict of all possible HOME and CSIDL vari
 substituteEnvVariableAtStart: substitute back into a file/folder path an environment variable
 
 Note: for extension with %NATLINK% etc. see natlinkstatus.py
-    (call getAllEnv, this one first takes NatLink variables and then these extended env variables)
+    (call getAllEnv, this one first takes Natlink variables and then these extended env variables)
 
 """ 
 import os
@@ -56,7 +56,7 @@ def getBaseFolder(globalsDict=None):
 ##        print 'baseFolder was empty, take wd: %s'% baseFolder
     return baseFolder
 
-# the NatLink Core directory:
+# the Natlink Core directory:
 thisBaseFolder = getBaseFolder()
 
 

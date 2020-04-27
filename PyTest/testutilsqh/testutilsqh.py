@@ -36,7 +36,7 @@ class UtilsqhTest(TestCaseWithHelpers.TestCaseWithHelpers):
     def xxxxtest_environment_variables(self):
 
         # check getExtendedEnv, substituting ~ to HOME, PERSONAL, 
-        # probably somewhere in NatLink now
+        # probably somewhere in Natlink now
         homeVariable = utilsqh.getExtendedEnv("~")
         homeVariableDuplicate = utilsqh.getExtendedEnv("HOME")
         self.assert_(len(homeVariable) > 0, "homeVariable was not caught")

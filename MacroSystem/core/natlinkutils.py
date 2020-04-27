@@ -77,7 +77,7 @@ if useMarkSendInput:
     # print "used for all normal playString calls!  If you do not want this,"
     # print "change the variable useMarkSendInput to 0 in line 65 of"
     # print "natlinkutils.py.  This file is located in the directory "
-    # print "NatLink\MacroSystem\Core.  Then restart Dragon...\n======"
+    # print "Natlink\MacroSystem\Core.  Then restart Dragon...\n======"
 # 
 import os
 import os.path

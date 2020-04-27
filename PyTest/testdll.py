@@ -31,7 +31,7 @@ if __name__ == "__main__":
     #p = os.path.normpath(r'C:\Windows\syswow64')
     #p = os.path.normpath(r'C:\Windows\system32')
     p = os.path.normpath(r'C:\\')
-    #p = os.path.normpath(r'C:\natlink\NatLink\Macrosystem\Core')
+    #p = os.path.normpath(r'C:\natlink\Natlink\Macrosystem\Core')
     dllname = 'msvcr100.dll'
     #dllname = 'msvcr100.dll'  # None for all testing dll pyd
 

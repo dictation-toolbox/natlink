@@ -15,7 +15,7 @@
 # Say "d\xe9mo sample two red" and it would recognize the command and type:
 #   The color is red               (it types the name of the color you say)
 #
-# This file d\xe9monstrates having two commands in one grammar.  NatLink knows
+# This file d\xe9monstrates having two commands in one grammar.  Natlink knows
 # which rule was recognized and calls the appropiate handling function
 # (gotResults_xxx).  This file also d\xe9monstrates using the actual words
 # recognized to control the results (we type the name of the spoken color).

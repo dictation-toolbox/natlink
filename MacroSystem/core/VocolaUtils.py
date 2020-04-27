@@ -253,7 +253,7 @@ def call_Unimacro(argumentString):
                        '    the link with Unimacro is unavailable.',
                        '    You can fix this by switching on the option:',
                        '    "Vocola takes Unimacro Actions" in the',
-                       '    program "Configure NatLink via GUI".'])
+                       '    program "Configure Natlink via GUI".'])
         raise VocolaRuntimeError(m)
 
 

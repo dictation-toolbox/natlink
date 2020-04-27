@@ -1,4 +1,4 @@
-# vcl2py:  Convert Vocola voice command files to NatLink Python "grammar"
+# vcl2py:  Convert Vocola voice command files to Natlink Python "grammar"
 #          classes implementing those voice commands
 #
 # Usage: python vcl2py.py [<option>...] <inputFileOrFolder> <outputFolder>
@@ -80,10 +80,10 @@
 # 01/03/2005  rm  Commands can incorporate arbitrary dictation 
 #                 Enable/disable command sequences via ini file
 # 04/12/2003  rm  Case insensitive window title comparisons
-#                 Output e.g. "emacs_vcl.py" (don't clobber existing NatLink 
+#                 Output e.g. "emacs_vcl.py" (don't clobber existing Natlink 
 #                 files)
 # 11/24/2002  rm  Option to process a single file, or only changed files
-# 10/12/2002  rm  Use <any>+ instead of exporting individual NatLink commands
+# 10/12/2002  rm  Use <any>+ instead of exporting individual Natlink commands
 # 10/05/2002  rm  Generalized indenting, emit()
 # 09/29/2002  rm  Built-in function: Repeat() 
 # 09/15/2002  rm  User-defined functions

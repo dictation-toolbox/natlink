@@ -159,7 +159,7 @@ def DecodeEncode(tRaw, filetype):
 
 
 if __name__ == '__main__':
-    testdir = r'C:\NatLink\NatLink\PyTest\test_vcl_files'
+    testdir = r'C:\Natlink\Natlink\PyTest\test_vcl_files'
     for filename in os.listdir(testdir):
         if filename.startswith('out'):
             continue

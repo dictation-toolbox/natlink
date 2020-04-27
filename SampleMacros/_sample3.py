@@ -8,7 +8,7 @@
 #
 # _sample3.py
 #
-# This is a sample macro file used to d\xe9monstrate how NatLink calls result
+# This is a sample macro file used to d\xe9monstrate how Natlink calls result
 # functions (gotResults_xxx) based on which words were recognized.
 #
 # When NatSpeak has the focus, say "d\xe9mo sample three now please".  When the

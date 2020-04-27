@@ -4,7 +4,7 @@
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
 # testnatlink.py
-#   This script performs some basic tests of the NatLink system.
+#   This script performs some basic tests of the Natlink system.
 #    Restart NatSpeak before rerunning this script. This is because the test
 #    script will leave some state around which will make it fail if run again
 #

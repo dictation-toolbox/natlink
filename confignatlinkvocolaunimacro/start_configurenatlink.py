@@ -30,7 +30,7 @@ else:
 try:
     import wx
 except (KeyError, ModuleNotFoundError):
-    print('Unable to run the GUI configuration program of NatLink/Unimacro/Vocola')
+    print('Unable to run the GUI configuration program of Natlink/Unimacro/Vocola')
     print('because module wx was not found.  This probably')
     print('means that wxPython is not installed correct:')
     print()
@@ -44,7 +44,7 @@ except (KeyError, ModuleNotFoundError):
 try:
     from win32api import ShellExecute, GetVersionEx
 except ImportError:
-    print('Unable to start the configuration program of NatLink/Unimacro/Vocola')
+    print('Unable to start the configuration program of Natlink/Unimacro/Vocola')
     print('because the module "win32api" is not found.  This probably')
     print('means that the win32 extensions package, pywin32, is not installed (properly).')
     print()
@@ -53,17 +53,17 @@ except ImportError:
     print('In some rare cases this install did not finish correct.')
     print('You can then try to run the batch script "start_postinstallscript_pywin32.cmd" in')
     print('Admin mode, in order to finish the installation. Hopefully this helps.')
-    print('This file can be found in the "confignatlinkvocolaunimacro" subdirectory of your NatLink directory.')
+    print('This file can be found in the "confignatlinkvocolaunimacro" subdirectory of your Natlink directory.')
     # time.sleep(30)
     sys.exit()
 
 try:
     import natlinkconfigfunctions
 except ImportError:
-    print('Unable to start the configuration program of NatLink/Unimacro/Vocola:')
+    print('Unable to start the configuration program of Natlink/Unimacro/Vocola:')
     print('the python module natlinkconfigfunctions.py gives an error.')
     print()
-    print('Please report this error message to the NatLink developers,')
+    print('Please report this error message to the Natlink developers,')
     print('preferably to q.hoogenboom@antenna.nl')
     print()
     import traceback
@@ -90,7 +90,7 @@ try:
 
     configPath = os.path.join(os.path.dirname(__file__), "configurenatlink.pyw")
     if not os.path.isfile(configPath):
-        print("cannot find the NatLink/Unimacro/Vocola configuration program: %s"% configPath)
+        print("cannot find the Natlink/Unimacro/Vocola configuration program: %s"% configPath)
         # time.sleep(30)
         sys.exit()
 

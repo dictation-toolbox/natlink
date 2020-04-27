@@ -4,7 +4,7 @@
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
 # testnatlink.py -> unittestNatlink
-#   / performs some basic tests of the NatLink system.
+#   / performs some basic tests of the Natlink system.
 #
 # run from a (preferably clean) US user profile, easiest from IDLE.
 # do not run from pythonwin. See also README.txt in PyTest folder
@@ -83,7 +83,7 @@ def getBaseFolder(globalsDict=None):
     return baseFolder
 
 def getCoreDir(thisDir):
-    """get the NatLink core folder, relative from the current folder
+    """get the Natlink core folder, relative from the current folder
 
     This folder should be relative to this with ../MacroSystem/core and should
     contain natlinkmain.p, natlink.dll, and natlinkstatus.py
@@ -688,7 +688,7 @@ class UnittestNatlink(unittest.TestCase):
 ##            raise TestError,'The NatSpeak window is not empty'
 
     #---------------------------------------------------------------------------
-    # Test extra functions of NatLink (getUser, getAllUsers)
+    # Test extra functions of Natlink (getUser, getAllUsers)
 
     def oktestGetAllUsersEtc(self):
         self.log("testGetAllUsersEtc", 0) # not to DragonPad!

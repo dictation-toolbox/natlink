@@ -1,5 +1,5 @@
 # -*- coding: latin-1 -*-
-"""_vocola_main.py - NatLink support for Vocola
+"""_vocola_main.py - Natlink support for Vocola
 
 Contains:
    - "Built-in" voice commands
@@ -52,11 +52,12 @@ try:
     import natlinkstatus
     Quintijn_installer = True
     status             = natlinkstatus.NatlinkStatus()
-    print('status: %s'% status)
+    # print('status: %s'% status)
     VocolaEnabled      = not not status.getVocolaUserDirectory()
-    print('VocolaEnabled: %s'% VocolaEnabled)
+    # print('VocolaEnabled: %s'% VocolaEnabled)
     language           = status.getLanguage()
-    print('language: %s'% language)
+    # if language != 'enx':
+    #     print('    language: %s'% language)
     
 except ImportError:
     Quintijn_installer = False
@@ -104,7 +105,7 @@ def get_top_command_folder():
             import RegistryDict
             import win32con
             # Scott's installer:
-            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,r"Software\NatLink")
+            r = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,r"Software\Natlink")
             if r:
                 configured = r["VocolaUserDirectory"]
         except ImportError:
@@ -137,7 +138,7 @@ VocolaUtils.Language = language
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <NatLinkWindow>     exported = [Show] (NatLink|Vocola) Window;
+        <NatLinkWindow>     exported = [Show] (Natlink|Vocola) Window;
         <edit>              exported = Edit [Voice] Commands;
         <editGlobal>        exported = Edit Global [Voice] Commands;
         <editMachine>       exported = Edit Machine [Voice] Commands;
@@ -151,7 +152,7 @@ class ThisGrammar(GrammarBase):
 
     if language == 'nld':
         gramSpec = """
-<NatLinkWindow>     exported = Toon (NatLink|Vocola) venster;
+<NatLinkWindow>     exported = Toon (Natlink|Vocola) venster;
 <edit>              exported = (Eddit|Bewerk|Sjoo|Toon) [stem|vojs] (Commandoos|Commands);
 <editGlobal>        exported = (Eddit|Bewerk|Sjoo|Toon) (Global|globale) [stem|vojs] (Commandoos|Commands);
 <editMachine>       exported = (Eddit|Bewerk|Sjoo|Toon) Machine [stem|vojs] (Commandoos|Commands);
@@ -164,7 +165,7 @@ class ThisGrammar(GrammarBase):
     """
     elif language == 'fra':
         gramSpec = """
-<NatLinkWindow>     exported = [Afficher] Fenetre (NatLink|Vocola);
+<NatLinkWindow>     exported = [Afficher] Fenetre (Natlink|Vocola);
 <edit>              exported = Editer Commandes [Vocales];
 <editGlobal>        exported = Editer Commandes [Vocales] Globales;
 <editMachine>       exported = Editer Commandes [Vocales] Machine;
@@ -177,7 +178,7 @@ class ThisGrammar(GrammarBase):
     """
     elif language == 'deu':
         gramSpec = """
-<NatLinkWindow>     exported = [Zeige] (NatLink|Vocola) Fenster;
+<NatLinkWindow>     exported = [Zeige] (Natlink|Vocola) Fenster;
 <edit>              exported = Bearbeite [Sprach] Befehle;
 <editGlobal>        exported = Bearbeite globale [Sprach] Befehle;
 <editMachine>       exported = Bearbeite Maschinen [Sprach] Befehle;
@@ -190,7 +191,7 @@ class ThisGrammar(GrammarBase):
     """
     elif language == 'ita':
         gramSpec = """
-<NatLinkWindow>     exported = [Mostra] Finestra Di (NatLink|Vocola);
+<NatLinkWindow>     exported = [Mostra] Finestra Di (Natlink|Vocola);
 <edit>              exported = Modifica Comandi [Vocali];
 <editGlobal>        exported = Modifica Comandi [Vocali] Globali;
 <editMachine>       exported = Modifica Comandi [Vocali] [del] Computer;
@@ -203,7 +204,7 @@ class ThisGrammar(GrammarBase):
     """
     elif language == 'esp':
         gramSpec = """
-<NatLinkWindow>     exported = [Mostrar] Ventana de (NatLink|Vocola) ;
+<NatLinkWindow>     exported = [Mostrar] Ventana de (Natlink|Vocola) ;
 <edit>              exported = (Modificar|Editar) Comandos [de voz];
 <editGlobal>        exported = (Modificar|Editar) Comandos [de voz] Globales ;
 <editMachine>       exported = (Modificar|Editar) Comandos [de voz] de (este ordenador|la Computadora);
@@ -238,7 +239,7 @@ Commands" are activated.
 
     def gotBegin(self, moduleInfo):
         self.currentModule = moduleInfo
-        # delay enabling until now to avoid NatLink clobbering our callback:
+        # delay enabling until now to avoid Natlink clobbering our callback:
         enable_callback()
 
 
@@ -250,9 +251,9 @@ Commands" are activated.
 
 ### Miscellaneous commands
 
-    # "Show NatLink Window" -- print to output window so it appears
+    # "Show Natlink Window" -- print to output window so it appears
     def gotResults_NatLinkWindow(self, words, fullResults):
-        print("This is the NatLink/Vocola output window")
+        print("This is the Natlink/Vocola output window")
 
     # "Load Extensions" -- scan for new/changed extensions:
     def gotResults_loadExtensions(self, words, fullResults):
@@ -381,7 +382,7 @@ Commands" are activated.
             new.close()
 
         #
-        # NatLink/DNS bug causes os.startfile or wpi32api.ShellExecute
+        # Natlink/DNS bug causes os.startfile or wpi32api.ShellExecute
         # to crash DNS if allResults is on in *any* grammer (e.g., Unimacro)
         #
         # Accordingly, use AppBringUp instead:
@@ -409,7 +410,7 @@ may_have_compiled = False  # has the compiler been called?
 compile_error     = False  # has a compiler error occurred?
 
 # Run Vocola compiler, converting command files from "inputFileOrFolder"
-# and writing output to NatLink/MacroSystem
+# and writing output to Natlink/MacroSystem
 def compile_Vocola(inputFileOrFolder, force):
     global may_have_compiled, compiler_error
 
@@ -563,7 +564,7 @@ def output_changes():
 
 # When speech is heard this function will be called before any others.
 #
-# Must return result of output_changes() so we can tell NatLink when
+# Must return result of output_changes() so we can tell Natlink when
 # files need to be loaded.
 def utterance_start_callback(moduleInfo):
     compile_changed()
@@ -580,12 +581,12 @@ def utterance_start_callback(moduleInfo):
 #
 # With Quintijn's installer as of February 4, 2008:
 #
-#   _vocola_main is loaded before any other NatLink modules
+#   _vocola_main is loaded before any other Natlink modules
 #   vocolaBeginCallback is called directly by natlinkmain before any
 #     other grammer's gotBegin method
 #   natlinkmain now guarantees we are not called with CallbackDepth>1
 #   we return the result of output_changes() directly rather than
-#     massaging NatLink to deal with new .py files
+#     massaging Natlink to deal with new .py files
 #
 
 
@@ -596,7 +597,7 @@ def enable_callback():
     if not callback_enabled:
         callback_enabled = True
         if not Quintijn_installer:
-            # Replace NatLink's "begin" callback function with ours:
+            # Replace Natlink's "begin" callback function with ours:
             natlink.setBeginCallback(vocolaBeginCallback)
 
 def disable_callback():
@@ -618,7 +619,7 @@ def vocolaBeginCallback(moduleInfo):
         return changes
     else:
         if changes > 1:
-            # make sure NatLink sees any new .py files:
+            # make sure Natlink sees any new .py files:
             natlinkmain.findAndLoadFiles()
             natlinkmain.loadModSpecific(moduleInfo)
         natlinkmain.beginCallback(moduleInfo)

@@ -1,11 +1,11 @@
 #! python3
-from __future__ import print_function
-import six
+"""this script should start the module natlinkconfigfunctions.py in elevated mode.
+
+    
+"""
 import os
 import sys
 import time
-
-if six.PY2: ModuleNotFoundError = ImportError
 
 print('Starting start_natlinkconfigfunctions.py,')
 print('Try to run natlinkconfigfunctions.py in Elevated mode...')
@@ -16,15 +16,15 @@ if not sys.version.startswith('3.'):
     time.sleep(30)
     sys.exit()
 
-try:
-    from future import standard_library
-except ModuleNotFoundError:
-    print('Cannot find module "future", consider pip install future')
-    time.sleep(30)
-else:
-    standard_library.install_aliases()
-    from future.builtins import next
-    from future.builtins import object
+# try:
+#     from future import standard_library
+# except ImportError:
+#     print('Cannot find module "future", consider pip install future')
+#     time.sleep(30)
+# else:
+#     standard_library.install_aliases()
+#     from future.builtins import next
+#     from future.builtins import object
 
 
 if sys.version.find("64 bit") >= 0:

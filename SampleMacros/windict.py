@@ -6,7 +6,7 @@
 # windict.py
 #
 # This is a sample Python program which demonstrates how to use the
-# NatLink dictation object in a Python program.  The user interface for
+# Natlink dictation object in a Python program.  The user interface for
 # this programn is based on the PythonWin (win32) extensions.
 #
 # The basic idea is as follows.
@@ -122,7 +122,7 @@ class CommandGrammar(GrammarBase):
 # VoiceDictation client
 #
 # This class provides a way of encapsulating the voice dictation (DictObj)
-# of NatLink.  We can not derive a class from DictObj because DictObj is an
+# of Natlink.  We can not derive a class from DictObj because DictObj is an
 # exporeted C class, not a Python class.  But we can create a class which
 # references a DictObj instance and makes it lkook like the class was
 # inherited from DictObj.        

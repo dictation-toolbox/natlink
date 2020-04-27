@@ -1,15 +1,14 @@
 #! python3
-# coding=latin-1
 #
 # natlinkconfigfunctions.py
 #   This module performs the configuration functions.
 #   called from natlinkconfig (a wxPython GUI),
 #   or directly, see below
 #
-#   Quintijn Hoogenboom, January 2008
+#   Quintijn Hoogenboom, January 2008/april 2020
 #
 """
-With the functions in this module NatLink can be configured.
+With the functions in this module Natlink can be configured.
 
 This can be done in three ways:
 -Through the command line interface (CLI) which is started automatically
@@ -33,7 +32,7 @@ DNSINIDir
       where they are expected, this one can be set in HKCU/Software/Natlink.
       Functions: setDNSIniDir(path) (c path) and clearDNSIniDir() (C)
 
-When NatLink is enabled natlink.pyd is registered with
+When Natlink is enabled natlink.pyd is registered with
       win32api.WinExec("regsvr32 /s pathToNatlinkPyd") (silent)
 
 It can be unregistered through function unregisterNatlinkPyd() see below.
@@ -59,14 +58,14 @@ except:
 
 try:
     from win32ui import MessageBox
-    def windowsMessageBox(message, title="NatLink configure program"):
+    def windowsMessageBox(message, title="Natlink configure program"):
         """do messagebox from windows, no wx needed
         """
         MessageBox(message, title)
 except:
     import ctypes
     MessageBoxA = ctypes.windll.user32.MessageBoxA
-    def windowsMessageBox(message, title="NatLink configure program"):
+    def windowsMessageBox(message, title="Natlink configure program"):
         """do messagebox from windows, no wx needed
         for old versions of python
         """
@@ -79,7 +78,7 @@ import pywintypes
 if __name__ == '__main__':
     if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
         pyVersion = sys.version[:3]
-        mess = ["Here are the natlinkconfigfunctions, with which you can configure NatLink even for this older (%s) version of Python."% pyVersion,
+        mess = ["Here are the natlinkconfigfunctions, with which you can configure Natlink even for this older (%s) version of Python."% pyVersion,
                 "Note: the natlink.pyd files (natlink.dll) that work with python %s are for older versions of NatSpeak (10 and before) only."% pyVersion,
                 "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7. You then use the newer natlink.pyd files in which several problems that arose between NatSpeak 10 and Dragon 11 are solved."]
 
@@ -121,7 +120,7 @@ def getBaseFolder(globalsDict=None):
     return baseFolder
 
 def getCoreDir(thisDir):
-    """get the NatLink core folder, relative from the current folder
+    """get the Natlink core folder, relative from the current folder
 
     This folder should be relative to this with ../MacroSystem/core and should
     contain natlinkmain.p, natlink.pyd, and natlinkstatus.py
@@ -192,7 +191,7 @@ import os, os.path, sys, getopt, cmd, types, string, win32con
 
 
 class NatlinkConfig(natlinkstatus.NatlinkStatus):
-    """performs the configuration tasks of NatLink
+    """performs the configuration tasks of Natlink
 
     userregnl got from natlinkstatus, as a Class (not instance) variable, so
     should be the same among instances of this class...
@@ -228,7 +227,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             fatal_error('no valid DNSInstallDir found, please repair in Config program or Configuration GUI')
         pass
 
-    def configCheckNatlinkPydFile(self):
+    def configCheckNatlinkPydFile(self, silent=None):
         """see if natlink.pyd is in core directory, if not copy from correct version
         if DNSInstallDir or DNSIniDir is not properly set, all goes wrong.
         """
@@ -236,7 +235,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if sys.version.find("64 bit") >= 0:
             print('=============================================')
             print('You installed a 64 bit version of python.')
-            print('NatLink cannot run with this version, please uninstall and')
+            print('Natlink cannot run with this version, please uninstall and')
             print('install a 32 bit version of python, see http://qh.antenna.nl/unimacro,,,')
             print('=============================================')
             return
@@ -297,7 +296,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             if not self.isElevated: raise ElevationError("first run of configure program must be done in elevated mode")
 
             result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
-            self.registerNatlinkPyd(silent=1)
+            self.registerNatlinkPyd(silent=silent)
 
         return result  # None if something went wrong 1 if all OK
 
@@ -367,8 +366,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         #    fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
         #                     (pythonPathSectionName, version))
         #    return None, None
-        if 'NatLink' in list(lmPythonPathDict.keys()):
-            subDict = lmPythonPathDict['NatLink']
+        if 'Natlink'  in list(lmPythonPathDict.keys()):
+            subDict = lmPythonPathDict['Natlink' ]
             if isinstance(subDict, RegistryDict.RegistryDict):
                 if '' in list(subDict.keys()):
                     value = subDict['']
@@ -377,10 +376,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                         return lmPythonPathDict, pythonPathSectionName
         # not ok, repair the setting, admin rights needed:
         if recursive:
-            fatal_error("Registry entry NatLink in pythonpath cannot be set correct, This can (hopefully) be solved by closing Dragon and then running the NatLink/Unimacro/Vocola Config program with administrator rights.run this program")
+            fatal_error("Registry entry Natlink in pythonpath cannot be set correct, This can (hopefully) be solved by closing Dragon and then running the Natlink/Unimacro/Vocola Config program with administrator rights.run this program")
             return None, None
-        print(('==== Set NatLink setting in PythonPath section of registry to "%s"'% coreDir))
-        lmPythonPathDict['NatLink'] = {'': coreDir}
+        print(('==== Set Natlink setting in PythonPath section of registry to "%s"'% coreDir))
+        lmPythonPathDict['Natlink' ] = {'': coreDir}
         return self.getHKLMPythonPathDict(recursive=True)
 
 
@@ -388,7 +387,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """checks if core directory is
 
         1. in the sys.path
-    ###    2. in the registry keys of HKLM/SOFTWARE/Python/PythonCore/2.7/PythonPath/NatLink
+    ###    2. in the registry keys of HKLM/SOFTWARE/Python/PythonCore/2.7/PythonPath/Natlink
 
         the latter part is inserted again, as, for some reason the automatic loading of
         natlinkmain needs the core directory in its path. Only take the core dir now!!
@@ -402,21 +401,21 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         It is probably the first time to run this program.
 
         If the settings are conflicting, either
-        ---you want to reconfigure NatLink in a new place (these directories)
+        ---you want to reconfigure Natlink in a new place (these directories)
         ---you ran this program from a wrong place, exit and start again from the correct directory
 
         """
         self.checkedUrgent = None
-        if __name__ == '__main__':
-            print("checking PythonPathAndRegistry")
+        # if __name__ == '__main__':
+            # print("checking PythonPathAndRegistry")
         try:
              result = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
-             print(result)
+             # print(result)
              if result is None:
                 pass
              lmPythonPathDict, PythonPathSectionName = result
         except Exception:
-            mess =  'The section "NatLink" does not exist and cannot be created in the registry. You probably should run this program with administrator rights'
+            mess =  'The section "Natlink" does not exist and cannot be created in the registry. You probably should run this program with administrator rights'
             self.warning(mess)
             self.checkedUrgent = 1
             if not self.isElevated: raise ElevationError("needed for fixing the PythonPath in the registry settings.")
@@ -431,9 +430,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         pathString = coreDir
 ##        if lmPythonPath:
 ##            print 'lmPythonPath: ', lmPythonPath.keys()
-        result = lmPythonPathDict['NatLink']
+        result = lmPythonPathDict['Natlink']
         if result and '' in result:
-            coreDirFromRegistry = lmPythonPathDict['NatLink']['']
+            coreDirFromRegistry = lmPythonPathDict['Natlink']['']
             if coreDirFromRegistry.lower() != coreDir.lower():
                 self.doFatalRegistryProblem(coreDirFromRegistry, coreDir)
                 return
@@ -444,7 +443,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.setNatlinkInPythonPathRegistry()
             return 1
 
-        lmNatlinkPathDict = lmPythonPathDict['NatLink']
+        lmNatlinkPathDict = lmPythonPathDict['Natlink' ]
         Keys = list(lmNatlinkPathDict.keys())
         if not Keys:
             # first time install Section is there, but apparently empty
@@ -459,7 +458,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             if '' in Keys:
                 Keys.remove("")
             fatal_error("The registry section of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\\%s\ncontains invalid keys: %s, remove them with the registry editor (regedit)\nAnd rerun this program"%
-                        (PythonPathSectionName+r'\NatLink', Keys))
+                        (PythonPathSectionName+r'\Natlink', Keys))
 
 
         # now section has default "" key, proceed:
@@ -470,7 +469,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         oldPathString = lmNatlinkPathDict[""]
         if oldPathString.find(';') > 0:
-            fatal_error("did not fix double entry in registry setting  of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\\%s\ncontains more entries separated by ';'. Remove with the registry editor (regedit)\nAnd rerun this program"%PythonPathSectionName+r'\NatLink')
+            fatal_error("did not fix double entry in registry setting  of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\\%s\ncontains more entries separated by ';'. Remove with the registry editor (regedit)\nAnd rerun this program"%PythonPathSectionName+r'\Natlink')
         if not oldPathString:
             # empty setting, silently register
             if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings and register natlink.pyd.")
@@ -491,13 +490,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         # now for something more serious:::
         text = \
 """
-The PythonPath for NatLink does not match in registry with what this program
+The PythonPath for Natlink does not match in registry with what this program
 expects
 
 ---settings in Registry: %s
 ---wanted settings: %s
 
-You probably just installed NatLink in a new location
+You probably just installed Natlink in a new location
 and you ran the config program for the first time.
 
 If you want the new settings, (re)register natlink.pyd (r)
@@ -533,7 +532,7 @@ from the correct place.
             if result == None:
 
                 text = \
-"""NatLink INI file settings are inconsistent,
+"""Natlink INI file settings are inconsistent,
 and cannot automatically be disabled.
 
 Try to disable again, acquire administrator rights or report this issue
@@ -542,10 +541,10 @@ Try to disable again, acquire administrator rights or report this issue
                 return None
             else:
                 text = \
-"""NatLink INI file settings were inconsistent;
+"""Natlink INI file settings were inconsistent;
 This has been repaired.
 
-NatLink is now disabled.
+Natlink is now disabled.
 """
                 self.warning(text)
         return 1
@@ -616,17 +615,17 @@ NatLink is now disabled.
         """
         lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         pathString = os.path.normpath(os.path.abspath(coreDir))
-        NatlinkSection = lmPythonPathDict.get('NatLink', None)
+        NatlinkSection = lmPythonPathDict.get('Natlink' , None)
         if NatlinkSection:
             oldPath = NatlinkSection.get('', '')
         else:
             oldPath = ''
         if oldPath.lower() != pathString.lower():
             try:
-                lmPythonPathDict['NatLink']  = {'': pathString}
-                self.warning('Set registry setting PythonPath/NatLink to: %s"'% pathString)
+                lmPythonPathDict['Natlink' ]  = {'': pathString}
+                self.warning('Set registry setting PythonPath/Natlink to: %s"'% pathString)
             except:
-                self.warning("cannot set PythonPath for NatLink in registry, probably you have insufficient rights to do this, try to run the config program with administrator rights")
+                self.warning("cannot set PythonPath for Natlink in registry, probably you have insufficient rights to do this, try to run the config program with administrator rights")
 
 
     def checkNatlinkRegistryPathSettings(self, secondTry=None):
@@ -635,14 +634,14 @@ NatLink is now disabled.
         """
         regDict, sectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         try:
-            value = regDict['NatLink']
+            value = regDict['Natlink' ]
         except:
             # new install, new key:
             if not secondTry:
                 try:
-                    regDict['NatLink'] = coreDir
+                    regDict['Natlink' ] = coreDir
                 except:
-                    self.error("cannot set PythonPath/NatLink setting, run Config program with administrator rights")
+                    self.error("cannot set PythonPath/Natlink setting, run Config program with administrator rights")
                     return
                 else:
                     # check if setting is completed:
@@ -650,16 +649,16 @@ NatLink is now disabled.
         # key was there already:
         wantedValue = coreDir
         if value == wantedValue:
-            print(('registry PythonPath/NatLink setting ok: %s'% value))
+            print(('registry PythonPath/Natlink setting ok: %s'% value))
             return 1
         # value different from current value:
         if secondTry:
-            self.error("cannot set correct PythonPath/NatLink setting, run config program with administrator rights")
+            self.error("cannot set correct PythonPath/Natlink setting, run config program with administrator rights")
             return
 
         # now change to new value:
-        self.warning("change PythonPath/NatLink setting in registry (HKLM section) to: %s"% coreDir)
-        regDict['NatLink'] = coreDir
+        self.warning("change PythonPath/Natlink setting in registry (HKLM section) to: %s"% coreDir)
+        regDict['Natlink' ] = coreDir
         return self.checkNatlinkRegistryPathSettings(secondTry=1)
 
 
@@ -669,11 +668,11 @@ NatLink is now disabled.
     #    lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
     #    baseDir = os.path.join(coreDir, '..')
     #    pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))
-    #    if 'NatLink' in lmPythonPathDict.keys():
+    #    if 'Natlink'  in lmPythonPathDict.keys():
     #        try:
-    #            del lmPythonPathDict['NatLink']
+    #            del lmPythonPathDict['Natlink' ]
     #        except:
-    #            self.warning("cannot clear Python path for NatLink in registry (HKLM section), probably you have insufficient rights to do this")
+    #            self.warning("cannot clear Python path for Natlink in registry (HKLM section), probably you have insufficient rights to do this")
 
     def printInifileSettings(self):
         print(('Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getCoreDirectory()))
@@ -763,11 +762,11 @@ NatLink is now disabled.
     def setUserDirectory(self, v):
         key = 'UserDirectory'
         if v and self.isValidPath(v):
-            print(("Setting the UserDirectory of NatLink to %s"% v))
+            print(("Setting the UserDirectory of Natlink to %s"% v))
             self.userregnl.set(key, v)
             self.userregnl.delete("Old"+key)
         else:
-            print(('Setting the UserDirectory of NatLink failed, not a valid directory: %s'% v))
+            print(('Setting the UserDirectory of Natlink failed, not a valid directory: %s'% v))
 
 
     def clearUserDirectory(self):
@@ -777,9 +776,9 @@ NatLink is now disabled.
             self.userregnl.set("Old"+key, oldvalue)
         if self.userregnl.get(key):
             self.userregnl.delete(key)
-            print('clearing UserDirectory of NatLink')
+            print('clearing UserDirectory of Natlink')
         else:
-            print('The UserDirectory of NatLink was not set, nothing changed...')
+            print('The UserDirectory of Natlink was not set, nothing changed...')
 
     def alwaysIncludeUnimacroDirectoryInPath(self):
         """set variable so natlinkstatus knows to include Unimacro in path
@@ -813,8 +812,8 @@ NatLink is now disabled.
         """register natlink.pyd and set settings in nssystem.INI and nsapps.ini
 
         """
-        if not self.isElevated: raise ElevationError("needed for enabling NatLink")
-        # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed for enabling NatLink")
+        if not self.isElevated: raise ElevationError("needed for enabling Natlink")
+        # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed for enabling Natlink")
 
         self.registerNatlinkPyd(silent=1)
         nssystemini = self.getNSSYSTEMIni()
@@ -826,9 +825,9 @@ NatLink is now disabled.
             win32api.WriteProfileVal(section1, key1, value1, nssystemini)
         except pywintypes.error as details:
             if details[0] == 5:
-                print('cannot enable NatLink (1), you probably need administrator rights')
+                print('cannot enable Natlink (1), you probably need administrator rights')
             else:
-                print('unexpected error at enable NatLink (1)')
+                print('unexpected error at enable Natlink (1)')
                 raise
 
         result = self.NatlinkIsEnabled(silent=1)
@@ -841,9 +840,9 @@ NatLink is now disabled.
                 win32api.WriteProfileVal(section2, key2, value2, nsappsini)
             except pywintypes.error as details:
                 if details[0] == 5:
-                    print('cannot enable NatLink (2), you probably need administrator rights')
+                    print('cannot enable Natlink (2), you probably need administrator rights')
                 else:
-                    print('unexpected error at enable NatLink (2)')
+                    print('unexpected error at enable Natlink (2)')
                     raise
             result = self.NatlinkIsEnabled(silent=1)
             if result == None:
@@ -857,39 +856,39 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         result = self.NatlinkIsEnabled(silent=1)
         if result:
             if not silent:
-                print(('NatLink enabled, you can now restart %s'% self.DNSName))
+                print(('Natlink enabled, you can now restart %s'% self.DNSName))
         else:
             if not silent:
-                self.warning("failed to enable NatLink")
+                self.warning("failed to enable Natlink")
 
 
     def disableNatlink(self, silent=None):
         """only do the nssystem.ini setting
         """
-        if not self.isElevated: raise ElevationError("needed for disabling NatLink")
-        # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed for disabling NatLink")
+        if not self.isElevated: raise ElevationError("needed for disabling Natlink")
+        # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed for disabling Natlink")
 
         nssystemini = self.getNSSYSTEMIni()
         section1 = self.section1
         key1 = self.key1
         # trick with None, see testConfigureFunctions...
-        # this one disables NatLink:
+        # this one disables Natlink:
         try:
             win32api.WriteProfileVal(section1, key1, None, nssystemini)
         except pywintypes.error as details:
             if details[0] == 5:
-                print('cannot disable NatLink, you probably need administrator rights')
+                print('cannot disable Natlink, you probably need administrator rights')
             else:
-                print('unexpected error at disable NatLink')
+                print('unexpected error at disable Natlink')
                 raise
         result = self.NatlinkIsEnabled(silent=1)
         if result:
-            t = 'NatLink is NOT disabled, you probably need administrator rights, please restart the config program in "elevated mode"'
+            t = 'Natlink is NOT disabled, you probably need administrator rights, please restart the config program in "elevated mode"'
             print(t)
             self.warning(t)
         else:
             if not silent:
-                print(('NatLink disabled, restart %s'% self.DNSName))
+                print(('Natlink disabled, restart %s'% self.DNSName))
                 print('Note natlink.pyd is NOT UNREGISTERED, but this is not necessary either')
 
     def getVocolaUserDir(self):
@@ -1052,7 +1051,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     def registerNatlinkPyd(self, silent=1):
         """register natlink.pyd
 
-        if silent, do through win32api, and not report. This is done whenever NatLink is enabled.
+        if silent, do through win32api, and not report. This is done whenever Natlink is enabled.
 
         if NOT silent, go through os.system, and produce a message window.
 
@@ -1095,7 +1094,6 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                     return
                 else:
                     self.userregnl.set('NatlinkPydRegistered', newIniSetting)
-                    print(('Registring pyd file succesful: %s'% PydPath))
 
     #                    print 'registered %s '% PydPath
 
@@ -1114,7 +1112,6 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 self.userregnl.set('NatlinkPydRegistered', newIniSetting)
                 print(('Registring pyd file succesful: %s'% PydPath))
 
-        self.setNatlinkInPythonPathRegistry()
         return result is None
 
     def PydIsRegistered(self, PydPath):
@@ -1187,7 +1184,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
 
     def disableDebugLoadOutput(self):
-        """disables the NatLink debug output of loading of natlinkmain is given
+        """disables the Natlink debug output of loading of natlinkmain is given
         """
         key = "NatlinkmainDebugLoad"
         self.userregnl.delete(key)
@@ -1201,7 +1198,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
 
     def disableDebugCallbackOutput(self):
-        """disables the NatLink debug output of callback functions of natlinkmain
+        """disables the Natlink debug output of callback functions of natlinkmain
         """
         key = "NatlinkmainDebugCallback"
         self.userregnl.delete(key)
@@ -1219,7 +1216,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     #     #self.userregnlOld[key] = 1
     #
     # def disableDebugOutput(self):
-    #     """disables the NatLink lengthy debug output to NatSpeak logfile
+    #     """disables the Natlink lengthy debug output to NatSpeak logfile
     #     """
     #     key = "NatlinkDebug"
     #     self.userregnl.delete(key)
@@ -1416,7 +1413,7 @@ def _main(Options=None):
 
     options: -i, --info: give status info
 
-             -I, --reginfo: give the info in the registry about NatLink
+             -I, --reginfo: give the info in the registry about Natlink
              etc., usage above...
 
     """
@@ -1473,7 +1470,7 @@ class CLI(cmd.Cmd):
             self.config.checkCoreDirectory()
             self.config.correctIniSettings()
             # check pyd file
-            result = self.config.configCheckNatlinkPydFile()
+            result = self.config.configCheckNatlinkPydFile(silent=1)
             if result is None:
                 if __name__ == "__main__":
                     print("Error starting NatlinkConfig, Type 'u' for a usage message")
@@ -1552,13 +1549,13 @@ or in an interactive session using the CLI (command line interface).
 
 [Status]
 
-i       - info, print information about the NatLink status
+i       - info, print information about the Natlink status
 I       - settings, print information about the natlinkstatus.ini settings
 j       - print PythonPath variable
 
-[NatLink]
+[Natlink]
 
-e/E     - enable/disable NatLink
+e/E     - enable/disable Natlink
 
 y/Y     - enable/disable debug callback output of natlinkmain
 x/X     - enable/disable debug load output     of natlinkmain
@@ -1585,12 +1582,12 @@ m/M     - insert/remove an include line for Unimacro.vch in all Vocola
 
 [UserDirectory]
 n/N     - enable/disable UserDirectory, the directory where
-          User NatLink grammar files are located (e.g., .../My Documents/NatLink)
+          User Natlink grammar files are located (e.g., .../My Documents/Natlink)
 
 [Repair]
-r/R     - register/unregister NatLink, the natlink.pyd (natlink.pyd) file
+r/R     - register/unregister Natlink, the natlink.pyd (natlink.pyd) file
           (should not be needed)
-z/Z     - silently enables NatLink and registers natlink.pyd / disables NatLink
+z/Z     - silently enables Natlink and registers natlink.pyd / disables Natlink
           and unregisters natlink.pyd.
 [AutoHotkey]
 h/H     - set/clear the AutoHotkey exe directory.
@@ -1619,15 +1616,15 @@ help <command>: give more explanation on <command>
     def help_i(self):
         print(('-'*60))
         print(("""The command info (i) gives an overview of the settings that are
-currently set inside the NatLink system.
+currently set inside the Natlink system.
 
-The command settings (I) gives all the NatLink settings, kept in
+The command settings (I) gives all the Natlink settings, kept in
 natlinkstatus.ini (overlap with (i))
 
 The command (j) gives the PythonPath variable which should contain several
-NatLink directories after the config GUI runs succesfully
+Natlink directories after the config GUI runs succesfully
 
-Settings are set by either the NatLink/Vocola/Unimacro installer
+Settings are set by either the Natlink/Vocola/Unimacro installer
 or by functions that are called by the CLI (command line interface).
 
 After you change settings, restart %s.
@@ -1657,7 +1654,7 @@ So setting is seldom not needed.
 
 When you have a pre-8 version of NatSpeak, setting this option might work.
 
-After you clear this setting, NatLink will, at starting time, again
+After you clear this setting, Natlink will, at starting time, again
 search for the %s install directory in the "normal" place(s).
 """% (self.DNSName, self.DNSName, self.DNSName)))
         print(('='*60))
@@ -1686,7 +1683,7 @@ Only needed if these cannot be found in the normal place(s):
 -if you have an "alternative" place where you keep your speech profiles
 -if you have a pre-8 version of NatSpeak.
 
-After Clearing this registry entry NatLink will, when it is started by %s,
+After Clearing this registry entry Natlink will, when it is started by %s,
 again search for its INI files in the "default/normal" place(s).
 """% (self.DNSName, self.DNSName)))
         print(('='*60))
@@ -1701,7 +1698,7 @@ again search for its INI files in the "default/normal" place(s).
         self.config.setUserDirectory(arg)
 
     def do_N(self, arg):
-        self.message = "Clears NatLink User Directory"
+        self.message = "Clears Natlink User Directory"
         self.config.clearUserDirectory()
 
     # def do_f(self, arg):
@@ -1714,7 +1711,7 @@ again search for its INI files in the "default/normal" place(s).
 
     def help_n(self):
         print(('-'*60))
-        print("""Sets (n <path>) or clears (N) the UserDirectory of NatLink.
+        print("""Sets (n <path>) or clears (N) the UserDirectory of Natlink.
 This is the folder where your own python grammar files are/will be located.
 
 Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro directory.
@@ -1746,7 +1743,7 @@ In this directory, your user INI files (and possibly other user
 dependent files) will be put.
 
 You can use (if entered through the CLI) "~" (or %%HOME%%) for user home directory, or
-another environment variable (%%...%%). (example: "o ~/NatLink/Unimacro")
+another environment variable (%%...%%). (example: "o ~/Natlink/Unimacro")
 
 Setting this directory also enables Unimacro. Clearing it disables Unimacro
 """)
@@ -1815,38 +1812,38 @@ Vocola command.
     help_m = help_M = help_l
 
 
-    # enable/disable NatLink------------------------------------------------
+    # enable/disable Natlink------------------------------------------------
     def do_e(self, arg):
-        self.message = "Enabling NatLink:"
+        self.message = "Enabling Natlink:"
         print(('do action: %s'% self.message))
         self.config.enableNatlink()
     def do_E(self, arg):
-        self.message = "Disabling NatLink:"
+        self.message = "Disabling Natlink:"
         self.config.disableNatlink()
 
     def help_e(self):
         print(('-'*60))
-        print(("""Enable NatLink (e) or disable NatLink (E):
+        print(("""Enable Natlink (e) or disable Natlink (E):
 
-When you enable NatLink, the necessary settings in nssystem.ini and nsapps.ini
+When you enable Natlink, the necessary settings in nssystem.ini and nsapps.ini
 are done.
 
 These options require elevated mode and probably Dragon be closed.
 
-After you restart %s, NatLink should start, opening a window titled
-'Messages from NatLink - ...'.
+After you restart %s, Natlink should start, opening a window titled
+'Messages from Natlink - ...'.
 
-When you enable NatLink, the file natlink.pyd is (re)registered silently.  Use
+When you enable Natlink, the file natlink.pyd is (re)registered silently.  Use
 the commands r/R to register/unregister natlink.pyd explicitly.
 (see help r, but most often not needed)
 
-When you disable NatLink, the necessary settings in nssystem.ini and nsapps.ini
+When you disable Natlink, the necessary settings in nssystem.ini and nsapps.ini
 are cleared.
 
-After you restart %s, NatLink should NOT START ANY MORE
-so the window 'Messages from NatLink' is NOT OPENED.
+After you restart %s, Natlink should NOT START ANY MORE
+so the window 'Messages from Natlink' is NOT OPENED.
 
-Note: when you disable NatLink, the natlink.pyd file is NOT unregistered.
+Note: when you disable Natlink, the natlink.pyd file is NOT unregistered.
 It is not called any more by %s, as its declaration is removed from
 the Global Clients section of nssystem.ini.
 """% (self.DNSName, self.DNSName, self.DNSName)))
@@ -1881,7 +1878,7 @@ the Global Clients section of nssystem.ini.
 
 In this VocolaUserDirectory your Vocola Command File are/will be located.
 
-<path> must be an existing folder; NatLink/Vocola in My Documents is a
+<path> must be an existing folder; Natlink/Vocola in My Documents is a
 popular choice.
 
 You may have to manually create this folder first.
@@ -1936,7 +1933,7 @@ You may have to manually create this folder first.
         print(('='*60))
 
     help_G = help_g
-    # enable/disable NatLink debug output...
+    # enable/disable Natlink debug output...
     def do_x(self, arg):
         self.message = 'Enable natlinkmain giving debugLoad output to "Messages from Natlink" window'
         print(('do action: %s'% self.message))
@@ -1945,7 +1942,7 @@ You may have to manually create this folder first.
         self.message = 'Disable natlinkmain giving debugLoad output to "Messages from Natlink" window'
         print(('do action: %s'% self.message))
         self.config.disableDebugLoadOutput()
-    # enable/disable NatLink debug output...
+    # enable/disable Natlink debug output...
     def do_y(self, arg):
         self.message = 'Enable natlinkmain giving debugCallback output to "Messages from Natlink" window'
         print(('do action: %s'% self.message))
@@ -1966,10 +1963,10 @@ Enable (y)/disable (Y) natlinkmain debug callback output
 Nearly obsolete options.
 
 This sends sometimes lengthy debugging messages to the
-"Messages from NatLink" window.
+"Messages from Natlink" window.
 
 Mainly used when you suspect problems with the working
-of NatLink, so keep off (X and Y) most of the time.
+of Natlink, so keep off (X and Y) most of the time.
 """)
         print(('='*60))
 
@@ -1981,7 +1978,7 @@ of NatLink, so keep off (X and Y) most of the time.
     def do_r(self, arg):
         self.message = "(Re) register and enable natlink.pyd"
         if self.config.isElevated:
-            print(('do action: %s'% self.message))
+            print('do action: %s'% self.message)
             isRegistered = self.config.userregnl.get("NatlinkPydRegistered")
             #if isRegistered:
             #    print "If you have problems re-registering natlink.pyd, please try the following:"
@@ -1994,7 +1991,7 @@ of NatLink, so keep off (X and Y) most of the time.
             #    return
             if not self.config.removeNatlinkPyd():
                 return
-            self.config.configCheckNatlinkPydFile()
+            self.config.configCheckNatlinkPydFile(silent=None)
 
             self.config.enableNatlink()
         else:
@@ -2005,7 +2002,7 @@ of NatLink, so keep off (X and Y) most of the time.
         #self.config.registerNatlinkPyd(silent=None)
 
     def do_R(self, arg):
-        self.message = "Unregister natlink.pyd and disable NatLink"
+        self.message = "Unregister natlink.pyd and disable Natlink"
         # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed before you can unregister natlink.pyd")
 
         if self.config.isElevated:
@@ -2015,16 +2012,16 @@ of NatLink, so keep off (X and Y) most of the time.
             raise ElevationError(self.message)
 
     def do_z(self, arg):
-        """register silent and enable NatLink"""
+        """register silent and enable Natlink"""
         # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed before you can register natlink.pyd")
 
         if not self.config.removeNatlinkPyd():
             return
-        self.config.configCheckNatlinkPydFile()
+        self.config.configCheckNatlinkPydFile(silent=1)
         self.config.enableNatlink()
 
     def do_Z(self, arg):
-        """(SILENT) Unregister natlink.pyd and disable NatLink"""
+        """(SILENT) Unregister natlink.pyd and disable Natlink"""
         # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed before you can unregister natlink.pyd")
         self.config.disableNatlink(silent=1)
         self.config.unregisterNatlinkPyd(silent=1)
@@ -2037,11 +2034,11 @@ Registering is also done (silently) when you start this program or the
 configuration GUI the first time, so this option should only be needed in rare cases.
 
 But if you do (-r or -R) a message dialog shows up to inform you what happened.
-When you unregister, NatLink is also disabled.
+When you unregister, Natlink is also disabled.
 
 When you want to try a new version of natlink.pyd, take the following steps:
 -close Dragon
--remove natlink.pyd (in the MacroSystem/core directory of NatLink)
+-remove natlink.pyd (in the MacroSystem/core directory of Natlink)
 -rerun this program or the configure program in elevated mode.
 
 The correct version of natlink.pyd (corresponding with your python version 2.6, 2.7 (2.5 for pre Dragon 12)
@@ -2049,8 +2046,8 @@ will be copied to this name and registered. In the log panel of the configure GU
 
 -restart Dragon.
 
-If you want to (silently) enable NatLink and register silently use -z,
-To disable NatLink and unregister (silently) use Z
+If you want to (silently) enable Natlink and register silently use -z,
+To disable Natlink and unregister (silently) use Z
 """)
         print(('='*60))
     help_R = help_r
@@ -2151,7 +2148,7 @@ When you use your English speech profile again, ("enx") the Vocola Command files
 
     help_H = help_k = help_K = help_h
 
-    # enable/disable NatLink debug output...
+    # enable/disable Natlink debug output...
 
     def default(self, line):
         print(('no valid entry: %s, type u or usage for list of commands'% line))

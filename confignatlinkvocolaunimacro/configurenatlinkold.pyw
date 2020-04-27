@@ -16,9 +16,9 @@ except ImportError:
 
     print
     print 'Either install wxPython (recommended) or use the CLI (Command Line Interface)'
-    print 'NatLink configuration program.'
+    print 'Natlink configuration program.'
     print
-    print 'A version of wxPython suitable for use with NatLink can be obtained from'
+    print 'A version of wxPython suitable for use with Natlink can be obtained from'
     print 'http://sourceforge.net/project/showfiles.php?group_id=70807&package_id=261793'
     print '(each package there contains a version of wxPython; get the one appropriate'
     print ' to the version of Python you have installed.)'
@@ -29,14 +29,14 @@ except ImportError:
 
 try:
     from win32ui import MessageBox
-    def windowsMessageBox(message, title="NatLink configure program"):
+    def windowsMessageBox(message, title="Natlink configure program"):
         """do messagebox from windows, no wx needed
         """
         MessageBox(message, title)
 except:
     import ctypes
     MessageBoxA = ctypes.windll.user32.MessageBoxA
-    def windowsMessageBox(message, title="NatLink configure program"):
+    def windowsMessageBox(message, title="Natlink configure program"):
         """do messagebox from windows, no wx needed
         for old versions of python
         """
@@ -46,11 +46,11 @@ import os
 import sys
 if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
     pyVersion = sys.version[:3]
-    mess = ["Warning, this Configure NatLink GUI possibly does not work for this old python version: %s."% pyVersion,
+    mess = ["Warning, this Configure Natlink GUI possibly does not work for this old python version: %s."% pyVersion,
             "Also the natlink.pyd files (natlink.dll) that work with python %s are for older versions of NatSpeak (10 and before) only."% pyVersion,
-            'Now the good news: you can still use NatLink for NatSpeak 10 and before even with this python version.',
-            'But if the Configure NatLink GUI does not work, you should do the configuration via "natlinkconfigfunctions.py".',
-            'Please start that program, preferably in elevated mode via "start_configurenatlinkfunctions.py" or via "Configure NatLink via Command Line Interface" in the start menu.',
+            'Now the good news: you can still use Natlink for NatSpeak 10 and before even with this python version.',
+            'But if the Configure Natlink GUI does not work, you should do the configuration via "natlinkconfigfunctions.py".',
+            'Please start that program, preferably in elevated mode via "start_configurenatlinkfunctions.py" or via "Configure Natlink via Command Line Interface" in the start menu.',
             "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7"]
     
     mess = '\n\n'.join(mess)
@@ -430,7 +430,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         # now self.DNSName is known (NatSpeak or Dragon)
             self.DNSName = self.config.getDNSName()
 
-    def warning(self, text, title='Message from Configure NatLink GUI'):
+    def warning(self, text, title='Message from Configure Natlink GUI'):
         if isinstance(text, basestring):
             Text = text
         else:
@@ -503,7 +503,7 @@ class ConfigureNatlinkPanel(wx.Panel):
 ##            if v:
 ##                print '%s: %s'% (k,v)
 ##        print '-------'
-        newStatus = {} # dict with keys NatLink, Vocola, Unimacro, values (value, changed) each of them
+        newStatus = {} # dict with keys Natlink, Vocola, Unimacro, values (value, changed) each of them
         
         
         try:
@@ -589,12 +589,12 @@ class ConfigureNatlinkPanel(wx.Panel):
             self.firstThaw = False
 
     def composeStatusLine(self, status):
-        """takes a dict with NatLink, Vocola, Unimacro as keys,
+        """takes a dict with Natlink, Vocola, Unimacro as keys,
         and a tuple (value, changed) as values. Value=0 means disable
         """
         L = []
         somethingChanged = 0
-        for part in ('NatLink', 'Vocola', 'Unimacro', 'User'):
+        for part in ('Natlink', 'Vocola', 'Unimacro', 'User'):
             value, changed = status[part.lower()]
             if value:
                 enableddisabled = 'enabled'
@@ -611,7 +611,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 line = '%s is %s'% (part, enableddisabled)
                 L.append(line)
                 
-            if part == 'NatLink' and enableddisabled == 'disabled':
+            if part == 'Natlink' and enableddisabled == 'disabled':
                 break # stop further status info
                     
         statusLine = '; '.join(L)
@@ -932,7 +932,7 @@ Help about re(register) natlink.pyd you will find in the log panel
 About this configure program:
 
 All actions are performed immediate, mostly doing something
-in the natlinkstatus.ini file of NatLink (in the MacroSystem/Core directory).
+in the natlinkstatus.ini file of Natlink (in the MacroSystem/Core directory).
 
 What is changed is shown in red. The Undo button undoes these actions.
 
@@ -940,7 +940,7 @@ If, for example, Vocola shows the button "Enable", it is currently disabled.
 
 In order to let the changes take effect, you have to restart NatSpeak.
 
-For the actions Enable/Disable NatLink and unregister/(re)register natlink.pyd
+For the actions Enable/Disable Natlink and unregister/(re)register natlink.pyd
 you should first close Dragon and you need elevated mode", so run start_configurenatlink.py
 .
 """
@@ -1065,7 +1065,7 @@ More about this in the "Vocola Compatibility" dialog.
         statustext = 'User Grammars are ENABLED, this will take effect after you restart %s'% self.DNSName
 
         # ask for the correct directory:
-        dlg = wx.DirDialog(self.frame, "Please choose the UserDirectory, where your NatLink grammar files are located.",
+        dlg = wx.DirDialog(self.frame, "Please choose the UserDirectory, where your Natlink grammar files are located.",
               style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
         ## search for previous directory or other default:
         oldPath = self.config.userregnl.get('OldUserDirectory')
@@ -1156,9 +1156,9 @@ More about this in the "Vocola Compatibility" dialog.
             undoLetter = letter.lower()
             self.do_command(doLetter, undo=undoLetter)
             if self.config.NatlinkIsEnabled():
-                statustext = 'NatLink is NOT DISABLED, please run this program in "elevated mode"'
+                statustext = 'Natlink is NOT DISABLED, please run this program in "elevated mode"'
             else:
-                statustext = 'NatLink is DISABLED, this will take effect after you restart %s'% self.DNSName
+                statustext = 'Natlink is DISABLED, this will take effect after you restart %s'% self.DNSName
                 
         else:
             # enable:
@@ -1166,9 +1166,9 @@ More about this in the "Vocola Compatibility" dialog.
             undoLetter = letter.upper()
             self.do_command(doLetter, undo=undoLetter)
             if self.config.NatlinkIsEnabled():
-                statustext = 'NatLink is ENABLED, this will take effect after you restart %s'% self.DNSName
+                statustext = 'Natlink is ENABLED, this will take effect after you restart %s'% self.DNSName
             else:
-                statustext = 'NatLink is NOT ENABLED, please run this program in "elevated mode"'
+                statustext = 'Natlink is NOT ENABLED, please run this program in "elevated mode"'
         self.setstatus(statustext)
         
     #def OnCBNatlinkDebug(self, event):   ## obsolete, QH 26-08-2013
@@ -1210,27 +1210,27 @@ More about this in the "Vocola Compatibility" dialog.
         L.append('When you use more languages, eg speech profiles for English and Dutch, please read the log panel for the "Vocola multi languages" option.')
         L.append("")
         L.append('When you want to use Unimacro actions in your Vocola comman files, you can check the "Vocola takes Unimacro Actions" option.')
-        L.append("More information about this on the NatLink/Vocola/Unimacro website")
+        L.append("More information about this on the Natlink/Vocola/Unimacro website")
         L.append("")
         self.warning('\n'.join(L))
 
     def OnButtonHelp1(self, event):
-        print '---help on Enable NatLink and corresponding functions:'
+        print '---help on Enable Natlink and corresponding functions:'
         print 'note the letters correspond to the commands in the self.cli (command line interface)'
         self.cli.help_e()
-        print '---help on NatLink debug options:'
+        print '---help on Natlink debug options:'
         self.cli.help_x()
         text = """
 
-This Enables or Disables NatLink. The state of NatLink is shown in the Status bar above, and is the opposite of the button text.
+This Enables or Disables Natlink. The state of Natlink is shown in the Status bar above, and is the opposite of the button text.
 
-NatLink should be enabled before you can use Vocola and/or Unimacro or other python grammars, like Dragonfly.
+Natlink should be enabled before you can use Vocola and/or Unimacro or other python grammars, like Dragonfly.
 
-When NatLink is disabled, Vocola and Unimacro will -- consequently -- be disabled too.
+When Natlink is disabled, Vocola and Unimacro will -- consequently -- be disabled too.
 
-Note that you need elevated mode and possibly Dragon be switched off before you can Enable or Disable NatLink.
+Note that you need elevated mode and possibly Dragon be switched off before you can Enable or Disable Natlink.
 
-At first run after you installed NatLink, natlink.pyd is registered silently, but NatLink is still Disabled.
+At first run after you installed Natlink, natlink.pyd is registered silently, but Natlink is still Disabled.
 
 So in that case click on Enable for getting started.
 """
@@ -1261,7 +1261,7 @@ class MyFrame(wx.Frame):
         wx.EVT_MENU(self, ID_MENUClose, self.OnMenuClose)
                 
         self.CreateStatusBar(1)
-        self.SetStatusText("This is the Configure NatLink & Vocola & Unimacro GUI")
+        self.SetStatusText("This is the Configure Natlink & Vocola & Unimacro GUI")
         self.CreateMyMenuBar()
         # insert main window here
         self.nb = wx.Notebook(self, -1, name='panel',
@@ -1298,7 +1298,7 @@ class MyFrame(wx.Frame):
         self.Destroy()
 
     def OnMenuHelp(self, event):
-        text = ['This configure GUI makes it possible to configure NatLink, ',
+        text = ['This configure GUI makes it possible to configure Natlink, ',
                 'including Vocola and Unimacro',"",
                 'Detailed help is given through various help buttons and in the "log" panel',""
                 'Written by Quintijn Hoogenboom, February, 2008/May, 2009,',
@@ -1306,7 +1306,7 @@ class MyFrame(wx.Frame):
         self.warning('\n'.join(text))
                 
 
-    def warning(self, text, title='Message from Configure NatLink GUI'):                     
+    def warning(self, text, title='Message from Configure Natlink GUI'):                     
         dlg = wx.MessageDialog(self, text, title,
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
@@ -1340,7 +1340,7 @@ class Stderr:
 class MyApp(wx.App):
     def OnInit(self):
         # wx.InitAllImageHandlers()
-        self.frame = MyFrame( None, -1, "Configure NatLink & Vocola & Unimacro",
+        self.frame = MyFrame( None, -1, "Configure Natlink & Vocola & Unimacro",
                               [110,80], [750,735] )
         self.frame.Show(True)
         return True

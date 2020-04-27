@@ -43,7 +43,7 @@ def updateUnimacroHeaderIfNeeded():
 Error: The option "Vocola Takes Unimacro Actions" is switched on, but
 no file "Unimacro.vch" is found.
 
-Please fix the configuration of NatLink/Vocola/Unimacro and restart
+Please fix the configuration of Natlink/Vocola/Unimacro and restart
 Dragon.  Either ensure the source file is at:
     "%s",
 or switch off the option "Vocola Takes Unimacro Actions".
@@ -61,7 +61,7 @@ Warning: Could not copy example "Unimacro.vch" to:
 There is a valid "Unimacro.vch" available, but a newer file is
 available at: "%s".
 
-Please fix the configuration of NatLink/Vocola/Unimacro and restart
+Please fix the configuration of Natlink/Vocola/Unimacro and restart
 Dragon, if you want to use the updated version of this file."""% (destDir, sourceDir), file=sys.stderr)
         else:
             print('Succesfully copied "Unimacro.vch" from\n\t"%s" to\n\t"%s".'% (sourceDir, destDir))

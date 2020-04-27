@@ -291,7 +291,7 @@ def window_go(specification):
 ## Test code:
 ##
 
-# Describes each visible window to the Messages from NatLink window as
+# Describes each visible window to the Messages from Natlink window as
 # "*>ID: TITLE|CLASS|EXECUTABLE" where * is present only if
 # the window matches the passed specification, if any, and the first >
 # is shown only for the foreground window.

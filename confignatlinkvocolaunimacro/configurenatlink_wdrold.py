@@ -201,10 +201,10 @@ def MainWindow( parent, call_fit = True, set_sizer = True ):
     
     item46 = wx.FlexGridSizer( 0, 6, 0, 0 )
     
-    item47 = wx.Button( parent, ID_BUTTONregister, "(re)Register NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item47 = wx.Button( parent, ID_BUTTONregister, "(re)Register Natlink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item46.Add( item47, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
 
-    item48 = wx.Button( parent, ID_BUTTONunregister, "unRegister NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item48 = wx.Button( parent, ID_BUTTONunregister, "unRegister Natlink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item46.Add( item48, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
 
     item49 = wx.StaticText( parent, ID_TEXT, "", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -364,7 +364,7 @@ def DialogVocolaCombatibility( parent, call_fit = True, set_sizer = True ):
         "\n"
         "With the options below, you can insert or remove an \"include\" line in all your Vocola Command Files, \n"
         "and ensure the include file is copied into the correct directory. \n"
-        "This last action is sometimes needed after an update of the NatLink/Vocola/Unimacro system.\n"
+        "This last action is sometimes needed after an update of the Natlink/Vocola/Unimacro system.\n"
         "\n"
         "Please check the options you want to be processed and press/call OK",
         wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -467,10 +467,10 @@ def ExtraWindow( parent, call_fit = True, set_sizer = True ):
     
     item19 = wx.BoxSizer( wx.HORIZONTAL )
     
-    item20 = wx.Button( parent, ID_BUTTONregister, "(re)Register NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item20 = wx.Button( parent, ID_BUTTONregister, "(re)Register Natlink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item19.Add( item20, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
 
-    item21 = wx.Button( parent, ID_BUTTONunregister, "unRegister NatLink", wx.DefaultPosition, wx.DefaultSize, 0 )
+    item21 = wx.Button( parent, ID_BUTTONunregister, "unRegister Natlink", wx.DefaultPosition, wx.DefaultSize, 0 )
     item19.Add( item21, 0, wx.ALIGN_CENTER_VERTICAL, 5 )
 
     item18.Add( item19, 0, wx.ALIGN_CENTER|wx.ALL, 5 )

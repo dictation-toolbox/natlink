@@ -12,7 +12,7 @@
 # focus, say "demo sample one".  It should recognize the command and type:
 #   Heard macro "sample one".
 #
-# This file represents the simplest possible example of a NatLink macro.
+# This file represents the simplest possible example of a Natlink macro.
 #
 # See also the variant _first_sample_docstring.py in the folder DisabledGrammars of Unimacro
 # Put in MacroSystem folder and toggle the microphone.

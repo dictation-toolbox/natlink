@@ -13,7 +13,7 @@ import natlink, time, string
 from natlinkutils import *
 
 
-logFile = r'C:\dev\DotNetProjects\NatLink\macrosystem\voice.log'
+logFile = r'C:\dev\DotNetProjects\Natlink\macrosystem\voice.log'
 
 def logMessageToFile (filename, message):
    output = "%s\t%s\n" % (time.strftime ('%m.%d.%Y %H:%M:%S'), message)

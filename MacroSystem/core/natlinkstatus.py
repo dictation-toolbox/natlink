@@ -1,7 +1,7 @@
 __version__ = "4.2"
 #
 # natlinkstatus.py
-#   This module gives the status of NatLink to natlinkmain
+#   This module gives the status of Natlink to natlinkmain
 #
 #  (C) Copyright Quintijn Hoogenboom, February 2008/January 2018
 #
@@ -88,8 +88,8 @@ The following  functions manage information that changes at changeCallback time
 (when a new user opens)
 
 setUserInfo(args) put username and directory of speech profiles of the last opened user in this class.
-getUsername: get active username (only if NatSpeak/NatLink is running)
-getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/NatLink is running)
+getUsername: get active username (only if NatSpeak/Natlink is running)
+getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/Natlink is running)
 
 
 The functions below should not change anything in settings, only  get information.
@@ -118,7 +118,7 @@ getWindowsVersion:
 
 getLanguage:
     returns the 3 letter code of the language of the speech profile that
-    is open (only possible when NatSpeak/NatLink is running)
+    is open (only possible when NatSpeak/Natlink is running)
 
 getUserLanguage:
     returns the language from changeCallback (>= 15) or config files
@@ -135,7 +135,7 @@ getPythonVersion:
 #(getFullPythonVersion: get string of complete version info).
 
 
-getUserDirectory: get the NatLink user directory, ##Unimacro will be there. If not return '' not any more (july 2015)
+getUserDirectory: get the Natlink user directory, ##Unimacro will be there. If not return '' not any more (july 2015)
     UserDirectory is now for non Unimacro grammar files, including Dragonfly.
     (if run from natlinkconfigfunctions use getUserDirectoryFromIni, which checks inifile
      at each call...)
@@ -150,7 +150,7 @@ getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return
       the Unimacro user directory
 
 NatlinkIsEnabled:
-    return 1 or 0 whether NatLink is enabled or not
+    return 1 or 0 whether Natlink is enabled or not
     returns None when strange values are found
     (checked with the INI file settings of NSSystemIni and NSAppsIni)
 
@@ -159,7 +159,7 @@ getNSAPPSIni(): get the path of nsapps.ini
 
 getBaseModelBaseTopic:
     return these as strings, not ready yet, only possible when
-    NatSpeak/NatLink is running. Obsolete 2018, use
+    NatSpeak/Natlink is running. Obsolete 2018, use
 getBaseModel
     get the acoustic model from config files (for DPI15, obsolescent)
 getBaseTopic
@@ -224,7 +224,7 @@ def fatal_error(message, new_raise=None):
     print()
     print(message)
     print()
-    print('This can (hopefully) be solved by closing Dragon and then running the NatLink/Unimacro/Vocola Config program with administrator rights.')
+    print('This can (hopefully) be solved by closing Dragon and then running the Natlink/Unimacro/Vocola Config program with administrator rights.')
     print()
     if new_raise:
         raise
@@ -271,7 +271,7 @@ reportDNSIniDirErrors = True # set after one stroke to False, if errors were the
 
 
 class NatlinkStatus:
-    """this class holds the NatLink status functions
+    """this class holds the Natlink status functions
 
     so, can be called from natlinkmain.
 
@@ -290,8 +290,8 @@ class NatlinkStatus:
     if not userregnlOld:
         userregnlOld = None
     else:
-        if 'NatLink' in list(userregnlOld.keys()):
-            userregnlOld = userregnlOld['NatLink']
+        if 'Natlink' in list(userregnlOld.keys()):
+            userregnlOld = userregnlOld['Natlink']
         else:
             userregnlOld = None
 
@@ -305,13 +305,13 @@ class NatlinkStatus:
 
     NSSystemIni  = "nssystem.ini"
     NSAppsIni  = "nsapps.ini"
-    ## setting of nssystem.ini if NatLink is enabled...
-    ## this first setting is decisive for NatSpeak if it loads NatLink or not
+    ## setting of nssystem.ini if Natlink is enabled...
+    ## this first setting is decisive for NatSpeak if it loads Natlink or not
     section1 = "Global Clients"
     key1 = ".Natlink"
     value1 = 'Python Macro System'
 
-    ## setting of nsapps.ini if NatLink is enabled...
+    ## setting of nsapps.ini if Natlink is enabled...
     ## this setting is ignored if above setting is not there...
     section2 = ".Natlink"
     key2 = "App Support GUID"
@@ -401,7 +401,7 @@ class NatlinkStatus:
         then also include the Unimacro directory!
 
         (the registry is out of use, only the core directory is in the
-        PythonPath / NatLink setting, for natlink be able to be started.
+        PythonPath / Natlink setting, for natlink be able to be started.
 
         Also set here the CoreDirectory and BaseDirectory
         """
@@ -413,22 +413,22 @@ class NatlinkStatus:
                 regDict, sectionName = self.getHKLMPythonPathDict()
             except pywintypes.error:
                 print("""PythonPath setting not found in registry\n
-Please try to correct this by running the NatLink Config Program (with administration rights)""")
+Please try to correct this by running the Natlink Config Program (with administration rights)""")
                 return
             except ValueError:
-                print("""NatLink setting not found or wrong in PythonPath setting in registry\n
-Please try to correct this by running the NatLink Config Program (with administration rights)""")
+                print("""Natlink setting not found or wrong in PythonPath setting in registry\n
+Please try to correct this by running the Natlink Config Program (with administration rights)""")
                 return
 
             if regDict is None:
-                print("""NatLink setting not found or wrong in PythonPath setting in registry\n
-Please try to correct this by running the NatLink Config Program (with administration rights)""")
+                print("""Natlink setting not found or wrong in PythonPath setting in registry\n
+Please try to correct this by running the Natlink Config Program (with administration rights)""")
                 return
 
-            section = regDict['NatLink']
+            section = regDict['Natlink']
             if not section:
                 print("""PythonPath/Natlink setting in registry does exist.\n
-Please try to correct this by running the NatLink Config Program (with administration rights)""")
+Please try to correct this by running the Natlink Config Program (with administration rights)""")
                 return
             setting = section['']
             if setting.lower() == CoreDirectory.lower():
@@ -438,7 +438,7 @@ Please try to correct this by running the NatLink Config Program (with administr
             else:
                 print(("""PythonPath/Natlink setting in registry does not match this core directory\n
 registry: %s\nCoreDirectory: %s\n
-Please try to correct this by running the NatLink Config Program (with administration rights)"""% (
+Please try to correct this by running the Natlink Config Program (with administration rights)"""% (
                 setting, CoreDirectory)))
                 return
         else:
@@ -540,8 +540,9 @@ Please try to correct this by running the NatLink Config Program (with administr
         except:
             fatal_error("registry section for pythonpath does not exist, probably invalid python version: %s"% version)
 
-        if 'NatLink' in list(lmPythonPathDict.keys()):
-            subDict = lmPythonPathDict['NatLink']
+        pythonPathDictKeysLower = [k.lower() for k in lmPythonPathDict]
+        if 'natlink' in pythonPathDictKeysLower:
+            subDict = lmPythonPathDict['Natlink']
             if isinstance(subDict, RegistryDict.RegistryDict):
                 if '' in list(subDict.keys()):
                     value = subDict['']
@@ -550,16 +551,16 @@ Please try to correct this by running the NatLink Config Program (with administr
                         pass  #OK otherwise print an error
                     else:
                         if not self.skipSpecialWarning:
-                            fatal_error('registry section for PythonPath should contain a folder "NatLink" with a non empty string or unicode default entry (key empty string), not: %s'%  repr(subDict))
+                            fatal_error('registry section for PythonPath should contain a folder "Natlink" with a non empty string or unicode default entry (key empty string), not: %s'%  repr(subDict))
                 else:
                     if not self.skipSpecialWarning:
-                        fatal_error('registry section for PythonPath should contain in folder "NatLink" a default entry (key empty string), not: %s'%  repr(subDict))
+                        fatal_error('registry section for PythonPath should contain in folder "Natlink" a default entry (key empty string), not: %s'%  repr(subDict))
             else:
                 if not self.skipSpecialWarning:
-                    fatal_error('registry section for PythonPath should contain a folder "NatLink" with a default entry (key empty string): HKLM\\\\%s'%  pythonPathSectionName)
+                    fatal_error('registry section for PythonPath should contain a folder "Natlink" with a default entry (key empty string): HKLM\\\\%s'%  pythonPathSectionName)
         else:
             if not self.skipSpecialWarning:
-                fatal_error('Registry section for PythonPath should contain a folder "NatLink": HKLM\\\\%s'% pythonPathSectionName)
+                fatal_error('Registry section for PythonPath should contain a folder "Natlink": HKLM\\\\%s'% pythonPathSectionName)
         return lmPythonPathDict, pythonPathSectionName
 
     def InsertToSysPath(self, newdir):
@@ -1006,7 +1007,7 @@ Please try to correct this by running the NatLink Config Program (with administr
         if len(version) != 2:
             raise Valueerror('getPythonVersion, length of python version should be 2, not: %s ("%s")'% (len(version), version))
         if int(version) < 25:
-            raise ValueError('getPythonVersion, version is: "%s" versions before "25" (Python 2.5) are not any more supported by NatLink'% version)
+            raise ValueError('getPythonVersion, version is: "%s" versions before "25" (Python 2.5) are not any more supported by Natlink'% version)
         return version
 
         #regSection = "SOFTWARE\Python\PythonCore"
@@ -1067,17 +1068,17 @@ Please try to correct this by running the NatLink Config Program (with administr
     in  nssystem.ini check for:
 
     [Global Clients]
-    .NatLink=Python Macro System
+    .Natlink=Python Macro System
 
     in nsapps.ini check for
-    [.NatLink]
+    [.Natlink]
     App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
 
     if both settings are set, return 1
     (if nssystem.ini setting is set, you also need the nsapps.ini setting)
     if nssystem.ini setting is NOT set, return 0
 
-    if nsapps.ini is set but nssystem.ini is not, NatLink is NOT enabled, still return 0
+    if nsapps.ini is set but nssystem.ini is not, Natlink is NOT enabled, still return 0
 
     if nssystem.ini is set, but nsapps.ini is NOT, there is an error, return None and a
     warning message, UNLESS silent = 1.
@@ -1106,10 +1107,10 @@ Please try to correct this by running the NatLink Config Program (with administr
                 return 1
             else:
                 #
-                mess = ['Error while checking if NatLink is enabled, unexpected result: ',
+                mess = ['Error while checking if Natlink is enabled, unexpected result: ',
                         'nssystem.ini points to NatlinkIsEnabled:',
                         '    section: %s, key: %s, value: %s'% (self.section1, self.key1, actual1),
-                        'but nsapps.ini points to NatLink is not enabled:',
+                        'but nsapps.ini points to Natlink is not enabled:',
                       '    section: %s, key: %s, value: %s'% (self.section2, self.key2, actual2),
                       '    should have value: %s'% self.value2]
                 if not silent:
@@ -1122,7 +1123,7 @@ Please try to correct this by running the NatLink Config Program (with administr
             return 0
         else:
             # GUID in nsapps may be defined, natspeak first checks nssystem.ini
-            # so NatLink NOT enabled
+            # so Natlink NOT enabled
             return 0
         self.warning("unexpected, natlinkstatus should not come here!")
         return None
@@ -1194,7 +1195,7 @@ Please try to correct this by running the NatLink Config Program (with administr
 
 
     def getUserDirectory(self):
-        """return the path to the NatLink User directory
+        """return the path to the Natlink User directory
 
         this one is not any more for Unimacro, but for User specified grammars, also Dragonfly
 
@@ -1570,10 +1571,10 @@ Please try to correct this by running the NatLink Config Program (with administr
         else:
             del D['userName']
             del D['DNSuserDirectory']
-        # NatLink::
+        # Natlink::
 
         if D['natlinkIsEnabled']:
-            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---NatLink is enabled")
+            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is enabled")
             key = 'CoreDirectory'
             self.appendAndRemove(L, D, key)
             key = 'InstallVersion'
@@ -1611,17 +1612,17 @@ Please try to correct this by running the NatLink Config Program (with administr
                 self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are disabled")
                 del D['UserDirectory']
 
-            ## remaining NatLink options:
-            L.append('other NatLink info:')
+            ## remaining Natlink options:
+            L.append('other Natlink info:')
             for key in ('DebugLoad', 'DebugCallback'):
                 self.appendAndRemove(L, D, key)
 
         else:
-            # NatLink disabled:
+            # Natlink disabled:
             if D['natlinkIsEnabled'] == 0:
-                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---NatLink is disabled")
+                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled")
             else:
-                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---NatLink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
+                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
             key = 'CoreDirectory'
             self.appendAndRemove(L, D, key)
             for key in ['DebugLoad', 'DebugCallback',
@@ -1677,7 +1678,7 @@ def AddExtendedEnvVariables():
 
 
 def AddNatlinkEnvironmentVariables(status=None):
-    """make the special NatLink variables global in this module
+    """make the special Natlink variables global in this module
     """
     if status is None:
         status = NatlinkStatus()

@@ -13,7 +13,7 @@ class ThisGrammar(GrammarBase):
                     "Normal":win32process.NORMAL_PRIORITY_CLASS,
                 };
     gramSpec = """
-        <change> exported = change NatLink priority to
+        <change> exported = change Natlink priority to
             ( Real Time | High | Low  | Normal);
     """
 

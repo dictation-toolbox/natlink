@@ -131,9 +131,9 @@ class GrammarParserError(Exception):
         filepath = os.path.join(dirName, filename)
         L = []
         if gramName:
-            L.append('Info about scanner/parser error of NatLink grammar "%s"\n'% gramName)
+            L.append('Info about scanner/parser error of Natlink grammar "%s"\n'% gramName)
         else:
-            L.append('Info about scanner/parser error of NatLink grammar\n')
+            L.append('Info about scanner/parser error of Natlink grammar\n')
     
         # does not work:
         # excType, excValue, tb = sys.exc_info()

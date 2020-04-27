@@ -5,9 +5,9 @@
 #
 # testnatlink.py
 #
-### This is the original test program of NatLink. Now converted to unittestNatlink.py (QH)
+### This is the original test program of Natlink. Now converted to unittestNatlink.py (QH)
 #
-#   This script performs some basic tests of the NatLink system.
+#   This script performs some basic tests of the Natlink system.
 #    Restart NatSpeak before rerunning this script. This is because the test
 #    script will leave some state around which will make it fail if run again
 #
@@ -202,7 +202,7 @@ def testPlayString():
         # This failure sometimes happens on Windows 2000
         print()
         print('*******')
-        print('One of the NatLink tests has failed.')
+        print('One of the Natlink tests has failed.')
         print()
         print('This particular failure has been seen on Windows 2000 when')
         print('there is a problem switching to Dragon NaturallySpeaking.')

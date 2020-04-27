@@ -842,15 +842,15 @@ try:
                 else:
                     break
 
-            if debugLoad: print(("NatLink pyd dir " + coreDirectory))
+            if debugLoad: print(("Natlink pyd dir " + coreDirectory))
             baseDirectory = os.path.normpath(os.path.abspath(os.path.join(coreDirectory,"..")))
             if not baseDirectory in sys.path:
                 sys.path.insert(0,baseDirectory)
                 if debugLoad:
                     print('insert baseDirectory: %s to sys.path!'% baseDirectory)
-            if debugLoad: print(("NatLink base dir" + baseDirectory))
+            if debugLoad: print(("Natlink base dir" + baseDirectory))
 
-            # get the current user information from the NatLink module
+            # get the current user information from the Natlink module
             userDirectory = status.getUserDirectory()
             if userDirectory:
                 if not userDirectory in sys.path:
@@ -903,7 +903,7 @@ try:
             natlink.setBeginCallback(beginCallback)
             natlink.setChangeCallback(changeCallback)
 
-            print(('natlinkmain started from %s:\n  NatLink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
+            print(('natlinkmain started from %s:\n  Natlink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
                       (status.getCoreDirectory(), status.getInstallVersion(),
                        DNSVersion, status.getPythonVersion(), WindowsVersion, )))
 

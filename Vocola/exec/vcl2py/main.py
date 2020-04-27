@@ -337,7 +337,7 @@ def convert_file(in_file, out_folder, suffix):
 def convert_filename(in_file):
     name = in_file
 
-    # ensure @ acts as a module name terminator for NatLink
+    # ensure @ acts as a module name terminator for Natlink
     name = re.sub(r'(.)@', r'\1_@', name)
 
     marker = "e_s_c_a_p_e_d__"
