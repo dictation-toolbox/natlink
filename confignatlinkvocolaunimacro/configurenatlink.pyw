@@ -7,7 +7,6 @@
 #  (C) Copyright Quintijn Hoogenboom, 2008-2009
 #
 #----------------------------------------------------------------------------
-
 try:
     import wx
 except ImportError:
@@ -15,13 +14,8 @@ except ImportError:
     print('means that wxPython is not installed.')
 
     print()
-    print('Either install wxPython (recommended) or use the CLI (Command Line Interface)')
-    print('Natlink configuration program.')
-    print()
-    print('A version of wxPython suitable for use with Natlink can be obtained from')
-    print('http://sourceforge.net/project/showfiles.php?group_id=70807&package_id=261793')
-    print('(each package there contains a version of wxPython; get the one appropriate')
-    print(' to the version of Python you have installed.)')
+    print('Either install wxPython (pip install wxpython) or ')
+    print('use the CLI (Command Line Interface): start_natlinkconfigfunctions.py')
     print()
     while True:
         pass

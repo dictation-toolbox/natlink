@@ -230,6 +230,15 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
     def configCheckNatlinkPydFile(self, silent=None):
         """see if natlink.pyd is in core directory, if not copy from correct version
+
+        In this function the essential parts of the install are done if needed
+        Last changes QH, April 2020
+        
+        If it already is, if the correct version is there, or a newer version is there
+        
+        Finally, also put the correct path to the Natlink pyd file in the registry,
+        the Natlink section of PythonPath of your current python install.
+        
         if DNSInstallDir or DNSIniDir is not properly set, all goes wrong.
         """
         self.checkedUrgent = 1
@@ -270,6 +279,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.checkedUrgent = None
             return 1 # all is well
 
+
+        result = None
         # for message:
         #fatal_error("The current file natlink.pyd is not available, the correct version or outdated, try to replace it by the proper (newer) version...")
         ## now go on with trying to replace natlink.pyd with the correct version and register it...
@@ -295,9 +306,14 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                 print(('-'*30))
         else:
             if not self.isElevated: raise ElevationError("first run of configure program must be done in elevated mode")
-
             result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
             self.registerNatlinkPyd(silent=silent)
+        
+        # now also put this in the registry:
+        if result:
+            result = self.setCoreDirectoryHKLMPythonPathDict(coreDir, silent=silent)
+            if not result:
+                print('Setting the registry to the new setting (%s) failed'% coreDir)
 
         return result  # None if something went wrong 1 if all OK
 
@@ -347,41 +363,69 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return
         return 1
 
-    def getCoreDirectoryHKLMPythonPathDict(self, flags=win32con.KEY_ALL_ACCESS, recursive=False):
-        """returns the dict that contains the PythonPath section of HKLM
-
-        Overload for config program, automatically set or repair the pythonpath variable if the format is not ok
+    # def getCoreDirectoryHKLMPythonPathDict(self, flags=win32con.KEY_ALL_ACCESS):
+    #     """returns the dict that contains the PythonPath section of HKLM
+    # 
+    #     Overload for config program, automatically set or repair the pythonpath variable if the format is not ok
+    #     """
+    #     version = self.getPythonVersion()
+    #     if not version:
+    #         fatal_error("no valid Python version available")
+    #         return None, None
+    #     # dottedVersion = version[0] + "." + version[1]
+    #     dottedVersion = sys.winver
+    #     pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
+    #     # key MUST already exist (ensure by passing flags=...:
+    #     #try:
+    #     lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
+    #     #except:
+    #     #    fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
+    #     #                     (pythonPathSectionName, version))
+    #     #    return None, None
+    #     PPDkeyslower = [k.lower() for k in lmPythonPathDict.keys()]
+    #     if 'natlink'  in PPDkeyslower:
+    #         subDict = lmPythonPathDict['Natlink' ]
+    #         if isinstance(subDict, RegistryDict.RegistryDict):
+    #             if '' in list(subDict.keys()):
+    #                 value = subDict['']
+    #                 if value and type(value) in (str, str):
+    #                     # all well (only the value is not tested yet):
+    #                     return lmPythonPathDict, pythonPathSectionName
+    #     else:
+    #         ## not earlier install, no Natlink or NatLink section:
+    #         return lmPythonPathDict, None
+        
+    def setCoreDirectoryHKLMPythonPathDict(self, coreDir, flags=win32con.KEY_ALL_ACCESS, silent=None):
+        """set the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
+        
+        this function should be in elevated mode, which should be checked before calling this
         """
-        version = self.getPythonVersion()
-        if not version:
-            fatal_error("no valid Python version available")
-            return None, None
-        # dottedVersion = version[0] + "." + version[1]
-        dottedVersion = sys.winver
-        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
-        # key MUST already exist (ensure by passing flags=...:
-        #try:
-        lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
-        #except:
-        #    fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
-        #                     (pythonPathSectionName, version))
-        #    return None, None
-        if 'Natlink'  in list(lmPythonPathDict.keys()):
-            subDict = lmPythonPathDict['Natlink' ]
-            if isinstance(subDict, RegistryDict.RegistryDict):
-                if '' in list(subDict.keys()):
-                    value = subDict['']
-                    if value and type(value) in (str, str):
-                        # all well (only the value is not tested yet):
-                        return lmPythonPathDict, pythonPathSectionName
-        # not ok, repair the setting, admin rights needed:
-        if recursive:
-            fatal_error("Registry entry Natlink in pythonpath cannot be set correct, This can (hopefully) be solved by closing Dragon and then running the Natlink/Unimacro/Vocola Config program with administrator rights.run this program")
-            return None, None
+        lmPythonPathDict, prevPathSectionName = self.getHKLMPythonPathDict(flags=flags)
+        if type(lmPythonPathDict) == RegistryDict.RegistryDict:
+            pass
+        else:
+            fatal_error('lmPythonPathDict is not correct type: %s'% type(lmPythonPathDict))
+            return 
         print(('==== Set Natlink setting in PythonPath section of registry to "%s"'% coreDir))
-        lmPythonPathDict['Natlink' ] = {'': coreDir}
-        return self.getHKLMPythonPathDict(recursive=True)
+        natlinkPart = lmPythonPathDict['Natlink']
 
+        ## do not check previous values, simply put it in:
+        lmPythonPathDict['Natlink'] = {'': coreDir}
+        lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
+        
+        ## check the result:
+        newNatlinkPart = lmPythonPathDict['Natlink']
+        if type(newNatlinkPart) == RegistryDict.RegistryDict:
+            newContent = newNatlinkPart['']
+            if newContent == coreDir:
+                # print("content is changed correct: %s"% newContent)
+                return True
+            fatal_error("setCoreDirectoryHKLMPythonPathDict: content did not change: %s"% newContent)
+            return
+        else:
+            fatal_error("setCoreDirectoryHKLMPythonPathDict: newNatlinkPart not a valid dict: %s"% newNatlinkPart)
+            return
+        return True
 
     def checkPythonPathAndRegistry(self):
         """checks if core directory is
@@ -1058,7 +1102,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         Also sets the pythonpath in the HKLM pythonpath section
         """
         # give fatal error if Python is not OK...
-        dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        dummy1, dummy2 = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
         if not (pythonVersion and len(pythonVersion) == 2):
@@ -1111,6 +1155,9 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             else:
                 self.userregnl.set('NatlinkPydRegistered', newIniSetting)
                 print(('Registring pyd file succesful: %s'% PydPath))
+
+        
+
 
         return result is None
 

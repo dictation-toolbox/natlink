@@ -199,16 +199,11 @@ import inivars
 
 # adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
-NSExt73Path  = r"ScanSoft\NaturallySpeaking"
-NSExt8Path  = r"ScanSoft\NaturallySpeaking8"
-NSExt9Path  = r"Nuance\NaturallySpeaking9"
-# NSExt10Path  = "Nuance\NaturallySpeaking10"
-# NSExt11Path  = "Nuance\NaturallySpeaking11"
-# NSExt12Path  = "Nuance\NaturallySpeaking12"
-# NSExt13Path  = "Nuance\NaturallySpeaking13"
-# NSExt14Path  = "Nuance\NaturallySpeaking14"
+
+lowestSupportedPythonVersion = 37
+
 DNSPaths = []
-DNSVersions = list(range(19,6,-1))
+DNSVersions = list(range(19,14,-1))
 for v in DNSVersions:
     varname = "NSExt%sPath"%v
     if "NSExt%sPath"% v not in globals():
@@ -533,8 +528,8 @@ Please try to correct this by running the Natlink Config Program (with administr
         #     return None, None
         # dottedVersion = version[0] + "." + version[1]
         dottedVersion = sys.winver
+        
         pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
-        # key MUST already exist (ensure by passing flags=...:
         try:
             lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
         except:
@@ -546,7 +541,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             if isinstance(subDict, RegistryDict.RegistryDict):
                 if '' in list(subDict.keys()):
                     value = subDict['']
-                    if value and type(value) in (bytes, str):
+                    if value and type(value) == str:
                         # all well (only the value is not tested yet):
                         pass  #OK otherwise print an error
                     else:
@@ -998,16 +993,21 @@ Please try to correct this by running the Natlink Config Program (with administr
     #    return version2
 
     def getPythonVersion(self):
-        """get the version of python from the registry
+        """get the version of python
 
-        length 2, without ".", so "26" etc.
+        Check if the version is supported on the "lower" side.
+        
+        length 2, without ".", so "38" etc.
         """
         version = sys.version[:3]
         version = version.replace(".", "")
         if len(version) != 2:
-            raise Valueerror('getPythonVersion, length of python version should be 2, not: %s ("%s")'% (len(version), version))
-        if int(version) < 25:
-            raise ValueError('getPythonVersion, version is: "%s" versions before "25" (Python 2.5) are not any more supported by Natlink'% version)
+            raise ValueError('getPythonVersion, length of python version should be 2, not: %s ("%s")'% (len(version), version))
+        if int(version) < lowestSupportedPythonVersion:
+            versionReadable = version[0] + "." + version[1]
+            lspv = str(lowestSupportedPythonVersion)
+            lspvReadable = lspv[0] + "." + lspv[1]
+            raise ValueError('getPythonVersion, current version is: "%s".\nPython versions before "%s" are not any more supported by Natlink.\nIf you want to run NatLink on Python2.7, please use the older version of NatLink at SourceForge (https://sourceforge.net/projects/natlink/)'% (versionReadable, lspvReadable))
         return version
 
         #regSection = "SOFTWARE\Python\PythonCore"
