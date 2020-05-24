@@ -7,7 +7,7 @@ import win32api
 import win32con
 import pickle
 
-class RegistryDict(object):
+class RegistryDict:
     def __init__(self, keyhandle = win32con.HKEY_LOCAL_MACHINE, keypath = [], flags = None):
         """If flags=None, then it will create the key.. otherwise pass a win32con.KEY_* sam"""
         self.keyhandle = None

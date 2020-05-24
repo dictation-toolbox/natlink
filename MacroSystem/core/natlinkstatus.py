@@ -407,15 +407,14 @@ class NatlinkStatus:
             # check the registry setting:
             try:
                 regDict, sectionName = self.getRegistryPythonPathDict()
-            except KeyError:
-                print("""PythonPath setting not found in registry\n
-Please try to correct this by running the Natlink Config Program (with administration rights)""")
-                return
             except ValueError:
                 print("""Natlink setting not found or wrong in PythonPath setting in registry\n
 Please try to correct this by running the Natlink Config Program (with administration rights)""")
                 return
-
+            except:   ## KeyError
+                print("""PythonPath setting not found in registry\n
+Please try to correct this by running the Natlink Config Program (with administration rights)""")
+                return
             if regDict is None:
                 print("""Natlink setting not found or wrong in PythonPath setting in registry\n
 Please try to correct this by running the Natlink Config Program (with administration rights)""")
