@@ -1,31 +1,13 @@
 #! python3
-from __future__ import print_function
-import six
 import os
 import sys
 import time
 
-if six.PY2: ModuleNotFoundError = ImportError
 #
 print('Starting start_configurenatlink.py,')
 print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')
 print()
 
-
-# if not sys.version.startswith('2.'):
-#     print('This script should start with python2, not with %s'% sys.version)
-    # time.sleep(30)
-#     sys.exit()
-
-try:
-    from future import standard_library
-except ModuleNotFoundError:
-    print('Cannot find module "future", consider "pip install future"')
-    time.sleep(10)
-else:
-    standard_library.install_aliases()
-    from future.builtins import next
-    from future.builtins import object
 
 try:
     import wx
