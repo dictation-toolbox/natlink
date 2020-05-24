@@ -188,6 +188,7 @@ import sys
 import pprint
 import stat
 import RegistryDict
+import winreg  # for constants to be passed to RegistryDict
 import natlinkcorefunctions
 import pywintypes
 import time
@@ -405,8 +406,8 @@ class NatlinkStatus:
         if CoreDirectory.lower().endswith('core'):
             # check the registry setting:
             try:
-                regDict, sectionName = self.getHKLMPythonPathDict()
-            except pywintypes.error:
+                regDict, sectionName = self.getRegistryPythonPathDict()
+            except KeyError:
                 print("""PythonPath setting not found in registry\n
 Please try to correct this by running the Natlink Config Program (with administration rights)""")
                 return
@@ -515,8 +516,8 @@ Please try to correct this by running the Natlink Config Program (with administr
         # all well
         return 1
 
-    def getHKLMPythonPathDict(self, flags=win32con.KEY_READ):
-        """returns the dict that contains the PythonPath section of HKLM
+    def getRegistryPythonPathDict(self, flags=win32con.KEY_READ):
+        """returns the dict that contains the PythonPath section of HKLM of HKCU
 
         by default read only, can be called (from natlinkconfigfunctions with
         KEY_ALL_ACCESS, so key can be created)
@@ -529,11 +530,22 @@ Please try to correct this by running the Natlink Config Program (with administr
         # dottedVersion = version[0] + "." + version[1]
         dottedVersion = sys.winver
         
-        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
-        try:
-            lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
-        except:
-            fatal_error("registry section for pythonpath does not exist, probably invalid python version: %s"% version)
+        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s"% dottedVersion
+        lmPythonLocalMachineDict = RegistryDict.RegistryDict(winreg.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=winreg.KEY_READ)
+        lmPythonCurrentUserDict = RegistryDict.RegistryDict(winreg.HKEY_CURRENT_USER, pythonPathSectionName, flags=winreg.KEY_READ)
+        
+        if lmPythonLocalMachineDict:
+            lmPythonDict = lmPythonLocalMachineDict
+            mainSection = "HKEY_LOCAL_MACHINE"
+        elif lmPythonCurrentUserDict:
+            lmPythonDict = lmPythonCurrentUserDict
+            mainSection = "HKEY_CURRENT_USER"
+            print("Python version only for CurrentUser")
+        else:
+            raise KeyError("No valid Python version found in registry")
+
+        lmPythonPathDict = lmPythonDict["PythonPath"]
+
 
         pythonPathDictKeysLower = [k.lower() for k in lmPythonPathDict]
         if 'natlink' in pythonPathDictKeysLower:
@@ -552,10 +564,10 @@ Please try to correct this by running the Natlink Config Program (with administr
                         fatal_error('registry section for PythonPath should contain in folder "Natlink" a default entry (key empty string), not: %s'%  repr(subDict))
             else:
                 if not self.skipSpecialWarning:
-                    fatal_error('registry section for PythonPath should contain a folder "Natlink" with a default entry (key empty string): HKLM\\\\%s'%  pythonPathSectionName)
+                    fatal_error('registry section for PythonPath should contain a folder "Natlink" with a default entry (key empty string): %s\\\\%s'%  (mainSection, pythonPathSectionName))
         else:
             if not self.skipSpecialWarning:
-                fatal_error('Registry section for PythonPath should contain a folder "Natlink": HKLM\\\\%s'% pythonPathSectionName)
+                fatal_error('Registry section for PythonPath should contain a folder "Natlink": %s\\\\%s'% (mainSection, pythonPathSectionName))
         return lmPythonPathDict, pythonPathSectionName
 
     def InsertToSysPath(self, newdir):
