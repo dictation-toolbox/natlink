@@ -400,7 +400,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         
         this function should be in elevated mode, which should be checked before calling this
         """
-        lmPythonPathDict, prevPathSectionName = self.getHKLMPythonPathDict(flags=flags)
+        lmPythonPathDict, prevPathSectionName = self.getRegistryPythonPathDict(flags=flags)
         if type(lmPythonPathDict) == RegistryDict.RegistryDict:
             pass
         else:
@@ -411,7 +411,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         ## do not check previous values, simply put it in:
         lmPythonPathDict['Natlink'] = {'': coreDir}
-        lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
+        lmPythonPathDict, pythonPathSectionName = self.getRegistryPythonPathDict()
         
         ## check the result:
         newNatlinkPart = lmPythonPathDict['Natlink']
@@ -453,12 +453,12 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         # if __name__ == '__main__':
             # print("checking PythonPathAndRegistry")
         try:
-             result = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+             result = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
              # print(result)
              if result is None:
                 pass
-             lmPythonPathDict, PythonPathSectionName = result
-        except Exception:
+             lmPythonPathDict, pythonPathSectionName = result
+        except KeyError:
             mess =  'The section "Natlink" does not exist and cannot be created in the registry. You probably should run this program with administrator rights'
             self.warning(mess)
             self.checkedUrgent = 1
@@ -502,7 +502,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             if '' in Keys:
                 Keys.remove("")
             fatal_error("The registry section of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\\%s\ncontains invalid keys: %s, remove them with the registry editor (regedit)\nAnd rerun this program"%
-                        (PythonPathSectionName+r'\Natlink', Keys))
+                        (pythonPathSectionName+r'\Natlink', Keys))
 
 
         # now section has default "" key, proceed:
@@ -513,7 +513,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         oldPathString = lmNatlinkPathDict[""]
         if oldPathString.find(';') > 0:
-            fatal_error("did not fix double entry in registry setting  of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\\%s\ncontains more entries separated by ';'. Remove with the registry editor (regedit)\nAnd rerun this program"%PythonPathSectionName+r'\Natlink')
+            fatal_error("did not fix double entry in registry setting  of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\\%s\ncontains more entries separated by ';'. Remove with the registry editor (regedit)\nAnd rerun this program"%pythonPathSectionName+r'\Natlink')
         if not oldPathString:
             # empty setting, silently register
             if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings and register natlink.pyd.")
@@ -657,7 +657,7 @@ Natlink is now disabled.
         do this only when needed...
 
         """
-        lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        lmPythonPathDict, pythonPathSectionName = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         pathString = os.path.normpath(os.path.abspath(coreDir))
         NatlinkSection = lmPythonPathDict.get('Natlink' , None)
         if NatlinkSection:
@@ -676,7 +676,7 @@ Natlink is now disabled.
         """check if the register pythonpath variable present and matches with the previous path
 
         """
-        regDict, sectionName = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        regDict, sectionName = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         try:
             value = regDict['Natlink' ]
         except:
@@ -709,7 +709,7 @@ Natlink is now disabled.
 
     #def clearNatlinkFromPythonPathRegistry(self):
     #    """clears the HKLM setting of the Python registry"""
-    #    lmPythonPathDict, pythonPathSectionName = self.getHKLMPythonPathDict()
+    #    lmPythonPathDict, pythonPathSectionName = self.getRegistryPythonPathDict()
     #    baseDir = os.path.join(coreDir, '..')
     #    pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))
     #    if 'Natlink'  in lmPythonPathDict.keys():
@@ -1102,7 +1102,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         Also sets the pythonpath in the HKLM pythonpath section
         """
         # give fatal error if Python is not OK...
-        dummy1, dummy2 = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        dummy1, dummy2 = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
         if not (pythonVersion and len(pythonVersion) == 2):
@@ -1183,7 +1183,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     def unregisterNatlinkPyd(self, silent=1):
         """unregister explicit, should not be done normally
         """
-        dummy, dummy = self.getHKLMPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        dummy, dummy = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         pythonVersion = self.getPythonVersion()
         PydPath = os.path.join(coreDir, 'natlink.pyd')
 
