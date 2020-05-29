@@ -476,6 +476,7 @@ def findAndLoadFiles(curModule=None):
             loadedFiles[x] = loadFile(x, origPath, origDate)
         else:
             loadedFiles[x] = loadFile(x)
+        pass
 
     # Unload any files which have been deleted
     for name, loadedFile in list(loadedFiles.items()):
@@ -782,6 +783,8 @@ def changeCallbackLoadedModules(Type,args):
 
 def start_natlink(doNatConnect=None):
     """do the startup of the python macros system
+    
+    Better not use doNatConnect, but ensure this is done before calling, and with a finally: natlink.natDisconnect() call
     """
     global userDirectory, DNSVersion, coreDirectory, baseDirectory, WindowsVersion, unimacroDirectory, loadedFiles
     print('--')
@@ -810,19 +813,19 @@ def start_natlink(doNatConnect=None):
             print('start_natlink, do natConnect with option 0, no threading')
             natlink.natConnect(0) # 0 or 1, should not be needed when automatic startup
 
+        print("----natlink.natConnect succeeded")
 
-    #print "\n".join(["%s=%s" % (k,v) for k, v in sys.modules ])
-    #print "\n".join(sys.modules.keys())
-    for modname in ['natlink', 'natlinkmain']:
-        try:
-            coreDirectory = os.path.split(
-               sys.modules[modname].__dict__['__file__'])[0]
-        except KeyError:
-            pass
-        else:
-            break
-
-    if debugLoad: print(("Natlink pyd dir " + coreDirectory))
+    # for modname in ['natlink', 'natlinkmain']:
+    #     try:
+    coreDirectory = os.path.split(
+            sys.modules['natlink'].__dict__['__file__'])[0]
+        # except KeyError:
+        #     pass
+        # else:
+        #     break
+    if not coreDirectory:
+        raise IOError("not a valid coreDirectory found in start_natlink() of natlinkmain.py")
+    if debugLoad: print("Natlink pyd dir: ", coreDirectory)
     baseDirectory = os.path.normpath(os.path.abspath(os.path.join(coreDirectory,"..")))
     if not baseDirectory in sys.path:
         sys.path.insert(0,baseDirectory)
@@ -907,14 +910,15 @@ def start_natlink(doNatConnect=None):
         print('='*30)
         status.emptyWarning()
 
-    ############################################################################
-    #
-    # Here is the initialization code.
-    #
+############################################################################
+#
+# Here is the initialization code.
+#
 
 # when you want to start natlink modules interactive from this module, set Testing to True
 # natlinkmain (which is the name of natlink.pyd when started from Dragon)
-# will then not start all natlink modules
+# will then not start all natlink modules. Whenever you change this value, you need
+# to restart Dragon...
 Testing = False
 
 if __name__ == "natlinkmain":
@@ -927,12 +931,18 @@ if __name__ == "natlinkmain":
         else:
             print('natlinkmain imported only, Testing in progress')
             print('\nDo not forget to put "Testing = False" again near bottom of natlinkmain.py in order to resume normal use...')
+            print('\n... and then restart Dragon.')
     else:
         print('Cannot start Natlink')
 elif __name__  == "__main__":
     if Testing:
-        print("starting all Natlink things from natlinkmain.py")
-        start_natlink(doNatConnect=1)
+        print("starting all Natlink stuff from natlinkmain.py")
+        natlink.natConnect(1)
+        try:
+            start_natlink()
+        finally:
+            print("finally do natDisconnect()")
+            natlink.natDisconnect()
     else:
         print("run interactive, do nothing, enable Testing if you want to start Natlink from this module")
-
+    pass
