@@ -411,7 +411,7 @@ class NatlinkStatus:
                 print("""Natlink setting not found or wrong in PythonPath setting in registry\n
 Please try to correct this by running the Natlink Config Program (with administration rights)""")
                 return
-            except:   ## KeyError
+            except KeyError:  
                 print("""PythonPath setting not found in registry\n
 Please try to correct this by running the Natlink Config Program (with administration rights)""")
                 return
@@ -530,8 +530,14 @@ Please try to correct this by running the Natlink Config Program (with administr
         dottedVersion = sys.winver
         
         pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s"% dottedVersion
-        lmPythonLocalMachineDict = RegistryDict.RegistryDict(winreg.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=winreg.KEY_READ)
-        lmPythonCurrentUserDict = RegistryDict.RegistryDict(winreg.HKEY_CURRENT_USER, pythonPathSectionName, flags=winreg.KEY_READ)
+        try:
+            lmPythonLocalMachineDict = RegistryDict.RegistryDict(winreg.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=winreg.KEY_READ)
+        except:
+            lmPythonLocalMachineDict = None
+        try:
+            lmPythonCurrentUserDict = RegistryDict.RegistryDict(winreg.HKEY_CURRENT_USER, pythonPathSectionName, flags=winreg.KEY_READ)
+        except:
+            lmPythonCurrentUserDict = None
         
         if lmPythonLocalMachineDict:
             lmPythonDict = lmPythonLocalMachineDict
@@ -1216,8 +1222,6 @@ Please try to correct this by running the Natlink Config Program (with administr
             return
         if not self.UserDirectory is None: return self.UserDirectory
         uDir = self.getUserDirectoryFromIni()
-        if uDir:
-            print('UserDirectory: %s'% uDir)
         return uDir
 
     def getUserDirectoryFromIni(self):
