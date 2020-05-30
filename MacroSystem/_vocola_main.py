@@ -66,19 +66,16 @@ except ImportError:
 
 
 # get location of MacroSystem folder:
-NatLinkFolder = os.path.split(
-    sys.modules['natlinkmain'].__dict__['__file__'])[0]
-# (originally, natlinkmain lived in MacroSystem, not MacroSystem\core)
-NatLinkFolder = re.sub(r'\\core$', "", NatLinkFolder)
+CoreDirectory = status.getCoreDirectory()
+NatlinkFolder = os.path.normpath(os.path.join(CoreDirectory, ".."))
 
-
-VocolaFolder     = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola'))
-ExecFolder       = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola',
+VocolaFolder     = os.path.normpath(os.path.join(NatlinkFolder, '..', 'Vocola'))
+ExecFolder       = os.path.normpath(os.path.join(NatlinkFolder, '..', 'Vocola',
                                                  'exec'))
-ExtensionsFolder = os.path.normpath(os.path.join(NatLinkFolder, '..', 'Vocola',
+ExtensionsFolder = os.path.normpath(os.path.join(NatlinkFolder, '..', 'Vocola',
                                                  'extensions'))
 
-NatLinkFolder = os.path.abspath(NatLinkFolder)
+# NatlinkFolder = os.path.abspath(NatlinkFolder)
 
 if VocolaEnabled:
     sys.path.append(ExecFolder)
@@ -427,7 +424,7 @@ def compile_Vocola(inputFileOrFolder, force):
     arguments += ["-suffix", "_vcl"]
     if force: arguments += ["-f"]
 
-    arguments += [inputFileOrFolder, NatLinkFolder]
+    arguments += [inputFileOrFolder, NatlinkFolder]
     hidden_call(executable, arguments)
 
     logName = commandFolder + r'\vcl2py_log.txt'
@@ -444,8 +441,8 @@ def compile_Vocola(inputFileOrFolder, force):
 # Unload all commands, including those of files no longer existing
 def purgeOutput():
     pattern = re.compile("_vcl\d*\.pyc?$")
-    [os.remove(os.path.join(NatLinkFolder,f)) for f
-     in os.listdir(NatLinkFolder) if pattern.search(f)]
+    [os.remove(os.path.join(NatlinkFolder,f)) for f
+     in os.listdir(NatlinkFolder) if pattern.search(f)]
 
 #
 # Run program with path executable and arguments arguments.  Waits for
@@ -508,14 +505,14 @@ def vocolaGetModTime(file):
 
 def deleteOrphanFiles():
     print("checking for orphans...")
-    for f in os.listdir(NatLinkFolder):
+    for f in os.listdir(NatlinkFolder):
         if not re.search("_vcl.pyc?$", f): continue
 
         s = getSourceFilename(f)
         if s:
             if vocolaGetModTime(s)>0: continue
 
-        f = os.path.join(NatLinkFolder, f)
+        f = os.path.join(NatlinkFolder, f)
         print("Deleting: " + f)
         os.remove(f)
 
@@ -551,7 +548,7 @@ def output_changes():
     old_may_have_compiled = may_have_compiled
     may_have_compiled = False
 
-    current = vocolaGetModTime(NatLinkFolder)
+    current = vocolaGetModTime(NatlinkFolder)
     if current > lastNatLinkModTime:
         lastNatLinkModTime = current
         return 2

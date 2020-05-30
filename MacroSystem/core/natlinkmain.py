@@ -103,9 +103,8 @@ import imp              # module reloading
 import re     
 from stat import ST_MTIME      # file statistics
 import glob             # new way to collect the grammar files
-import pprint
+from pprint import pprint
 import inspect
-
 
 class NewStdout(object):
     softspace=1
@@ -430,7 +429,7 @@ def findAndLoadFiles(curModule=None):
         else:
             loadedFiles[x] = loadFile(x)
             print('Vocola first: ', x)
-            print('Vocola first first time origPath: %s, origDate: %s'% loadedFiles[x])
+            print('Vocola first first time')
         vocolaIsLoaded = 1
         if doVocolaFirst:
             if not doVocolaFirst in sys.modules:
@@ -585,6 +584,8 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
 
 def setSearchImportDirs():
     """set the global list of import dirs, to be used for import
+    
+    and add them to sys.path if needed...
 
     either [userDirectory, baseDirectory, unimacroDirectory] or less (if no userDirectory or no unimacroDirectory)
 
@@ -597,6 +598,14 @@ def setSearchImportDirs():
         searchImportDirs.append(unimacroDirectory)
 
     searchImportDirs.append(baseDirectory)
+    added = False
+    for searchdir in reversed(searchImportDirs):
+        if not searchdir in sys.path:
+            sys.path.insert(0, searchdir)
+            added = True
+    if added:
+        print('from setSearchImportDirs: ')
+        pprint(sys.path)
 
 
 #
@@ -866,7 +875,7 @@ def start_natlink(doNatConnect=None):
         if debugLoad:
             print('no unimacroDirectory')
 
-    # setting searchImportDirs:
+    # setting searchImportDirs, also insert at front of sys.path if not in the list yet.
     setSearchImportDirs()
 
     # get invariant variables:
@@ -939,7 +948,9 @@ elif __name__  == "__main__":
         print("starting all Natlink stuff from natlinkmain.py")
         natlink.natConnect(1)
         try:
+            print("start_natlink starting...")
             start_natlink()
+            print("after start_natlink...")
         finally:
             print("finally do natDisconnect()")
             natlink.natDisconnect()

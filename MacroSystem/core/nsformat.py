@@ -13,7 +13,10 @@
 import types
 import copy
 import natlink
-import natlinkmain
+import natlinkstatus
+status = natlinkstatus.NatlinkStatus()
+DNSVersion = status.getDNSVersion()
+del status
 
 flag_useradded = 0
 flag_varadded = 1
@@ -121,7 +124,7 @@ def formatWords(wordList,state=None):
         flags_like_period = (4, 21, 17) # one space after period.
         
     # get the getWordsInfo function, now returning a tuple of properties
-    DNSVersion = natlinkmain.DNSVersion
+    DNSVersion = status.getDNSVersion()
     if DNSVersion >= 11:
         gwi = getWordInfo11
     else:
@@ -172,6 +175,7 @@ countDict= dict(one=1, two=2, three=3, four=4, five=5, six=6, seven=7, eight=8, 
 def formatPassword(wordList):
     """format the words, no spaces capping each word, getting the numbers and repeating the @ etc
 >>> formatPassword(['small', 'bird', 'three', '@'])
+'SmallBird3@@@'
 
     """
     nextRepeat = 0
@@ -212,7 +216,7 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     emptySet = set()
     if gwi is None:
         # get the proper getWordInfo function
-        DNSVersion = natlinkmain.DNSVersion
+        DNSVersion = sta.DNSVersion
         if DNSVersion >= 11:
             gwi = getWordInfo11
         else:
@@ -520,14 +524,4 @@ if __name__=='__main__':
     doctest.testmod()
     natlink.natDisconnect()
     
-    # natlink.natConnect()
-    # try:
-    #     if natlinkmain.DNSVersion >= 11:
-    #         testFormatting11()
-    #     else:
-    #         testFormatting10()
-    #     natlink.natDisconnect()
-    # except:
-    #     natlink.natDisconnect()
-    #     raise
 
