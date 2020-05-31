@@ -53,6 +53,8 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	// load and initialize the Python system
 	Py_Initialize();
 
+	// Set sys.argv so it exists as [''].
+	PySys_SetArgvEx(1, NULL, 0);
 
 	// load the natlink module into Python and return a pointer to the
 	// shared CDragonCode object
