@@ -247,8 +247,8 @@ getScreenSize()
     value can be used to make sure that the cursor remains on the screen.
     
 inputFromFile( fileName, realtime, playlist, uttDetect )
-    This function will caused Dragon NaturallySpeaking to take its input from
-    a wave file with the indicated filename.  The realtime flag is optional 
+    This function will cause Dragon NaturallySpeaking to take its input from
+    a wave file with the indicated filename.  The realtime flag is optional
     and if true (integer 1) it will cause the playback to be slowed down to
     simulate realtime recognition.
 
@@ -260,14 +260,22 @@ inputFromFile( fileName, realtime, playlist, uttDetect )
     utterances).  The play list can contain a mixture of single integers and
     ranges represented as tuples of start and ending integers.
 
-    Warning: because of a bug in NatSpeak, this code can not handle the 
-    error if you specify an utterance number in the playlist which is not
+    Warning: because of bugs in NatSpeak, this function can sometimes cause
+    NatSpeak to fail. This can happen in at least the following scenarios:
+
+    1) If you specify an utterance number in the playlist which is not
     present in the input file.  If that happens you will get a NatSpeak
-    SDAPI error and this function will not return.  The only way to recover
+    SDAPI error and this function will not return. The only way to recover
     from this error will be to end the Python and NatSpeak processes.
 
-	The defatly behavior of inputFromFile is to perform utterance 
-	detection (split speek at pauses) when using files with an extension
+    2) If you call this function with a wave file path in at least some
+    recent DNS versions (e.g. DNS 15).  This can cause a fatal process crash
+    in DNS which will also crash the Python interpreter. To be safe, try
+    using this function from a separate Python process to avoid crashing
+    NatSpeak.exe.
+
+	The default behavior of inputFromFile is to perform utterance
+	detection (split speech at pauses) when using files with an extension
 	of .wav and not perform utterance detection for other file extensions.
 	You can override this default behavior by setting uttDetect.  Setting
 	uttDetect to 1 forces utterance detection and setting uttDetect to 0
