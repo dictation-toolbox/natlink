@@ -89,17 +89,20 @@ import time
 import natlink
 #from gramparser import *
 import gramparser
-import natlinkmain
+import natlinkstatus
 import utilsqh
 import sys
 import traceback
 import locale
 
-preferredencoding =  locale.getpreferredencoding()
+status = natlinkstatus.NatlinkStatus()
+debugLoad = status.getDebugLoad()
+DNSVersion = status.getDNSVersion()
+shiftkey = status.getShiftKey()
+del status
 
-DNSVersion = natlinkmain.DNSVersion
+preferredencoding =  locale.getpreferredencoding()
 # print 'DNSVersion (natlinkutils) %s'% DNSVersion
-debugLoad = natlinkmain.debugLoad
 
 # The following constants define the common windows message codes which
 # are passed to playEvents.
@@ -314,7 +317,6 @@ def playString(keys, hooks=None):
         if hooks not in (None, 0x100):
             natlink.playString(keys, hooks)
         else:
-            shiftkey = natlinkmain.shiftkey
             natlink.playString(shiftkey + keys)
 
 #---------------------------------------------------------------------------

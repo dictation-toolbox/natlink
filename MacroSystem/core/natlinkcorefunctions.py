@@ -112,6 +112,12 @@ def getFolderFromLibraryName(fName):
         return getExtendedEnv("OneDrive")
     if fName in ['Desktop', "Bureaublad"]:
         return getExtendedEnv("DESKTOP")
+    if fName in ['Quick access', 'Snelle toegang']:
+        templatesfolder = getExtendedEnv('TEMPLATES')
+        if os.path.isdir(templatesfolder):
+            QuickAccess = os.path.normpath(os.path.join(templatesfolder, "..", "Libraries"))
+            if os.path.isdir(QuickAccess):
+                return QuickAccess
     if fName == 'Dropbox':
         return getDropboxFolder()
     if fName in ['Download', 'Downloads']:
@@ -122,6 +128,7 @@ def getFolderFromLibraryName(fName):
             if os.path.isdir(tryDir):
                 return tryDir
     print('cannot find folder for Library name: %s'% fName)
+
 def getDropboxFolder(containsFolder=None):
     """get the dropbox folder, or the subfolder which is specified.
     
@@ -564,6 +571,6 @@ if __name__ == "__main__":
     print('recentEnv: %s'% len(recentEnv))
     np = getExtendedEnv("NOTEPAD")
     print(np)
-    for lName in ['Documenten', 'Documents', 'Muziek', 'Afbeeldingen', 'Dropbox', 'OneDrive', 'Desktop', 'Bureaublad']:
+    for lName in ['Snelle toegang', 'Quick access', 'Documenten', 'Documents', 'Muziek', 'Afbeeldingen', 'Dropbox', 'OneDrive', 'Desktop', 'Bureaublad']:
         f = getFolderFromLibraryName(lName)
         print('folder from library name %s: %s'% (lName, f))
