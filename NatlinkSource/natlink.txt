@@ -270,9 +270,9 @@ inputFromFile( fileName, realtime, playlist, uttDetect )
 
     2) If you call this function with a wave file path in at least some
     recent DNS versions (e.g. DNS 15).  This can cause a fatal process crash
-    in DNS which will also crash the Python interpreter. To be safe, try
-    using this function from a separate Python process to avoid crashing
-    NatSpeak.exe.
+    in DNS which will also crash the Python interpreter. There is a useful
+    'natlinkAudioFileInput.py' script in the 'MiscScripts' folder for safely
+    working around this problem by using a dedicated Python process.
 
 	The default behavior of inputFromFile is to perform utterance
 	detection (split speech at pauses) when using files with an extension
