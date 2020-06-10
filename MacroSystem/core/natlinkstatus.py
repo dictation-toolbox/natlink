@@ -243,6 +243,7 @@ languages = {  # from config files (if not given by args in setUserInfo)
              "UK English": "enx",
              "US English": "enx",
              "Australian English": "enx",
+             # "Canadian English": "enx",
              "Indian English": "enx",
              "SEAsian English": "enx",
              "Italiano": "ita",
@@ -639,8 +640,12 @@ Please try to correct this by running the Natlink Config Program (with administr
             try:
                 language = languages[userLanguage]
             except KeyError:
-                print('natlinkstatus, setUserInfo: no language found for userLanguage: %s'% userLanguage)
-                language = ''
+                englishDialect = language.split()[-1]
+                if englishDialect == 'English':
+                    language = 'enx'
+                else:
+                    print('natlinkstatus, setUserInfo: no language found for userLanguage: %s'% userLanguage)
+                    language = ''
             self.userArgsDict['language'] = language
             self.userArgsDict['userLanguage'] = userLanguage
             self.userArgsDict['userTopic'] = self.getUserTopic() # will be the basetopic...
