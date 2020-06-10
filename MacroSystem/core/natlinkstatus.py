@@ -640,7 +640,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             try:
                 language = languages[userLanguage]
             except KeyError:
-                englishDialect = language.split()[-1]
+                englishDialect = userLanguage.split()[-1]
                 if englishDialect == 'English':
                     language = 'enx'
                 else:
