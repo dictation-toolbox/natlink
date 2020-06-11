@@ -106,33 +106,6 @@ import glob             # new way to collect the grammar files
 from pprint import pprint
 import inspect
 
-class NewStdout(object):
-    softspace=1
-    def write(self,text):
-        # if text.find('\x00') >= 0:
-        #     text = text.replace('\x00', '')
-        #     text = "===Warning, text contains null bytes==\n" + text
-        # if type(text) == str:
-        #     text = text.encode('cp1252')
-        natlink.displayText(text, 0)
-    def flush(self):
-        pass
-
-class NewStderr(object):
-    softspace=1
-    def write(self,text):
-        # if text.find('\x00') >= 0:
-        #     text = text.replace('\x00', '')
-        #     text = "===Warning, text contains null bytes===\n" + text
-        # if type(text) == str:
-        #     text = text.encode('cp1252')
-        natlink.displayText(text, 1)
-    def flush(self):
-        pass
-
-if __name__ == "natlinkmain":
-    sys.stdout = NewStdout()
-    sys.stderr = NewStderr()
     # print("at start of natlinkmain, after redirect stderr and stdout")
 
 import natlinkstatus    # for extracting status info (QH)
