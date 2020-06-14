@@ -10,7 +10,7 @@ import winreg
 from collections import UserDict
 
 class RegistryDict(UserDict):
-    def __init__(self, keyhandle = winreg.HKEY_LOCAL_MACHINE, keypath = [], flags = None):
+    def __init__(self, keyhandle = winreg.HKEY_LOCAL_MACHINE, keypath = None, flags = None):
         """If flags=None, then it will create the key.. otherwise pass a winreg.KEY_* """
         UserDict.__init__(self)
         self.keyhandle = None
@@ -263,13 +263,19 @@ if __name__=='__main__':
     ##    try some of the functions and remove the TestRegistryDict section again.
     ##    in case of doubt, follow this in the regedit program...
     ##
-    lm = RegistryDict(winreg.HKEY_LOCAL_MACHINE,"Software\TestRegistryDict", flags=None)
+    lm = RegistryDict(winreg.HKEY_LOCAL_MACHINE, r"Software\TestRegistryDictWinreg\TestSmall", flags=None)
 
     print('should start with empty dict: ', lm)
     lm['test'] = "abcd"
     print('should contain test/abcd: ', lm)
     lm['test'] = "xxxx"
+    
     print('should contain test/xxxx: ', lm)
+
+    ltest = RegistryDict(winreg.HKEY_LOCAL_MACHINE, r"Software\TestRegistryDictWinreg\TestSmall", flags=None)
+    print('ltest should also contain test/abcd: ', ltest)
+    pass
+
     del lm['test']
     print('should be empty again: ', lm)
     del lm['dummy']
@@ -283,13 +289,13 @@ if __name__=='__main__':
     print('should be empty again: ', lm)
 
     # now put a dict in:
-    lm['testdict'] = {"": "path/to/natlink", "Unimacro": "path/to/unimacro"}
-    print('should contain a dict with two items: ', lm)
-    del lm['testdict']
-    print('should be empty again: ', lm)
+    # lm['testdict'] = {"": "path/to/natlink", "Unimacro": "path/to/unimacro"}
+    # print('should contain a dict with two items: ', lm)
+    # del lm['testdict']
+    # print('should be empty again: ', lm)
 
-    ls = RegistryDict(winreg.HKEY_LOCAL_MACHINE,"Software")
-    del ls['TestRegistryDict']
+    ls = RegistryDict(winreg.HKEY_LOCAL_MACHINE,r"Software\TestRegistryDictWinreg")
+    del ls['TestSmall']
 
 
 

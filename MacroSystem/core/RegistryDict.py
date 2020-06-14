@@ -156,7 +156,7 @@ class RegistryDict:
         except:
             return  # Silently ignore bad keys
         itemtype = type(item)
-        if itemtype in (str, str, int):
+        if itemtype in (str, int):
             win32api.RegDeleteValue(self.keyhandle, key)
         elif isinstance(item, RegistryDict):
             # Delete everything in the subkey, then the subkey itself
@@ -245,13 +245,24 @@ if __name__=='__main__':
     ##    try some of the functions and remove the TestRegistryDict section again.
     ##    in case of doubt, follow this in the regedit program...
     ##
-    lm = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software\TestRegistryDict", flags=None)
+    ## keep out of the way of the complete Software branch, leave TestRegistryDict intact, only possibly
+    ## remove manually. (the dict resulting from directly calling and removing TestRegistryDict is very large and
+    ## slows down testing)
+    lm = RegistryDict(win32con.HKEY_LOCAL_MACHINE,r"Software\TestRegistryDict\TestSmall", flags=None)
 
     print('should start with empty dict: ', lm)
     lm['test'] = "abcd"
     print('should contain test/abcd: ', lm)
     lm['test'] = "xxxx"
     print('should contain test/xxxx: ', lm)
+
+    ltest = RegistryDict(win32con.HKEY_LOCAL_MACHINE, r"Software\TestRegistryDict\TestSmall", flags=None)
+    print('ltest should also contain test/abcd: ', ltest)
+    pass
+
+
+
+
     del lm['test']
     print('should be empty again: ', lm)
     del lm['dummy']
@@ -263,8 +274,8 @@ if __name__=='__main__':
     print('should contain: test/1', lm)
     del lm['test']
     print('should be empty again: ', lm)
-    ls = RegistryDict(win32con.HKEY_LOCAL_MACHINE,"Software")
-    del ls['TestRegistryDict']
+    ls = RegistryDict(win32con.HKEY_LOCAL_MACHINE,r"Software\TestRegistryDict")
+    del ls['TestSmall']
 
 
 
