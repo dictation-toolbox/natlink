@@ -1,3 +1,8 @@
+# new redirect trick, starting june 2020 (by Jan Scheffczyk)
+# this module is imported by natlink.pyd.
+# So apart from starting natlink via natlink.pyd (as called from Dragon),
+# redirection of stdout and stderr is never done (unless you import this module)
+
 import sys
 
 import natlink

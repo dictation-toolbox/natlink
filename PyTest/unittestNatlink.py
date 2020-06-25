@@ -130,7 +130,6 @@ doSleep = 0.2
 
 import natlink
 import natlinkmain  # for Dragon 12, need recognitionMimic from natlinkmain
-natlinkmain.start_natlink(natconnectOption) #?? otherwise baseDirectory etc have no values...
 import gramparser
 from natlinkutils import *
 import natlinkutils
@@ -146,6 +145,10 @@ class TestError(Exception):
 class ShouldBeCommandError(Exception):
     pass # for testing commands to be commands, not dictate...
 ExitQuietly = 'ExitQuietly'
+
+# natlinkmain.start_natlink(natconnectOption) #?? otherwise baseDirectory etc have no values...
+
+
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -1235,7 +1238,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
        
-    def oktestRecognitionMimic(self):
+    def tttestRecognitionMimic(self):
         """test different phrases with spoken forms,
         
         Sometimes not all phrases pass, maybe due to the doSleep variable, which slows down the testing
@@ -1655,7 +1658,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException(KeyError, "getModifierKeyCodes('typo')")
 
-    def oktestNatLinkMain(self):
+    def testNatLinkMain(self):
         
         ## see one remark at the bottom...(QH, 2020)
 
@@ -1713,7 +1716,7 @@ class UnittestNatlink(unittest.TestCase):
         testRecognition(['testing', 'Natlink', 'commands','one'], 1, log=1)
         self.lookForDragonPad()
 
-        # now separate two parts. Note this cannot be checked here together,this is automated testing from python six this is automated testing from python one this is automated testing from python two this is automated testing from python three this is automated testing from python four this is automated testing from python five this is automated testing from python seven this is automated testing from python eight
+        # now separate two parts. Note this cannot be checked here together,
         # because changes in natlinkmain take no effect when done from this
         # program!
         if natlinkmain.checkForGrammarChanges:
@@ -1986,9 +1989,15 @@ class UnittestNatlink(unittest.TestCase):
                 if log:
                     self.log("recognised: %s"% words)
         else:
-            self.doTestForException(natlink.MimicFailed,"natlink.recognitionMimic(words)",locals())
-            if log:
-                self.log("did not recognise (as expected): %s"% words)
+            try:
+                natlink.recognitionMimic(words)
+            except natlink.MimicFailed:
+                if log:
+                    self.log('recognitionMimic "%s" not recognized, as expected' % words)
+            except:
+                raise TestError('recognitionMimic "%s", expecting another exception %s, got exception %s'% (words, natlink.MimicFailed, excType, words))
+            else:
+                raise TestError('recognitionMimic of "%s" should have failed'% words)
 
 
     def doTestCommandRecognition(self, words, shouldWork=1, log=None, testGram=None):
@@ -3154,7 +3163,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
 
-    def tttestSelectGram(self):
+    def testSelectGram(self):
         self.log("testSelectGram")
         
         # this one give a debug error in my Komodo. So unclear what happened, see line 3219
@@ -3445,7 +3454,7 @@ class UnittestNatlink(unittest.TestCase):
     ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
     ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
 
-    def tttestNextPrevRulesAndWordsRecursive(self):
+    def testNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3591,7 +3600,7 @@ class UnittestNatlink(unittest.TestCase):
             time.sleep(w)
 
     ## TODO
-    def tttestNestedMimics(self):
+    def testNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -3925,7 +3934,7 @@ def run():
     log("log messages to file: %s"% logFileName)
     log('starting unittestNatlink')
     # trick: if you only want one or two tests to perform, change
-    # the test names to her example def tttest....
+    # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNatlink, 'test')
