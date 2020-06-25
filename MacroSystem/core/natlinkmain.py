@@ -401,8 +401,7 @@ def findAndLoadFiles(curModule=None):
             print('Vocola first  repeat origPath: %s, origDate: %s'% loadFile)
         else:
             loadedFiles[x] = loadFile(x)
-            print('Vocola first: ', x)
-            print('Vocola first first time')
+            if debugLoad: print('Vocola first: ', x)
         vocolaIsLoaded = 1
         if doVocolaFirst:
             if not doVocolaFirst in sys.modules:

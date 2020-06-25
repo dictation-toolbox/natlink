@@ -96,7 +96,7 @@ def get_top_command_folder():
         import natlinkstatus
         # Quintijn's's installer:
         configured = natlinkstatus.NatlinkStatus().getVocolaUserDirectory()
-        print('Vocola configured: %s'% configured)
+        # print('Vocola configured: %s'% configured)
     except ImportError:
         try:
             import RegistryDict
@@ -291,7 +291,7 @@ Commands" are activated.
     # Load all command files
     def loadAllFiles(self, force):
         if commandFolder:
-            print('loadAllFiles: %s'% commandFolder)
+            # print('loadAllFiles: %s'% commandFolder)
             compile_Vocola(commandFolder, force)
 
     # Load command files for specific application

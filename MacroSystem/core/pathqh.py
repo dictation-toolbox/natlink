@@ -24,6 +24,10 @@ reEnv = re.compile('(%[A-Z_]+%)', re.I)
 # for alternatives in virtual drive definitions:
 reAltenativePaths = re.compile(r"(\([^|()]+?(\|[^|()]+?)+\))")
 
+class PathError(Exception):
+    pass
+
+
 def generate_alternatives(s):
     """generates altenatives if (xxx|yyy) is found, otherwise just yields s
     Helper for cross_loop_alternatives

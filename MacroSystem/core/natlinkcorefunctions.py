@@ -127,6 +127,12 @@ def getFolderFromLibraryName(fName):
             tryDir = os.path.normpath(os.path.join(userDir, fName))
             if os.path.isdir(tryDir):
                 return tryDir
+    usersHome = os.path.normpath(os.path.join(r"C:\Users", fName))
+    if os.path.isdir(usersHome):
+        return usersHome
+    if fName in ["This PC", "Deze pc"]:
+        return "\\"
+    
     print('cannot find folder for Library name: %s'% fName)
 
 def getDropboxFolder(containsFolder=None):
