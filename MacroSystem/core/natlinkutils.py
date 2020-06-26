@@ -586,10 +586,10 @@ class GrammarBase(GramClassBase):
         #     raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
         if ruleName in self.activeRules:
             if window == self.activeRules[ruleName]:
-                print('rule %s already active for window %s'% (ruleName, window))
+                if debugLoad: print('rule %s already active for window %s'% (ruleName, window))
                 return
             else:
-                print('change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window))
+                if debugLoad: print('change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window))
                 self.gramObj.deactivate(ruleName)
         if debugLoad: print('activate rule %s (window: %s)'% (ruleName, window))
         self.gramObj.activate(ruleName,window)
