@@ -240,20 +240,21 @@ languages = {  # from config files (if not given by args in setUserInfo)
              "Nederlands": "nld",
              "Fran\xe7ais": "fra",
              "Deutsch": "deu",
-             "UK English": "enx",
-             "US English": "enx",
-             "Australian English": "enx",
-             # "Canadian English": "enx",
-             "Indian English": "enx",
-             "SEAsian English": "enx",
+             # English is detected as second word of userLanguage
+             # "UK English": "enx",
+             # "US English": "enx",
+             # "Australian English": "enx",
+             # # "Canadian English": "enx",
+             # "Indian English": "enx",
+             # "SEAsian English": "enx",
              "Italiano": "ita",
              "Espa\xf1ol": "esp",
              # as passed by args in changeCallback, DPI15:
              "Dutch": "nld",
              "French": "fra",
              "German": "deu",
-             "CAN English": "enx",
-             "AUS English": "enx",
+             # "CAN English": "enx",
+             # "AUS English": "enx",
              "Italian": "ita",
              "Spanish": "esp",}
 
@@ -626,7 +627,18 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def setUserInfo(self, args):
         """set username and userdirectory at change callback user
+        
+        args[0] = username
+        args[1] = Current directory for user profile (in programdata/nuance etc)
+                  extract for example userLanguage ('Nederlands') from acoustics.ini and options.ini
+
+        if the three letter "language" ('enx', 'nld' etc) is not found there is an error in this module: 'languages' dict.
+        English dialects are detected if the userLanguage is '.... English'.
+        
+        if there is no connection with natlink (no speech profile on, when debugging) language 'tst' is returned in getLanguage
+        
         """
+        # print("setUserInfo, args: %s"% repr(args))
         if len(args) < 2:
             print('UNEXPECTED ERROR: natlinkstatus, setUserInfo: length of args to small, should be at least 2: %s (%s)'% (len(args), repr(args)))
             return
@@ -645,29 +657,40 @@ Please try to correct this by running the Natlink Config Program (with administr
                     language = 'enx'
                 else:
                     print('natlinkstatus, setUserInfo: no language found for userLanguage: %s'% userLanguage)
+                    print('=== please report to q.hoogenboom@antenna.nl ===')
                     language = ''
             self.userArgsDict['language'] = language
             self.userArgsDict['userLanguage'] = userLanguage
             self.userArgsDict['userTopic'] = self.getUserTopic() # will be the basetopic...
 
         elif len(args) == 4:
-            userLanguage = args[2]
-            try:
-                language = languages[userLanguage]
-            except KeyError:
-                print('natlinkstatus, setUserInfo: cannot get language from userLanguage: %s'% userLanguage)
-                print('=== please report to q.hoogenboom@antenna.nl ===')
-                userLanguageIni = self.getUserLanguageFromInifile()
-                try:
-                    language = languages[userLanguageIni]
-                except KeyError:
-                    print('SERIOUS ERROR: natlinkstatus, setUserInfo: cannot get language from  ini file either: %s'% userLanguageIni)
-                    print('languages: %s'% languages)
-                    language = 'zxz'
-                print('got language: %s, userLanguage1: %s, userLanguageIni (from config files): %s'% (language, userLanguage, userLanguageIni))
-            self.userArgsDict['language'] = language
-            self.userArgsDict['userLanguage'] = userLanguage
-            self.userArgsDict['userTopic'] = args[3]
+            print('natlinkstatus, setUserInfo: this case seems to be obsolete, (len(args) == 4!!): %s'% userLanguage)
+            language = ''
+            print('=== please report to q.hoogenboom@antenna.nl ===')
+            # # 
+            # # 
+            # # userLanguage = args[2]
+            # # try:
+            # #     language = languages[userLanguage]
+            # # except KeyError:
+            # #     englishDialect = userLanguage.split()[-1]
+            # #     if englishDialect == 'English':
+            # #         language = 'enx'
+            # #     else:
+            # #         print('natlinkstatus, setUserInfo: no language found for userLanguage (len(args) == 4!!): %s'% userLanguage)
+            # #         language = ''
+            # #         print('=== please report to q.hoogenboom@antenna.nl ===')
+            # #     userLanguageIni = self.getUserLanguageFromInifile()
+            # #     try:
+            # #         language = languages[userLanguageIni]
+            # #     except KeyError:
+            # #         print('SERIOUS ERROR: natlinkstatus, setUserInfo: cannot get language from  ini file either: %s'% userLanguageIni)
+            # #         print('languages: %s'% languages)
+            # #         language = 'zxz'
+            # #     print('got language: %s, userLanguage1: %s, userLanguageIni (from config files): %s'% (language, userLanguage, userLanguageIni))
+            # self.userArgsDict['language'] = language
+            # self.userArgsDict['userLanguage'] = userLanguage
+            # self.userArgsDict['userTopic'] = args[3]
         else:
             print('natlinkstatus, setUserInfo: unexpected length of args for userArgsDict: %s (%s)'% (len(args), repr(args)))
             print('=== please report to q.hoogenboom@antenna.nl ===')
@@ -1030,31 +1053,6 @@ Please try to correct this by running the Natlink Config Program (with administr
             lspv = str(lowestSupportedPythonVersion)
             lspvReadable = lspv[0] + "." + lspv[1]
             raise ValueError('getPythonVersion, current version is: "%s".\nPython versions before "%s" are not any more supported by Natlink.\nIf you want to run NatLink on Python2.7, please use the older version of NatLink at SourceForge (https://sourceforge.net/projects/natlink/)'% (versionReadable, lspvReadable))
-        return version
-
-        #regSection = "SOFTWARE\Python\PythonCore"
-        #try:
-        #    r= RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, regSection)
-        #except ValueError:
-        #    return ''
-        #versionKeys = r.keys()
-        #decorated = [(len(k), k) for k in versionKeys]
-        #decorated.sort()
-        #decorated.reverse()
-        #versionKeysSorted = [k for (dummy,k) in decorated]
-        #
-        #version2 = self.getPythonFullVersion()
-        #for version1 in versionKeysSorted:
-        #    if version2.startswith(version1):
-        #        return version1
-        #if versionKeys:
-        #    print 'ambiguous python version:\npython (module sys) gives full version: "%s"\n' \
-        #      'the registry gives (in HKLM/%s): "%s"'% (version2,regSection, versionKeys)
-        #else:
-        #    print 'ambiguous python version:\npython (module sys) gives full version: "%s"\n' \
-        #      'the registry gives (in HKLM/%s) no keys found in that section'% (version2, regSection)
-        #version = version2[:3]
-        #print 'use version %s'% version
         return version
 
     def getPythonPath(self):
@@ -1431,10 +1429,16 @@ Please try to correct this by running the Natlink Config Program (with administr
         '' if not set, probably no speech profile on then
 
         """
-        try:
-            return self.userArgsDict['language']
-        except KeyError:
-            return ''
+        if self.userArgsDict:
+            try:
+                lang = self.userArgsDict['language']
+                return self.userArgsDict['language']
+            except KeyError:
+                print('Serious error, natlinkstatus.getLanguage: no language found in userArgsDict return ""')
+                return ''
+        else:
+            print('natlinkstatus.getLanguage: no speech profile loaded, no userArgsDict available, used for testing only, return language "tst"')
+            return 'tst'
 
     def getUserLanguage(self):
         """get userLanguage from userArgsDict
@@ -1750,6 +1754,7 @@ def isValidPath(spec, wantFile=None, wantDirectory=None):
 
 
 if __name__ == "__main__":
+
     status = NatlinkStatus()
     status.checkSysPath()
 

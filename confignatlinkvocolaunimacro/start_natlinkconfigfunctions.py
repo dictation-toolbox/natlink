@@ -7,7 +7,7 @@ import os
 import sys
 import time
 
-print('Starting start_natlinkconfigfunctions.py,')
+print('Starting start_natlinkconfigfunctions.py with python %s,'% sys.version)
 print('Try to run natlinkconfigfunctions.py in Elevated mode...')
 print()
 
