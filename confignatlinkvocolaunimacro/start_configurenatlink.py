@@ -8,6 +8,15 @@ print('Starting start_configurenatlink.py,')
 print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')
 print()
 
+if sys.version.find("64 bit") >= 0:
+    print('=============================================')
+    print('You run this module from a 64 bit version of Python.')
+    print('Natlink cannot run with this version, please be sure to ')
+    print('install a 32 bit version of python, and run from there.')
+    print('See https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
+    print('=============================================')
+    time.sleep(30)
+    sys.exit()
 
 try:
     import wx
