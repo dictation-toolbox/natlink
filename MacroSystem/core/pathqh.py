@@ -953,14 +953,19 @@ True
         return L
 
 
-    def walk(self, functionToDo, keepAbs=1, makePath=0):
-        """return the arg list when walking self
+    def walk(self, functionToDo, keepAbs=1, makePath=0, topdown=True, onerror=None, followlinks=False):
+        """return the complete walk, filtered by functionToDo
+        
+        only the directories with the files in each directory are traversed, per directory the functionToDo is called.
+
+        functionToDo is the old fashioned function with arg as list being filled in the process.
 
         assume arg is a list,
         functionToDo must use exactly 3 parameters,
         1 list "arg"
         2 dirname
         3 list of filenames
+
         path(testdrive + "/projects").walk(testWalk, keepAbs=1, makePath=0)
 
         optional parameters:
@@ -968,6 +973,8 @@ True
                  0: strip off the prefix, being the calling instance
         makePath 0 (default) do not to do this
                  1: make the resulting items path instances
+
+        and the optional parameters of os.walk, topdown, onerror and followlinks
 
         setting up the files:
 # 
@@ -1015,8 +1022,11 @@ True
         arg = []
         if not self.isdir():
             raise PathError("walk must start with folder, not with: %s"% self)
-        os.walk(str(self), functionToDo, arg)
-        return self._manipulateList(arg, keepAbs, makePath)
+        List = os.walk(str(self))
+        ReturnList = []
+        for directory, subdirs, files in List:
+            functionToDo(ReturnList, directory, files)
+        return self._manipulateList(ReturnList, keepAbs, makePath)
 
     def _manipulateList(self, List, keepAbs, makePath):
         """helper function for treating a result of listdir or glob

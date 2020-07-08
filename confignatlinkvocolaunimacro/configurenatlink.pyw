@@ -1296,6 +1296,7 @@ class MyFrame(wx.Frame):
         self.nb.AddPage(imageId=-1, page=self.cpanel, select=True,
               text='configure')
         self.infopanel.cpanel = self.cpanel
+        print("started configurenatlink, python version: %s"% sys.version)
 ## self.nb = wx.Notebook(name='notebook', parent=self, style=0)
 
 
