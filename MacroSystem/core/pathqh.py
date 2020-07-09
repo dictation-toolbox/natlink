@@ -965,8 +965,16 @@ c:\windows\speech
         return L
 
 
-    def walk(self, includeDirs=None, skipDirs=None,  includeFiles=None, skipFiles=None, makePath=1, keepAbs=0, topdown=True, onerror=None, followlinks=False):
+    def walk(self, *functionToDo, includeDirs=None, skipDirs=None,  includeFiles=None, skipFiles=None, makePath=1, keepAbs=0, topdown=True, onerror=None, followlinks=False):
         """return the complete walk
+        
+        Nearly obsolete, but if functionToDO is a valid function, this one is called for each file/dir combination
+                functionToDo is the old fashioned function with arg as list being filled in the process.
+                    assume arg is a list,
+                    functionToDo must use exactly 3 parameters,
+                    1 list "arg"
+                    2 dirname
+                    3 list of filenames
         
         A list of valid path instances, absolute path's (str), relative path's (str)
         is yielded, according to makePath and keepAbs variables.
@@ -991,6 +999,11 @@ c:\windows\speech
         *** see _acceptDirectoryWalk and _acceptFileWalk below for doctest examples ***
 
 
+## example of the "old fashioned" function to be called...
+>>> print(list(path("C:/Windows/Speech/Common").walk(WalkAllFiles)))
+[path('C:/Windows/Speech/Common/sapisvr.exe'), path('C:/Windows/Speech/Common/en-US/sapisvr.exe.mui')]
+
+
 >>> list(path("C:/Windows/Speech").walk(includeFiles="*.exe", makePath=0))
 ['vcmd.exe', 'Common/sapisvr.exe']
 
@@ -1011,6 +1024,14 @@ c:\windows\speech
         arg = []
         if not self.isdir():
             raise PathError("walk must start with folder, not with: %s"% self)
+        # if functionToDo:
+        #     arg = []
+        #     for directory, subdirs, files in os.walk(str(self)):
+        #         print("functionToDo: %s"% functionToDo)
+        #         functionToDo(arg, directory, files)
+        #     return arg
+        
+        
         for directory, subdirs, files in os.walk(str(self)):
             if _acceptDirectoryWalk(directory, includeDirs, skipDirs):
                 reducedFiles = [f for f in files if _acceptFileWalk(f, includeFiles, skipFiles)]
@@ -1957,6 +1978,48 @@ def _acceptFileWalk(File, includeFiles, skipFiles):
     # now pass the tests!
     return True
     
+
+def collectPsdFiles(arg, dir, files):
+    """collect only .psd files"""
+    ext = '.psd'
+    for f in files:
+        dirplusf = path(dir)/f
+        if dirplusf.isdir():
+            continue
+
+        if dirplusf.lower().endswith(ext):
+            # in case .PSD instead of .psd:
+            dirplusf.replaceExt(ext)
+            arg.append(dirplusf)
+
+def WalkAllFiles(arg, dir, files):
+    """touch all files in folder"""
+    dir = path(dir)
+    # touch(dir, files)
+    for f in files:
+        arg.append(dir/f)
+        
+        
+def touchAllFiles(arg, dir, files):
+    """touch all files in folder"""
+    dir = path(dir)
+    touch(dir, files)
+    for f in files:
+        arg.append(dir/f)
+
+def collectTifFiles(arg, dir, files):
+    """collect only .tif files"""
+    ext = '.tif'
+    for f in files:
+        dirplusf = path(dir)/f
+        if dirplusf.isdir():
+            continue
+
+        if dirplusf.lower().endswith(ext):
+            # in case .PSD instead of .psd:
+            dirplusf.replaceExt(ext)
+            arg.append(dirplusf)
+
 
 
 ## for sitegen, also used in Unimacro, folders grammar (for sites, QH specific) and virtualdrive mechanism
