@@ -1,9 +1,9 @@
 """
 implements the path class, based upon pathlib/path
 
-was before in utilsqh, but better do it here.
-testing inside qh for the moment
+was before in utilsqh, but better do it here, in Natlink/Macrosystem/core
 moving into the core directory of the python 3 branch
+
 """
 import pathlib
 import os
@@ -15,6 +15,7 @@ import re
 import copy
 import unicodedata
 import win32file
+import fnmatch
 # for extended environment variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
 
@@ -198,7 +199,7 @@ path('folder/subfolder/trunc.txt')
 
 ### construct from list:
 >>> str(path(['C:', 'projects']))
-'C:/projects'
+'C:/Projects'
 
 small cases:
 >>> workingdirectory = os.getcwd()
@@ -735,7 +736,7 @@ True
 >>> startpath.relpathto(testpath)
 'unittest'
 >>> testpath.relpathto(startpath)
-'C:/projects'
+'C:/Projects'
 >>> startpath.relpathto(u"F:/projects/unexisting")
 'F:/projects/unexisting'
 
@@ -751,8 +752,20 @@ True
 
     def normpath(self):
         """ return normalised path as string
+>>> print(path("c:\\Windows/system/../SPEECH/engines").normpath())
+C:\Windows\Speech\Engines
+
         """
         return os.path.normpath(str(self))
+
+    def normcase(self):
+        """ return normalised and normalised cased path as str
+
+>>> print(path("c:\\Windows/system/../SPEECH/").normcase())
+c:\windows\speech
+
+        """
+        return os.path.normcase(str(self))
 
 
     def remove(self):
@@ -931,7 +944,6 @@ True
         if not self.isdir():
             raise PathError("glob must start with folder, not with: %s"% self)
         L = glob.glob(str(self/pattern))
-        return self._manipulateList(L, keepAbs, makePath)
 
     def listdir(self):
         """give list relative to self, default unicodes, not path instances!
@@ -953,135 +965,91 @@ True
         return L
 
 
-    def walk(self, functionToDo, keepAbs=1, makePath=0, topdown=True, onerror=None, followlinks=False):
-        """return the complete walk, filtered by functionToDo
+    def walk(self, includeDirs=None, skipDirs=None,  includeFiles=None, skipFiles=None, makePath=1, keepAbs=0, topdown=True, onerror=None, followlinks=False):
+        """return the complete walk
         
-        only the directories with the files in each directory are traversed, per directory the functionToDo is called.
+        A list of valid path instances, absolute path's (str), relative path's (str)
+        is yielded, according to makePath and keepAbs variables.
+        
+        a complete path instance is the default (makePath == 1).
+        if makePath == 0, the default is a str giving the path relative to self.
+        
+        When you specify makePath=0, keepAbs=1, absobulte paths as str's are yielded.
 
-        functionToDo is the old fashioned function with arg as list being filled in the process.
+        *** Drop the previous "functionToDo" function. ***
 
-        assume arg is a list,
-        functionToDo must use exactly 3 parameters,
-        1 list "arg"
-        2 dirname
-        3 list of filenames
+        includeDirs, skipDirs, includeFiles, skipFiles can be a str or a sequence of str's.
+        
+        Each pattern is matched against the Dir part or File name, with the fnmatch function (same behaviour as the glob.glob function).
+        
+        So for example "*.txt" if different from "*". "*.*" is needed for matching all files.
+        
+        If all letters are lowercase, the comparisons are done caseInsensitive (Windows!).
+        But if capitals are used, case sensitive matching is done by fnmatch
+                
+        First includeDirs is checked, then skipDirs, then for each file includeFiles and then skipFiles.
+        *** see _acceptDirectoryWalk and _acceptFileWalk below for doctest examples ***
 
-        path(testdrive + "/projects").walk(testWalk, keepAbs=1, makePath=0)
 
-        optional parameters:
-        keepAbs: 1 (default) do nothing with the resulting paths
-                 0: strip off the prefix, being the calling instance
-        makePath 0 (default) do not to do this
-                 1: make the resulting items path instances
+>>> list(path("C:/Windows/Speech").walk(includeFiles="*.exe", makePath=0))
+['vcmd.exe', 'Common/sapisvr.exe']
 
-        and the optional parameters of os.walk, topdown, onerror and followlinks
+>>> list(path("C:/Windows/Speech").walk(includeFiles=["x*.dll", "*.exe"], includeDirs="Common"))
+[path('C:/Windows/Speech/Common/sapisvr.exe')]
 
-        setting up the files:
-# 
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> makeEmptyFolder(folderName/"afolder")
-# >>> makeEmptyFolder(folderName/"bfolder")
-# >>> touch(folderName, 'f.ini', 'ff.txt')
-# >>> touch(folderName/"afolder", 'aa.ini')
-# >>> touch(folderName/"bfolder", 'b.ini', 'bb.txt')
-# 
-# trying the first test walk:
-# 
-# >>> L = folderName.walk(testWalk)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['XXX/qhtemp', 'afolder', 'bfolder', 'f.ini', 'ff.txt', 'XXX/qhtemp/afolder', 'aa.ini', 'XXX/qhtemp/bfolder', 'b.ini', 'bb.txt']
-# >>> L = folderName.walk(testWalk, keepAbs=0)
-# Traceback (most recent call last):
-# PathError: path._manipulateList with keepAbs: 0, 7 items of the list do not have XXX/qhtemp as start
-# >>> L = folderName.walk(testWalk, keepAbs=1, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['XXX/qhtemp', 'afolder', 'bfolder', 'f.ini', 'ff.txt', 'XXX/qhtemp/afolder', 'aa.ini', 'XXX/qhtemp/bfolder', 'b.ini', 'bb.txt']
-# 
-# trying the second test walk:
-# 
-# >>> L = folderName.walk(testWalk2, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['XXX/qhtemp/afolder', 'XXX/qhtemp/bfolder', 'XXX/qhtemp/f.ini', 'XXX/qhtemp/ff.txt', 'XXX/qhtemp/afolder/aa.ini', 'XXX/qhtemp/bfolder/b.ini', 'XXX/qhtemp/bfolder/bb.txt']
-# >>> L = folderName.walk(testWalk2, keepAbs=0, makePath=1)
-# 
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['afolder', 'bfolder', 'f.ini', 'ff.txt', 'afolder/aa.ini', 'bfolder/b.ini', 'bfolder/bb.txt']
-# 
-# third test, skip folders, note the list is path instances now,
-# converted back to strings or not by the parameter makePath:
-# 
-# >>> L = folderName.walk(walkOnlyFiles, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['XXX/qhtemp/f.ini', 'XXX/qhtemp/ff.txt', 'XXX/qhtemp/afolder/aa.ini', 'XXX/qhtemp/bfolder/b.ini', 'XXX/qhtemp/bfolder/bb.txt']
-# >>> folderName.walk(walkOnlyFiles, keepAbs=0, makePath=1)
-# ['f.ini', 'ff.txt', 'afolder/aa.ini', 'bfolder/b.ini', 'bfolder/bb.txt']
-# 
+        ====
+        Recaoitulate, the optional parameters:
+        includeDirs, skipDirs, includeFiles, skipFiles: see above
+        
+        makePath, keepAbs, see above.
+        
+        topdown, onerror and followlinks, the optional parameters of os.walk.
+      
+        See testing in unittestPath.py and two examples above...
 
         """
         arg = []
         if not self.isdir():
             raise PathError("walk must start with folder, not with: %s"% self)
-        List = os.walk(str(self))
-        ReturnList = []
-        for directory, subdirs, files in List:
-            functionToDo(ReturnList, directory, files)
-        return self._manipulateList(ReturnList, keepAbs, makePath)
+        for directory, subdirs, files in os.walk(str(self)):
+            if _acceptDirectoryWalk(directory, includeDirs, skipDirs):
+                reducedFiles = [f for f in files if _acceptFileWalk(f, includeFiles, skipFiles)]
+                if reducedFiles:
+                    if makePath:
+                        directory = path(directory)
+                        FilesListed = [directory/f for f in reducedFiles]
+                    else:
+                        FilesListed = [os.path.normpath(os.path.join(directory, f)) for f in reducedFiles]
+                        FilesListed = [item.replace("\\", "/") for item in FilesListed]
+                        if not keepAbs:
+                            lenOrg = len(self)
+                            strOrg = str(self)
+                            FilesListed = [self._makePathRelative(item) for item in FilesListed]
+                    for item in FilesListed:
+                        yield item
 
-    def _manipulateList(self, List, keepAbs, makePath):
-        """helper function for treating a result of listdir or glob
-# needs testing!
-#
-#
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> touch(folderName, 'a.ini', 'b.txt')
-# >>> L = [folderName/'a.ini', folderName/'b.txt']
-# >>> F = folderName._manipulateList(L, keepAbs=1, makePath=0)
-# >>> [f.replace(testdrive, 'XXX') for f in F]
-# ['XXX/qhtemp/a.ini', 'XXX/qhtemp/b.txt']
-# >>> type(F[0])
-# <type 'unicode'>
-# >>> F = folderName._manipulateList(L, keepAbs=1, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in F]
-# ['XXX/qhtemp/a.ini', 'XXX/qhtemp/b.txt']
-# 
-# >>> type(F[0])
-# <class 'utilsqh.path'>
-# >>> F = folderName._manipulateList(L, keepAbs=0, makePath=0)
-# >>> F
-# ['a.ini', 'b.txt']
-# >>> type(F[0])
-# <type 'unicode'>
-# >>> F = folderName._manipulateList(L, keepAbs=0, makePath=1)
-# >>> F
-# ['a.ini', 'b.txt']
-# >>> type(F[0])
-# <class 'utilsqh.path'>
-# >>> L = [folderName/'a.ini', 'b.txt']
-# >>> F = folderName._manipulateList(L, keepAbs=1, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in F]
-# ['XXX/qhtemp/a.ini', 'b.txt']
+    def _makePathRelative(self, item):
+        """helper function returning the path relative to self (the originating path)
+        tested, in unittestPath.py
+>>> path("C:/System/")._makePathRelative("C:/System/Control")
+'Control'
 
+Never needed, hopefully:
+>>> path("C:/System/")._makePathRelative("C:/OtherSystem/Control")
+'C:/OtherSystem/Control'
+        
         """
-        if not List:
-            return List
-        L = List[:]
-        if not keepAbs:
+        if not item:
+            return ""
             # make relative:
-            length = len(self)
-            unicodePath = str(self)
-            if not self.endswith("/"):
-                length += 1
-            L = [k[length:] for k in L if k.find(unicodePath) == 0]
-            if len(L) !=len(List):
-                raise PathError("path._manipulateList with keepAbs: %s, %s items of the list do not have %s as start"%
-                                (keepAbs, len(List)-len(L), self))
-
-        if makePath:
-            return list(map(path, L))
+        length = len(self)
+        strPath = str(self)
+        if not self.endswith("/"):
+            length += 1
+        if item.startswith(strPath):
+            return item[length:]
         else:
-            return list(map(str, list(map(path, L))))
+            return item
 
     def internetformat(self):
         """convert to file:/// and fill with %20 etc
@@ -1838,6 +1806,159 @@ def translate_non_alphanumerics(to_translate, translate_to='_'):
     translate_table[8364] = translate_to
     return to_translate.translate(translate_table)
 
+
+def _acceptDirectoryWalk(Dir, includeDirs, skipDirs):
+    """function for path.walk, to accept or reject a directory
+    
+    Dir is path or str instance of a directory path.
+    
+    includeDirs and skipDirs are None or pattern(s) which should or
+    should not match Dir. If no slashes are in pattern, *\ and \* are added,
+    so normally only one subdirectory on the path is tested...
+    
+    If no uppercase letters are used in a pat, do case insensitive testing.
+    
+    They are str of a sequence of str's (or False, if no decision has to be taken)
+    
+    returns True if Dir is accepted, None otherwise
+
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "Common", None)
+True
+
+Next six examples all return True (Note all forward slashes are changed into backslashes for the fnmatch call...)
+
+>>> _acceptDirectoryWalk(path("C:/Windows/System/Common"), "System", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "/System/", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "*\\System\\*", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "*/System/*", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "/system/", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "*s*", None)
+True
+
+Next one fails:
+>>> _acceptDirectoryWalk(path("C:/Windows/System/Common"), ["*z*", "*ysta*"], None)
+
+Now the skipDirs, first one hits, so the directory is rejected:
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", None, "system")
+
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", None, ["syste", "/abacadabra/"])
+True
+
+
+    """
+    if isinstance(Dir, path):
+        Dir = str(Dir)
+    if includeDirs:
+        if type(includeDirs) == str:
+            includeDirs = [includeDirs]
+        for pat in includeDirs:
+            if pat == pat.lower():
+                DirNorm = os.path.normcase(Dir)
+            else:
+                DirNorm = os.path.normpath(Dir)
+            
+            if not DirNorm.endswith("\\"):
+                DirNorm += "\\"
+            
+            if pat.find("/") >= 0:
+                pat = pat.replace("/", "\\")
+            if pat.find("\\") == -1:
+                pat = "*\\%s\\*"% pat
+            elif pat.startswith("\\") and pat.endswith("\\"):
+                pat = "*" + pat + "*"
+            if fnmatch.fnmatch(DirNorm, pat):
+                break
+        else:
+            return
+    if skipDirs:    
+        if type(skipDirs) == str:
+            skipDirs = [skipDirs]
+        for pat in skipDirs:
+            if pat == pat.lower():
+                DirNorm = os.path.normcase(Dir)
+            else:
+                DirNorm = os.path.normpath(Dir)
+            if not DirNorm.endswith("\\"):
+                DirNorm += "\\"
+                
+            if pat.find("/") >= 0:
+                pat = pat.replace("/", "\\")
+            if pat.find("\\") == -1:
+                pat = "*\\%s\\*"% pat
+            elif pat.startswith("\\") and pat.endswith("\\"):
+                pat = "*" + pat + "*"
+            if fnmatch.fnmatch(DirNorm, pat):
+                # pattern matches, reject the Directory
+                return
+    # all tests pass:
+    return True
+    
+
+# 
+# def _selectFilesWalk(inputList, includeFiles, skipFiles):
+#     """function for path.walk, to return a list of accepted files
+#     
+#     returns True is Dir is accepted
+# >>> _selectFilesWalk(('aap', 'noot', 'mies'), None, None)
+# ['aap', 'noot', 'mies']
+# >>> _selectFilesWalk(['aap', 'noot', 'mies'], "a*", None)
+# ['aap']
+# >>> _selectFilesWalk(('aap', 'noot', 'mies'), None, "*s")
+# ['aap', 'noot']
+# 
+# When includeFiles is given, skipFiles is ignored
+# 
+# >>> _selectFilesWalk(('aap', 'arts', 'noot', 'mies'), "a*", "*p")
+# ['arts']
+# 
+# Now with extensions:
+# 
+# >>> _selectFilesWalk(('aap.py', 'aap.pyc', 'aap', 'noot.py', 'noot.pyc', 'noot'), "a*", "*.pyc")
+# ['aap.py', 'aap']
+# 
+# Note a*.* needs an extension!!
+# 
+# >>> _selectFilesWalk(('aap.py', 'aap.pyc', 'aap', 'noot.py', 'noot.pyc', 'noot'), "a*.*", "*.pyc")
+# ['aap.py']
+# 
+# >>> _selectFilesWalk(('aap.py', 'aap.pyc', 'aap', 'noot.py', 'noot.pyc', 'noot'), ["a*.*", "*t.*", "*p"], ["*.pyc", "*.log", "*.ini"])
+# ['aap.py', 'aap', 'noot.py']
+# 
+#     """
+#     return [item for item in inputList if _acceptFileWalk(item, includeFiles, skipFiles)]
+# 
+def _acceptFileWalk(File, includeFiles, skipFiles):
+    """helper function for _selectFilesWalk (of path.walk), to return if a name matches
+    
+    returns True is File is accepted
+
+    """
+    # test for includeFiles, return is test fails
+    if includeFiles:
+        if type(includeFiles) == str:
+            includeFiles = [includeFiles]
+        for pat in includeFiles:
+            if fnmatch.fnmatch(File, pat):
+                break
+        else:
+            return
+    # test for skipFiles, return if test passes
+    if skipFiles:    
+        if type(skipFiles) == str:
+            skipFiles = [skipFiles]
+        for pat in skipFiles:
+            if fnmatch.fnmatch(File, pat):
+                return
+    # now pass the tests!
+    return True
+    
+
+
 ## for sitegen, also used in Unimacro, folders grammar (for sites, QH specific) and virtualdrive mechanism
 ## test! TODOQH
 def getValidPath(variablePathDefinition):
@@ -1848,8 +1969,6 @@ def getValidPath(variablePathDefinition):
     for p in loop_through_alternative_paths(variablePathDefinition):
         if os.path.exists(p):
             return path(p)
-
-
 
 def walkZfiles(directory):
     for Dir, subdirList, filesList in os.walk(directory):
