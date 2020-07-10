@@ -913,55 +913,56 @@ c:\windows\speech
         """
         return path(os.getcwd())
 
-    def glob(self, pattern="*", keepAbs=1, makePath=1):
+    def glob(self, pattern="*", makePath=1, keepAbs=0):
         """glob a path, default = "*"
 
         default options: give absolute paths as path instances
-        Use listdir if you want all files relative to the path
+        See also walk...
+        
+        You can also use listdir if you want all files relative to the path,
+        but glob without a pattern (or "*") will give the same.
+        
+>>> path("C:/Windows/Speech/Common/").glob("*")
+[path('C:/Windows/Speech/Common/en-US'), path('C:/Windows/Speech/Common/sapisvr.exe')]
 
-# later test TODOQH
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> touch(folderName, 'a.ini', 'b.txt')
-# >>> g = folderName.glob()
-# >>> [f.replace(testdrive, 'XXX') for f in g]
-# ['XXX/qhtemp/a.ini', 'XXX/qhtemp/b.txt']
-# >>> type(g[0])
-# <class 'utilsqh.path'>
-# >>> g = folderName.glob('*.txt', keepAbs=0)
-# >>> g
-# ['b.txt']
-# >>> type(g[0])
-# <class 'utilsqh.path'>
-# >>> g = folderName.glob('*.txt', keepAbs=0, makePath=0)
-# >>> g
-# ['b.txt']
-# >>> type(g[0])
-# <type 'unicode'>
+>>> path("C:/Windows/Speech").glob("*.dll", makePath=0)
+['spchtel.dll', 'speech.dll', 'vcmshl.dll', 'Vdict.dll', 'VText.dll', 'WrapSAPI.dll', 'Xcommand.dll', 'Xlisten.dll', 'XTel.Dll', 'Xvoice.dll']
 
+>>> path("C:/Windows/Speech").glob("*.dll", makePath=0)
+['spchtel.dll', 'speech.dll', 'vcmshl.dll', 'Vdict.dll', 'VText.dll', 'WrapSAPI.dll', 'Xcommand.dll', 'Xlisten.dll', 'XTel.Dll', 'Xvoice.dll']
+
+## note glob is case insensitive (see walk for case sensitive patterns)
+>>> path("C:/Windows/Speech").glob("V*.dll", makePath=0, keepAbs=1)
+['C:/Windows/Speech/vcmshl.dll', 'C:/Windows/Speech/Vdict.dll', 'C:/Windows/Speech/VText.dll']
 
         """
         if not self.isdir():
             raise PathError("glob must start with folder, not with: %s"% self)
-        L = glob.glob(str(self/pattern))
+        globpat = "%s/%s"% (self, pattern)
+        L = glob.glob(globpat)
+        if makePath:
+            return [path(f) for f in L]
+        else:
+            if keepAbs:
+                return [f.replace("\\", "/") for f in L]
+            else:
+                return [self._makePathRelative(item) for item in L]
 
     def listdir(self):
-        """give list relative to self, default unicodes, not path instances!
-# later test (TODOQH)
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> touch(folderName, 'a.ini', 'b.txt')
-# >>> L = path(folderName).listdir()
-# >>> L
-# ['a.ini', 'b.txt']
-# >>> type(L[0])
-# <type 'unicode'>
+        """give list of directory relative to self
+        
+        listdir only gives a list of relative files and directories.
+        
+        If you want makePath or keepAbs, use glob without pattern (or "*")
+        
+        
+>>> path("C:/Windows/Speech/Common/").listdir()
+['en-US', 'sapisvr.exe']
 
         """
         if not self.isdir():
             raise PathError("listdir only works on folders, not with: %s"% self)
         L = os.listdir(self)
-        # note keepAbs is a formality here, listdir gives relative files only:
         return L
 
 
