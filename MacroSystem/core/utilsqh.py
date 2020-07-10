@@ -100,17 +100,17 @@ else:
 # fixwordquotes = translator(b'\x91\x92\x93\x94\x95\x96', b"''\"\"  ")
 
 ###removenoncharacters = translator('
-def fixinivarskey(s):
-    """remove all non letters to underscore, remove leading underscore
-    remove double spaces
-    """
-    if isinstance(s, str):
-        s = str(s)
-    t = translate_non_alphanumerics(s)
-    t = t.strip("_ ")
-    while '  ' in t:
-        t = t.replace('  ', ' ')
-    return t
+# def fixinivarskey(s):
+#     """remove all non letters to underscore, remove leading underscore
+#     remove double spaces
+#     """
+#     if isinstance(s, str):
+#         s = str(s)
+#     t = translate_non_alphanumerics(s)
+#     t = t.strip("_ ")
+#     while '  ' in t:
+#         t = t.replace('  ', ' ')
+#     return t
     
 def unifyaccentedchars(to_translate):
     """change acuted characters with combining code to single characters

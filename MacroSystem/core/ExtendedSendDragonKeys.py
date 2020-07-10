@@ -26,6 +26,7 @@ debug = False
 #
 def senddragonkeys_to_events(input, ignore_unknown_names=True):
 
+    if debug: print("senddragonkeys_to_events, input: %s"% input)
     chords = parse_into_chords(input)
 
     events = []
@@ -397,7 +398,7 @@ def get_mouse_button(button_name):
                     button = "left"
         return button
     except:
-        raise KeyError("unknown mouse button: " + key)
+        raise KeyError("unknown mouse button: ", button_name)
 
 
 ## 
@@ -417,7 +418,7 @@ def single(key, releasing):
         try:
             return [mouse_button_event(get_mouse_button(lower_key), releasing)]
         except:
-            raise KeyError("unknown key/button: " + key)
+            raise KeyError("unknown key/button: " + lower_key)
 
 
 
