@@ -307,8 +307,8 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
             if k in D and D[k] != v:
                 print('warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v))
             D[k] = v
-    if fillRecentEnv:
-        recentEnv = copy.copy(D)
+    if type(fillRecentEnv) == dict:
+        recentEnv.update(D)
     return D
 
 #def setInRecentEnv(key, value):

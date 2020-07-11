@@ -2,7 +2,7 @@
 implements the path class, based upon pathlib/path
 
 was before in utilsqh, but better do it here, in Natlink/Macrosystem/core
-moving into the core directory of the python 3 branch
+moving into the core directory natlink (with python3)
 
 """
 import pathlib
@@ -17,7 +17,13 @@ import unicodedata
 import win32file
 import fnmatch
 # for extended environment variables:
-reEnv = re.compile('(%[A-Z_]+%)', re.I)
+from win32com.shell import shell, shellcon
+
+
+## environment variables:
+reEnv = re.compile('(%([a-z_]+)%)', re.I)
+
+recentEnv = {}   # to be updated at end of module import
 
 ## functions for generating alternative paths in virtual drives
 ## uses reAltenativePaths, defined in the top of this module
@@ -372,6 +378,33 @@ True
             else:
                 expanded.prefix = expanded.resolvedprefix = ""
             return expanded
+        elif reEnv.match(input):
+            if not recentEnv:
+                recentEnv.update(getAllFolderEnvironmentVariables())
+                if not recentEnv:
+                    print("path %s, cannot expand input, no recentEnv dict"% recentEnv)
+            m = reEnv.match(input)
+            envVar = m.group(2)   # a riddle to me!!
+            envVarComplete = m.group(1)  # with %xxxx%
+            lenEnvVarComplete = len(envVarComplete)
+            if envVar in recentEnv:
+                result = recentEnv[envVar]
+            else:
+                result = getFolderFromLibraryName(envVar)
+                if not result:
+                    print("Could not expand  %%%s%% in %s"% (envVar, input))
+                    return self
+            result = path(result)
+            rest = input[lenEnvVarComplete+1:]
+            expanded = result/rest
+            # expanded = path(expanded).normpath()
+            if str(expanded).startswith(str(result)):
+                expanded.prefix = envVarComplete
+                expanded.resolvedprefix = str(result)
+            else:
+                expanded.prefix = expanded.resolvedprefix = ""
+            return expanded
+                
         # all other cases:
         return self
 
@@ -2038,6 +2071,270 @@ def walkZfiles(directory):
             if f.startswith("Z") and f.endswith(".csv"):
                 yield os.path.join(Dir, f)
 
+## the %XXX% variables, to be kept in recentEnv:
+
+def getAllFolderEnvironmentVariables():
+    """return, as a dict, all the environ AND all CSLID variables that result into a folder
+    
+    Now also implemented:  Also include NATLINK, UNIMACRO, VOICECODE, DRAGONFLY, VOCOLAUSERDIR, UNIMACROUSERDIR
+    This is done by calling from natlinkstatus, see there and example in natlinkmain.
+
+    Optionally put them in recentEnv, if you specify fillRecentEnv to 1 (True)
+
+    """
+    D = {}
+
+    for k in dir(shellcon):
+        if k.startswith("CSIDL_"):
+            kStripped = k[6:]
+            try:
+                v = getExtendedEnv(kStripped, displayMessage=None)
+            except ValueError:
+                continue
+            if len(v) > 2 and os.path.isdir(v):
+                D[kStripped] = v
+            elif v == '.':
+                D[kStripped] = os.getcwd
+    # os.environ overrules CSIDL:
+    for k in os.environ:
+        v = os.environ[k]
+        if os.path.isdir(v):
+            v = os.path.normpath(v)
+            if k in D and D[k] != v:
+                print('warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v))
+            D[k] = v
+    return D
+
+def getExtendedEnv(var, envDict=None, displayMessage=1):
+    """get from environ or windows CSLID
+
+    HOME is environ['HOME'] or CSLID_PERSONAL
+    ~ is HOME
+
+    DROPBOX added via getDropboxFolder is this module (QH, December 1, 2018)
+
+    As envDict for recent results either a private (passed in) dict is taken, or
+    the global recentEnv.
+
+    This is merely for "caching results"
+
+    """
+    if envDict == None:
+        myEnvDict = recentEnv
+    else:
+        myEnvDict = envDict
+##    var = var.strip()
+    var = var.strip("% ")
+    var = var.upper()
+    
+    if var == "~":
+        var = 'HOME'
+
+    if var in myEnvDict:
+        return myEnvDict[var]
+
+    if var in os.environ:
+        myEnvDict[var] = os.environ[var]
+        return myEnvDict[var]
+
+    if var == 'DROPBOX':
+        result = getDropboxFolder()
+        if result:
+            return result
+        raise ValueError('getExtendedEnv, cannot find path for "DROPBOX"')
+
+    if var == 'NOTEPAD':
+        windowsDir = getExtendedEnv("WINDOWS")
+        notepadPath = os.path.join(windowsDir, 'notepad.exe')
+        if os.path.isfile(notepadPath):
+            return notepadPath
+        raise ValueError('getExtendedEnv, cannot find path for "NOTEPAD"')
+
+    # try to get from CSIDL system call:
+    if var == 'HOME':
+        var2 = 'PERSONAL'
+    else:
+        var2 = var
+        
+    try:
+        CSIDL_variable =  'CSIDL_%s'% var2
+        shellnumber = getattr(shellcon,CSIDL_variable, -1)
+    except:
+        print('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+        return ''
+    if shellnumber < 0:
+        # on some systems have SYSTEMROOT instead of SYSTEM:
+        if var == 'SYSTEM':
+            return getExtendedEnv('SYSTEMROOT', envDict=envDict)
+        return ''
+        # raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+    try:
+        result = shell.SHGetFolderPath (0, shellnumber, 0, 0)
+    except:
+        if displayMessage:
+            print('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+        return ''
+
+    
+    result = str(result)
+    result = os.path.normpath(result)
+    myEnvDict[var] = result
+    # on some systems apparently:
+    if var == 'SYSTEMROOT':
+
+        myEnvDict['SYSTEM'] = result
+    return result
+
+def expandEnvVariableAtStart(filepath, envDict=None): 
+    """try to substitute environment variable into a path name
+
+    """
+    filepath = filepath.strip()
+
+    if filepath.startswith('~'):
+        folderpart = getExtendedEnv('~', envDict)
+        filepart = filepath[1:]
+        filepart = filepart.strip('/\\ ')
+        return os.path.normpath(os.path.join(folderpart, filepart))
+    elif reEnv.match(filepath):
+        envVar = reEnv.match(filepath).group(1)
+        # get the envVar...
+        try:
+            folderpart = getExtendedEnv(envVar, envDict)
+        except ValueError:
+            print('invalid (extended) environment variable: %s'% envVar)
+        else:
+            # OK, found:
+            filepart = filepath[len(envVar)+1:]
+            filepart = filepart.strip('/\\ ')
+            return os.path.normpath(os.path.join(folderpart, filepart))
+    # no match
+    return filepath
+
+def substituteEnvVariableAtStart(filepath, envDict=None): 
+    """try to substitute back one of the (preused) environment variables back
+
+    into the start of a filename
+
+    if ~ (HOME) is D:\My documents,
+    the path "D:\My documents\folder\file.txt" should return "~\folder\file.txt"
+
+    pass in a dict of possible environment variables, which can be taken from recent calls, or
+    from  envDict = getAllFolderEnvironmentVariables().
+
+    Alternatively you can call getAllFolderEnvironmentVariables once, and use the recentEnv
+    of this module! getAllFolderEnvironmentVariables(fillRecentEnv)
+
+    If you do not pass such a dict, recentEnv is taken, but this recentEnv holds only what has been
+    asked for in the session, so no complete list!
+
+    """
+    if envDict == None:
+        envDict = recentEnv
+    Keys = list(envDict.keys())
+    # sort, longest result first, shortest keyname second:
+    decorated = [(-len(envDict[k]), len(k), k) for k in Keys]
+    decorated.sort()
+    Keys = [k for (dummy1,dummy2, k) in decorated]
+    for k in Keys:
+        val = envDict[k]
+        if filepath.lower().startswith(val.lower()):
+            if k in ("HOME", "PERSONAL"):
+                k = "~"
+            else:
+                k = "%" + k + "%"
+            filepart = filepath[len(val):]
+            filepart = filepart.strip('/\\ ')
+            return os.path.join(k, filepart)
+    # no hit, return original:
+    return filepath
+
+
+def getFolderFromLibraryName(fName):
+    """from windows library names extract the real folder
+    
+    the CabinetWClass and #32770 controls return "Documents", "Dropbox", "Desktop" etc.
+    try to resolve these throug the extended env variables.
+    """
+    if fName.startswith("Docum"):  # Documents in Dutch and English
+        return getExtendedEnv("PERSONAL")
+    if fName in ["Muziek", "Music"]:
+        return getExtendedEnv("MYMUSIC")
+    if fName in ["Pictures", "Afbeeldingen"]:
+        return getExtendedEnv("MYPICTURES")
+    if fName in ["Videos", "Video's"]:
+        return getExtendedEnv("MYVIDEO")
+    if fName in ['OneDrive']:
+        return getExtendedEnv("OneDrive")
+    if fName in ['Desktop', "Bureaublad"]:
+        return getExtendedEnv("DESKTOP")
+    if fName in ['Quick access', 'Snelle toegang']:
+        templatesfolder = getExtendedEnv('TEMPLATES')
+        if os.path.isdir(templatesfolder):
+            QuickAccess = os.path.normpath(os.path.join(templatesfolder, "..", "Libraries"))
+            if os.path.isdir(QuickAccess):
+                return QuickAccess
+    if fName == 'Dropbox':
+        return getDropboxFolder()
+    if fName in ['Download', 'Downloads']:
+        personal = getExtendedEnv('PERSONAL')
+        userDir = os.path.normpath(os.path.join(personal, '..'))
+        if os.path.isdir(userDir):
+            tryDir = os.path.normpath(os.path.join(userDir, fName))
+            if os.path.isdir(tryDir):
+                return tryDir
+    usersHome = os.path.normpath(os.path.join(r"C:\Users", fName))
+    if os.path.isdir(usersHome):
+        return usersHome
+    if fName in ["This PC", "Deze pc"]:
+        return "\\"
+    
+    print('cannot find folder for Library name: %s'% fName)
+
+def getDropboxFolder(containsFolder=None):
+    """get the dropbox folder, or the subfolder which is specified.
+    
+    Searching is done in all 'C:\\Users' folders, and in the root of "C:"
+    (See DirsToTry)
+    
+    raises IOError if more folders are found (should not happen, I think)
+    if containsFolder is not passed, the dropbox main folder is returned
+    if containsFolder is passed, this folder is returned if it is found in the dropbox folder
+    
+    otherwise None is returned.
+    """
+    results = []
+    root = 'C:\\Users'
+    dirsToTry = [ os.path.join(root, s) for s in os.listdir(root) if os.path.isdir(os.path.join(root,s)) ]
+    dirsToTry.append('C:\\')
+    for root in dirsToTry:
+        if not os.path.isdir(root):
+            continue
+        try:
+            subs = os.listdir(root)
+        except WindowsError:
+            continue
+        if 'Dropbox' in subs:
+            subAbs = os.path.join(root, 'Dropbox')
+            subsub = os.listdir(subAbs)
+            if not ('.dropbox' in subsub and os.path.isfile(os.path.join(subAbs,'.dropbox'))):
+                continue
+            elif containsFolder:
+                result = matchesStart(subsub, containsFolder, caseSensitive=False)
+                if result:
+                    results.append(os.path.join(subAbs,result))
+            else:
+                results.append(subAbs)
+    if not results:
+        return
+    if len(results) > 1:
+        raise IOError('getDropboxFolder, more dropbox folders found: %s')
+    return results[0]                 
+
+
+# recentEnv.update(getAllFolderEnvironmentVariables())
+
+
 def _test():
     import doctest
     doctest.testmod()
@@ -2046,6 +2343,7 @@ if __name__ == "__main__":
     # print("is_dir: %s"% p.is_dir())
     # print("isdir: %s"% p.isdir())
     # envvars = EnvVariable()
-    # getAllFolderEnvironmentVariables()
     # printAllEnvVariables()
+    p = path("%COMMON_APPDATA%/Etta en Quintijn")
+    p = path("%DROPBOX%/Etta en Quintijn")
     _test()
