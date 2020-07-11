@@ -1050,6 +1050,37 @@ c:\windows\speech
                     for item in FilesListed:
                         yield item
 
+    def removeEmptyFolders(self, debug=0):
+        """a special walk, which iterates through empty folders
+
+The calling folder remains, even if all subfolders are removed
+
+See unittestPath for more testing and examples.
+        """
+        round = 0
+        while True:
+            round += 1
+            hadChange = False
+            if debug > 1: print("removeEmptyFolders, round %s"% round)
+            # print("removeEmptyFolders, new round;;;;")
+            for directory, dirs, files in os.walk(self, topdown=False):
+                if self == directory:
+                    continue
+                # print("removeEmptyFolders: %s"% self._makePathRelative(directory))
+                if dirs or files:
+                    continue
+                # now empty directory, remove:
+                hadChange = True
+                if debug: print("removeEmptyFolders: remove: %s"% self._makePathRelative(directory))
+                path(directory).rmdir()
+            if not hadChange:
+                if debug > 1: print("removeEmptyFolders, no change in round %s"% round)
+                break
+
+        if debug > 1: print("removeEmptyFolders: ready in %s rounds"% round)
+        pass
+    
+    
     def _makePathRelative(self, item):
         """helper function returning the path relative to self (the originating path)
         tested, in unittestPath.py
@@ -1830,9 +1861,11 @@ def translate_non_alphanumerics(to_translate, translate_to='_'):
 
 
 def _acceptDirectoryWalk(Dir, includeDirs, skipDirs):
-    """function for path.walk, to accept or reject a directory
-    
+    """private function for path.walk, to accept or reject a directory
+
     Dir is path or str instance of a directory path.
+    
+    See examples that show you how to specify a wanted directory:
     
     includeDirs and skipDirs are None or pattern(s) which should or
     should not match Dir. If no slashes are in pattern, *\ and \* are added,
@@ -1865,13 +1898,12 @@ True
 Next one fails:
 >>> _acceptDirectoryWalk(path("C:/Windows/System/Common"), ["*z*", "*ysta*"], None)
 
-Now the skipDirs, first one hits, so the directory is rejected:
+Now the skipDirs, the "skipDirs" variable hits, so the directory is rejected:
 >>> _acceptDirectoryWalk("C:/Windows/System/Common", None, "system")
 
+These two patterns of "skipDirs" do not hit, so the directory is accepted:
 >>> _acceptDirectoryWalk("C:/Windows/System/Common", None, ["syste", "/abacadabra/"])
 True
-
-
     """
     if isinstance(Dir, path):
         Dir = str(Dir)
@@ -1919,41 +1951,7 @@ True
                 return
     # all tests pass:
     return True
-    
-
-# 
-# def _selectFilesWalk(inputList, includeFiles, skipFiles):
-#     """function for path.walk, to return a list of accepted files
-#     
-#     returns True is Dir is accepted
-# >>> _selectFilesWalk(('aap', 'noot', 'mies'), None, None)
-# ['aap', 'noot', 'mies']
-# >>> _selectFilesWalk(['aap', 'noot', 'mies'], "a*", None)
-# ['aap']
-# >>> _selectFilesWalk(('aap', 'noot', 'mies'), None, "*s")
-# ['aap', 'noot']
-# 
-# When includeFiles is given, skipFiles is ignored
-# 
-# >>> _selectFilesWalk(('aap', 'arts', 'noot', 'mies'), "a*", "*p")
-# ['arts']
-# 
-# Now with extensions:
-# 
-# >>> _selectFilesWalk(('aap.py', 'aap.pyc', 'aap', 'noot.py', 'noot.pyc', 'noot'), "a*", "*.pyc")
-# ['aap.py', 'aap']
-# 
-# Note a*.* needs an extension!!
-# 
-# >>> _selectFilesWalk(('aap.py', 'aap.pyc', 'aap', 'noot.py', 'noot.pyc', 'noot'), "a*.*", "*.pyc")
-# ['aap.py']
-# 
-# >>> _selectFilesWalk(('aap.py', 'aap.pyc', 'aap', 'noot.py', 'noot.pyc', 'noot'), ["a*.*", "*t.*", "*p"], ["*.pyc", "*.log", "*.ini"])
-# ['aap.py', 'aap', 'noot.py']
-# 
-#     """
-#     return [item for item in inputList if _acceptFileWalk(item, includeFiles, skipFiles)]
-# 
+ 
 def _acceptFileWalk(File, includeFiles, skipFiles):
     """helper function for _selectFilesWalk (of path.walk), to return if a name matches
     
