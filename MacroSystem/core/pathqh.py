@@ -379,6 +379,8 @@ True
                 expanded.prefix = expanded.resolvedprefix = ""
             return expanded
         elif reEnv.match(input):
+            ## here use the extended trick of the folder environment variable,
+            ## enhanced with extended Library Folders (also Dropbox)
             if not recentEnv:
                 recentEnv.update(getAllFolderEnvironmentVariables())
                 if not recentEnv:
