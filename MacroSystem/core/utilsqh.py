@@ -740,6 +740,18 @@ False
     if not ext: return
     return ext.lower() in [".jpg", ".jpeg", ".png"]
 
+def fileHasJpgExtension(fileName):
+    """return True if fileName has extension .jpg, .jpeg
+>>> fileHasJpgExtension(u"a.JPG")
+True
+>>> fileHasJpgExtension(u"yyy.PNG")
+False
+
+    """
+    ext = getExt(fileName)
+    if not ext: return
+    return ext.lower() in [".jpg", ".jpeg"]
+
 def removeFromStart(text, toRemove, ignoreCase=None):
     """returns the text with "toRemove" stripped from the start if it matches
 >>> removeFromStart('abcd', 'a')
