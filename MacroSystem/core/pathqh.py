@@ -1245,7 +1245,7 @@ path('C:/_-3d/_-4a.txt')
 
         used in gui inputoutput and kontrol (minimal)
 >>> path("C:/Natlink/a/b.txt").encodePath()
-'b.txt (C:/Natlink/a)'
+'b.txt (C:/natlink/a)'
 
 ## doubt if this is nice: (TODOQH)
 # >>> path("b.txt").encodePath()
@@ -2258,27 +2258,28 @@ def getFolderFromLibraryName(fName):
     the CabinetWClass and #32770 controls return "Documents", "Dropbox", "Desktop" etc.
     try to resolve these throug the extended env variables.
     """
-    if fName.startswith("Docum"):  # Documents in Dutch and English
+    fName = fName.lower()
+    if fName.startswith("docum"):  # Documents in Dutch and English
         return getExtendedEnv("PERSONAL")
-    if fName in ["Muziek", "Music"]:
+    if fName in ["muziek", "music"]:
         return getExtendedEnv("MYMUSIC")
-    if fName in ["Pictures", "Afbeeldingen"]:
+    if fName in ["pictures", "afbeeldingen"]:
         return getExtendedEnv("MYPICTURES")
-    if fName in ["Videos", "Video's"]:
+    if fName in ["videos", "video's"]:
         return getExtendedEnv("MYVIDEO")
-    if fName in ['OneDrive']:
+    if fName in ['onedrive']:
         return getExtendedEnv("OneDrive")
-    if fName in ['Desktop', "Bureaublad"]:
+    if fName in ['desktop', "bureaublad"]:
         return getExtendedEnv("DESKTOP")
-    if fName in ['Quick access', 'Snelle toegang']:
+    if fName in ['quick access', 'snelle toegang']:
         templatesfolder = getExtendedEnv('TEMPLATES')
         if os.path.isdir(templatesfolder):
             QuickAccess = os.path.normpath(os.path.join(templatesfolder, "..", "Libraries"))
             if os.path.isdir(QuickAccess):
                 return QuickAccess
-    if fName == 'Dropbox':
+    if fName == 'dropbox':
         return getDropboxFolder()
-    if fName in ['Download', 'Downloads']:
+    if fName in ['download', 'downloads']:
         personal = getExtendedEnv('PERSONAL')
         userDir = os.path.normpath(os.path.join(personal, '..'))
         if os.path.isdir(userDir):
@@ -2288,7 +2289,7 @@ def getFolderFromLibraryName(fName):
     usersHome = os.path.normpath(os.path.join(r"C:\Users", fName))
     if os.path.isdir(usersHome):
         return usersHome
-    if fName in ["This PC", "Deze pc"]:
+    if fName in ["this pc", "deze pc"]:
         return "\\"
     
     print('cannot find folder for Library name: %s'% fName)
