@@ -1140,6 +1140,11 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
 
     sys.stderr.write('\n'.join(L))
     sys.stderr.write(callback)
+    if filename:
+        print("skip writing to file %s"% filename)
+        # with open(filename, 'w') as fout:
+        #     fout.write("\n".join(L))
+        #     print("written traceback in %s"% filename)    
     #print('result specialsDict: %s'% specialsDict')
     return callback, specialsDict
 
