@@ -194,6 +194,7 @@ import pywintypes
 import time
 import types
 import inivars
+from pathqh import path   
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -346,7 +347,7 @@ class NatlinkStatus:
         #         if not skipSpecialWarning:
         #             print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
         self.correctIniSettings() # change to newer conventions
-
+        
         ## DNSInstallDir:
         try:
             result = self.getDNSInstallDir()
@@ -828,32 +829,40 @@ Please try to correct this by running the Natlink Config Program (with administr
             knownDNSVersion = None
 
         # first try in allusersprofile/'application data'
-        allusersprofile = natlinkcorefunctions.getExtendedEnv('ALLUSERSPROFILE')
-        trunkPaths  = [allusersprofile, os.path.join(os.environ['ALLUSERSPROFILE'], 'Application Data') ]
-        report = []
+        # up to DNS15.3: C:\ProgramData\Nuance\NaturallySpeaking15\Users
+        # after DNS15.5:   %LOCALAPPDATA%s\Nuance\NS15\Users 
         triedPaths = []
-        for dnsdir in DNSPaths:
-            if knownDNSVersion:
-                if dnsdir.find(knownDNSVersion) == -1:
-                    continue
-            triedPaths.append(dnsdir)
+        alluserprofileProgramData = path('%ALLUSERSPROFILE%')
+        allusersprofileAppData = path('%LOCALAPPDATA%')
+        DNSVersion = self.getDNSVersion()
+        if allusersprofileAppData.isdir():
+            usersDir = allusersprofileAppData/('Nuance/NS%s/Users'%DNSVersion)
+            if usersDir.isdir():
+                DNSIniDir = usersDir.normpath()
+                return DNSIniDir
+            triedPaths.append(usersDir.normpath())
+        else:
+            triedPaths.append(allusersprofileAppData.normpath())
+
+        if alluserprofileProgramData.isdir():
+            usersDir = alluserprofileProgramData/('Nuance/NaturallySpeaking%s/Users'% DNSVersion)
+            if usersDir.isdir():
+                DNSIniDir = usersDir.normpath()
+                return DNSIniDir
+            triedPaths.append(usersDir.normpath())
+        else:
+            triedPaths.append(alluserprofileProgramData.normpath())
+        
         if not triedPaths:
+            report = []
             if reportDNSIniDirErrors:
                 report.append('DNSIniDir not found, did not find paths to try from for version: %s'% self.getDNSVersion())
                 report.append('Please report to q.hoogenboom@antenna.nl')
 
-        for trunk in trunkPaths:
-            for dnsdir in triedPaths:
-                cand = os.path.join(trunk, dnsdir)
-                if os.path.isdir(cand):
-                    nssystem = os.path.join(cand, self.NSSystemIni)
-                    nsapps = os.path.join(cand, self.NSAppsIni)
-                    if os.path.isfile(nssystem) and os.path.isfile(nsapps):
-                        return os.path.normpath(cand)
         if reportDNSIniDirErrors:
+            report = []
             reportDNSIniDirErrors = False
-            report.append('DNSIniDir not found, tried in ProgramData directories: %s'% repr(trunkPaths))
-            report.append('Tried in DNSPaths: %s'% triedPaths)
+            report.append('DNSIniDir not found, tried in directories: %s'% repr(triedPaths))
             report.append('no valid DNS INI files Dir found, please provide one in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)')
             report.append('Note: The path must end with "NaturallySpeaking%s"'% self.getDNSVersion())
             print('Errors in getDNSIniDir:')
@@ -984,17 +993,22 @@ Please try to correct this by running the Natlink Config Program (with administr
                 else:
                     print('invalid DNSInstallDir: %s, but proceed...'% P)
                     return ''
-        pf = natlinkcorefunctions.getExtendedEnv('PROGRAMFILES')
-        if not os.path.isdir(pf):
+                
+        ## get the program files (x86) directory via extended Environment variables,
+        ## now in the path class. Note %PROGRAMFILES(X86)% does not work, because
+        ## only [a-z0-9_] is accepted, case independent.
+        pf = path('%PROGRAM_FILESX86%')
+        if not pf.isdir():
             raise IOError("no valid folder for program files: %s"% pf)
         for dnsdir in DNSPaths:
-            cand = os.path.join(pf, dnsdir)
+            cand = pf/dnsdir
             # print('cand: %s'% cand)
-            if os.path.isdir(cand):
-                programfolder = os.path.join(cand, 'Program')
-                if os.path.isdir(programfolder):
+            if cand.isdir():
+                programfolder = cand/'Program'
+                if programfolder.isdir():
                     # print('succes!: %s'% programfolder)
-                    return os.path.normpath(cand)
+                    # return a str:
+                    return cand.normpath()
         if not self.skipSpecialWarning:
             print('-'*60)
             print('No valid DNSInstallDir is found in the default settings of Natlink')
@@ -1764,7 +1778,7 @@ if __name__ == "__main__":
 
     # exapmles, for more tests in ...
     print('\n====\nexamples of expanding ~ and %...% variables:')
-    short = "~/Quintijn"
+    short = path("~/Quintijn")
     AddExtendedEnvVariables()
     addedListNatlinkVariables = AddNatlinkEnvironmentVariables()
 

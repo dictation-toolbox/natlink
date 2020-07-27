@@ -21,7 +21,7 @@ from win32com.shell import shell, shellcon
 
 
 ## environment variables:
-reEnv = re.compile('(%([a-z_]+)%)', re.I)
+reEnv = re.compile('(%([a-z0-9_]+)%)', re.I)
 
 recentEnv = {}   # to be updated at end of module import
 

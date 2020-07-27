@@ -1131,7 +1131,7 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
     if pagename:
         push('page: %s'% pagename)
         callback.append('page: %s'% pagename)
-    push('\ntype: %s, value: %s'% (sys.exc_info()[0], sys.exc_info()[1]))
+    push('\ntype: %s, value: %s\n'% (sys.exc_info()[0], sys.exc_info()[1]))
     callback.append('error: %s'%sys.exc_info()[1])
 
     print('\nerror occurred:')

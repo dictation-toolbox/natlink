@@ -85,9 +85,7 @@ import copy
 import types
 import struct
 import time
-#from natlink import *
 import natlink
-#from gramparser import *
 import gramparser
 import natlinkstatus
 import utilsqh
