@@ -836,7 +836,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         allusersprofileAppData = path('%LOCALAPPDATA%')
         DNSVersion = self.getDNSVersion()
         if allusersprofileAppData.isdir():
-            usersDir = allusersprofileAppData/('Nuance/NS%s/Users'%DNSVersion)
+            usersDir = allusersprofileAppData/('Nuance/NS%s'%DNSVersion)
             if usersDir.isdir():
                 DNSIniDir = usersDir.normpath()
                 return DNSIniDir
@@ -845,7 +845,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             triedPaths.append(allusersprofileAppData.normpath())
 
         if alluserprofileProgramData.isdir():
-            usersDir = alluserprofileProgramData/('Nuance/NaturallySpeaking%s/Users'% DNSVersion)
+            usersDir = alluserprofileProgramData/('Nuance/NaturallySpeaking%s'% DNSVersion)
             if usersDir.isdir():
                 DNSIniDir = usersDir.normpath()
                 return DNSIniDir
