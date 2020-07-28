@@ -105,9 +105,10 @@ getDNSInstallDir:
 getDNSIniDir:
     returns the directory where the NatSpeak INI files are located,
     notably nssystem.ini and nsapps.ini.
-    If the registry key NatspeakIniDir exists (CURRENT_USER/Software/Natlink),
-    and the folder exists and the needed INI files are in this folder this path is returned.
-    Otherwise it is looked for in %COMMON_APPDATA%/Nuance/...
+    Can be set in natlinkstatus.ini, but mostly is got from
+    %ALLUSERSPROFILE% (C:/ProgramData) (up to DNS 15.3) or
+    %LOCALAPPDATA% (C:/Users/Username/AppData/Local) (from 15.5 or 15.6 onwards)
+
 getDNSVersion:
     returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, ... (???)
     note distinction is made here between different subversions.
@@ -339,16 +340,8 @@ class NatlinkStatus:
         self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
         self.__class__.NatlinkDirectory = os.path.normpath(os.path.join(CoreDirectory, '..', '..'))
         self.skipSpecialWarning = skipSpecialWarning
-        # for the migration from registry to ini files:
-        # if self.userregnl.firstUse:
-        #     if self.userregnlOld:
-        #         self.copyRegSettingsToInifile(self.userregnlOld, self.userregnl)
-        #     else:
-        #         if not skipSpecialWarning:
-        #             print 'ERROR: no natlinkstatus.ini found and no (old) registry settings, (re)run config program'
         self.correctIniSettings() # change to newer conventions
         
-        ## DNSInstallDir:
         try:
             result = self.getDNSInstallDir()
         except IOError:
@@ -360,6 +353,9 @@ class NatlinkStatus:
             ## also DNSIniDir is hopeless, set value and return.
             self.__class__.DNSIniDir = result
             return
+
+        ## version uses DNSInstallDir:
+        self.DNSVersion = self.getDNSVersion()
 
         ## DNSIniDir:
         try:
@@ -902,6 +898,13 @@ Please try to correct this by running the Natlink Config Program (with administr
         for earlier versions try the registry, the result is uncertain.
 
         """
+        try:
+            version = self.DNSVersion
+        except AttributeError:
+            pass
+        else:
+            if version:
+                return version
         dnsPath = self.getDNSInstallDir()
         if dnsPath == -1:
             print('dnsPath not found, please ensure there is a proper DNSInstallDir')
