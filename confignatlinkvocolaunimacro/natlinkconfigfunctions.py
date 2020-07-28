@@ -1197,7 +1197,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             # pass this step if it does not succeed:
             # dll = ctypes.windll[PydPath.replace("\\", "/")]
             print(PydPath)
-            dll = ctypes.windll.LoadLibrary(PydPath.replace("\\", "/"))
+            dll = ctypes.windll.LoadLibrary(PydPath) ###.replace("\\", "/"))
             result = dll.DllUnregisterServer()
             if result != 0:
                 print(('could not unregister %s'% PydPath))
@@ -1209,8 +1209,12 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         except:
             traceback.print_exc()
         finally:
-            handle = dll._handle # obtain the DLL handle
-            result2 = ctypes.windll.kernel32.FreeLibrary(handle)
+            try:
+                result = result2 = 0
+                handle = dll._handle # obtain the DLL handle
+                result2 = ctypes.windll.kernel32.FreeLibrary(handle)
+            except:
+                pass
 
         if result2 != 1:
             print(('could not free the link to %s'% PydPath))
