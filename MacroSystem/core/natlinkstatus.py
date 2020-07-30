@@ -324,6 +324,7 @@ class NatlinkStatus:
     BaseDirectory = None
     CoreDirectory = None
     DNSInstallDir = None
+    DNSVersion = None
     DNSIniDir = None
     UnimacroDirectory = None
     UnimacroUserDirectory = None
@@ -334,45 +335,52 @@ class NatlinkStatus:
 
     def __init__(self, skipSpecialWarning=None):
 
-        ## start setting the CoreDirectory and BaseDirectory:
-        CoreDirectory = natlinkcorefunctions.getBaseFolder()
-        self.__class__.CoreDirectory = CoreDirectory
-        self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
-        self.__class__.NatlinkDirectory = os.path.normpath(os.path.join(CoreDirectory, '..', '..'))
         self.skipSpecialWarning = skipSpecialWarning
-        self.correctIniSettings() # change to newer conventions
+
+        ## start setting the CoreDirectory and BaseDirectory and other variables:
+        if self.CoreDirectory is None:
+            CoreDirectory = natlinkcorefunctions.getBaseFolder()
+            self.__class__.CoreDirectory = CoreDirectory
+            self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
+            self.__class__.NatlinkDirectory = os.path.normpath(os.path.join(CoreDirectory, '..', '..'))
+            self.correctIniSettings() # change to newer conventions
         
-        try:
-            result = self.getDNSInstallDir()
-        except IOError:
-            result = -1
-        else:
-            result = result or -1
-        self.__class__.DNSInstallDir = result
-        if result == -1:
-            ## also DNSIniDir is hopeless, set value and return.
-            self.__class__.DNSIniDir = result
-            return
+            ## initialise DNSInstallDir, DNSVersion and DNSIniDir
+            ## other "cached" variables, like UserDirectory, are done at first call.
+            try:
+                result = self.getDNSInstallDir()
+            except IOError:
+                result = -1
+            else:
+                result = result or -1
+            self.__class__.DNSInstallDir = result
+                
+                
+            if result == -1:
+                ## also DNSIniDir is hopeless, set value and return.
+                self.__class__.DNSIniDir = result
+                self.__class__.DNSVersion = result
+                return
+            else:
+                ## proceed with other __class__ variables:
+                self.__class__.DNSVersion = self.getDNSVersion()
 
-        ## version uses DNSInstallDir:
-        self.DNSVersion = self.getDNSVersion()
+                ## DNSIniDir:
+                try:
+                    result = self.getDNSIniDir()
+                except IOError:
+                    result = -1
+                else:
+                    result = result or -1
 
-        ## DNSIniDir:
-        try:
-            result = self.getDNSIniDir()
-        except IOError:
-            result = -1
-        else:
-            result = result or -1
+                self.__class__.DNSIniDir = result
+                if result == -1:
+                    return  # serious problem.
 
-        self.__class__.DNSIniDir = result
-        if result == -1:
-            return  # serious problem.
-
-        result = self.checkNatlinkPydFile()
-        if result is None:
-            if not skipSpecialWarning:
-                self.warning('WARNING: invalid or no version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
+            result = self.checkNatlinkPydFile()
+            if result is None:
+                if not skipSpecialWarning:
+                    self.warning('WARNING: invalid or no version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
 
     def getWarningText(self):
         """return a printable text if there were warnings
@@ -725,6 +733,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         """return the path to coreDir or CoreDirectory
         """
         if self.CoreDirectory is None:
+            print("natlinkstatus.getCoreDirectory: CoreDirectory should have been set in __init__")
             return natlinkcorefunctions.getBaseFolder()
         return self.CoreDirectory
 
@@ -888,6 +897,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getDNSVersion(self):
         """find the correct DNS version number (as an integer)
 
+        Version 15 is simply the int of the last two letters of the DNSInstallDir.
 
         note: 12.80 is also 13
         from 10 onwards, get as last two characters of the DNSInstallDir
@@ -1372,7 +1382,8 @@ Please try to correct this by running the Natlink Config Program (with administr
         # Dir = self.getDNSuserDirectory()
         # #dir = r'D:\projects'  # for testing (at bottom of file)
         if not os.path.isdir(DNSuserDirectory):
-            raise ValueError('not a valid DNSuserDirectory: |%s|, check your configuration'% DNSuserDirectory)
+            print("_getLastUsedTopic, no DNSuserDirectory, probably no speech profile on")
+            return ""
         optionsini = os.path.join(DNSuserDirectory, 'options.ini')
         if not os.path.isfile(optionsini):
             raise ValueError('not a valid options inifile found: |%s|, check your configuration'% optionsini)
@@ -1420,7 +1431,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         #dir = r'D:\projects'   # for testing, see bottom of file
         keyToModel = self._getLastUsedTopic(Dir)
         if not keyToModel:
-            print('Warning, no valid key to topic found')
+            # print('Warning, no valid key to topic found')
             return ''
         topicsini = os.path.join(Dir, 'topics.ini')
         section = "Base Topic"
@@ -1795,14 +1806,13 @@ if __name__ == "__main__":
     print('\nExample: the pyd directory:')
     pydDir = natlinkcorefunctions.expandEnvVariableAtStart('%COREDIRECTORY%/pyd')
     print('%%COREDIRECTORY%%/pyd is expanded to: %s'% pydDir)
-    print('Is valid directory: %s'% os.path.isdir(pydDir))
-
-
+    print('Pyd directory is a valid directory: %s'% os.path.isdir(pydDir))
 
     # next things only testable when changing the dir in the functions above
     # and copying the ini files to this dir...
     # they normally run only when natspeak is on (and from NatSpeak)
     #print 'language (test): |%s|'% lang
     #print status.getBaseModelBaseTopic()
-    #print status.getBaseModel()
-    #print status.getBaseTopic()
+    print(status.getBaseModel())
+    print(status.getBaseTopic())
+    pass

@@ -137,6 +137,15 @@ if canStartNatlink:
         print('do extra output at (re)loading time: %s'% debugLoad)
     if debugCallback:
         print('do extra output at callback time: %s'% debugCallback)
+        
+## always set:
+baseDirectory = status.BaseDirectory    ## MacroSystem folder
+coreDirectory = status.CoreDirectory
+natlinkDirectory = status.NatlinkDirectory  ## root of Natlink area, two above the core directory
+userDirectory = status.getUserDirectory()
+unimacroDirectory = status.getUnimacroDirectory()
+DNSVersion = status.getDNSVersion()
+windowsVersion = status.getWindowsVersion()
 
 # QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
 # otherwise no grammar change checking is performed, only at microphone toggle
@@ -152,14 +161,13 @@ natlinkmainPrintsAtStart = 1
 natlinkmainPrintsAtEnd = 1
 
 #
-# This is the directory where the Python modules all reside.
-#
+# These are the directories where the Python modules all reside (defined above)
+# - baseDirectory (MacroSystem, mainly for Vocola)
+# - unimacroDirectory
+# - userDirectory (Dragonfly and descendants and user defined grammar files)
 
-# the base directory is one level above the core directory.
-# Vocola grammar files are located here.
-for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
-             'unimacroDirectory', 'userDirectory',
-             'WindowsVersion', 'BaseModel', 'BaseTopic',
+for name in ['DNSuserDirectory', 'userName',
+             'windowsVersion', 'BaseModel', 'BaseTopic',
              'language', 'userLanguage', 'userTopic']:
     if not name in globals():
         globals()[name] = ''
@@ -244,8 +252,8 @@ def loadFile(modName, origPath=None, origDate=None):
     
     sourceDate = getFileDate(fndName)
     
-    if debugLoad:
-        print('loadFile if changed modName %s, fndName: %s, origPath: %s'% (modName, fndName, origPath))
+    # if debugLoad:
+    #     print('loadFile if changed modName %s, fndName: %s, origPath: %s'% (modName, fndName, origPath))
 
     if origPath:
         if fndName[-3:] != ".py":
@@ -254,8 +262,8 @@ def loadFile(modName, origPath=None, origDate=None):
             safelyCall(modName,'unload')
             return None
         if origPath == fndName:
-            if debugLoad:
-                print('not changed: %s (%s, %s)'% (fndName, sourceDate, origDate))
+            # if debugLoad:
+            #     print('not changed: %s (%s, %s)'% (fndName, sourceDate, origDate))
             if origDate >= sourceDate:
                 fndFile.close()
                 return origPath, origDate
@@ -726,16 +734,16 @@ def changeCallback(Type,args):
     # see _oops, _repeat, _control for examples
     changeCallbackLoadedModules(Type,args)
 
-    if debugCallback:
-        print('=== debugCallback info ===')
-        for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
-         'unimacroDirectory', 'userDirectory',
-         'WindowsVersion', 'BaseModel', 'BaseTopic',
-         'language', 'userLanguage', 'userTopic']:
-            if not name in globals():
-                print('natlinkmain, changeCallback, not in globals: %s'% name)
-            else:
-                print('natlinkmain changeCallback, global variable: %s: %s'% (name, globals()[name]))
+    # if debugCallback:
+    #     print('=== debugCallback info ===')
+    #     for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
+    #      'unimacroDirectory', 'userDirectory',
+    #      'windowsVersion', 'BaseModel', 'BaseTopic',
+    #      'language', 'userLanguage', 'userTopic']:
+    #         if not name in globals():
+    #             print('natlinkmain, changeCallback, not in globals: %s'% name)
+    #         else:
+    #             print('natlinkmain changeCallback, global variable: %s: %s'% (name, globals()[name]))
 
 def changeCallbackLoadedModules(Type,args):
     """BJ added, in order to intercept in a grammar (oops, repeat, control) in eg mic changed
@@ -767,7 +775,7 @@ def start_natlink(doNatConnect=None):
     
     Better not use doNatConnect, but ensure this is done before calling, and with a finally: natlink.natDisconnect() call
     """
-    global userDirectory, DNSVersion, coreDirectory, baseDirectory, WindowsVersion, unimacroDirectory, loadedFiles
+    global loadedFiles
     print('--')
     nGrammarsLoaded = len(loadedFiles)
     if nGrammarsLoaded:
@@ -797,17 +805,6 @@ def start_natlink(doNatConnect=None):
         print("----natlink.natConnect succeeded")
 
     # for modname in ['natlink', 'natlinkmain']:
-    #     try:
-    coreDirectory = os.path.split(
-            sys.modules['natlink'].__dict__['__file__'])[0]
-        # except KeyError:
-        #     pass
-        # else:
-        #     break
-    if not coreDirectory:
-        raise IOError("not a valid coreDirectory found in start_natlink() of natlinkmain.py")
-    if debugLoad: print("Natlink pyd dir: ", coreDirectory)
-    baseDirectory = os.path.normpath(os.path.abspath(os.path.join(coreDirectory,"..")))
     if not baseDirectory in sys.path:
         sys.path.insert(0,baseDirectory)
         if debugLoad:
@@ -815,8 +812,7 @@ def start_natlink(doNatConnect=None):
     if debugLoad: print(("Natlink base dir" + baseDirectory))
 
     # get the current user information from the Natlink module
-    userDirectory = status.getUserDirectory()
-    if userDirectory:
+    if userDirectory and os.path.isdir(userDirectory):
         if not userDirectory in sys.path:
             sys.path.insert(0,userDirectory)
             if debugLoad:
@@ -829,8 +825,7 @@ def start_natlink(doNatConnect=None):
             print('no userDirectory')
 
     # for unimacro, in order to reach unimacro files to be imported:
-    unimacroDirectory = status.getUnimacroDirectory()
-    if unimacroDirectory:
+    if unimacroDirectory and os.path.isdir(unimacroDirectory):
         if status.UnimacroIsEnabled():
             if not unimacroDirectory in sys.path:
                 sys.path.insert(0,unimacroDirectory)
@@ -850,10 +845,6 @@ def start_natlink(doNatConnect=None):
     # setting searchImportDirs, also insert at front of sys.path if not in the list yet.
     setSearchImportDirs()
 
-    # get invariant variables:
-    DNSVersion = status.getDNSVersion()
-    WindowsVersion = status.getWindowsVersion()
-
     # init things identical to when user changes:
     #   [MDL: this calls findAndLoadFiles()!]
     changeCallback('user', natlink.getCurrentUser())
@@ -869,7 +860,7 @@ def start_natlink(doNatConnect=None):
 
     print(('natlinkmain started from %s:\n  Natlink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
               (status.getCoreDirectory(), status.getInstallVersion(),
-               DNSVersion, status.getPythonVersion(), WindowsVersion, )))
+               DNSVersion, status.getPythonVersion(), windowsVersion, )))
 
 
     if debugLoad:
