@@ -239,6 +239,7 @@ class UnittestNatlink(unittest.TestCase):
     def connect(self):
         # start with 1 for thread safety when run from pythonwin:
         natlink.natConnect(natconnectOption)
+        natlinkmain.start_natlink()
 
     def disconnect(self):
         natlink.natDisconnect()
@@ -701,7 +702,58 @@ class UnittestNatlink(unittest.TestCase):
         print('all Users: %s'% allUsers)
         
         self.assertTrue(currentUser in allUsers, "currentUser should be in allUsers list")
+
+    def testMicState(self):
+        """test the setMicState and getMicState
         
+        Think how this works inside a function, related to threading...
+        
+        The toggleMicrophone inside the tests relies on this...
+        
+part of output (if debugCallback is switched on!!)
+
+(better switch Vocola, Unimacro and UserDirectory off,
+and switch on debugLoad and debugCallback
+Set Testing = False at bottom of natlinkmain...
+)
+
+beginCallback, cbd: 1
+check for changed files (only specific)
+now switch mic on, sleeping, off...
+toggle mic, switching on
+new mic state: on
+toggle mic, switching sleeping
+new mic state: sleeping
+toggle mic, switching off
+new mic state: off
+leaving test function testMicState, latest state: off
+changeCallback, Type: mic, args: off
+changeCallback, Type: mic, args: off
+changeCallback, Type: mic, args: off
+beginCallback, cbd: 1
+        
+        
+        
+        
+        
+        """
+        w = 1
+        micState = natlink.getMicState()
+        if micState == 'on':
+            self.log('start of test, mic is on, switching off')
+            natlink.setMicState('off')
+            time.sleep(w)
+            self.doTestFuncReturn('off', "natlink.getMicState()")
+
+        self.log("now switch mic on, sleeping, off...")
+        for state in ['on', 'sleeping', 'off']:
+            self.log('toggle mic, switching %s'% state)
+            natlink.setMicState(state)
+            time.sleep(w)
+            newState = natlink.getMicState()
+            self.log("new mic state: %s"% newState)
+            self.doTestFuncReturn(state, "natlink.getMicState()")
+        self.log("leaving test function testMicState, latest state: %s"% state)
         
 ##        try:
     #---------------------------------------------------------------------------
@@ -1154,7 +1206,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def testRecognitionMimicCommands(self):
+    def tttestRecognitionMimicCommands(self):
         """test different phrases with commands, from own grammar
         
         explore when the recognitionMimic fails
@@ -1658,7 +1710,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException(KeyError, "getModifierKeyCodes('typo')")
 
-    def testNatLinkMain(self):
+    def ttttestNatLinkMain(self):
         
         ## see one remark at the bottom...(QH, 2020)
 
@@ -1689,31 +1741,30 @@ class UnittestNatlink(unittest.TestCase):
         self.clearTestFiles()
         toggleMicrophone()
  
-        self.log("\nSet Command Mode on")
- 
+        # self.log("\nSet Command Mode on")
         # self.setCommandMode(1)
   
         self.log('create jMg1, seventeen', 'seventeen')
         createMacroFile(baseDirectory,'__jMg1.py', 'seventeen')
         # direct after create no recognition yet
-        testRecognition(['testing', 'Natlink', 'commands','seventeen'], 0, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','seventeen'], 0, log=1)
         
         toggleMicrophone()
         # after toggle it should be in:
         # does not work qh:
-        #testRecognition(['testing', 'Natlink', 'commands','seventeen'], 1)
-        testRecognition(['testing', 'Natlink', 'commands','one'], 0, log=1)
+        #testRecognition(['teststrangeword', 'Natlink', 'commands','seventeen'], 1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','one'], 0, log=1)
         self.log('create jMg1, one', 'one')
         
         createMacroFile(baseDirectory,'__jMg1.py','one')
-         #here the recognition is already there, should not be though...
-        testRecognition(['testing', 'Natlink', 'commands','one'], 0, log=1)
+        #here the grammar is created, but not should not be recognised by Natlink yet
+        testRecognition(['teststrangeword', 'Natlink', 'commands','one'], 0, log=1)
 
         self.log('\ntoggle mic, to get jMg1 in loadedGrammars', 1)
         toggleMicrophone()
     
         ## after toggling, this one should hit:    
-        testRecognition(['testing', 'Natlink', 'commands','one'], 1, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','one'], 1, log=1)
         self.lookForDragonPad()
 
         # now separate two parts. Note this cannot be checked here together,
@@ -1726,50 +1777,50 @@ class UnittestNatlink(unittest.TestCase):
             createMacroFile(baseDirectory,'__jMg1.py','two')
             self.wait(2)
             ## with checking at each utterance next two lines should pass
-            testRecognition(['testing', 'Natlink', 'commands','two'], 1, log=1)
-            testRecognition(['testing', 'Natlink', 'commands','one'], 0, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','two'], 1, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','one'], 0, log=1)
         else:
             self.log('\nNow change grammar file jMg1 to 2, no recognise immediate, only after mic toggle', 1)
             createMacroFile(baseDirectory,'__jMg1.py','two')
             # If next line fails, the checking is immediate, in spite of checkForGrammarChanges being on:
-            testRecognition(['testing', 'Natlink', 'commands','two'], 0, log=1)
-            testRecognition(['testing', 'Natlink', 'commands','one'], 1, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','two'], 0, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','one'], 1, log=1)
             toggleMicrophone(1)
-            testRecognition(['testing', 'Natlink', 'commands','two'], 1, log=1)
-            testRecognition(['testing', 'Natlink', 'commands','one'], 0, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','two'], 1, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','one'], 0, log=1)
 
         # Make sure a user specific file also works
         # now with extended file names (glob.glob, request of Mark Lillibridge) (QH):
         self.log('now new grammar file: %s'% specialFilenameGlobal, 1)
-        testRecognition(['testing', 'Natlink', 'commands','seven'], 0, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','seven'], 0, log=1)
         createMacroFile(userDirectory,specialFilenameGlobal+'.py','seven')
         toggleMicrophone()
         if userDirectory:
-            testRecognition(['testing', 'Natlink', 'commands','seven'], 1, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','seven'], 1, log=1)
         else:
             # no userDirectory, so this can be no recognition
-            testRecognition(['testing', 'Natlink', 'commands','seven'], 0, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','seven'], 0, log=1)
 
         self.log('now new grammar file: %s'% spacesFilenameGlobal, 1)
         self.log('See if this file is accepted (with thirty)', 1)
 
         # should be unknown command:
-        testRecognition(['testing', 'Natlink', 'commands','thirty'], 0, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','thirty'], 0, log=1)
         createMacroFile(userDirectory,spacesFilenameGlobal+'.py','thirty')
         # no automatic update of commands:
-        testRecognition(['testing', 'Natlink', 'commands','thirty'], 0, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','thirty'], 0, log=1)
         toggleMicrophone()
         if userDirectory:
             # only after mic toggle should the grammar be recognised:
-            testRecognition(['testing', 'Natlink', 'commands','thirty'], 1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','thirty'], 1)
         else:
             self.log('this test cannot been done if there is no userDirectory')
 
         self.log('now new grammar file (should not be recognised)... %s'% "_.py", 1)
-        testRecognition(['testing', 'Natlink', 'commands','eight'], 0, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','eight'], 0, log=1)
         createMacroFile(userDirectory,"_.py",'eight')
         toggleMicrophone()
-        testRecognition(['testing', 'Natlink', 'commands','eight'], 0, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','eight'], 0, log=1)
 
         # Make sure user specific files have precidence over global files
 
@@ -1781,7 +1832,7 @@ class UnittestNatlink(unittest.TestCase):
             toggleMicrophone()
             # this one seems to go wrong if the dictation box is automatically loaded for non-standard applications, switch
             # this option off for the test-speech profile:
-            testRecognition(['testing', 'Natlink', 'commands','three'], 1, log=1)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','three'], 1, log=1)
         else:
             self.log("not userDirectory, cannot test order of command recognition between baseDirectory and userDirectory")
 
@@ -1794,8 +1845,8 @@ class UnittestNatlink(unittest.TestCase):
             createMacroFile(userDirectory,'calc__jMg1.py','six')
             self.lookForCalc()
             toggleMicrophone()
-            testRecognition(['testing', 'Natlink', 'commands','five'], 0, log=0)
-            testRecognition(['testing', 'Natlink', 'commands','six'], 1, log=0)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','five'], 0, log=0)
+            testRecognition(['teststrangeword', 'Natlink', 'commands','six'], 1, log=0)
         else:
             self.log("without a userDirectory (Unimacro) switched on, this test is unneeded, so not done...")
 
@@ -1807,7 +1858,7 @@ class UnittestNatlink(unittest.TestCase):
         self.log("work to be done, which file names accept??? application specific")
         self.log("see if specialFilenameCalc hits: %s"% specialFilenameCalc)
         toggleMicrophone()
-        testRecognition(['testing', 'Natlink', 'commands','eight'], 1, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','eight'], 1, log=1)
 
         # filenames with spaces (not valid)
         self.log("work to be done, which file names accept??? application specific")
@@ -1815,11 +1866,11 @@ class UnittestNatlink(unittest.TestCase):
         createMacroFile(baseDirectory,spacesFilenameCalcInvalid+'.py','fourty')
         toggleMicrophone()
         ### febr 2020, python3: fails...
-        testRecognition(['testing', 'Natlink', 'commands','fourty'], 0, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','fourty'], 0, log=1)
         # filenames with spaces (valid)
         createMacroFile(baseDirectory,spacesFilenameCalcValid+'.py','fifty')
         toggleMicrophone()
-        testRecognition(['testing', 'Natlink', 'commands','fifty'], 1, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','fifty'], 1, log=1)
         
         #other filenames:
 ##        createMacroFile(baseDirectory,'calc.py', '9')  # chances are calc is already there, so skip now...
@@ -1827,16 +1878,16 @@ class UnittestNatlink(unittest.TestCase):
         # this name should be invalid:
         createMacroFile(baseDirectory,'calculator.py', 'eleven')
         toggleMicrophone()
-##        testRecognition(['testing', 'Natlink', 'commands','9'],1)
-        testRecognition(['testing', 'Natlink', 'commands','ten'], 1, log=1)
-        testRecognition(['testing', 'Natlink', 'commands','eleven'], 0, log=1)
+##        testRecognition(['teststrangeword', 'Natlink', 'commands','9'],1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','ten'], 1, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','eleven'], 0, log=1)
         
         self.killCalc()
         ### seems to go correct, no calc window any more, so rule six (specific for calc) should NOT respond
         #was a problem: OOPS, rule 6 remains valid, must be deactivated in gotBegin, user responsibility:
-        #was a problem: testRecognition(['testing', 'Natlink', 'commands','six'], 1)
+        #was a problem: testRecognition(['teststrangeword', 'Natlink', 'commands','six'], 1)
         # no recognition because calc is not there any more:
-        testRecognition(['testing', 'Natlink', 'commands','six'], 0, log=1)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','six'], 0, log=1)
         
     ##        natlink.playString('{Alt+F4}')
 #-----------------------------------------------------------
@@ -1854,18 +1905,18 @@ class UnittestNatlink(unittest.TestCase):
 
         # now that the files are gone, make sure that we no longer recognize
         # from them
-        testRecognition(['testing', 'Natlink', 'commands','one'], 0)
-        testRecognition(['testing', 'Natlink', 'commands','two'], 0)
-        testRecognition(['testing', 'Natlink', 'commands','three'], 0)
-        testRecognition(['testing', 'Natlink', 'commands','four'], 0)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','one'], 0)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','two'], 0)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','three'], 0)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','four'], 0)
 
         # some of the specialFilename cases:
         ## why does this one still hit?
         ## do they only vanish when calc is in the foreground? (calc == ApplicationFrameHost)
         ## TODOQH  TODOMIKE 
-        testRecognition(['testing', 'Natlink', 'commands','five'], 0)
-        testRecognition(['testing', 'Natlink', 'commands','seven'], 0)
-        testRecognition(['testing', 'Natlink', 'commands','eight'], 0)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','five'], 0)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','seven'], 0)
+        testRecognition(['teststrangeword', 'Natlink', 'commands','eight'], 0)
 
     
     #---------------------------------------------------------------------------
@@ -3163,7 +3214,7 @@ class UnittestNatlink(unittest.TestCase):
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
 
-    def testSelectGram(self):
+    def tttestSelectGram(self):
         self.log("testSelectGram")
         
         # this one give a debug error in my Komodo. So unclear what happened, see line 3219
@@ -3454,7 +3505,7 @@ class UnittestNatlink(unittest.TestCase):
     ## check if all goes well with a recursive call (by recognitionMimic) in the same grammar
     ## a problem was reported Febr 2013 by Mark Lillibridge concerning a Vocola grammar
 
-    def testNextPrevRulesAndWordsRecursive(self):
+    def tttestNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
         testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
@@ -3577,30 +3628,33 @@ class UnittestNatlink(unittest.TestCase):
     ##    natlink.setMicState('on')
     ##    natlink.setMicState('off')
     ##    time.sleep(wait)
-    def toggleMicrophone(self, w=0.1):
+    def toggleMicrophone(self, w=1):
         # do it slow, the changeCallback does not hit
         # otherwise
         micState = natlink.getMicState()
         if micState == 'on':
-            self.log('switching off mic')
+            self.log('toggle mic, switching off')
             natlink.setMicState('off')
             time.sleep(w)
             # self.log('switching on mic')
             natlink.setMicState('on')
             time.sleep(w)
-            self.log('switched on again mic')
+            self.log('toggle mic, switched on again')
         else:        
-            self.log('switching on mic')
+            self.log('toggle mic, switching on')
             natlink.setMicState('on')
+            time.sleep(w)
+            ## in order to react on the toggle of the mic...
+            # natlink.recognitionMimic(['hello', 'world'])
             time.sleep(w)
             # self.log('switching to "%s" mic'% micState)
             natlink.setMicState(micState)
             time.sleep(w)
-            self.log('switched %s again mic'% micState)
+            self.log('toggle mic, switched %s again'% micState)
             time.sleep(w)
 
     ## TODO
-    def testNestedMimics(self):
+    def tttestNestedMimics(self):
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
@@ -3853,7 +3907,7 @@ macroFileTemplate = """
 import natlink
 from natlinkutils import *
 class ThisGrammar(GrammarBase):
-    gramSpec = '<Start> exported = testing Natlink commands %s;'
+    gramSpec = '<Start> exported = teststrangeword Natlink commands %s;'
     def initialize(self):
         self.load(self.gramSpec)
         self.activateAll()
