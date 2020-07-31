@@ -37,7 +37,7 @@
 // Called when a message is sent to the dialog box.  Return FALSE to tell
 // the dialog box default window message handler to process the message.
 
-BOOL CALLBACK dialogProc(
+INT_PTR CALLBACK dialogProc(
 	HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	// This is the threads copy of the MessageWindow class pointer. I

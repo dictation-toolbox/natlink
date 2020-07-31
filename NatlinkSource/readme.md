@@ -1,28 +1,3 @@
-# Goal
-
-Create a minimal working version of Natlink a dragonspeak to python API. The immediate goal is to
-create a more reliable 32-bit python 2.7 for dragon 15+ implementation that is easy to compile, understand and 
-contribute to.
-
-Later on the python 3 port as well as x64 support may be added. 
-
-# Compile instructions
-Currently only tested on windows 
-- Install VisulStudio and ensure that you are also installing C++ support (Desktop Develpment with C++).
-- Install python 2.7 and ``pip install pywin32 wxpython six future ``
-- Install cmake
-- Install git and :
-``git clone https://gitlab.com/knork/natlink2.git``
-- Set msvc as you're compiler and ensure that you build in x86 mode. 
-
-I would recommend to use VStudio or Clion as your built environment. 
-We have to install msvc in order to get the necessary header files
- onto our system (e.g. altcom.h) and it is currently the ONLY working compiler
-  (mostlikely due to missing include paths for the other compilers).
-   x64 does compile fine but I haven't managed to convince Dragon to load a x64 support module.
-
-
-
 # Program flow
 
 
@@ -38,7 +13,8 @@ The compiled library natlink.pyd/natlink.dll is registered with natspeak as a CO
  
  ### Support module registration
  
- First we need to register our COM-Server with the windows registry. To do pass the dll/pyd to `regsvr32`. 
+ First we need to register our COM-Server with the windows registry.
+ This is done by the installer. 
  Windows will associate the path of the libary with the GUID that we choose for Natlink (`dd990001-bb89-11d2-b031-0060088dc929`) which will set the ``HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{dd990001-bb89-11d2-b031-0060088dc929}\InprocServer32``for x64 systems.
  
  Then we need to inform dragon of the new module. To do so we add
@@ -51,9 +27,6 @@ App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
  We can then activate/deactivate our support Module by either adding or removing `.Natlink=Default` it from the 
  `[Global Clients]:` section of :  `C:\ProgramData\Nuance\NaturallySpeaking15\nssystem.ini`
  As far as I can tell the value to the `.Natlink` key is irrelevant.
- 
- **TODO** figure out where the registration currently/previously takes place. I currently assume that it is 
- in``confignatlinkvocolaunimacro/natlinkconfigfunctions.py`` line 1045: ``registerNatlinkPyd()``
  
  ### COM-Server implementation
 ``appsupp.h/appsupp.cpp``
@@ -69,7 +42,7 @@ These files seem to implement the support interface defined in ``COM/dspeech.h``
  ### DLL initialization and python Interpreter 
  ### COM-Python Wrapper
  
- The python natlink module is added to ``HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\2.7\PythonPath``
+ The python natlink module is added to ``HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.8\PythonPath``
  as a Key/Subentry(?). This allows the sys module loader to find natlinkmain module.
  
  As this library is loaded as support-module the working directory during runtime is that of the dragon system and

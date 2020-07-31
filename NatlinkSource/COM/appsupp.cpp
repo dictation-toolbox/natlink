@@ -74,7 +74,8 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 			"Failed to initialize NatSpeak interfaces\r\n", TRUE );
 		return S_OK;
 	}
-
+	const std::string versionMsg = std::string("Python Version: ") + std::string(Py_GetVersion()) + std::string("\r\n");
+	m_pDragCode->displayText(versionMsg.c_str());
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
 	* According to PEP514 python should scan this registry location when
@@ -87,12 +88,12 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	* is that we add a value to the path which is already there.
 	*/
 	PyRun_SimpleString("import winreg, sys");
-	PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Python\\\\PythonCore\\\\{str(sys.winver)}\\\\PythonPath\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
+	PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
 	// PyRun_SimpleString returns 0 on success and -1 if an exception is raised.
 	if (PyRun_SimpleString("natlink_key = winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags)")) {
 		m_pDragCode->displayText("Failed to find Natlink key in Windows registry.\r\n");
 	}
-	if (PyRun_SimpleString("core_path = winreg.QueryValue(natlink_key, \"\")")) {
+	if (PyRun_SimpleString("core_path, _ = winreg.QueryValueEx(natlink_key, \"coreDir\")")) {
 		m_pDragCode->displayText("Failed to extract value from Natlink key.\r\n");
 	}
 	PyRun_SimpleString("sys.path.append(core_path)");

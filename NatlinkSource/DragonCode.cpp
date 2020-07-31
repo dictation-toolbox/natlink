@@ -1399,7 +1399,7 @@ void CDragonCode::logMessage( const char * pszText )
 //---------------------------------------------------------------------------
 // Called when a message is sent to the waitForSpeech dialog box.
 
-BOOL CALLBACK waitDialogProc(
+INT_PTR CALLBACK waitDialogProc(
 	HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	int nTimeout;

@@ -235,17 +235,17 @@ DWORD * parsePlayList(
 //
 // See natlink.txt for documentation.
 
-extern "C" static PyObject *
-natlink_isNatSpeakRunning( PyObject *self, PyObject *args )
+extern "C" static PyObject*
+natlink_isNatSpeakRunning(PyObject* self, PyObject* args)
 {
-	if( !PyArg_ParseTuple( args, "" ) )
+	if (!PyArg_ParseTuple(args, ""))
 	{
 		return NULL;
 	}
 
 	BOOL bRunning = cDragon.isNatSpeakRunning();
 
-	return Py_BuildValue( "i", bRunning );
+	return Py_BuildValue("i", bRunning);
 }
 
 //---------------------------------------------------------------------------
