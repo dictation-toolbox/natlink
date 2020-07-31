@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 #get_filename_component(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE)
 #set(DEPENDENCIES_DIR ${PROJECT_DIR}/dependencies)
 set(PROJECT_NAME natlink)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 
 # make binary python callable
