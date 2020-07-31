@@ -1,931 +1,259 @@
 #
-# Python Macro Language for Dragon NaturallySpeaking
-#   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc..
 #
-# natlinkmain.py
-#   Base module for the Python-based command and control subsystem
-#
-# May 2020: adaptations for python3
-#     -loadedFiles items are now tuple (origPath, origDate)
-#     -fix the wrongFiles, in the same way
-#    
-#
-#
-#
-# July 2015 (QH): assume Unimacro at fixed place, extend macro files to BaseDirectory (Vocola),
-#    UnimacroDirectory, UserDirectory
-# August 2011 (QH): added function reorderKeys, which influences the order
-#   of the grammars to load. Hardcoded are _tasks.py (first) and _control (last)
-#   _vocola_main could be set here too, but already has a special treatment.
-#   This is done because _control needs to know about other Unimacro grammars
-#   and _lines can call functions in _tasks, so the tasks grammar must exist before
-#   lines is loaded
-#
-# June 2011 (QH):
-#   improved the include or exclude mechanism of Vocola (_vocola_main). In
-#   _vocola_main the compiled .py and .pyc grammar files from Vocola command files
-#   are automatically purged if Vocola not active (first time after a deactivate of Vocola)
-#   vocolaEnabled is set at start, but made false if Vocola is not active.
-# December 2010 (QH): keep track of grammar files with errors, so they only reload when
-#                     changes are made (wrongFiles global dict)
-# March 2010 (QH) loading (in findAndLoadFiles) _control.py last, the
-#            Unimacro control grammar (for introspection)
-#August 17, 2009
-#   - added throughWords in SelectGramBase, see natlinkutils.py (Quintijn)
-#
-# Febr 2008 (QH)
-#   - userDirectory inserted at front of sys.path (was appended)
-#   - made special arrangements for _vocola_main, so it calls back before
-#     anything else is done, see doVocolaFirst, vocolaModule and vocolaIsLoaded.
-#     These 3 variables control all. Moreover` `VocolaUserDirectory must be given,
-#     otherwise Vocola will not switch on.
-#
-# Jan 2008 (QH)
-#   - adapted to natlinkstatus, which gives info about NatLink, both by
-#     this module and by the NatLink config functions.
-#     Note: status is now a class instance of natlinkstatus.NatlinkStatus
-#
-# QH, May 22, 2007:
-#    extended range of possible filenames, (nearly) arbitrary characters may appear after
-#    "_" in global grammar names or after
-#    "mod_" in specific grammar names  (request of Mark Lillibridge)
-# Quintijn Hoogenboom (QH), May 1, 2007
-# changes for compatibility with unimacro:
-# extra information reported (language version, natspeak version, windows version etc)
-# checking not at each utterance (option, see below)
-# always printing a line when natlinkmain started (option)
-# see in documentation below, and unittestNatlink.py in folder PyTest...
+# # Calls the unload member function of a given module.  Does not make the call
+# # if the function does not exist and cleans up in the case of errors.
+# def safelyCall(modName, funcName):
+#     try:
+#         func = getattr(sys.modules[modName], funcName)
+#     except AttributeError:
+#         # unload function does not exist
+#         return None
+#     try:
+#         func(*[])
+#     except:
+#         sys.stderr.write('Error calling ' + modName + '.' + funcName + '\n')
+#         traceback.print_exc()
+#         return None
 #
 #
-# April 1, 2000
-#   - fixed a bug where we did not unload files when we noticed that they
-#     were deleted
-#   - fixed a bug where we would load .pyc files without a matching .py
+# def changeCallback(Type, args):
+#     global userName, DNSuserDirectory, language, userLanguage, userTopic, \
+#         BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
 #
-# TODO - known bug: if you change the name of a user while it is active we
-# throw an exception!
-
-############################################################################
+#     if Type == 'mic' and args == 'on':
+#         moduleInfo = natlink.getCurrentModule()
+#         findAndLoadFiles()
+#         beginCallback(moduleInfo, checkAll=1)
+#         loadModSpecific(moduleInfo)
 #
-# natlinkmain
+#     ## user: at start and at user switch:
+#     if Type == 'user' and userName != args[0]:
+#         moduleInfo = natlink.getCurrentModule()
 #
-# This Python module comprises the core of the Python based command and
-# control subsystem for Dragon NaturallySpeaking.  Python programs should
-# should not import this module.  Instead, this module is automatically
-# imported when the Python compatibility module starts.
+#         unloadEverything()
 #
-# The basic logic is as follows:
+#     changeCallbackLoadedModules(Type, args)
 #
-# (1) redirect stdout and stderr so we see messages in the dialog box which
-#   natlink.dll creates
 #
-# (2) compute the directory we are running from, by looking at this modules
-#   path as known to Python
+# def changeCallbackLoadedModules(Type, args):
+#     """BJ added, in order to intercept in a grammar (oops, repeat, control) in eg mic changed
 #
-# (3) load all filenames in our directory which begin with an underscore
-#
-# (4) install callbacks for user/mic changes and beginning of utterance
-#
-# A few print statements are commented out.  Remove the pound sign during
-# debugging to print information about when a module is loaded.
-#
-# start with the redirect, so the messages window responds:
-import natlink
-import sys
-import traceback
-import types
-import time
-import copy
-import os
-import os.path
-import imp              # module reloading
-import re     
-from stat import ST_MTIME      # file statistics
-import glob             # new way to collect the grammar files
-from pprint import pprint
-import inspect
-
-    # print("at start of natlinkmain, after redirect stderr and stdout")
-
-import natlinkstatus    # for extracting status info (QH)
-import natlinkstartup
-debugTiming=0
-# bookkeeping for Vocola:
-vocolaEnabled = 1  # first time try, is set to 0 if _vocola_main signals it is not active
-doVocolaFirst = '_vocola_main'
-vocolaIsLoaded = None  # 1 or None
-vocolaModule = None    # pointer to the module...
-
-reVocolaModuleName = re.compile(r'_vcl[0-9]?$')
-
-# status:
-status = natlinkstatus.NatlinkStatus()
-debugLoad = debugCallback = None
-canStartNatlink = True
-if status.getDNSInstallDir() == -1:
-    print('DNSInstallDir not valid, please run the Natlink config GUI to fix this')
-    canStartNatlink = False
-if status.getDNSIniDir() == -1:
-    print('DNSIniDir not valid, please run the Natlink config GUI to fix this')
-    canStartNatlink = False
-if canStartNatlink:
-    status.checkSysPath()
-    debugLoad = status.getDebugLoad()
-    debugCallback = status.getDebugCallback()
-    if debugLoad:
-        print('do extra output at (re)loading time: %s'% debugLoad)
-    if debugCallback:
-        print('do extra output at callback time: %s'% debugCallback)
-
-# QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
-# otherwise no grammar change checking is performed, only at microphone toggle
-checkForGrammarChanges = 0
-
-def setCheckForGrammarChanges(value):
-    """switching on or off (1 or 0), for continuous checking or only a mic toggle"""
-    global checkForGrammarChanges
-    checkForGrammarChanges = value
-
-# start silent, set this to 0:
-natlinkmainPrintsAtStart = 1
-natlinkmainPrintsAtEnd = 1
-
-#
-# This is the directory where the Python modules all reside.
-#
-
-# the base directory is one level above the core directory.
-# Vocola grammar files are located here.
-for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
-             'unimacroDirectory', 'userDirectory',
-             'WindowsVersion', 'BaseModel', 'BaseTopic',
-             'language', 'userLanguage', 'userTopic']:
-    if not name in globals():
-        globals()[name] = ''
-    else:
-        if debugCallback:
-            print('natlinkmain starting, global variable: %s: %s'% (name, globals()[name]))
-# set in findAndLoadFiles:
-try: searchImportDirs
-except NameError: searchImportDirs = []
-DNSVersion = status.getDNSVersion()
-try: DNSmode
-except NameError: DNSmode = 0
-             # can be changed in grammarX by the setMode command to
-             # 1 dictate, 2 command, 3 numbers, 4 spell
-             # commands currently from _general7,
-             # is reset temporarily in DisplayMessage function.
-             # it is only safe when changing modes is performed through
-             # this setMode function
-
-# at start and at changeCallback (new user) get the current language:
-language = ''
-shiftkey = ''  # {shift} or different in some other languages,
-               # will be changed at changecallback when a speech profile opens.
-               # for example tp {umschalt} for german speech profiles.
-               # Is used by natlinkutils.playString.
-#
-# We maintain a dictionary of all the modules which we have loaded.  The key
-# is the Python module name.  The value is the complete path to the loaded
-# module.
-#
-try: loadedFiles
-except NameError: loadedFiles = {}
-try: wrongFiles
-except NameError:  wrongFiles = {} # path and timestamp of files with an error in it...
-#
-# Module which was active last time we looked for module specific files
-#
-try: lastModule
-except NameError: lastModule = ''
-
-# for information printing only
-try: changeCallbackUserFirst
-except NameError: changeCallbackUserFirst = 1
-
-def unloadModule(modName):
-    """calls the 'unload' function of the module.
-
-    used in _control for specific unloading and reloading of modules
-    """
-    global lastModule, loadedFiles
-    safelyCall(modName, 'unload')
-    if modName in loadedFiles:
-        del loadedFiles[modName]
-    ## this is strange, a module can have more loadedFiles
-    if modName == lastModule:
-        lastModule = ''
-
-#
-# This function will load another Python module, usually one which the user
-# supplies.  This function will trap all execptions and report them so an
-# error in this function will not prevent another module from being
-# imported. This routine will also conditionaly reload a module if it has
-# changed.
-#
-def loadModule(modName):
-    """load a single module
-
-    mostly this goes with findAndLoadFiles, this is for a single module,
-    called from _control (Unimacro)
-    """
-    global loadedFiles
-    result = loadFile(modName)
-    if result:
-        loadedFiles[modName] = result
-    else:
-        print('loading module %s failed, put in "wrongFiles"'% modName)
-
-def loadFile(modName, origPath=None, origDate=None):
-    global wrongFiles  # keep track of non edited files with errors
-    try: fndFile,fndName,fndDesc = imp.find_module(modName, searchImportDirs)
-    except ImportError: return None     # module not found
-    
-    sourceDate = getFileDate(fndName)
-    
-    if debugLoad:
-        print('loadFile if changed modName %s, fndName: %s, origPath: %s'% (modName, fndName, origPath))
-
-    if origPath:
-        if fndName[-3:] != ".py":
-            # not a Python source file
-            fndFile.close()
-            safelyCall(modName,'unload')
-            return None
-        if origPath == fndName:
-            if debugLoad:
-                print('not changed: %s (%s, %s)'% (fndName, sourceDate, origDate))
-            if origDate >= sourceDate:
-                fndFile.close()
-                return origPath, origDate
-        if debugLoad:
-            print("Reloading", modName)
-
-        # if we know we are reloading a module, we call the unload function
-        # in that module first to release all objects
-        safelyCall(modName,'unload')
-    else:
-        if fndName[-3:] != ".py":
-            # not a Python source file
-            fndFile.close()
-            return None
-        if debugLoad: print(("Loading", modName)) 
-
-    if modName in wrongFiles:
-        wrongPath, sourceDate = wrongFiles[modName]
-        newDate = getFileDate(wrongPath)
-        if not newDate:
-            print('-- wrong grammar file removed: %s'% fndName)
-            del wrongFiles[modName]
-            return
-        elif newDate <= sourceDate:
-            print('-- skip unchanged wrong grammar file: %s'% wrongPath)
-            return
-        else:
-            print('-- retry changed grammar: %s'% modName)
-
-    try:
-        imp.load_module(modName,fndFile,fndName,fndDesc)
-        fndFile.close()
-        if fndName in wrongFiles:
-            del wrongFiles[fndName]  # release that
-        return fndName, sourceDate
-    except:
-        fndFile.close()
-        sys.stderr.write('Error loading '+modName+' from '+fndName+'\n' )
-        traceback.print_exc()
-        sourceDate = getFileDate(fndName)
-        wrongFiles[modName] = fndName, sourceDate
-        return
-
-# Returns the date on a file or 0 if the file does not exist
-
-def getFileDate(modName):
-    try: return os.stat(modName)[ST_MTIME]
-    except OSError: return 0        # file not found
-
-# Calls the unload member function of a given module.  Does not make the call
-# if the function does not exist and cleans up in the case of errors.
-
-def safelyCall(modName,funcName):
-    try:
-        func = getattr(sys.modules[modName], funcName)
-    except AttributeError:
-        # unload function does not exist
-        return None
-    try:
-        func(*[])
-    except:
-        sys.stderr.write( 'Error calling '+modName+'.'+funcName+'\n' )
-        traceback.print_exc()
-        return None
-
-#
-# This routine loads two types of files.  If curModule is empty then we will
-# load the global files which are all the files which begin with an
-# underscore in the current directory.  If curModule is not empty then we
-# load all the module specific files file all begin with the module name
-# followed by an optional underscore.
-#
-# Sample global files:
-#   _macro.py
-#   _other_stuff.py
-#
-# Sample module specific files (for curModule=wordpad)
-#   wordpad.py
-#   wordpad_extra.py
-#
-
-def findAndLoadFiles(curModule=None):
-    global loadedFiles, vocolaIsLoaded, vocolaModule, vocolaEnabled
-    if curModule == 'ApplicationFrameHost':
-        print("findAndLoadFiles, change module %s to %s"% (curModule, 'calc'))
-        curModule = 'calc'
-    moduleHasDot = None
-    if curModule:
-        # special case, encountered with Vocola modules with . in name:
-        moduleHasDot = curModule.find(".") >= 0
-        curModuleEscaped = re.escape(curModule)
-        pat = re.compile(r"""
-            ^(%s        # filename must match module name
-##            (_\w+)?)    # optional underscore followed by text (old)
-            (_.*)?)    # optional underscore followed by anything (or nothing) (QH)
-            [.]py$      # extension .py
-          """%curModuleEscaped, re.VERBOSE|re.IGNORECASE)
-    else:
-        pat = re.compile(r"""
-            ^(_         # filename must start with an underscore
-##            \w+)        # remainder of filename (old)
-             .+)        # remainder of filename (anything) (QH)
-            [.]py$      # extension .py
-          """, re.VERBOSE|re.IGNORECASE)
-
-    filesToLoad = {}
-    if userDirectory != '':
-        userDirFiles = [x for x in os.listdir(userDirectory) if x.endswith('.py')]
-        for x in userDirFiles:
-            res = pat.match(x)
-            if res:
-                modName = res.group(1)
-                addToFilesToLoad( filesToLoad, modName, userDirectory, moduleHasDot )
-    ## unimacro:
-    if status.UnimacroIsEnabled():
-        unimacroDirFiles = [x for x in os.listdir(unimacroDirectory) if x.endswith('.py')]
-        for x in unimacroDirFiles:
-            res = pat.match(x)
-            if res:
-                modName = res.group(1)
-                addToFilesToLoad( filesToLoad, modName, unimacroDirectory, moduleHasDot )
-    else:
-        unimacroDirFiles = []
-
-
-    # baseDirectory:
-    if baseDirectory:
-        baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
-    else:
-        baseDirFiles = []
-
-    # if present, load _vocola_main first, it can generate grammar files
-    # before proceeding:
-    vocolaEnabled = (vocolaEnabled and doVocolaFirst and doVocolaFirst+'.py' in baseDirFiles)
-    if debugLoad:
-        print('vocolaEnabled: %s'% vocolaEnabled)
-    if vocolaEnabled and not vocolaIsLoaded:
-        x = doVocolaFirst
-        loadedFile = loadedFiles.get(x, None)
-        if loadedFile:
-            origPath, origDate = loadedFile
-            loadedFiles[x] = loadFile(x, origPath, origDate)
-            print('Vocola first  repeat origPath: %s, origDate: %s'% loadFile)
-        else:
-            loadedFiles[x] = loadFile(x)
-            if debugLoad: print('Vocola first: ', x)
-        vocolaIsLoaded = 1
-        if doVocolaFirst:
-            if not doVocolaFirst in sys.modules:
-                sys.stderr.write("_vocola_main could not be loaded, please fix errors\n")
-                vocolaEnabled = 0
-            else:
-                vocolaModule = sys.modules[doVocolaFirst]
-                if not vocolaModule.VocolaEnabled:
-                    # vocola module signals vocola is not enabled:
-                    vocolaEnabled = 0
-                    del loadedFiles[x]
-                    if debugLoad: print('Vocola is disabled...')
-        # repeat the base directory, as Vocola just had the chance to rebuild Python grammar files:
-        baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
-    if debugLoad and curModule:
-        print("loading base directory with curModule: %s"% curModule)
-
-    for x in baseDirFiles:
-        res = pat.match(x)
-        if res:
-            modName = res.group(1)
-            if debugLoad and curModule:
-                print("application specific, baseDirFile MATCH: %s, group1: %s"% (x, modName))
-            addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
-        # else:
-        #     if debugLoad and curModule:
-        #         print("baseDirFile NO MATCH: %s"% x)
-
-    # Try to (re)load any files we find
-    # to Unimacro grammar control last:
-    controlModule = None
-
-    # user wishes?? _control last, _tasks first for Unimacro
-    keysToLoad = reorderKeys(list(filesToLoad.keys()))
-    if debugLoad: print(('filesToLoad: %s'% keysToLoad))
-
-    for x in keysToLoad:
-        if x == doVocolaFirst:
-            continue
-        loadedFile = loadedFiles.get(x, None)
-        if loadedFile:
-            origPath, origDate = loadedFile
-            loadedFiles[x] = loadFile(x, origPath, origDate)
-        else:
-            loadedFiles[x] = loadFile(x)
-        pass
-
-    # Unload any files which have been deleted
-    for name, loadedFile in list(loadedFiles.items()):
-        if loadedFile:
-            origPath, origDate = loadedFile
-        else:
-            continue
-        if origPath and not getFileDate(origPath):
-            if debugLoad:
-                print("natlinkmain, file is deleted, unload %s"% origPath)
-            safelyCall(name,'unload')
-            del loadedFiles[name]
-
-def reorderKeys(modulesKeys):
-    """here is the chance to influence the order of loading
-
-    for Unimacro do _control last and _tasks first
-    
-    and doVocolaFirst is excluded here, because it has a special treatment anyway...
-
-    """
-    L = copy.copy(modulesKeys)
-    gramsLast = ['_control']
-    gramsFirst = ['_tasks']
-    for g in gramsFirst:
-        if g in L:
-            L.remove(g)
-            L.insert(0, g)
-    for g in gramsLast:
-        if g in L:
-            L.remove(g)
-            L.append(g)
-    if debugLoad:
-        print('list of grammars to load: %s'% L)
-    return L
-
-def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
-    """add to the dict of filesToLoad,
-
-    if moduleHasDot (module name for example aaa.bbb), replace aaa.bbb to aaa_dot_bbb and
-    check the Python files accordingly. Fix for Vocola command files that have a . (dot)
-    in the module name. Also user grammar files can be written according to this trick.
-
-    Note: if manual changes have to be done, the aaa.bbb_ccc.py file MUST exist, never change
-    alone in aaa_dot_bbb_ccc.py
-    (Quintijn 29/11/2008)
-
-    """
-    if not moduleHasDot:
-        filesToLoad[modName] = None
-        return
-    # special case, check for special name and take that one instead of modName
-    newModName = modName.replace(".", "_dot_")
-    inFile = os.path.join(modDirectory, modName + ".py")
-    outFile = os.path.join(modDirectory, newModName + ".py")
-    dotDate = getFileDate(inFile)
-    _dot_Date = getFileDate(outFile)
-    if dotDate >= _dot_Date:
-        # aaa.bbb.py -->> aaa_dot_bbb.py, only if it outdated.
-##        print 'copy: %s to %s'% (inFile, outFile)
-        shutil.copyfile(inFile, outFile)
-    # set newModName to this one:
-    filesToLoad[newModName] = None
-##    print 'set newModName: %s'% newModName
-
-
-#
-# This function is called when we change users.  It calls the unload member
-# function in each loaded module.
-#
-
-def unloadEverything():
-    global loadedFiles, vocolaIsLoaded, vocolaModule
-    for x in loadedFiles:
-        if loadedFiles[x]:
-            if debugLoad: print(('unload grammar %s'% x))
-            safelyCall(x,'unload')
-            if x == doVocolaFirst:
-                vocolaIsLoaded = None
-                vocolaModule = None
-    loadedFiles = {}
-
-#
-# Compute the name of the current module and load all files which are
-# specific to that module.
-#
-
-def loadModSpecific(moduleInfo,onlyIfChanged=0):
-    """load program specific grammars
-
-    onlyIfChanged: default 0: check always. 1: check only if new module.
-    So in beginCallback you can call this one with onlyIfChanged=1 in order to
-    minimise the reloadings.
-    """
-    global lastModule
-    # this extracts the module base name like "wordpad"
-    try:
-        curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
-    except:
-        print("loadModSpecific: invalid modulename, skipping (moduleInfo): %s"% repr(moduleInfo))
-        curModule = ''
-
-    if curModule and not (onlyIfChanged and curModule==lastModule):
-        findAndLoadFiles(curModule)
-        lastModule = curModule
-
-def setSearchImportDirs():
-    """set the global list of import dirs, to be used for import
-    
-    and add them to sys.path if needed...
-
-    either [userDirectory, baseDirectory, unimacroDirectory] or less (if no userDirectory or no unimacroDirectory)
-
-    """
-    global searchImportDirs
-    searchImportDirs = []
-    if userDirectory != '':
-        searchImportDirs.append(userDirectory)
-    if unimacroDirectory != '':
-        searchImportDirs.append(unimacroDirectory)
-
-    searchImportDirs.append(baseDirectory)
-    added = False
-    for searchdir in reversed(searchImportDirs):
-        if not searchdir in sys.path:
-            sys.path.insert(0, searchdir)
-            added = True
-    if added:
-        print('from setSearchImportDirs: ')
-        pprint(sys.path)
-
-
-#
-# When a new utterance begins we check all the loaded modules for changes.
-# After that, we check to see whether we have to load a new module based on
-# the currently active Windows executable.
-#
-# If reloading a module fails, we do not remove it from the list of modules
-# to check in this session so the user can correct any problems and get the
-# module to reload again in the future.
-#
-# Note that we do not reload existing modules when we are in a nested
-# callback since that callback may be coming from code in the module we are
-# trying to reload (consider recognitionMimic).
-#
-
-prevModInfo = None
-def beginCallback(moduleInfo, checkAll=None):
-    global loadedFiles, prevModInfo
-    cbd = natlink.getCallbackDepth()
-    if debugCallback:
-        print('beginCallback, cbd: %s'% cbd)
-        # print 'beginCallback, cbd: %s, checkAll: %s, checkForGrammarChanges: %s'% \
-        #       (cbd, checkAll, checkForGrammarChanges)
-    # maybe should be 1...
-    if natlink.getCallbackDepth() > 1:
-        return
-    t0 = time.time()
-
-    if vocolaEnabled and vocolaIsLoaded:
-        result = vocolaModule.vocolaBeginCallback(moduleInfo)
-        if result == 2:
-            if debugCallback:
-                print('Vocola made new module, load all Python files')
-            findAndLoadFiles()
-            loadModSpecific(moduleInfo)
-        elif result == 1:
-            if debugCallback:
-                print('Vocola changed a Python module, check')
-            checkAll = 1
-        else:
-            if debugCallback:
-                print('no changes Vocola user files')
-
-    if checkAll or checkForGrammarChanges:
-        if debugCallback:
-            print('check for changed files (all files)...')
-        for x, loadedFile in loadedFiles.items():
-            if loadedFile:
-                origPath, origDate = loadedFile
-                loadedFiles[x] = loadFile(x, origPath, origDate)
-            else:
-                loadedFiles[x] = loadFile(x)
-        loadModSpecific(moduleInfo)  # in checkAll or checkForGrammarChanges mode each time
-    else:
-        if debugCallback:
-            print('check for changed files (only specific)')
-        loadModSpecific(moduleInfo, 1)  # only if changed module
-    if debugTiming:
-        print('checked all grammar files: %.6f'% (time.time()-t0,))
-
-#
-# This callback is called when the user changes or when the microphone
-# changes state.  We check for changes when the microphone is turned on.
-#
-# Note: getCurrentModule can raise the BadWindow except and if that happens
-# we ignore the callback.
-#
-
-def changeCallback(Type,args):
-    global userName, DNSuserDirectory, language, userLanguage, userTopic, \
-            BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
-
-    if debugCallback:
-        print('changeCallback, Type: %s, args: %s'% (Type, args))
-    if Type == 'mic' and args == 'on':
-        if debugCallback:
-            print('findAndLoadFiles...')
-        moduleInfo = natlink.getCurrentModule()
-        findAndLoadFiles()
-        beginCallback(moduleInfo, checkAll=1)
-        loadModSpecific(moduleInfo)
-
-    ## user: at start and at user switch:
-    if Type == 'user' and userName != args[0]:
-        if debugCallback:
-            print('callback user, args: %s'% repr(args))
-        moduleInfo = natlink.getCurrentModule()
-        if debugCallback:
-            print("---------changeCallback, User changed to", args[0])
-        elif not changeCallbackUserFirst:
-            # first time, no print message, but next time do...
-            print("\n--- user changed to: %s"% args[0])
-
-        unloadEverything()
-## this is not longer needed here, as we fixed the userDirectory
-##        changeUserDirectory()
-        status.clearUserInfo()
-        # if debugLoad: print('setUserInfo of natlinkstatus to: %s"'% repr(args))
-        status.setUserInfo(args)
-        language = status.getLanguage()
-        
-        DNSuserDirectory = status.getDNSuserDirectory()
-        userLanguage = status.getUserLanguage()
-        userTopic = status.getUserTopic()
-        baseTopic = status.getBaseTopic() # obsolescent, 2018, DPI15
-        baseModel = status.getBaseModel() # osbolescent, 2018, DPI 15
-        userName = status.getUserName()
-        shiftkey = status.getShiftKey()
-        if debugCallback:
-            print('setting shiftkey to: %s (language: %s)'% (shiftkey, language))
-
-        if debugCallback:
-            print('usercallback, language: %s'% language)
-
-        # initialize recentEnv in natlinkcorefunctions (new 2018, 4.1uniform)
-        natlinkstatus.AddExtendedEnvVariables()
-        natlinkstatus.AddNatlinkEnvironmentVariables(status=status)
-
-        if changeCallbackUserFirst:
-            natlinkstartup.start()
-            changeCallbackUserFirst = 0
-        # changed next two lines QH:
-        findAndLoadFiles()
-        beginCallback(moduleInfo, checkAll=1)
-        loadModSpecific(moduleInfo)
-        # # give a warning for BestMatch V , only for Dragon 12:
-        BaseModel = status.getBaseModel()
-        # BaseTopic = status.getBaseTopic(userTopic=userTopic)
-        BaseTopic = status.getBaseTopic()
-        if debugCallback:
-            print('language: %s (%s)'% (language, type(language)))
-            print('userLanguage: %s (%s)'% (userLanguage, type(userLanguage)))
-            print('DNSuserDirectory: %s (%s)'% (DNSuserDirectory, type(DNSuserDirectory)))
-        else:
-            ## end of user info message:
-            if language != 'enx':
-                print('--- userLanguage: %s\n'% language)
-
-    #ADDED BY BJ, possibility to finish exclusive mode by a grammar itself (around 2002)
-    # the grammar should include a function like:
-    #def changeCallback():
-    #    if thisGrammar:
-    #        thisGrammar.cancelMode()
-    # and the grammar should have a cancelMode function that finishes exclusive mode.
-    # see _oops, _repeat, _control for examples
-    changeCallbackLoadedModules(Type,args)
-
-    if debugCallback:
-        print('=== debugCallback info ===')
-        for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
-         'unimacroDirectory', 'userDirectory',
-         'WindowsVersion', 'BaseModel', 'BaseTopic',
-         'language', 'userLanguage', 'userTopic']:
-            if not name in globals():
-                print('natlinkmain, changeCallback, not in globals: %s'% name)
-            else:
-                print('natlinkmain changeCallback, global variable: %s: %s'% (name, globals()[name]))
-
-def changeCallbackLoadedModules(Type,args):
-    """BJ added, in order to intercept in a grammar (oops, repeat, control) in eg mic changed
-
-    in those cases the cancelMode can be called, so exclusiveMode is finished
-    """
-    global loadedFiles
-    sysmodules = sys.modules
-    for x in list(loadedFiles.keys()):
-        if loadedFiles[x]:
-            try: func = getattr(sysmodules[x], 'changeCallback')
-            except AttributeError: pass
-            else:
-##                print 'call changeCallback for: %s'% x
-                func(*[Type,args])
-
-# ### try here a adapted recognitionMimic function
-# def recognitionMimic(mimicList):
-#     """for Dragon 12, try execScript HeardWord
+#     in those cases the cancelMode can be called, so exclusiveMode is finished
 #     """
-#     if DNSVersion >= 12:
-#         script = 'HeardWord "%s"'% '", "'.join(mimicList)
-#         natlink.execScript(script)
-#     else:
-#         natlink.recognitionMimic(mimicList)
+#     sysmodules = sys.modules
+#     for x in list(loadedFiles.keys()):
+#         if loadedFiles[x]:
+#             try:
+#                 func = getattr(sysmodules[x], 'changeCallback')
+#             except AttributeError:
+#                 pass
+#             else:
+#                 func(*[Type, args])
+#
+#
+# def start_natlink(doNatConnect=None):
+#
+#     if not natlink.isNatSpeakRunning():
+#         print('start Dragon first, then rerun the script natlinkmain...')
+#         time.sleep(10)
+#         return
+#
+#     if not doNatConnect is None:
+#         if doNatConnect:
+#             print('start_natlink, do natConnect with option 1, threading')
+#             natlink.natConnect(1)  # 0 or 1, should not be needed when automatic startup
+#         else:
+#             print('start_natlink, do natConnect with option 0, no threading')
+#             natlink.natConnect(0)  # 0 or 1, should not be needed when automatic startup
+#
+#         print("----natlink.natConnect succeeded")
+#
+#     findAndLoadFiles()
+#     natlink.setBeginCallback(beginCallback)
+#     natlink.setChangeCallback(changeCallback)
 
-def start_natlink(doNatConnect=None):
-    """do the startup of the python macros system
-    
-    Better not use doNatConnect, but ensure this is done before calling, and with a finally: natlink.natDisconnect() call
-    """
-    global userDirectory, DNSVersion, coreDirectory, baseDirectory, WindowsVersion, unimacroDirectory, loadedFiles
-    print('--')
-    nGrammarsLoaded = len(loadedFiles)
-    if nGrammarsLoaded:
-        if debugLoad:
-            print("unload everything, %s grammars loaded"% nGrammarsLoaded)
-        unloadEverything()
-    else:
-        if debugLoad:
-            print("no grammars loaded yet")
 
-    if natlinkmainPrintsAtStart:
-        print('-- natlinkmain starting...')
+import configparser
+import importlib
+import importlib.machinery
+import importlib.util
+import logging
+import os
+import sys
+import time
+import traceback
+import winreg
+from types import ModuleType
+from typing import List, Dict, Set, Iterable, Optional
 
-    if not natlink.isNatSpeakRunning():
-        print('start Dragon first, then rerun the script natlinkmain...')
-        time.sleep(10)
-        return
+import natlink
 
-    if not doNatConnect is None:
-        if doNatConnect:
-            print('start_natlink, do natConnect with option 1, threading')
-            natlink.natConnect(1) # 0 or 1, should not be needed when automatic startup
+
+class NoGoodConfigFoundException(Exception):
+    pass
+
+
+class NatlinkMain:
+    def __init__(self, logger: logging.Logger, config: configparser.ConfigParser):
+        self.logger = logger
+        self.config = config
+        self.loaded_modules: Dict[str, ModuleType] = {}
+        self.bad_modules: Set[str] = set()
+        self.load_attempt_times: Dict[str, float] = {}
+
+    @property
+    def directories(self) -> List[str]:
+        if self.config.has_section('directories'):
+            return list(self.config['directories'].values())
         else:
-            print('start_natlink, do natConnect with option 0, no threading')
-            natlink.natConnect(0) # 0 or 1, should not be needed when automatic startup
+            return []
 
-        print("----natlink.natConnect succeeded")
 
-    # for modname in ['natlink', 'natlinkmain']:
-    #     try:
-    coreDirectory = os.path.split(
-            sys.modules['natlink'].__dict__['__file__'])[0]
-        # except KeyError:
-        #     pass
-        # else:
-        #     break
-    if not coreDirectory:
-        raise IOError("not a valid coreDirectory found in start_natlink() of natlinkmain.py")
-    if debugLoad: print("Natlink pyd dir: ", coreDirectory)
-    baseDirectory = os.path.normpath(os.path.abspath(os.path.join(coreDirectory,"..")))
-    if not baseDirectory in sys.path:
-        sys.path.insert(0,baseDirectory)
-        if debugLoad:
-            print('insert baseDirectory: %s to sys.path!'% baseDirectory)
-    if debugLoad: print(("Natlink base dir" + baseDirectory))
+    @property
+    def module_names(self) -> List[str]:
+        return self.module_names_in_dirs(self.directories)
 
-    # get the current user information from the Natlink module
-    userDirectory = status.getUserDirectory()
-    if userDirectory:
-        if not userDirectory in sys.path:
-            sys.path.insert(0,userDirectory)
-            if debugLoad:
-                print('insert userDirectory: %s to sys.path!'% userDirectory)
-        else:
-            if debugLoad:
-                print('userDirectory: %s'% userDirectory)
-    else:
-        if debugLoad:
-            print('no userDirectory')
+    @classmethod
+    def config_from_file(cls, fn: str) -> configparser.ConfigParser:
+        return cls.config_from_first_found_file([fn])
 
-    # for unimacro, in order to reach unimacro files to be imported:
-    unimacroDirectory = status.getUnimacroDirectory()
-    if unimacroDirectory:
-        if status.UnimacroIsEnabled():
-            if not unimacroDirectory in sys.path:
-                sys.path.insert(0,unimacroDirectory)
-                if debugLoad:
-                    print('insert unimacroDirectory: %s to sys.path!'% unimacroDirectory)
+    @staticmethod
+    def config_from_first_found_file(files: Iterable[str]) -> configparser.ConfigParser:
+        config = configparser.ConfigParser()
+        for fn in files:
+            if config.read(fn):
+                return config
+        raise NoGoodConfigFoundException(f'No good config found, did you define your ~/.natlink?')
+
+    @staticmethod
+    def module_names_in_dirs(directories: Iterable[str]) -> List[str]:
+
+        def is_script(f: str) -> bool:
+            return f.startswith('_') and f.endswith('.py')
+
+        init = '__init__.py'
+
+        mod_names: List[str] = []
+        for d in directories:
+            scripts = os.listdir(d)
+            scripts = sorted(filter(is_script, scripts))
+            if init in scripts:
+                scripts.remove(init)
+                scripts.insert(0, init)
+            names = [f[:-len('.py')] for f in scripts]
+            mod_names.extend(names)
+
+        return mod_names
+
+    @staticmethod
+    def add_dirs_to_path(directories: Iterable[str]) -> None:
+        sys.path.extend(directories)
+
+    def unload_module(self, module: ModuleType) -> None:
+        unload = getattr(module, 'unload', None)
+        if unload is not None:
+            self.logger.info(f'unloading module: {module.__name__}')
+            unload()
+
+    def load_modules(self, mod_names: Iterable[str]) -> None:
+        for mod_name in mod_names:
+            last_attempt_time = self.load_attempt_times.get(mod_name, 0.0)
+            self.load_attempt_times[mod_name] = time.time()
+            try:
+                if mod_name in self.bad_modules:
+                    spec = importlib.util.find_spec(mod_name)
+                    if spec is None:
+                        raise FileNotFoundError(f'Could not find spec for: {mod_name}')
+                    loader = spec.loader
+                    if loader is None:
+                        raise FileNotFoundError(f'Could not find loader for: {mod_name}')
+                    elif not isinstance(loader, importlib.machinery.SourceFileLoader):
+                        raise ValueError(f'module {mod_name} does not have a SourceFileLoader loader')
+                    last_modified_time = loader.path_stats(loader.path)['mtime']
+                    if last_attempt_time < last_modified_time:
+                        self.logger.info(f'loading previously bad module: {mod_name}')
+                        module = importlib.import_module(mod_name)
+                        self.bad_modules.remove(mod_name)
+                    else:
+                        self.logger.info(f'skipping unchanged bad module: {mod_name}')
+                        continue
+                else:
+                    maybe_module = self.loaded_modules.get(mod_name)
+                    if maybe_module is None:
+                        self.logger.info(f'loading module: {mod_name}')
+                        module = importlib.import_module(mod_name)
+                    else:
+                        module = maybe_module
+                        loader = module.__loader__
+                        if not isinstance(loader, importlib.machinery.SourceFileLoader):
+                            raise ValueError(f'module {mod_name} does not have a SourceFileLoader loader')
+                        last_modified_time = loader.path_stats(loader.path)['mtime']
+                        if last_attempt_time < last_modified_time:
+                            self.unload_module(module)
+                            self.logger.info(f'reloading module: {mod_name}')
+                            module = importlib.reload(module)
+                        else:
+                            self.logger.debug(f'skipping unchanged loaded module: {mod_name}')
+                            continue
+                self.loaded_modules[mod_name] = module
+            except Exception:
+                self.logger.exception(traceback.format_exc())
+                self.bad_modules.add(mod_name)
+                if mod_name in self.loaded_modules:
+                    del self.loaded_modules[mod_name]
+
+    def on_change_callback(self, change_type: str, args) -> None:
+        self.logger.debug(f'on_change_callback called with: change:{change_type}, args:{args}')
+        if change_type == 'mic' and args == 'on':
+            self.load_modules(self.module_names)
+
+    def start(self) -> None:
+        self.logger.info('starting natlinkmain')
+        self.add_dirs_to_path(self.directories)
+        self.load_modules(self.module_names)
+        natlink.setChangeCallback(self.on_change_callback)
+
+    def setup_logger(self) -> None:
+        for handler in list(self.logger.handlers):
+            self.logger.removeHandler(handler)
+        self.logger.addHandler(logging.StreamHandler(sys.stdout))
+        self.logger.propagate = False
+        if config.has_section('settings'):
+            level = config['settings'].get('log_level')
+            logging_levels = {
+                'CRITICAL': logging.CRITICAL,
+                'FATAL': logging.FATAL,
+                'ERROR': logging.ERROR,
+                'WARN': logging.WARNING,
+                'WARNING': logging.WARNING,
+                'INFO': logging.INFO,
+                'DEBUG': logging.DEBUG,
+                'NOTSET': logging.NOTSET,
+            }
+            log_level = logging_levels.get(level)
+            if log_level is not None:
+                self.logger.setLevel(level)
+                self.logger.debug(f'set log level to: {level}')
             else:
-                if debugLoad:
-                    print('unimacroDirectory: %s'% unimacroDirectory)
-        else:
-            if debugLoad:
-                print('Unimacro not enabled')
-
-    else:
-        if debugLoad:
-            print('no unimacroDirectory')
-
-    # setting searchImportDirs, also insert at front of sys.path if not in the list yet.
-    setSearchImportDirs()
-
-    # get invariant variables:
-    DNSVersion = status.getDNSVersion()
-    WindowsVersion = status.getWindowsVersion()
-
-    # init things identical to when user changes:
-    #   [MDL: this calls findAndLoadFiles()!]
-    changeCallback('user', natlink.getCurrentUser())
-
-##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
-
-    # load all global files in user directory and current directory
-    findAndLoadFiles()
-
-    # initialize our callbacks
-    natlink.setBeginCallback(beginCallback)
-    natlink.setChangeCallback(changeCallback)
-
-    print(('natlinkmain started from %s:\n  Natlink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
-              (status.getCoreDirectory(), status.getInstallVersion(),
-               DNSVersion, status.getPythonVersion(), WindowsVersion, )))
+                self.logger.error(f'Tried to set log level to {log_level}, '
+                                  f'valid choices are {list(logging_levels.keys())}')
 
 
-    if debugLoad:
-        print("userDirectory: %s\nbaseDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, baseDirectory, unimacroDirectory))
-        print("natlinkmain imported-----------------------------------")
-    elif natlinkmainPrintsAtEnd:
-        if status.UnimacroIsEnabled():
-            print('Unimacro enabled, UnimacroUserDirectory:\n  %s'% status.getUnimacroUserDirectory())
-        if status.VocolaIsEnabled():
-            print('Vocola enabled, VocolaUserDirectory:\n  %s'% status.getVocolaUserDirectory())
-        if userDirectory:
-            print("User defined macro's enabled, UserDirectory:\n  %s"% userDirectory)
-        print('-'*40)
-    #else:
-    #    natlinkLogMessage('natlinkmain started (imported)\n')
-    if status.hadWarning:
-        print('='*30)
-        print(status.getWarningText())
-        print('='*30)
-        status.emptyWarning()
+def get_natlink_system_config_filename() -> str:
+    hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, r'Software\Natlink', winreg.KEY_WOW64_32KEY)
+    with winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags) as natlink_key:
+        core_path, _ = winreg.QueryValueEx(natlink_key, "coreDir")
+        return core_path
 
-############################################################################
-#
-# Here is the initialization code.
-#
 
-# when you want to start natlink modules interactive from this module, set Testing to True
-# natlinkmain (which is the name of natlink.pyd when started from Dragon)
-# will then not start all natlink modules. Whenever you change this value, you need
-# to restart Dragon...
-Testing = False
+def config_locations() -> Iterable[str]:
+    yield os.path.expanduser('~/.natlink')
+    yield get_natlink_system_config_filename()
+
 
 if __name__ == "natlinkmain":
-
-    if canStartNatlink:
-        if Testing is False:
-            #sys.stdout = NewStdout()  # this is done at the top already
-            #sys.stderr = NewStderr()
-            start_natlink()
-        else:
-            print('natlinkmain imported only, Testing in progress')
-            print('\nDo not forget to put "Testing = False" again near bottom of natlinkmain.py in order to resume normal use...')
-            print('\n... and then restart Dragon.')
-    else:
-        print('Cannot start Natlink')
-elif __name__  == "__main__":
-    if Testing:
-        print("starting all Natlink stuff from natlinkmain.py")
-        natlink.natConnect(1)
-        try:
-            print("start_natlink starting...")
-            start_natlink()
-            print("after start_natlink...")
-        finally:
-            print("finally do natDisconnect()")
-            natlink.natDisconnect()
-    else:
-        print("run interactive, do nothing, enable Testing if you want to start Natlink from this module")
-    pass
+    logger = logging.getLogger('natlink')
+    config = NatlinkMain.config_from_first_found_file(config_locations())
+    main = NatlinkMain(logger, config)
+    main.setup_logger()
+    main.start()
