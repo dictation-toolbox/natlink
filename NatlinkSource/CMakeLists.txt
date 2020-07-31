@@ -46,10 +46,9 @@ set(HEADERS_FILES
         )
 source_group("Headers" FILES ${HEADERS_FILES})
 
-# TODO This should not be hard coded...
-include_directories("C:\\Python37_32bit\\include")
+find_package(PythonLibs ${PYTHON_VERSION} EXACT REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories("extern")
-link_directories("C:\\Python37_32bit\\libs")
 
 add_compile_definitions(DRAGON_VERSION=15)
 # Asserts that Py_ssize_t is used in argument parsing,
@@ -83,3 +82,4 @@ set_target_properties(
         LINKER_LANGUAGE C
 )
 SET_TARGET_PROPERTIES(${PROJECT_NAME}   PROPERTIES SUFFIX .pyd)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${PYTHON_LIBRARIES})
