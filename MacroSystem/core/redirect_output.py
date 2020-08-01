@@ -4,7 +4,6 @@
 # redirection of stdout and stderr is never done (unless you import this module)
 
 import sys
-
 import natlink
 
 
@@ -28,5 +27,6 @@ class NewStderr:
         pass
 
 
-sys.stdout = NewStdout()
-sys.stderr = NewStderr()
+def redirect() -> None:
+    sys.stdout = NewStdout()
+    sys.stderr = NewStderr()

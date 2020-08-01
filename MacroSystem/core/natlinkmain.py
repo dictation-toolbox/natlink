@@ -84,7 +84,7 @@ import time
 import traceback
 import winreg
 from types import ModuleType
-from typing import List, Dict, Set, Iterable, Optional
+from typing import List, Dict, Set, Iterable
 
 import natlink
 
@@ -107,7 +107,6 @@ class NatlinkMain:
             return list(self.config['directories'].values())
         else:
             return []
-
 
     @property
     def module_names(self) -> List[str]:
@@ -218,8 +217,8 @@ class NatlinkMain:
             self.logger.removeHandler(handler)
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
         self.logger.propagate = False
-        if config.has_section('settings'):
-            level = config['settings'].get('log_level')
+        if self.config.has_section('settings'):
+            level = self.config['settings'].get('log_level')
             logging_levels = {
                 'CRITICAL': logging.CRITICAL,
                 'FATAL': logging.FATAL,
@@ -251,7 +250,7 @@ def config_locations() -> Iterable[str]:
     yield get_natlink_system_config_filename()
 
 
-if __name__ == "natlinkmain":
+def run() -> None:
     logger = logging.getLogger('natlink')
     config = NatlinkMain.config_from_first_found_file(config_locations())
     main = NatlinkMain(logger, config)

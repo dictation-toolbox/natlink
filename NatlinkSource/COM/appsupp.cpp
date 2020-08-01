@@ -96,21 +96,30 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	if (PyRun_SimpleString("core_path, _ = winreg.QueryValueEx(natlink_key, \"coreDir\")")) {
 		m_pDragCode->displayText("Failed to extract value from Natlink key.\r\n");
 	}
-	PyRun_SimpleString("sys.path.append(core_path)");
 	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
+	PyRun_SimpleString("sys.path.append(core_path)");
+
+	if (PyRun_SimpleString("import redirect_output\r\nredirect_output.redirect()")) {
+		m_pDragCode->displayText("Failed to redirect output.\r\n");
+	}
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit( TRUE );
-    m_pNatLinkMain = PyImport_ImportModule( "redirect_output" );
     m_pNatLinkMain = PyImport_ImportModule( "natlinkmain" );
-	m_pDragCode->setDuringInit( FALSE );
-
-
-	if( m_pNatLinkMain == NULL ) {
+	if ( m_pNatLinkMain == NULL ) {
 		OutputDebugString(
 			TEXT( "NatLink: an exception occurred loading 'natlinkmain' module" ) ); // RW TEXT macro added
 		m_pDragCode->displayText(
 			"An exception occurred loading 'natlinkmain' module\r\n", TRUE );
+	}
+	PyObject* main_module = PyImport_AddModule("__main__");
+	PyObject_SetAttrString(main_module, "natlinkmain", m_pNatLinkMain);
+
+	if (PyRun_SimpleString("natlinkmain.run()")) {
+		OutputDebugString(
+			TEXT( "NatLink: an exception occurred in 'natlinkmain.run'" ) ); // RW TEXT macro added
+		m_pDragCode->displayText(
+			"An exception occurred in 'natlinkmain.run' module\r\n", TRUE );
 		if (PyErr_Occurred()) {
 			PyObject *ptype, *pvalue, *ptraceback;
 			PyErr_Fetch(&ptype, &pvalue, &ptraceback);
@@ -126,6 +135,7 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 			PyErr_Restore(ptype, pvalue, ptraceback);
 		}
 	}
+	m_pDragCode->setDuringInit( FALSE );
 
 	return S_OK;
 }
