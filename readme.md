@@ -79,7 +79,7 @@ To compile, run the CMakeLists.txt file from Visual Studio after selecting the d
 CMake settings for different versions of Python are included in CMakeSettings.json.
 You must be compiling in 32-bit release mode with debug info using the Microsoft Visual C++ compiler.
 You must have the corresponding Python (and it must be 32 bit) already installed on your system.
-Output will appear under NatlinkSource\\out\\build\\\[PythonVersion\].
+Output will appear under out\\build\\\[PythonVersion\]\\NatlinkSource.
 
 ## Main (Python)
 The Python layer is found in MacroSystem\\core.
@@ -89,8 +89,11 @@ and its job is to load the configuration files and then load any user scripts.
 ## Installer (Inno Setup)
 The installer/uninstaller is compiled using [Inno Setup](https://jrsoftware.org/isinfo.php).
 The inno setup script is found under the InstallerSource directory.
-You must first compile natlink.pyd before you can compile the installer.
-Output will appear under InstallerSource\\out.
+Make sure the Inno Setup compiler iscc.exe is in your PATH.
+To compile, run the CMakeLists.txt file from Visual Studio after selecting the desired Python.
+Output will appear under out\\build\\\[PythonVersion\]\\InstallerSource.
+The installer executable is self-contained and may be distributed.
+
 
 ## Why 32-bit?
 Currently Dragon NaturallySpeaking (up to version 15) is itself a 32-bit application and it is therefore
