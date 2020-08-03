@@ -1,19 +1,13 @@
 cmake_minimum_required(VERSION 3.12)
-# Project
-#get_filename_component(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" ABSOLUTE)
-#set(DEPENDENCIES_DIR ${PROJECT_DIR}/dependencies)
-set(PROJECT_NAME natlink)
+set(PROJECT_NAME NatlinkPyd)
 set(CMAKE_CXX_STANDARD 20)
 
-
-# make binary python callable
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS  ON)
 
 project(${PROJECT_NAME})
 
-# Source Files
 set(SRC_FILES
         COM/appsupp.cpp
         DictationObject.cpp
@@ -29,7 +23,6 @@ set(SRC_FILES
         )
 source_group("Sources" FILES ${SRC_FILES})
 
-# Header Files
 set(HEADERS_FILES
         COM/appsupp.h
         COM/comsupp.h
@@ -51,6 +44,7 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories("extern")
 
 add_compile_definitions(DRAGON_VERSION=15)
+add_compile_definitions(NATLINK_VERSION="${NATLINK_VERSION}")
 # Asserts that Py_ssize_t is used in argument parsing,
 # see note at top of https://docs.python.org/3/c-api/arg.html
 add_compile_definitions(PY_SSIZE_T_CLEAN)
@@ -78,8 +72,8 @@ set_target_properties(
         ${PROJECT_NAME}
         PROPERTIES
         PREFIX ""
+        SUFFIX ".pyd"
         OUTPUT_NAME "natlink"
         LINKER_LANGUAGE C
 )
-SET_TARGET_PROPERTIES(${PROJECT_NAME}   PROPERTIES SUFFIX .pyd)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${PYTHON_LIBRARIES})

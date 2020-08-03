@@ -74,8 +74,13 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 			"Failed to initialize NatSpeak interfaces\r\n", TRUE );
 		return S_OK;
 	}
-	const std::string versionMsg = std::string("Python Version: ") + std::string(Py_GetVersion()) + std::string("\r\n");
-	m_pDragCode->displayText(versionMsg.c_str());
+
+#ifdef NATLINK_VERSION
+	const std::string natlinkVersionMsg = std::string("Natlink Version: ") + std::string(NATLINK_VERSION) + std::string("\r\n");
+	m_pDragCode->displayText(natlinkVersionMsg.c_str());
+#endif
+	const std::string pythonVersionMsg = std::string("Python Version: ") + std::string(Py_GetVersion()) + std::string("\r\n");
+	m_pDragCode->displayText(pythonVersionMsg.c_str());
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
 	* According to PEP514 python should scan this registry location when

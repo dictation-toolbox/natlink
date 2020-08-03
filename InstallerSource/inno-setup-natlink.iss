@@ -1,9 +1,18 @@
 #define MyAppName "Natlink"
-#define MyAppVersion "4.2"
-#define PythonVersion "3.8-32"
+#ifndef MyAppVersion
+  #define MyAppVersion "4.2"
+#endif
+#ifndef PythonVersion
+  #define PythonVersion "3.8-32"
+#endif
 #define MyGUID "{{dd990001-bb89-11d2-b031-0060088dc929}"
 #define Bits "32bit"
-#define ProjectRoot ".."
+#ifndef SourceRoot
+  #define SourceRoot ".."
+#endif
+#ifndef BinaryRoot
+  #define BinaryRoot ".."
+#endif
 
 [Setup]
 AppId={#MyGUID}
@@ -11,8 +20,8 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
-LicenseFile={#ProjectRoot}\LICENSE
-OutputDir={#ProjectRoot}\InstallerSource\out
+LicenseFile={#SourceRoot}\LICENSE
+OutputDir={#SourceRoot}\InstallerSource\out
 OutputBaseFilename=natlink{#MyAppVersion}-py{#PythonVersion}-setup
 Compression=lzma
 SolidCompression=yes
@@ -22,9 +31,9 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "{#ProjectRoot}\MacroSystem\core\natlinkmain.py"; DestDir: "{app}\MacroSystem\core";
-Source: "{#ProjectRoot}\MacroSystem\core\redirect_output.py"; DestDir: "{app}\MacroSystem\core";
-Source: "{#ProjectRoot}\NatlinkSource\out\build\{#PythonVersion}\natlink.pyd"; DestDir: "{app}\MacroSystem\core"; Flags: onlyifdoesntexist regserver {#Bits}
+Source: "{#SourceRoot}\MacroSystem\core\natlinkmain.py"; DestDir: "{app}\MacroSystem\core";
+Source: "{#SourceRoot}\MacroSystem\core\redirect_output.py"; DestDir: "{app}\MacroSystem\core";
+Source: "{#BinaryRoot}\NatlinkSource\natlink.pyd"; DestDir: "{app}\MacroSystem\core"; Flags: onlyifdoesntexist regserver {#Bits}
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
