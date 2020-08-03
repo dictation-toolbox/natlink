@@ -23,6 +23,18 @@
             "ctestCommandArgs": "",
             "inheritEnvironments": [ "msvc_x86" ],
             "variables": []
+        },
+        {
+            "name": "3.6-32",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "buildRoot": "${projectDir}\\out\\build\\${name}",
+            "installRoot": "${projectDir}\\out\\install\\${name}",
+            "cmakeCommandArgs": "-DPYTHON_VERSION:STRING=3.6",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x86" ],
+            "variables": []
         }
     ]
 }

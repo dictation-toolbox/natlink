@@ -6,7 +6,7 @@ This fork does not include
  [Dragonfly](https://github.com/dictation-toolbox/dragonfly),
  [Unimacro, or Vocolo](https://qh.antenna.nl/unimacro/aboutunimacro/index.html).
 These should be installed separately and included in the Natlink config as necessary.
-The currently supported versions of Python are: 3.8-32 and 3.7-32.
+The currently supported versions of Python are: 3.8-32, 3.7-32, and 3.6-32.
 
 ## Installation
 
@@ -16,7 +16,8 @@ please file a bug report.
 
 To install:
  - Install Dragon NaturallySpeaking
- - Install Python (32 bit required) and your desired extra packages (e.g. dragonfly)
+ - Install Python (32 bit required), and make sure to check the box to add it to your PATH
+ - Pip install your desired extra packages (e.g. dragonfly)
  - Download and run the Natlink installer.
  - Put a .natlink file in your home directory (see example below)
  - Add your scripts
@@ -44,7 +45,6 @@ systemwide=C:\Path\To\Shared\Scripts
 [settings]
 log_level=DEBUG
 ````
-
 
 #### Section: \[directories\] (optional)
 These are directories that Natlink will look for scripts to load in.

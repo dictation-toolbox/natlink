@@ -11,7 +11,7 @@
   #define SourceRoot ".."
 #endif
 #ifndef BinaryRoot
-  #define BinaryRoot ".."
+  #define BinaryRoot "..\out\build\3.8-32"
 #endif
 
 [Setup]
@@ -21,7 +21,7 @@ AppVersion={#MyAppVersion}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 LicenseFile={#SourceRoot}\LICENSE
-OutputDir={#SourceRoot}\InstallerSource\out
+OutputDir={#BinaryRoot}\InstallerSource
 OutputBaseFilename=natlink{#MyAppVersion}-py{#PythonVersion}-setup
 Compression=lzma
 SolidCompression=yes
@@ -31,9 +31,9 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "{#SourceRoot}\MacroSystem\core\natlinkmain.py"; DestDir: "{app}\MacroSystem\core";
-Source: "{#SourceRoot}\MacroSystem\core\redirect_output.py"; DestDir: "{app}\MacroSystem\core";
-Source: "{#BinaryRoot}\NatlinkSource\natlink.pyd"; DestDir: "{app}\MacroSystem\core"; Flags: onlyifdoesntexist regserver {#Bits}
+Source: "{#SourceRoot}\MacroSystem\core\natlinkmain.py"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion
+Source: "{#SourceRoot}\MacroSystem\core\redirect_output.py"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion
+Source: "{#BinaryRoot}\NatlinkSource\natlink.pyd"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion regserver {#Bits}
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
