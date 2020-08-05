@@ -14,18 +14,27 @@
 #   - fixed a few minor bugs detecting errors
 #
 
+import copy
+import locale
+import os
+import os.path
+import pprint
+import re
+from collections import OrderedDict
+from struct import pack
+
 ########################################################################
 #
 # Grammar format
-# 
+#
 #   Rule Definition:
-#       <RuleName> imported ;
-#       <RuleName> = Expression ;
-#       <RuleName> exported = Expression ;
+#       <RuleName> imported
+#       <RuleName> = Expression
+#       <RuleName> exported = Expression
 #
 #   A rule needs the keywork "exported" in order to be activated or visible
 #   to other grammars for importing.
-# 
+#
 #   Expression:
 #       <RuleName>                  // no spaces
 #       {ListName}                  // no spaces
@@ -47,23 +56,15 @@
 #   <dgndictation>  A special rule which corresponds to dictation.  It is
 #       roughly equivelent to ( <dgnwords> | "\(noise)" )+  However, the
 #       noise words is filtered out from any results reported to clients.
-# 
+#
 ########################################################################
-from struct import pack
-import re
-import sys
-import os
-import os.path
-import traceback
-import utilsqh ## convertToBinary
-import importlib
-import locale
-from collections import OrderedDict
 
-preferredencoding =  locale.getpreferredencoding()
+preferredencoding = locale.getpreferredencoding()
 
-reAlphaNumeric = re.compile('\w+$')
-reValidName = re.compile('^[a-zA-Z0-9-_]+$')
+reAlphaNumeric = re.compile(r'\w+$')
+reValidName = re.compile(r'^[a-zA-Z0-9-_]+$')
+
+
 #
 # This is the lexical scanner.
 #
@@ -73,68 +74,67 @@ reValidName = re.compile('^[a-zA-Z0-9-_]+$')
 # and value will contain the details about the next token in the input stream.
 #
 
-import pprint
-import copy
 
 class GrammarParserError(Exception):
     """these exceptions all expect the scanObj as second parameter
     in order to produce the correct message info
     """
+
     def __init__(self, message, scanObj=None):
         self.message = message
         self.scanObj = scanObj
-        
+
     def __str__(self):
         """return special info for scanner or parser exceptions.
         """
         if self.scanObj is None:
-            return message
-        
+            return self.message
+
         gramName = self.scanObj.grammarName or ""
         L = []
         if self.scanObj.phase == 'scanning':
             line = self.scanObj.line + 1
-            startPos, charPos = self.scanObj.start+1, self.scanObj.char+1
+            startPos, charPos = self.scanObj.start + 1, self.scanObj.char + 1
             if startPos == charPos:
                 pos = charPos
             elif charPos - startPos == 1:
                 pos = charPos
             else:
-                pos = '%s-%s'% (startPos, charPos)
+                pos = '%s-%s' % (startPos, charPos)
             errorMarker = self.scanObj.getError()
             if gramName:
-                L.append('in grammar "%s", line %s, position %s:'% (gramName, line, pos))
+                L.append('in grammar "%s", line %s, position %s:' % (gramName, line, pos))
             else:
-                L.append('in grammar, line %s, position %s:'% (line, pos))
+                L.append('in grammar, line %s, position %s:' % (line, pos))
             L.append(self.message)
             L.append(errorMarker)
         else:
             if gramName:
-                L.append('in grammar "%s", %s scanning/parsing:'% (gramName, self.scanObj.phase))
+                L.append('in grammar "%s", %s scanning/parsing:' % (gramName, self.scanObj.phase))
             else:
-                L.append('in grammar, %s scanning/parsing:'% self.scanObj.phase)
+                L.append('in grammar, %s scanning/parsing:' % self.scanObj.phase)
             L.append(self.message)
-        
+
         L.append(self.dumpToFile())
-            
+
         return '\n'.join(L)
-        
+
     def dumpToFile(self):
         """dump grammar and traceback to a file for debugging purposes
         """
         gramName = self.scanObj.grammarName
         dirName = os.path.dirname(__file__)
         if gramName:
-            filename = 'error_info_grammar_%s.txt'% gramName
+            filename = 'error_info_grammar_%s.txt' % gramName
         else:
             filename = 'error_info_natlink_grammar.txt'
         filepath = os.path.join(dirName, filename)
         L = []
         if gramName:
-            L.append('Info about scanner/parser error of Natlink grammar "%s"\n'% gramName)
+            L.append('Info about scanner/parser error of Natlink grammar "%s"\n' % gramName)
         else:
             L.append('Info about scanner/parser error of Natlink grammar\n')
-    
+
         # does not work:
         # excType, excValue, tb = sys.exc_info()
         # excName = str(excType).split("'")[1]
@@ -147,8 +147,8 @@ class GrammarParserError(Exception):
             for i, line in enumerate(self.scanObj.text):
                 if i == self.scanObj.line:
                     L.append(self.scanObj.getError())
-                elif i == len(self.scanObj.text)-1 and not line.strip():
-                    L.append("%.2s: %s"% (i+1, line))
+                elif i == len(self.scanObj.text) - 1 and not line.strip():
+                    L.append("%.2s: %s" % (i + 1, line))
 
         else:
             L.extend(self.scanObj.text)
@@ -156,12 +156,14 @@ class GrammarParserError(Exception):
 
         try:
             open(filepath, 'w').write('\n'.join(L))
-            return '(more info in file: %s)'% filepath
+            return '(more info in file: %s)' % filepath
         except IOError as message:
-            return '(could not write more info to error file %s (%s))'% (filepath, message)
-                         
-class SyntaxError(GrammarParserError):
+            return '(could not write more info to error file %s (%s))' % (filepath, message)
+
+
+class GrammarSyntaxError(GrammarParserError):
     pass
+
 
 class LexicalError(GrammarParserError):
     pass
@@ -170,21 +172,24 @@ class LexicalError(GrammarParserError):
 class SymbolError(GrammarParserError):
     pass
 
+
 class GrammarError(GrammarParserError):
     pass
 
-SeqCode = 1     # sequence
-AltCode = 2     # alternative
-RepCode = 3     # repeat
-OptCode = 4     # optional
+
+SeqCode = 1  # sequence
+AltCode = 2  # alternative
+RepCode = 3  # repeat
+OptCode = 4  # optional
+
 
 class GramScanner:
 
-    def __init__(self,text=None, grammarName=None):
+    def __init__(self, text=None, grammarName=None):
         self.token = None
         self.value = None
-        self.line = 0;
-        self.char = 0;
+        self.line = 0
+        self.char = 0
         if text:
             self.text = copy.copy(text)
             if self.text[-1] != '\0':
@@ -194,24 +199,24 @@ class GramScanner:
         self.lastWhiteSpace = ""  # for gramscannerreverse
         self.grammarName = grammarName or ""
         self.phase = "before"
-    
-    def newText(self,text):
-        GramScanner.__init__(self, text);
+
+    def newText(self, text):
+        GramScanner.__init__(self, text)
 
     def getError(self):
         if self.token == '\0' or self.text[self.line][0] == '\0':
             errorLine = '=> (end of input)\n'
         else:
-            spacing = ' '*self.start
+            spacing = ' ' * self.start
             hats = '^' * (self.char - self.start)
             if not hats:
                 hats = '^'
-            errorLine = '=> '+self.text[self.line]+'\n=> '+spacing + hats + '\n'
+            errorLine = '=> ' + self.text[self.line] + '\n=> ' + spacing + hats + '\n'
         return errorLine
 
     def testAndEatToken(self, token):
         if self.token != token:
-            raise SyntaxError( "expecting '%s'" % token, self )
+            raise GrammarSyntaxError("expecting '%s'" % token, self)
         else:
             value = self.value
             self.getAnotherToken()
@@ -240,11 +245,10 @@ class GramScanner:
             self.lastWhiteSpace = ln[oldPos:ch]
         else:
             L = [self.text[oldLine][oldPos:]]
-            for l in range(oldLine+1, self.line):
+            for l in range(oldLine + 1, self.line):
                 L.append(self.text[l])
             L.append(self.text[self.line][:ch])
             self.lastWhiteSpace = '\n'.join(L)
-                
 
     def getAnotherToken(self):
         """return a token and (if appropriate) the corresponding value
@@ -256,11 +260,11 @@ class GramScanner:
         Note "exorted" and "imported" and list names and rule names must have token 'word'
         Grammar words can have dqword or sqword too. (dqword and sqword added by QH, july 2012)
         
-        """    
-    
+        """
+
         if self.token == '\0':
             return None
-        
+
         self.value = None
 
         self.skipWhiteSpace()  # now leaves self.lastWhiteSpace
@@ -269,7 +273,7 @@ class GramScanner:
         lnLen = len(ln)
 
         self.start = ch
-        
+
         if ln[ch] in ['(', ')', '[', ']', '|', '+', '=', ';', '\0']:
             self.token = ln[ch]
             ch = ch + 1
@@ -280,28 +284,28 @@ class GramScanner:
             while ch < lnLen and ln[ch] != '"':
                 ch = ch + 1
             if ch >= lnLen:
-                raise LexicalError( "expecting closing quote in word name", self)
-            self.value = ln[self.start+1:ch]
+                raise LexicalError("expecting closing quote in word name", self)
+            self.value = ln[self.start + 1:ch]
             ch = ch + 1
-        
+
         elif ln[ch] == "'":
             self.token = 'sqword'
             ch = ch + 1
             while ch < lnLen and ln[ch] != "'":
                 ch = ch + 1
             if ch >= lnLen:
-                raise LexicalError( "expecting closing quote in word name", self)
-            self.value = ln[self.start+1:ch]
+                raise LexicalError("expecting closing quote in word name", self)
+            self.value = ln[self.start + 1:ch]
             ch = ch + 1
-        
+
         elif ln[ch] == '<':
             self.token = 'rule'
             ch = ch + 1
             while ch < lnLen and ln[ch] != '>':
                 ch = ch + 1
             if ch >= lnLen:
-                raise LexicalError( "expecting closing angle bracket in rule name", self)
-            self.value = ln[self.start+1:ch]
+                raise LexicalError("expecting closing angle bracket in rule name", self)
+            self.value = ln[self.start + 1:ch]
             ch = ch + 1
 
         elif ln[ch] == '{':
@@ -310,8 +314,8 @@ class GramScanner:
             while ch < lnLen and ln[ch] != '}':
                 ch = ch + 1
             if ch >= lnLen:
-                raise LexicalError( "expecting closing brace in list name", self)
-            self.value = ln[self.start+1:ch]
+                raise LexicalError("expecting closing brace in list name", self)
+            self.value = ln[self.start + 1:ch]
             ch = ch + 1
 
         elif isCharOrDigit(ln[ch]):
@@ -321,9 +325,10 @@ class GramScanner:
             self.value = ln[self.start:ch]
 
         else:
-            raise LexicalError( "unknown character found", self)
+            raise LexicalError("unknown character found", self)
 
         self.char = ch
+
 
 ## generator function, scanning the tokens and whitespace of a gramspec:
 ## this class can scan a grammar, return the tokens in a generator function
@@ -332,8 +337,8 @@ class GramScannerReverse(GramScanner):
     def __init__(self, text=None):
         text2 = splitApartLines(text)
         GramScanner.__init__(self, text2)
-        self.returnList = []        
-            
+        self.returnList = []
+
     def gramscannergen(self):
         """this generator function gives all whitespace, token, value tuples
         
@@ -357,29 +362,30 @@ class GramScannerReverse(GramScanner):
             L.append(whitespace)
         if token == '\0':
             return
-        
+
         if token == 'rule':
-            L.append('<%s>'% value)
+            L.append('<%s>' % value)
         elif token == 'list':
-            L.append('{%s}'% value)
+            L.append('{%s}' % value)
         elif token == 'word':
             if reAlphaNumeric.match(value):
                 L.append(value)
             elif "'" in value:
-                L.append('"%s"'% value)
-            else :
-                L.append("'%s'"% value)
+                L.append('"%s"' % value)
+            else:
+                L.append("'%s'" % value)
         elif token == 'sqword':
-            L.append("'%s'"% value)
+            L.append("'%s'" % value)
         elif token == 'dqword':
-            L.append('"%s"'% value)
+            L.append('"%s"' % value)
         elif value is None:
             L.append(token)
         else:
             L.append(value)
-    
+
     def mergeReturnList(self):
         return ''.join(self.returnList)
+
 
 #
 # This is a rule parser.  It builds up data structures which contain details
@@ -392,7 +398,7 @@ class GramScannerReverse(GramScanner):
 
 class GramParser:
 
-    def __init__(self,text, grammarName=None):
+    def __init__(self, text, grammarName=None):
         self.knownRules = dict()
         self.knownWords = dict()
         self.knownLists = dict()
@@ -404,35 +410,36 @@ class GramParser:
         self.ruleDefines = dict()
         self.grammarName = grammarName or ""
         text = splitApartLines(text)
-        
+
         self.scanObj = GramScanner(text, grammarName=grammarName)
 
     def doParse(self, *text):
         self.scanObj.phase = "scanning"
         if text:
             self.scanObj.newText(text[0])
-        #try:
+        # try:
         self.scanObj.getAnotherToken()
         while self.scanObj.token != '\0':
             self.parseRule()
         self.scanObj.phase = "after"
-        #except SyntaxError, message:
+        # except SyntaxError, message:
         #    raise SyntaxError("Syntax error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError())
-        #except LexicalError, message:
+        # except LexicalError, message:
         #    raise LexicalError("Lexical error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError())
-        #except SymbolError, message:
+        # except SymbolError, message:
         #    raise SymbolError("Symbol error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError())
 
     def parseRule(self):
         if self.scanObj.token != 'rule':
-            raise SyntaxError("expecting rule name to start rule definition", self.scanObj)
+            raise GrammarSyntaxError("expecting rule name to start rule definition", self.scanObj)
         ruleName = self.scanObj.value
         if not isValidListOrRulename(ruleName):
-            raise SyntaxError('rulename may may only contain ascii letters, digits or - or _: "%s"'% ruleName, self.scanObj)
+            raise GrammarSyntaxError('rulename may may only contain ascii letters, digits or - or _: "%s"' % ruleName,
+                                     self.scanObj)
         if ruleName in self.ruleDefines:
-            raise SymbolError( "rule '%s' has already been defined" % ruleName, self.scanObj)
+            raise SymbolError("rule '%s' has already been defined" % ruleName, self.scanObj)
         if ruleName in self.importRules:
-            raise SymbolError( "rule '%s' has already been defined as imported" % ruleName, self.scanObj)
+            raise SymbolError("rule '%s' has already been defined as imported" % ruleName, self.scanObj)
         if ruleName in self.knownRules:
             ruleNumber = self.knownRules[ruleName]
         else:
@@ -461,7 +468,7 @@ class GramParser:
             self.scanObj.getAnotherToken()
             moreThanOne = 1
         if moreThanOne:
-            return [ ('start', AltCode) ] + definition + [ ('end', AltCode) ]
+            return [('start', AltCode)] + definition + [('end', AltCode)]
         else:
             return definition
 
@@ -470,11 +477,11 @@ class GramParser:
         moreThanOne = 0
         while 1:
             definition = definition + self.parseExpr3()
-            if self.scanObj.token not in ( 'word', 'sqword', 'dqword', 'rule', 'list', '(', '[' ):
+            if self.scanObj.token not in ('word', 'sqword', 'dqword', 'rule', 'list', '(', '['):
                 break
             moreThanOne = 1
         if moreThanOne:
-            return [ ('start', SeqCode) ] + definition + [ ('end', SeqCode) ]
+            return [('start', SeqCode)] + definition + [('end', SeqCode)]
         else:
             return definition
 
@@ -482,7 +489,7 @@ class GramParser:
         definition = self.parseExpr4()
         if self.scanObj.token == '+':
             self.scanObj.getAnotherToken()
-            return [ ('start', RepCode) ] + definition + [ ('end', RepCode) ]
+            return [('start', RepCode)] + definition + [('end', RepCode)]
         else:
             return definition
 
@@ -490,7 +497,7 @@ class GramParser:
         if self.scanObj.token in ['word', 'sqword', 'dqword']:
             wordName = self.scanObj.value
             if not wordName:
-                raise SyntaxError("empty word name", self.scanObj)
+                raise GrammarSyntaxError("empty word name", self.scanObj)
             if wordName in self.knownWords:
                 wordNumber = self.knownWords[wordName]
             else:
@@ -498,14 +505,15 @@ class GramParser:
                 self.nextWord = self.nextWord + 1
                 self.knownWords[wordName] = wordNumber
             self.scanObj.getAnotherToken()
-            return [ ( 'word', wordNumber ) ]
-                
+            return [('word', wordNumber)]
+
         elif self.scanObj.token == 'list':
             listName = self.scanObj.value
             if not listName:
-                raise SyntaxError("empty word name", self.scanObj)
+                raise GrammarSyntaxError("empty word name", self.scanObj)
             if not isValidListOrRulename(listName):
-                raise SyntaxError('listname may may only contain ascii letters, digits or - or _: "%s"'% listName, self.scanObj)
+                raise GrammarSyntaxError('listname may may only contain ascii letters, digits or - or _: "%s"' % listName,
+                                         self.scanObj)
             if listName in self.knownLists:
                 listNumber = self.knownLists[listName]
             else:
@@ -513,14 +521,15 @@ class GramParser:
                 self.nextList = self.nextList + 1
                 self.knownLists[listName] = listNumber
             self.scanObj.getAnotherToken()
-            return [ ( 'list', listNumber ) ]
-                
+            return [('list', listNumber)]
+
         elif self.scanObj.token == 'rule':
             ruleName = self.scanObj.value
             if not ruleName:
-                raise SyntaxError("empty word name", self.scanObj)
+                raise GrammarSyntaxError("empty word name", self.scanObj)
             if not isValidListOrRulename(ruleName):
-                raise SyntaxError('rulename may may only contain ascii letters, digits or - or _: "%s"'% ruleName, self.scanObj)
+                raise GrammarSyntaxError('rulename may may only contain ascii letters, digits or - or _: "%s"' % ruleName,
+                                         self.scanObj)
             if ruleName in self.knownRules:
                 ruleNumber = self.knownRules[ruleName]
             else:
@@ -528,8 +537,8 @@ class GramParser:
                 self.nextRule = self.nextRule + 1
                 self.knownRules[ruleName] = ruleNumber
             self.scanObj.getAnotherToken()
-            return [ ( 'rule', ruleNumber ) ]
-                
+            return [('rule', ruleNumber)]
+
         elif self.scanObj.token == '(':
             self.scanObj.getAnotherToken()
             definition = self.parseExpr()
@@ -540,33 +549,33 @@ class GramParser:
             self.scanObj.getAnotherToken()
             definition = self.parseExpr()
             self.scanObj.testAndEatToken(']')
-            #self.reportOptionalRule(definition)
-            return [ ('start', OptCode) ] + definition + [ ('end', OptCode) ]
+            # self.reportOptionalRule(definition)
+            return [('start', OptCode)] + definition + [('end', OptCode)]
 
         else:
-            raise SyntaxError( "expecting expression (word, rule, etc.)", self.scanObj)
+            raise GrammarSyntaxError("expecting expression (word, rule, etc.)", self.scanObj)
 
     def reportOptionalRule(self, definition):
         """print the words that are optional, for testing BestMatch V"""
-        wordsRev = OrderedDict([(v,k) for k,v in self.knownWords.items()])
+        wordsRev = OrderedDict([(v, k) for k, v in self.knownWords.items()])
 
         for w, number in definition:
             if w == 'word':
-                print('optional word: %s'% wordsRev[number])
+                print('optional word: %s' % wordsRev[number])
 
     def checkForErrors(self):
         if not len(self.exportRules):
             raise GrammarError("no rules were exported")
         for ruleName in list(self.knownRules.keys()):
             if ruleName not in self.importRules and ruleName not in self.ruleDefines:
-                raise GrammarError( "rule '%s' was not defined or imported" % ruleName)
+                raise GrammarError("rule '%s' was not defined or imported" % ruleName)
 
     def dumpString(self):
         """returns the parts that are non empty
         """
         L = []
         for name in ["knownRules", "knownLists", "knownWords",
-                    "exportRules","importRules" , "ruleDefines" ]:
+                     "exportRules", "importRules", "ruleDefines"]:
             var = getattr(self, name)
             if var:
                 L.append(name + ":")
@@ -578,23 +587,23 @@ class GramParser:
         reverse numbers of rules and ruleDefines... must be identical in gramparserlexyacc...
         """
         L = []
-        rulesRev = OrderedDict([(v,k) for k,v in list(self.knownRules.items())])
-        wordsRev = OrderedDict([(v,k) for k,v in list(self.knownWords.items())])
-        listsRev = OrderedDict([(v,k) for k,v in list(self.knownLists.items())])
-        codeRev = {SeqCode:'SeqCode',
-                   AltCode:'AltCode',
-                   RepCode:'RepCode',
-                   OptCode:'OptCode'}
-    
-        for name in ["exportRules","importRules"]:
+        rulesRev = OrderedDict([(v, k) for k, v in list(self.knownRules.items())])
+        wordsRev = OrderedDict([(v, k) for k, v in list(self.knownWords.items())])
+        listsRev = OrderedDict([(v, k) for k, v in list(self.knownLists.items())])
+        codeRev = {SeqCode: 'SeqCode',
+                   AltCode: 'AltCode',
+                   RepCode: 'RepCode',
+                   OptCode: 'OptCode'}
+
+        for name in ["exportRules", "importRules"]:
             var = getattr(self, name)
             if var:
-                L.append('%s: %s'% (name, ', '.join(var)))
+                L.append('%s: %s' % (name, ', '.join(var)))
         if self.ruleDefines:
-            ruleDefinesNice = OrderedDict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev,codeRev) \
-                                                for item in ruleList]) \
-                                     for (rulename,ruleList) in list(self.ruleDefines.items())])
-                                    
+            ruleDefinesNice = OrderedDict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev, codeRev) \
+                                                       for item in ruleList]) \
+                                           for (rulename, ruleList) in list(self.ruleDefines.items())])
+
             L.append(pprint.pformat(ruleDefinesNice))
         return '\n'.join(L)
 
@@ -606,27 +615,27 @@ class GramParser:
         reverse numbers of rules and ruleDefines... must be identical in gramparserlexyacc...
         """
         D = {}
-        rulesRev = OrderedDict([(v,k) for k,v in list(self.knownRules.items())])
-        wordsRev = OrderedDict([(v,k) for k,v in list(self.knownWords.items())])
-        listsRev = OrderedDict([(v,k) for k,v in list(self.knownLists.items())])
-        codeRev = {SeqCode:'SeqCode',
-                   AltCode:'AltCode',
-                   RepCode:'RepCode',
-                   OptCode:'OptCode'}
-    
-        for name in ["exportRules","importRules"]:
+        rulesRev = OrderedDict([(v, k) for k, v in list(self.knownRules.items())])
+        wordsRev = OrderedDict([(v, k) for k, v in list(self.knownWords.items())])
+        listsRev = OrderedDict([(v, k) for k, v in list(self.knownLists.items())])
+        codeRev = {SeqCode: 'SeqCode',
+                   AltCode: 'AltCode',
+                   RepCode: 'RepCode',
+                   OptCode: 'OptCode'}
+
+        for name in ["exportRules", "importRules"]:
             var = getattr(self, name)
             if var:
                 D[name] = list(var.keys())
         if self.ruleDefines:
-            ruleDefinesNice = dict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev,codeRev) \
+            ruleDefinesNice = dict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev, codeRev) \
                                                 for item in ruleList]) \
-                                     for (rulename,ruleList) in list(self.ruleDefines.items())])
-            D['ruleDefines'] = ruleDefinesNice       
+                                    for (rulename, ruleList) in list(self.ruleDefines.items())])
+            D['ruleDefines'] = ruleDefinesNice
         return D
 
     def nicenItem(self, item, rulesRev, wordsRev, listsRev, codeRev):
-        i,v = item
+        i, v = item
         if i == 'word':
             return (i, wordsRev[v])
         elif i == 'list':
@@ -636,7 +645,9 @@ class GramParser:
         elif i in ('start', 'end'):
             return (i, codeRev[v])
         else:
-            raise ValueError('invalid item in nicenItem: %s'% i)
+            raise ValueError('invalid item in nicenItem: %s' % i)
+
+
 #
 # This function takes a GramParser class which contains the parse of a grammar
 # and returns a "string" object which contains the binary representation of
@@ -673,7 +684,7 @@ def packGrammar(parseObj):
     return b"".join(output)
 
 
-def packGrammarChunk(chunktype,chunkdict):
+def packGrammarChunk(chunktype, chunkdict):
     output = []
     totalLen = 0
 
@@ -685,21 +696,21 @@ def packGrammarChunk(chunktype,chunkdict):
         #   DWORD dwSize = number of bytes in entry
         #   DWORD dwNum  = ID number for this rule/word
         #   DWORD szName = name of rule/word, zero-term'd and padded to dword
-        paddedLen = ( len(word) + 4 ) & 0xFFFC
-        output.append(pack("LL%ds" % paddedLen, paddedLen+8, value, word ))
-        totalLen = totalLen + paddedLen+8
+        paddedLen = (len(word) + 4) & 0xFFFC
+        output.append(pack("LL%ds" % paddedLen, paddedLen + 8, value, word))
+        totalLen = totalLen + paddedLen + 8
 
     # chunk header
     #   DWORD dwChunkID = type
     #   DWORD dwChunkSize = number of bytes in chunk not including this header
-    output.insert(0, pack("LL", chunktype, totalLen ))
+    output.insert(0, pack("LL", chunktype, totalLen))
     return b"".join(output)
 
 
-def packGrammarRules(chunktype,names,chunkdict):
+def packGrammarRules(chunktype, names, chunkdict):
     output = []
     totalLen = 0
-    elemType = { 'start':1, 'end':2, 'word':3, 'rule':4, 'list':6 }
+    elemType = {'start': 1, 'end': 2, 'word': 3, 'rule': 4, 'list': 6}
 
     for word, element in chunkdict.items():
         ruleDef = []
@@ -712,35 +723,38 @@ def packGrammarRules(chunktype,names,chunkdict):
             #   DWORD dwValue = element value
             ruleDef.append(pack("HHL", elemType[element[0]], 0, element[1]))
             ruleLen = ruleLen + 8
-        
+
         # rule definition:
         #   DWORD dwSize = number of bytes in rule definition
         #   DWORD dwnum  = ID number of rule
-        output.append(pack("LL", ruleLen+8, names[word] ))
+        output.append(pack("LL", ruleLen + 8, names[word]))
         output.append(b"".join(ruleDef))
-        totalLen = totalLen + ruleLen+8
+        totalLen = totalLen + ruleLen + 8
 
     # chunk header:
     #   DWORD dwChunkID = type
     #   DWORD dwChunkSize = number of bytes in chunk not including this header
-    output.insert(0, pack("LL", chunktype, totalLen ))
+    output.insert(0, pack("LL", chunktype, totalLen))
     return b"".join(output)
+
+
 #
 # This is a routine which was included for testing but can also be used to 
 # compile grammar files.  It takes an input file name containing a grammar 
 # and an output file name to write the binary into.
 #
 
-def parseGrammarAndSave(inName,outName):
-    inFile = open(inName,'r')
-    parseObj = GramParser()
-    parseObj.doParse( inFile.readlines() )
-    inFile.close()
-    binary = gramparser.packGrammar(parseObj)
-    outFile = open(outName,'wb')
-    outFile.write( binary )
-    outFile.write( "hello" )
-    outFile.close()
+# def parseGrammarAndSave(inName, outName):
+#     inFile = open(inName, 'r')
+#     parseObj = GramParser()
+#     parseObj.doParse(inFile.readlines())
+#     inFile.close()
+#     binary = packGrammar(parseObj)
+#     outFile = open(outName, 'wb')
+#     outFile.write(binary)
+#     outFile.write("hello")
+#     outFile.close()
+
 
 def isCharOrDigit(ch):
     """test if ch is letter or digit or - or _
@@ -754,6 +768,7 @@ def isCharOrDigit(ch):
         return 1
     # else false
 
+
 def isValidListOrRulename(word):
     """test if there are no accented characters in a listname or rulename
     
@@ -761,6 +776,7 @@ def isValidListOrRulename(word):
     """
     if reValidName.match(word):
         return 1
+
 
 #
 # This utility routine will split apart strings at linefeeds in a list of
@@ -804,20 +820,21 @@ def splitApartLines(lines):
     List = list(_splitApartLinesSpacing(lines))
     ## last item of List is the value to left strip all lines...
     leftStrip = List.pop()
-    
+
     ## ignore empty lines at end:
     while not List[-1]: List.pop()
 
     if not leftStrip:
         return List
     LList = []
-    leftStringStr = ' '*leftStrip
+    leftStringStr = ' ' * leftStrip
     for line in List:
         if line.startswith(leftStringStr):
             LList.append(line[leftStrip:])
         else:
             LList.append(line)
     return LList
+
 
 def _splitApartLinesSpacing(lines):
     """yield line by line, last item is minimum left spacing of lines
@@ -846,7 +863,8 @@ def _splitApartLinesSpacing(lines):
     else:
         for part in lines:
             if type(part) != str:
-                raise ValueError("_splitApartLinesSpacing, item of list should be str, not %s\n(%s)"% (type(part), part))
+                raise ValueError(
+                    "_splitApartLinesSpacing, item of list should be str, not %s\n(%s)" % (type(part), part))
             firstLine = True
             for line in _splitApartStr(part):
                 lSpaces = len(line) - len(line.strip())
@@ -858,8 +876,8 @@ def _splitApartLinesSpacing(lines):
                     minSpacing = min(minSpacing, lSpaces)
                 yield line
     yield minSpacing or 0
-                
-            
+
+
 def _splitApartStr(lines):
     """yield the lines of a str of input, rstrip each lines
     """
@@ -867,6 +885,7 @@ def _splitApartStr(lines):
     # Lines = lines.split('\n')
     for line in lines.split('\n'):
         yield line.rstrip()
+
 
 test = """
 
@@ -929,23 +948,22 @@ ruleDefines:
 
 """
 
-    
 testRecognitionMimicGrammar = """
 
 >>> gramSpec = '''
-...                <runone> exported = mimic runone;
-...                <runtwo> exported = mimic two {colors};
-...                <runthree> exported = mimic three <extraword>;
-...                <runfour> exported = mimic four <extrawords>;
-...                <runfive> exported = mimic five <extralist>;
-...                <runsix> exported = mimic six {colors}+;
-...                <runseven> exported = mimic seven <wordsalternatives>;
-...                <runeight> exported = mimic eight <wordsalternatives> [<wordsalternatives>+];
-...                <optional>  = very | small | big;
-...                <extralist> = {furniture};
-...                <extraword> = painting ;
-...                <extrawords> = modern painting ;
-...                <wordsalternatives> = house | tent | church | tower;
+...                <runone> exported = mimic runone
+...                <runtwo> exported = mimic two {colors}
+...                <runthree> exported = mimic three <extraword>
+...                <runfour> exported = mimic four <extrawords>
+...                <runfive> exported = mimic five <extralist>
+...                <runsix> exported = mimic six {colors}+
+...                <runseven> exported = mimic seven <wordsalternatives>
+...                <runeight> exported = mimic eight <wordsalternatives> [<wordsalternatives>+]
+...                <optional>  = very | small | big
+...                <extralist> = {furniture}
+...                <extraword> = painting 
+...                <extrawords> = modern painting 
+...                <wordsalternatives> = house | tent | church | tower
 ...            '''
 >>> parser = GramParser(gramSpec)
 >>> parser.doParse()
@@ -1051,19 +1069,19 @@ expecting rule name to start rule definition
 (more info in file: C:\NatlinkGIT3\Natlink\MacroSystem\core\error_info_natlink_grammar.txt)
         """
 
-
 ###doctest handling:
 __test__ = {'test': test,
             'testRecognitionMimicGrammar': testRecognitionMimicGrammar,
             'testError': testError
             }
 
+
 def _test():
     import doctest
-    
+
     doctest.master = None
-    return  doctest.testmod()
-            
+    return doctest.testmod()
+
+
 if __name__ == "__main__":
     _test()
-
