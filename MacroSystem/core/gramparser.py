@@ -28,9 +28,9 @@ from struct import pack
 # Grammar format
 #
 #   Rule Definition:
-#       <RuleName> imported
-#       <RuleName> = Expression
-#       <RuleName> exported = Expression
+#       <RuleName> imported ;
+#       <RuleName> = Expression ;
+#       <RuleName> exported = Expression ;
 #
 #   A rule needs the keywork "exported" in order to be activated or visible
 #   to other grammars for importing.
@@ -65,14 +65,6 @@ reAlphaNumeric = re.compile(r'\w+$')
 reValidName = re.compile(r'^[a-zA-Z0-9-_]+$')
 
 
-#
-# This is the lexical scanner.
-#
-# We take a list of strings as input (such as would be returned by readlines).
-#
-# After every call to getAnotherToken or testAndEatToken the variables token
-# and value will contain the details about the next token in the input stream.
-#
 
 
 class GrammarParserError(Exception):
@@ -115,7 +107,7 @@ class GrammarParserError(Exception):
                 L.append('in grammar, %s scanning/parsing:' % self.scanObj.phase)
             L.append(self.message)
 
-        L.append(self.dumpToFile())
+        # L.append(self.dumpToFile())
 
         return '\n'.join(L)
 
@@ -183,6 +175,14 @@ RepCode = 3  # repeat
 OptCode = 4  # optional
 
 
+#
+# This is the lexical scanner.
+#
+# We take a list of strings as input (such as would be returned by readlines).
+#
+# After every call to getAnotherToken or testAndEatToken the variables token
+# and value will contain the details about the next token in the input stream.
+#
 class GramScanner:
 
     def __init__(self, text=None, grammarName=None):
@@ -423,7 +423,7 @@ class GramParser:
             self.parseRule()
         self.scanObj.phase = "after"
         # except SyntaxError, message:
-        #    raise SyntaxError("Syntax error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError())
+        #    raise GrammarSyntaxError("Syntax error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError())
         # except LexicalError, message:
         #    raise LexicalError("Lexical error at column: %d\n%s\n"%(self.scanObj.start,message)+self.scanObj.getError())
         # except SymbolError, message:
@@ -951,19 +951,19 @@ ruleDefines:
 testRecognitionMimicGrammar = """
 
 >>> gramSpec = '''
-...                <runone> exported = mimic runone
-...                <runtwo> exported = mimic two {colors}
-...                <runthree> exported = mimic three <extraword>
-...                <runfour> exported = mimic four <extrawords>
-...                <runfive> exported = mimic five <extralist>
-...                <runsix> exported = mimic six {colors}+
-...                <runseven> exported = mimic seven <wordsalternatives>
-...                <runeight> exported = mimic eight <wordsalternatives> [<wordsalternatives>+]
-...                <optional>  = very | small | big
-...                <extralist> = {furniture}
-...                <extraword> = painting 
-...                <extrawords> = modern painting 
-...                <wordsalternatives> = house | tent | church | tower
+...                <runone> exported = mimic runone;
+...                <runtwo> exported = mimic two {colors};
+...                <runthree> exported = mimic three <extraword>;
+...                <runfour> exported = mimic four <extrawords>;
+...                <runfive> exported = mimic five <extralist>;
+...                <runsix> exported = mimic six {colors}+;
+...                <runseven> exported = mimic seven <wordsalternatives>;
+...                <runeight> exported = mimic eight <wordsalternatives> [<wordsalternatives>+];
+...                <optional>  = very | small | big;
+...                <extralist> = {furniture};
+...                <extraword> = painting ;
+...                <extrawords> = modern painting ;
+...                <wordsalternatives> = house | tent | church | tower;
 ...            '''
 >>> parser = GramParser(gramSpec)
 >>> parser.doParse()
@@ -1061,13 +1061,12 @@ testError = r"""
 >>> parser = GramParser(gramSpec)
 >>> parser.doParse()
 Traceback (most recent call last):
-SyntaxError: in grammar, line 1, position 1-9:
+GrammarSyntaxError: in grammar, line 1, position 1-9:
 expecting rule name to start rule definition
 => badvalue;
 => ^^^^^^^^
 <BLANKLINE>
-(more info in file: C:\NatlinkGIT3\Natlink\MacroSystem\core\error_info_natlink_grammar.txt)
-        """
+"""
 
 ###doctest handling:
 __test__ = {'test': test,
