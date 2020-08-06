@@ -146,7 +146,9 @@ class NatlinkMain:
 
     @staticmethod
     def add_dirs_to_path(directories: Iterable[str]) -> None:
-        sys.path.extend(directories)
+        for d in directories:
+            if d not in sys.path:
+                sys.path.append(d)
 
     def unload_module(self, module: ModuleType) -> None:
         unload = getattr(module, 'unload', None)
