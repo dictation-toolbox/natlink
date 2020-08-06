@@ -84,7 +84,7 @@ import time
 import traceback
 import winreg
 from types import ModuleType
-from typing import List, Dict, Set, Iterable
+from typing import List, Dict, Set, Iterable, Any
 
 import natlink
 
@@ -201,7 +201,7 @@ class NatlinkMain:
                 if mod_name in self.loaded_modules:
                     del self.loaded_modules[mod_name]
 
-    def on_change_callback(self, change_type: str, args) -> None:
+    def on_change_callback(self, change_type: str, args: Any) -> None:
         self.logger.debug(f'on_change_callback called with: change:{change_type}, args:{args}')
         if change_type == 'mic' and args == 'on':
             self.load_modules(self.module_names)
