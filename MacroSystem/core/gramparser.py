@@ -56,7 +56,7 @@ from collections import OrderedDict
 from enum import unique, IntEnum
 from struct import pack
 
-from typing import Optional, List, Iterator, Tuple, Dict, Iterable, Union, Any, cast
+from typing import Optional, List, Iterator, Tuple, Dict, Iterable, Union, Any, Generator, TypeVar, Generic
 
 preferredencoding = locale.getpreferredencoding()
 
@@ -771,6 +771,26 @@ def isValidListOrRulename(word: str) -> bool:
     return bool(reValidName.match(word))
 
 
+YieldType = TypeVar('YieldType')
+SendType = TypeVar('SendType')
+ReturnType = TypeVar('ReturnType')
+
+
+class GeneratorWithReturnValue(Generic[YieldType, SendType, ReturnType]):
+
+    def __init__(self, gen: Generator[YieldType, SendType, ReturnType]):
+        self.gen = gen
+        self._value: ReturnType
+
+    def __iter__(self) -> Generator[YieldType, SendType, ReturnType]:
+        self._value = yield from self.gen
+        return self._value
+
+    @property
+    def value(self) -> ReturnType:
+        return self._value
+
+
 #
 # This utility routine will split apart strings at linefeeds in a list of
 # strings.  For example:
@@ -809,12 +829,11 @@ def splitApartLines(lines: Union[str, Iterable[str]]) -> List[str]:
 
 
     """
+
     # lines can be str or list, each list item can hold str or list
-    myListWithMinSpaceAtEnd = list(_splitApartLinesSpacing(lines))
-    # last item of myList is the value to left strip all lines...
-    leftStrip = myListWithMinSpaceAtEnd.pop()
-    assert isinstance(leftStrip, int)
-    myList = cast(List[str], myListWithMinSpaceAtEnd)
+    gen = GeneratorWithReturnValue(_splitApartLinesSpacing(lines))
+    myList = list(gen)
+    leftStrip = gen.value
 
     # ignore empty lines at end:
     while not myList[-1]:
@@ -825,7 +844,6 @@ def splitApartLines(lines: Union[str, Iterable[str]]) -> List[str]:
     myLList: List[str] = []
     leftStringStr = ' ' * leftStrip
     for line in myList:
-        assert isinstance(line, str)
         if line.startswith(leftStringStr):
             myLList.append(line[leftStrip:])
         else:
@@ -833,7 +851,7 @@ def splitApartLines(lines: Union[str, Iterable[str]]) -> List[str]:
     return myLList
 
 
-def _splitApartLinesSpacing(lines: Union[Iterable[str], str]) -> Iterator[Union[str, int]]:
+def _splitApartLinesSpacing(lines: Union[Iterable[str], str]) -> Generator[str, None, int]:
     """yield line by line, last item is minimum left spacing of lines
     
     each yielded line is rstripped, and the number of left spaced is recorded.
@@ -872,7 +890,7 @@ def _splitApartLinesSpacing(lines: Union[Iterable[str], str]) -> Iterator[Union[
                 else:
                     minSpacing = min(minSpacing, lSpaces)
                 yield line
-    yield minSpacing or 0
+    return minSpacing or 0
 
 
 def _splitApartStr(lines: str) -> Iterator[str]:
