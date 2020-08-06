@@ -125,13 +125,6 @@ class GrammarParserError(Exception):
         else:
             L.append('Info about scanner/parser error of Natlink grammar\n')
 
-        # does not work:
-        # excType, excValue, tb = sys.exc_info()
-        # excName = str(excType).split("'")[1]
-        # L.append('%s: %s'% (excName, excValue))
-        # L.extend(traceback.format_tb(tb, limit=-2))
-        # print(''.join(t))
-
         L.append('\nThe complete grammar:\n')
         if self.scanObj.phase == 'scanning':
             for i, line in enumerate(self.scanObj.text):
@@ -172,15 +165,15 @@ class ElementCode(IntEnum):
     OptCode = 4  # optional
 
 
-#
-# This is the lexical scanner.
-#
-# We take a list of strings as input (such as would be returned by readlines).
-#
-# After every call to getAnotherToken or testAndEatToken the variables token
-# and value will contain the details about the next token in the input stream.
-#
 class GramScanner:
+    """
+    This is the lexical scanner.
+
+    We take a list of strings as input (such as would be returned by readlines).
+
+    After every call to getAnotherToken or testAndEatToken the variables token
+    and value will contain the details about the next token in the input stream.
+    """
 
     def __init__(self, text: Optional[List[str]] = None, grammarName: Optional[str] = None) -> None:
         self.token: Optional[str] = None
@@ -328,18 +321,21 @@ class GramScanner:
         self.char = ch
 
 
-# generator function, scanning the tokens and whitespace of a gramspec:
-# this class can scan a grammar, return the tokens in a generator function
-# and put back the results exactly the same:
 class GramScannerReverse(GramScanner):
+    """
+    generator function, scanning the tokens and whitespace of a gramspec:
+    this class can scan a grammar, return the tokens in a generator function
+    and put back the results exactly the same
+    """
+
     def __init__(self, text: List[str]):
         text2 = splitApartLines(text)
         GramScanner.__init__(self, text2)
         self.returnList: List[str] = []
 
     def gramscannergen(self) -> Iterator[Tuple[str, Optional[str], Optional[str]]]:
-        """this generator function gives all whitespace, token, value tuples
-        
+        """
+        this generator function gives all whitespace, token, value tuples
         end with (whitespace, '\0', None)
         """
         while 1:
@@ -386,20 +382,20 @@ class GramScannerReverse(GramScanner):
         return ''.join(self.returnList)
 
 
-#
-# This is a rule parser.  It builds up data structures which contain details
-# about the rules in the parsed text.
-#
-# The definition of a rule is an array which contains tuples.  The array 
-# contains the rule elements in sequence.  The tuples are pairs of element
-# type and element value
-#
 Definition = List[Tuple[str, int]]
 
 
 class GramParser:
+    """
+    This is a rule parser.  It builds up data structures which contain details
+    about the rules in the parsed text.
 
-    def __init__(self, text: List[str], grammarName: Optional[str] = None):
+    The definition of a rule is an array which contains tuples.  The array
+    contains the rule elements in sequence.  The tuples are pairs of element
+    type and element value
+    """
+
+    def __init__(self, text: Union[str, List[str]], grammarName: Optional[str] = None):
         self.knownRules: Dict[str, int] = dict()
         self.knownWords: Dict[str, int] = dict()
         self.knownLists: Dict[str, int] = dict()
@@ -648,21 +644,20 @@ class GramParser:
             raise ValueError('invalid item in nicenItem: %s' % i)
 
 
-#
-# This function takes a GramParser class which contains the parse of a grammar
-# and returns a "string" object which contains the binary representation of
-# that grammar.
-#
-# The binary form is standard SAPI which consists a header followed by five
-# "chunks".  The first four chunks are all in the same format and are lists
-# of the names and number of the exported rules, imported rules, lists and
-# words respectively.
-#
-# The fifth chunk contains the details of the elements which make up each
-# defined rule.
-#
-
 def packGrammar(parseObj: GramParser) -> bytes:
+    """
+    This function takes a GramParser class which contains the parse of a grammar
+    and returns a "string" object which contains the binary representation of
+    that grammar.
+
+    The binary form is standard SAPI which consists a header followed by five
+    "chunks".  The first four chunks are all in the same format and are lists
+    of the names and number of the exported rules, imported rules, lists and
+    words respectively.
+
+    The fifth chunk contains the details of the elements which make up each
+    defined rule.
+    """
     # header:
     #   DWORD dwType  = 0
     #   DWORD dwFlags = 0
@@ -799,7 +794,7 @@ class GeneratorWithReturnValue(Generic[YieldType, SendType, ReturnType]):
 #
 # Becomes:
 #
-#   [ "This is line one\n", "This is line two", "This is line three" ]
+#   [ "This is line one", "This is line two", "This is line three" ]
 #
 # newly written, Quintijn Hoogenboom, february 2020:
 #
@@ -807,30 +802,10 @@ def splitApartLines(lines: Union[str, Iterable[str]]) -> List[str]:
     """split apart the lines of a grammar and clean up unwanted spacing
     
     all lines are rstripped (in _splitApartLinesSpacing)
-    input is either a str or a list of str.
     the left spacing is analysed: of each list item, if present,
     the first line is ignored, because of triple quotes strings, which can indent following lines.
-
->>> splitApartLines("\\n     <start> exported = d\xe9mo sample one; \\n")
-['<start> exported = démo sample one;']
-
-## First line does not influence the stripping of the other ones:
->>> splitApartLines(["This is line one\\n This is line two, one space", "  This is line three, one more space"])
-['This is line one', 'This is line two, one space', ' This is line three, one more space']
-
-## But only if first line has no spaces at start.
-## result, indent of one space in the second line:
->>> splitApartLines([" This is line one, one space\\n  This is line two, two spaces"])
-['This is line one, one space', ' This is line two, two spaces']
-
-## Initial lines of each of the two strings have no indent. So the left stripping is 4 here:
->>> splitApartLines(["Initial line\\n    This is line two indented\\n        This is line three extra indented", "Second string no indent\\n    But second line indented four"])
-['Initial line', 'This is line two indented', '    This is line three extra indented', 'Second string no indent', 'But second line indented four']
-
-
     """
 
-    # lines can be str or list, each list item can hold str or list
     gen = GeneratorWithReturnValue(_splitApartLinesSpacing(lines))
     myList = list(gen)
     leftStrip = gen.value
@@ -899,201 +874,3 @@ def _splitApartStr(lines: str) -> Iterator[str]:
     assert isinstance(lines, str)
     for line in lines.split('\n'):
         yield line.rstrip()
-
-
-test = """
-
-## testing the result of the packGrammar function for simple grammars:
-
->>> gramSpec = ['<rule> exported = action;']
->>> parser = GramParser(gramSpec)
->>> parser.doParse()
->>> parser.checkForErrors()
->>> print(parser.dumpString())
-knownRules:
-{'rule': 1}
-knownWords:
-{'action': 1}
-exportRules:
-{'rule': 1}
-ruleDefines:
-{'rule': [('word', 1)]}
-
->>> repr(packGrammar(parser))
-"b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00rule\\\\x00\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
-
->>> gramSpec = ['<ruleList> exported = action {List};']
->>> parser = GramParser(gramSpec)
->>> parser.doParse()
->>> parser.checkForErrors()
->>> print(parser.dumpString())
-knownRules:
-{'ruleList': 1}
-knownLists:
-{'List': 1}
-knownWords:
-{'action': 1}
-exportRules:
-{'ruleList': 1}
-ruleDefines:
-{'ruleList': [('start', 1), ('word', 1), ('list', 1), ('end', 1)]}
-
->>> repr(packGrammar(parser))
-"b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00\\\\x14\\\\x00\\\\x00\\\\x00\\\\x14\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00ruleList\\\\x00\\\\x00\\\\x00\\\\x00\\\\x06\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00List\\\\x00\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x06\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
-
-## two lines:
->>> gramSpec = ['<rule1> exported = action one;', '<rule2> exported = action two;']
->>> parser = GramParser(gramSpec)
->>> parser.doParse()
->>> parser.checkForErrors()
->>> print(parser.dumpString())
-knownRules:
-{'rule1': 1, 'rule2': 2}
-knownWords:
-{'action': 1, 'one': 2, 'two': 3}
-exportRules:
-{'rule1': 1, 'rule2': 2}
-ruleDefines:
-{'rule1': [('start', 1), ('word', 1), ('word', 2), ('end', 1)],
- 'rule2': [('start', 1), ('word', 1), ('word', 3), ('end', 1)]}
-
->>> repr(packGrammar(parser))
-"b'\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x00\\\\x04\\\\x00\\\\x00\\\\x00 \\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00rule1\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00rule2\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x10\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00action\\\\x00\\\\x00\\\\x0c\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00one\\\\x00\\\\x0c\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00two\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00P\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00(\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x03\\\\x00\\\\x00\\\\x00\\\\x02\\\\x00\\\\x00\\\\x00\\\\x01\\\\x00\\\\x00\\\\x00'"
-
-"""
-
-testRecognitionMimicGrammar = """
-
->>> gramSpec = '''
-...                <runone> exported = mimic runone;
-...                <runtwo> exported = mimic two {colors};
-...                <runthree> exported = mimic three <extraword>;
-...                <runfour> exported = mimic four <extrawords>;
-...                <runfive> exported = mimic five <extralist>;
-...                <runsix> exported = mimic six {colors}+;
-...                <runseven> exported = mimic seven <wordsalternatives>;
-...                <runeight> exported = mimic eight <wordsalternatives> [<wordsalternatives>+];
-...                <optional>  = very | small | big;
-...                <extralist> = {furniture};
-...                <extraword> = painting ;
-...                <extrawords> = modern painting ;
-...                <wordsalternatives> = house | tent | church | tower;
-...            '''
->>> parser = GramParser(gramSpec)
->>> parser.doParse()
->>> parser.checkForErrors()
->>> print(parser.dumpString())
-knownRules:
-{'extralist': 8,
- 'extraword': 4,
- 'extrawords': 6,
- 'optional': 13,
- 'runeight': 12,
- 'runfive': 7,
- 'runfour': 5,
- 'runone': 1,
- 'runseven': 10,
- 'runsix': 9,
- 'runthree': 3,
- 'runtwo': 2,
- 'wordsalternatives': 11}
-knownLists:
-{'colors': 1, 'furniture': 2}
-knownWords:
-{'big': 12,
- 'church': 17,
- 'eight': 9,
- 'five': 6,
- 'four': 5,
- 'house': 15,
- 'mimic': 1,
- 'modern': 14,
- 'painting': 13,
- 'runone': 2,
- 'seven': 8,
- 'six': 7,
- 'small': 11,
- 'tent': 16,
- 'three': 4,
- 'tower': 18,
- 'two': 3,
- 'very': 10}
-exportRules:
-{'runeight': 12,
- 'runfive': 7,
- 'runfour': 5,
- 'runone': 1,
- 'runseven': 10,
- 'runsix': 9,
- 'runthree': 3,
- 'runtwo': 2}
-ruleDefines:
-{'extralist': [('list', 2)],
- 'extraword': [('word', 13)],
- 'extrawords': [('start', 1), ('word', 14), ('word', 13), ('end', 1)],
- 'optional': [('start', 2),
-              ('word', 10),
-              ('word', 11),
-              ('word', 12),
-              ('end', 2)],
- 'runeight': [('start', 1),
-              ('word', 1),
-              ('word', 9),
-              ('rule', 11),
-              ('start', 4),
-              ('start', 3),
-              ('rule', 11),
-              ('end', 3),
-              ('end', 4),
-              ('end', 1)],
- 'runfive': [('start', 1), ('word', 1), ('word', 6), ('rule', 8), ('end', 1)],
- 'runfour': [('start', 1), ('word', 1), ('word', 5), ('rule', 6), ('end', 1)],
- 'runone': [('start', 1), ('word', 1), ('word', 2), ('end', 1)],
- 'runseven': [('start', 1), ('word', 1), ('word', 8), ('rule', 11), ('end', 1)],
- 'runsix': [('start', 1),
-            ('word', 1),
-            ('word', 7),
-            ('start', 3),
-            ('list', 1),
-            ('end', 3),
-            ('end', 1)],
- 'runthree': [('start', 1), ('word', 1), ('word', 4), ('rule', 4), ('end', 1)],
- 'runtwo': [('start', 1), ('word', 1), ('word', 3), ('list', 1), ('end', 1)],
- 'wordsalternatives': [('start', 2),
-                       ('word', 15),
-                       ('word', 16),
-                       ('word', 17),
-                       ('word', 18),
-                       ('end', 2)]}
-
-
-"""
-
-testError = r"""
-
->>> gramSpec = "badvalue;"
->>> parser = GramParser(gramSpec)
->>> parser.doParse()
-Traceback (most recent call last):
-GrammarSyntaxError: in grammar, line 1, position 1-9:
-expecting rule name to start rule definition
-=> badvalue;
-=> ^^^^^^^^
-<BLANKLINE>
-"""
-
-# doctest handling:
-__test__ = {'test': test,
-            'testRecognitionMimicGrammar': testRecognitionMimicGrammar,
-            'testError': testError
-            }
-
-
-def _test() -> Any:
-    import doctest
-    doctest.master = None
-    return doctest.testmod()
-
-
-if __name__ == "__main__":
-    _test()
