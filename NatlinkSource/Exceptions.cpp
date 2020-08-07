@@ -19,12 +19,8 @@ PyObject * ErrObjects[ ERROR_COUNT ];
 
 //---------------------------------------------------------------------------
 
-void createException( PyObject * pDict, int errorType, char * errorName )
+void createException( PyObject * pDict, const int errorType, const char * errorName, const char * fullName)
 {
-	char * fullName = new char[ 10+strlen(errorName) ];
-	strcpy( fullName, "natlink." );
-	strcat( fullName, errorName );
-
     ErrObjects[errorType] = PyErr_NewException( fullName, ErrObjects[0], NULL );
     PyDict_SetItemString( pDict, errorName, ErrObjects[errorType] );
 }
@@ -40,18 +36,18 @@ void initExceptions( PyObject * pModule )
     PyDict_SetItemString( pDict, "NatError", ErrObjects[0] );
 
 	// Here we create all the other errors
-	createException( pDict, errInvalidWord, "InvalidWord" );
-	createException( pDict, errUnknownName, "UnknownName" );
-	createException( pDict, errBadGrammar, "BadGrammar" );
-	createException( pDict, errUserExists, "UserExists" );
-	createException( pDict, errWrongState, "WrongState" );
-	createException( pDict, errOutOfRange, "OutOfRange" );
-	createException( pDict, errMimicFailed, "MimicFailed" );
-	createException( pDict, errBadWindow, "BadWindow" );
-	createException( pDict, errSyntaxError, "SyntaxError" );
-	createException( pDict, errValueError, "ValueError" );
-	createException( pDict, errDataMissing, "DataMissing" );
-	createException( pDict, errWrongType, "WrongType" );
+	createException( pDict, errInvalidWord, "InvalidWord", "natlink.InvalidWord"  );
+	createException( pDict, errUnknownName, "UnknownName", "natlink.UnknownName"  );
+	createException( pDict, errBadGrammar, "BadGrammar", "natlink.BadGrammar"  );
+	createException( pDict, errUserExists, "UserExists", "natlink.UserExists"  );
+	createException( pDict, errWrongState, "WrongState", "natlink.WrongState"  );
+	createException( pDict, errOutOfRange, "OutOfRange", "natlink.OutOfRange"  );
+	createException( pDict, errMimicFailed, "MimicFailed", "natlink.MimicFailed"  );
+	createException( pDict, errBadWindow, "BadWindow", "natlink.BadWindow"  );
+	createException( pDict, errSyntaxError, "SyntaxError", "natlink.SyntaxError"  );
+	createException( pDict, errValueError, "ValueError", "natlink.ValueError"  );
+	createException( pDict, errDataMissing, "DataMissing", "natlink.DataMissing"  );
+	createException( pDict, errWrongType, "WrongType", "natlink.WrongType"  );
 	// Important: added new exceptions above this line
 }
 
