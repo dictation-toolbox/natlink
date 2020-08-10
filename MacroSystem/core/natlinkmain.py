@@ -1,78 +1,3 @@
-#
-#
-# # Calls the unload member function of a given module.  Does not make the call
-# # if the function does not exist and cleans up in the case of errors.
-# def safelyCall(modName, funcName):
-#     try:
-#         func = getattr(sys.modules[modName], funcName)
-#     except AttributeError:
-#         # unload function does not exist
-#         return None
-#     try:
-#         func(*[])
-#     except:
-#         sys.stderr.write('Error calling ' + modName + '.' + funcName + '\n')
-#         traceback.print_exc()
-#         return None
-#
-#
-# def changeCallback(Type, args):
-#     global userName, DNSuserDirectory, language, userLanguage, userTopic, \
-#         BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
-#
-#     if Type == 'mic' and args == 'on':
-#         moduleInfo = natlink.getCurrentModule()
-#         findAndLoadFiles()
-#         beginCallback(moduleInfo, checkAll=1)
-#         loadModSpecific(moduleInfo)
-#
-#     ## user: at start and at user switch:
-#     if Type == 'user' and userName != args[0]:
-#         moduleInfo = natlink.getCurrentModule()
-#
-#         unloadEverything()
-#
-#     changeCallbackLoadedModules(Type, args)
-#
-#
-# def changeCallbackLoadedModules(Type, args):
-#     """BJ added, in order to intercept in a grammar (oops, repeat, control) in eg mic changed
-#
-#     in those cases the cancelMode can be called, so exclusiveMode is finished
-#     """
-#     sysmodules = sys.modules
-#     for x in list(loadedFiles.keys()):
-#         if loadedFiles[x]:
-#             try:
-#                 func = getattr(sysmodules[x], 'changeCallback')
-#             except AttributeError:
-#                 pass
-#             else:
-#                 func(*[Type, args])
-#
-#
-# def start_natlink(doNatConnect=None):
-#
-#     if not natlink.isNatSpeakRunning():
-#         print('start Dragon first, then rerun the script natlinkmain...')
-#         time.sleep(10)
-#         return
-#
-#     if not doNatConnect is None:
-#         if doNatConnect:
-#             print('start_natlink, do natConnect with option 1, threading')
-#             natlink.natConnect(1)  # 0 or 1, should not be needed when automatic startup
-#         else:
-#             print('start_natlink, do natConnect with option 0, no threading')
-#             natlink.natConnect(0)  # 0 or 1, should not be needed when automatic startup
-#
-#         print("----natlink.natConnect succeeded")
-#
-#     findAndLoadFiles()
-#     natlink.setBeginCallback(beginCallback)
-#     natlink.setChangeCallback(changeCallback)
-
-
 import configparser
 import importlib
 import importlib.machinery
@@ -83,7 +8,7 @@ import sys
 import time
 import traceback
 import winreg
-from enum import unique, IntEnum
+from enum import IntEnum
 from types import ModuleType
 from typing import List, Dict, Set, Iterable, Any
 
@@ -94,7 +19,6 @@ class NoGoodConfigFoundException(Exception):
     pass
 
 
-@unique
 class LogLevel(IntEnum):
     CRITICAL = logging.CRITICAL
     FATAL = logging.FATAL
