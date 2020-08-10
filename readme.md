@@ -63,8 +63,8 @@ The currently supported settings are:
 - log_level: the log level to set the Natlink logger to. 
     Possible values are: CRITICAL, FATAL, ERROR, WARN, WARNING, INFO, DEBUG, NOTSET
 
-- load_on_begin (default: False): check for and load any scripts at the beginning of each utterance
-- load_on_mic_on (default: True): check for and load any scripts when the microphone state changes to on. 
+- load_on_begin_utterance (default: False): check for and load or reload any new or changed scripts at the beginning of each utterance
+- load_on_mic_on (default: True): check for and load or reload any new or changed scripts when the microphone state changes to "on". 
 
 
 ## COM Module (C++)

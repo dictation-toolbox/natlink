@@ -31,18 +31,19 @@ class LogLevel(IntEnum):
 
 
 class NatlinkConfig:
-    def __init__(self, directories: List[str], log_level: LogLevel, load_on_mic_on: bool, load_on_begin: bool):
+    def __init__(self, directories: List[str], log_level: LogLevel, load_on_mic_on: bool,
+                 load_on_begin_utterance: bool):
         self.directories = directories
         self.log_level = log_level
         self.load_on_mic_on = load_on_mic_on
-        self.load_on_begin = load_on_begin
+        self.load_on_begin_utterance = load_on_begin_utterance
 
     @staticmethod
     def from_config_parser(config: configparser.ConfigParser) -> 'NatlinkConfig':
         directories: List[str] = []
         log_level = LogLevel.NOTSET
         load_on_mic_on = True
-        load_on_begin = False
+        load_on_begin_utterance = False
 
         if config.has_section('directories'):
             directories = list(config['directories'].values())
@@ -52,10 +53,10 @@ class NatlinkConfig:
             if level is not None:
                 log_level = LogLevel[level.upper()]
             load_on_mic_on = settings.getboolean('load_on_mic_on', fallback=load_on_mic_on)
-            load_on_begin = settings.getboolean('load_on_begin', fallback=load_on_begin)
+            load_on_begin_utterance = settings.getboolean('load_on_begin_utterance', fallback=load_on_begin_utterance)
 
         return NatlinkConfig(directories=directories, log_level=log_level, load_on_mic_on=load_on_mic_on,
-                             load_on_begin=load_on_begin)
+                             load_on_begin_utterance=load_on_begin_utterance)
 
     @classmethod
     def from_file(cls, fn: str) -> 'NatlinkConfig':
@@ -169,7 +170,7 @@ class NatlinkMain:
 
     def on_begin_callback(self, module_info: Any) -> None:
         self.logger.debug(f'on_begin_callback called with: moduleInfo:{module_info}')
-        if self.config.load_on_begin:
+        if self.config.load_on_begin_utterance:
             self.load_or_reload_modules(self.module_names)
 
     def start(self) -> None:
