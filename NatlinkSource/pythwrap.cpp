@@ -1545,6 +1545,8 @@ gramobj_dealloc(PyObject *self)
 // This datastructure tells Python which methods for a new class (GramObj in
 // this casze) are defined.  We actually define very few methods since we
 // are not creating a number or sequence-type object.
+extern "C" PyObject *
+gramobj_new(PyObject * self, PyObject * args);
 
 static PyTypeObject gramobj_stackType = {
 	PyVarObject_HEAD_INIT(NULL, 0) // 0 ob-size
@@ -1575,7 +1577,26 @@ static PyTypeObject gramobj_stackType = {
 	0,                              /* tp_iter */
 	0,                              /* tp_iternext */
 	gramobj_methods,                /* tp_methods */
-	// remainder of fields are NULL
+	0,								/* tp_members */
+	0,								/* tp_getset */
+	0,								/* tp_base */
+	0,								/* tp_dict */
+	0,								/* tp_descr_get */
+	0,								/* tp_descr_set */
+	0,								/* tp_dictoffset */
+	0,								/* tp_init */
+	0,								/* tp_alloc */
+	(newfunc)gramobj_new,			/* tp_new */
+	0,								/* tp_free  */
+	0,								/* tp_is_gc */
+	0,								/* tp_bases */
+	0,								/* tp_mro  */
+	0,								/* tp_cache */
+	0,								/* tp_subclasses */
+	0,								/* tp_weaklist */
+	0,								/* tp_del */
+	0,								/* tp_version_tag */
+	0,								/* tp_finalize */
 };
 
 //---------------------------------------------------------------------------
@@ -1809,9 +1830,26 @@ static PyTypeObject resobj_stackType = {
 	0,                              /* tp_iter */
 	0,                              /* tp_iternext */
 	resobj_methods,                 /* tp_methods */
-
-
-	// remainder of fields are NULL
+	0,								/* tp_members */
+	0,								/* tp_getset */
+	0,								/* tp_base */
+	0,								/* tp_dict */
+	0,								/* tp_descr_get */
+	0,								/* tp_descr_set */
+	0,								/* tp_dictoffset */
+	0,								/* tp_init */
+	0,								/* tp_alloc */
+	0,								/* tp_new */ /* ResObj cannot be created from python*/
+	0,								/* tp_free  */
+	0,								/* tp_is_gc */
+	0,								/* tp_bases */
+	0,								/* tp_mro  */
+	0,								/* tp_cache */
+	0,								/* tp_subclasses */
+	0,								/* tp_weaklist */
+	0,								/* tp_del */
+	0,								/* tp_version_tag */
+	0,								/* tp_finalize */
 };
 
 
@@ -2130,6 +2168,8 @@ dictobj_dealloc(PyObject *self)
 // This datastructure tells Python which methods for a new class (DictObj in
 // this casze) are defined.  We actually define very few methods since we
 // are not creating a number or sequence-type object.
+extern "C" PyObject *
+dictobj_new(PyObject * self, PyObject * args);
 
 static PyTypeObject dictobj_stackType = {
 	PyVarObject_HEAD_INIT(&PyType_Type, 0) // ob_size
@@ -2160,7 +2200,26 @@ static PyTypeObject dictobj_stackType = {
 	0,                              /* tp_iter */
 	0,                              /* tp_iternext */
 	dictobj_methods,                /* tp_methods */
-	// remainder of fields are NULL
+	0,								/* tp_members */
+	0,								/* tp_getset */
+	0,								/* tp_base */
+	0,								/* tp_dict */
+	0,								/* tp_descr_get */
+	0,								/* tp_descr_set */
+	0,								/* tp_dictoffset */
+	0,								/* tp_init */
+	0,								/* tp_alloc */
+	(newfunc)dictobj_new,			/* tp_new */
+	0,								/* tp_free  */
+	0,								/* tp_is_gc */
+	0,								/* tp_bases */
+	0,								/* tp_mro  */
+	0,								/* tp_cache */
+	0,								/* tp_subclasses */
+	0,								/* tp_weaklist */
+	0,								/* tp_del */
+	0,								/* tp_version_tag */
+	0,								/* tp_finalize */
 };
 
 //---------------------------------------------------------------------------
@@ -2236,8 +2295,6 @@ static struct PyMethodDef natlink_methods[] = {
 	{ "setWordInfo", natlink_setWordInfo, METH_VARARGS },
 	{ "getWordProns", natlink_getWordProns, METH_VARARGS },
 	{ "setTrayIcon", natlink_setTrayIcon, METH_VARARGS },
-	{ "GramObj", gramobj_new, METH_VARARGS },
-	{ "DictObj", dictobj_new, METH_VARARGS },
 	{ NULL }
 };
 
@@ -2255,17 +2312,44 @@ static struct PyModuleDef NatlinkModule = {
 
 extern "C"
 //void initnatlink()
-PyMODINIT_FUNC PyInit_natlink(void){
-	PyObject *pMod;
+PyMODINIT_FUNC PyInit_natlink(void) {
+	PyObject* pMod;
 
-	CoInitialize( NULL );
+	CoInitialize(NULL);
 
-	pMod = PyModule_Create( &NatlinkModule );
-	initExceptions( pMod );
+	if (PyType_Ready(&gramobj_stackType) < 0)
+		return NULL;
+	if (PyType_Ready(&resobj_stackType) < 0)
+		return NULL;
+	if (PyType_Ready(&dictobj_stackType) < 0)
+		return NULL;
 
-	if( PyErr_Occurred() )
+	pMod = PyModule_Create(&NatlinkModule);
+
+	Py_INCREF(&gramobj_stackType);
+	if (PyModule_AddObject(pMod, "GramObj", (PyObject*)&gramobj_stackType) < 0) {
+		Py_DECREF(&gramobj_stackType);
+		Py_DECREF(pMod);
+		return NULL;
+	}
+	Py_INCREF(&resobj_stackType);
+	if (PyModule_AddObject(pMod, "ResObj", (PyObject*)&resobj_stackType) < 0) {
+		Py_DECREF(&resobj_stackType);
+		Py_DECREF(pMod);
+		return NULL;
+	}
+	Py_INCREF(&dictobj_stackType);
+	if (PyModule_AddObject(pMod, "DictObj", (PyObject*)&dictobj_stackType) < 0) {
+		Py_DECREF(&dictobj_stackType);
+		Py_DECREF(pMod);
+		return NULL;
+	}
+
+	initExceptions(pMod);
+
+	if (PyErr_Occurred())
 	{
-		Py_FatalError( "Can't initialize natlink module" );
+		Py_FatalError("Can't initialize natlink module");
 	}
 	return pMod;
 }
