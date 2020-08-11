@@ -65,6 +65,7 @@ The currently supported settings are:
 
 - load_on_begin_utterance (default: False): check for and load or reload any new or changed scripts at the beginning of each utterance
 - load_on_mic_on (default: True): check for and load or reload any new or changed scripts when the microphone state changes to "on". 
+- load_on_startup (default: True): check for and load scripts as soon as Dragon loads Natlink.
 
 
 ## COM Module (C++)

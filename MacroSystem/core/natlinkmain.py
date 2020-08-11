@@ -32,11 +32,12 @@ class LogLevel(IntEnum):
 
 class NatlinkConfig:
     def __init__(self, directories: List[str], log_level: LogLevel, load_on_mic_on: bool,
-                 load_on_begin_utterance: bool):
+                 load_on_begin_utterance: bool, load_on_startup: bool):
         self.directories = directories
         self.log_level = log_level
         self.load_on_mic_on = load_on_mic_on
         self.load_on_begin_utterance = load_on_begin_utterance
+        self.load_on_startup = load_on_startup
 
     @staticmethod
     def from_config_parser(config: configparser.ConfigParser) -> 'NatlinkConfig':
@@ -44,6 +45,7 @@ class NatlinkConfig:
         log_level = LogLevel.NOTSET
         load_on_mic_on = True
         load_on_begin_utterance = False
+        load_on_startup = True
 
         if config.has_section('directories'):
             directories = list(config['directories'].values())
@@ -54,9 +56,10 @@ class NatlinkConfig:
                 log_level = LogLevel[level.upper()]
             load_on_mic_on = settings.getboolean('load_on_mic_on', fallback=load_on_mic_on)
             load_on_begin_utterance = settings.getboolean('load_on_begin_utterance', fallback=load_on_begin_utterance)
+            load_on_startup = settings.getboolean('load_on_startup', fallback=load_on_startup)
 
         return NatlinkConfig(directories=directories, log_level=log_level, load_on_mic_on=load_on_mic_on,
-                             load_on_begin_utterance=load_on_begin_utterance)
+                             load_on_begin_utterance=load_on_begin_utterance, load_on_startup=load_on_startup)
 
     @classmethod
     def from_file(cls, fn: str) -> 'NatlinkConfig':
@@ -194,7 +197,8 @@ class NatlinkMain:
     def start(self) -> None:
         self.logger.info('starting natlinkmain')
         self.add_dirs_to_path(self.config.directories)
-        self.load_or_reload_modules(self.module_names)
+        if self.config.load_on_startup:
+            self.load_or_reload_modules(self.module_names)
         natlink.setBeginCallback(self.on_begin_callback)
         natlink.setChangeCallback(self.on_change_callback)
 
