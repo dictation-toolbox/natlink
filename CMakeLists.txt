@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 
-project ("Natlink")
+project (Natlink)
 set(NATLINK_VERSION 4.2)
 
-add_subdirectory ("NatlinkSource")
-add_subdirectory ("InstallerSource")
+add_subdirectory (NatlinkSource)
+add_subdirectory (InstallerSource)
