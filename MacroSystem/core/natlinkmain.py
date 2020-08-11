@@ -115,52 +115,70 @@ class NatlinkMain:
             self.logger.info(f'unloading module: {module.__name__}')
             unload()
 
+    @staticmethod
+    def get_source_file_loader_from_mod_name(mod_name: str) -> importlib.machinery.SourceFileLoader:
+        spec = importlib.util.find_spec(mod_name)
+        if spec is None:
+            raise FileNotFoundError(f'Could not find spec for: {mod_name}')
+        loader = spec.loader
+        if loader is None:
+            raise FileNotFoundError(f'Could not find loader for: {mod_name}')
+        elif not isinstance(loader, importlib.machinery.SourceFileLoader):
+            raise ValueError(f'module {mod_name} does not have a SourceFileLoader loader')
+        return loader
+
+    @staticmethod
+    def get_source_file_loader_from_module(module: ModuleType) -> importlib.machinery.SourceFileLoader:
+        loader = module.__loader__
+        if not isinstance(loader, importlib.machinery.SourceFileLoader):
+            raise ValueError(f'module {module.__name__} does not have a SourceFileLoader loader')
+        return loader
+
+    def load_or_reload_module(self, mod_name: str, force_load: bool = False) -> None:
+        last_attempt_time = self.load_attempt_times.get(mod_name, 0.0)
+        self.load_attempt_times[mod_name] = time.time()
+        try:
+            if mod_name in self.bad_modules:
+                loader = self.get_source_file_loader_from_mod_name(mod_name)
+                last_modified_time = loader.path_stats(loader.path)['mtime']
+                if force_load or last_attempt_time < last_modified_time:
+                    self.logger.info(f'loading previously bad module: {mod_name}')
+                    module = importlib.import_module(mod_name)
+                    self.bad_modules.remove(mod_name)
+                    self.loaded_modules[mod_name] = module
+                    return
+                else:
+                    self.logger.info(f'skipping unchanged bad module: {mod_name}')
+                    return
+            else:
+                maybe_module = self.loaded_modules.get(mod_name)
+                if maybe_module is None:
+                    self.logger.info(f'loading module: {mod_name}')
+                    module = importlib.import_module(mod_name)
+                    self.loaded_modules[mod_name] = module
+                    return
+                else:
+                    module = maybe_module
+                    loader = self.get_source_file_loader_from_module(module)
+                    last_modified_time = loader.path_stats(loader.path)['mtime']
+                    if force_load or last_attempt_time < last_modified_time:
+                        self.unload_module(module)
+                        self.logger.info(f'reloading module: {mod_name}')
+                        module = importlib.reload(module)
+                        self.loaded_modules[mod_name] = module
+                        return
+                    else:
+                        self.logger.debug(f'skipping unchanged loaded module: {mod_name}')
+                        return
+        except Exception:
+            self.logger.exception(traceback.format_exc())
+            self.bad_modules.add(mod_name)
+            if mod_name in self.loaded_modules:
+                del self.loaded_modules[mod_name]
+
     def load_or_reload_modules(self, mod_names: Iterable[str]) -> None:
         for mod_name in mod_names:
-            last_attempt_time = self.load_attempt_times.get(mod_name, 0.0)
-            self.load_attempt_times[mod_name] = time.time()
-            try:
-                if mod_name in self.bad_modules:
-                    spec = importlib.util.find_spec(mod_name)
-                    if spec is None:
-                        raise FileNotFoundError(f'Could not find spec for: {mod_name}')
-                    loader = spec.loader
-                    if loader is None:
-                        raise FileNotFoundError(f'Could not find loader for: {mod_name}')
-                    elif not isinstance(loader, importlib.machinery.SourceFileLoader):
-                        raise ValueError(f'module {mod_name} does not have a SourceFileLoader loader')
-                    last_modified_time = loader.path_stats(loader.path)['mtime']
-                    if last_attempt_time < last_modified_time:
-                        self.logger.info(f'loading previously bad module: {mod_name}')
-                        module = importlib.import_module(mod_name)
-                        self.bad_modules.remove(mod_name)
-                    else:
-                        self.logger.info(f'skipping unchanged bad module: {mod_name}')
-                        continue
-                else:
-                    maybe_module = self.loaded_modules.get(mod_name)
-                    if maybe_module is None:
-                        self.logger.info(f'loading module: {mod_name}')
-                        module = importlib.import_module(mod_name)
-                    else:
-                        module = maybe_module
-                        loader = module.__loader__
-                        if not isinstance(loader, importlib.machinery.SourceFileLoader):
-                            raise ValueError(f'module {mod_name} does not have a SourceFileLoader loader')
-                        last_modified_time = loader.path_stats(loader.path)['mtime']
-                        if last_attempt_time < last_modified_time:
-                            self.unload_module(module)
-                            self.logger.info(f'reloading module: {mod_name}')
-                            module = importlib.reload(module)
-                        else:
-                            self.logger.debug(f'skipping unchanged loaded module: {mod_name}')
-                            continue
-                self.loaded_modules[mod_name] = module
-            except Exception:
-                self.logger.exception(traceback.format_exc())
-                self.bad_modules.add(mod_name)
-                if mod_name in self.loaded_modules:
-                    del self.loaded_modules[mod_name]
+            self.load_or_reload_module(mod_name)
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
         self.logger.debug(f'on_change_callback called with: change:{change_type}, args:{args}')
