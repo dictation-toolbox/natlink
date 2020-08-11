@@ -32,6 +32,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: "{#SourceRoot}\MacroSystem\core\natlinkmain.py"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion
+Source: "{#SourceRoot}\MacroSystem\core\natlink.pyi"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion
 Source: "{#SourceRoot}\MacroSystem\core\redirect_output.py"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion
 Source: "{#BinaryRoot}\NatlinkSource\natlink.pyd"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion regserver {#Bits}
 
