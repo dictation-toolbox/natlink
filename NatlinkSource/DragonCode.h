@@ -34,6 +34,7 @@ class CDragonCode
 		m_pFirstResObj = NULL;
 		m_pFirstDictObj = NULL;
 		m_pSecdThrd = NULL;
+		m_pAppClass = NULL;
 		m_bDuringInit = FALSE;
 		m_bDuringPaused = FALSE;
 		m_nCallbackDepth = 0;
