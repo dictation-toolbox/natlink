@@ -10,12 +10,12 @@ import traceback
 import winreg
 from enum import IntEnum
 from types import ModuleType
-from typing import List, Dict, Set, Iterable, Any
+from typing import List, Dict, Set, Iterable, Any, Tuple
 
 import natlink
 
 
-class NoGoodConfigFoundException(Exception):
+class NoGoodConfigFoundException(natlink.NatError):
     pass
 
 
@@ -168,7 +168,7 @@ class NatlinkMain:
             if self.config.load_on_mic_on:
                 self.load_or_reload_modules(self.module_names)
 
-    def on_begin_callback(self, module_info: Any) -> None:
+    def on_begin_callback(self, module_info: Tuple[str, str, int]) -> None:
         self.logger.debug(f'on_begin_callback called with: moduleInfo:{module_info}')
         if self.config.load_on_begin_utterance:
             self.load_or_reload_modules(self.module_names)
