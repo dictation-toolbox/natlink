@@ -180,8 +180,12 @@ class NatlinkMain:
                 del self.loaded_modules[mod_name]
 
     def load_or_reload_modules(self, mod_names: Iterable[str]) -> None:
+        seen: Set[str] = set()
         for mod_name in mod_names:
+            if mod_name in seen:
+                self.logger.warning(f'Attempting to load duplicate module: {mod_name})')
             self.load_or_reload_module(mod_name)
+            seen.add(mod_name)
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
         self.logger.debug(f'on_change_callback called with: change:{change_type}, args:{args}')
