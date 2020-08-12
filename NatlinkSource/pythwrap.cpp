@@ -2312,7 +2312,7 @@ static struct PyModuleDef NatlinkModule = {
 
 extern "C"
 //void initnatlink()
-PyMODINIT_FUNC PyInit_natlink(void) {
+PyMODINIT_FUNC PyInit__natlink_core(void) {
 	PyObject* pMod;
 
 	CoInitialize(NULL);
@@ -2359,6 +2359,6 @@ PyMODINIT_FUNC PyInit_natlink(void) {
 
 CDragonCode * initModule()
 {
-	PyInit_natlink();
+	PyInit__natlink_core();
 	return &cDragon;
 }
