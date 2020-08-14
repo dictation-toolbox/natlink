@@ -22,3 +22,10 @@ add_custom_command(
         /D"MyAppVersion=${NATLINK_VERSION}"
         /D"PythonVersion=${PYTHON_VERSION}-32"
 )
+
+add_custom_target(natlink-installer-zip ALL DEPENDS "${INSTALLER_FILE_BASE}.zip")
+add_custom_command(
+    OUTPUT "${INSTALLER_FILE_BASE}.zip"
+    DEPENDS natlink-installer
+	COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${INSTALLER_FILE_BASE}.zip" --format=zip
+       "${CMAKE_CURRENT_BINARY_DIR}/${INSTALLER_FILE_BASE}.exe")
