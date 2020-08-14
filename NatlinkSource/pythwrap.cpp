@@ -2304,7 +2304,7 @@ static struct PyMethodDef natlink_methods[] = {
 // We tell Python about our functions and also create an error type.
 static struct PyModuleDef NatlinkModule = {
 		PyModuleDef_HEAD_INIT,
-		"natlink",   /* name of module */
+		"_natlink_core",   /* name of module */
 		"natlink with python3 compatability",
 		-1,
 		natlink_methods

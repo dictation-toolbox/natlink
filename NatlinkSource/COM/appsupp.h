@@ -51,7 +51,7 @@ public:
 protected:
 
 	// this is a pointer to the NatSpeak python code module
-	PyObject * m_pNatLinkMain;
+	PyObject * m_pNatlinkModule;
 
 	// this is a pointer to the CDragonCode module
 	CDragonCode * m_pDragCode;

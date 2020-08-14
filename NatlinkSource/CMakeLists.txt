@@ -73,7 +73,7 @@ set_target_properties(
         PROPERTIES
         PREFIX ""
         SUFFIX ".pyd"
-        OUTPUT_NAME "natlink"
+        OUTPUT_NAME "_natlink_core"
         LINKER_LANGUAGE C
 )
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${PYTHON_LIBRARIES})

@@ -14,6 +14,9 @@
   #define BinaryRoot "..\out\build\3.8-32"
 #endif
 
+#define SitePackagesDir "{app}\site-packages"
+#define CoreDir "{app}\site-packages\natlink"
+
 [Setup]
 AppId={#MyGUID}
 AppName={#MyAppName}
@@ -31,10 +34,9 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "{#SourceRoot}\MacroSystem\core\natlinkmain.py"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion
-Source: "{#SourceRoot}\MacroSystem\core\natlink.pyi"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion
-Source: "{#SourceRoot}\MacroSystem\core\redirect_output.py"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion
-Source: "{#BinaryRoot}\NatlinkSource\natlink.pyd"; DestDir: "{app}\MacroSystem\core"; Flags: ignoreversion regserver {#Bits}
+Source: "{#SourceRoot}\natlink\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+Source: "{#SourceRoot}\natlink\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+Source: "{#BinaryRoot}\NatlinkSource\_natlink_core.pyd"; DestDir: "{#CoreDir}"; Flags: ignoreversion regserver {#Bits}
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
@@ -177,10 +179,11 @@ end;
 [Registry]
 Root: HKLM; Subkey: "Software\{#MyAppName}"; Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "installPath"; ValueData: "{app}"
-Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "coreDir"; ValueData: "{app}\MacroSystem\core"
+Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "coreDir"; ValueData: "{#CoreDir}"
+Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "sitePackagesDir"; ValueData: "{#SitePackagesDir}"
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "dragonIniDir"; ValueData: "{code:GetDragonIniDir}"
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "version"; ValueData: "{#MyAppVersion}"
-Root: HKLM; Subkey: "Software\Python\PythonCore\{#PythonVersion}\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{app}\MacroSystem\core"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\Python\PythonCore\{#PythonVersion}\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey
 
 [INI]                                                                                                                                                   
 Filename: "{code:GetDragonIniDir}\nssystem.ini"; Section: "Global Clients"; Key: ".{#MyAppName}"; String: "Python Macro System"; Flags: uninsdeleteentry
