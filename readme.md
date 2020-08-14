@@ -73,6 +73,7 @@ The folder NatlinkSource, which contains all the C++ code,
 is for generating an in-process [Component Object Model (COM)](https://docs.microsoft.com/en-us/windows/win32/com/component-object-model--com--portal)
 server.
 The output is natlink.pyd (a .pyd is essentially a .dll that is also a python module).
+The natlink.pyd can be used both as a COM server or just as a plain python package.
 When Dragon starts, it will start natlink.pyd, 
 which does some setup and quickly passes things off to the Python side by importing natlinkmain.py.
 A different version of natlink.pyd is compiled for each supported version of Python.
