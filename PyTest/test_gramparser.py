@@ -1,6 +1,6 @@
 import pytest
 
-from gramparser import GramParser, packGrammar, GrammarSyntaxError, splitApartLines
+from natlink.gramparser import GramParser, packGrammar, GrammarSyntaxError, splitApartLines
 
 
 def test_packGrammar():
