@@ -139,7 +139,7 @@ class NatlinkMain:
             self.load_or_reload_modules(self.module_names)
 
     def start(self) -> None:
-        self.logger.info('starting natlinkmain')
+        self.logger.info('starting natlink loader')
         self.add_dirs_to_path(self.config.directories)
         if self.config.load_on_startup:
             self.load_or_reload_modules(self.module_names)

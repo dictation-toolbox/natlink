@@ -14,7 +14,6 @@ class LogLevel(IntEnum):
     CRITICAL = logging.CRITICAL
     FATAL = logging.FATAL
     ERROR = logging.ERROR
-    WARN = logging.WARNING
     WARNING = logging.WARNING
     INFO = logging.INFO
     DEBUG = logging.DEBUG
