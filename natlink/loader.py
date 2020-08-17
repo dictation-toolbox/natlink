@@ -117,7 +117,12 @@ class NatlinkMain:
             self.logger.exception(traceback.format_exc())
             self.bad_modules.add(mod_name)
             if mod_name in self.loaded_modules:
-                del self.loaded_modules[mod_name]
+                old_module = self.loaded_modules.pop(mod_name)
+                self.unload_module(old_module)
+                if mod_name in sys.modules:
+                    del sys.modules[mod_name]
+                del old_module
+                importlib.invalidate_caches()
 
     def load_or_reload_modules(self, mod_names: Iterable[str]) -> None:
         seen: Set[str] = set()
