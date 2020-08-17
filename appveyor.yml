@@ -1,0 +1,10 @@
+version: 4.2.{build}
+
+image:
+- Visual Studio 2019
+
+configuration:
+- 3.8-32
+- 3.7-32
+- 3.6-32
+
