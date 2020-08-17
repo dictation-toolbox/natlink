@@ -29,10 +29,10 @@ To uninstall:
   
 ## Configuration
 
-Configuration is done in .natlink.ini files.
-Upon starting, Natlink will first look in the user's home directory for .natlink.ini.
+Configuration is done in .natlink ini-style files.
+Upon starting, Natlink will first look in the user's home directory for .natlink.
 If no config is found there,
-it will then look for .natlink.ini in INSTALL_DIRECTORY\\MacroSystem\\core.
+it will then look for .natlink in INSTALL_DIRECTORY\\MacroSystem\\core.
 Here is an example config.
 
 ````ini

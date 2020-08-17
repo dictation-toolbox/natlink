@@ -50,7 +50,7 @@ class NatlinkMain:
     def add_dirs_to_path(directories: Iterable[str]) -> None:
         for d in directories:
             if d not in sys.path:
-                sys.path.append(d)
+                sys.path.insert(0, d)
 
     def unload_module(self, module: ModuleType) -> None:
         unload = getattr(module, 'unload', None)
@@ -171,7 +171,11 @@ def get_natlink_system_config_filename() -> str:
 
 def config_locations() -> Iterable[str]:
     yield os.path.expanduser('~/.natlink')
-    yield get_natlink_system_config_filename()
+    try:
+        yield get_natlink_system_config_filename()
+    except OSError:
+        # installed locally
+        pass
 
 
 def run() -> None:
