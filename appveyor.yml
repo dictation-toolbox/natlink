@@ -8,3 +8,8 @@ configuration:
 - 3.7-32
 - 3.6-32
 
+build_script:
+  - md build
+  - cd build
+  - cmake -DPYTHON_VERSION=%CONFIGURATION% -G "Visual Studio 16 2019" ..
+  - cmake --build . --target NatlinkModule
