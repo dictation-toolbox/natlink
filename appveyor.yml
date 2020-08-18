@@ -3,13 +3,23 @@ version: 4.2.{build}
 image:
 - Visual Studio 2019
 
-configuration:
-- "3.8"
-- "3.7"
-- "3.6"
+environment:
+  matrix:
+    - PYTHON: "C:\\Python38"
+      PYTHON_VERSION: "3.8"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6"
+      PYTHON_ARCH: "32"
 
 build_script:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - md build
   - cd build
   - cmake -DPYTHON_VERSION=%CONFIGURATION% -G "Visual Studio 16 2019" -A Win32 ..
