@@ -29,4 +29,4 @@ build_script:
   - md build
   - cd build
   - cmake -DPYTHON_VERSION=%PYTHON_VERSION% -DPYTHON_INCLUDE_DIRS=%PYTHON_INCLUDE_DIRS% -DPYTHON_LIBRARIES=%PYTHON_LIBRARIES% -G "Visual Studio 16 2019" -A Win32 ..
-  - cmake --build . --target NatlinkModule
+  - cmake --build . --target NatlinkModule --config RelWithDebInfo
