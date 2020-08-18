@@ -39,7 +39,11 @@ set(HEADERS_FILES
         )
 source_group("Headers" FILES ${HEADERS_FILES})
 
-find_package(PythonLibs ${PYTHON_VERSION} EXACT REQUIRED)
+if (NOT DEFINED PYTHON_INCLUDE_DIRS)
+    find_package(PythonLibs ${PYTHON_VERSION} EXACT REQUIRED)
+endif (NOT DEFINED PYTHON_INCLUDE_DIRS)
+message(STATUS "Using Python libraries: ${PYTHON_LIBRARIES}")
+message(STATUS "Using Python include: ${PYTHON_INCLUDE_DIRS}")
 include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories("extern")
 

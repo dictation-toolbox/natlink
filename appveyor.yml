@@ -7,14 +7,20 @@ environment:
   matrix:
     - PYTHON: "C:\\Python38"
       PYTHON_VERSION: "3.8"
+      PYTHON_LIBRARIES: "optimized;C:/Python38/libs/python38.lib;debug;C:/Python38/libs/python38_d.lib"
+      PYTHON_INCLUDE_DIRS: "C:/Python38/include"
       PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python37"
       PYTHON_VERSION: "3.7"
+      PYTHON_LIBRARIES: "optimized;C:/Python37/libs/python37.lib;debug;C:/Python37/libs/python37_d.lib"
+      PYTHON_INCLUDE_DIRS: "C:/Python37/include"
       PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6"
+      PYTHON_LIBRARIES: "optimized;C:/Python36/libs/python36.lib;debug;C:/Python36/libs/python36_d.lib"
+      PYTHON_INCLUDE_DIRS: "C:/Python36/include"
       PYTHON_ARCH: "32"
 
 build_script:
@@ -22,5 +28,5 @@ build_script:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - md build
   - cd build
-  - cmake -DPYTHON_VERSION=%PYTHON_VERSION% -G "Visual Studio 16 2019" -A Win32 ..
+  - cmake -DPYTHON_VERSION=%PYTHON_VERSION% -DPYTHON_INCLUDE_DIRS=%PYTHON_INCLUDE_DIRS% -DPYTHON_LIBRARIES=%PYTHON_LIBRARIES% -G "Visual Studio 16 2019" -A Win32 ..
   - cmake --build . --target NatlinkModule
