@@ -35,8 +35,9 @@ after_build:
   - pip install ./natlink
 
 before_test:
-  - pip install pytest
+  - pip install pytest mypy
 
 test_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - pytest PyTest
+  - mypy
