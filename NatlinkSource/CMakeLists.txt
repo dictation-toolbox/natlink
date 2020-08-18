@@ -71,6 +71,8 @@ add_library(${PROJECT_NAME} SHARED
 set_target_properties(
         ${PROJECT_NAME}
         PROPERTIES
+        COMPILE_OPTIONS "-m32" 
+        LINK_FLAGS "-m32"
         PREFIX ""
         SUFFIX ".pyd"
         OUTPUT_NAME "_natlink_core"
