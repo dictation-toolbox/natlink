@@ -3,7 +3,7 @@
 project ("Installer")
 find_program(ISCC iscc)
 if(NOT ISCC)
-	message(FATAL_ERROR "ISCC not found")
+	message(STATUS "ISCC not found")
 else()
     message(STATUS "Found ISCC at ${ISCC}")
 endif()
