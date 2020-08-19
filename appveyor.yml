@@ -25,7 +25,7 @@ environment:
 
 build_script:
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%;C:\\Program Files (x86)\\Inno Setup 6)"
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%;C:\\Program Files (x86)\\Inno Setup 6"
   - md build
   - cd build
   - cmake -DPYTHON_VERSION=%PYTHON_VERSION% -DPYTHON_INCLUDE_DIRS=%PYTHON_INCLUDE_DIRS% -DPYTHON_LIBRARIES=%PYTHON_LIBRARIES% -G "Visual Studio 16 2019" -A Win32 ..
