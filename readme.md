@@ -40,6 +40,9 @@ Here is an example config.
 my_dragonfly_scripts=C:\Users\user\dragonfly-scripts
 systemwide=C:\Path\To\Shared\Scripts
 
+[myusername-directories]
+only_loaded_if_myusername_active=C:\User\myusername\scripts
+
 # comments are allowed like this
 
 [settings]
@@ -57,6 +60,11 @@ loaded first if it exists.
 If no directories are listed or this section is omitted,
 then no scripts will be loaded.
 
+#### Section: \[\<user\>-directories\] (optional)
+Same as \[directories\], but scripts are only loaded if the active user profile is \<user\>.
+This is useful e.g. if you have profiles for different languages.
+The relative load order between global and user directories is the order of appearance in the config.
+
 #### Section: \[settings\] (optional)
 The currently supported settings are:
 
@@ -66,6 +74,7 @@ The currently supported settings are:
 - load_on_begin_utterance (default: False): check for and load or reload any new or changed scripts at the beginning of each utterance
 - load_on_mic_on (default: True): check for and load or reload any new or changed scripts when the microphone state changes to "on". 
 - load_on_startup (default: True): check for and load scripts as soon as Dragon loads Natlink.
+- load_on_user_changed (default: True): check for and load scripts when the user profile changes.
 
 
 ## COM Module (C++)

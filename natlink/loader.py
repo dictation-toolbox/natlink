@@ -22,10 +22,11 @@ class NatlinkMain:
         self.loaded_modules: Dict[Path, ModuleType] = {}
         self.bad_modules: Set[Path] = set()
         self.load_attempt_times: Dict[Path, float] = {}
+        self._user: str = ''
 
     @property
-    def module_paths(self) -> List[Path]:
-        return self.module_paths_in_dirs(self.config.directories)
+    def module_paths_for_user(self) -> List[Path]:
+        return self.module_paths_in_dirs(self.config.directories_for_user(self._user))
 
     @staticmethod
     def module_paths_in_dirs(directories: Iterable[str]) -> List[Path]:
@@ -131,9 +132,9 @@ class NatlinkMain:
             seen.add(mod_path)
 
     def remove_modules_that_no_longer_exist(self) -> None:
-        mod_paths = self.module_paths
+        mod_paths = self.module_paths_for_user
         for mod_path in set(self.loaded_modules).difference(mod_paths):
-            self.logger.info(f'unloading removed module {mod_path.stem}')
+            self.logger.info(f'unloading removed or not-for-this-user module {mod_path.stem}')
             old_module = self.loaded_modules.pop(mod_path)
             self.load_attempt_times.pop(mod_path)
             self.unload_module(old_module)
@@ -147,22 +148,30 @@ class NatlinkMain:
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
         self.logger.debug(f'on_change_callback called with: change:{change_type}, args:{args}')
-        if change_type == 'mic' and args == 'on':
+        if change_type == 'user':
+            user, _profile = args
+            if not isinstance(user, str):
+                raise TypeError('unexpected args given to change callback: {args}')
+            self._user = user
+            if self.config.load_on_user_changed:
+                self.remove_modules_that_no_longer_exist()
+                self.load_or_reload_modules(self.module_paths_for_user)
+        elif change_type == 'mic' and args == 'on':
             if self.config.load_on_mic_on:
                 self.remove_modules_that_no_longer_exist()
-                self.load_or_reload_modules(self.module_paths)
+                self.load_or_reload_modules(self.module_paths_for_user)
 
     def on_begin_callback(self, module_info: Tuple[str, str, int]) -> None:
         self.logger.debug(f'on_begin_callback called with: moduleInfo:{module_info}')
         if self.config.load_on_begin_utterance:
             self.remove_modules_that_no_longer_exist()
-            self.load_or_reload_modules(self.module_paths)
+            self.load_or_reload_modules(self.module_paths_for_user)
 
     def start(self) -> None:
         self.logger.info('starting natlink loader')
         self.add_dirs_to_path(self.config.directories)
         if self.config.load_on_startup:
-            self.load_or_reload_modules(self.module_paths)
+            self.load_or_reload_modules(self.module_paths_for_user)
         natlink.setBeginCallback(self.on_begin_callback)
         natlink.setChangeCallback(self.on_change_callback)
 
