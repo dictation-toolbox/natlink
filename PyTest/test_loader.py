@@ -80,6 +80,31 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
 
     del_loaded_modules(main)
 
+def test_load_single_good_script_from_user_dir(tmpdir, empty_config, logger, monkeypatch):
+    config = empty_config
+    config.directories_by_user['user'] = [tmpdir.strpath]
+    a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
+    mtime = 123456.0
+    a_script.write("""x=0""")
+    a_script.setmtime(mtime)
+    monkeypatch.setattr(time, 'time', lambda: mtime)
+
+    main = NatlinkMain(logger, config)
+
+    assert main.module_paths_for_user == []
+    main._user = 'user'
+    assert main.module_paths_for_user == [a_path]
+
+    main.load_or_reload_modules(main.module_paths_for_user)
+    assert set(main.loaded_modules.keys()) == {a_path}
+    assert '_a' not in sys.modules
+    assert main.bad_modules == set()
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
+    assert main.loaded_modules[a_path].x == 0
+
+    del_loaded_modules(main)
 
 def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
