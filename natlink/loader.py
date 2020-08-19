@@ -7,6 +7,7 @@ import sys
 import time
 import traceback
 import winreg
+from pathlib import Path
 from types import ModuleType
 from typing import List, Dict, Set, Iterable, Any, Tuple
 
@@ -18,33 +19,33 @@ class NatlinkMain:
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
         self.logger = logger
         self.config = config
-        self.loaded_modules: Dict[str, ModuleType] = {}
-        self.bad_modules: Set[str] = set()
-        self.load_attempt_times: Dict[str, float] = {}
+        self.loaded_modules: Dict[Path, ModuleType] = {}
+        self.bad_modules: Set[Path] = set()
+        self.load_attempt_times: Dict[Path, float] = {}
 
     @property
-    def module_names(self) -> List[str]:
-        return self.module_names_in_dirs(self.config.directories)
+    def module_paths(self) -> List[Path]:
+        return self.module_paths_in_dirs(self.config.directories)
 
     @staticmethod
-    def module_names_in_dirs(directories: Iterable[str]) -> List[str]:
+    def module_paths_in_dirs(directories: Iterable[str]) -> List[Path]:
 
-        def is_script(f: str) -> bool:
-            return f.startswith('_') and f.endswith('.py')
+        def is_script(f: Path) -> bool:
+            return f.is_file() and f.name.startswith('_') and f.name.endswith('.py')
 
         init = '__init__.py'
 
-        mod_names: List[str] = []
+        mod_paths: List[Path] = []
         for d in directories:
-            scripts = os.listdir(d)
-            scripts = sorted(filter(is_script, scripts))
-            if init in scripts:
-                scripts.remove(init)
-                scripts.insert(0, init)
-            names = [f[:-len('.py')] for f in scripts]
-            mod_names.extend(names)
+            dir_path = Path(d)
+            scripts = sorted(filter(is_script, dir_path.iterdir()))
+            init_path = dir_path.joinpath(init)
+            if init_path in scripts:
+                scripts.remove(init_path)
+                scripts.insert(0, init_path)
+            mod_paths.extend(scripts)
 
-        return mod_names
+        return mod_paths
 
     @staticmethod
     def add_dirs_to_path(directories: Iterable[str]) -> None:
@@ -56,11 +57,15 @@ class NatlinkMain:
         unload = getattr(module, 'unload', None)
         if unload is not None:
             self.logger.info(f'unloading module: {module.__name__}')
-            unload()
+            try:
+                unload()
+            except Exception:
+                self.logger.exception(traceback.format_exc())
 
     @staticmethod
-    def get_source_file_loader_from_mod_name(mod_name: str) -> importlib.machinery.SourceFileLoader:
-        spec = importlib.util.find_spec(mod_name)
+    def import_module_from_path(mod_path: Path) -> ModuleType:
+        mod_name = mod_path.stem
+        spec = importlib.util.spec_from_file_location(mod_name, mod_path)
         if spec is None:
             raise FileNotFoundError(f'Could not find spec for: {mod_name}')
         loader = spec.loader
@@ -68,86 +73,96 @@ class NatlinkMain:
             raise FileNotFoundError(f'Could not find loader for: {mod_name}')
         elif not isinstance(loader, importlib.machinery.SourceFileLoader):
             raise ValueError(f'module {mod_name} does not have a SourceFileLoader loader')
-        return loader
+        module = importlib.util.module_from_spec(spec)
+        loader.exec_module(module)
+        return module
 
-    @staticmethod
-    def get_source_file_loader_from_module(module: ModuleType) -> importlib.machinery.SourceFileLoader:
-        loader = module.__loader__
-        if not isinstance(loader, importlib.machinery.SourceFileLoader):
-            raise ValueError(f'module {module.__name__} does not have a SourceFileLoader loader')
-        return loader
-
-    def load_or_reload_module(self, mod_name: str, force_load: bool = False) -> None:
-        last_attempt_time = self.load_attempt_times.get(mod_name, 0.0)
-        self.load_attempt_times[mod_name] = time.time()
+    def load_or_reload_module(self, mod_path: Path, force_load: bool = False) -> None:
+        mod_name = mod_path.stem
+        last_attempt_time = self.load_attempt_times.get(mod_path, 0.0)
+        self.load_attempt_times[mod_path] = time.time()
         try:
-            if mod_name in self.bad_modules:
-                loader = self.get_source_file_loader_from_mod_name(mod_name)
-                last_modified_time = loader.path_stats(loader.path)['mtime']
+            if mod_path in self.bad_modules:
+                last_modified_time = mod_path.stat().st_mtime
                 if force_load or last_attempt_time < last_modified_time:
                     self.logger.info(f'loading previously bad module: {mod_name}')
-                    module = importlib.import_module(mod_name)
-                    self.bad_modules.remove(mod_name)
-                    self.loaded_modules[mod_name] = module
+                    module = self.import_module_from_path(mod_path)
+                    self.bad_modules.remove(mod_path)
+                    self.loaded_modules[mod_path] = module
                     return
                 else:
                     self.logger.info(f'skipping unchanged bad module: {mod_name}')
                     return
             else:
-                maybe_module = self.loaded_modules.get(mod_name)
+                maybe_module = self.loaded_modules.get(mod_path)
                 if maybe_module is None:
                     self.logger.info(f'loading module: {mod_name}')
-                    module = importlib.import_module(mod_name)
-                    self.loaded_modules[mod_name] = module
+                    module = self.import_module_from_path(mod_path)
+                    self.loaded_modules[mod_path] = module
                     return
                 else:
                     module = maybe_module
-                    loader = self.get_source_file_loader_from_module(module)
-                    last_modified_time = loader.path_stats(loader.path)['mtime']
+                    last_modified_time = mod_path.stat().st_mtime
                     if force_load or last_attempt_time < last_modified_time:
-                        self.unload_module(module)
                         self.logger.info(f'reloading module: {mod_name}')
-                        module = importlib.reload(module)
-                        self.loaded_modules[mod_name] = module
+                        self.unload_module(module)
+                        del module
+                        module = self.import_module_from_path(mod_path)
+                        self.loaded_modules[mod_path] = module
                         return
                     else:
                         self.logger.debug(f'skipping unchanged loaded module: {mod_name}')
                         return
         except Exception:
             self.logger.exception(traceback.format_exc())
-            self.bad_modules.add(mod_name)
-            if mod_name in self.loaded_modules:
-                old_module = self.loaded_modules.pop(mod_name)
+            self.bad_modules.add(mod_path)
+            if mod_path in self.loaded_modules:
+                old_module = self.loaded_modules.pop(mod_path)
                 self.unload_module(old_module)
-                if mod_name in sys.modules:
-                    del sys.modules[mod_name]
                 del old_module
                 importlib.invalidate_caches()
 
-    def load_or_reload_modules(self, mod_names: Iterable[str]) -> None:
-        seen: Set[str] = set()
-        for mod_name in mod_names:
-            if mod_name in seen:
-                self.logger.warning(f'Attempting to load duplicate module: {mod_name})')
-            self.load_or_reload_module(mod_name)
-            seen.add(mod_name)
+    def load_or_reload_modules(self, mod_paths: Iterable[Path]) -> None:
+        seen: Set[Path] = set()
+        for mod_path in mod_paths:
+            if mod_path in seen:
+                self.logger.warning(f'Attempting to load duplicate module: {mod_path})')
+            self.load_or_reload_module(mod_path)
+            seen.add(mod_path)
+
+    def remove_modules_that_no_longer_exist(self) -> None:
+        mod_paths = self.module_paths
+        for mod_path in set(self.loaded_modules).difference(mod_paths):
+            self.logger.info(f'unloading removed module {mod_path.stem}')
+            old_module = self.loaded_modules.pop(mod_path)
+            self.load_attempt_times.pop(mod_path)
+            self.unload_module(old_module)
+            del old_module
+        for mod_path in self.bad_modules.difference(mod_paths):
+            self.logger.debug(f'bad module was removed: {mod_path.stem}')
+            self.bad_modules.remove(mod_path)
+            self.load_attempt_times.pop(mod_path)
+
+        importlib.invalidate_caches()
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
         self.logger.debug(f'on_change_callback called with: change:{change_type}, args:{args}')
         if change_type == 'mic' and args == 'on':
             if self.config.load_on_mic_on:
-                self.load_or_reload_modules(self.module_names)
+                self.remove_modules_that_no_longer_exist()
+                self.load_or_reload_modules(self.module_paths)
 
     def on_begin_callback(self, module_info: Tuple[str, str, int]) -> None:
         self.logger.debug(f'on_begin_callback called with: moduleInfo:{module_info}')
         if self.config.load_on_begin_utterance:
-            self.load_or_reload_modules(self.module_names)
+            self.remove_modules_that_no_longer_exist()
+            self.load_or_reload_modules(self.module_paths)
 
     def start(self) -> None:
         self.logger.info('starting natlink loader')
         self.add_dirs_to_path(self.config.directories)
         if self.config.load_on_startup:
-            self.load_or_reload_modules(self.module_names)
+            self.load_or_reload_modules(self.module_paths)
         natlink.setBeginCallback(self.on_begin_callback)
         natlink.setChangeCallback(self.on_change_callback)
 

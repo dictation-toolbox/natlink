@@ -43,16 +43,14 @@ def logger():
 
 def del_loaded_modules(natlink_main: NatlinkMain):
     for name, mod in natlink_main.loaded_modules.items():
-        if name in sys.modules:
-            del sys.modules[name]
         if mod:
             del mod
 
 
 def test_empty_config_loader(empty_config, logger):
     main = NatlinkMain(logger, empty_config)
-    assert main.module_names == []
-    main.load_or_reload_modules(main.module_names)
+    assert main.module_paths == []
+    main.load_or_reload_modules(main.module_paths)
     assert main.loaded_modules == {}
     assert main.bad_modules == set()
     assert main.load_attempt_times == {}
@@ -62,6 +60,7 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
     config.directories = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
     mtime = 123456.0
     a_script.write("""x=0""")
     a_script.setmtime(mtime)
@@ -69,16 +68,15 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
 
     main = NatlinkMain(logger, config)
 
-    # use instead of add_dirs_to_path
-    monkeypatch.syspath_prepend(tmpdir.strpath)
-    assert main.module_names == ['_a']
+    assert main.module_paths == [a_path]
 
-    main.load_or_reload_modules(main.module_names)
-    assert set(main.loaded_modules.keys()) == {'_a'}
+    main.load_or_reload_modules(main.module_paths)
+    assert set(main.loaded_modules.keys()) == {a_path}
+    assert '_a' not in sys.modules
     assert main.bad_modules == set()
-    assert set(main.load_attempt_times.keys()) == {'_a'}
-    assert main.load_attempt_times['_a'] == mtime
-    assert main.loaded_modules['_a'].x == 0
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
+    assert main.loaded_modules[a_path].x == 0
 
     del_loaded_modules(main)
 
@@ -87,6 +85,7 @@ def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeyp
     config = empty_config
     config.directories = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
     mtime = 123456.0
     a_script.write("""x=0""")
     a_script.setmtime(mtime)
@@ -94,26 +93,23 @@ def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeyp
 
     main = NatlinkMain(logger, config)
 
-    # use instead of add_dirs_to_path
-    monkeypatch.syspath_prepend(tmpdir.strpath)
-
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
 
     mtime += 1.0
     a_script.write("""x=1""")
     a_script.setmtime(mtime)
 
-    main.load_or_reload_modules(main.module_names)
-    assert set(main.loaded_modules.keys()) == {'_a'}
+    main.load_or_reload_modules(main.module_paths)
+    assert set(main.loaded_modules.keys()) == {a_path}
     assert main.bad_modules == set()
-    assert set(main.load_attempt_times.keys()) == {'_a'}
-    assert main.load_attempt_times['_a'] == mtime
-    assert main.loaded_modules['_a'].x == 1
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
+    assert main.loaded_modules[a_path].x == 1
 
     del_loaded_modules(main)
 
 
-def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, logger, monkeypatch):
+def test_remove_single_deleted_good_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
     config.directories = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
@@ -124,24 +120,45 @@ def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, l
 
     main = NatlinkMain(logger, config)
 
-    # use instead of add_dirs_to_path
-    monkeypatch.syspath_prepend(tmpdir.strpath)
+    main.load_or_reload_modules(main.module_paths)
 
-    main.load_or_reload_modules(main.module_names)
+    a_script.remove()
+
+    main.remove_modules_that_no_longer_exist()
+    assert main.loaded_modules == {}
+    assert main.bad_modules == set()
+    assert main.load_attempt_times == {}
+
+    del_loaded_modules(main)
+
+
+def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, logger, monkeypatch):
+    config = empty_config
+    config.directories = [tmpdir.strpath]
+    a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
+    mtime = 123456.0
+    a_script.write("""x=0""")
+    a_script.setmtime(mtime)
+    monkeypatch.setattr(time, 'time', lambda: mtime)
+
+    main = NatlinkMain(logger, config)
+
+    main.load_or_reload_modules(main.module_paths)
 
     a_script.write("""x=1""")
     # set the mtime to the old mtime, so natlink should NOT reload
     a_script.setmtime(mtime)
     mtime += 1.0
 
-    main.load_or_reload_modules(main.module_names)
-    assert set(main.loaded_modules.keys()) == {'_a'}
+    main.load_or_reload_modules(main.module_paths)
+    assert set(main.loaded_modules.keys()) == {a_path}
     assert main.bad_modules == set()
-    assert set(main.load_attempt_times.keys()) == {'_a'}
-    assert main.load_attempt_times['_a'] == mtime
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
 
     # make sure it still has the old value, not the new one
-    assert main.loaded_modules['_a'].x == 0
+    assert main.loaded_modules[a_path].x == 0
 
     msg = f'skipping unchanged loaded module: _a'
     assert msg in logger.messages['debug']
@@ -153,6 +170,7 @@ def test_load_single_bad_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
     config.directories = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
     mtime = 123456.0
     a_script.write("""x=; #a syntax error.""")
     a_script.setmtime(mtime)
@@ -160,16 +178,36 @@ def test_load_single_bad_script(tmpdir, empty_config, logger, monkeypatch):
 
     main = NatlinkMain(logger, config)
 
-    # use instead of add_dirs_to_path
-    monkeypatch.syspath_prepend(tmpdir.strpath)
-
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
     assert main.loaded_modules == {}
     assert '_a' not in sys.modules
-    assert main.bad_modules == {'_a'}
-    assert set(main.load_attempt_times.keys()) == {'_a'}
-    assert main.load_attempt_times['_a'] == mtime
+    assert main.bad_modules == {a_path}
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
     assert len(logger.messages['error']) == 1
+
+    del_loaded_modules(main)
+
+
+def test_remove_single_deleted_bad_script(tmpdir, empty_config, logger, monkeypatch):
+    config = empty_config
+    config.directories = [tmpdir.strpath]
+    a_script = tmpdir.join('_a.py')
+    mtime = 123456.0
+    a_script.write(""""x=; #a syntax error.""")
+    a_script.setmtime(mtime)
+    monkeypatch.setattr(time, 'time', lambda: mtime)
+
+    main = NatlinkMain(logger, config)
+
+    main.load_or_reload_modules(main.module_paths)
+
+    a_script.remove()
+
+    main.remove_modules_that_no_longer_exist()
+    assert main.loaded_modules == {}
+    assert main.bad_modules == set()
+    assert main.load_attempt_times == {}
 
     del_loaded_modules(main)
 
@@ -178,6 +216,7 @@ def test_reload_single_changed_bad_script(tmpdir, empty_config, logger, monkeypa
     config = empty_config
     config.directories = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
     mtime = 123456.0
     a_script.write("""x=; #a syntax error.""")
     a_script.setmtime(mtime)
@@ -185,20 +224,17 @@ def test_reload_single_changed_bad_script(tmpdir, empty_config, logger, monkeypa
 
     main = NatlinkMain(logger, config)
 
-    # use instead of add_dirs_to_path
-    monkeypatch.syspath_prepend(tmpdir.strpath)
-
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
     mtime += 1.0
     a_script.setmtime(mtime)
 
     logger.reset()
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
     assert main.loaded_modules == {}
     assert '_a' not in sys.modules
-    assert main.bad_modules == {'_a'}
-    assert set(main.load_attempt_times.keys()) == {'_a'}
-    assert main.load_attempt_times['_a'] == mtime
+    assert main.bad_modules == {a_path}
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
@@ -208,6 +244,7 @@ def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, lo
     config = empty_config
     config.directories = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
     mtime = 123456.0
     a_script.write("""x=; #a syntax error.""")
     a_script.setmtime(mtime)
@@ -215,22 +252,19 @@ def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, lo
 
     main = NatlinkMain(logger, config)
 
-    # use instead of add_dirs_to_path
-    monkeypatch.syspath_prepend(tmpdir.strpath)
-
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
 
     a_script.write("""x=1""")
     # set the mtime to the old mtime, so natlink should NOT reload
     a_script.setmtime(mtime)
     mtime += 1.0
 
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
     assert main.loaded_modules == {}
     assert '_a' not in sys.modules
-    assert main.bad_modules == {'_a'}
-    assert set(main.load_attempt_times.keys()) == {'_a'}
-    assert main.load_attempt_times['_a'] == mtime
+    assert main.bad_modules == {a_path}
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
 
     msg = f'skipping unchanged bad module: _a'
     assert msg in logger.messages['info']
@@ -242,6 +276,7 @@ def test_load_single_good_script_that_was_previously_bad(tmpdir, empty_config, l
     config = empty_config
     config.directories = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
     mtime = 123456.0
     a_script.write("""x=; #a syntax error.""")
     a_script.setmtime(mtime)
@@ -249,20 +284,17 @@ def test_load_single_good_script_that_was_previously_bad(tmpdir, empty_config, l
 
     main = NatlinkMain(logger, config)
 
-    # use instead of add_dirs_to_path
-    monkeypatch.syspath_prepend(tmpdir.strpath)
-
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
     mtime += 1.0
     a_script.write("""x=1""")
     a_script.setmtime(mtime)
 
-    main.load_or_reload_modules(main.module_names)
-    assert set(main.loaded_modules.keys()) == {'_a'}
+    main.load_or_reload_modules(main.module_paths)
+    assert set(main.loaded_modules.keys()) == {a_path}
     assert main.bad_modules == set()
-    assert set(main.load_attempt_times.keys()) == {'_a'}
-    assert main.load_attempt_times['_a'] == mtime
-    assert main.loaded_modules['_a'].x == 1
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
+    assert main.loaded_modules[a_path].x == 1
 
     del_loaded_modules(main)
 
@@ -271,6 +303,7 @@ def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, l
     config = empty_config
     config.directories = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
+    a_path = Path(a_script.strpath)
     mtime = 123456.0
     a_script.write("""x=0""")
     a_script.setmtime(mtime)
@@ -278,20 +311,17 @@ def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, l
 
     main = NatlinkMain(logger, config)
 
-    # use instead of add_dirs_to_path
-    monkeypatch.syspath_prepend(tmpdir.strpath)
-
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
     mtime += 1.0
     a_script.write("""x=; #a syntax error.""")
     a_script.setmtime(mtime)
 
-    main.load_or_reload_modules(main.module_names)
+    main.load_or_reload_modules(main.module_paths)
     assert main.loaded_modules == {}
     assert '_a' not in sys.modules
-    assert main.bad_modules == {'_a'}
-    assert set(main.load_attempt_times.keys()) == {'_a'}
-    assert main.load_attempt_times['_a'] == mtime
+    assert main.bad_modules == {a_path}
+    assert set(main.load_attempt_times.keys()) == {a_path}
+    assert main.load_attempt_times[a_path] == mtime
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
