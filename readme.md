@@ -46,7 +46,7 @@ only_loaded_if_myusername_active=C:\User\myusername\scripts
 # comments are allowed like this
 
 [settings]
-log_level=DEBUG
+log_level=INFO
 ````
 
 #### Section: \[directories\] (optional)
