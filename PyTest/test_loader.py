@@ -56,6 +56,42 @@ def test_empty_config_loader(empty_config, logger):
     assert main.load_attempt_times == {}
 
 
+def test_pre_and_post_load_setter(empty_config, logger):
+    main = NatlinkMain(logger, empty_config)
+    main.set_pre_load_callback(None)
+    main.set_post_load_callback(None)
+    with pytest.raises(TypeError):
+        main.set_pre_load_callback("not callable")
+    with pytest.raises(TypeError):
+        main.set_post_load_callback("not callable")
+    cb = lambda: None
+    main.set_pre_load_callback(cb)
+    main.set_post_load_callback(cb)
+
+
+def test_trigger_load_calls_pre_and_post_load(empty_config, logger, monkeypatch):
+    main = NatlinkMain(logger, empty_config)
+    actual = []
+
+    def pre():
+        actual.append(1)
+
+    def load(*_args, **_kwargs):
+        actual.append(2)
+
+    def post():
+        actual.append(3)
+
+    main.set_pre_load_callback(pre)
+    main.set_post_load_callback(post)
+    monkeypatch.setattr(main, 'load_or_reload_modules', load)
+
+    main.trigger_load()
+
+    expected = [1, 2, 3]
+    assert actual == expected
+
+
 def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
     config.directories_by_user[''] = [tmpdir.strpath]
@@ -79,6 +115,7 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
     assert main.loaded_modules[a_path].x == 0
 
     del_loaded_modules(main)
+
 
 def test_load_single_good_script_from_user_dir(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -105,6 +142,7 @@ def test_load_single_good_script_from_user_dir(tmpdir, empty_config, logger, mon
     assert main.loaded_modules[a_path].x == 0
 
     del_loaded_modules(main)
+
 
 def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
