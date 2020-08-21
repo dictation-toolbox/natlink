@@ -1240,6 +1240,23 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         return uDir
 
+    def getBaseDirectory(self):
+        """return the path of the baseDirectory, MacroSystem
+        """
+        return self.BaseDirectory
+
+    def getCoreDirectory(self):
+        """return the path of the coreDirectory, MacroSystem/core
+        """
+        return self.CoreDirectory
+
+    def getNatlinkDirectory(self):
+        """return the path of the NatlinkDirectory, two above the coreDirectory
+        """
+        return self.NatlinkDirectory
+
+
+
 
     def getUserDirectory(self):
         """return the path to the Natlink User directory

@@ -6,12 +6,13 @@
 # natlinkmain.py
 #   Base module for the Python-based command and control subsystem
 #
+# August 2020 (QH):
+#     - streamline code
+#     - improve the loading and updating of module specific grammars
+#       (with testing in unittestNatlink, testNatlinkmain)
 # May 2020: adaptations for python3
 #     -loadedFiles items are now tuple (origPath, origDate)
 #     -fix the wrongFiles, in the same way
-#    
-#
-#
 #
 # July 2015 (QH): assume Unimacro at fixed place, extend macro files to BaseDirectory (Vocola),
 #    UnimacroDirectory, UserDirectory
@@ -79,6 +80,8 @@
 #
 # (1) redirect stdout and stderr so we see messages in the dialog box which
 #   natlink.dll creates
+#   (this has been changed to loading the module redirect_output.py, only
+#    from natlink.pyd, July 2020, Jan Scheffczyk)
 #
 # (2) compute the directory we are running from, by looking at this modules
 #   path as known to Python
@@ -87,10 +90,12 @@
 #
 # (4) install callbacks for user/mic changes and beginning of utterance
 #
+# (3 and 4 are now done by calling a changeCallback to the current user, from which
+#  the relevant data are set and the relevant grammars are loaded, Augus 2020, QH)
+#
 # A few print statements are commented out.  Remove the pound sign during
 # debugging to print information about when a module is loaded.
 #
-# start with the redirect, so the messages window responds:
 import natlink
 import sys
 import traceback
@@ -138,10 +143,10 @@ if canStartNatlink:
     if debugCallback:
         print('do extra output at callback time: %s'% debugCallback)
         
-## always set:
-baseDirectory = status.BaseDirectory    ## MacroSystem folder
-coreDirectory = status.CoreDirectory
-natlinkDirectory = status.NatlinkDirectory  ## root of Natlink area, two above the core directory
+## always set as global variables:
+baseDirectory = status.getBaseDirectory()    ## MacroSystem folder
+coreDirectory = status.getCoreDirectory()
+natlinkDirectory = status.getNatlinkDirectory()  ## root of Natlink area, two above the core directory
 userDirectory = status.getUserDirectory()
 unimacroDirectory = status.getUnimacroDirectory()
 DNSVersion = status.getDNSVersion()
@@ -173,19 +178,20 @@ for name in ['DNSuserDirectory', 'userName',
         globals()[name] = ''
     else:
         if debugCallback:
-            print('natlinkmain starting, global variable: %s: %s'% (name, globals()[name]))
+            print('natlinkmain starting, global variable was already set: %s: %s'% (name, globals()[name]))
 # set in findAndLoadFiles:
 try: searchImportDirs
 except NameError: searchImportDirs = []
 DNSVersion = status.getDNSVersion()
 try: DNSmode
 except NameError: DNSmode = 0
-             # can be changed in grammarX by the setMode command to
-             # 1 dictate, 2 command, 3 numbers, 4 spell
-             # commands currently from _general7,
-             # is reset temporarily in DisplayMessage function.
-             # it is only safe when changing modes is performed through
-             # this setMode function
+# above is obsolete, could be inspected again!! (QH, 2020)
+# can be changed in grammarX by the setMode command to
+# 1 dictate, 2 command, 3 numbers, 4 spell
+# commands currently from _general7,
+# is reset temporarily in DisplayMessage function.
+# it is only safe when changing modes is performed through
+# this setMode function
 
 # at start and at changeCallback (new user) get the current language:
 language = ''
@@ -193,10 +199,11 @@ shiftkey = ''  # {shift} or different in some other languages,
                # will be changed at changecallback when a speech profile opens.
                # for example tp {umschalt} for german speech profiles.
                # Is used by natlinkutils.playString.
+               # shiftkey is error prone and obsolete...(2020)
 #
 # We maintain a dictionary of all the modules which we have loaded.  The key
-# is the Python module name.  The value is the complete path to the loaded
-# module.
+# is the Python module name.  The value is a tuple,
+#  (complete path to the loaded module, timestamp of the python file)
 #
 try: loadedFiles
 except NameError: loadedFiles = {}
@@ -227,7 +234,7 @@ def unloadModule(modName):
 
 #
 # This function will load another Python module, usually one which the user
-# supplies.  This function will trap all execptions and report them so an
+# supplies.  This function will trap all exceptions and report them so an
 # error in this function will not prevent another module from being
 # imported. This routine will also conditionaly reload a module if it has
 # changed.
@@ -388,7 +395,6 @@ def findAndLoadFiles(curModule=None):
     else:
         unimacroDirFiles = []
 
-
     # baseDirectory:
     if baseDirectory:
         baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
@@ -420,7 +426,7 @@ def findAndLoadFiles(curModule=None):
                 if not vocolaModule.VocolaEnabled:
                     # vocola module signals vocola is not enabled:
                     vocolaEnabled = 0
-                    del loadedFiles[x]
+                    unloadFile(x)
                     if debugLoad: print('Vocola is disabled...')
         # repeat the base directory, as Vocola just had the chance to rebuild Python grammar files:
         baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
@@ -458,16 +464,17 @@ def findAndLoadFiles(curModule=None):
         pass
 
     # Unload any files which have been deleted
-    for name, loadedFile in list(loadedFiles.items()):
+    filesToUnload = []
+    for name, loadedFile in loadedFiles.items():
         if loadedFile:
             origPath, origDate = loadedFile
-        else:
-            continue
-        if origPath and not getFileDate(origPath):
-            if debugLoad:
-                print("natlinkmain, file is deleted, unload %s"% origPath)
-            safelyCall(name,'unload')
-            del loadedFiles[name]
+            if origPath and not getFileDate(origPath):
+                filesToUnload.append(name)
+
+    for name in filesToUnload:
+        if debugLoad:
+            print("natlinkmain, file is deleted, unload %s"% name)
+        unloadFile(name)
 
 def reorderKeys(modulesKeys):
     """here is the chance to influence the order of loading
@@ -488,9 +495,12 @@ def reorderKeys(modulesKeys):
         if g in L:
             L.remove(g)
             L.append(g)
+    if modulesKeys == L:
+        return L
     if debugLoad:
-        print('list of grammars to load: %s'% L)
+        print('reordered list of grammars to load:\n===old: %s\nnew: %s'% (modulesKeys, L))
     return L
+
 
 def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
     """add to the dict of filesToLoad,
@@ -522,21 +532,34 @@ def addToFilesToLoad( filesToLoad, modName, modDirectory, moduleHasDot=None):
 ##    print 'set newModName: %s'% newModName
 
 
+
+def unloadFile(name):
+    """unload the grammar and remove from loadedFiles
+    
+    some special treatment of vocola
+    """
+    global loadedFiles, vocolaIsLoaded, vocolaModule
+    if name in loadedFiles:
+        safelyCall(name, 'unload')
+        del loadedFiles[name]
+        if name == doVocolaFirst:
+            vocolaIsLoaded = None
+            vocolaModule = None
+    else:
+        print("??? unloadFile(%s) loadedFiles is False???"% x)
 #
 # This function is called when we change users.  It calls the unload member
 # function in each loaded module.
 #
 
 def unloadEverything():
-    global loadedFiles, vocolaIsLoaded, vocolaModule
-    for x in loadedFiles:
-        if loadedFiles[x]:
-            if debugLoad: print(('unload grammar %s'% x))
-            safelyCall(x,'unload')
-            if x == doVocolaFirst:
-                vocolaIsLoaded = None
-                vocolaModule = None
-    loadedFiles = {}
+    global loadedFiles
+    for x in list(loadedFiles.keys()):
+        unloadFile(x)
+    if loadedFiles:
+        print("after unloadEverything, loadedFiles not empty: %s"% loadedFiles)
+        print("make it empty NOW")
+        loadedFiles = {}
 
 #
 # Compute the name of the current module and load all files which are
@@ -581,12 +604,12 @@ def setSearchImportDirs():
     added = False
     for searchdir in reversed(searchImportDirs):
         if not searchdir in sys.path:
+            print('from setSearchImportDirs add to path: %s'% searchdir)
             sys.path.insert(0, searchdir)
             added = True
-    if added:
-        print('from setSearchImportDirs: ')
-        pprint(sys.path)
-
+    # if added:
+    #     print('from setSearchImportDirs: ')
+    #     pprint(sys.path)
 
 #
 # When a new utterance begins we check all the loaded modules for changes.
@@ -845,18 +868,18 @@ def start_natlink(doNatConnect=None):
     # setting searchImportDirs, also insert at front of sys.path if not in the list yet.
     setSearchImportDirs()
 
-    # init things identical to when user changes:
-    #   [MDL: this calls findAndLoadFiles()!]
-    changeCallback('user', natlink.getCurrentUser())
 
 ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
 
     # load all global files in user directory and current directory
-    findAndLoadFiles()
+    # findAndLoadFiles()  
 
     # initialize our callbacks
     natlink.setBeginCallback(beginCallback)
     natlink.setChangeCallback(changeCallback)
+
+    # init things identical to when user changes:
+    changeCallback('user', natlink.getCurrentUser())
 
     print(('natlinkmain started from %s:\n  Natlink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
               (status.getCoreDirectory(), status.getInstallVersion(),
@@ -865,6 +888,7 @@ def start_natlink(doNatConnect=None):
 
     if debugLoad:
         print("userDirectory: %s\nbaseDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, baseDirectory, unimacroDirectory))
+        print("loadedFiles: %s"% loadedFiles)
         print("natlinkmain imported-----------------------------------")
     elif natlinkmainPrintsAtEnd:
         if status.UnimacroIsEnabled():
@@ -882,7 +906,7 @@ def start_natlink(doNatConnect=None):
         print('='*30)
         status.emptyWarning()
 
-############################################################################
+###################################################################
 #
 # Here is the initialization code.
 #
