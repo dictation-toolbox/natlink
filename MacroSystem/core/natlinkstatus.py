@@ -4,85 +4,17 @@ __version__ = "4.2"
 #   This module gives the status of Natlink to natlinkmain
 #
 #  (C) Copyright Quintijn Hoogenboom, February 2008/January 2018
+#  Adapted to new directories strategy with python3, and new natlinkmain.py (James Murphy, kb100)
 #
 #----------------------------------------------------------------------------
-#
-# 4.2 stable version, exit from subversion, end of python2.7 development.
-#
-# 4.1whiskey, minor changes, 12/11/2018
-# 4.1victor, changes for DPI15, nearly stable, waiting for Mark getting SendKeys implemented.
-#
-# 4.1uniform, changes for DPI15, and also getting 4 parameters from natlink.changeCallback
-#                                so the userLanguage (and also userTopic) is reporting via natlink.
-#
-# 4.1tango, improving installer
-#            Messages window handles diacritical characters.
-#            several changes unimacro
-#            added chrome_browsing, using Click by Voice.
-# 4.1quebec, working to check of pyd register errors.
-#            cleaning up some functions, getting the correct Dragon version
-#            getting the correct DNSIniDir
-#            removing IncludeUnimacroInPythonPath (done automatically when Vocola wants Unimacro actions)
-#
-# 4.1papa:  intermediate, checking correct Dragon version and reporting windows 8or10
-# 4.1oscar: installer changed, extended with Unimacro, apart from UserDirectory
-# 4.1november: a few small bugs
-# 4.1mike: extra checks in start_configurenatlink.py
-#          unimacro additions
-# 4.1kilo/lima: Dragon 13!
-# 4.1juliet: adapted playString function (Mark Lillibridge) via natlinkutils.playString
-#            natlinkmain.py has nearly all code caught in a try except statement
-# 4.1india: bugfix Vocola
-# 4.1hotel:
-#      more stable pyd files (hopefully)
-#      installer checks for 64 bit python (forbidden)
-#      many Unimacro improvements, action classes for specific programs (lines module hundred)
-#      autohotkey support
-#
-# 4.1golf: some improvements in config program
-#          new build of previous version of natlink.pyd (which was already in 4.1delta version)
-#          natlinkutils.playString tries to workaround the sendkeys problem sometimes experienced.
-#
-# 4.1foxtrot: some changes in config program
-#
-# 4.1echo:
-# reverted the 2.7 UNICODE pyd to the charlie version because of trouble with the delta version
-#
-# version 4.2delta  more stable pyd's, 2.7/dragon 12 cannot reload. All pyd versions in separate subdirectory (PYD),
-#                   following Rudigers naming convention
-#                   more testing on changed  (out of date) natlink.pyd file and nicer messages in config program
-#                   and natlink start (Messages window)
-# version 4.1charlie some experimental pyd's for dragon 12, python2.6 and python 2.7
-#                    new vocola compiler all python
-#                    several bugfixes in setting correct python version and pyd
-#                    got rid of .bat files in config directory
-# version 4.1beta: with first version of natlink26_12.pyd for Dragon 12 (thanks to Rudiger)
-#                  drastic changes in old registry settings, removing the PythonPath variable
-#                  also change key for previous installed pyd from NatlinkDllRegistered=25 to NatlinkPydRegistered=25;11
-#                  so, include the Dragon version in this string too.
-#
-# version 4.0 at last, Quintijn, oct 2011
-# version 3.9sierraArnoud: a private intermediate release for Arnoud van den Eerenbeemt
-#                          making search macro's across applications
-# version 3.9sierra: nearly stable, but a lot of details with Dragon 11 have to
-#                    be investigated
-# version 3.9quebec: working to a final release, with Vocola 2.7.2
-# version 3.9papa: removed system command directories vocola (mdl)
-# version 3.9foxtrot: adaptation NatSpeak 11
-# version 3.9: changing to ini files instead of registry
-#              and get python path directly...
-#              making ready for python2.6
-#              minor change to NewStdout and NewStderr in natlinkmain
-# version 3.7: changed userDirectory to UserDirectory in the getNatlinkStatusDict function.
-#              no influence on the natlinkstatus.getUserDirectory() function.
-
+# previous version history to be found in git versions up to FinalCommitWithVocola, 21-8-2020
+# 
 """The following functions are provided in this module:
 (to be used by either natlinkmain.py or natlinkconfigfunctions.py)
 
 The functions below are put into the class NatlinkStatus.
 The natlinkconfigfunctions can subclass this class, and
 the configurenatlink.py (GUI) again sub-subclasses this one.
-
 
 The following  functions manage information that changes at changeCallback time
 (when a new user opens)
@@ -136,19 +68,30 @@ getPythonVersion:
 #(getFullPythonVersion: get string of complete version info).
 
 
-getUserDirectory: get the Natlink user directory, ##Unimacro will be there. If not return '' not any more (july 2015)
-    UserDirectory is now for non Unimacro grammar files, including Dragonfly.
-    (if run from natlinkconfigfunctions use getUserDirectoryFromIni, which checks inifile
-     at each call...)
+getUserDirectory: get the Natlink user directory, 
+    Especially Dragonfly users will use this directory for putting their grammar files in.
+    Also users that have their own custom grammar files can use this user directory
 
-getUnimacroDirectory: get the directory, which should be in natlink\\Unimacro.
+getUnimacroDirectory: get the directory where the Unimacro system is.
+    When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped). This grammar will (and should) hold the _control.py grammar
+    and needs to be included in the load directories list of James' natlinkmain
+
+getUnimacroGrammarsDirectory: get the directory, where the user can put his Unimacro grammars. By default
+    this will be the ActiveGrammars subdirectory of the UnimacroUserDirectory.
+
+getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return '' or
+      the Unimacro user directory
+
+getVocolaDirectory: get the directory where the Vocola system is. When cloned from git, in Vocola, relative to
+      the Core directory. Otherwise (when pipped) in some site-packages directory. It holds (and should hold) the
+      grammar _vocola_main.py.
 
 getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
     (if run from natlinkconfigfunctions use getVocolaDirectoryFromIni, which checks inifile
      at each call...)
 
-getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return '' or
-      the Unimacro user directory
+getVocolaGrammarsDirectory: get the directory, where the compiled Vocola grammars are/will be.
+    This will normally be the "CompiledGrammars" subdirectory of the VocolaUserDirectory.
 
 NatlinkIsEnabled:
     return 1 or 0 whether Natlink is enabled or not
@@ -320,15 +263,21 @@ class NatlinkStatus:
     userArgsDict = {}
 
     # for quicker access (only once lookup in a run)
-    UserDirectory = None # not Unimacro!!
+    UserDirectory = None # for Dragonfly mainly, and for user defined grammars
     BaseDirectory = None
     CoreDirectory = None
     DNSInstallDir = None
     DNSVersion = None
     DNSIniDir = None
+    ## Unimacro:
     UnimacroDirectory = None
     UnimacroUserDirectory = None
+    UnimacroGrammarsDirectory = None
+    ## Vocola:
     VocolaUserDirectory = None
+    VocolaDirectory = None
+    VocolaGrammarsDirectory = None
+    ## AutoHotkey:
     AhkUserDir = None
     AhkExeDir = None
     hadWarning = []
@@ -343,6 +292,7 @@ class NatlinkStatus:
             self.__class__.CoreDirectory = CoreDirectory
             self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
             self.__class__.NatlinkDirectory = os.path.normpath(os.path.join(CoreDirectory, '..', '..'))
+            assert os.path.isdir(self.NatlinkDirectory)
             self.correctIniSettings() # change to newer conventions
         
             ## initialise DNSInstallDir, DNSVersion and DNSIniDir
@@ -1187,11 +1137,21 @@ Please try to correct this by running the Natlink Config Program (with administr
             self.hadWarning.append(text)
 
     def VocolaIsEnabled(self):
+        """Return True if Vocola is enables
+        
+        To be so,
+        1. the VocolaUserDirectory (where the vocola command files (*.vcl) are located)
+        should be defined in the user config file
+        2. the VocolaMainDirectory should be found, and hold '_vocola_main.py'
+        
+        """
         if not self.NatlinkIsEnabled():
             return
-        vocDir = self.getVocolaUserDirectory()
-        if vocDir:
-            return 1
+        vocUserDir = self.getVocolaUserDirectory()
+        if vocUserDir and path(vocUserDir).isdir():
+            vocDir = self.getVocolaDirectory()
+            if vocDir and path(vocDir).isdir():    
+                return True
 
     def UnimacroIsEnabled(self):
         """UnimacroIsEnabled: see if UserDirectory is there and
@@ -1200,13 +1160,15 @@ Please try to correct this by running the Natlink Config Program (with administr
         """
         if not self.NatlinkIsEnabled():
             return
-        UnimacroDir = self.getUnimacroDirectory()
-        UnimacroUserDir = self.getUnimacroUserDirectory()
-        if not UnimacroDir:
+        uuDir = self.getUnimacroUserDirectory()
+        if not uuDir:
+            return
+        uDir = self.getUnimacroDirectory()
+        if not uDir:
             # print('no valid UnimacroDirectory, Unimacro is disabled')
             return
-        if UnimacroUserDir and os.path.isdir(UnimacroUserDir):
-            files = os.listdir(UnimacroDir)
+        if uDir and os.path.isdir(uDir):
+            files = os.listdir(uDir)
             if '_control.py' in files:
                 return 1
 
@@ -1217,28 +1179,85 @@ Please try to correct this by running the Natlink Config Program (with administr
         if userDir:
             return 1
 
-    def getUnimacroDirectory(self):
-        """return the path to the Unimacro Directory, starting July 2015
+    def getUnimacroUserDirectory(self):
+        if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
+        key = 'UnimacroUserDirectory'
+        value = self.userregnl.get(key)
+        if value:
+            Path = isValidPath(value, wantDirectory=1)
+            if Path:
+                try: del self.UnimacroUserDirectory
+                except AttributeError: pass
 
-        should be in a fixed place!
+                self.UnimacroUserDirectory = Path
+                return Path
+            else:
+                print('invalid path for %s: "%s"'% (key, value))
+
+        try: del self.UnimacroUserDirectory
+        except AttributeError: pass
+        self.UnimacroUserDirectory = ''
+        return ''
+
+    def getUnimacroDirectory(self):
+        """return the path to the Unimacro Directory
+        
+        This is the directory where the _control.py grammar is.
+
+        When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped).
+        
+        This directory needs to be included in the load directories list of James' natlinkmain
+        (August 2020)
 
         """
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
-        if not self.CoreDirectory:
-            print('no valid CoreDirectory, so no UnimacroDirectory')
-            uDir = ''
-        else:
-            uDir = os.path.normpath(os.path.join(self.CoreDirectory, '..','..', '..', 'Unimacro'))
-            if uDir and os.path.isdir(uDir):
-                pass
-                # print 'UnimacroDirectory: %s'% uDir
-            else:
-                # print(('UnimacroDirectory not found: %s, set empty string'% uDir))
-                uDir = ''
+        uDir = path(self.NatlinkDirectory)/".."/"Unimacro"
+        if not uDir.isdir():
+            print("not in git clone area, Unimacro Directory")
+            uDir = ""
+        if uDir:
+            controlGrammar = uDir/"_control.py"
+            if controlGrammar.isfile():
+                try: del self.UnimacroDirectory
+                except AttributeError: pass
+                self.UnimacroDirectory = uDir.normpath()
+                self.addToPath(self.UnimacroDirectory)
+                return self.UnimacroDirectory
+        ## not found:
+        try: del self.UnimacroDirectory
+        except AttributeError: pass
+        self.UnimacroDirectory = ""
+        return ""
+        
+    def getUnimacroGrammarsDirectory(self):
+        """return the path to the directory where the ActiveGrammars of Unimacro are located.
+        
+        Expected in "ActiveGrammars" of the UnimacroUserDirectory
+        (August 2020)
 
-        self.__class__.UnimacroDirectory = uDir # meaning path is invalid!!
+        """
+        if not self.UnimacroGrammarsDirectory is None: return self.UnimacroGrammarsDirectory
+        
+        uuDir = self.getUnimacroUserDirectory()
+        if uuDir and path(uuDir).isdir():
+            uuDir = path(uuDir)
+            ugDir = uuDir/"ActiveGrammars"
+            if not ugDir.exists():
+                ugDir.mkdir()
+            if ugDir.exists() and ugDir.isdir():
+                ugFiles = [f for f in ugDir.listdir() if f.endswith(".py")]
+                if not ugFiles:
+                    print(f"UnimacroGrammarsDirectory: {ugDir} has no python grammar files (yet), please populate this directory with the Unimacro grammars you wish to use, and then toggle your microphone")
+                
+                try: del self.UnimacroGrammarsDirectory
+                except AttributeError: pass
+                self.UnimacroGrammarsDirectory= ugDir.normpath()
+                return self.UnimacroGrammarsDirectory
 
-        return uDir
+        try: del self.UnimacroGrammarsDirectory
+        except AttributeError: pass
+        self.UnimacroGrammarsDirectory= ""   # meaning is not set, for future calls.
+        return self.UnimacroGrammarsDirectory
 
     def getBaseDirectory(self):
         """return the path of the baseDirectory, MacroSystem
@@ -1255,9 +1274,6 @@ Please try to correct this by running the Natlink Config Program (with administr
         """
         return self.NatlinkDirectory
 
-
-
-
     def getUserDirectory(self):
         """return the path to the Natlink User directory
 
@@ -1268,43 +1284,81 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.NatlinkIsEnabled:
             return
         if not self.UserDirectory is None: return self.UserDirectory
-        uDir = self.getUserDirectoryFromIni()
-        return uDir
-
-    def getUserDirectoryFromIni(self):
-        """get the UserDirectory from the ini file
-        return '' if invalid path or not specified...
-        """
         key = 'UserDirectory'
         value = self.userregnl.get(key)
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
-                self.__class__.UserDirectory = Path
+                self.UserDirectory = Path
                 return Path
             else:
                 print('invalid path for UserDirectory: "%s"'% value)
-        self.__class__.UserDirectory = ''
+        self.UserDirectory = ''
         return ''
 
     def getVocolaUserDirectory(self):
         if not self.VocolaUserDirectory is None: return self.VocolaUserDirectory
-        return self.getVocolaUserDirectoryFromIni()
-
-    def getVocolaUserDirectoryFromIni(self):
         key = 'VocolaUserDirectory'
 
         value = self.userregnl.get(key)
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
-                self.__class__.VocolaUserDirectory = Path
+                self.VocolaUserDirectory = Path
                 return Path
             else:
                 print('invalid path for VocolaUserDirectory: "%s"'% value)
-        self.__class__.VocolaUserDirectory = ''
+        self.VocolaUserDirectory = ''
         return ''
 
+    def getVocolaDirectory(self):
+        if not self.VocolaDirectory is None: return self.VocolaDirectory
+        vDir = path(self.NatlinkDirectory)/".."/"Vocola"
+        if not vDir.isdir():
+            print("not in git clone area, Vocola Directory")
+            vDir = ""
+        if vDir:
+            controlGrammar = vDir/"_vocola_main.py"
+            if controlGrammar.isfile():
+                self.VocolaDirectory = vDir.normpath()
+                self.addToPath(self.VocolaDirectory)
+                return self.VocolaDirectory
+
+        ## search the path for pipped packages: (not tested yet)
+        for Dir in sys.path:
+            controlGrammar = Dir/"_vocola_main.py"
+            if controlGrammar.isfile():
+                self.VocolaDirectory = Dir.normpath()
+                self.addToPath(self.VocolaDirectory)
+                return self.VocolaDirectory
+        ## not found:
+        self.VocolaDirectory = ""
+        return ""
+
+    def getVocolaGrammarsDirectory(self):
+        """return the VocolaGrammarsDirectory, but only if Vocola is enabled
+        
+        If so, the subdirectory CompiledGrammars is created if not there yet.
+        
+        The path of this "CompiledGrammars" directory is returned.
+        
+        If Vocola is not enabled, or anything goes wrong, return ""
+        
+        """
+        if not self.VocolaGrammarsDirectory is None: return self.VocolaGrammarsDirectory
+        vUserDir = self.getVocolaUserDirectory()
+        if not vUserDir:
+            self.VocolaGrammarsDirectory = ''
+            return ''
+        vgDir = path(vUserDir)/"CompiledGrammars"
+        if not vgDir.exists():
+            vgDir.mkdir()
+        if vgDir.exists() and vgDir.isdir():
+            self.VocolaGrammarsDirectory= vgDir.normpath()
+            return self.VocolaGrammarsDirectory
+        ## not found:
+        self.VocolaGrammarsDirectory = ""
+        return ""
 
     def getAhkUserDir(self):
         if not self.AhkUserDir is None: return self.AhkUserDir
@@ -1317,11 +1371,11 @@ Please try to correct this by running the Natlink Config Program (with administr
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
-                self.__class__.AhkUserDir = Path
+                self.AhkUserDir = Path
                 return Path
             else:
                 print('invalid path for AhkUserDir: "%s"'% value)
-        self.__class__.AhkUserDir = ''
+        self.AhkUserDir = ''
         return ''
 
     def getAhkExeDir(self):
@@ -1334,29 +1388,13 @@ Please try to correct this by running the Natlink Config Program (with administr
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
-                self.__class__.AhkExeDir = Path
+                self.AhkExeDir = Path
                 return Path
             else:
                 print('invalid path for AhkExeDir: "%s"'% value)
-        self.__class__.AhkExeDir = ''
+        self.AhkExeDir = ''
         return ''
 
-    def getUnimacroUserDirectory(self):
-        if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
-        return self.getUnimacroUserDirectoryFromIni()
-
-    def getUnimacroUserDirectoryFromIni(self):
-        key = 'UnimacroUserDirectory'
-        value = self.userregnl.get(key)
-        if value:
-            Path = isValidPath(value, wantDirectory=1)
-            if Path:
-                self.__class__.UnimacroUserDirectory = Path
-                return Path
-            else:
-                print('invalid path for %s: "%s"'% (key, value))
-        self.__class__.UnimacroUserDirectory = ''
-        return ''
 
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
@@ -1606,8 +1644,9 @@ Please try to correct this by running the Natlink Config Program (with administr
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion',
                     'DNSName',
-                    'UnimacroDirectory',
+                    'UnimacroDirectory', 'UnimacroUserDirectory', 'UnimacroGrammarsDirectory',
                     'DebugLoad', 'DebugCallback',
+                    'VocolaDirectory', 'VocolaUserDirectory', 'VocolaGrammarsDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'UnimacroIniFilesEditor',
                     'InstallVersion', 'NatlinkPydRegistered',
@@ -1619,11 +1658,10 @@ Please try to correct this by running the Natlink Config Program (with administr
             exec(execstring)
         D['CoreDirectory'] = self.CoreDirectory
         D['BaseDirectory'] = self.BaseDirectory
-        D['UserDirectory'] = self.getUserDirectoryFromIni()
-        D['VocolaUserDirectory'] = self.getVocolaUserDirectoryFromIni()
-        D['UnimacroUserDirectory'] = self.getUnimacroUserDirectoryFromIni()
+        D['UserDirectory'] = self.getUserDirectory()
         D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
+
         D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
         D['userIsEnabled'] = self.UserIsEnabled()
         # extra for information purposes:
@@ -1652,25 +1690,28 @@ Please try to correct this by running the Natlink Config Program (with administr
             ## Vocola::
             if D['vocolaIsEnabled']:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
-                for key in ('BaseDirectory', 'VocolaUserDirectory', 'VocolaTakesLanguages',
+                for key in ('BaseDirectory', 'VocolaUserDirectory', 'VocolaDirectory',
+                            'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
                             'VocolaTakesUnimacroActions'):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
-                for key in ('VocolaUserDirectory', 'VocolaTakesLanguages',
+                for key in ('VocolaUserDirectory', 'VocolaDirectory',
+                            'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
                             'VocolaTakesUnimacroActions'):
                     del D[key]
 
             ## Unimacro:
             if D['unimacroIsEnabled']:
                 self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is enabled")
-                for key in ('UnimacroDirectory',):
+                for key in ('UnimacroUserDirectory', 'UnimacroDirectory', 'UnimacroGrammarsDirectory'):
                     self.appendAndRemove(L, D, key)
-                for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
+                for key in ('UnimacroIniFilesEditor',):
                     self.appendAndRemove(L, D, key)
             else:
                 self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is disabled")
-                for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor'):
+                for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor',
+                            'UnimacroDirectory', 'UnimacroGrammarsDirectory'):
                     del D[key]
             ##  UserDirectory:
             if D['userIsEnabled']:
@@ -1723,6 +1764,18 @@ Please try to correct this by running the Natlink Config Program (with administr
                 value = '-'
             List.append("\t%s\t%s"% (Key,value))
         del Dict[Key]
+        
+    def addToPath(self, directory):
+        """add to the python path if not there yet
+        """
+        Dir2 = path(directory)
+        if not Dir2.isdir():
+            print(f"natlinkstatus, addToPath, not an existing directory: {directory}")
+            return
+        Dir3 = Dir2.normpath()
+        if Dir3 not in sys.path:
+            print(f"natlinkstatus, addToPath: {Dir3}")
+            sys.path.append(Dir3)
 
 def getFileDate(modName):
     try: return os.stat(modName)[stat.ST_MTIME]

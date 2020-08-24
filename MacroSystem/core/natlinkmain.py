@@ -119,6 +119,8 @@ debugTiming=0
 # bookkeeping for Vocola:
 vocolaEnabled = 1  # first time try, is set to 0 if _vocola_main signals it is not active
 doVocolaFirst = '_vocola_main'
+        
+   
 vocolaIsLoaded = None  # 1 or None
 vocolaModule = None    # pointer to the module...
 
@@ -149,6 +151,9 @@ coreDirectory = status.getCoreDirectory()
 natlinkDirectory = status.getNatlinkDirectory()  ## root of Natlink area, two above the core directory
 userDirectory = status.getUserDirectory()
 unimacroDirectory = status.getUnimacroDirectory()
+unimacroGrammarsDirectory = status.getUnimacroGrammarsDirectory()
+vocolaDirectory = status.getVocolaDirectory()
+vocolaGrammarsDirectory = status.getVocolaGrammarsDirectory()
 DNSVersion = status.getDNSVersion()
 windowsVersion = status.getWindowsVersion()
 
@@ -353,7 +358,7 @@ def safelyCall(modName,funcName):
 #
 
 def findAndLoadFiles(curModule=None):
-    global loadedFiles, vocolaIsLoaded, vocolaModule, vocolaEnabled
+    global loadedFiles
     if curModule == 'ApplicationFrameHost':
         print("findAndLoadFiles, change module %s to %s"% (curModule, 'calc'))
         curModule = 'calc'
@@ -384,8 +389,9 @@ def findAndLoadFiles(curModule=None):
             if res:
                 modName = res.group(1)
                 addToFilesToLoad( filesToLoad, modName, userDirectory, moduleHasDot )
-    ## unimacro:
-    if status.UnimacroIsEnabled():
+
+    ## unimacro, the main file, _control:
+    if unimacroDirectory:
         unimacroDirFiles = [x for x in os.listdir(unimacroDirectory) if x.endswith('.py')]
         for x in unimacroDirFiles:
             res = pat.match(x)
@@ -395,43 +401,56 @@ def findAndLoadFiles(curModule=None):
     else:
         unimacroDirFiles = []
 
+    ## the unimacro grammars:
+    if unimacroGrammarsDirectory:
+        unimacroGrammarFiles = [x for x in os.listdir(unimacroGrammarsDirectory) if x.endswith('.py')]
+        for x in unimacroGrammarFiles:
+            res = pat.match(x)
+            if res:
+                modName = res.group(1)
+                addToFilesToLoad( filesToLoad, modName, unimacroGrammarsDirectory, moduleHasDot )
+    else:
+        unimacroGrammarDirFiles = []
+
     # baseDirectory:
     if baseDirectory:
         baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
     else:
         baseDirFiles = []
 
-    # if present, load _vocola_main first, it can generate grammar files
-    # before proceeding:
-    vocolaEnabled = (vocolaEnabled and doVocolaFirst and doVocolaFirst+'.py' in baseDirFiles)
-    if debugLoad:
-        print('vocolaEnabled: %s'% vocolaEnabled)
-    if vocolaEnabled and not vocolaIsLoaded:
+    ## _vocola_main:
+    if vocolaDirectory:
+        VocolaDirFiles = [x for x in os.listdir(vocolaDirectory) if x.endswith('.py')]
+        for x in VocolaDirFiles:
+            res = pat.match(x)
+            if res:
+                modName = res.group(1)
+                addToFilesToLoad( filesToLoad, modName, vocolaDirectory, moduleHasDot )
+    else:
+        VocolaDirFiles = []
+    if VocolaDirFiles and doVocolaFirst in VocolaDirFiles:
+        print("natlinkmain, load {doVocolaFirst}")
         x = doVocolaFirst
         loadedFile = loadedFiles.get(x, None)
         if loadedFile:
             origPath, origDate = loadedFile
             loadedFiles[x] = loadFile(x, origPath, origDate)
-            print('Vocola first  repeat origPath: %s, origDate: %s'% loadFile)
         else:
             loadedFiles[x] = loadFile(x)
-            if debugLoad: print('Vocola first: ', x)
-        vocolaIsLoaded = 1
-        if doVocolaFirst:
-            if not doVocolaFirst in sys.modules:
-                sys.stderr.write("_vocola_main could not be loaded, please fix errors\n")
-                vocolaEnabled = 0
-            else:
-                vocolaModule = sys.modules[doVocolaFirst]
-                if not vocolaModule.VocolaEnabled:
-                    # vocola module signals vocola is not enabled:
-                    vocolaEnabled = 0
-                    unloadFile(x)
-                    if debugLoad: print('Vocola is disabled...')
-        # repeat the base directory, as Vocola just had the chance to rebuild Python grammar files:
-        baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
-    if debugLoad and curModule:
-        print("loading base directory with curModule: %s"% curModule)
+        pass
+
+    if vocolaGrammarsDirectory:
+        vocolaGrammarFiles = [x for x in os.listdir(vocolaGrammarsDirectory) if x.endswith('.py')]
+        nVocolaGrammars = 0
+        for x in vocolaGrammarFiles:
+            res = pat.match(x)
+            if res:
+                nVocolaGrammars += 1
+                modName = res.group(1)
+                addToFilesToLoad( filesToLoad, modName, vocolaGrammarsDirectory, moduleHasDot )
+        print(f"natlinkmain: {nVocolaGrammars} Vocola Compiled grammars")
+    else:
+        vocolaGrammarFiles = []
 
     for x in baseDirFiles:
         res = pat.match(x)
@@ -440,21 +459,13 @@ def findAndLoadFiles(curModule=None):
             if debugLoad and curModule:
                 print("application specific, baseDirFile MATCH: %s, group1: %s"% (x, modName))
             addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
-        # else:
-        #     if debugLoad and curModule:
-        #         print("baseDirFile NO MATCH: %s"% x)
 
-    # Try to (re)load any files we find
-    # to Unimacro grammar control last:
-    controlModule = None
-
-    # user wishes?? _control last, _tasks first for Unimacro
-    keysToLoad = reorderKeys(list(filesToLoad.keys()))
-    if debugLoad: print(('filesToLoad: %s'% keysToLoad))
-
+    keysToLoad = list(filesToLoad.keys())
+    print(f'natlinkmain: {len(keysToLoad)} grammars to load')
     for x in keysToLoad:
         if x == doVocolaFirst:
             continue
+        if debugLoad: print(f"loading {x}")
         loadedFile = loadedFiles.get(x, None)
         if loadedFile:
             origPath, origDate = loadedFile
@@ -538,7 +549,7 @@ def unloadFile(name):
     
     some special treatment of vocola
     """
-    global loadedFiles, vocolaIsLoaded, vocolaModule
+    global loadedFiles
     if name in loadedFiles:
         safelyCall(name, 'unload')
         del loadedFiles[name]
@@ -590,15 +601,21 @@ def setSearchImportDirs():
     
     and add them to sys.path if needed...
 
-    either [userDirectory, baseDirectory, unimacroDirectory] or less (if no userDirectory or no unimacroDirectory)
+    either [userDirectory, baseDirectory, unimacroDirectory, ] or less (if no userDirectory or no unimacroDirectory)
 
     """
     global searchImportDirs
     searchImportDirs = []
+    if vocolaDirectory:
+        searchImportDirs.append(vocolaDirectory)
+    if vocolaGrammarsDirectory:
+        searchImportDirs.append(vocolaGrammarsDirectory)
     if userDirectory != '':
         searchImportDirs.append(userDirectory)
     if unimacroDirectory != '':
         searchImportDirs.append(unimacroDirectory)
+    if unimacroGrammarsDirectory != '':
+        searchImportDirs.append(unimacroGrammarsDirectory)
 
     searchImportDirs.append(baseDirectory)
     added = False

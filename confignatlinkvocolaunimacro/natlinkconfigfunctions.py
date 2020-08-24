@@ -76,15 +76,12 @@ import sys
 import pywintypes
 
 if __name__ == '__main__':
-    if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
-        pyVersion = sys.version[:3]
-        mess = ["Here are the natlinkconfigfunctions, with which you can configure Natlink even for this older (%s) version of Python."% pyVersion,
-                "Note: the natlink.pyd files (natlink.dll) that work with python %s are for older versions of NatSpeak (10 and before) only."% pyVersion,
-                "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7. You then use the newer natlink.pyd files in which several problems that arose between NatSpeak 10 and Dragon 11 are solved."]
-
-        mess = '\n\n'.join(mess)
+    if sys.version[0] == '2':
+        mess = "support for python 2 is no longer available, please run with python 3"
         windowsMessageBox(mess)
-
+    elif sys.version[0] == '3':
+        mess = f"natlinkconfigfunctions for python{sys.version[:3]}"
+        # windowsMessageBox(mess)
 
 class ElevationError(Exception):
     def __init__(self, message):
@@ -935,18 +932,19 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 print(('Natlink disabled, restart %s'% self.DNSName))
                 print('Note natlink.pyd is NOT UNREGISTERED, but this is not necessary either')
 
-    def getVocolaUserDir(self):
-        key = 'VocolaUserDirectory'
-        value = self.userregnl.get(key, None)
-        return value
+    # def getVocolaUserDir(self):
+    #     key = 'VocolaUserDirectory'
+    #     value = self.userregnl.get(key, None)
+    #     return value
 
-    def setVocolaUserDir(self, v):
+    def setVocolaUserDirectory(self, v):
         key = 'VocolaUserDirectory'
         v = os.path.normpath(os.path.expanduser(v))
         if self.isValidPath(v, wantDirectory=1):
-            print(("Setting VocolaUserDirectory %s and enable Vocola"% v))
+            # print(f'Enable Vocola, with setting VocolaUserDirectory {v}')
             self.userregnl.set(key, v)
             self.userregnl.delete("Old"+key)
+            self.VocolaUserDirectory = v
         else:
             oldvocdir = self.userregnl.get(key)
             if oldvocdir and self.isValidPath(oldvocdir, wantDirectory=1):
@@ -955,14 +953,14 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 mess = 'not a valid directory: %s, Vocola remains disabled'% v
             return mess
 
-    def clearVocolaUserDir(self):
+    def clearVocolaUserDirectory(self):
         key = 'VocolaUserDirectory'
         oldvalue = self.userregnl.get(key)
         if oldvalue and self.isValidPath(oldvalue):
             self.userregnl.set("Old"+key, oldvalue)
+        self.VocolaUserDirectory = "" 
         if self.userregnl.get(key):
             self.userregnl.delete(key)
-            print('clearing the VocolaUserDirectory and disable Vocola')
         else:
             mess = 'no valid VocolaUserDirectory, so Vocola was already disabled'
             return mess
@@ -1032,56 +1030,67 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             mess = 'AutoHotkey Exe Directory (AhkExeDir) was not set, do nothing'
             return mess
 
-
-    def getUnimacroUserDir(self):
-        key = 'UnimacroUserDirectory'
-        return self.userregnl.get(key, None)
-
-    def setUnimacroUserDir(self, v):
+    def setUnimacroUserDirectory(self, v):
+        """Enable Unimacro, by setting the UnimacroUserDirectory
+        """
         key = 'UnimacroUserDirectory'
 
-        oldDir = self.getUnimacroUserDir()
+        oldDir = self.getUnimacroUserDirectory()
         # v = os.path.normpath(os.path.expanduser(v))
-        unimacrouserdir = self.isValidPath(v, wantDirectory=1)
-        if unimacrouserdir:
+        uuDir = self.isValidPath(v, wantDirectory=1)
+        if uuDir:
             oldDir = self.isValidPath(oldDir, wantDirectory=1)
-            if oldDir == unimacrouserdir:
-                print(('UnimacroUserDirectory is already set to "%s", Unimacro is enabled'% v))
+            if oldDir == uuDir:
+                print(f'The UnimacroUserDirectory was already set to "{uuDir}", and Unimacro is enabled')
                 return
-                print(('Set UnimacroUserDirectory to %s, enable Unimacro'% v))
             if oldDir:
-                print(('\n-----------\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
-                      'from old UnimacroUserDirectory (%s) to \n' \
-                      'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, unimacrouserdir)))
+                print(f'\n-----------\nChanging your UnimacroUserDirectory\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
+                      'from old: "{oldDir}" to the\n' \
+                      'new UnimacroUserDirectory "{uuDir}"\n--------\n')
             self.userregnl.set(key, v)
+            
+            self.UnimacroUserDirectory = uuDir
+            
+            # clear this one, in order to refresh next time it is called:
+            self.UnimacroGrammarsDirectory = None
+            
             self.userregnl.delete('Old'+key)
+            print(f'Enable Unimacro, and set UnimacroUserDirectory to {uuDir}')
             return
-        else:
-            mess = 'not a valid directory: %s, '% v
+        mess = f'natlinkconfigfunctions, could not Enable Unimacro, and set the UnimacroUserDirectory to "{v}"'
         return mess
 
-
-    def clearUnimacroUserDir(self):
+    def clearUnimacroUserDirectory(self):
         """clear but keep previous value"""
         key = 'UnimacroUserDirectory'
         oldValue = self.userregnl.get(key)
+        self.UnimacroUserDirectory = ""
+
+        ## also clear this one:
+        self.UnimacroGrammarsDirectory = ""
+
         self.userregnl.delete(key)
         oldDirectory = self.isValidPath(oldValue)
         if oldDirectory:
             keyOld = 'Old' + key
             self.userregnl.set(keyOld, oldValue)
         else:
-            print('UnimacroUserDirectory was already cleared, Unimacro remains disabled')
-
+            print('- UnimacroUserDirectory seems to be already cleared, Unimacro remains disabled')
+            
     def setUnimacroIniFilesEditor(self, v):
         key = "UnimacroIniFilesEditor"
         exefile = self.isValidPath(v, wantFile=1)
         if exefile and v.endswith(".exe"):
             self.userregnl.set(key, v)
             self.userregnl.delete("Old"+key)
-            print(('Set UnimacroIniFilesEditor to "%s"'% v))
+            try:
+                del self.UnimacroIniFilesEditor
+            except AttributeError:
+                pass
+            self.UnimacroIniFilesEditor = v
+            print(f'natlinkconfigfunctions, Set UnimacroIniFilesEditor to {v}')
         else:
-            print(('not a valid .exe file: %s'% v))
+            print(f'natlinkconfigfunctions, setUnimacroIniFilesEditor, not a valid .exe file: "{v}')
 
     def clearUnimacroIniFilesEditor(self):
         key = "UnimacroIniFilesEditor"
@@ -1773,15 +1782,19 @@ Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro dire
 
     # Unimacro User directory and Editor or Unimacro INI files-----------------------------------
     def do_o(self, arg):
+        if not arg.strip():
+            print('natlinkconfigfunctions, enable Unimacro, needs the UnimacroUserDirectory to be passed')
+            return
         arg = self.stripCheckDirectory(arg)  # also quotes
         if not arg:
+            print(f'natlinkconfigfunctions, enable Unimacro, needs a valid (UnimacroUserDirectory) to be passed, not: {arg}')
             return
-        self.config.setUnimacroUserDir(arg)
+        self.config.setUnimacroUserDirectory(arg)
 
     def do_O(self, arg):
-        self.message = "Clearing Unimacro user directory, and disable Unimacro"
-        print(('do action: %s'% self.message))
-        self.config.clearUnimacroUserDir()
+        self.message = "Clearing UnimacroUserDirectory, and disable Unimacro"
+        print(('natlinkconfigfunctions: %s'% self.message))
+        self.config.clearUnimacroUserDirectory()
 
     def help_o(self):
         print(('-'*60))
@@ -1915,12 +1928,12 @@ the Global Clients section of nssystem.ini.
             return
         self.message =  'Set VocolaUserDirectory to "%s" and enable Vocola'% arg
         print(('do action: %s'% self.message))
-        self.config.setVocolaUserDir(arg)
+        self.config.setVocolaUserDirectory(arg)
 
     def do_V(self, arg):
         self.message = "Clear VocolaUserDirectory and (therefore) disable Vocola"
         print(('do action: %s'% self.message))
-        self.config.clearVocolaUserDir()
+        self.config.clearVocolaUserDirectory()
 
     def help_v(self):
         print(('-'*60))
@@ -2232,11 +2245,11 @@ if __name__ == "__main__":
             pass
         except ElevationError:
             e = sys.exc_info()[1]
-            print(('please run this program in elevated mode (%s).'% e.message))
+            print(f'For some functions you need to run this program in elevated mode\n-- {e.message}')
             cli.do_q("dummy")
         except NatSpeakRunningError:
             e = sys.exc_info()[1]
-            print(('Dragon should not be running, %s.'% e.message))
+            print(f'Dragon should not be running for the function you choosed\n-- {e.message}')
     else:
       _main()
 
