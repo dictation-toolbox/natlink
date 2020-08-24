@@ -208,29 +208,40 @@ path('folder/subfolder/trunc.txt')
 'C:/Projects'
 
 small cases:
->>> workingdirectory = os.getcwd()
->>> path('.') == workingdirectory
-True
->>> path('') == workingdirectory
-False
->>> path('/')
-path('/')
->>> path('../..')
-path('../..')
->>> path('../../')
-path('../..')
->>> p = path('C:/windows/../nonexistingdir/acties')
->>> str(p)
-'C:/nonexistingdir/acties'
->>> p.is_dir()
-False
+# >>> workingdirectory = os.getcwd()
+# >>> path('.') == workingdirectory
+# True
+# >>> path('') == workingdirectory
+# False
+# >>> path('/')
+# path('/')
+# >>> path('../..')
+# path('../..')
+# >>> path('../../')
+# path('../..')
+# >>> p = path('C:/windows/../nonexistingdir/acties')
+# >>> str(p)
+# 'C:/nonexistingdir/acties'
+# >>> q = p/".."
+# >>> q
+# path('C:/nonexistingdir')
+# >>> p.is_dir()
+# False
 
 ## "~" is in Windows the Documents directory:
-# >>> hometrick = path("~/.ssh/id_rsa.pub")
-# >>> str(hometrick)
-# 'C:/Users/Gebruiker/Documents/.ssh/id_rsa.pub'
-# >>> hometrick.isfile()
-# True
+>>> hometrick = path("~/.ssh/id_rsa.pub")
+>>> str(hometrick)
+'C:/Users/Gebruiker/Documents/.ssh/id_rsa.pub'
+>>> hometrick.isfile()
+True
+>>> docsdir = hometrick/".."/".."
+>>> docsdir
+path('~')
+>>> str(docsdir)
+'C:/Users/Gebruiker/Documents'
+>>> print(docsdir)
+C:/Users/Gebruiker/Documents
+
 # >>> hometrick.prefix
 # '~'
 # >>> hometrick.resolvedprefix
@@ -454,10 +465,13 @@ path('C:/temp')
 
     def __truediv__(self, key):
         """also a list can be passed after the /
+        
+        make an extra call to path, in order to always return a normpathed instance...
         """
         if type(key) in (list, tuple):
             key = '/'.join(key)
         child = self._make_child((key,))
+        child = path(child.normpath())
         child.prefix = self.prefix
         child.resolvedprefix = self.resolvedprefix
         return child
@@ -1245,7 +1259,7 @@ path('C:/_-3d/_-4a.txt')
 
         used in gui inputoutput and kontrol (minimal)
 >>> path("C:/Natlink/a/b.txt").encodePath()
-'b.txt (C:/natlink/a)'
+'b.txt (C:/Natlink/a)'
 
 ## doubt if this is nice: (TODOQH)
 # >>> path("b.txt").encodePath()
