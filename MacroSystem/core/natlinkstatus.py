@@ -131,7 +131,7 @@ import win32con
 import sys
 import pprint
 import stat
-import RegistryDict
+# import RegistryDict
 import winreg  # for constants to be passed to RegistryDict
 import natlinkcorefunctions
 import pywintypes
@@ -222,25 +222,6 @@ class NatlinkStatus:
     in the PyTest folder there are/come test functions in TestNatlinkStatus
 
     """
-
-    ### this part is nearly obsolete, this registry section was used in version before 3.5 or so
-    usergroup = "SOFTWARE"
-##    lmgroup = "SOFTWARE\Natlink"
-    try:
-        userregnlOld = RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, usergroup, flags=win32con.KEY_READ)
-    except:
-        userregnlOld = None
-    if not userregnlOld:
-        userregnlOld = None
-    else:
-        if 'Natlink' in list(userregnlOld.keys()):
-            userregnlOld = userregnlOld['Natlink']
-        else:
-            userregnlOld = None
-
-
-##    regnl = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, group)
-
     userregnl = natlinkcorefunctions.NatlinkstatusInifileSection()
 
     ### from previous modules, needed or not...
@@ -362,57 +343,51 @@ class NatlinkStatus:
 
         if CoreDirectory.lower().endswith('core'):
             # check the registry setting:
-            try:
-                regDict, sectionName = self.getRegistryPythonPathDict()
-            except ValueError:
-                print("""Natlink setting not found or wrong in PythonPath setting in registry\n
-Please try to correct this by running the Natlink Config Program (with administration rights)""")
+            result = self.getRegistryPythonPathNatlink()
+            if not result:
+                print('''Natlink setting not found in Natlink section of PythonPath setting\n
+Please try to correct this by running the Natlink Config Program (with administration rights)\n''')
                 return
-            except KeyError:  
-                print("""PythonPath setting not found in registry\n
-Please try to correct this by running the Natlink Config Program (with administration rights)""")
-                return
-            if regDict is None:
-                print("""Natlink setting not found or wrong in PythonPath setting in registry\n
-Please try to correct this by running the Natlink Config Program (with administration rights)""")
+            natlinkvalue, hivekey, pythonpathkey = result
+            if not natlinkvalue:
+                print(f'''Natlink setting not found in Natlink section of PythonPath setting {pythonpathkey} in registry\n
+Please try to correct this by running the Natlink Config Program (with administration rights)''')
                 return
 
-            section = regDict['Natlink']
-            if not section:
-                print("""PythonPath/Natlink setting in registry does exist.\n
-Please try to correct this by running the Natlink Config Program (with administration rights)""")
-                return
-            setting = section['']
-            if setting.lower() == CoreDirectory.lower():
-                baseDir = os.path.normpath(os.path.join(CoreDirectory, ".."))
-                self.InsertToSysPath(CoreDirectory)
-                self.InsertToSysPath(baseDir)
-            else:
-                print(("""PythonPath/Natlink setting in registry does not match this core directory\n
-registry: %s\nCoreDirectory: %s\n
-Please try to correct this by running the Natlink Config Program (with administration rights)"""% (
-                setting, CoreDirectory)))
-                return
-        else:
-            baseDir = None
-            print('non expected core directory %s, cannot find baseDirectory\nTry to run the Config Program with administrator rights'% CoreDirectory)
-        userDir = self.getUserDirectory()
-        # special for other user directories, insert also unimacro for actions etc.
-        if userDir:
-            self.InsertToSysPath(userDir)
-
-        includeUnimacroDirectory =  self.UnimacroIsEnabled() or (self.VocolaIsEnabled() and self.getVocolaTakesUnimacroActions())
-        if  includeUnimacroDirectory:
-            if not baseDir:
-                print('no baseDir found, cannot "IncludeUnimacroInPythonPath"')
-                return
-            unimacroDir = os.path.join(baseDir, '..', '..', 'Unimacro')
-            unimacroDir = os.path.normpath(unimacroDir)
-            if os.path.isdir(unimacroDir):
-                self.InsertToSysPath(unimacroDir)
-            else:
-                print(('no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
-                    unimacroDir))
+            coreDirectory = path(natlinkvalue)
+            if not coreDirectory.isdir():
+                print(f'''Natlink setting "{coreDirectory}" in "{pythonpathkey}" of the registry is not a valid directory\n
+Please try to correct this by running the Natlink Config Program (with administration rights)''')
+#             if setting.lower() == CoreDirectory.lower():
+#                 baseDir = os.path.normpath(os.path.join(CoreDirectory, ".."))
+#                 self.InsertToSysPath(CoreDirectory)
+#                 self.InsertToSysPath(baseDir)
+#             else:
+#                 print(("""PythonPath/Natlink setting in registry does not match this core directory\n
+# registry: %s\nCoreDirectory: %s\n
+# Please try to correct this by running the Natlink Config Program (with administration rights)"""% (
+#                 setting, CoreDirectory)))
+#                 return
+#         else:
+#             baseDir = None
+#             print('non expected core directory %s, cannot find baseDirectory\nTry to run the Config Program with administrator rights'% CoreDirectory)
+#         userDir = self.getUserDirectory()
+#         # special for other user directories, insert also unimacro for actions etc.
+#         if userDir:
+#             self.InsertToSysPath(userDir)
+# 
+#         includeUnimacroDirectory =  self.UnimacroIsEnabled() or (self.VocolaIsEnabled() and self.getVocolaTakesUnimacroActions())
+#         if  includeUnimacroDirectory:
+#             if not baseDir:
+#                 print('no baseDir found, cannot "IncludeUnimacroInPythonPath"')
+#                 return
+#             unimacroDir = os.path.join(baseDir, '..', '..', 'Unimacro')
+#             unimacroDir = os.path.normpath(unimacroDir)
+#             if os.path.isdir(unimacroDir):
+#                 self.InsertToSysPath(unimacroDir)
+#             else:
+#                 print(('no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
+#                     unimacroDir))
 
         return 1
 
@@ -432,22 +407,28 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         the config program should be run.
         """
+        # with James' installer skip this check:
+
+        
         CoreDirectory = self.getCoreDirectory()
+        pydDir = path(CoreDirectory)/'PYD'
+        if not (pydDir and pydDir.isdir()):
+            return 1
 
         originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
-        wantedPydPath = os.path.join(CoreDirectory, 'PYD', wantedPyd)
-        currentPydPath = os.path.join(CoreDirectory, 'natlink.pyd')
+        wantedPydPath = pydDir/wantedPyd
+        currentPydPath = path(CoreDirectory)/'natlink.pyd'
 
-        if not os.path.isfile(wantedPydPath):
+        if not wantedPydPath.isfile():
             if not fromConfig:
-                print('The wanted pyd does not exist, Dragon/python combination not valid: %s'% wantedPydPath)
+                print(f'The wanted pyd "{wantedPydPath}" does not exist, Dragon/python combination not valid.')
             return
 
         # first check existence of natlink.pyd (probably never comes here)
-        if not os.path.isfile(currentPydPath):
+        if not currentPydPath.isfile():
             if not fromConfig:
-                print('%s does not exist...'% currentPydPath)
+                print(f'pyd path "{currentPydPath}" does not exist...')
             return
 
         # check correct pyd version, with python version and Dragon version:
@@ -471,12 +452,23 @@ Please try to correct this by running the Natlink Config Program (with administr
                 return
         # all well
         return 1
+    
+    def getHiveKeyReadable(self, hive):
+        if hive == winreg.HKEY_LOCAL_MACHINE: return 'HKLM'
+        if hive == winreg.HKEY_CURRENT_USER: return 'HKCU'
+        return 'HK??'
 
-    def getRegistryPythonPathDict(self, flags=win32con.KEY_READ):
-        """returns the dict that contains the PythonPath section of HKLM of HKCU
+    def getRegistryPythonPathNatlink(self, flags=winreg.KEY_READ, silent=True):
+        """returns the path-to-core of Natlink and the PythonPath key in the registry
+        
+        returns a tuple (path-to-core, key-to-pythonpath-setting)
+        
+        if no Natlink key found, or no path, "" is returned
+        if no PythonPath setting is found, "", "" is returned
 
-        by default read only, can be called (from natlinkconfigfunctions with
-        KEY_ALL_ACCESS, so key can be created)
+        by default read only.
+        When setting the value, from natlinkconfigfunctions,
+        pass winreg.KEY_ALL_ACCESS as flags.
 
         """
         # version = self.getPythonVersion()
@@ -486,52 +478,37 @@ Please try to correct this by running the Natlink Config Program (with administr
         # dottedVersion = version[0] + "." + version[1]
         dottedVersion = sys.winver
         
-        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s"% dottedVersion
-        try:
-            lmPythonLocalMachineDict = RegistryDict.RegistryDict(winreg.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=winreg.KEY_READ)
-        except:
-            lmPythonLocalMachineDict = None
-        try:
-            lmPythonCurrentUserDict = RegistryDict.RegistryDict(winreg.HKEY_CURRENT_USER, pythonPathSectionName, flags=winreg.KEY_READ)
-        except:
-            lmPythonCurrentUserDict = None
+        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
+        for hive in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+            key, wowflags = (pythonPathSectionName, winreg.KEY_WOW64_32KEY)
+            try:
+                with winreg.OpenKeyEx(hive, key, access= flags | wowflags) as pythonpath_key:
+                    for i in range(10):
+                        try:
+                            keyName = winreg.EnumKey(pythonpath_key, i)
+                            if keyName.lower() == 'natlink':
+                                natlink_key = winreg.OpenKey(pythonpath_key, keyName)
+                                for i in range(10):
+                                    Value = winreg.EnumValue(natlink_key, i)
+                                    # print(f'values: {i}, {Value}')
+                                    break
+                                else:
+                                    print(f'no valid Natlink entry found in registry section {pythonPathSectionName} of {self.getHiveKeyReadable(hive)}')
+                                    raise FileNotFoundError
+                                
+                                if type(Value) == tuple and len(Value) == 3:
+                                    pythonpath = Value[1]
+                                    if not silent:
+                                        print(f'Natlink entry found in registry section "{pythonPathSectionName}" of "{self.getHiveKeyReadable(hive)}": "{pythonpath}"')
+                                    return pythonpath, hive, pythonPathSectionName
+                        except OSError:
+                            print(f'no pythonpath/natlink key found')
+                            return '', hive, pythonpath_key
+            except FileNotFoundError:
+                continue
+            print(f'no valid PythonPath/Natlink key found in registry')
+            return "", "", ""
         
-        if lmPythonLocalMachineDict:
-            lmPythonDict = lmPythonLocalMachineDict
-            mainSection = "HKEY_LOCAL_MACHINE"
-        elif lmPythonCurrentUserDict:
-            lmPythonDict = lmPythonCurrentUserDict
-            mainSection = "HKEY_CURRENT_USER"
-            print("Python version only for CurrentUser")
-        else:
-            raise KeyError("No valid Python version found in registry")
-
-        lmPythonPathDict = lmPythonDict["PythonPath"]
-
-
-        pythonPathDictKeysLower = [k.lower() for k in lmPythonPathDict]
-        if 'natlink' in pythonPathDictKeysLower:
-            subDict = lmPythonPathDict['Natlink']
-            if isinstance(subDict, RegistryDict.RegistryDict):
-                if '' in list(subDict.keys()):
-                    value = subDict['']
-                    if value and type(value) == str:
-                        # all well (only the value is not tested yet):
-                        pass  #OK otherwise print an error
-                    else:
-                        if not self.skipSpecialWarning:
-                            fatal_error('registry section for PythonPath should contain a folder "Natlink" with a non empty string or unicode default entry (key empty string), not: %s'%  repr(subDict))
-                else:
-                    if not self.skipSpecialWarning:
-                        fatal_error('registry section for PythonPath should contain in folder "Natlink" a default entry (key empty string), not: %s'%  repr(subDict))
-            else:
-                if not self.skipSpecialWarning:
-                    fatal_error('registry section for PythonPath should contain a folder "Natlink" with a default entry (key empty string): %s\\\\%s'%  (mainSection, pythonPathSectionName))
-        else:
-            if not self.skipSpecialWarning:
-                fatal_error('Registry section for PythonPath should contain a folder "Natlink": %s\\\\%s'% (mainSection, pythonPathSectionName))
-        return lmPythonPathDict, pythonPathSectionName
-
     def InsertToSysPath(self, newdir):
         """leave "." in the first place if it is there"""
         if not newdir: return
@@ -888,37 +865,6 @@ Please try to correct this by running the Natlink Config Program (with administr
             print('These digits must match the version number of Dragon!!!')
             return 0
         return i
-
-        ## older versions, not taken from the install dir (obsolete really)
-        version = self.getDNSFullVersion()
-        print('DNSFullVersion: %s'% version)
-        if version:
-            if version.find('.') > 0:
-                versionList = list(map(int, version.split('.')))
-                version = versionList[0]
-                if version == 12:
-                    if versionList[1] >= 80:
-                        version = 13
-                return version
-            else:
-                return int(version[0])
-
-        try:
-            print('getDNSVersion, try for very old version, 8 or before...')
-            # older versions:
-            # try falling back on registry:
-            r= RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER,"Software\ScanSoft")
-            if "NaturallySpeaking8" in r:
-                DNSVersion = 8
-            elif "NaturallySpeaking 7.1" in r or "NaturallySpeaking 7.3":
-                DNSVersion = 7
-            else:
-                DNSVersion = 5
-        except:
-            print('no good DNS version found, return 999')
-            DNSVersion = 999
-
-        return DNSVersion
 
 
     def getDNSInstallDir(self, force=None):

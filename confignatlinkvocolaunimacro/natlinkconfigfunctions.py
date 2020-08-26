@@ -50,6 +50,7 @@ More at the bottom, with the CLI description...
 import ctypes
 import traceback
 import types
+from pathqh import path
 
 try:
     from win32com.shell.shell import IsUserAnAdmin
@@ -182,7 +183,9 @@ if not os.path.normpath(coreDir) in sys.path:
     sys.path.insert(0, coreDir)
 
 # from core directory, use registry entries from CURRENT_USER/Software/Natlink:
-import natlinkstatus, natlinkcorefunctions, RegistryDict
+import natlinkstatus
+import natlinkcorefunctions
+import winreg
 import os, os.path, sys, getopt, cmd, types, string, win32con
 
 # import natlink  # to see if NatSpeak is running...
@@ -308,7 +311,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         
         # now also put this in the registry:
         if result:
-            result = self.setCoreDirectoryHKLMPythonPathDict(coreDir, silent=silent)
+            result = self.setRegistryPythonPathNatlink(coreDir, silent=silent)
             if not result:
                 print('Setting the registry to the new setting (%s) failed'% coreDir)
 
@@ -392,48 +395,80 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     #         ## not earlier install, no Natlink or NatLink section:
     #         return lmPythonPathDict, None
         
-    def setCoreDirectoryHKLMPythonPathDict(self, coreDir, flags=win32con.KEY_ALL_ACCESS, silent=None):
+    def setRegistryPythonPathNatlink(self, coreDir, flags=win32con.KEY_ALL_ACCESS, silent=None):
         """set the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
         
         this function should be in elevated mode, which should be checked before calling this
         """
-        lmPythonPathDict, prevPathSectionName = self.getRegistryPythonPathDict(flags=flags)
-        if type(lmPythonPathDict) == RegistryDict.RegistryDict:
-            pass
-        else:
-            fatal_error('lmPythonPathDict is not correct type: %s'% type(lmPythonPathDict))
-            return 
-        print(('==== Set Natlink setting in PythonPath section of registry to "%s"'% coreDir))
-        natlinkPart = lmPythonPathDict['Natlink']
+        result = self.getRegistryPythonPathNatlink()
+        if result:
+            natlinkvalue, hive, pythonpathkey = result
+            if coreDir == natlinkvalue:
+                print(f'setRegistryPythonPathNatlink, coreDir already OK: {coreDir}')
+                return
+        print(f'now set coreDir to "{coreDir}" in registry')
+        key, flags = (pythonpathkey, winreg.KEY_WOW64_32KEY | flags)
 
-        ## do not check previous values, simply put it in:
-        lmPythonPathDict['Natlink'] = {'': coreDir}
-        lmPythonPathDict, pythonPathSectionName = self.getRegistryPythonPathDict()
+        with winreg.OpenKeyEx(hive, key, access= flags) as pythonpath_key:
+            natlink_key = winreg.CreateKeyEx(pythonpath_key, "Natlink", 0, flags)
+            result = winreg.SetValueEx(natlink_key, "", 0, winreg.REG_SZ, coreDir)            
+            # for i in range(10):
+            #     try:
+            #         keyName = winreg.EnumKey(pythonpath_key, i)
+            #         if keyName.lower() == 'natlink':
+            #             natlink_key = winreg.OpenKey(pythonpath_key, keyName)
+            #             for i in range(10):
+            #                 Value = winreg.EnumValue(natlink_key, i)
+            #                 # print(f'values: {i}, {Value}')
+            #                 break
+            #             else:
+            #                 print(f'no valid Natlink entry found in registry section {pythonPathSectionName} of {self.getHiveKeyReadable(hive)}')
+            #                 raise FileNotFoundError
+            #             
+            #             if type(Value) == tuple and len(Value) == 3:
+            #                 pythonpath = Value[1]
+            #                 print(f'Natlink entry found in registry section "{pythonPathSectionName}" of "{self.getHiveKeyReadable(hive)}": "{pythonpath}"')
+            #                 return pythonpath, hive, pythonPathSectionName
+            #     except OSError:
+            #         print(f'no pythonpath/natlink key found')
+            #         return '', hive, pythonpath_key
+    
         
-        ## check the result:
-        newNatlinkPart = lmPythonPathDict['Natlink']
-        if type(newNatlinkPart) == RegistryDict.RegistryDict:
-            newContent = newNatlinkPart['']
-            if newContent == coreDir:
-                # print("content is changed correct: %s"% newContent)
-                return True
-            fatal_error("setCoreDirectoryHKLMPythonPathDict: content did not change: %s"% newContent)
-            return
-        else:
-            fatal_error("setCoreDirectoryHKLMPythonPathDict: newNatlinkPart not a valid dict: %s"% newNatlinkPart)
-            return
+        # 
+        # 
+        # if type(lmPythonPathDict) == RegistryDict.RegistryDict:
+        #     pass
+        # else:
+        #     fatal_error('lmPythonPathDict is not correct type: %s'% type(lmPythonPathDict))
+        #     return 
+        # print(('==== Set Natlink setting in PythonPath section of registry to "%s"'% coreDir))
+        # natlinkPart = lmPythonPathDict['Natlink']
+        # 
+        # ## do not check previous values, simply put it in:
+        # lmPythonPathDict['Natlink'] = {'': coreDir}
+        # lmPythonPathDict, pythonPathSectionName = self.getRegistryPythonPathDict()
+        # 
+        # ## check the result:
+        # newNatlinkPart = lmPythonPathDict['Natlink']
+        # if type(newNatlinkPart) == RegistryDict.RegistryDict:
+        #     newContent = newNatlinkPart['']
+        #     if newContent == coreDir:
+        #         # print("content is changed correct: %s"% newContent)
+        #         return True
+        #     fatal_error("setRegistryPythonPathNatlink: content did not change: %s"% newContent)
+        #     return
+        # else:
+        #     fatal_error("setRegistryPythonPathNatlink: newNatlinkPart not a valid dict: %s"% newNatlinkPart)
+        #     return
         return True
 
     def checkPythonPathAndRegistry(self):
         """checks if core directory is
 
         1. in the sys.path
-    ###    2. in the registry keys of HKLM/SOFTWARE/Python/PythonCore/2.7/PythonPath/Natlink
+        2. in the registry keys of HKLM or HKCU /SOFTWARE/Python/PythonCore/{pythonversion}/PythonPath/Natlink
 
-        the latter part is inserted again, as, for some reason the automatic loading of
-        natlinkmain needs the core directory in its path. Only take the core dir now!!
-
-        Instead the status.checkSysPath() function checks the existence of the core, base and user
+        Instead the status.checkSysPath() function checks the existence of the core
         directories in the sys.path and sets then if necessary.
 
         If this last key is not there or empty
@@ -449,28 +484,31 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         self.checkedUrgent = None
         # if __name__ == '__main__':
             # print("checking PythonPathAndRegistry")
-        try:
-             result = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
-             # print(result)
-             if result is None:
-                pass
-             lmPythonPathDict, pythonPathSectionName = result
-        except KeyError:
-            mess =  'The section "Natlink" does not exist and cannot be created in the registry. You probably should run this program with administrator rights'
-            self.warning(mess)
-            self.checkedUrgent = 1
-            if not self.isElevated: raise ElevationError("needed for fixing the PythonPath in the registry settings.")
+        result = self.getRegistryPythonPathNatlink(silent=False)
+        # print(result)
+        if result is None:
+           fatal_error('Cannot find valid PythonPath section in registry')
+           pass
+        natlinkvalue, hivekey, pythonpathkey = result
 
-        coreDir2 = self.getCoreDirectory()
-        if coreDir2.lower() != coreDir.lower():
-            fatal_error('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
-                                              (coreDir, coreDir2))
-        # adding the relevant directories to the sys.path variable:
-        #self.checkSysPath() ## not needed in config program
+        coreDir = path(self.getCoreDirectory())
+        coreFromRegistry = path(natlinkvalue)
+        if coreDir == coreFromRegistry:
+            return 1
 
+        if not coreFromRegistry:
+            ## probably first time install
+            ## silently register
+            print(f'silently register (first time use of Natlink) in {coreDir}')
+            pass
+            return 1
+
+        if not self.isElevated:
+            raise ElevationError("Run in Elevated mode. This is needed for making changes in the PythonPath registry settings and register natlink.pyd.")
+
+        print(f'now should exit, Natlink in "{natlinkvalue}", or reregister to "{coreDir}"')
+        return 0
         pathString = coreDir
-##        if lmPythonPath:
-##            print 'lmPythonPath: ', lmPythonPath.keys()
         result = lmPythonPathDict['Natlink']
         if result and '' in result:
             coreDirFromRegistry = lmPythonPathDict['Natlink']['']
@@ -1111,11 +1149,14 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         Also sets the pythonpath in the HKLM pythonpath section
         """
         # give fatal error if Python is not OK...
-        dummy1, dummy2 = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        result = self.getRegistryPythonPathNatlink()
+        if result:
+            natlinkvalue, hivekey, pythonpathkey = result
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
         if not (pythonVersion and len(pythonVersion) == 2):
-            fatal_error('not a valid python version found: |%s|'% pythonVersion)
+            fatal_error('not a valid python version found: |%s|'%
+                        pythonVersion)
 
         # for safety unregister always:
         # print 'first unregister, just to be sure...'
