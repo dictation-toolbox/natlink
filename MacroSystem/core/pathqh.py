@@ -311,15 +311,15 @@ True
         if args and len(args) == 1 and type(args[0]) == cls:
             return args[0]
         if args and args[0] is None:
-            input = ""
+            Input = ""
         if type(args[0]) == list:
             args = ('/'.join(args[0]),)
         if args == (None,):    # vreemde fout bij HTMLgen BGsound
-            input = ""
+            Input = ""
         else:            
-            input = '/'.join(args)
-        if input.find("|") >= 0:
-            validPath = getValidPath(input)
+            Input = '/'.join(args)
+        if Input.find("|") >= 0:
+            validPath = getValidPath(Input)
             if validPath:
                 return validPath
         drv, root, parts = self._parse_args(args)
@@ -354,18 +354,18 @@ True
             # with a drive, but not resolved:
             return self
         # relative path:
-        if not input:
-            # empty input, return empty path (relative)
+        if not Input:
+            # empty Input, return empty path (relative)
             return self
             # emptypath = self.resolve()
             # return emptypath
         # relative, but not office temporary file:
-        if input == "~":
+        if Input == "~":
             homedir = self.expanduser()
             homedir.prefix = "~"
             homedir.resolvedprefix = str(homedir)
             return homedir
-        elif input.startswith("~") and not input.startswith("~$"):
+        elif Input.startswith("~") and not Input.startswith("~$"):
             expanded = path(self.expanduser().normpath())
             homedir = str(path("~"))
             if str(expanded).startswith(str(homedir)):
@@ -374,14 +374,14 @@ True
             else:
                 expanded.prefix = expanded.resolvedprefix = ""
             return expanded
-        elif input == ".":
+        elif Input == ".":
             curdir = path(os.getcwd())
             curdir.prefix = "."
             curdir.resolvedprefix = str(curdir)
             return curdir
-        elif input.startswith(".") and input[1] in "/\\":
+        elif Input.startswith(".") and Input[1] in "/\\":
             curdir = path(".")
-            expanded = path(curdir/input[2:])
+            expanded = path(curdir/Input[2:])
             expanded = path(expanded.normpath())
             if str(expanded).startswith(str(curdir)):
                 expanded.prefix = "."
@@ -389,14 +389,14 @@ True
             else:
                 expanded.prefix = expanded.resolvedprefix = ""
             return expanded
-        elif reEnv.match(input):
+        elif reEnv.match(Input):
             ## here use the extended trick of the folder environment variable,
             ## enhanced with extended Library Folders (also Dropbox)
             if not recentEnv:
                 recentEnv.update(getAllFolderEnvironmentVariables())
                 if not recentEnv:
-                    print("path %s, cannot expand input, no recentEnv dict"% recentEnv)
-            m = reEnv.match(input)
+                    print("path %s, cannot expand Input, no recentEnv dict"% recentEnv)
+            m = reEnv.match(Input)
             envVar = m.group(2)   # a riddle to me!!
             envVarComplete = m.group(1)  # with %xxxx%
             lenEnvVarComplete = len(envVarComplete)
@@ -405,10 +405,10 @@ True
             else:
                 result = getFolderFromLibraryName(envVar)
                 if not result:
-                    print("Could not expand  %%%s%% in %s"% (envVar, input))
+                    print("Could not expand  %%%s%% in %s"% (envVar, Input))
                     return self
             result = path(result)
-            rest = input[lenEnvVarComplete+1:]
+            rest = Input[lenEnvVarComplete+1:]
             expanded = result/rest
             # expanded = path(expanded).normpath()
             if str(expanded).startswith(str(result)):
@@ -417,7 +417,9 @@ True
             else:
                 expanded.prefix = expanded.resolvedprefix = ""
             return expanded
-                
+        else:
+            pass
+        
         # all other cases:
         return self
 
@@ -426,7 +428,7 @@ True
         
         Really, the resolve step is done in initiatlisation, and is unneeded (and unwanted) as additional call
         
-        By default of pathlib, othher relative paths remain unchanged, but the empty string resolves to wd by default.
+        By default of pathlib, other relative paths remain unchanged, but the empty string resolves to wd by default.
         This is overridden here at initialisation time of this class.
         
 >>> p = path("")
@@ -465,13 +467,32 @@ path('C:/temp')
 
     def __truediv__(self, key):
         """also a list can be passed after the /
+>>> p = path('')
+>>> p.resolve()
+path('')
+>>> q = p/'testaap'
+>>> q
+path('testaap')
+>>> r = q/'..'/'testmonkey'
+>>> r
+path('testmonkey')
         
         make an extra call to path, in order to always return a normpathed instance...
         """
         if type(key) in (list, tuple):
             key = '/'.join(key)
         child = self._make_child((key,))
-        child = path(child.normpath())
+        if child.drive:
+            pass
+        else:
+            ## resolve '..' here immediately:
+            ## note: if relative path resolves to '', we want an empty path, not the current directory:
+            normalised_path = os.path.normpath(str(child))
+            if normalised_path == os.path.normpath(''):
+                child = path('')
+            else:
+                child = path(normalised_path)
+        
         child.prefix = self.prefix
         child.resolvedprefix = self.resolvedprefix
         return child
@@ -488,14 +509,16 @@ True
         return super().__eq__(other)
     
     def __str__(self):
-        """Return the string representation of the path, empty if input was empty"""
+        """Return the string representation of the path, empty if Input was empty"""
         try:
-            return self._str
+            result = self._str
         except AttributeError:
             result  = self._format_parsed_parts(self._drv, self._root,
                                                   self._parts)
-            self._str = result.replace("\\", "/")
-        return self._str
+        if result.find('..') > 0 and self.drive:
+            result = os.path.normpath(result)
+        resultslash = result.replace("\\", "/")
+        return resultslash
   
     def __repr__(self):
         short = self.nicestr()
@@ -2361,6 +2384,7 @@ if __name__ == "__main__":
     # print("isdir: %s"% p.isdir())
     # envvars = EnvVariable()
     # printAllEnvVariables()
-    p = path("%COMMON_APPDATA%/Etta en Quintijn")
-    p = path("%DROPBOX%/Etta en Quintijn")
+    # p = path("%COMMON_APPDATA%/Etta en Quintijn")
+    # p = path("%DROPBOX%/Etta en Quintijn")
+    # p = path('../../test/onetwo/../three')
     _test()

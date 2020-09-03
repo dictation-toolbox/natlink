@@ -923,6 +923,10 @@ def start_natlink(doNatConnect=None):
         print('='*30)
         status.emptyWarning()
 
+## in order to test the pyd file of James with the old natlinkmain:
+def run():
+    start_natlink()
+
 ###################################################################
 #
 # Here is the initialization code.
@@ -933,6 +937,14 @@ def start_natlink(doNatConnect=None):
 # will then not start all natlink modules. Whenever you change this value, you need
 # to restart Dragon...
 Testing = False
+
+def run():
+    if not Testing:
+        start_natlink()
+    else:
+        print("natlinkmain is in testing mode...")
+
+
 
 if __name__ == "natlinkmain":
 

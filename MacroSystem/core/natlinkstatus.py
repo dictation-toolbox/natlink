@@ -1,3 +1,4 @@
+
 __version__ = "4.2"
 #
 # natlinkstatus.py
@@ -8,7 +9,7 @@ __version__ = "4.2"
 #
 #----------------------------------------------------------------------------
 # previous version history to be found in git versions up to FinalCommitWithVocola, 21-8-2020
-# 
+#
 """The following functions are provided in this module:
 (to be used by either natlinkmain.py or natlinkconfigfunctions.py)
 
@@ -123,7 +124,6 @@ getAhkExeDir: return the directory where AutoHotkey is found (only needed when n
 getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.
 
 """
-
 import os
 import re
 import win32api
@@ -656,13 +656,13 @@ Please try to correct this by running the Natlink Config Program (with administr
             return ''
 
 
-    def getCoreDirectory(self):
-        """return the path to coreDir or CoreDirectory
-        """
-        if self.CoreDirectory is None:
-            print("natlinkstatus.getCoreDirectory: CoreDirectory should have been set in __init__")
-            return natlinkcorefunctions.getBaseFolder()
-        return self.CoreDirectory
+    # def getCoreDirectory(self):
+    #     """return the path to coreDir or CoreDirectory
+    #     """
+    #     if self.CoreDirectory is None:
+    #         print("natlinkstatus.getCoreDirectory: CoreDirectory should have been set in __init__")
+    #         return natlinkcorefunctions.getBaseFolder()
+    #     return self.CoreDirectory
 
     def getOriginalNatlinkPydFile(self):
         """return the path of the original dll/pyd file
