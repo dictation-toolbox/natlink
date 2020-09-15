@@ -419,6 +419,8 @@ def findAndLoadFiles(curModule=None):
         baseDirFiles = []
 
     ## _vocola_main:
+    if debugLoad:
+        print(f'_natlinkmain, vocolaDirectory: {vocolaDirectory}')
     if vocolaDirectory:
         VocolaDirFiles = [x for x in os.listdir(vocolaDirectory) if x.endswith('.py')]
         for x in VocolaDirFiles:
@@ -428,8 +430,10 @@ def findAndLoadFiles(curModule=None):
                 addToFilesToLoad( filesToLoad, modName, vocolaDirectory, moduleHasDot )
     else:
         VocolaDirFiles = []
-    if VocolaDirFiles and doVocolaFirst in VocolaDirFiles:
-        print("natlinkmain, load {doVocolaFirst}")
+    doVocolaFirstModuleName = doVocolaFirst + '.py'
+    if VocolaDirFiles and doVocolaFirstModuleName in VocolaDirFiles:
+        if debugLoad:
+            print("natlinkmain, load {doVocolaFirst}")
         x = doVocolaFirst
         loadedFile = loadedFiles.get(x, None)
         if loadedFile:
@@ -448,7 +452,8 @@ def findAndLoadFiles(curModule=None):
                 nVocolaGrammars += 1
                 modName = res.group(1)
                 addToFilesToLoad( filesToLoad, modName, vocolaGrammarsDirectory, moduleHasDot )
-        print(f"natlinkmain: {nVocolaGrammars} Vocola Compiled grammars")
+        if debugLoad or nVocolaGrammars:
+            print(f"natlinkmain: {nVocolaGrammars} Vocola Compiled grammars to load")
     else:
         vocolaGrammarFiles = []
 
@@ -461,7 +466,8 @@ def findAndLoadFiles(curModule=None):
             addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
 
     keysToLoad = list(filesToLoad.keys())
-    print(f'natlinkmain: {len(keysToLoad)} grammars to load')
+    if len(keysToLoad) or debugLoad:
+        print(f'natlinkmain: {len(keysToLoad)} grammars to load')
     for x in keysToLoad:
         if x == doVocolaFirst:
             continue
