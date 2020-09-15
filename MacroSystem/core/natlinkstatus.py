@@ -1272,7 +1272,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         ## search the path for pipped packages: (not tested yet)
         for Dir in sys.path:
-            controlGrammar = Dir/"_vocola_main.py"
+            controlGrammar = path(Dir)/"_vocola_main.py"
             if controlGrammar.isfile():
                 self.VocolaDirectory = Dir.normpath()
                 self.addToPath(self.VocolaDirectory)
