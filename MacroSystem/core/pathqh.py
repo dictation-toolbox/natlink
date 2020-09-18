@@ -394,8 +394,14 @@ True
             ## enhanced with extended Library Folders (also Dropbox)
             if not recentEnv:
                 recentEnv.update(getAllFolderEnvironmentVariables())
+                try:
+                    import natlinkstatus
+                    recentEnv.update(natlinkstatus.AddNatlinkEnvironmentVariables())
+                except ModuleNotFoundError:
+                    pass
                 if not recentEnv:
                     print("path %s, cannot expand Input, no recentEnv dict"% recentEnv)
+            
             m = reEnv.match(Input)
             envVar = m.group(2)   # a riddle to me!!
             envVarComplete = m.group(1)  # with %xxxx%
