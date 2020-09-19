@@ -47,11 +47,54 @@ etc.
 More at the bottom, with the CLI description...
 
 """
-import ctypes
+import os
+import shutil
+import sys
+import pywintypes
 import traceback
 import types
-from pathqh import path
 
+def lookForCoreDirectory():
+    thisDir = os.path.split(__file__)[0]
+    CoreDirRelative = os.path.normpath(os.path.join(thisDir, '..', 'MacroSystem', 'Core'))
+    if os.path.isdir(CoreDirRelative):
+        yield CoreDirRelative
+    CoreDirRelativeNew = os.path.normpath(os.path.join(thisDir, '..', 'Core'))
+    if os.path.isdir(CoreDirRelativeNew):
+        yield CoreDirRelativeNew
+        
+    key = 'PROGRAMFILES'
+    programFilesDir = os.environ.get(key, None)
+    if programFilesDir and os.path.isdir(programFilesDir):
+        natlinkDir = os.path.join(programFilesDir, 'Natlink')
+        if os.path.isdir(natlinkDir):
+            CoreDir = os.path.normpath(os.path.join(natlinkDir, 'MacroSystem', 'Core'))
+            if os.path.isdir(CoreDir):
+                yield CoreDir
+            CoreDirNew = os.path.normpath(os.path.join(natlinkDir, 'Core'))
+            if os.path.isdir(CoreDirNew):
+                yield CoreDirNew
+
+# for Dir in lookForCoreDirectory():
+#     print(f'lookForCoreDirectory: {Dir}')
+
+try:
+    from pathqh import path
+except (ModuleNotFoundError, ImportError):
+    for tryCoreDir in lookForCoreDirectory():
+        tryPathFile = os.path.join(tryCoreDir, "pathqh.py")
+        if os.path.isfile(tryPathFile):
+            if tryCoreDir in sys.path:
+                raise IOError(f'directory {tryCoreDir} is in sys.path, but pathqh if not found')
+            print(f'add to sys.path: {tryCoreDir}')
+            sys.path.append(tryCoreDir)
+            try:
+                from pathqh import path
+            except ModuleNotFoundError:
+                raise IOError(f'seem to have {tryCoreDir} in sys.path, but cannot import pathqh.py')
+            else:
+                break
+           
 try:
     from win32com.shell.shell import IsUserAnAdmin
 except:
@@ -71,10 +114,6 @@ except:
         for old versions of python
         """
         MessageBoxA(None, message, title, 0)
-
-import os, shutil
-import sys
-import pywintypes
 
 if __name__ == '__main__':
     if sys.version[0] == '2':
