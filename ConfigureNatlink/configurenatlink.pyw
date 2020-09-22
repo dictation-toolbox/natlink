@@ -1,10 +1,9 @@
 #! python3
 #
-# confignatlinkvocolaunimacro.py
 #   This module does the natlinkconfigfunctions through a
 #   wxPython GUI
 #
-#  (C) Copyright Quintijn Hoogenboom, 2008-2009
+#  Quintijn Hoogenboom, 2008-2009
 #
 #----------------------------------------------------------------------------
 try:
@@ -37,6 +36,8 @@ except:
         MessageBoxA(None, message, title, 0)
 
 import os
+thisDir = os.path.split(__file__)[0]
+
 import sys
 if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
     pyVersion = sys.version[:3]
@@ -1361,7 +1362,7 @@ except:
     # traceback.print_exception(type, value, traceback[, limit[, file]])
     traceback.print_exc(file=open("configurenatlink_error.txt", "w"))
     mess  = traceback.format_exc()
-    mess += '\n\nMore info in configurenatlink_error.txt in the directory "(C:\\natlink)\\natlink\\confignatlinkvocolaunimacro"'
+    mess += f'\n\nMore info in configurenatlink_error.txt in the directory "{thisDir}"'
     windowsMessageBox(mess, "Error at startup of configurenatlink")
     sys.exit(1)
 else:

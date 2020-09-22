@@ -39,8 +39,7 @@ getDNSIniDir:
     returns the directory where the NatSpeak INI files are located,
     notably nssystem.ini and nsapps.ini.
     Can be set in natlinkstatus.ini, but mostly is got from
-    %ALLUSERSPROFILE% (C:/ProgramData) (up to DNS 15.3) or
-    %LOCALAPPDATA% (C:/Users/Username/AppData/Local) (from 15.5 or 15.6 onwards)
+    %ALLUSERSPROFILE% (C:/ProgramData)
 
 getDNSVersion:
     returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, ... (???)
@@ -131,8 +130,7 @@ import win32con
 import sys
 import pprint
 import stat
-# import RegistryDict
-import winreg  # for constants to be passed to RegistryDict
+import winreg 
 import natlinkcorefunctions
 import pywintypes
 import time
@@ -655,15 +653,6 @@ Please try to correct this by running the Natlink Config Program (with administr
         except KeyError:
             return ''
 
-
-    # def getCoreDirectory(self):
-    #     """return the path to coreDir or CoreDirectory
-    #     """
-    #     if self.CoreDirectory is None:
-    #         print("natlinkstatus.getCoreDirectory: CoreDirectory should have been set in __init__")
-    #         return natlinkcorefunctions.getBaseFolder()
-    #     return self.CoreDirectory
-
     def getOriginalNatlinkPydFile(self):
         """return the path of the original dll/pyd file
 
@@ -759,31 +748,34 @@ Please try to correct this by running the Natlink Config Program (with administr
             knownDNSVersion = str(self.getDNSVersion())
         else:
             knownDNSVersion = None
+    
+        # the nssystem.ini and nsapps.ini are in the ProgramData directory
+        # version 15: C:\ProgramData\Nuance\NaturallySpeaking15\Users
 
-        # first try in allusersprofile/'application data'
-        # up to DNS15.3: C:\ProgramData\Nuance\NaturallySpeaking15\Users
-        # after DNS15.5:   %LOCALAPPDATA%s\Nuance\NS15\Users 
+        # The User profile directory, from where the properties of the current profile are got
+        # were, up to DNS15.3 in the ProgramData/Users directory
+        # 
+        # after DNS15.5:   %LOCALAPPDATA%s\Nuance\NS15\Users
+        # but the DNSIniDir is unchanged with the upgrade to DNS15.5 or 15.6
         triedPaths = []
-        alluserprofileProgramData = path('%ALLUSERSPROFILE%')
-        allusersprofileAppData = path('%LOCALAPPDATA%')
+        ProgramDataDirectory = path('%ALLUSERSPROFILE%')
+        # allusersprofileAppData = path('%LOCALAPPDATA%')
         DNSVersion = self.getDNSVersion()
-        if allusersprofileAppData.isdir():
-            usersDir = allusersprofileAppData/('Nuance/NS%s'%DNSVersion)
-            if usersDir.isdir():
-                DNSIniDir = usersDir.normpath()
-                return DNSIniDir
-            triedPaths.append(usersDir.normpath())
-        else:
-            triedPaths.append(allusersprofileAppData.normpath())
+        # if allusersprofileAppData.isdir():
+        #     usersDir = allusersprofileAppData/('Nuance/NS%s'%DNSVersion)
+        #     if usersDir.isdir():
+        #         DNSIniDir = usersDir.normpath()
+        #         return DNSIniDir
+        #     triedPaths.append(usersDir.normpath())
+        # else:
+        #     triedPaths.append(allusersprofileAppData.normpath())
 
-        if alluserprofileProgramData.isdir():
-            usersDir = alluserprofileProgramData/('Nuance/NaturallySpeaking%s'% DNSVersion)
+        if ProgramDataDirectory.isdir():
+            usersDir = ProgramDataDirectory/(f'Nuance/NaturallySpeaking{DNSVersion}')
             if usersDir.isdir():
                 DNSIniDir = usersDir.normpath()
                 return DNSIniDir
             triedPaths.append(usersDir.normpath())
-        else:
-            triedPaths.append(alluserprofileProgramData.normpath())
         
         if not triedPaths:
             report = []
@@ -1096,7 +1088,8 @@ Please try to correct this by running the Natlink Config Program (with administr
         vocUserDir = self.getVocolaUserDirectory()
         if vocUserDir and path(vocUserDir).isdir():
             vocDir = self.getVocolaDirectory()
-            if vocDir and path(vocDir).isdir():    
+            vocGrammarsDir = self.getVocolaGrammarsDirectory()
+            if vocDir and path(vocDir).isdir() and vocGrammarsDir and path(vocGrammarsDir).isdir():
                 return True
 
     def UnimacroIsEnabled(self):
@@ -1113,10 +1106,14 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not uDir:
             # print('no valid UnimacroDirectory, Unimacro is disabled')
             return
-        if uDir and os.path.isdir(uDir):
+        if uDir and path(uDir).isdir():
             files = os.listdir(uDir)
-            if '_control.py' in files:
-                return 1
+            if not '_control.py' in files:
+                return   # _control.py should be in Unimacro directory
+        ugDir = self.getUnimacroGrammarsDirectory()
+        if ugDir and path(ugDir).isdir():
+            return True  # Unimacro is enabled...            
+                
 
     def UserIsEnabled(self):
         if not self.NatlinkIsEnabled():
@@ -1271,7 +1268,8 @@ Please try to correct this by running the Natlink Config Program (with administr
                 return self.VocolaDirectory
 
         ## search the path for pipped packages: (not tested yet)
-        for Dir in sys.path:
+        for D in sys.path:
+            Dir = path(D)
             controlGrammar = Dir/"_vocola_main.py"
             if controlGrammar.isfile():
                 self.VocolaDirectory = Dir.normpath()
@@ -1574,7 +1572,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getNatlinkPydRegistered(self):
         value = self.userregnl.get('NatlinkDllRegistered', None)
         return value
-
+  
     def getDNSName(self):
         """return NatSpeak for versions <= 11, and Dragon for versions >= 12
         """

@@ -77,7 +77,7 @@ if thisDir == coreDir:
 if not os.path.normpath(coreDir) in sys.path:
     sys.path.append(coreDir)
 # now we can import:::
-configDir = os.path.normpath(os.path.join(thisDir, '..', 'confignatlinkvocolaunimacro'))
+configDir = os.path.normpath(os.path.join(thisDir, '..', 'ConfigureNatlink'))
 if not os.path.normpath(configDir) in sys.path:
     sys.path.append(configDir)
 import natlinkconfigfunctions
@@ -85,7 +85,7 @@ import natlinkstatus
 from natlinkstatus import isValidPath ## used a lot in the test procedures!
 from natlinkcorefunctions import InifileSection  # to test own inifile data
 
-import natlinkcorefunctions  # not RegistryDict any more
+import natlinkcorefunctions
 
 
 defaultFilename = "natlinkstatustest.ini"
@@ -184,7 +184,6 @@ class TestConfigureFunctions(unittest.TestCase):
 
         #  for setting getting values test:        
         # self.restoreRegistrySettings(self.backuptestinisection,
-        #         RegistryDict.RegistryDict(win32con.HKEY_CURRENT_USER, self.usergroup))
         # leave tmpTest en natlinkstatustest.ini (in this directory) for inspection, is refreshed at each setUp
         shutil.rmtree(self.vocolausertest)
         shutil.rmtree(self.unimacrousertest)
