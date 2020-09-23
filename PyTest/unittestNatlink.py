@@ -1217,7 +1217,7 @@ class UnittestNatlink(unittest.TestCase):
 ##        natlink.playString('{Alt+F4}')
 
 
-    def tttestRecognitionMimicCommands(self):
+    def testRecognitionMimicCommands(self):
         """test different phrases with commands, from own grammar
         
         explore when the recognitionMimic fails
@@ -1227,13 +1227,14 @@ class UnittestNatlink(unittest.TestCase):
         class TestGrammar(GrammarBase):
 
             gramSpec = """
-                <runone> exported = mimic runone;
-                <runtwo> exported = mimic two {colors};
-                <runthree> exported = mimic four <extraword> [{colors}]+;
-                <runsix> exported = mimic six {colors}+;
-                <runseven> exported = mimic seven <wordsalternatives>;
-                <runeight> exported = mimic eight <wordsalternatives>+;
+                <runone> exported = mimicss runone;
+                <runtwo> exported = mimicss two {colors};
+                <runthree> exported = mimicss three [<qualification>] <extraword> [{colors}]+;
+                <runsix> exported = mimicss six {colors}+;
+                <runseven> exported = mimicss seven <wordsalternatives>;
+                <runeight> exported = mimicss eight <wordsalternatives>+;
                 <extraword> = painting ;
+                <qualification> = {qualification};
                 <wordsalternatives> = house | tent | church | tower;
             """       
 
@@ -1242,6 +1243,7 @@ class UnittestNatlink(unittest.TestCase):
                 self.activateAll()
                 print("set list colors")
                 self.setList('colors', ['red', 'green', 'blue', 'bllackk'])
+                self.setList('qualification', ['modern', 'antique', 'avant-garde'])
                 self.testNum = 0
 
             def resetExperiment(self):
@@ -1274,29 +1276,36 @@ class UnittestNatlink(unittest.TestCase):
 
         ## ruleone:
         testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)  
-        testCommandRecognition(['mimic', 'runone'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'runone'], shouldWork=1, testGram=testGram)  
+            
+        ## this one already misses:
+        testCommandRecognition(['mimicss', 'two', 'green'], shouldWork=1, testGram=testGram)  
 
-        #  <runthree> exported = mimic three <extraword>;
-        testCommandRecognition(['mimic', 'three', 'painting'], shouldWork=1, testGram=testGram)  
+
+        #  <runthree> exported = mimic three [<qualification>] <extraword>;
+        testCommandRecognition(['mimicss', 'three', 'painting'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'three', 'modern', 'painting'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'three', 'avant-garde', 'painting'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'three', 'extravagant', 'painting'], shouldWork=0, testGram=testGram)  
          
-        # <runfour> exported = mimic four <extrawords>;
-        testCommandRecognition(['mimic', 'four', 'modern', 'painting'], shouldWork=1, testGram=testGram)  
+        # # <runfour> exported = mimic four <extrawords>;
+        # testCommandRecognition(['mimicss', 'four', 'modern', 'painting'], shouldWork=1, testGram=testGram)  
 
         # <runfive> exported = mimic five <extralist>; ## fails DPI15
         # testCommandRecognition(['mimic', 'five', 'table'], shouldWork=1, testGram=testGram)  
 
         # <runseven> exported = mimic seven <wordsalternatives>;
-        testCommandRecognition(['mimic', 'seven', 'tent'], shouldWork=1, testGram=testGram)  
-        testCommandRecognition(['mimic', 'seven', 'tower'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'seven', 'tent'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'seven', 'tower'], shouldWork=1, testGram=testGram)  
 
         # <runeight> exported = mimic eight <wordsalternatives> [<wordsalternatives>+];
-        testCommandRecognition(['mimic', 'eight', 'tower'], shouldWork=1, testGram=testGram)  
-        testCommandRecognition(['mimic', 'eight', 'tower', 'tent'], shouldWork=1, testGram=testGram)  
-        testCommandRecognition(['mimic', 'eight', 'tower', 'tent', 'house', 'tower', 'tent', 'house', 'tower', 'church'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'eight', 'tower'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'eight', 'tower', 'tent'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'eight', 'tower', 'tent', 'house', 'tower', 'tent', 'house', 'tower', 'church'], shouldWork=1, testGram=testGram)  
 
         ## ruletwo  fails DPI15
         # testGram.testNum = 2
-        testCommandRecognition(['mimic', 'two', 'green'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'two', 'green'], shouldWork=1, testGram=testGram)  
 
 
     #---------------------------------------------------------------------------
@@ -1721,7 +1730,7 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException(KeyError, "getModifierKeyCodes('typo')")
 
-    def testNatLinkMain(self):
+    def tttestNatLinkMain(self):
         """test the workings of natlinkmain, loading and unloading of grammar files
         
         when microphone toggles, new files should be in, note the toggleMicrophone function uses
@@ -3676,24 +3685,20 @@ class UnittestNatlink(unittest.TestCase):
             self.log('toggle mic, switched %s again'% micState)
         natlink.waitForSpeech(-wmilli)
 
-    ## TODO
-    def tttestNestedMimics(self):
+    def OKtestNestedMimics(self):
+        """call recursive into recognitionMimics
+        """
         self.log("testNestedMimics", 1)
         testForException = self.doTestForException
         class TestGrammar(GrammarBase):
 
             gramSpec = """
-                <run> exported = testtestrun ; # ( one |  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 ) ;
-                <testone> exported = test test one ;
-                <test1> exported = test test 1 ;
-                <test2> exported = test test 2 ;
-                <test3> exported = test test 3 ;
-                <test4> exported = test test 4 ;
-                <test5> exported = test test 5 ;
-                <test6> exported = test test 6 ;
-                <test7> exported = test test 7 ;
-                <test8> exported = test test 8 ;
-                <test9> exported = test test 9 ;
+                <run> exported = testtestrun ( one |  2 | 3 | 4 | 5 ) ;
+                <testone> exported = grtest test one ;
+                <test2> exported = grtest test 2 ;
+                <test3> exported = grtest test 3 ;
+                <test4> exported = grtest test 4 ;
+                <test5> exported = grtest test 5 ;
             """
 
             def resetExperiment(self):
@@ -3712,9 +3717,9 @@ class UnittestNatlink(unittest.TestCase):
             def gotResults_run(self,words,fullResults):
                 self.results.append('run')
                 mimicWord = words[1]
-                self.log("do mimictest with mimicWord: %s"% mimicWord)
+                print(f'do mimictest with mimicWord:{mimicWord}')
                 # natlink.execScript('HeardWord "test","test","one"')
-                natlink.recognitionMimic(['test','test', mimicWord])
+                natlink.recognitionMimic(['grtest','test', mimicWord])
                 pass
 
             def gotResults_testone(self,words,fullResults):
@@ -3725,40 +3730,46 @@ class UnittestNatlink(unittest.TestCase):
 
             def gotResults_test2(self,words,fullResults):
                 self.results.append('2')
-                natlink.recognitionMimic(['test','test','1'])
+                natlink.recognitionMimic(['grtest','test','3'])
 
             def gotResults_test3(self,words,fullResults):
                 self.results.append('3')
-                natlink.execScript('HeardWord "test","test","1"')
+                natlink.execScript('HeardWord "grtest","test","4"')
 
             def gotResults_test4(self,words,fullResults):
                 self.results.append('4')
-                natlink.execScript('HeardWord "test","test","3"')
+                natlink.execScript('HeardWord "grtest","test","5"')
 
             def gotResults_test5(self,words,fullResults):
                 self.results.append('5')
-                testForException(natlink.MimicFailed,"natlink.recognitionMimic(['*unknown-word*'])")
+                # testForException(natlink.MimicFailed,"natlink.recognitionMimic(['*unknown-word*'])")
 
         testGram = TestGrammar()
         testGram.initialize()
         
         # first check one of the rules that are going to be mimiced:
         testGram.resetExperiment()
-        natlink.recognitionMimic(['test','test', 'one'])
+
+        # this one goes is not recursive yet:
+        natlink.recognitionMimic(['grtest','test', 'one'])
         testGram.checkExperiment(['one'])
-        # 
-        # natlink.recognitionMimic(['testtestrun','2'])
-        # testGram.checkExperiment(['run','2','1'])
-        # 
-        # natlink.recognitionMimic(['testtestrun','3'])
-        # testGram.checkExperiment(['run','3','1'])
-        # 
-        # natlink.recognitionMimic(['testtestrun','4'])
-        # testGram.checkExperiment(['run','4','3','1'])
-        # 
-        # if DNSVersion < 12:
-        #     natlink.recognitionMimic(['test','test','run','5'])
-        #     testGram.checkExperiment(['run','5'])
+        #
+        # goes one step recursive:
+        natlink.recognitionMimic(['testtestrun','one'])
+        testGram.checkExperiment(['run', 'one'])
+        
+        natlink.recognitionMimic(['testtestrun','2'])
+        testGram.checkExperiment(['run', '2', '3', '4', '5'])
+
+        natlink.recognitionMimic(['testtestrun','3'])
+        testGram.checkExperiment(['run', '3', '4', '5'])
+
+        natlink.recognitionMimic(['testtestrun','4'])
+        testGram.checkExperiment(['run', '4', '5'])
+
+        # this one ends the chain:
+        natlink.recognitionMimic(['testtestrun','5'])
+        testGram.checkExperiment(['run', '5'])
 
         testGram.unload()
 
