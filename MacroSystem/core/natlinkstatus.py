@@ -1,4 +1,3 @@
-
 __version__ = "4.2"
 #
 # natlinkstatus.py
@@ -1080,7 +1079,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         To be so,
         1. the VocolaUserDirectory (where the vocola command files (*.vcl) are located)
         should be defined in the user config file
-        2. the VocolaMainDirectory should be found, and hold '_vocola_main.py'
+        2. the VocolaDirectory should be found, and hold '_vocola_main.py'
         
         """
         if not self.NatlinkIsEnabled():

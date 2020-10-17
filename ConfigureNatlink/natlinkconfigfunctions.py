@@ -1192,7 +1192,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     def unregisterNatlinkPyd(self, silent=1):
         """unregister explicit, should not be done normally
         """
-        dummy, dummy = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        # dummy, dummy = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         pythonVersion = self.getPythonVersion()
         PydPath = os.path.join(coreDir, 'natlink.pyd')
 

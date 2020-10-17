@@ -86,6 +86,7 @@ import types
 import struct
 import time
 import natlink
+import natlinkmain
 import gramparser
 import natlinkstatus
 import utilsqh
@@ -187,7 +188,7 @@ dgnwordflag_DNS8newwrdProp  = 0x20000000
 
 def matchWindow(moduleInfo, modName, wndText):
     if len(moduleInfo)<3 or not moduleInfo[0]: return None
-    curName = getBaseName(moduleInfo[0]).lower()
+    curName = natlinkmain.getCurrentApplicationName(moduleInfo)
     if curName != modName: return None
     if moduleInfo[1].find(wndText) == -1: return None
     return moduleInfo[2]

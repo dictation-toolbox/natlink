@@ -144,6 +144,11 @@ if canStartNatlink:
         print('do extra output at (re)loading time: %s'% debugLoad)
     if debugCallback:
         print('do extra output at callback time: %s'% debugCallback)
+ApplicationFrameHostTitles = {}
+ApplicationFrameHostTitles["Photos"] = "photos"
+ApplicationFrameHostTitles["Foto's"] = "photos"
+ApplicationFrameHostTitles["Calculator"] = "calc"
+ApplicationFrameHostTitles["Rekenmachine"] = "calc"
         
 ## always set as global variables:
 baseDirectory = status.getBaseDirectory()    ## MacroSystem folder
@@ -160,6 +165,41 @@ windowsVersion = status.getWindowsVersion()
 # QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
 # otherwise no grammar change checking is performed, only at microphone toggle
 checkForGrammarChanges = 0
+
+def getCurrentApplicationName(moduleInfo):
+    """get the module name from currentModule info
+    
+    normally: the application name from currentModule[0] 
+
+    if this is applicationframhost, try from title in above dict, ApplicationFrameHostTitles
+    """
+            # return os.path.splitext(
+        #     os.path.split(self.currentModule[0]) [1]) [0].lower()
+
+    try:
+        curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
+    except:
+        print(f'getCurrentApplicationName: invalid modulename, skipping moduleInfo: {moduleInfo}')
+        return
+    if not curModule:
+        return
+    
+    progname = curModule.lower()
+    if curModule == 'ApplicationFrameHost':
+        title = moduleInfo[1]
+        for progname in title.split()[0], title.split()[-1]:
+            # print(f'ApplicationFrameHost, try title word: {progname}')
+            if progname in ApplicationFrameHostTitles:
+                progname = ApplicationFrameHostTitles[progname]
+                # print(f'ApplicationFrameHost, found progname: {progname}')
+                break
+        else:
+            print(f'ApplicationFrameHost with title: {title} not found in titles, enter in configuration')
+            return
+        # print(f'getCurrentApplicationName,  from ApplicationFrameHost, return progName: {progname}')
+    # print(f'getCurrentApplicationName,  return progName: {progname}')
+        
+    return progname
 
 def setCheckForGrammarChanges(value):
     """switching on or off (1 or 0), for continuous checking or only a mic toggle"""
@@ -358,10 +398,7 @@ def safelyCall(modName,funcName):
 #
 
 def findAndLoadFiles(curModule=None):
-    global loadedFiles
-    if curModule == 'ApplicationFrameHost':
-        print("findAndLoadFiles, change module %s to %s"% (curModule, 'calc'))
-        curModule = 'calc'
+    global loadedFiles, vocolaIsLoaded, vocolaModule
     moduleHasDot = None
     if curModule:
         # special case, encountered with Vocola modules with . in name:
@@ -441,7 +478,14 @@ def findAndLoadFiles(curModule=None):
             loadedFiles[x] = loadFile(x, origPath, origDate)
         else:
             loadedFiles[x] = loadFile(x)
-        pass
+        vocolaModule = sys.modules[doVocolaFirst]
+        vocolaIsLoaded = True
+        if not vocolaModule.VocolaEnabled:
+            # vocola module signals vocola is not enabled:
+            vocolaEnabled = 0
+            del loadedFiles[x]
+            if debugLoad: print('Vocola is disabled...')
+            vocolaIsLoaded = False
 
     if vocolaGrammarsDirectory:
         vocolaGrammarFiles = [x for x in os.listdir(vocolaGrammarsDirectory) if x.endswith('.py')]
@@ -591,16 +635,13 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
     minimise the reloadings.
     """
     global lastModule
-    # this extracts the module base name like "wordpad"
-    try:
-        curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
-    except:
-        print("loadModSpecific: invalid modulename, skipping (moduleInfo): %s"% repr(moduleInfo))
-        curModule = ''
+
+    curModule = getCurrentApplicationName(moduleInfo)
 
     if curModule and not (onlyIfChanged and curModule==lastModule):
         findAndLoadFiles(curModule)
         lastModule = curModule
+
 
 def setSearchImportDirs():
     """set the global list of import dirs, to be used for import
