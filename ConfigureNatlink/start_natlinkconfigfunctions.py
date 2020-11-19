@@ -7,7 +7,7 @@ import os
 import sys
 import time
 
-print('Starting start_natlinkconfigfunctions.py,')
+print('Starting start_natlinkconfigfunctions.py with python %s,'% sys.version)
 print('Try to run natlinkconfigfunctions.py in Elevated mode...')
 print()
 
@@ -29,9 +29,10 @@ if not sys.version.startswith('3.'):
 
 if sys.version.find("64 bit") >= 0:
     print('=============================================')
-    print('You installed a 64 bit version of Python.')
-    print('Natlink cannot run with this version, please uninstall and')
-    print('install a 32 bit version of python, see https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
+    print('You run this module from a 64 bit version of Python.')
+    print('Natlink cannot run with this version, please be sure to ')
+    print('install a 32 bit version of python, and run from there.')
+    print('See https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
     print('=============================================')
     time.sleep(30)
     sys.exit()

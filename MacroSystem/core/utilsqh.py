@@ -100,17 +100,17 @@ else:
 # fixwordquotes = translator(b'\x91\x92\x93\x94\x95\x96', b"''\"\"  ")
 
 ###removenoncharacters = translator('
-def fixinivarskey(s):
-    """remove all non letters to underscore, remove leading underscore
-    remove double spaces
-    """
-    if isinstance(s, str):
-        s = str(s)
-    t = translate_non_alphanumerics(s)
-    t = t.strip("_ ")
-    while '  ' in t:
-        t = t.replace('  ', ' ')
-    return t
+# def fixinivarskey(s):
+#     """remove all non letters to underscore, remove leading underscore
+#     remove double spaces
+#     """
+#     if isinstance(s, str):
+#         s = str(s)
+#     t = translate_non_alphanumerics(s)
+#     t = t.strip("_ ")
+#     while '  ' in t:
+#         t = t.replace('  ', ' ')
+#     return t
     
 def unifyaccentedchars(to_translate):
     """change acuted characters with combining code to single characters
@@ -740,6 +740,18 @@ False
     if not ext: return
     return ext.lower() in [".jpg", ".jpeg", ".png"]
 
+def fileHasJpgExtension(fileName):
+    """return True if fileName has extension .jpg, .jpeg
+>>> fileHasJpgExtension(u"a.JPG")
+True
+>>> fileHasJpgExtension(u"yyy.PNG")
+False
+
+    """
+    ext = getExt(fileName)
+    if not ext: return
+    return ext.lower() in [".jpg", ".jpeg"]
+
 def removeFromStart(text, toRemove, ignoreCase=None):
     """returns the text with "toRemove" stripped from the start if it matches
 >>> removeFromStart('abcd', 'a')
@@ -1119,7 +1131,7 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
     if pagename:
         push('page: %s'% pagename)
         callback.append('page: %s'% pagename)
-    push('\ntype: %s, value: %s'% (sys.exc_info()[0], sys.exc_info()[1]))
+    push('\ntype: %s, value: %s\n'% (sys.exc_info()[0], sys.exc_info()[1]))
     callback.append('error: %s'%sys.exc_info()[1])
 
     print('\nerror occurred:')
@@ -1128,6 +1140,11 @@ def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
 
     sys.stderr.write('\n'.join(L))
     sys.stderr.write(callback)
+    if filename:
+        print("skip writing to file %s"% filename)
+        # with open(filename, 'w') as fout:
+        #     fout.write("\n".join(L))
+        #     print("written traceback in %s"% filename)    
     #print('result specialsDict: %s'% specialsDict')
     return callback, specialsDict
 

@@ -359,6 +359,15 @@ class Clipboard:
             self.current_sequence_number = win32clipboard.GetClipboardSequenceNumber()
             win32clipboard.CloseClipboard()
 
+    def Set_text_and_paste(t):
+        """a one shot function to past text back into the application
+        """
+        if type(t) == str and t:
+            self.copy_to_system(data=t)
+            pass
+        #### to be finished
+
+
     def restore(self):
         """restore the _backup to the system clipboard
         """

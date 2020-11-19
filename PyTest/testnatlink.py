@@ -1,3 +1,4 @@
+# Not for actual use, only for historic reasons it is kept here...
 #
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould

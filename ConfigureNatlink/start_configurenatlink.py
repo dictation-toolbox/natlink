@@ -8,6 +8,15 @@ print('Starting start_configurenatlink.py,')
 print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')
 print()
 
+if sys.version.find("64 bit") >= 0:
+    print('=============================================')
+    print('You run this module from a 64 bit version of Python.')
+    print('Natlink cannot run with this version, please be sure to ')
+    print('install a 32 bit version of python, and run from there.')
+    print('See https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
+    print('=============================================')
+    time.sleep(30)
+    sys.exit()
 
 try:
     import wx
@@ -35,7 +44,7 @@ except ImportError:
     print('In some rare cases this install did not finish correct.')
     print('You can then try to run the batch script "start_postinstallscript_pywin32.cmd" in')
     print('Admin mode, in order to finish the installation. Hopefully this helps.')
-    print('This file can be found in the "confignatlinkvocolaunimacro" subdirectory of your Natlink directory.')
+    print(f'This file can be found in the "{thisDir}" directory.')
     # time.sleep(30)
     sys.exit()
 

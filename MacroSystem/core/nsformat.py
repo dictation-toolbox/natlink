@@ -8,16 +8,23 @@
 #
 # inserted in the unimacro package june 2006
 # adapted for Dragon 11, oct 2011, Quintijn
+# now for python3 version, with (normally) DNSVersion 15 (QH, June 2020)
 #
 
 import types
 import copy
 import natlink
 import natlinkstatus
-status = natlinkstatus.NatlinkStatus()
-DNSVersion = status.getDNSVersion()
-del status
 
+## make DNSVersion global variable:
+try: DNSVersion
+except NameError:
+    status = natlinkstatus.NatlinkStatus()
+    DNSVersion = status.getDNSVersion()
+    del status
+else:
+    print("Repeated import nsformat, DNSVersion: %s"% DNSVersion)
+    
 flag_useradded = 0
 flag_varadded = 1
 flag_custompron = 2
@@ -124,7 +131,7 @@ def formatWords(wordList,state=None):
         flags_like_period = (4, 21, 17) # one space after period.
         
     # get the getWordsInfo function, now returning a tuple of properties
-    DNSVersion = status.getDNSVersion()
+    # DNSVersion = status.getDNSVersion()
     if DNSVersion >= 11:
         gwi = getWordInfo11
     else:
@@ -216,7 +223,8 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     emptySet = set()
     if gwi is None:
         # get the proper getWordInfo function
-        DNSVersion = sta.DNSVersion
+        # DNSVersion = status.DNSVersion
+        # DNSVersion is global variable...
         if DNSVersion >= 11:
             gwi = getWordInfo11
         else:

@@ -85,9 +85,8 @@ import copy
 import types
 import struct
 import time
-#from natlink import *
 import natlink
-#from gramparser import *
+import natlinkmain
 import gramparser
 import natlinkstatus
 import utilsqh
@@ -189,7 +188,7 @@ dgnwordflag_DNS8newwrdProp  = 0x20000000
 
 def matchWindow(moduleInfo, modName, wndText):
     if len(moduleInfo)<3 or not moduleInfo[0]: return None
-    curName = getBaseName(moduleInfo[0]).lower()
+    curName = natlinkmain.getCurrentApplicationName(moduleInfo)
     if curName != modName: return None
     if moduleInfo[1].find(wndText) == -1: return None
     return moduleInfo[2]
@@ -586,10 +585,10 @@ class GrammarBase(GramClassBase):
         #     raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
         if ruleName in self.activeRules:
             if window == self.activeRules[ruleName]:
-                print('rule %s already active for window %s'% (ruleName, window))
+                if debugLoad: print('rule %s already active for window %s'% (ruleName, window))
                 return
             else:
-                print('change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window))
+                if debugLoad: print('change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window))
                 self.gramObj.deactivate(ruleName)
         if debugLoad: print('activate rule %s (window: %s)'% (ruleName, window))
         self.gramObj.activate(ruleName,window)

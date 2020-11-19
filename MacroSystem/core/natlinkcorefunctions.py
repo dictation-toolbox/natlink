@@ -127,6 +127,12 @@ def getFolderFromLibraryName(fName):
             tryDir = os.path.normpath(os.path.join(userDir, fName))
             if os.path.isdir(tryDir):
                 return tryDir
+    usersHome = os.path.normpath(os.path.join(r"C:\Users", fName))
+    if os.path.isdir(usersHome):
+        return usersHome
+    if fName in ["This PC", "Deze pc"]:
+        return "\\"
+    
     print('cannot find folder for Library name: %s'% fName)
 
 def getDropboxFolder(containsFolder=None):
@@ -301,8 +307,8 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
             if k in D and D[k] != v:
                 print('warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v))
             D[k] = v
-    if fillRecentEnv:
-        recentEnv = copy.copy(D)
+    if type(fillRecentEnv) == dict:
+        recentEnv.update(D)
     return D
 
 #def setInRecentEnv(key, value):

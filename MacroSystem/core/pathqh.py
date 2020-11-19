@@ -1,9 +1,9 @@
 """
 implements the path class, based upon pathlib/path
 
-was before in utilsqh, but better do it here.
-testing inside qh for the moment
-moving into the core directory of the python 3 branch
+was before in utilsqh, but better do it here, in Natlink/Macrosystem/core
+moving into the core directory natlink (with python3)
+
 """
 import pathlib
 import os
@@ -15,14 +15,25 @@ import re
 import copy
 import unicodedata
 import win32file
+import fnmatch
 # for extended environment variables:
-reEnv = re.compile('(%[A-Z_]+%)', re.I)
+from win32com.shell import shell, shellcon
+
+
+## environment variables:
+reEnv = re.compile('(%([a-z0-9_]+)%)', re.I)
+
+recentEnv = {}   # to be updated at end of module import
 
 ## functions for generating alternative paths in virtual drives
 ## uses reAltenativePaths, defined in the top of this module
 ## put in utilsqh.py! used in sitegen AND in _folders.py grammar of Unimacro:
 # for alternatives in virtual drive definitions:
 reAltenativePaths = re.compile(r"(\([^|()]+?(\|[^|()]+?)+\))")
+
+class PathError(Exception):
+    pass
+
 
 def generate_alternatives(s):
     """generates altenatives if (xxx|yyy) is found, otherwise just yields s
@@ -194,32 +205,43 @@ path('folder/subfolder/trunc.txt')
 
 ### construct from list:
 >>> str(path(['C:', 'projects']))
-'C:/projects'
+'C:/Projects'
 
 small cases:
->>> workingdirectory = os.getcwd()
->>> path('.') == workingdirectory
-True
->>> path('') == workingdirectory
-False
->>> path('/')
-path('/')
->>> path('../..')
-path('../..')
->>> path('../../')
-path('../..')
->>> p = path('C:/windows/../nonexistingdir/acties')
->>> str(p)
-'C:/nonexistingdir/acties'
->>> p.is_dir()
-False
+# >>> workingdirectory = os.getcwd()
+# >>> path('.') == workingdirectory
+# True
+# >>> path('') == workingdirectory
+# False
+# >>> path('/')
+# path('/')
+# >>> path('../..')
+# path('../..')
+# >>> path('../../')
+# path('../..')
+# >>> p = path('C:/windows/../nonexistingdir/acties')
+# >>> str(p)
+# 'C:/nonexistingdir/acties'
+# >>> q = p/".."
+# >>> q
+# path('C:/nonexistingdir')
+# >>> p.is_dir()
+# False
 
 ## "~" is in Windows the Documents directory:
-# >>> hometrick = path("~/.ssh/id_rsa.pub")
-# >>> str(hometrick)
-# 'C:/Users/Gebruiker/Documents/.ssh/id_rsa.pub'
-# >>> hometrick.isfile()
-# True
+>>> hometrick = path("~/.ssh/id_rsa.pub")
+>>> str(hometrick)
+'C:/Users/Gebruiker/Documents/.ssh/id_rsa.pub'
+>>> hometrick.isfile()
+True
+>>> docsdir = hometrick/".."/".."
+>>> docsdir
+path('~')
+>>> str(docsdir)
+'C:/Users/Gebruiker/Documents'
+>>> print(docsdir)
+C:/Users/Gebruiker/Documents
+
 # >>> hometrick.prefix
 # '~'
 # >>> hometrick.resolvedprefix
@@ -289,15 +311,15 @@ True
         if args and len(args) == 1 and type(args[0]) == cls:
             return args[0]
         if args and args[0] is None:
-            input = ""
+            Input = ""
         if type(args[0]) == list:
             args = ('/'.join(args[0]),)
         if args == (None,):    # vreemde fout bij HTMLgen BGsound
-            input = ""
+            Input = ""
         else:            
-            input = '/'.join(args)
-        if input.find("|") >= 0:
-            validPath = getValidPath(input)
+            Input = '/'.join(args)
+        if Input.find("|") >= 0:
+            validPath = getValidPath(Input)
             if validPath:
                 return validPath
         drv, root, parts = self._parse_args(args)
@@ -332,18 +354,18 @@ True
             # with a drive, but not resolved:
             return self
         # relative path:
-        if not input:
-            # empty input, return empty path (relative)
+        if not Input:
+            # empty Input, return empty path (relative)
             return self
             # emptypath = self.resolve()
             # return emptypath
         # relative, but not office temporary file:
-        if input == "~":
+        if Input == "~":
             homedir = self.expanduser()
             homedir.prefix = "~"
             homedir.resolvedprefix = str(homedir)
             return homedir
-        elif input.startswith("~") and not input.startswith("~$"):
+        elif Input.startswith("~") and not Input.startswith("~$"):
             expanded = path(self.expanduser().normpath())
             homedir = str(path("~"))
             if str(expanded).startswith(str(homedir)):
@@ -352,14 +374,14 @@ True
             else:
                 expanded.prefix = expanded.resolvedprefix = ""
             return expanded
-        elif input == ".":
+        elif Input == ".":
             curdir = path(os.getcwd())
             curdir.prefix = "."
             curdir.resolvedprefix = str(curdir)
             return curdir
-        elif input.startswith(".") and input[1] in "/\\":
+        elif Input.startswith(".") and Input[1] in "/\\":
             curdir = path(".")
-            expanded = path(curdir/input[2:])
+            expanded = path(curdir/Input[2:])
             expanded = path(expanded.normpath())
             if str(expanded).startswith(str(curdir)):
                 expanded.prefix = "."
@@ -367,6 +389,43 @@ True
             else:
                 expanded.prefix = expanded.resolvedprefix = ""
             return expanded
+        elif reEnv.match(Input):
+            ## here use the extended trick of the folder environment variable,
+            ## enhanced with extended Library Folders (also Dropbox)
+            if not recentEnv:
+                recentEnv.update(getAllFolderEnvironmentVariables())
+                try:
+                    import natlinkstatus
+                    recentEnv.update(natlinkstatus.AddNatlinkEnvironmentVariables())
+                except ModuleNotFoundError:
+                    pass
+                if not recentEnv:
+                    print("path %s, cannot expand Input, no recentEnv dict"% recentEnv)
+            
+            m = reEnv.match(Input)
+            envVar = m.group(2)   # a riddle to me!!
+            envVarComplete = m.group(1)  # with %xxxx%
+            lenEnvVarComplete = len(envVarComplete)
+            if envVar in recentEnv:
+                result = recentEnv[envVar]
+            else:
+                result = getFolderFromLibraryName(envVar)
+                if not result:
+                    print("Could not expand  %%%s%% in %s"% (envVar, Input))
+                    return self
+            result = path(result)
+            rest = Input[lenEnvVarComplete+1:]
+            expanded = result/rest
+            # expanded = path(expanded).normpath()
+            if str(expanded).startswith(str(result)):
+                expanded.prefix = envVarComplete
+                expanded.resolvedprefix = str(result)
+            else:
+                expanded.prefix = expanded.resolvedprefix = ""
+            return expanded
+        else:
+            pass
+        
         # all other cases:
         return self
 
@@ -375,7 +434,7 @@ True
         
         Really, the resolve step is done in initiatlisation, and is unneeded (and unwanted) as additional call
         
-        By default of pathlib, othher relative paths remain unchanged, but the empty string resolves to wd by default.
+        By default of pathlib, other relative paths remain unchanged, but the empty string resolves to wd by default.
         This is overridden here at initialisation time of this class.
         
 >>> p = path("")
@@ -414,10 +473,32 @@ path('C:/temp')
 
     def __truediv__(self, key):
         """also a list can be passed after the /
+>>> p = path('')
+>>> p.resolve()
+path('')
+>>> q = p/'testaap'
+>>> q
+path('testaap')
+>>> r = q/'..'/'testmonkey'
+>>> r
+path('testmonkey')
+        
+        make an extra call to path, in order to always return a normpathed instance...
         """
         if type(key) in (list, tuple):
             key = '/'.join(key)
         child = self._make_child((key,))
+        if child.drive:
+            pass
+        else:
+            ## resolve '..' here immediately:
+            ## note: if relative path resolves to '', we want an empty path, not the current directory:
+            normalised_path = os.path.normpath(str(child))
+            if normalised_path == os.path.normpath(''):
+                child = path('')
+            else:
+                child = path(normalised_path)
+        
         child.prefix = self.prefix
         child.resolvedprefix = self.resolvedprefix
         return child
@@ -434,14 +515,16 @@ True
         return super().__eq__(other)
     
     def __str__(self):
-        """Return the string representation of the path, empty if input was empty"""
+        """Return the string representation of the path, empty if Input was empty"""
         try:
-            return self._str
+            result = self._str
         except AttributeError:
             result  = self._format_parsed_parts(self._drv, self._root,
                                                   self._parts)
-            self._str = result.replace("\\", "/")
-        return self._str
+        if result.find('..') > 0 and self.drive:
+            result = os.path.normpath(result)
+        resultslash = result.replace("\\", "/")
+        return resultslash
   
     def __repr__(self):
         short = self.nicestr()
@@ -731,7 +814,7 @@ True
 >>> startpath.relpathto(testpath)
 'unittest'
 >>> testpath.relpathto(startpath)
-'C:/projects'
+'C:/Projects'
 >>> startpath.relpathto(u"F:/projects/unexisting")
 'F:/projects/unexisting'
 
@@ -747,8 +830,20 @@ True
 
     def normpath(self):
         """ return normalised path as string
+>>> print(path("c:\\Windows/system/../SPEECH/engines").normpath())
+C:\Windows\Speech\Engines
+
         """
         return os.path.normpath(str(self))
+
+    def normcase(self):
+        """ return normalised and normalised cased path as str
+
+>>> print(path("c:\\Windows/system/../SPEECH/").normcase())
+c:\windows\speech
+
+        """
+        return os.path.normcase(str(self))
 
 
     def remove(self):
@@ -896,178 +991,196 @@ True
         """
         return path(os.getcwd())
 
-    def glob(self, pattern="*", keepAbs=1, makePath=1):
+    def glob(self, pattern="*", makePath=1, keepAbs=0):
         """glob a path, default = "*"
 
         default options: give absolute paths as path instances
-        Use listdir if you want all files relative to the path
+        See also walk...
+        
+        You can also use listdir if you want all files relative to the path,
+        but glob without a pattern (or "*") will give the same.
+        
+>>> path("C:/Windows/Speech/Common/").glob("*")
+[path('C:/Windows/Speech/Common/en-US'), path('C:/Windows/Speech/Common/sapisvr.exe')]
 
-# later test TODOQH
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> touch(folderName, 'a.ini', 'b.txt')
-# >>> g = folderName.glob()
-# >>> [f.replace(testdrive, 'XXX') for f in g]
-# ['XXX/qhtemp/a.ini', 'XXX/qhtemp/b.txt']
-# >>> type(g[0])
-# <class 'utilsqh.path'>
-# >>> g = folderName.glob('*.txt', keepAbs=0)
-# >>> g
-# ['b.txt']
-# >>> type(g[0])
-# <class 'utilsqh.path'>
-# >>> g = folderName.glob('*.txt', keepAbs=0, makePath=0)
-# >>> g
-# ['b.txt']
-# >>> type(g[0])
-# <type 'unicode'>
+>>> path("C:/Windows/Speech").glob("*.dll", makePath=0)
+['spchtel.dll', 'speech.dll', 'vcmshl.dll', 'Vdict.dll', 'VText.dll', 'WrapSAPI.dll', 'Xcommand.dll', 'Xlisten.dll', 'XTel.Dll', 'Xvoice.dll']
 
+>>> path("C:/Windows/Speech").glob("*.dll", makePath=0)
+['spchtel.dll', 'speech.dll', 'vcmshl.dll', 'Vdict.dll', 'VText.dll', 'WrapSAPI.dll', 'Xcommand.dll', 'Xlisten.dll', 'XTel.Dll', 'Xvoice.dll']
+
+## note glob is case insensitive (see walk for case sensitive patterns)
+>>> path("C:/Windows/Speech").glob("V*.dll", makePath=0, keepAbs=1)
+['C:/Windows/Speech/vcmshl.dll', 'C:/Windows/Speech/Vdict.dll', 'C:/Windows/Speech/VText.dll']
 
         """
         if not self.isdir():
             raise PathError("glob must start with folder, not with: %s"% self)
-        L = glob.glob(str(self/pattern))
-        return self._manipulateList(L, keepAbs, makePath)
+        globpat = "%s/%s"% (self, pattern)
+        L = glob.glob(globpat)
+        if makePath:
+            return [path(f) for f in L]
+        else:
+            if keepAbs:
+                return [f.replace("\\", "/") for f in L]
+            else:
+                return [self._makePathRelative(item) for item in L]
 
     def listdir(self):
-        """give list relative to self, default unicodes, not path instances!
-# later test (TODOQH)
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> touch(folderName, 'a.ini', 'b.txt')
-# >>> L = path(folderName).listdir()
-# >>> L
-# ['a.ini', 'b.txt']
-# >>> type(L[0])
-# <type 'unicode'>
+        """give list of directory relative to self
+        
+        listdir only gives a list of relative files and directories.
+        
+        If you want makePath or keepAbs, use glob without pattern (or "*")
+        
+        
+>>> path("C:/Windows/Speech/Common/").listdir()
+['en-US', 'sapisvr.exe']
 
         """
         if not self.isdir():
             raise PathError("listdir only works on folders, not with: %s"% self)
         L = os.listdir(self)
-        # note keepAbs is a formality here, listdir gives relative files only:
         return L
 
 
-    def walk(self, functionToDo, keepAbs=1, makePath=0):
-        """return the arg list when walking self
+    def walk(self, *functionToDo, includeDirs=None, skipDirs=None,  includeFiles=None, skipFiles=None, makePath=1, keepAbs=0, topdown=True, onerror=None, followlinks=False):
+        """return the complete walk
+        
+        Nearly obsolete, but if functionToDO is a valid function, this one is called for each file/dir combination
+                functionToDo is the old fashioned function with arg as list being filled in the process.
+                    assume arg is a list,
+                    functionToDo must use exactly 3 parameters,
+                    1 list "arg"
+                    2 dirname
+                    3 list of filenames
+        
+        A list of valid path instances, absolute path's (str), relative path's (str)
+        is yielded, according to makePath and keepAbs variables.
+        
+        a complete path instance is the default (makePath == 1).
+        if makePath == 0, the default is a str giving the path relative to self.
+        
+        When you specify makePath=0, keepAbs=1, absobulte paths as str's are yielded.
 
-        assume arg is a list,
-        functionToDo must use exactly 3 parameters,
-        1 list "arg"
-        2 dirname
-        3 list of filenames
-        path(testdrive + "/projects").walk(testWalk, keepAbs=1, makePath=0)
+        *** Drop the previous "functionToDo" function. ***
 
-        optional parameters:
-        keepAbs: 1 (default) do nothing with the resulting paths
-                 0: strip off the prefix, being the calling instance
-        makePath 0 (default) do not to do this
-                 1: make the resulting items path instances
+        includeDirs, skipDirs, includeFiles, skipFiles can be a str or a sequence of str's.
+        
+        Each pattern is matched against the Dir part or File name, with the fnmatch function (same behaviour as the glob.glob function).
+        
+        So for example "*.txt" if different from "*". "*.*" is needed for matching all files.
+        
+        If all letters are lowercase, the comparisons are done caseInsensitive (Windows!).
+        But if capitals are used, case sensitive matching is done by fnmatch
+                
+        First includeDirs is checked, then skipDirs, then for each file includeFiles and then skipFiles.
+        *** see _acceptDirectoryWalk and _acceptFileWalk below for doctest examples ***
 
-        setting up the files:
-# 
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> makeEmptyFolder(folderName/"afolder")
-# >>> makeEmptyFolder(folderName/"bfolder")
-# >>> touch(folderName, 'f.ini', 'ff.txt')
-# >>> touch(folderName/"afolder", 'aa.ini')
-# >>> touch(folderName/"bfolder", 'b.ini', 'bb.txt')
-# 
-# trying the first test walk:
-# 
-# >>> L = folderName.walk(testWalk)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['XXX/qhtemp', 'afolder', 'bfolder', 'f.ini', 'ff.txt', 'XXX/qhtemp/afolder', 'aa.ini', 'XXX/qhtemp/bfolder', 'b.ini', 'bb.txt']
-# >>> L = folderName.walk(testWalk, keepAbs=0)
-# Traceback (most recent call last):
-# PathError: path._manipulateList with keepAbs: 0, 7 items of the list do not have XXX/qhtemp as start
-# >>> L = folderName.walk(testWalk, keepAbs=1, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['XXX/qhtemp', 'afolder', 'bfolder', 'f.ini', 'ff.txt', 'XXX/qhtemp/afolder', 'aa.ini', 'XXX/qhtemp/bfolder', 'b.ini', 'bb.txt']
-# 
-# trying the second test walk:
-# 
-# >>> L = folderName.walk(testWalk2, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['XXX/qhtemp/afolder', 'XXX/qhtemp/bfolder', 'XXX/qhtemp/f.ini', 'XXX/qhtemp/ff.txt', 'XXX/qhtemp/afolder/aa.ini', 'XXX/qhtemp/bfolder/b.ini', 'XXX/qhtemp/bfolder/bb.txt']
-# >>> L = folderName.walk(testWalk2, keepAbs=0, makePath=1)
-# 
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['afolder', 'bfolder', 'f.ini', 'ff.txt', 'afolder/aa.ini', 'bfolder/b.ini', 'bfolder/bb.txt']
-# 
-# third test, skip folders, note the list is path instances now,
-# converted back to strings or not by the parameter makePath:
-# 
-# >>> L = folderName.walk(walkOnlyFiles, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in L]
-# ['XXX/qhtemp/f.ini', 'XXX/qhtemp/ff.txt', 'XXX/qhtemp/afolder/aa.ini', 'XXX/qhtemp/bfolder/b.ini', 'XXX/qhtemp/bfolder/bb.txt']
-# >>> folderName.walk(walkOnlyFiles, keepAbs=0, makePath=1)
-# ['f.ini', 'ff.txt', 'afolder/aa.ini', 'bfolder/b.ini', 'bfolder/bb.txt']
-# 
+
+## example of the "old fashioned" function to be called...
+>>> print(list(path("C:/Windows/Speech/Common").walk(WalkAllFiles)))
+[path('C:/Windows/Speech/Common/sapisvr.exe'), path('C:/Windows/Speech/Common/en-US/sapisvr.exe.mui')]
+
+
+>>> list(path("C:/Windows/Speech").walk(includeFiles="*.exe", makePath=0))
+['vcmd.exe', 'Common/sapisvr.exe']
+
+>>> list(path("C:/Windows/Speech").walk(includeFiles=["x*.dll", "*.exe"], includeDirs="Common"))
+[path('C:/Windows/Speech/Common/sapisvr.exe')]
+
+        ====
+        Recaoitulate, the optional parameters:
+        includeDirs, skipDirs, includeFiles, skipFiles: see above
+        
+        makePath, keepAbs, see above.
+        
+        topdown, onerror and followlinks, the optional parameters of os.walk.
+      
+        See testing in unittestPath.py and two examples above...
 
         """
         arg = []
         if not self.isdir():
             raise PathError("walk must start with folder, not with: %s"% self)
-        os.walk(str(self), functionToDo, arg)
-        return self._manipulateList(arg, keepAbs, makePath)
+        # if functionToDo:
+        #     arg = []
+        #     for directory, subdirs, files in os.walk(str(self)):
+        #         print("functionToDo: %s"% functionToDo)
+        #         functionToDo(arg, directory, files)
+        #     return arg
+        
+        
+        for directory, subdirs, files in os.walk(str(self)):
+            if _acceptDirectoryWalk(directory, includeDirs, skipDirs):
+                reducedFiles = [f for f in files if _acceptFileWalk(f, includeFiles, skipFiles)]
+                if reducedFiles:
+                    if makePath:
+                        directory = path(directory)
+                        FilesListed = [directory/f for f in reducedFiles]
+                    else:
+                        FilesListed = [os.path.normpath(os.path.join(directory, f)) for f in reducedFiles]
+                        FilesListed = [item.replace("\\", "/") for item in FilesListed]
+                        if not keepAbs:
+                            lenOrg = len(self)
+                            strOrg = str(self)
+                            FilesListed = [self._makePathRelative(item) for item in FilesListed]
+                    for item in FilesListed:
+                        yield item
 
-    def _manipulateList(self, List, keepAbs, makePath):
-        """helper function for treating a result of listdir or glob
-# needs testing!
-#
-#
-# >>> folderName = path(testdrive + '/qhtemp')
-# >>> makeEmptyFolder(folderName)
-# >>> touch(folderName, 'a.ini', 'b.txt')
-# >>> L = [folderName/'a.ini', folderName/'b.txt']
-# >>> F = folderName._manipulateList(L, keepAbs=1, makePath=0)
-# >>> [f.replace(testdrive, 'XXX') for f in F]
-# ['XXX/qhtemp/a.ini', 'XXX/qhtemp/b.txt']
-# >>> type(F[0])
-# <type 'unicode'>
-# >>> F = folderName._manipulateList(L, keepAbs=1, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in F]
-# ['XXX/qhtemp/a.ini', 'XXX/qhtemp/b.txt']
-# 
-# >>> type(F[0])
-# <class 'utilsqh.path'>
-# >>> F = folderName._manipulateList(L, keepAbs=0, makePath=0)
-# >>> F
-# ['a.ini', 'b.txt']
-# >>> type(F[0])
-# <type 'unicode'>
-# >>> F = folderName._manipulateList(L, keepAbs=0, makePath=1)
-# >>> F
-# ['a.ini', 'b.txt']
-# >>> type(F[0])
-# <class 'utilsqh.path'>
-# >>> L = [folderName/'a.ini', 'b.txt']
-# >>> F = folderName._manipulateList(L, keepAbs=1, makePath=1)
-# >>> [f.replace(testdrive, 'XXX') for f in F]
-# ['XXX/qhtemp/a.ini', 'b.txt']
+    def removeEmptyFolders(self, debug=0):
+        """a special walk, which iterates through empty folders
 
+The calling folder remains, even if all subfolders are removed
+
+See unittestPath for more testing and examples.
         """
-        if not List:
-            return List
-        L = List[:]
-        if not keepAbs:
-            # make relative:
-            length = len(self)
-            unicodePath = str(self)
-            if not self.endswith("/"):
-                length += 1
-            L = [k[length:] for k in L if k.find(unicodePath) == 0]
-            if len(L) !=len(List):
-                raise PathError("path._manipulateList with keepAbs: %s, %s items of the list do not have %s as start"%
-                                (keepAbs, len(List)-len(L), self))
+        round = 0
+        while True:
+            round += 1
+            hadChange = False
+            if debug > 1: print("removeEmptyFolders, round %s"% round)
+            # print("removeEmptyFolders, new round;;;;")
+            for directory, dirs, files in os.walk(self, topdown=False):
+                if self == directory:
+                    continue
+                # print("removeEmptyFolders: %s"% self._makePathRelative(directory))
+                if dirs or files:
+                    continue
+                # now empty directory, remove:
+                hadChange = True
+                if debug: print("removeEmptyFolders: remove: %s"% self._makePathRelative(directory))
+                path(directory).rmdir()
+            if not hadChange:
+                if debug > 1: print("removeEmptyFolders, no change in round %s"% round)
+                break
 
-        if makePath:
-            return list(map(path, L))
+        if debug > 1: print("removeEmptyFolders: ready in %s rounds"% round)
+        pass
+    
+    
+    def _makePathRelative(self, item):
+        """helper function returning the path relative to self (the originating path)
+        tested, in unittestPath.py
+>>> path("C:/System/")._makePathRelative("C:/System/Control")
+'Control'
+
+Never needed, hopefully:
+>>> path("C:/System/")._makePathRelative("C:/OtherSystem/Control")
+'C:/OtherSystem/Control'
+        
+        """
+        if not item:
+            return ""
+            # make relative:
+        length = len(self)
+        strPath = str(self)
+        if not self.endswith("/"):
+            length += 1
+        if item.startswith(strPath):
+            return item[length:]
         else:
-            return list(map(str, list(map(path, L))))
+            return item
 
     def internetformat(self):
         """convert to file:/// and fill with %20 etc
@@ -1824,6 +1937,168 @@ def translate_non_alphanumerics(to_translate, translate_to='_'):
     translate_table[8364] = translate_to
     return to_translate.translate(translate_table)
 
+
+def _acceptDirectoryWalk(Dir, includeDirs, skipDirs):
+    """private function for path.walk, to accept or reject a directory
+
+    Dir is path or str instance of a directory path.
+    
+    See examples that show you how to specify a wanted directory:
+    
+    includeDirs and skipDirs are None or pattern(s) which should or
+    should not match Dir. If no slashes are in pattern, *\ and \* are added,
+    so normally only one subdirectory on the path is tested...
+    
+    If no uppercase letters are used in a pat, do case insensitive testing.
+    
+    They are str of a sequence of str's (or False, if no decision has to be taken)
+    
+    returns True if Dir is accepted, None otherwise
+
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "Common", None)
+True
+
+Next six examples all return True (Note all forward slashes are changed into backslashes for the fnmatch call...)
+
+>>> _acceptDirectoryWalk(path("C:/Windows/System/Common"), "System", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "/System/", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "*\\System\\*", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "*/System/*", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "/system/", None)
+True
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", "*s*", None)
+True
+
+Next one fails:
+>>> _acceptDirectoryWalk(path("C:/Windows/System/Common"), ["*z*", "*ysta*"], None)
+
+Now the skipDirs, the "skipDirs" variable hits, so the directory is rejected:
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", None, "system")
+
+These two patterns of "skipDirs" do not hit, so the directory is accepted:
+>>> _acceptDirectoryWalk("C:/Windows/System/Common", None, ["syste", "/abacadabra/"])
+True
+    """
+    if isinstance(Dir, path):
+        Dir = str(Dir)
+    if includeDirs:
+        if type(includeDirs) == str:
+            includeDirs = [includeDirs]
+        for pat in includeDirs:
+            if pat == pat.lower():
+                DirNorm = os.path.normcase(Dir)
+            else:
+                DirNorm = os.path.normpath(Dir)
+            
+            if not DirNorm.endswith("\\"):
+                DirNorm += "\\"
+            
+            if pat.find("/") >= 0:
+                pat = pat.replace("/", "\\")
+            if pat.find("\\") == -1:
+                pat = "*\\%s\\*"% pat
+            elif pat.startswith("\\") and pat.endswith("\\"):
+                pat = "*" + pat + "*"
+            if fnmatch.fnmatch(DirNorm, pat):
+                break
+        else:
+            return
+    if skipDirs:    
+        if type(skipDirs) == str:
+            skipDirs = [skipDirs]
+        for pat in skipDirs:
+            if pat == pat.lower():
+                DirNorm = os.path.normcase(Dir)
+            else:
+                DirNorm = os.path.normpath(Dir)
+            if not DirNorm.endswith("\\"):
+                DirNorm += "\\"
+                
+            if pat.find("/") >= 0:
+                pat = pat.replace("/", "\\")
+            if pat.find("\\") == -1:
+                pat = "*\\%s\\*"% pat
+            elif pat.startswith("\\") and pat.endswith("\\"):
+                pat = "*" + pat + "*"
+            if fnmatch.fnmatch(DirNorm, pat):
+                # pattern matches, reject the Directory
+                return
+    # all tests pass:
+    return True
+ 
+def _acceptFileWalk(File, includeFiles, skipFiles):
+    """helper function for _selectFilesWalk (of path.walk), to return if a name matches
+    
+    returns True is File is accepted
+
+    """
+    # test for includeFiles, return is test fails
+    if includeFiles:
+        if type(includeFiles) == str:
+            includeFiles = [includeFiles]
+        for pat in includeFiles:
+            if fnmatch.fnmatch(File, pat):
+                break
+        else:
+            return
+    # test for skipFiles, return if test passes
+    if skipFiles:    
+        if type(skipFiles) == str:
+            skipFiles = [skipFiles]
+        for pat in skipFiles:
+            if fnmatch.fnmatch(File, pat):
+                return
+    # now pass the tests!
+    return True
+    
+
+def collectPsdFiles(arg, dir, files):
+    """collect only .psd files"""
+    ext = '.psd'
+    for f in files:
+        dirplusf = path(dir)/f
+        if dirplusf.isdir():
+            continue
+
+        if dirplusf.lower().endswith(ext):
+            # in case .PSD instead of .psd:
+            dirplusf.replaceExt(ext)
+            arg.append(dirplusf)
+
+def WalkAllFiles(arg, dir, files):
+    """touch all files in folder"""
+    dir = path(dir)
+    # touch(dir, files)
+    for f in files:
+        arg.append(dir/f)
+        
+        
+def touchAllFiles(arg, dir, files):
+    """touch all files in folder"""
+    dir = path(dir)
+    touch(dir, files)
+    for f in files:
+        arg.append(dir/f)
+
+def collectTifFiles(arg, dir, files):
+    """collect only .tif files"""
+    ext = '.tif'
+    for f in files:
+        dirplusf = path(dir)/f
+        if dirplusf.isdir():
+            continue
+
+        if dirplusf.lower().endswith(ext):
+            # in case .PSD instead of .psd:
+            dirplusf.replaceExt(ext)
+            arg.append(dirplusf)
+
+
+
 ## for sitegen, also used in Unimacro, folders grammar (for sites, QH specific) and virtualdrive mechanism
 ## test! TODOQH
 def getValidPath(variablePathDefinition):
@@ -1835,13 +2110,276 @@ def getValidPath(variablePathDefinition):
         if os.path.exists(p):
             return path(p)
 
-
-
 def walkZfiles(directory):
     for Dir, subdirList, filesList in os.walk(directory):
         for f in filesList:
             if f.startswith("Z") and f.endswith(".csv"):
                 yield os.path.join(Dir, f)
+
+## the %XXX% variables, to be kept in recentEnv:
+
+def getAllFolderEnvironmentVariables():
+    """return, as a dict, all the environ AND all CSLID variables that result into a folder
+    
+    Now also implemented:  Also include NATLINK, UNIMACRO, VOICECODE, DRAGONFLY, VOCOLAUSERDIR, UNIMACROUSERDIR
+    This is done by calling from natlinkstatus, see there and example in natlinkmain.
+
+    Optionally put them in recentEnv, if you specify fillRecentEnv to 1 (True)
+
+    """
+    D = {}
+
+    for k in dir(shellcon):
+        if k.startswith("CSIDL_"):
+            kStripped = k[6:]
+            try:
+                v = getExtendedEnv(kStripped, displayMessage=None)
+            except ValueError:
+                continue
+            if len(v) > 2 and os.path.isdir(v):
+                D[kStripped] = v
+            elif v == '.':
+                D[kStripped] = os.getcwd
+    # os.environ overrules CSIDL:
+    for k in os.environ:
+        v = os.environ[k]
+        if os.path.isdir(v):
+            v = os.path.normpath(v)
+            if k in D and D[k] != v:
+                print('warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v))
+            D[k] = v
+    return D
+
+def getExtendedEnv(var, envDict=None, displayMessage=1):
+    """get from environ or windows CSLID
+
+    HOME is environ['HOME'] or CSLID_PERSONAL
+    ~ is HOME
+
+    DROPBOX added via getDropboxFolder is this module (QH, December 1, 2018)
+
+    As envDict for recent results either a private (passed in) dict is taken, or
+    the global recentEnv.
+
+    This is merely for "caching results"
+
+    """
+    if envDict == None:
+        myEnvDict = recentEnv
+    else:
+        myEnvDict = envDict
+##    var = var.strip()
+    var = var.strip("% ")
+    var = var.upper()
+    
+    if var == "~":
+        var = 'HOME'
+
+    if var in myEnvDict:
+        return myEnvDict[var]
+
+    if var in os.environ:
+        myEnvDict[var] = os.environ[var]
+        return myEnvDict[var]
+
+    if var == 'DROPBOX':
+        result = getDropboxFolder()
+        if result:
+            return result
+        raise ValueError('getExtendedEnv, cannot find path for "DROPBOX"')
+
+    if var == 'NOTEPAD':
+        windowsDir = getExtendedEnv("WINDOWS")
+        notepadPath = os.path.join(windowsDir, 'notepad.exe')
+        if os.path.isfile(notepadPath):
+            return notepadPath
+        raise ValueError('getExtendedEnv, cannot find path for "NOTEPAD"')
+
+    # try to get from CSIDL system call:
+    if var == 'HOME':
+        var2 = 'PERSONAL'
+    else:
+        var2 = var
+        
+    try:
+        CSIDL_variable =  'CSIDL_%s'% var2
+        shellnumber = getattr(shellcon,CSIDL_variable, -1)
+    except:
+        print('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+        return ''
+    if shellnumber < 0:
+        # on some systems have SYSTEMROOT instead of SYSTEM:
+        if var == 'SYSTEM':
+            return getExtendedEnv('SYSTEMROOT', envDict=envDict)
+        return ''
+        # raise ValueError('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+    try:
+        result = shell.SHGetFolderPath (0, shellnumber, 0, 0)
+    except:
+        if displayMessage:
+            print('getExtendedEnv, cannot find in environ or CSIDL: "%s"'% var2)
+        return ''
+
+    
+    result = str(result)
+    result = os.path.normpath(result)
+    myEnvDict[var] = result
+    # on some systems apparently:
+    if var == 'SYSTEMROOT':
+
+        myEnvDict['SYSTEM'] = result
+    return result
+
+def expandEnvVariableAtStart(filepath, envDict=None): 
+    """try to substitute environment variable into a path name
+
+    """
+    filepath = filepath.strip()
+
+    if filepath.startswith('~'):
+        folderpart = getExtendedEnv('~', envDict)
+        filepart = filepath[1:]
+        filepart = filepart.strip('/\\ ')
+        return os.path.normpath(os.path.join(folderpart, filepart))
+    elif reEnv.match(filepath):
+        envVar = reEnv.match(filepath).group(1)
+        # get the envVar...
+        try:
+            folderpart = getExtendedEnv(envVar, envDict)
+        except ValueError:
+            print('invalid (extended) environment variable: %s'% envVar)
+        else:
+            # OK, found:
+            filepart = filepath[len(envVar)+1:]
+            filepart = filepart.strip('/\\ ')
+            return os.path.normpath(os.path.join(folderpart, filepart))
+    # no match
+    return filepath
+
+def substituteEnvVariableAtStart(filepath, envDict=None): 
+    """try to substitute back one of the (preused) environment variables back
+
+    into the start of a filename
+
+    if ~ (HOME) is D:\My documents,
+    the path "D:\My documents\folder\file.txt" should return "~\folder\file.txt"
+
+    pass in a dict of possible environment variables, which can be taken from recent calls, or
+    from  envDict = getAllFolderEnvironmentVariables().
+
+    Alternatively you can call getAllFolderEnvironmentVariables once, and use the recentEnv
+    of this module! getAllFolderEnvironmentVariables(fillRecentEnv)
+
+    If you do not pass such a dict, recentEnv is taken, but this recentEnv holds only what has been
+    asked for in the session, so no complete list!
+
+    """
+    if envDict == None:
+        envDict = recentEnv
+    Keys = list(envDict.keys())
+    # sort, longest result first, shortest keyname second:
+    decorated = [(-len(envDict[k]), len(k), k) for k in Keys]
+    decorated.sort()
+    Keys = [k for (dummy1,dummy2, k) in decorated]
+    for k in Keys:
+        val = envDict[k]
+        if filepath.lower().startswith(val.lower()):
+            if k in ("HOME", "PERSONAL"):
+                k = "~"
+            else:
+                k = "%" + k + "%"
+            filepart = filepath[len(val):]
+            filepart = filepart.strip('/\\ ')
+            return os.path.join(k, filepart)
+    # no hit, return original:
+    return filepath
+
+
+def getFolderFromLibraryName(fName):
+    """from windows library names extract the real folder
+    
+    the CabinetWClass and #32770 controls return "Documents", "Dropbox", "Desktop" etc.
+    try to resolve these throug the extended env variables.
+    """
+    fName = fName.lower()
+    if fName.startswith("docum"):  # Documents in Dutch and English
+        return getExtendedEnv("PERSONAL")
+    if fName in ["muziek", "music"]:
+        return getExtendedEnv("MYMUSIC")
+    if fName in ["pictures", "afbeeldingen"]:
+        return getExtendedEnv("MYPICTURES")
+    if fName in ["videos", "video's"]:
+        return getExtendedEnv("MYVIDEO")
+    if fName in ['onedrive']:
+        return getExtendedEnv("OneDrive")
+    if fName in ['desktop', "bureaublad"]:
+        return getExtendedEnv("DESKTOP")
+    if fName in ['quick access', 'snelle toegang']:
+        templatesfolder = getExtendedEnv('TEMPLATES')
+        if os.path.isdir(templatesfolder):
+            QuickAccess = os.path.normpath(os.path.join(templatesfolder, "..", "Libraries"))
+            if os.path.isdir(QuickAccess):
+                return QuickAccess
+    if fName == 'dropbox':
+        return getDropboxFolder()
+    if fName in ['download', 'downloads']:
+        personal = getExtendedEnv('PERSONAL')
+        userDir = os.path.normpath(os.path.join(personal, '..'))
+        if os.path.isdir(userDir):
+            tryDir = os.path.normpath(os.path.join(userDir, fName))
+            if os.path.isdir(tryDir):
+                return tryDir
+    usersHome = os.path.normpath(os.path.join(r"C:\Users", fName))
+    if os.path.isdir(usersHome):
+        return usersHome
+    if fName in ["this pc", "deze pc"]:
+        return "\\"
+    
+    print('cannot find folder for Library name: %s'% fName)
+
+def getDropboxFolder(containsFolder=None):
+    """get the dropbox folder, or the subfolder which is specified.
+    
+    Searching is done in all 'C:\\Users' folders, and in the root of "C:"
+    (See DirsToTry)
+    
+    raises IOError if more folders are found (should not happen, I think)
+    if containsFolder is not passed, the dropbox main folder is returned
+    if containsFolder is passed, this folder is returned if it is found in the dropbox folder
+    
+    otherwise None is returned.
+    """
+    results = []
+    root = 'C:\\Users'
+    dirsToTry = [ os.path.join(root, s) for s in os.listdir(root) if os.path.isdir(os.path.join(root,s)) ]
+    dirsToTry.append('C:\\')
+    for root in dirsToTry:
+        if not os.path.isdir(root):
+            continue
+        try:
+            subs = os.listdir(root)
+        except WindowsError:
+            continue
+        if 'Dropbox' in subs:
+            subAbs = os.path.join(root, 'Dropbox')
+            subsub = os.listdir(subAbs)
+            if not ('.dropbox' in subsub and os.path.isfile(os.path.join(subAbs,'.dropbox'))):
+                continue
+            elif containsFolder:
+                result = matchesStart(subsub, containsFolder, caseSensitive=False)
+                if result:
+                    results.append(os.path.join(subAbs,result))
+            else:
+                results.append(subAbs)
+    if not results:
+        return
+    if len(results) > 1:
+        raise IOError('getDropboxFolder, more dropbox folders found: %s')
+    return results[0]                 
+
+
+# recentEnv.update(getAllFolderEnvironmentVariables())
+
 
 def _test():
     import doctest
@@ -1851,6 +2389,8 @@ if __name__ == "__main__":
     # print("is_dir: %s"% p.is_dir())
     # print("isdir: %s"% p.isdir())
     # envvars = EnvVariable()
-    # getAllFolderEnvironmentVariables()
     # printAllEnvVariables()
+    # p = path("%COMMON_APPDATA%/Etta en Quintijn")
+    # p = path("%DROPBOX%/Etta en Quintijn")
+    # p = path('../../test/onetwo/../three')
     _test()

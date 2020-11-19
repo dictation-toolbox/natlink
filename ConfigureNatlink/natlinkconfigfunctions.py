@@ -47,10 +47,54 @@ etc.
 More at the bottom, with the CLI description...
 
 """
-import ctypes
+import os
+import shutil
+import sys
+import pywintypes
 import traceback
 import types
 
+def lookForCoreDirectory():
+    thisDir = os.path.split(__file__)[0]
+    CoreDirRelative = os.path.normpath(os.path.join(thisDir, '..', 'MacroSystem', 'Core'))
+    if os.path.isdir(CoreDirRelative):
+        yield CoreDirRelative
+    CoreDirRelativeNew = os.path.normpath(os.path.join(thisDir, '..', 'Core'))
+    if os.path.isdir(CoreDirRelativeNew):
+        yield CoreDirRelativeNew
+        
+    key = 'PROGRAMFILES'
+    programFilesDir = os.environ.get(key, None)
+    if programFilesDir and os.path.isdir(programFilesDir):
+        natlinkDir = os.path.join(programFilesDir, 'Natlink')
+        if os.path.isdir(natlinkDir):
+            CoreDir = os.path.normpath(os.path.join(natlinkDir, 'MacroSystem', 'Core'))
+            if os.path.isdir(CoreDir):
+                yield CoreDir
+            CoreDirNew = os.path.normpath(os.path.join(natlinkDir, 'Core'))
+            if os.path.isdir(CoreDirNew):
+                yield CoreDirNew
+
+# for Dir in lookForCoreDirectory():
+#     print(f'lookForCoreDirectory: {Dir}')
+
+try:
+    from pathqh import path
+except (ModuleNotFoundError, ImportError):
+    for tryCoreDir in lookForCoreDirectory():
+        tryPathFile = os.path.join(tryCoreDir, "pathqh.py")
+        if os.path.isfile(tryPathFile):
+            if tryCoreDir in sys.path:
+                raise IOError(f'directory {tryCoreDir} is in sys.path, but pathqh if not found')
+            print(f'add to sys.path: {tryCoreDir}')
+            sys.path.append(tryCoreDir)
+            try:
+                from pathqh import path
+            except ModuleNotFoundError:
+                raise IOError(f'seem to have {tryCoreDir} in sys.path, but cannot import pathqh.py')
+            else:
+                break
+           
 try:
     from win32com.shell.shell import IsUserAnAdmin
 except:
@@ -71,20 +115,13 @@ except:
         """
         MessageBoxA(None, message, title, 0)
 
-import os, shutil
-import sys
-import pywintypes
-
 if __name__ == '__main__':
-    if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
-        pyVersion = sys.version[:3]
-        mess = ["Here are the natlinkconfigfunctions, with which you can configure Natlink even for this older (%s) version of Python."% pyVersion,
-                "Note: the natlink.pyd files (natlink.dll) that work with python %s are for older versions of NatSpeak (10 and before) only."% pyVersion,
-                "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7. You then use the newer natlink.pyd files in which several problems that arose between NatSpeak 10 and Dragon 11 are solved."]
-
-        mess = '\n\n'.join(mess)
+    if sys.version[0] == '2':
+        mess = "support for python 2 is no longer available, please run with python 3"
         windowsMessageBox(mess)
-
+    elif sys.version[0] == '3':
+        mess = f"natlinkconfigfunctions for python{sys.version[:3]}"
+        # windowsMessageBox(mess)
 
 class ElevationError(Exception):
     def __init__(self, message):
@@ -185,7 +222,9 @@ if not os.path.normpath(coreDir) in sys.path:
     sys.path.insert(0, coreDir)
 
 # from core directory, use registry entries from CURRENT_USER/Software/Natlink:
-import natlinkstatus, natlinkcorefunctions, RegistryDict
+import natlinkstatus
+import natlinkcorefunctions
+import winreg
 import os, os.path, sys, getopt, cmd, types, string, win32con
 
 # import natlink  # to see if NatSpeak is running...
@@ -311,7 +350,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         
         # now also put this in the registry:
         if result:
-            result = self.setCoreDirectoryHKLMPythonPathDict(coreDir, silent=silent)
+            result = self.setRegistryPythonPathNatlink(coreDir, silent=silent)
             if not result:
                 print('Setting the registry to the new setting (%s) failed'% coreDir)
 
@@ -363,80 +402,32 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return
         return 1
 
-    # def getCoreDirectoryHKLMPythonPathDict(self, flags=win32con.KEY_ALL_ACCESS):
-    #     """returns the dict that contains the PythonPath section of HKLM
-    # 
-    #     Overload for config program, automatically set or repair the pythonpath variable if the format is not ok
-    #     """
-    #     version = self.getPythonVersion()
-    #     if not version:
-    #         fatal_error("no valid Python version available")
-    #         return None, None
-    #     # dottedVersion = version[0] + "." + version[1]
-    #     dottedVersion = sys.winver
-    #     pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
-    #     # key MUST already exist (ensure by passing flags=...:
-    #     #try:
-    #     lmPythonPathDict = RegistryDict.RegistryDict(win32con.HKEY_LOCAL_MACHINE, pythonPathSectionName, flags=flags)
-    #     #except:
-    #     #    fatal_error("registry section for pythonpath does not exist yet: %s,  probably invalid Python version: %s"%
-    #     #                     (pythonPathSectionName, version))
-    #     #    return None, None
-    #     PPDkeyslower = [k.lower() for k in lmPythonPathDict.keys()]
-    #     if 'natlink'  in PPDkeyslower:
-    #         subDict = lmPythonPathDict['Natlink' ]
-    #         if isinstance(subDict, RegistryDict.RegistryDict):
-    #             if '' in list(subDict.keys()):
-    #                 value = subDict['']
-    #                 if value and type(value) in (str, str):
-    #                     # all well (only the value is not tested yet):
-    #                     return lmPythonPathDict, pythonPathSectionName
-    #     else:
-    #         ## not earlier install, no Natlink or NatLink section:
-    #         return lmPythonPathDict, None
-        
-    def setCoreDirectoryHKLMPythonPathDict(self, coreDir, flags=win32con.KEY_ALL_ACCESS, silent=None):
+    def setRegistryPythonPathNatlink(self, coreDir, flags=win32con.KEY_ALL_ACCESS, silent=None):
         """set the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
         
         this function should be in elevated mode, which should be checked before calling this
         """
-        lmPythonPathDict, prevPathSectionName = self.getRegistryPythonPathDict(flags=flags)
-        if type(lmPythonPathDict) == RegistryDict.RegistryDict:
-            pass
-        else:
-            fatal_error('lmPythonPathDict is not correct type: %s'% type(lmPythonPathDict))
-            return 
-        print(('==== Set Natlink setting in PythonPath section of registry to "%s"'% coreDir))
-        natlinkPart = lmPythonPathDict['Natlink']
+        result = self.getRegistryPythonPathNatlink()
+        if result:
+            natlinkvalue, hive, pythonpathkey = result
+            if coreDir == natlinkvalue:
+                print(f'setRegistryPythonPathNatlink, coreDir already OK: {coreDir}')
+                return 1
+        print(f'now set coreDir to "{coreDir}" in registry')
+        key, flags = (pythonpathkey, winreg.KEY_WOW64_32KEY | flags)
 
-        ## do not check previous values, simply put it in:
-        lmPythonPathDict['Natlink'] = {'': coreDir}
-        lmPythonPathDict, pythonPathSectionName = self.getRegistryPythonPathDict()
-        
-        ## check the result:
-        newNatlinkPart = lmPythonPathDict['Natlink']
-        if type(newNatlinkPart) == RegistryDict.RegistryDict:
-            newContent = newNatlinkPart['']
-            if newContent == coreDir:
-                # print("content is changed correct: %s"% newContent)
-                return True
-            fatal_error("setCoreDirectoryHKLMPythonPathDict: content did not change: %s"% newContent)
-            return
-        else:
-            fatal_error("setCoreDirectoryHKLMPythonPathDict: newNatlinkPart not a valid dict: %s"% newNatlinkPart)
-            return
+        with winreg.OpenKeyEx(hive, key, access= flags) as pythonpath_key:
+            natlink_key = winreg.CreateKeyEx(pythonpath_key, "Natlink", 0, flags)
+            result = winreg.SetValueEx(natlink_key, "", 0, winreg.REG_SZ, coreDir)            
         return True
 
     def checkPythonPathAndRegistry(self):
         """checks if core directory is
 
         1. in the sys.path
-    ###    2. in the registry keys of HKLM/SOFTWARE/Python/PythonCore/2.7/PythonPath/Natlink
+        2. in the registry keys of HKLM or HKCU /SOFTWARE/Python/PythonCore/{pythonversion}/PythonPath/Natlink
 
-        the latter part is inserted again, as, for some reason the automatic loading of
-        natlinkmain needs the core directory in its path. Only take the core dir now!!
-
-        Instead the status.checkSysPath() function checks the existence of the core, base and user
+        Instead the status.checkSysPath() function checks the existence of the core
         directories in the sys.path and sets then if necessary.
 
         If this last key is not there or empty
@@ -452,28 +443,31 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         self.checkedUrgent = None
         # if __name__ == '__main__':
             # print("checking PythonPathAndRegistry")
-        try:
-             result = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
-             # print(result)
-             if result is None:
-                pass
-             lmPythonPathDict, pythonPathSectionName = result
-        except KeyError:
-            mess =  'The section "Natlink" does not exist and cannot be created in the registry. You probably should run this program with administrator rights'
-            self.warning(mess)
-            self.checkedUrgent = 1
-            if not self.isElevated: raise ElevationError("needed for fixing the PythonPath in the registry settings.")
+        result = self.getRegistryPythonPathNatlink(silent=False)
+        # print(result)
+        if result is None:
+           fatal_error('Cannot find valid PythonPath section in registry')
+           pass
+        natlinkvalue, hivekey, pythonpathkey = result
 
-        coreDir2 = self.getCoreDirectory()
-        if coreDir2.lower() != coreDir.lower():
-            fatal_error('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
-                                              (coreDir, coreDir2))
-        # adding the relevant directories to the sys.path variable:
-        #self.checkSysPath() ## not needed in config program
+        coreDir = path(self.getCoreDirectory())
+        coreFromRegistry = path(natlinkvalue)
+        if coreDir == coreFromRegistry:
+            return 1
 
+        if not coreFromRegistry:
+            ## probably first time install
+            ## silently register
+            print(f'silently register (first time use of Natlink) in {coreDir}')
+            pass
+            return 1
+
+        if not self.isElevated:
+            raise ElevationError("Run in Elevated mode. This is needed for making changes in the PythonPath registry settings and register natlink.pyd.")
+
+        print(f'now should exit, Natlink in "{natlinkvalue}", or reregister to "{coreDir}"')
+        return 0
         pathString = coreDir
-##        if lmPythonPath:
-##            print 'lmPythonPath: ', lmPythonPath.keys()
         result = lmPythonPathDict['Natlink']
         if result and '' in result:
             coreDirFromRegistry = lmPythonPathDict['Natlink']['']
@@ -935,18 +929,19 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 print(('Natlink disabled, restart %s'% self.DNSName))
                 print('Note natlink.pyd is NOT UNREGISTERED, but this is not necessary either')
 
-    def getVocolaUserDir(self):
-        key = 'VocolaUserDirectory'
-        value = self.userregnl.get(key, None)
-        return value
+    # def getVocolaUserDir(self):
+    #     key = 'VocolaUserDirectory'
+    #     value = self.userregnl.get(key, None)
+    #     return value
 
-    def setVocolaUserDir(self, v):
+    def setVocolaUserDirectory(self, v):
         key = 'VocolaUserDirectory'
         v = os.path.normpath(os.path.expanduser(v))
         if self.isValidPath(v, wantDirectory=1):
-            print(("Setting VocolaUserDirectory %s and enable Vocola"% v))
+            # print(f'Enable Vocola, with setting VocolaUserDirectory {v}')
             self.userregnl.set(key, v)
             self.userregnl.delete("Old"+key)
+            self.VocolaUserDirectory = v
         else:
             oldvocdir = self.userregnl.get(key)
             if oldvocdir and self.isValidPath(oldvocdir, wantDirectory=1):
@@ -955,14 +950,14 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 mess = 'not a valid directory: %s, Vocola remains disabled'% v
             return mess
 
-    def clearVocolaUserDir(self):
+    def clearVocolaUserDirectory(self):
         key = 'VocolaUserDirectory'
         oldvalue = self.userregnl.get(key)
         if oldvalue and self.isValidPath(oldvalue):
             self.userregnl.set("Old"+key, oldvalue)
+        self.VocolaUserDirectory = "" 
         if self.userregnl.get(key):
             self.userregnl.delete(key)
-            print('clearing the VocolaUserDirectory and disable Vocola')
         else:
             mess = 'no valid VocolaUserDirectory, so Vocola was already disabled'
             return mess
@@ -1032,56 +1027,67 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             mess = 'AutoHotkey Exe Directory (AhkExeDir) was not set, do nothing'
             return mess
 
-
-    def getUnimacroUserDir(self):
-        key = 'UnimacroUserDirectory'
-        return self.userregnl.get(key, None)
-
-    def setUnimacroUserDir(self, v):
+    def setUnimacroUserDirectory(self, v):
+        """Enable Unimacro, by setting the UnimacroUserDirectory
+        """
         key = 'UnimacroUserDirectory'
 
-        oldDir = self.getUnimacroUserDir()
+        oldDir = self.getUnimacroUserDirectory()
         # v = os.path.normpath(os.path.expanduser(v))
-        unimacrouserdir = self.isValidPath(v, wantDirectory=1)
-        if unimacrouserdir:
+        uuDir = self.isValidPath(v, wantDirectory=1)
+        if uuDir:
             oldDir = self.isValidPath(oldDir, wantDirectory=1)
-            if oldDir == unimacrouserdir:
-                print(('UnimacroUserDirectory is already set to "%s", Unimacro is enabled'% v))
+            if oldDir == uuDir:
+                print(f'The UnimacroUserDirectory was already set to "{uuDir}", and Unimacro is enabled')
                 return
-                print(('Set UnimacroUserDirectory to %s, enable Unimacro'% v))
             if oldDir:
-                print(('\n-----------\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
-                      'from old UnimacroUserDirectory (%s) to \n' \
-                      'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, unimacrouserdir)))
+                print(f'\n-----------\nChanging your UnimacroUserDirectory\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
+                      'from old: "{oldDir}" to the\n' \
+                      'new UnimacroUserDirectory "{uuDir}"\n--------\n')
             self.userregnl.set(key, v)
+            
+            self.UnimacroUserDirectory = uuDir
+            
+            # clear this one, in order to refresh next time it is called:
+            self.UnimacroGrammarsDirectory = None
+            
             self.userregnl.delete('Old'+key)
+            print(f'Enable Unimacro, and set UnimacroUserDirectory to {uuDir}')
             return
-        else:
-            mess = 'not a valid directory: %s, '% v
+        mess = f'natlinkconfigfunctions, could not Enable Unimacro, and set the UnimacroUserDirectory to "{v}"'
         return mess
 
-
-    def clearUnimacroUserDir(self):
+    def clearUnimacroUserDirectory(self):
         """clear but keep previous value"""
         key = 'UnimacroUserDirectory'
         oldValue = self.userregnl.get(key)
+        self.UnimacroUserDirectory = ""
+
+        ## also clear this one:
+        self.UnimacroGrammarsDirectory = ""
+
         self.userregnl.delete(key)
         oldDirectory = self.isValidPath(oldValue)
         if oldDirectory:
             keyOld = 'Old' + key
             self.userregnl.set(keyOld, oldValue)
         else:
-            print('UnimacroUserDirectory was already cleared, Unimacro remains disabled')
-
+            print('- UnimacroUserDirectory seems to be already cleared, Unimacro remains disabled')
+            
     def setUnimacroIniFilesEditor(self, v):
         key = "UnimacroIniFilesEditor"
         exefile = self.isValidPath(v, wantFile=1)
         if exefile and v.endswith(".exe"):
             self.userregnl.set(key, v)
             self.userregnl.delete("Old"+key)
-            print(('Set UnimacroIniFilesEditor to "%s"'% v))
+            try:
+                del self.UnimacroIniFilesEditor
+            except AttributeError:
+                pass
+            self.UnimacroIniFilesEditor = v
+            print(f'natlinkconfigfunctions, Set UnimacroIniFilesEditor to {v}')
         else:
-            print(('not a valid .exe file: %s'% v))
+            print(f'natlinkconfigfunctions, setUnimacroIniFilesEditor, not a valid .exe file: "{v}')
 
     def clearUnimacroIniFilesEditor(self):
         key = "UnimacroIniFilesEditor"
@@ -1102,11 +1108,14 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         Also sets the pythonpath in the HKLM pythonpath section
         """
         # give fatal error if Python is not OK...
-        dummy1, dummy2 = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        result = self.getRegistryPythonPathNatlink()
+        if result:
+            natlinkvalue, hivekey, pythonpathkey = result
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
         if not (pythonVersion and len(pythonVersion) == 2):
-            fatal_error('not a valid python version found: |%s|'% pythonVersion)
+            fatal_error('not a valid python version found: |%s|'%
+                        pythonVersion)
 
         # for safety unregister always:
         # print 'first unregister, just to be sure...'
@@ -1183,7 +1192,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     def unregisterNatlinkPyd(self, silent=1):
         """unregister explicit, should not be done normally
         """
-        dummy, dummy = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
+        # dummy, dummy = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
         pythonVersion = self.getPythonVersion()
         PydPath = os.path.join(coreDir, 'natlink.pyd')
 
@@ -1197,7 +1206,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             # pass this step if it does not succeed:
             # dll = ctypes.windll[PydPath.replace("\\", "/")]
             print(PydPath)
-            dll = ctypes.windll.LoadLibrary(PydPath.replace("\\", "/"))
+            dll = ctypes.windll.LoadLibrary(PydPath) ###.replace("\\", "/"))
             result = dll.DllUnregisterServer()
             if result != 0:
                 print(('could not unregister %s'% PydPath))
@@ -1209,8 +1218,12 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         except:
             traceback.print_exc()
         finally:
-            handle = dll._handle # obtain the DLL handle
-            result2 = ctypes.windll.kernel32.FreeLibrary(handle)
+            try:
+                result = result2 = 0
+                handle = dll._handle # obtain the DLL handle
+                result2 = ctypes.windll.kernel32.FreeLibrary(handle)
+            except:
+                pass
 
         if result2 != 1:
             print(('could not free the link to %s'% PydPath))
@@ -1769,15 +1782,19 @@ Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro dire
 
     # Unimacro User directory and Editor or Unimacro INI files-----------------------------------
     def do_o(self, arg):
+        if not arg.strip():
+            print('natlinkconfigfunctions, enable Unimacro, needs the UnimacroUserDirectory to be passed')
+            return
         arg = self.stripCheckDirectory(arg)  # also quotes
         if not arg:
+            print(f'natlinkconfigfunctions, enable Unimacro, needs a valid (UnimacroUserDirectory) to be passed, not: {arg}')
             return
-        self.config.setUnimacroUserDir(arg)
+        self.config.setUnimacroUserDirectory(arg)
 
     def do_O(self, arg):
-        self.message = "Clearing Unimacro user directory, and disable Unimacro"
-        print(('do action: %s'% self.message))
-        self.config.clearUnimacroUserDir()
+        self.message = "Clearing UnimacroUserDirectory, and disable Unimacro"
+        print(('natlinkconfigfunctions: %s'% self.message))
+        self.config.clearUnimacroUserDirectory()
 
     def help_o(self):
         print(('-'*60))
@@ -1911,12 +1928,12 @@ the Global Clients section of nssystem.ini.
             return
         self.message =  'Set VocolaUserDirectory to "%s" and enable Vocola'% arg
         print(('do action: %s'% self.message))
-        self.config.setVocolaUserDir(arg)
+        self.config.setVocolaUserDirectory(arg)
 
     def do_V(self, arg):
         self.message = "Clear VocolaUserDirectory and (therefore) disable Vocola"
         print(('do action: %s'% self.message))
-        self.config.clearVocolaUserDir()
+        self.config.clearVocolaUserDirectory()
 
     def help_v(self):
         print(('-'*60))
@@ -2228,11 +2245,11 @@ if __name__ == "__main__":
             pass
         except ElevationError:
             e = sys.exc_info()[1]
-            print(('please run this program in elevated mode (%s).'% e.message))
+            print(f'For some functions you need to run this program in elevated mode\n-- {e.message}')
             cli.do_q("dummy")
         except NatSpeakRunningError:
             e = sys.exc_info()[1]
-            print(('Dragon should not be running, %s.'% e.message))
+            print(f'Dragon should not be running for the function you choosed\n-- {e.message}')
     else:
       _main()
 
