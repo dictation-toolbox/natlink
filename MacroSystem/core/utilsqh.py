@@ -2279,7 +2279,7 @@ def getFileDate(fileName):
     # 1072694718 (not testable, changes all the time!)
     """
     try:
-        return int(round(os.path.getmtime(fileName)))
+        return int(round(os.path.getmtime(str(fileName))))
     except os.error:
         return 0
 

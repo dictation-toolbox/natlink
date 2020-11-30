@@ -18,7 +18,8 @@ import win32file
 import fnmatch
 # for extended environment variables:
 from win32com.shell import shell, shellcon
-
+import time
+import datetime
 
 ## environment variables:
 reEnv = re.compile('(%([a-z0-9_]+)%)', re.I)
@@ -779,6 +780,31 @@ True
         """
         return self.name
 
+    def mtime(self):
+        """give last modified time of path
+        (doctest, see touch)
+        """
+        if self.exists():
+            return self.stat().st_mtime
+        else:
+            return 0
+
+    def mtimestr(self, format=None):
+        """give last modified time of path in date format
+        
+        pass in a format if you want different from '%Y-%m-%d-%H:%M'
+        
+        (doctest, see touch)
+        """
+        if format is None:
+            format = '%Y-%m-%d-%H:%M'
+        if self.exists():
+            t = self.stat().st_mtime
+            t_str = datetime.datetime.fromtimestamp(t).strftime(format)
+            return t_str
+        else:
+            return 'file does not exist'
+
     def relpath(self, startPath):
         """get relative path, starting with startPath
         
@@ -966,19 +992,54 @@ c:\windows\speech
             else:
                 (self/f).copy(outPath/f)
 
-    def touch(self):
-        """mark file or touch date
+    def touch(self, mode=0o666, exist_ok=True):
+        """create file or touch file.
         
-        # >>> p = path(getValidPath('(C|D)/projects/unittest/aaa.txt'))
-        # >>> p.touch()
-        # >>> p.isfile()
-        # True
-        # >>> p.remove()
-        # >>> p.isfile()
-        # False
+        Directories are not created...
+        
+        >>> p = path('C:/projects/unittest/aaa.txt')
+        >>> p.touch()
+        touch, C:/Projects/unittest/aaa.txt created
+        >>> p.isfile()
+        True
+        >>> first = p.mtime()
+        >>> now = datetime.datetime.now()
+        >>> nowstr = f'{now:%Y-%m-%d-%H:%M}'
+        >>> p.mtimestr() == nowstr
+        True
+        >>> print(f'touched right now: {time.time() - first:.1f}')
+        touched right now: 0.0
+        >>> time.sleep(1)
+        >>> p.touch()
+        touch, touched C:/Projects/unittest/aaa.txt, previous mtime was 1 seconds ago
+        >>> second = p.mtime()
+        >>> print(f'{second - first:.0f}')
+        1
+        >>> p.remove()
+        >>> p.isfile()
+        False
+        >>> p.mtime()
+        0
+        >>> p.mtimestr()
+        'file does not exist'
         """
-        touch(self)
-
+        if self.exists():
+            if self.isfile():
+                t_before = self.mtime()
+                super().touch(mode=mode, exist_ok=True)
+                t_after = self.mtime()
+                diff = t_after - t_before
+                if diff:
+                    print(f'touch, touched {self}, previous mtime was {diff:.0f} seconds ago')
+                else:
+                    print(f'touch did not work: {self}')
+            else:
+                print(f'pathqh, no touch for directory: {self}')
+        else:
+            super().touch(mode=mode, exist_ok=False)
+            # t = self.mtime()
+            print(f'touch, {self} created')
+            
     def chdir(self):
         """change directory
 
@@ -2096,8 +2157,6 @@ def collectTifFiles(arg, dir, files):
             # in case .PSD instead of .psd:
             dirplusf.replaceExt(ext)
             arg.append(dirplusf)
-
-
 
 ## for sitegen, also used in Unimacro, folders grammar (for sites, QH specific) and virtualdrive mechanism
 ## test! TODOQH

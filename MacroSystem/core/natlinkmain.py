@@ -320,7 +320,7 @@ def loadFile(modName, origPath=None, origDate=None):
                 fndFile.close()
                 return origPath, origDate
         if debugLoad:
-            print("Reloading", modName)
+            print(f'Reloading {modName}')
 
         # if we know we are reloading a module, we call the unload function
         # in that module first to release all objects
@@ -330,7 +330,8 @@ def loadFile(modName, origPath=None, origDate=None):
             # not a Python source file
             fndFile.close()
             return None
-        if debugLoad: print(("Loading", modName)) 
+        if debugLoad:
+            print(f'Loading {modName}') 
 
     if modName in wrongFiles:
         wrongPath, sourceDate = wrongFiles[modName]
@@ -470,7 +471,7 @@ def findAndLoadFiles(curModule=None):
     doVocolaFirstModuleName = doVocolaFirst + '.py'
     if VocolaDirFiles and doVocolaFirstModuleName in VocolaDirFiles:
         if debugLoad:
-            print("natlinkmain, load {doVocolaFirst}")
+            print(f'natlinkmain, load {doVocolaFirst}')
         x = doVocolaFirst
         loadedFile = loadedFiles.get(x, None)
         if loadedFile:
@@ -496,8 +497,8 @@ def findAndLoadFiles(curModule=None):
                 nVocolaGrammars += 1
                 modName = res.group(1)
                 addToFilesToLoad( filesToLoad, modName, vocolaGrammarsDirectory, moduleHasDot )
-        if debugLoad or nVocolaGrammars:
-            print(f"natlinkmain: {nVocolaGrammars} Vocola Compiled grammars to load")
+        if debugLoad and nVocolaGrammars:
+            print(f"natlinkmain: {nVocolaGrammars} Vocola Compiled grammars checking to load")
     else:
         vocolaGrammarFiles = []
 
@@ -510,8 +511,8 @@ def findAndLoadFiles(curModule=None):
             addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
 
     keysToLoad = list(filesToLoad.keys())
-    if len(keysToLoad) or debugLoad:
-        print(f'natlinkmain: {len(keysToLoad)} grammars to load')
+    if len(keysToLoad) and debugLoad:
+        print(f'natlinkmain: {len(keysToLoad)} grammars checking load')
     for x in keysToLoad:
         if x == doVocolaFirst:
             continue
@@ -677,7 +678,6 @@ def setSearchImportDirs():
 
 #
 # When a new utterance begins we check all the loaded modules for changes.
-# After that, we check to see whether we have to load a new module based on
 # the currently active Windows executable.
 #
 # If reloading a module fails, we do not remove it from the list of modules
