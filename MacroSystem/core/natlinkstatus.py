@@ -345,7 +345,7 @@ class NatlinkStatus:
                 print('''Natlink setting not found in Natlink section of PythonPath setting\n
 Please try to correct this by running the Natlink Config Program (with administration rights)\n''')
                 return
-            natlinkvalue, hivekey, pythonpathkey = result
+            natlinkvalue, pythonpathkey = result
             if not natlinkvalue:
                 print(f'''Natlink setting not found in Natlink section of PythonPath setting {pythonpathkey} in registry\n
 Please try to correct this by running the Natlink Config Program (with administration rights)''')
@@ -455,56 +455,75 @@ Please try to correct this by running the Natlink Config Program (with administr
         if hive == winreg.HKEY_CURRENT_USER: return 'HKCU'
         return 'HK??'
 
+    def getRegistryPythonPathKey(self, silent=True):
+        """returns the key to PythonPath setting in the registry
+        
+        This must be a 32-bit python version as given by sys.winver
+        
+        flag is winreg.KEY_READ (always read only) and KEY_WOW64_32KEY
+        
+        Returns the key, which can come from either
+        CURRENT_USER (python installed for one user) or
+        LOCAL_MACHINE (python installed for all users)
+        
+        """
+        dottedVersion = sys.winver
+        
+        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
+        for hive in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
+            key, flags = (pythonPathSectionName, winreg.KEY_WOW64_32KEY | winreg.KEY_READ)
+            try:
+                pythonpath_key = winreg.OpenKeyEx(hive, key, access= flags)
+                if pythonpath_key:
+                    return pythonpath_key
+            except FileNotFoundError:
+                continue
+            print(f'no valid PythonPath/Natlink key found in registry')
+            return
+
     def getRegistryPythonPathNatlink(self, flags=winreg.KEY_READ, silent=True):
         """returns the path-to-core of Natlink and the PythonPath key in the registry
         
         returns a tuple (path-to-core, key-to-pythonpath-setting)
         
         if no Natlink key found, or no path, "" is returned
-        if no PythonPath setting is found, "", "" is returned
+        if no PythonPath setting is found, None is return
 
         by default read only.
         When setting the value, from natlinkconfigfunctions,
         pass winreg.KEY_ALL_ACCESS as flags.
 
         """
-        # version = self.getPythonVersion()
-        # if not version:
-        #     fatal_error("no valid Python version available")
-        #     return None, None
-        # dottedVersion = version[0] + "." + version[1]
-        dottedVersion = sys.winver
-        
-        pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
-        for hive in (winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER):
-            key, wowflags = (pythonPathSectionName, winreg.KEY_WOW64_32KEY)
+        pythonpath_key = self.getRegistryPythonPathKey()
+        if not pythonpath_key:
+            print('no valid pythonpath key in registry found')
+            return
+        for i in range(10):
             try:
-                with winreg.OpenKeyEx(hive, key, access= flags | wowflags) as pythonpath_key:
+                keyName = winreg.EnumKey(pythonpath_key, i)
+                if keyName.lower() == 'natlink':
+                    natlink_key = winreg.OpenKey(pythonpath_key, keyName)
                     for i in range(10):
-                        try:
-                            keyName = winreg.EnumKey(pythonpath_key, i)
-                            if keyName.lower() == 'natlink':
-                                natlink_key = winreg.OpenKey(pythonpath_key, keyName)
-                                for i in range(10):
-                                    Value = winreg.EnumValue(natlink_key, i)
-                                    # print(f'values: {i}, {Value}')
-                                    break
-                                else:
-                                    print(f'no valid Natlink entry found in registry section {pythonPathSectionName} of {self.getHiveKeyReadable(hive)}')
-                                    raise FileNotFoundError
-                                
-                                if type(Value) == tuple and len(Value) == 3:
-                                    pythonpath = Value[1]
-                                    if not silent:
-                                        print(f'Natlink entry found in registry section "{pythonPathSectionName}" of "{self.getHiveKeyReadable(hive)}": "{pythonpath}"')
-                                    return pythonpath, hive, pythonPathSectionName
-                        except OSError:
-                            print(f'no pythonpath/natlink key found')
-                            return '', hive, pythonpath_key
-            except FileNotFoundError:
-                continue
-            print(f'no valid PythonPath/Natlink key found in registry')
-            return "", "", ""
+                        Value = winreg.EnumValue(natlink_key, i)
+                        # print(f'values: {i}, {Value}')
+                        break
+                    else:
+                        print(f'no valid Natlink entry found in registry section "Natlink"')
+                        raise FileNotFoundError
+                    
+                    if type(Value) == tuple and len(Value) == 3:
+                        pythonpath = Value[1]
+                        natlinkmainPath = os.path.join(pythonpath, "natlinkmain.py")
+                        if os.path.isfile(natlinkmainPath):
+                            if not silent:
+                                print(f'Natlink entry found in registry section "Natlink": "{pythonpath}"')
+                            return pythonpath, natlink_key
+                        else:
+                            print(f'no valid Natlink entry found in registry section "Natlink": {pythonpath}, does not contain "natlinkmain.py"')
+                            raise FileNotFoundError
+                            
+            except OSError:
+                return 
         
     def InsertToSysPath(self, newdir):
         """leave "." in the first place if it is there"""
@@ -1016,16 +1035,39 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     if nssystem.ini is set, but nsapps.ini is NOT, there is an error, return None and a
     warning message, UNLESS silent = 1.
+    
+    Also check if the registry is set properly...
 
         """
+        try:
+            isEnabled = self.cache_NatlinkIsEnabled
+        except AttributeError:
+            pass
+        else:
+            return self.cache_NatlinkIsEnabled
+
+        result = self.getRegistryPythonPathNatlink()
+        if not result:
+            self.cache_NatlinkIsEnabled = False
+            return   ## registry setting not of pythonpath to core directory is not OK
+        coredir_from_registry, registry_key = result
+        
         if self.DNSInstallDir == -1:
+            self.cache_NatlinkIsEnabled = False
             return
         if self.DNSIniDir == -1:
+            self.cache_NatlinkIsEnabled = False
             return
         if not self.CoreDirectory:
+            self.cache_NatlinkIsEnabled = False
             return
+        if self.CoreDirectory.lower() != coredir_from_registry.lower():
+            self.cache_NatlinkIsEnabled = False
+            return
+            
         nssystemini = self.getNSSYSTEMIni() or ''
         if not os.path.isfile(nssystemini):
+            self.cache_NatlinkIsEnabled = False
             return 0
             # raise IOError("NatlinkIsEnabled, not a valid file: %s"% nssystemini)
         actual1 = win32api.GetProfileVal(self.section1, self.key1, "", nssystemini)
@@ -1038,6 +1080,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if self.value1 == actual1:
             if self.value2 == actual2:
                 # enabled:
+                self.cache_NatlinkIsEnabled = True
                 return 1
             else:
                 #
@@ -1049,19 +1092,25 @@ Please try to correct this by running the Natlink Config Program (with administr
                       '    should have value: %s'% self.value2]
                 if not silent:
                     self.warning(mess)
+                
+                self.cache_NatlinkIsEnabled = False
                 return None # error!
         elif actual1:
             if not silent:
                 self.warning("unexpected value of nssystem.ini value: %s"% actual1)
             # unexpected value, but not enabled:
+            self.cache_NatlinkIsEnabled = False
             return 0
         else:
             # GUID in nsapps may be defined, natspeak first checks nssystem.ini
             # so Natlink NOT enabled
+            self.cache_NatlinkIsEnabled = False
             return 0
         self.warning("unexpected, natlinkstatus should not come here!")
+        self.cache_NatlinkIsEnabled = False
         return None
 
+        
 
     def warning(self, text):
         "to be overloaded in natlinkconfigfunctions and configurenatlink"
