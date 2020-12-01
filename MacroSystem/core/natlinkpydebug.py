@@ -54,10 +54,12 @@ def start_dap():
         __debugger = dap
 
         if __natLinkPythonDebugOnStartupVar in os.environ:
-            dos_str=os.environ[__natLinkPythonDebugPortEnviornmentVar]
+            dos_str=os.environ[__natLinkPythonDebugOnStartupVar]
             dos=len(dos_str)==1 and dos_str in ["YyTt"]
-            print(f"Waiting for DAP debugger to attach now as {__natLinkPythonDebugOnStartupVar} is set to {dos_str}")
-            debugpy.wait_for_client()
+
+            if dos:
+                print(f"Waiting for DAP debugger to attach now as {__natLinkPythonDebugOnStartupVar} is set to {dos_str}")
+                debugpy.wait_for_client()
 
 
     except Exception as ee:
