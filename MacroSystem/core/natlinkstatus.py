@@ -1304,9 +1304,14 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def getVocolaDirectory(self):
         if not self.VocolaDirectory is None: return self.VocolaDirectory
-        vDir = path(self.NatlinkDirectory)/".."/"Vocola"
-        if not vDir.isdir():
-            print(f'not in git clone area, VocolaDirectory (NatlinkDirectory is in {self.NatlinkDirectory}).')
+        vDir1 = path(self.NatlinkDirectory)/".."/"Vocola"
+        vDir2 = path(self.NatlinkDirectory)/".."/"Vocola2"
+        if vDir1.isdir():
+            vDir = vDir1
+        elif vDir2.isdir():
+            vDir = vDir2
+        else:
+            print(f'not in git clone area, VocolaDirectory (called "Vocola" or "Vocola2" (NatlinkDirectory is in {self.NatlinkDirectory}).')
             vDir = ""
         if vDir:
             controlGrammar = vDir/"_vocola_main.py"
