@@ -1204,7 +1204,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
         uDir = path(self.NatlinkDirectory)/".."/"Unimacro"
         if not uDir.isdir():
-            print("not in git clone area, Unimacro Directory")
+            print(f'not in git clone area, UnimacroDirectory (NatlinkDirectory is in {self.NatlinkDirectory}).')
             uDir = ""
         if uDir:
             controlGrammar = uDir/"_control.py"
@@ -1306,7 +1306,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.VocolaDirectory is None: return self.VocolaDirectory
         vDir = path(self.NatlinkDirectory)/".."/"Vocola"
         if not vDir.isdir():
-            print("not in git clone area, Vocola Directory")
+            print(f'not in git clone area, VocolaDirectory (NatlinkDirectory is in {self.NatlinkDirectory}).')
             vDir = ""
         if vDir:
             controlGrammar = vDir/"_vocola_main.py"
