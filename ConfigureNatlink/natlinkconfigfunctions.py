@@ -53,6 +53,8 @@ import sys
 import pywintypes
 import traceback
 import types
+import ctypes
+
 
 def lookForCoreDirectory():
     thisDir = os.path.split(__file__)[0]
@@ -107,7 +109,6 @@ try:
         """
         MessageBox(message, title)
 except:
-    import ctypes
     MessageBoxA = ctypes.windll.user32.MessageBoxA
     def windowsMessageBox(message, title="Natlink configure program"):
         """do messagebox from windows, no wx needed
@@ -878,7 +879,7 @@ Natlink is now disabled.
                 raise
 
         result = self.NatlinkIsEnabled(silent=1)
-        if result is None:
+        if (result is None) or (not result):
             nsappsini = self.getNSAPPSIni()
             section2 = self.section2
             key2 = self.key2
