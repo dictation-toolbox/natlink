@@ -1200,9 +1200,12 @@ Please try to correct this by running the Natlink Config Program (with administr
         This directory needs to be included in the load directories list of James' natlinkmain
         (August 2020)
 
+        note that if using unimacro from a git clone area Unimacro will be in a /src subdirectory.
+        when installed as  a package, that will not be the case.
+
         """
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
-        uDir = path(self.NatlinkDirectory)/".."/"Unimacro"
+        uDir = path(self.NatlinkDirectory)/".."/"Unimacro/src/unimacro"
         if not uDir.isdir():
             print(f'not in git clone area, UnimacroDirectory (NatlinkDirectory is in {self.NatlinkDirectory}).')
             uDir = ""
@@ -1304,8 +1307,8 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def getVocolaDirectory(self):
         if not self.VocolaDirectory is None: return self.VocolaDirectory
-        vDir1 = path(self.NatlinkDirectory)/".."/"Vocola"
-        vDir2 = path(self.NatlinkDirectory)/".."/"Vocola2"
+        vDir1 = path(self.NatlinkDirectory)/".."/"Vocola/src/vocola2"
+        vDir2 = path(self.NatlinkDirectory)/".."/"Vocola2/src/vocola2"
         if vDir1.isdir():
             vDir = vDir1
         elif vDir2.isdir():
