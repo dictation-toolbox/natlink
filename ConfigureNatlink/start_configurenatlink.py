@@ -34,12 +34,10 @@ Exception Details:\n{e}''')
 try:
     import natlinkconfigfunctions
 except ImportError:
-    print('Unable to start the configuration program of Natlink/Unimacro/Vocola:')
-    print('the python module natlinkconfigfunctions.py gives an error.')
-    print()
-    print('Please report this error message to the Natlink developers,')
-    print('preferably to q.hoogenboom@antenna.nl')
-    print()
+    print('''Unable to start the configuration program of Natlink/Unimacro/Vocola:\n
+the python module natlinkconfigfunctions.py gives an error.\n
+Please report this error message to the Natlink developers,\n
+preferably to q.hoogenboom@antenna.nl\n''')
     import traceback
     traceback.print_exc()
 
