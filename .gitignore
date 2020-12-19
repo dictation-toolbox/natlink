@@ -83,3 +83,7 @@ MacroSystem/*_vcl.py
 
 #flit build stuff
 /natlinkdev/dist
+
+
+#ConfigureNatlink Error 
+/ConfigureNatlink/configurenatlink_error.txt
