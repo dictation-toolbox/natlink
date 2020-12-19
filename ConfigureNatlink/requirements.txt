@@ -8,5 +8,5 @@ future
 ###### Requirements with Version Specifiers ######`
 flit_core >=3,<4
 flit >= 3.0.0
-wxpython >= 4.1.1
-pywin32 >= 300
+wxpython = 4.0.7; python_version>3.7
+pywin32 >= 300; 
