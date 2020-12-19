@@ -1,0 +1,23 @@
+[build-system]
+requires = [
+	"flit_core >=3,<4",
+	"wxpython >= 4.1.1",
+	"pywin32 >= 300",
+	"debugpy",
+	"six",
+	"wheel",
+	"future",
+    "flit >= 3.0.0"
+]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "natlinkdev"
+author = "Doug Ransom"
+author-email = "doug.ransom@gmail.com"
+home-page = "https://qh.antenna.nl/unimacro/installation/installationexperimentalversionpython3.html"
+
+ 	
+	
+
+	
