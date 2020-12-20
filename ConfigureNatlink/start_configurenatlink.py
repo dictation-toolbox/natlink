@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import re
 
 #
 print('Starting start_configurenatlink.py,')
@@ -9,54 +10,34 @@ print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode.
 print()
 
 if sys.version.find("64 bit") >= 0:
-    print('=============================================')
-    print('You run this module from a 64 bit version of Python.')
-    print('Natlink cannot run with this version, please be sure to ')
-    print('install a 32 bit version of python, and run from there.')
-    print('See https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
-    print('=============================================')
+    print('''=============================================\n
+You run this module from a 64 bit version of Python.\n
+Natlink cannot run with this version, please be sure to \n
+install a 32 bit version of python, and run from there.\n
+See https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html\n
+=============================================''')
     time.sleep(30)
     sys.exit()
 
 try:
     import wx
-except (KeyError, ModuleNotFoundError):
-    print('Unable to run the GUI configuration program of Natlink/Unimacro/Vocola')
-    print('because module wx was not found.  This probably')
-    print('means that wxPython is not installed correct:')
-    print()
-    print('Please try to install wxPython via pip, see https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
-    print()
-    print('You can also try to run start_natlinkconfigfunctions.py,')
-    print('via Start, Configure Natlink via Command Line Interface')
-    # time.sleep(30)
-    sys.exit()
-
-try:
     from win32api import ShellExecute, GetVersionEx
-except ImportError:
-    print('Unable to start the configuration program of Natlink/Unimacro/Vocola')
-    print('because the module "win32api" is not found.  This probably')
-    print('means that the win32 extensions package, pywin32, is not installed (properly).')
-    print()
-    print('Please try to install pywin32 via pip, see https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html')
-    print()
-    print('In some rare cases this install did not finish correct.')
-    print('You can then try to run the batch script "start_postinstallscript_pywin32.cmd" in')
-    print('Admin mode, in order to finish the installation. Hopefully this helps.')
-    print(f'This file can be found in the "{thisDir}" directory.')
-    # time.sleep(30)
+except (Exception, e):
+    print(f'''Unable to run the GUI configuration program of Natlink/Unimacro/Vocola\n
+because a module was not found.  An error occurred during import.  This is probably due to a missing or incorrect prequisite.\n
+Please run 'pip install -r requirements.txt in {thisDir}\n
+More information https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html\n\n
+Exception Details:\n{e}''')
+    time.sleep(30)
     sys.exit()
 
 try:
     import natlinkconfigfunctions
 except ImportError:
-    print('Unable to start the configuration program of Natlink/Unimacro/Vocola:')
-    print('the python module natlinkconfigfunctions.py gives an error.')
-    print()
-    print('Please report this error message to the Natlink developers,')
-    print('preferably to q.hoogenboom@antenna.nl')
-    print()
+    print('''Unable to start the configuration program of Natlink/Unimacro/Vocola:\n
+the python module natlinkconfigfunctions.py gives an error.\n
+Please report this error message to the Natlink developers,\n
+preferably to q.hoogenboom@antenna.nl\n''')
     import traceback
     traceback.print_exc()
 
@@ -72,8 +53,11 @@ try:
         openpar = "runas"
     else:
         openpar = "open"
+    #python and pythonw.exe may be in a scripts directory in virtualenvs.  
+    #to find the path of the python executable, 
+    pathToPythonExecutables="\\".join(sys.executable.split('\\')[0:-1])
 
-    pathToPythonW = os.path.join(sys.prefix, "pythonw.exe")
+    pathToPythonW = f"{pathToPythonExecutables}\\pythonw.exe" 
     if not os.path.isfile(pathToPythonW):
         print("cannot find the Pythonw exectutable: %s"% pathToPythonW)
         # time.sleep(30)

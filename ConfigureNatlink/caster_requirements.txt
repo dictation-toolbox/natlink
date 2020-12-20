@@ -1,0 +1,10 @@
+#requirements for caster, in addition to those for natlink (see requirements.txt)
+###### Requirements without Version Specifiers ######
+dragonfly2 
+tomlkit 
+mock 
+appdirs 
+scandir 
+pyvda
+
+###### Requirements with Version Specifiers ######`

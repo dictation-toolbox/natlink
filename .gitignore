@@ -80,3 +80,10 @@ MacroSystem/*_vcl.py
 /MacroSystem/core/error_info_natlink_grammar.txt
 /PyTest/nsformattestresult.txt
 /Vocola/extensions/extensions.csv
+
+#flit build stuff
+/natlinkdev/dist
+
+
+#ConfigureNatlink Error 
+/ConfigureNatlink/configurenatlink_error.txt
