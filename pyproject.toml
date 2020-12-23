@@ -10,9 +10,13 @@ home-page = "https://github.com/dictation-toolbox/unimacro"
 description-file = "README.md"
 
 requires=["wxPython >=4.1.1",
-		  "debugypy > 1.2.0",
-		  "pywin32 >= 300"]
-		  
+		  "debugpy >= 1.2.0",
+		  "pywin32 >= 300",
+		  "debugpy",
+		  "six",
+		  "wheel",
+		  "future"]
+	  
 		
 classifiers=[	"Development Status :: 4 - Beta",
 				"Topic :: Multimedia :: Sound/Audio :: Speech",
