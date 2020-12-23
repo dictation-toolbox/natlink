@@ -55,10 +55,16 @@ import traceback
 import types
 import ctypes
 
+#the core directory is now storend in "natlink/core" rather than "MacroSystem/Core"
+#beause the Python packaing will make more sense.   
+
+core_parent = "natlink"
+
+
 
 def lookForCoreDirectory():
     thisDir = os.path.split(__file__)[0]
-    CoreDirRelative = os.path.normpath(os.path.join(thisDir, '..', 'MacroSystem', 'Core'))
+    CoreDirRelative = os.path.normpath(os.path.join(thisDir, '..', core_parent, 'Core'))
     if os.path.isdir(CoreDirRelative):
         yield CoreDirRelative
     CoreDirRelativeNew = os.path.normpath(os.path.join(thisDir, '..', 'Core'))
@@ -70,7 +76,7 @@ def lookForCoreDirectory():
     if programFilesDir and os.path.isdir(programFilesDir):
         natlinkDir = os.path.join(programFilesDir, 'Natlink')
         if os.path.isdir(natlinkDir):
-            CoreDir = os.path.normpath(os.path.join(natlinkDir, 'MacroSystem', 'Core'))
+            CoreDir = os.path.normpath(os.path.join(natlinkDir, core_parent, 'Core'))
             if os.path.isdir(CoreDir):
                 yield CoreDir
             CoreDirNew = os.path.normpath(os.path.join(natlinkDir, 'Core'))
@@ -166,7 +172,7 @@ def getCoreDir(thisDir):
     If not found like this, prints a line and returns thisDir
     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
     """
-    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
+    coreFolder = os.path.normpath( os.path.join(thisDir, '..', core_parent, 'core') )
     print(('coreDirectory: %s'% coreFolder))
     if not os.path.isdir(coreFolder):
         print(('not a directory: %s'% coreFolder))
