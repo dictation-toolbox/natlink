@@ -81,9 +81,10 @@ fabric.properties
 cli_install/build
 cli_install/dist
 cli_install/*.spec
-# Natlink MacroSystem
-MacroSystem/*_vcl.py
-/MacroSystem/core/error_info_natlink_grammar.txt
+# Natlink MacroSystem (now in src/natlink/core)
+src/*_vcl.py
+/src/core/error_info_natlink_grammar.txt
+**/configurenatlink_error.txt
 /PyTest/nsformattestresult.txt
 /Vocola/extensions/extensions.csv
 
@@ -93,3 +94,4 @@ MacroSystem/*_vcl.py
 
 #ConfigureNatlink Error 
 /ConfigureNatlink/configurenatlink_error.txt
+/configurenatlink_error.txt
