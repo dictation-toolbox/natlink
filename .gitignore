@@ -4,7 +4,13 @@
 **.pyc
 **/natlink.pyd
 **/natlinkstatus.ini
+
 MacroSystem/_**
+
+
+.vscode/launch.json
+/dist
+
 
 # User-specific stuff
 .idea/**/workspace.xml
