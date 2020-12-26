@@ -71,6 +71,10 @@ getUserDirectory: get the Natlink user directory,
     Especially Dragonfly users will use this directory for putting their grammar files in.
     Also users that have their own custom grammar files can use this user directory
 
+getDictationToolboxDirectory:  
+    when developing, this points to dictation toolbox, below which natlink, vocola, unimacro
+    should be cloned.  
+
 getUnimacroDirectory: get the directory where the Unimacro system is.
     When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped). This grammar will (and should) hold the _control.py grammar
     and needs to be included in the load directories list of James' natlinkmain
@@ -1171,6 +1175,9 @@ Please try to correct this by running the Natlink Config Program (with administr
         if userDir:
             return 1
 
+    def getDictationToolboxDirectory(self):
+        return str(PurePath(self.getBaseDirectory()).parents[2])
+
     def getUnimacroUserDirectory(self):
         if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
         key = 'UnimacroUserDirectory'
@@ -1206,11 +1213,13 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         """
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
-        nd=PurePath(self.NatlinkDirectory)
+        dtb_dir = PurePath(self.getDictationToolboxDirectory())
         print("Get Unimacro directory")
-        uDir = path(str(nd.joinpath("Unimacro/src/unimacro")))
-        if not uDir.isdir():
-            print(f'not in git clone area, UnimacroDirectory (NatlinkDirectory is in {self.NatlinkDirectory}).')
+        uDirPath =dtb_dir.joinpath("Unimacro/src/unimacro")
+
+        uDir = path(str(uDirPath))
+        if not os.path.exists(uDirPath):
+            print(f'{uDir} not in git clone area, dictation toolbox dir is {dtb_dir}.')
             uDir = ""
         if uDir:
             print(f"UDir {uDir}")
@@ -1311,19 +1320,22 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def getVocolaDirectory(self):
         if not self.VocolaDirectory is None: return self.VocolaDirectory
-        vDir1 = path(self.NatlinkDirectory)/".."/"Vocola/src/vocola2"
-        vDir2 = path(self.NatlinkDirectory)/".."/"Vocola2/src/vocola2"
-        if vDir1.isdir():
+
+        vDir1 = PurePath(self.getDictationToolboxDirectory()) / "Vocola2/src/vocola2"
+        vDir2 = PurePath(self.getDictationToolboxDirectory()) / "Vocola/src/vocola2"
+        if os.path.exists(vDir1):
             vDir = vDir1
-        elif vDir2.isdir():
+        elif os.path.exists(vDir2):
             vDir = vDir2
         else:
-            print(f'not in git clone area, VocolaDirectory (called "Vocola" or "Vocola2" (NatlinkDirectory is in {self.NatlinkDirectory}).')
+            print(f'{vDir1} and {vDir2} not in git clone area, VocolaDirectory (called "Vocola" or "Vocola2" (dication toolbox  is in {self.getDictationToolboxDirectory()}).')
             vDir = ""
         if vDir:
-            controlGrammar = vDir/"_vocola_main.py"
+            print(f"Vocola system dir {vDir} ")
+            controlGrammar= path(str(vDir/"_vocola_main.py"))
+
             if controlGrammar.isfile():
-                self.VocolaDirectory = vDir.normpath()
+                self.VocolaDirectory = str(vDir)
                 self.addToPath(self.VocolaDirectory)
                 return self.VocolaDirectory
 
