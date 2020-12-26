@@ -31,6 +31,7 @@ import os
 import sys
 import re
 import copy
+from pathlib import PurePath
 from win32com.shell import shell, shellcon
 # import win32api
 # for extended environment variables:
@@ -47,13 +48,20 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-##        print 'baseFolder from argv: %s'% baseFolder
+        print( 'baseFolder from argv: %s'% baseFolder)
     elif globalsDictHere['__file__']:
-        baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-##        print 'baseFolder from __file__: %s'% baseFolder
+        print(f"__file__ {__file__}")
+        this_file_folder = str(PurePath(__file__).parent)
+        print(f"this file folder  {this_file_folder}")
+
+        #the based folder is two parents up  to allow qualified imports
+        #like import natlink.core.natlinkcorefunctions.py
+        baseFolder = str(PurePath(__file__).parents[2])
+        print(f"Base folder {baseFolder}")
+        print( 'baseFolder from __file__: %s'% baseFolder)
     if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
-##        print 'baseFolder was empty, take wd: %s'% baseFolder
+        print ('baseFolder was empty, take wd: %s'% baseFolder)
     return baseFolder
 
 # the Natlink Core directory:

@@ -135,7 +135,8 @@ import pywintypes
 import time
 import types
 import inivars
-from pathqh import path   
+from pathqh import path
+from pathlib import PurePath
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -1205,11 +1206,14 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         """
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
-        uDir = path(self.NatlinkDirectory)/".."/"Unimacro/src/unimacro"
+        nd=PurePath(self.NatlinkDirectory)
+        print("Get Unimacro directory")
+        uDir = path(str(nd.joinpath("Unimacro/src/unimacro")))
         if not uDir.isdir():
             print(f'not in git clone area, UnimacroDirectory (NatlinkDirectory is in {self.NatlinkDirectory}).')
             uDir = ""
         if uDir:
+            print(f"UDir {uDir}")
             controlGrammar = uDir/"_control.py"
             if controlGrammar.isfile():
                 try: del self.UnimacroDirectory
