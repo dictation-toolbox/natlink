@@ -51,13 +51,7 @@ def getBaseFolder(globalsDict=None):
         print( 'baseFolder from argv: %s'% baseFolder)
     elif globalsDictHere['__file__']:
         print(f"__file__ {__file__}")
-        this_file_folder = str(PurePath(__file__).parent)
-        print(f"this file folder  {this_file_folder}")
-
-        #the base folder is two parents up  to allow qualified imports
-        #like import natlink.core.natlinkcorefunctions.py
-        baseFolder = str(PurePath(__file__).parents[1])
-        print(f"Base folder {baseFolder}")
+        baseFolder = str(PurePath(__file__).parent)
         print( 'baseFolder from __file__: %s'% baseFolder)
     if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
