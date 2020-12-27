@@ -1223,7 +1223,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         for p in uDirPaths:
             controlGrammar = p / "_control.py"
-            if os.path.exists(p) and os.path.exists(controlGrammar):
+            if os.path.exists(controlGrammar):
                 uDir = str(p)
                 self.UnimacroDirectory=uDir
                 self.addToPath(uDir)
