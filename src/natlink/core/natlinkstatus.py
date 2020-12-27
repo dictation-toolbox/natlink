@@ -1217,34 +1217,21 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
         dtb_dir = PurePath(self.getDictationToolboxDirectory())
         print("Get Unimacro directory")
-        uDirPath =dtb_dir.joinpath("Unimacro/src/unimacro")
+        uDirCloneAreaPath =dtb_dir.joinpath("Unimacro/src/unimacro")
+        uDirSitePackagesPaths = [PurePath(s)/"unimacro"  for s in [site.USER_SITE,site.getsitepackages()[1] ] ]
+        uDirPaths = [uDirCloneAreaPath]+uDirSitePackagesPaths
 
-        uDir = path(str(uDirPath))
-        if not os.path.exists(uDirPath):
-            print(f'{uDir} not in git clone area, dictation toolbox dir is {dtb_dir}.')
-            uDir = ""
-            #try in site packages
-            for s in [site.USER_SITE,site.getsitepackages()[1] ]:
-                site_packages_unimacro_path = PurePath(s)/"unimacro"
-                if os.path.exists(site_packages_unimacro_path):
-                    print(f"Unimacro to be loaded from {site_packages_unimacro_path}")
-                    uDir=str(site_packages_unimacro_path)
-                    break
+        for p in uDirPaths:
+            controlGrammar = p / "_control.py"
+            if os.path.exists(p) and os.path.exists(controlGrammar):
+                uDir = str(p)
+                self.UnimacroDirectory=uDir
+                self.addToPath(uDir)
+                print(f"Unimacro system dir: {p}")
+                return uDir
+        self.UnimacroDirectory=""
+        return self.UnimacroDirectory
 
-        if uDir:
-            print(f"Unimacro {uDir}")
-            controlGrammar = path(uDir)/"_control.py"
-            if controlGrammar.isfile():
-                try: del self.UnimacroDirectory
-                except AttributeError: pass
-                self.UnimacroDirectory = uDir
-                self.addToPath(self.UnimacroDirectory)
-                return self.UnimacroDirectory
-        ## not found:
-        try: del self.UnimacroDirectory
-        except AttributeError: pass
-        self.UnimacroDirectory = ""
-        return ""
         
     def getUnimacroGrammarsDirectory(self):
         """return the path to the directory where the ActiveGrammars of Unimacro are located.
