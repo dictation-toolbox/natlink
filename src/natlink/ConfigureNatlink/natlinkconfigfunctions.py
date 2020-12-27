@@ -67,7 +67,8 @@ from pathlib import WindowsPath
 
 def CoreDirectory():
     """Returns the CoreDirectory as a pathlib.path"""
-    thisDir=WindowsPath(__file__).parent
+    thisDir=WindowsPath(__file__).parent.resolve()
+    print(f"this dir {thisDir}")
     coreDir=thisDir.parent/"MacroSystem/core"
     return coreDir
 
