@@ -141,6 +141,8 @@ import types
 import inivars
 from pathqh import path
 from pathlib import PurePath
+import site as site
+
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -1221,8 +1223,16 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not os.path.exists(uDirPath):
             print(f'{uDir} not in git clone area, dictation toolbox dir is {dtb_dir}.')
             uDir = ""
+            #try in site packages
+            for s in [site.USER_SITE,site.getsitepackages()[1] ]:
+                site_packages_unimacro_path = PurePath(s)/"unimacro"
+                if os.path.exists(site_packages_unimacro_path):
+                    print(f"Unimacro to be loaded from {site_packages_unimacro_path}")
+                    uDir=str(site_packages_unimacro_path)
+                    break
+
         if uDir:
-            print(f"UDir {uDir}")
+            print(f"Unimacro {uDir}")
             controlGrammar = uDir/"_control.py"
             if controlGrammar.isfile():
                 try: del self.UnimacroDirectory
