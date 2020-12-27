@@ -140,7 +140,7 @@ import time
 import types
 import inivars
 from pathqh import path
-from pathlib import PurePath
+from pathlib import WindowsPath
 import site as site
 
 # for getting generalised env variables:
@@ -1178,7 +1178,20 @@ Please try to correct this by running the Natlink Config Program (with administr
             return 1
 
     def getDictationToolboxDirectory(self):
-        return str(PurePath(self.getBaseDirectory()).parents[2])
+        default_toolbox_src_root="c:/dragon_toolbox_not_checked_out_from_git/dummy_folder"
+        #we must be in a child of
+        test_child_of="*/src/natlink/macrosystem/core"
+        #the number of parent directories to toolbox root
+        #computed rather than hard coded as folder structure might
+        #change.
+        parent_dirs_to_toolbox=test_child_of.count("/")
+        b=WindowsPath(self.getCoreDirectory())
+
+        toolbox_src_root = default_toolbox_src_root if not b.match(test_child_of) \
+            else str(b.parents[parent_dirs_to_toolbox])
+
+
+        return toolbox_src_root
 
     def getUnimacroUserDirectory(self):
         if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
@@ -1215,15 +1228,15 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         """
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
-        dtb_dir = PurePath(self.getDictationToolboxDirectory())
+        dtb_dir = WindowsPath(self.getDictationToolboxDirectory())
         print("Get Unimacro directory")
-        uDirCloneAreaPath =dtb_dir.joinpath("Unimacro/src/unimacro")
-        uDirSitePackagesPaths = [PurePath(s)/"unimacro"  for s in [site.USER_SITE,site.getsitepackages()[1] ] ]
+        uDirCloneAreaPath =dtb_dir /"Unimacro/src/unimacro"
+        uDirSitePackagesPaths = [WindowsPath(s)/"unimacro"  for s in [site.USER_SITE,site.getsitepackages()[1] ] ]
         uDirPaths = [uDirCloneAreaPath]+uDirSitePackagesPaths
 
         for p in uDirPaths:
             controlGrammar = p / "_control.py"
-            if os.path.exists(controlGrammar):
+            if controlGrammar.is_file():
                 uDir = str(p)
                 self.UnimacroDirectory=uDir
                 self.addToPath(uDir)
@@ -1318,14 +1331,14 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getVocolaDirectory(self):
         if not self.VocolaDirectory is None: return self.VocolaDirectory
 
-        vDir1 = PurePath(self.getDictationToolboxDirectory()) / "Vocola2/src/vocola2"
-        vDir2 = PurePath(self.getDictationToolboxDirectory()) / "Vocola/src/vocola2"
-        vDir3 = PurePath(site.USER_SITE)/"vocola2"
-        vDir4 = PurePath(site.getsitepackages()[1])/"vocola2"
+        vDir1 = WindowsPath(self.getDictationToolboxDirectory()) / "Vocola2/src/vocola2"
+        vDir2 = WindowsPath(self.getDictationToolboxDirectory()) / "Vocola/src/vocola2"
+        vDir3 = WindowsPath(site.USER_SITE)/"vocola2"
+        vDir4 = WindowsPath(site.getsitepackages()[1])/"vocola2"
         vocolaPaths = [vDir1,vDir2,vDir3,vDir4]
         for vpath in vocolaPaths:
             controlGrammarPath=vpath/"_vocola_main.py"
-            if os.path.exists(vpath):
+            if vpath.is_file():
                 print(f"Vocola System Directory: {vpath}")
                 vDir=str(vpath)
                 self.VocolaDirectory=vDir
