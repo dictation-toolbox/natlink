@@ -72,6 +72,20 @@ def CoreDirectory():
     coreDir=thisDir.parent/"MacroSystem/core"
     return coreDir
 
+def NatlinkStatusIniFileName():
+    """
+    make the users ./natlink folder if required in their home directory.
+    returns the file name of the ini file with full path
+    :return:
+    """
+    natlink_ini_folder = WindowsPath.home() / ".natlink"
+    natlink_ini_file = natlink_ini_folder / "natlinkstatus.ini"
+    #make the folder if it doesn't exists
+    if not natlink_ini_folder.is_dir():
+        natlink_ini_folder.mkdir()   #make it if it doesn't exist
+    return  str(natlink_ini_file)
+
+natlink_status_ini_file_name=NatlinkStatusIniFileName()
 coreDir = CoreDirectory()
 sys.path.append(str(coreDir))
 print(f"Core dir {coreDir}\nsys.path: {sys.path}")
@@ -693,6 +707,7 @@ Natlink is now disabled.
     #            self.warning("cannot clear Python path for Natlink in registry (HKLM section), probably you have insufficient rights to do this")
 
     def printInifileSettings(self):
+
         print(('Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getCoreDirectory()))
         Keys = list(self.userregnl.keys())
         Keys.sort()

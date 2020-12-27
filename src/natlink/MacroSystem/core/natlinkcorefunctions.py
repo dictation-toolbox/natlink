@@ -31,7 +31,7 @@ import os
 import sys
 import re
 import copy
-from pathlib import PurePath
+from pathlib import PurePath,WindowsPath
 from win32com.shell import shell, shellcon
 # import win32api
 # for extended environment variables:
@@ -535,14 +535,13 @@ class NatlinkstatusInifileSection(InifileSection):
     
     def __init__(self):
         """get the default inifile:
-        In baseDirectory (this directory) the ini file natlinkstatus.ini
+        In the users home diretory/.natlink  the ini file natlinkstatus.ini
         with section defaultSection
         """        
-        dirName = getBaseFolder()
-        if not os.path.isdir(dirName):
-            raise ValueError("starting inifilesection, invalid directory: %s"%
-                            dirName)
-        filename = os.path.join(dirName, defaultFilename)
+        natlink_ini_path=WindowsPath.home() / ".natlink"
+        if not natlink_ini_path.is_dir():
+            raise ValueError(f"Natlink folder  {natlink_ini_path} missing.")
+        filename = str(natlink_ini_path/defaultFilename)
         InifileSection.__init__(self, section=defaultSection, filename=filename)
 
 
