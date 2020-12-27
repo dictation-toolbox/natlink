@@ -1233,11 +1233,11 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         if uDir:
             print(f"Unimacro {uDir}")
-            controlGrammar = uDir/"_control.py"
+            controlGrammar = path(uDir)/"_control.py"
             if controlGrammar.isfile():
                 try: del self.UnimacroDirectory
                 except AttributeError: pass
-                self.UnimacroDirectory = uDir.normpath()
+                self.UnimacroDirectory = uDir
                 self.addToPath(self.UnimacroDirectory)
                 return self.UnimacroDirectory
         ## not found:
@@ -1333,32 +1333,18 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         vDir1 = PurePath(self.getDictationToolboxDirectory()) / "Vocola2/src/vocola2"
         vDir2 = PurePath(self.getDictationToolboxDirectory()) / "Vocola/src/vocola2"
-        if os.path.exists(vDir1):
-            vDir = vDir1
-        elif os.path.exists(vDir2):
-            vDir = vDir2
-        else:
-            print(f'{vDir1} and {vDir2} not in git clone area, VocolaDirectory (called "Vocola" or "Vocola2" (dication toolbox  is in {self.getDictationToolboxDirectory()}).')
-            vDir = ""
-        if vDir:
-            print(f"Vocola system dir {vDir} ")
-            controlGrammar= path(str(vDir/"_vocola_main.py"))
+        vDir3 = PurePath(site.USER_SITE)/"vocola2"
+        vDir4 = PurePath(site.getsitepackages()[1])/"vocola2"
+        vocolaPaths = [vDir1,vDir2,vDir3,vDir4]
+        for vpath in vocolaPaths:
+            controlGrammarPath=vpath/"_vocola_main.py"
+            if os.path.exists(vpath):
+                print(f"Vocola System Directory: {vpath}")
+                vDir=str(vpath)
+                self.VocolaDirectory=vDir
+                self.addToPath(vDir)
+                return vDir
 
-            if controlGrammar.isfile():
-                self.VocolaDirectory = str(vDir)
-                self.addToPath(self.VocolaDirectory)
-                return self.VocolaDirectory
-
-        ## search the path for pipped packages: (not tested yet)
-        for D in sys.path:
-            Dir = path(D)
-            controlGrammar = Dir/"_vocola_main.py"
-            if controlGrammar.isfile():
-                self.VocolaDirectory = Dir.normpath()
-                self.addToPath(self.VocolaDirectory)
-                return self.VocolaDirectory
-        ## not found:
-        self.VocolaDirectory = ""
         return ""
 
     def getVocolaGrammarsDirectory(self):
