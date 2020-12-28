@@ -1330,15 +1330,17 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def getVocolaDirectory(self):
         if not self.VocolaDirectory is None: return self.VocolaDirectory
-
+        print(f"Looking for Vocola dir in {__file__}")
         vDir1 = WindowsPath(self.getDictationToolboxDirectory()) / "Vocola2/src/vocola2"
         vDir2 = WindowsPath(self.getDictationToolboxDirectory()) / "Vocola/src/vocola2"
         vDir3 = WindowsPath(site.USER_SITE)/"vocola2"
         vDir4 = WindowsPath(site.getsitepackages()[1])/"vocola2"
         vocolaPaths = [vDir1,vDir2,vDir3,vDir4]
+        main_file="_vocola_main.py"
         for vpath in vocolaPaths:
-            controlGrammarPath=vpath/"_vocola_main.py"
-            if vpath.is_file():
+            print(f"Testing if  {vpath}/{main_file} exists")
+            controlGrammarPath=vpath/main_file
+            if controlGrammarPath.is_file():
                 print(f"Vocola System Directory: {vpath}")
                 vDir=str(vpath)
                 self.VocolaDirectory=vDir
