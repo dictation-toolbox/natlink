@@ -9,12 +9,13 @@ author-email = "quintijn@me.uk"
 home-page = "https://github.com/dictation-toolbox/unimacro"
 description-file = "README.md"
 
-requires=["wxPython ==4.0.7",
-		  "debugpy >= 1.2.0",
+requires=[ 
 		  "pywin32 >= 300",
 		  "debugpy",
+		  "unimacro",
+		  "vocola",
 		  "wxpython == 4.0.7; python_version>='3.8'",
-		   "wxpython == 4.0.3; python_version<'3.7'"]
+		  "wxpython == 4.0.3; python_version<'3.7'"]
 	  
 		
 classifiers=[	"Development Status :: 4 - Beta",
