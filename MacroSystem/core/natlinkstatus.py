@@ -345,15 +345,15 @@ class NatlinkStatus:
                 print('''Natlink setting not found in Natlink section of PythonPath setting\n
 Please try to correct this by running the Natlink Config Program (with administration rights)\n''')
                 return
-            natlinkvalue, pythonpathkey = result
+            natlinkkey, natlinkvalue,  = result
             if not natlinkvalue:
-                print(f'''Natlink setting not found in Natlink section of PythonPath setting {pythonpathkey} in registry\n
+                print(f'''Natlink setting not found in Natlink section of PythonPath setting in registry\n
 Please try to correct this by running the Natlink Config Program (with administration rights)''')
                 return
 
             coreDirectory = path(natlinkvalue)
             if not coreDirectory.isdir():
-                print(f'''Natlink setting "{coreDirectory}" in "{pythonpathkey}" of the registry is not a valid directory\n
+                print(f'''Natlink setting "{coreDirectory}" in the registry is not a valid directory\n
 Please try to correct this by running the Natlink Config Program (with administration rights)''')
 #             if setting.lower() == CoreDirectory.lower():
 #                 baseDir = os.path.normpath(os.path.join(CoreDirectory, ".."))
@@ -484,12 +484,14 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getRegistryPythonPathNatlink(self, flags=winreg.KEY_READ, silent=True):
         """returns the path-to-core of Natlink and the PythonPath key in the registry
         
-        returns a tuple (path-to-core, key-to-pythonpath-setting)
+        returns a tuple (key-to-pythonpath-setting, directory_from_registry)
+        (Note: order changed, December, 2020)
         
-        if no Natlink key found, or no path, "" is returned
-        if no PythonPath setting is found, None is return
+        if no Natlink key found, return None
+        
+        if Natlink key is found, return the directory_from_registry, mostly the middle item of a 3 tuple.
+        If the value found is NOT a 3 tuple, return "Natlink value wrong type in registry"
 
-        by default read only.
         When setting the value, from natlinkconfigfunctions,
         pass winreg.KEY_ALL_ACCESS as flags.
 
@@ -504,23 +506,30 @@ Please try to correct this by running the Natlink Config Program (with administr
                 if keyName.lower() == 'natlink':
                     natlink_key = winreg.OpenKey(pythonpath_key, keyName)
                     for i in range(10):
-                        Value = winreg.EnumValue(natlink_key, i)
-                        # print(f'values: {i}, {Value}')
-                        break
-                    else:
-                        print(f'no valid Natlink entry found in registry section "Natlink"')
-                        raise FileNotFoundError
-                    
-                    if type(Value) == tuple and len(Value) == 3:
-                        pythonpath = Value[1]
-                        natlinkmainPath = os.path.join(pythonpath, "natlinkmain.py")
-                        if os.path.isfile(natlinkmainPath):
-                            if not silent:
-                                print(f'Natlink entry found in registry section "Natlink": "{pythonpath}"')
-                            return pythonpath, natlink_key
+                        natlink_value = winreg.EnumValue(natlink_key, i)
+                        # print(f'Value from registry: {natlink_value}')
+                        if type(natlink_value) == tuple and len(natlink_value) == 3:
+                            natlinkdir_from_registry = natlink_value[1]
                         else:
-                            print(f'no valid Natlink entry found in registry section "Natlink": {pythonpath}, does not contain "natlinkmain.py"')
-                            raise FileNotFoundError
+                            natlinkdir_from_registry = "Natlink value wrong type in registry"
+                        
+                        return natlink_key, natlinkdir_from_registry
+                    #     # print(f'values: {i}, {Value}')
+                    #     break
+                    # else:
+                    #     print(f'no valid Natlink entry found in registry section "Natlink"')
+                    #     raise FileNotFoundError
+                    # 
+                    # if type(Value) == tuple and len(Value) == 3:
+                    #     pythonpath = Value[1]
+                    #     natlinkmainPath = os.path.join(pythonpath, "natlinkmain.py")
+                    #     if os.path.isfile(natlinkmainPath):
+                    #         if not silent:
+                    #             print(f'Natlink entry found in registry section "Natlink": "{pythonpath}"')
+                    #         return pythonpath, natlink_key
+                    #     else:
+                    #         print(f'no valid Natlink entry found in registry section "Natlink": {pythonpath}, does not contain "natlinkmain.py"')
+                    #         raise FileNotFoundError
                             
             except OSError:
                 return 
@@ -1050,7 +1059,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not result:
             self.cache_NatlinkIsEnabled = False
             return   ## registry setting not of pythonpath to core directory is not OK
-        coredir_from_registry, registry_key = result
+        registry_key, coredir_from_registry = result
         
         if self.DNSInstallDir == -1:
             self.cache_NatlinkIsEnabled = False

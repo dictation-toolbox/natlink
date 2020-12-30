@@ -408,24 +408,26 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         
         this function should be in elevated mode, which should be checked before calling this
         """
+        pythonpath_key = self.getRegistryPythonPathKey()
+        if not pythonpath_key:
+            print(f'setRegistryPythonPathNatlink, cannot find pythonpath_key')
+            return
+
         result = self.getRegistryPythonPathNatlink()
         if result:
-            natlinkvalue, natlink_key = result
-            if coreDir == natlinkvalue:
+            natlink_key, natlinkdir_from_registry = result
+            if coreDir == natlinkdir_from_registry:
                 print(f'setRegistryPythonPathNatlink, coreDir already OK: {coreDir}')
                 return 1
-        else:
-            # Natlink section not exists
-            pythonpath_key = self.getRegistryPythonPathKey()
-            if not pythonpath_key:
-                print(f'setRegistryPythonPathNatlink, cannot find pythonpath_key')
-                return
-            
-            value, flags = ("Natlink", winreg.KEY_WOW64_32KEY | flags)
-            natlink_key = winreg.CreateKeyEx(pythonpath_key, "Natlink", 0, flags)
-            if not natlink_key:
-                print(f'setRegistryPythonPathNatlink, cannot create "Natlink" key in registy')
-                return
+            else:
+                result = winreg.DeleteKeyEx(pythonpath_key, "natlink", winreg.KEY_WOW64_32KEY | flags)
+                pass
+        # Natlink section not exists (possibly just deleted)
+        value, flags = ("Natlink", winreg.KEY_WOW64_32KEY | flags)
+        natlink_key = winreg.CreateKeyEx(pythonpath_key, "Natlink", 0, flags)
+        if not natlink_key:
+            print(f'setRegistryPythonPathNatlink, cannot create "Natlink" key in registy')
+            return
 
         value, flags = (coreDir, winreg.KEY_WOW64_32KEY | flags)
         result = winreg.SetValueEx(natlink_key, "", 0, winreg.REG_SZ, coreDir)            
@@ -458,7 +460,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if result is None:
            fatal_error('Cannot find valid PythonPath section in registry')
            return
-        natlinkvalue, pythonpathkey = result
+        natlinkkey, natlinkvalue = result
 
         coreDir = path(self.getCoreDirectory())
         coreFromRegistry = path(natlinkvalue)
@@ -1120,7 +1122,8 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         # give fatal error if Python is not OK...
         result = self.getRegistryPythonPathNatlink()
         if result:
-            natlinkvalue, pythonpathkey = result
+            natlink_key, natlinkdir_from_registry = result
+        
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
         if not (pythonVersion and len(pythonVersion) == 2):
