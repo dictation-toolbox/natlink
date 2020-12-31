@@ -1216,19 +1216,21 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
         uDir = path(self.NatlinkDirectory)/".."/"Unimacro/src/unimacro"
         if not uDir.isdir():
-            print(f'not in git clone area, UnimacroDirectory (NatlinkDirectory is in {self.NatlinkDirectory}).')
-            uDir = ""
-        if uDir:
-            controlGrammar = uDir/"_control.py"
+            spDir = path(sys.prefix)/"lib"/"site-packages"
+            if spDir.isdir():
+                uDir = spDir/"unimacro"
+
+        if uDir.isdir():
+            uFile = "_control.py"
+            controlGrammar = uDir/uFile
             if controlGrammar.isfile():
-                try: del self.UnimacroDirectory
-                except AttributeError: pass
                 self.UnimacroDirectory = uDir.normpath()
                 self.addToPath(self.UnimacroDirectory)
                 return self.UnimacroDirectory
-        ## not found:
-        try: del self.UnimacroDirectory
-        except AttributeError: pass
+            else:
+                print(f'UnimacroDirectory found: "{uDir}", but no valid file: "{uFile}", return ""')
+        else:
+            print(f'UnimacroDirectory not found in Git area or in "lib/site-packages/unimacro", return ""')
         self.UnimacroDirectory = ""
         return ""
         
@@ -1316,30 +1318,34 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def getVocolaDirectory(self):
         if not self.VocolaDirectory is None: return self.VocolaDirectory
+
+        vDir = None        
+        # first try in Gir area, related to NatlinkDirectory:
         vDir1 = path(self.NatlinkDirectory)/".."/"Vocola/src/vocola2"
         vDir2 = path(self.NatlinkDirectory)/".."/"Vocola2/src/vocola2"
+
         if vDir1.isdir():
             vDir = vDir1
         elif vDir2.isdir():
             vDir = vDir2
         else:
-            print(f'not in git clone area, VocolaDirectory (called "Vocola" or "Vocola2" (NatlinkDirectory is in {self.NatlinkDirectory}).')
-            vDir = ""
+            ## try in site-packages:
+            spDir = path(sys.prefix)/"lib"/"site-packages"
+            if spDir.isdir():
+                vocDir = spDir/"vocola2"
+                if vocDir.isdir():
+                    vDir = vocDir
         if vDir:
-            controlGrammar = vDir/"_vocola_main.py"
+            vFile = "_vocola_main.py"
+            controlGrammar = vDir/vFile
             if controlGrammar.isfile():
                 self.VocolaDirectory = vDir.normpath()
                 self.addToPath(self.VocolaDirectory)
                 return self.VocolaDirectory
-
-        ## search the path for pipped packages: (not tested yet)
-        for D in sys.path:
-            Dir = path(D)
-            controlGrammar = Dir/"_vocola_main.py"
-            if controlGrammar.isfile():
-                self.VocolaDirectory = Dir.normpath()
-                self.addToPath(self.VocolaDirectory)
-                return self.VocolaDirectory
+            else:
+                print(f'VocolaDirectory found in "{vDir}", but no file "{vFile}" found, return ""')
+        else:
+            print(f'VocolaDirectory not found in Git area or in "lib/site-packages/vocola2", return ""')
         ## not found:
         self.VocolaDirectory = ""
         return ""
