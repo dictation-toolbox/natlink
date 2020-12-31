@@ -30,4 +30,4 @@ keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
 #commands that go in site-packages/scripts and end up in the system path
 natlinkconfigfunctions="natlink.ConfigureNatlink.natlinkconfigfunctions:main"
 start_natlinkconfig="natlink.ConfigureNatlink.start_configurenatlink:main"
-natlinkstatus="natlink.Macrosystem.core.natlinkstatus:main"
+natlinkstatus="natlink.MacroSystem.core.natlinkstatus:main"

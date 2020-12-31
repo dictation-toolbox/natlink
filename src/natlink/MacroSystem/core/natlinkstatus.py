@@ -1901,6 +1901,6 @@ def main():
     print(status.getBaseModel())
     print(status.getBaseTopic())
  
- if __name__ == "__main__":
+if __name__ == "__main__":
     main()
     pass
