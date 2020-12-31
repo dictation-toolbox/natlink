@@ -9,12 +9,17 @@ seems very finicky even though it looks like a text file.  If publishing to pypi
 new it is suggested you copy pypirc_template to ~/.pypirc and add your token from your accounts for PyPi/TestPyPi.
 
  
+Customizing the Package for PyPi:
+
+Read https://flit.readthedocs.io/en/latest/pyproject_toml.html  to see how to customize the description on PyPi,
+licensing, etc.   
  
 To build a package:
 
 Ensure you have flit ("pip install flit")
+
 Update the version number of the package.  Make the number bigger in src/natlink/__init__.py than it was the last time
-a package was uploaded to TestPypi or PyPi.  
+a package was uploaded to TestPypi or PyPi.  Flit uses that number as the release number on pypi.
 
 Start a power shell in the root of your git clone.  if you are used to command shell, type "powershell" and that 
 will launch a windows powershell.  
@@ -36,6 +41,9 @@ Now install it using pip with this:
 
 pip --no-cache install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple  natlink
 
+Remove any local projects for natlink from any Python Path variables, so that the version in site-packages gets loaded by
+natlink.  You can rename your dictation-toolbox root temporarily below which natlink lies, or your can temporarily rename
+natlink to something like dev_natlink.
  
 Change your shell directory (command shell or power shell) to  C:\your-python-install-root\Lib\site-packages\natlink\ConfigureNatlink
 
