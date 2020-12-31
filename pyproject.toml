@@ -1,0 +1,29 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module="natlink"
+author = "quintijn"
+author-email = "quintijn@me.uk"
+home-page = "https://github.com/dictation-toolbox/unimacro"
+description-file = "README.md"
+
+requires=[ 
+		  "pywin32 >= 300",
+		  "debugpy",
+		  "unimacro",
+		  "vocola2",
+		  "wxpython == 4.0.7; python_version>='3.8'",
+		  "wxpython == 4.0.3; python_version<'3.7'"]
+	  
+		
+classifiers=[	"Development Status :: 4 - Beta",
+				"Topic :: Multimedia :: Sound/Audio :: Speech",
+				"Topic :: Scientific/Engineering :: Human Machine Interfaces",
+				]
+				
+requires-python = ">=3.8"
+keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
+
+[tool.flit.scripts]
