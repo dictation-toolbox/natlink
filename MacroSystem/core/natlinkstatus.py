@@ -1279,16 +1279,21 @@ Please try to correct this by running the Natlink Config Program (with administr
         """
         return self.NatlinkDirectory
 
-    def getUserDirectory(self):
+    def getUserDirectory(self, force=None):
         """return the path to the Natlink User directory
 
         this one is not any more for Unimacro, but for User specified grammars, also Dragonfly
 
         should be set in configurenatlink, otherwise ignore...
+        
+        if force is True, ignore previous value...
         """
         if not self.NatlinkIsEnabled:
             return
-        if not self.UserDirectory is None: return self.UserDirectory
+        if force is True:
+            pass
+        elif not self.UserDirectory is None:
+            return self.UserDirectory
         key = 'UserDirectory'
         value = self.userregnl.get(key)
         if value:
@@ -1652,9 +1657,14 @@ Please try to correct this by running the Natlink Config Program (with administr
         else:
             return "Dragon"
 
-    def getNatlinkStatusDict(self):
-        """return actual status in a dict"""
+    def getNatlinkStatusDict(self, force=None):
+        """return actual status in a dict
+        
+        force can be passed as True, when called from the config GUI program
+        
+        """
         D = {}
+
         for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion',
@@ -1668,12 +1678,17 @@ Please try to correct this by running the Natlink Config Program (with administr
                     # 'IncludeUnimacroInPythonPath',
                     'AhkExeDir', 'AhkUserDir']:
 ##                    'BaseTopic', 'BaseModel']:
+            if force:
+                setattr(self, key, None)
             keyCap = key[0].upper() + key[1:]
-            execstring = "D['%s'] = self.get%s()"% (key, keyCap)
-            exec(execstring)
+            funcName = f'get{keyCap}'
+            func = getattr(self, funcName)
+            D[key] = func()
+            # execstring = "D['%s'] = self.get%s()"% (key, keyCap)
+            # exec(execstring)
         D['CoreDirectory'] = self.CoreDirectory
         D['BaseDirectory'] = self.BaseDirectory
-        D['UserDirectory'] = self.getUserDirectory()
+        D['UserDirectory'] = self.getUserDirectory(force=force)
         D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
 

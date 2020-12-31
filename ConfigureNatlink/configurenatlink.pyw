@@ -500,7 +500,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         """extract data for the info controls
         """
         self.parent.Freeze()
-        D = self.config.getNatlinkStatusDict()
+        D = self.config.getNatlinkStatusDict(force=True)  # refresh for example UserDirectory change
 ##        print 'StatusDict:'
 ##        for k,v in D.items():
 ##            if v:
@@ -1009,7 +1009,7 @@ More about this in the "Vocola Compatibility" dialog.
 
 
     def OnButtonUnimacroEnableDisable(self, event):
-        D = self.config.getNatlinkStatusDict()
+        D = self.config.getNatlinkStatusDict(force=True)
         letter = 'o'
         if D['unimacroIsEnabled']:
             doLetter = letter.upper()
@@ -1057,7 +1057,7 @@ More about this in the "Vocola Compatibility" dialog.
         self.setInfo()
 
     def OnButtonUserEnableDisable(self, event):
-        D = self.config.getNatlinkStatusDict()
+        D = self.config.getNatlinkStatusDict(force=True)
         letter = 'n'
         if D['userIsEnabled']:
             doLetter = letter.upper()
@@ -1106,7 +1106,7 @@ More about this in the "Vocola Compatibility" dialog.
         self.setInfo()
 
     def OnButtonVocolaEnableDisable(self, event):
-        D = self.config.getNatlinkStatusDict()
+        D = self.config.getNatlinkStatusDict(force=True)
         isValidPath = self.config.isValidPath
         letter = 'v'
         if D['vocolaIsEnabled']:
@@ -1158,7 +1158,7 @@ More about this in the "Vocola Compatibility" dialog.
 
 
     def OnButtonNatlinkEnableDisable(self, event):
-        D = self.config.getNatlinkStatusDict()
+        D = self.config.getNatlinkStatusDict(force=True)
         letter = 'e'
         if D['natlinkIsEnabled']:
             # disable:
