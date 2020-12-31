@@ -12,10 +12,10 @@ description-file = "README.md"
 requires=[ 
 		  "pywin32 >= 300",
 		  "debugpy",
-		  "unimacro",
-		  "vocola2",
 		  "wxpython == 4.0.7; python_version>='3.8'",
-		  "wxpython == 4.0.3; python_version<'3.7'"]
+		  "wxpython == 4.0.3; python_version<'3.7'",
+		  "unimacro",
+		  "vocola2"]
 	  
 		
 classifiers=[	"Development Status :: 4 - Beta",
@@ -27,4 +27,7 @@ requires-python = ">=3.8"
 keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
 
 [tool.flit.scripts]
-natlinkstatus="foo"
+#commands that go in site-packages/scripts and end up in the system path
+natlinkconfigfunctions="natlink.ConfigureNatlink.natlinkconfigfunctions:main"
+start_natlinkconfig="natlink.ConfigureNatlink.start_configurenatlink:main"
+natlinkstatus="natlink.Macrosystem.core.natlinkstatus:main"
