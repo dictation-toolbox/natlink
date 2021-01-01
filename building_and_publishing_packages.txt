@@ -1,3 +1,27 @@
+Developing natlink:
+
+You can now git clone natlink anywhere you like.
+pip uninstall natlinkpy in case it is already in site-packages.
+add flit to your site-packages:
+pip install flit
+
+build the package with powershell command  (see below).  it is a one liner.
+
+now use flit to install it:
+
+flit install --symlink
+
+then change to your site-packages directory 
+
+What is useful about this symlink install is that the code in site-packages is sym-linked to 
+the code in your git-clone area.  If you make a change to a python file,
+it will be reflected in site-packages.
+
+you still need to change into the site-packages/natlinkpy/ConfigureNatlink and run
+the setup programs to register and config natlink. That is a work in progress.
+  
+
+
 
 Packages are build without a setup.py, and source only, as any PIP recent enough will be PEP517 compliant.
 Flit is the simplest packaging tool that will work. Read about it here https://flit.readthedocs.io/en/latest/cmdline.html.
