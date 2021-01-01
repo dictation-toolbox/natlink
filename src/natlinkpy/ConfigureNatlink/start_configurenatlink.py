@@ -3,10 +3,20 @@ import os
 import sys
 import time
 import re
+import pathlib
 
 #all this code is in main so that it is possible for the package 
 #to create a script in site-packages/scripts.
 def main():
+
+    #we have to add the current path and its parent to the search path.
+    current_dir = pathlib.WindowsPath(__file__)
+    parent_dir =current_dir.parent
+    for p in (current_dir,parent_dir):
+        sys.path.append(str(p))
+    
+    
+    
     #
     print('Starting start_configurenatlink.py,')
     print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')
