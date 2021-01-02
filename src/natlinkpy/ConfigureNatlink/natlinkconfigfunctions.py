@@ -2231,9 +2231,7 @@ Informational commands: i and I
 """)
     help_usage = help_u
 
-
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) == 1:
         cli = CLI()
         cli.info = "type u for usage"
@@ -2250,4 +2248,7 @@ if __name__ == "__main__":
             print(f'Dragon should not be running for the function you choosed\n-- {e.message}')
     else:
       _main()
+
+if __name__ == "__main__":
+    main()
 
