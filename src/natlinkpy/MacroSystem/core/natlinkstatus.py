@@ -1881,8 +1881,9 @@ def isValidPath(spec, wantFile=None, wantDirectory=None):
         return spec2
 
 
-if __name__ == "__main__":
-
+    
+def main():
+    print(f"{sys.argv[0]}  __name__ :  {__name__}")
     status = NatlinkStatus()
     status.checkSysPath()
 
@@ -1915,4 +1916,7 @@ if __name__ == "__main__":
     #print status.getBaseModelBaseTopic()
     print(status.getBaseModel())
     print(status.getBaseTopic())
+ 
+if __name__ == "__main__":
+    main()
     pass

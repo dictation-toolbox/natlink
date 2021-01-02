@@ -1,11 +1,10 @@
 ###### Requirements without Version Specifiers ######`
 debugpy
-six
-wheel
 future
 
 
 ###### Requirements with Version Specifiers ######`
+#flit is only required for developers
 flit_core >=3,<4
 flit >= 3.0.0
 wxpython == 4.0.7; python_version>='3.8'

@@ -55,52 +55,51 @@ import traceback
 import types
 import ctypes
 
+from pathlib import WindowsPath
 
-def lookForCoreDirectory():
-    thisDir = os.path.split(__file__)[0]
-    CoreDirRelative = os.path.normpath(os.path.join(thisDir, '..', 'MacroSystem', 'Core'))
-    if os.path.isdir(CoreDirRelative):
-        yield CoreDirRelative
-    CoreDirRelativeNew = os.path.normpath(os.path.join(thisDir, '..', 'Core'))
-    if os.path.isdir(CoreDirRelativeNew):
-        yield CoreDirRelativeNew
-        
-    key = 'PROGRAMFILES'
-    programFilesDir = os.environ.get(key, None)
-    if programFilesDir and os.path.isdir(programFilesDir):
-        natlinkDir = os.path.join(programFilesDir, 'Natlink')
-        if os.path.isdir(natlinkDir):
-            CoreDir = os.path.normpath(os.path.join(natlinkDir, 'MacroSystem', 'Core'))
-            if os.path.isdir(CoreDir):
-                yield CoreDir
-            CoreDirNew = os.path.normpath(os.path.join(natlinkDir, 'Core'))
-            if os.path.isdir(CoreDirNew):
-                yield CoreDirNew
 
-# for Dir in lookForCoreDirectory():
-#     print(f'lookForCoreDirectory: {Dir}')
+
+#under the new regime, the core directory must be ../MacroSystem/Core
+#as it will be installed  there by the packaging system, and lives there in the source.
+
+#this simplified the lookForCoreDirectory function from previous versions of natlink
+
+
+def CoreDirectory():
+    """Returns the CoreDirectory as a pathlib.path"""
+    thisDir=WindowsPath(__file__).parent.resolve()
+    print(f"this dir {thisDir}")
+    coreDir=thisDir.parent/"MacroSystem/core"
+    return coreDir
+
+def NatlinkStatusIniFileName():
+    """
+    make the users ./natlink folder if required in their home directory.
+    returns the file name of the ini file with full path
+    :return:
+    """
+    natlink_ini_folder = WindowsPath.home() / ".natlink"
+    natlink_ini_file = natlink_ini_folder / "natlinkstatus.ini"
+    #make the folder if it doesn't exists
+    if not natlink_ini_folder.is_dir():
+        natlink_ini_folder.mkdir()   #make it if it doesn't exist
+    return  str(natlink_ini_file)
+
+natlink_status_ini_file_name=NatlinkStatusIniFileName()
+coreDir = CoreDirectory()
+sys.path.append(str(coreDir))
+print(f"Core dir {coreDir}\nsys.path: {sys.path}")
 
 try:
     from pathqh import path
-except (ModuleNotFoundError, ImportError):
-    for tryCoreDir in lookForCoreDirectory():
-        tryPathFile = os.path.join(tryCoreDir, "pathqh.py")
-        if os.path.isfile(tryPathFile):
-            if tryCoreDir in sys.path:
-                raise IOError(f'directory {tryCoreDir} is in sys.path, but pathqh if not found')
-            print(f'add to sys.path: {tryCoreDir}')
-            sys.path.append(tryCoreDir)
-            try:
-                from pathqh import path
-            except ModuleNotFoundError:
-                raise IOError(f'seem to have {tryCoreDir} in sys.path, but cannot import pathqh.py')
-            else:
-                break
-           
+
+except Exception as e:
+    print(f"not loading pathqh, e {e}")
 try:
     from win32com.shell.shell import IsUserAnAdmin
 except:
     IsUserAnAdmin = ctypes.windll.shell32.IsUserAnAdmin
+
 
 try:
     from win32ui import MessageBox
@@ -165,24 +164,13 @@ def getCoreDir(thisDir):
 
     If not found like this, prints a line and returns thisDir
     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
+
+
     """
-    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
+    coreFolder = str(CoreDirectory())
     print(('coreDirectory: %s'% coreFolder))
-    if not os.path.isdir(coreFolder):
-        print(('not a directory: %s'% coreFolder))
-        return thisDir
-##    PydPath = os.path.join(coreFolder, 'natlink.pyd')
-    mainPath = os.path.join(coreFolder, 'natlinkmain.py')
-    statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-##    if not os.path.isfile(PydPath):
-##        print 'natlink.pyd not found in core directory: %s'% coreFolder
-##        return thisDir
-    if not os.path.isfile(mainPath):
-        print(('natlinkmain.py not found in core directory: %s'% coreFolder))
-        return thisDir
-    if not os.path.isfile(statusPath):
-        print(('natlinkstatus.py not found in core directory: %s'% coreFolder))
-        return thisDir
+    #the stuff testing for existance of natlinkmain.py etc has been removed, no
+    #longer required.
     return coreFolder
 hadFatalErrors = []
 def fatal_error(message, new_raise=None):
@@ -217,10 +205,6 @@ if not os.path.normpath(thisDir) in sys.path:
     print(('inserting %s to pythonpath...'% thisDir))
     sys.path.insert(0, thisDir)
 
-if not os.path.normpath(coreDir) in sys.path:
-    coreDir = os.path.normpath(coreDir)
-    print(('inserting %s to pythonpath...'% coreDir))
-    sys.path.insert(0, coreDir)
 
 # from core directory, use registry entries from CURRENT_USER/Software/Natlink:
 import natlinkstatus
@@ -725,6 +709,7 @@ Natlink is now disabled.
     #            self.warning("cannot clear Python path for Natlink in registry (HKLM section), probably you have insufficient rights to do this")
 
     def printInifileSettings(self):
+
         print(('Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getCoreDirectory()))
         Keys = list(self.userregnl.keys())
         Keys.sort()
@@ -2246,9 +2231,7 @@ Informational commands: i and I
 """)
     help_usage = help_u
 
-
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) == 1:
         cli = CLI()
         cli.info = "type u for usage"
@@ -2265,4 +2248,7 @@ if __name__ == "__main__":
             print(f'Dragon should not be running for the function you choosed\n-- {e.message}')
     else:
       _main()
+
+if __name__ == "__main__":
+    main()
 
