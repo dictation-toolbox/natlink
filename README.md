@@ -57,9 +57,9 @@ Your local git repository can be anywhere conveninent.  It no longer needs to be
 
 
 * Install as per the instructions for end users, to get any python prequisites in.
-* Install [flit](https://pypi.org/project/flit/). This is a python package build tool that is required for developer workflow. 
+* Install [flit](https://pypi.org/project/flit/) `pip install flit`. This is a python package build tool that is required for developer workflow. 
 * Uninstall the packages you wish to develop.  i.e pip  if you want to work on natlink:   
-	`pip uninstall natlinkpy natlink'   and answer yes to all the questions about removing files from your python scripts folder.
+	`pip uninstall natlinkpy natlink`   and answer yes to all the questions about removing files from your python scripts folder.
 * Build the Python packages.  In the root folder of your natlink repository, run `build_package` in your shell.  This creates the package.  
 At this step, if you have any untracked files
 in your git repository, you will have to correct them with a `git add` command or adding those files to .gitignore.
@@ -86,7 +86,7 @@ The package is specified in 'pyproject.toml' and built with [flit](https://pypi.
 (a batch file in the root folder of natlink) builds a source distribution.   
 
 Several scripts  are specfied in pyproject.toml in the scripts section.  Scripts are automatically generated 
-and placed in the python distribution "Script" folder. Those scripts are then available in the system path for 
+and placed in the python distribution "Scripts" folder. Those scripts are then available in the system path for 
 users to run. Note the `flit install --symlink` will install scripts as batchfiles;  `pip install natlink ...` will install
 scripts as .exe files.
 
