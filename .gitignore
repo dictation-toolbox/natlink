@@ -4,6 +4,7 @@
 **.pyc
 **/natlink.pyd
 **/natlinkstatus.ini
+/README.html
 
 MacroSystem/_**
 
