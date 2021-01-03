@@ -68,7 +68,7 @@ from pathlib import WindowsPath
 def CoreDirectory():
     """Returns the CoreDirectory as a pathlib.path"""
     thisDir=WindowsPath(__file__).parent.resolve()
-    print(f"this dir {thisDir}")
+    # print(f"this dir {thisDir}")
     coreDir=thisDir.parent/"MacroSystem/core"
     return coreDir
 
@@ -86,9 +86,9 @@ def NatlinkStatusIniFileName():
     return  str(natlink_ini_file)
 
 natlink_status_ini_file_name=NatlinkStatusIniFileName()
-coreDir = CoreDirectory()
-sys.path.append(str(coreDir))
-print(f"Core dir {coreDir}\nsys.path: {sys.path}")
+# coreDir = CoreDirectory()
+# sys.path.append(str(coreDir))
+# print(f"Core dir {coreDir}\nsys.path: {sys.path}")
 
 try:
     from pathqh import path
@@ -147,13 +147,13 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-        print(('baseFolder from argv: %s'% baseFolder))
+        # print(('baseFolder from argv: %s'% baseFolder))
     elif globalsDictHere['__file__']:
         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print(('baseFolder from __file__: %s'% baseFolder))
+        # print(('baseFolder from __file__: %s'% baseFolder))
     if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
-        print(('baseFolder was empty, take wd: %s'% baseFolder))
+        # print(('baseFolder was empty, take wd: %s'% baseFolder))
     return baseFolder
 
 def getCoreDir(thisDir):
@@ -168,10 +168,11 @@ def getCoreDir(thisDir):
 
     """
     coreFolder = str(CoreDirectory())
-    print(('coreDirectory: %s'% coreFolder))
+    # print(('coreDirectory: %s'% coreFolder))
     #the stuff testing for existance of natlinkmain.py etc has been removed, no
     #longer required.
     return coreFolder
+
 hadFatalErrors = []
 def fatal_error(message, new_raise=None):
     """prints a fatal error when running this module
@@ -197,12 +198,14 @@ import win32api
 
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
+print(f'This dir: {thisDir}')
+print(f'Core dir: {coreDir}')
 if thisDir == coreDir:
     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(thisDir) in sys.path:
     thisDir = os.path.normpath(thisDir)
-    print(('inserting %s to pythonpath...'% thisDir))
+    print(f'inserting {thisDir} to pythonpath...')
     sys.path.insert(0, thisDir)
 
 

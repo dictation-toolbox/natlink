@@ -48,14 +48,14 @@ def getBaseFolder(globalsDict=None):
     baseFolder = ""
     if globalsDictHere['__name__']  == "__main__":
         baseFolder = os.path.split(sys.argv[0])[0]
-        print( 'baseFolder from argv: %s'% baseFolder)
+        # print( 'baseFolder from argv: %s'% baseFolder)
     elif globalsDictHere['__file__']:
-        print(f"__file__ {__file__}")
+        # print(f"__file__ {__file__}")
         baseFolder = str(PurePath(__file__).parent)
-        print( 'baseFolder from __file__: %s'% baseFolder)
+        # print( 'baseFolder from __file__: %s'% baseFolder)
     if not baseFolder or baseFolder == '.':
         baseFolder = os.getcwd()
-        print ('baseFolder was empty, take wd: %s'% baseFolder)
+        # print ('baseFolder was empty, take wd: %s'% baseFolder)
     return baseFolder
 
 # the Natlink Base directory, core/..:

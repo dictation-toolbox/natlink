@@ -1216,6 +1216,9 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.UnimacroDirectory is None: return self.UnimacroDirectory
         uDir = path(self.NatlinkDirectory)/".."/"Unimacro/src/unimacro"
         if not uDir.isdir():
+            uDir = path(self.NatlinkDirectory)/".."/".."/".."/"Unimacro/src/unimacro"
+            
+        if not uDir.isdir():
             spDir = path(sys.prefix)/"lib"/"site-packages"
             if spDir.isdir():
                 uDir = spDir/"unimacro"
@@ -1325,14 +1328,15 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.VocolaDirectory is None: return self.VocolaDirectory
 
         vDir = None        
-        # first try in Gir area, related to NatlinkDirectory:
-        vDir1 = path(self.NatlinkDirectory)/".."/"Vocola/src/vocola2"
-        vDir2 = path(self.NatlinkDirectory)/".."/"Vocola2/src/vocola2"
+        # first try in Gir area, related to NatlinkDirectory
+        vDir1 = path(self.NatlinkDirectory)/".."/".."/".."/"Vocola/src/vocola2"
+        vDir2 = path(self.NatlinkDirectory)/".."/".."/".."/"Vocola2/src/vocola2"
 
         if vDir1.isdir():
             vDir = vDir1
         elif vDir2.isdir():
             vDir = vDir2
+        
         else:
             ## try in site-packages:
             spDir = path(sys.prefix)/"lib"/"site-packages"
