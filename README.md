@@ -90,8 +90,8 @@ and placed in the python distribution "Scripts" folder. Those scripts are then a
 users to run. Note the `flit install --symlink` will install scripts as batchfiles;  `pip install natlink ...` will install
 scripts as .exe files.
 
-Version numbers of the packages must be increased before your publish to [Test Python Packaging Index](https://test.pypi.org/ 
-or [Python Packaging Index]https://pypi.org/).  These are specified in __init__.py in src/natlinkpy.  Don't bother changing the 
+Version numbers of the packages must be increased before your publish to [Test Python Packaging Index](https://test.pypi.org/) 
+or [Python Packaging Index](https://pypi.org/).  These are specified in __init__.py in src/natlinkpy.  Don't bother changing the 
 version numbers unless you are publishing.
 
 This command will publish to [Test Python Packaging Index](https://test.pypi.org/): `publish_package_testpypi`.
