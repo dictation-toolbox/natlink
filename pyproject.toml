@@ -30,6 +30,7 @@ keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
 #are not in the python path, so the import statements won't find the other modules in 
 #the folder.
 
-natlinkconfigfunctions="natlinkpy.ConfigureNatlink.natlinkconfigfunctions:main"
-start_natlinkconfig="natlinkpy.ConfigureNatlink.start_configurenatlink:main"
-natlinkstatus="natlinkpy.MacroSystem.core.natlinkstatus:main"
+natlinkconfigfunctions="natlink.ConfigureNatlink.natlinkconfigfunctions:main"
+start_natlinkconfig="natlink.ConfigureNatlink.start_configurenatlink:main"
+
+
