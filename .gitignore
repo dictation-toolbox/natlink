@@ -49,6 +49,12 @@ MacroSystem/_**
 # CMake
 cmake-build-*/
 
+#Visual Studio
+NatlinkSource/Debug/*
+NatlinkSource/.vs/
+NatlinkSource/*.sln
+NatlinkSource/*.user
+
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
 
