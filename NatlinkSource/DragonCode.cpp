@@ -214,7 +214,7 @@ class CLockPython
 // m_pThreadState is NULL which means that we are not supporting threads.
 
 #define MY_BEGIN_ALLOW_THREADS \
-	PyThreadState *_save; \
+	PyThreadState *_save=NULL; \
 	if( m_pThreadState ) \
 		_save = PyEval_SaveThread();
 

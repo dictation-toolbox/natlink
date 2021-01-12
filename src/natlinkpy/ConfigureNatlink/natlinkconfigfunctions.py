@@ -1,4 +1,5 @@
 #! python3
+#! python3
 #
 # natlinkconfigfunctions.py
 #   This module performs the configuration functions.
@@ -86,9 +87,14 @@ def NatlinkStatusIniFileName():
     return  str(natlink_ini_file)
 
 natlink_status_ini_file_name=NatlinkStatusIniFileName()
-# coreDir = CoreDirectory()
-# sys.path.append(str(coreDir))
-# print(f"Core dir {coreDir}\nsys.path: {sys.path}")
+
+#Core directory must be added to the path;  Required for when runing from the Python scripts folder:
+coreDir = CoreDirectory()
+sys.path.append(str(coreDir))
+
+
+
+print(f"Core dir {coreDir}\nsys.path: {sys.path}")
 
 try:
     from pathqh import path

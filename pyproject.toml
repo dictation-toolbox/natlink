@@ -32,4 +32,5 @@ keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
 
 natlinkconfigfunctions="natlinkpy.ConfigureNatlink.natlinkconfigfunctions:main"
 start_natlinkconfig="natlinkpy.ConfigureNatlink.start_configurenatlink:main"
-natlinkstatus="natlinkpy.MacroSystem.core.natlinkstatus:main"
+
+

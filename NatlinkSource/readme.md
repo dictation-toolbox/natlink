@@ -1,26 +1,62 @@
 # Goal
 
 Create a minimal working version of Natlink a dragonspeak to python API. The immediate goal is to
-create a more reliable 32-bit python 2.7 for dragon 15+ implementation that is easy to compile, understand and 
+create a more reliable 32-bit python 3.8 or later for dragon 15+ implementation that is easy to compile, understand and 
 contribute to.
 
 Later on the python 3 port as well as x64 support may be added. 
 
 # Compile instructions
 Currently only tested on windows 
-- Install VisulStudio and ensure that you are also installing C++ support (Desktop Develpment with C++).
-- Install python 2.7 and ``pip install pywin32 wxpython six future ``
-- Install cmake
-- Install git and :
-``git clone https://gitlab.com/knork/natlink2.git``
-- Set msvc as you're compiler and ensure that you build in x86 mode. 
+- Install VisulStudio 2019 or later and ensure that you are also installing C++ support (Desktop Develpment with C++).
+- Install python 3.8 **32  bit build** on your computer, for all users.  it is a good idea to install it 
+   at c:\python38-32 rather than in c:\Program files (x86)\ to reduce the directory navigation requirements.  
+   Be sure the C:\Python38-32 and C:\Python38-32\Scripts
+   are in your system path - either with the correct options at install time or edit the system path yourself.
+ 
+ 
+- upgrade pip right away as  a good practice
+- `pip install --upgrade pip`
 
-I would recommend to use VStudio or Clion as your built environment. 
-We have to install msvc in order to get the necessary header files
- onto our system (e.g. altcom.h) and it is currently the ONLY working compiler
-  (mostlikely due to missing include paths for the other compilers).
-   x64 does compile fine but I haven't managed to convince Dragon to load a x64 support module.
+Currently there are no package prequisites for building natlink.
+  
+  
+Clone the natlink project with git to your computer if you haven't already.
 
+This is goofy.  We need to figure out a better way.  
+
+
+
+
+ 
+The visual studio solution project file natlink.vxproj.  
+  **At this time python virtualenvs are not supported for natlink building or deployment**
+ 
+
+Double click on it natlink.vxproj with Visual Studio 2019.  
+
+This is **Goofy** but we don't know how to set the include a lib paths outside of an individual projects:
+
+*If you know how to set include and lib paths for python without modifying the .vxproj file, 
+please submit an issue to :
+[natlink issues](https://github.com/dictation-toolbox/natlink/issues) with instructions. *
+
+Edit the include directories to match your python include folder.
+Edit the library directories to match your python library.
+
+**If you check this out after someone else has merged their code, you may have
+to edit these again**
+
+
+
+You should be able to build natlink.dll.
+It will appear in a   Debug subfolder.
+
+IF you want to include it in a package,  rename it natlink_VV_Verxx.pyd as is the 
+convention in MacroSystem\core\PYD.  
+
+If for some reason you are building by creating your own visual studio project file or command line,
+you need the preprocessor definition CRT_SECURE_NO_WARNING to compile the code.
 
 
 # Program flow
