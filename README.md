@@ -69,13 +69,13 @@ in your git repository area as you prefer - they are the same files, not copies.
 Oddly, when you follow this workflow and register natlink by running startnatlinkcofig or natlinkconfigfunctions, even though the 
 python paths those commands pickup, you will find that the natlinkcorepath will be in our git repository.  
 
-If you uninstall natlinkpy, and install it with pip, and reregister natlink, you will find the core diretory is
+If you uninstall natlink, and install it with pip, and reregister natlink, you will find the core diretory is
 reognized as a subfolder of site-packages.
 
 
 ## Notes About Packaging for Developers
 
-*Important*  Note the subfolder (and package name) is natlinkpy, not natlink.  This is because there are 
+This is because there are 
 import statements in macrosystem/core `import natlink`.  So modules trying to import from a natlink folder break.
 This is particularly problematic for scripts end-users might run while setting up natlink. This probably won't be resolved
 by moving natlink.pyd to another folder or name.
@@ -90,7 +90,7 @@ users to run. Note the `flit install --symlink` will install scripts as batchfil
 scripts as .exe files.
 
 Version numbers of the packages must be increased before your publish to [Test Python Packaging Index](https://test.pypi.org/) 
-or [Python Packaging Index](https://pypi.org/).  These are specified in __init__.py in src/natlinkpy.  Don't bother changing the 
+or [Python Packaging Index](https://pypi.org/).  These are specified in __init__.py in src/natlink.  Don't bother changing the 
 version numbers unless you are publishing.
 
 This command will publish to [Test Python Packaging Index](https://test.pypi.org/): `publish_package_testpypi`.
