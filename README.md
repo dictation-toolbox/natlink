@@ -36,9 +36,8 @@ Install natlink, Unimacro, and Vocola2 from [Test Python Packaging Index](https:
 It will also
 pull any prequisites from the [Python Packaging Index](https://pypi.org/).
 
-`pip install --no-cache --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple natlinkpy unimacro vocola2`
+`pip install --no-cache --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple natlink unimacro vocola2`
 
-Note in the above command, the package is *natlinkpy* not natlink.
 
 
 This will install the packages in your Python site-packages area.  It will also add the following commands, which should be
