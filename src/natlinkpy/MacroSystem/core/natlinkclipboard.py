@@ -248,14 +248,15 @@ class Clipboard:
                If false contents are retrieved in self._contents
         """
         if waiting_interval or waiting_iterations:
-            waiting_interval = waiting_interval or 0.1
+            waiting_interval = waiting_interval or 0.025
             waiting_iterations = waiting_iterations or 10
             result = self._wait_for_clipboard_change(waiting_interval, waiting_iterations)
             if result is None:
                 print("no clipboard change")
                 return
             if result:
-                print('did have to wait %s steps of %s'% (result, waiting_iterations))
+                if result > waiting_iterations*0.7 or self.debug:
+                    print(f'did have to wait {result} steps of {waiting_iterations} with interval of {waiting_interval:.3f} seconds.')
         if not OpenClipboardCautious():
             if self.debug: print('Clipboard copy_from_system, could not open clipboard')
             return
@@ -278,6 +279,7 @@ class Clipboard:
                     self._contents = copy.copy(contents)
                 else:
                     self._contents = None
+            return contents
         finally:    
             # Clear the system clipboard, if requested, and close it.
             self.current_sequence_number = win32clipboard.GetClipboardSequenceNumber()
@@ -288,9 +290,11 @@ class Clipboard:
         """once the clipboard is opened, just get the clipboard data
         
         meant as internal functions, called from copy_from_system
-        return a dict with format, data pairs
+        return the contents as a dict, see for example method get_text
+        also leave the contents in self._contents
         """
         contents = {}
+        self._contents = {}
         if not formats:
             formats = _get_clipboard_formats_open_clipboard()
         elif isinstance(formats, int):
@@ -318,7 +322,8 @@ class Clipboard:
                     # else:
                     #     print('_get_clipboard_data_from_system, clipboard empty')
                     # return {}
-        return contents
+            self._contents = contents
+            return contents
 
     def copy_to_system(self, data=None, clear=True):
         """Copy the contents of this instance to the Windows clipboard
@@ -442,20 +447,20 @@ class Clipboard:
         
         If no text content available, return ""
         """
-        self.copy_from_system(formats = [self.format_unicode, self.format_text], waiting_interval=waiting_interval, waiting_iterations=waiting_iterations)
+        contents = self.copy_from_system(formats = [self.format_unicode, self.format_text], waiting_interval=waiting_interval, waiting_iterations=waiting_iterations)
         text = ""
-        if self._contents:
-            if self.format_unicode in self._contents:
-                text = self._contents[self.format_unicode]
+        if contents:
+            if self.format_unicode in contents:
+                text = contents[self.format_unicode]
                 if text.find('\r\n') >= 0:
                     text = text.replace('\r\n', '\n')
                 if text.find('\0') >= 0:
                     if replaceNullChar:
                         text = text.replace('\0', '')
-            elif self.format_text in self._contents:
-                text = self._contents[self.format_text]
+            elif self.format_text in contents:
+                text = contents[self.format_text]
             else:
-                print("get contents, but no expected format: %s"% self._contents.keys())
+                print("get contents, but no expected format: %s"% contents.keys())
                 text = ""
         if text.find('\r\n') >= 0:
             text = text.replace('\r\n', '\n')
