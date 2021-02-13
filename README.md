@@ -65,6 +65,22 @@ python paths those commands pickup, you will find that the natlinkcorepath will 
 If you uninstall natlink, and install it with pip, and reregister natlink, you will find the core diretory is
 reognized as a subfolder of site-packages.
 
+### FAQ for compiling with Visual Studio
+
+The Visual Studio project file needs to be set up to the specific location of your system Python install.
+
+- Error: `Python.h: No such file or directory`
+  You should be able to include dir that contains `Python.h`
+  1. Right click on the Project ``Properties -> Configuration Properties -> C/C++ -> General Menu`
+  2. In the field `Additional Include Directories` add path `;C:\Users\Main\AppData\Local\Programs\Python\Python38-32\include\`
+
+- Error: `LINK : fatal error LNK1104: cannot open file 'python38.lib'`
+  1. Right click on the Project `Properties -> Linker -> Input`
+  2. In the field `AdditionalDependencies` type `;C:\Users\Main\AppData\Local\Programs\Python\Python38-32\libs\python38.lib`
+- Warning: `This function or variable may be unsafe when compling`
+  1. Right click on the Project `Properties -> Configuration Properties -> C/C++ -> Preprocessor`
+  2. In the field `PreprocessorDefinitions` add `;_CRT_SECURE_NO_WARNINGS` to turn those warnings off.
+
 ## Notes About Packaging for Developers
 
 This is because there are import statements in macrosystem/core `import natlink`. So modules trying to import from a natlink folder break.
