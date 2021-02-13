@@ -14,7 +14,7 @@ help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.c
 The packages are ccurrently published in the [Test Python Packaging Index](https://test.pypi.org/) rather than
 the [Python Packaging Index](https://pypi.org/). The pip commands are a bit more complicated for this.
 
-## Instructions for end users
+## Instructions for End Users
 
 If you would like to install Natlink for use, but not as a developer, here are the instructions:
 
@@ -25,23 +25,23 @@ you a lot of typing and mouse clicking over the long run.
 Start a command prompt as **adminstrator**. All command line actions described for end users must be performed in
 a command shell with adminstrator privileges.
 
-Upgrade pip immediately:
+1. Upgrade pip immediately:
 
-- `pip install --upgrade pip`
+   - pip install --upgrade pip`
 
-Install natlink, Unimacro, and Vocola2 from [Test Python Packaging Index](https://test.pypi.org/). The following command will do that.  
-It will also pull any prequisites from the [Python Packaging Index](https://pypi.org/).
+2. Install natlink, Unimacro, and Vocola2 from [Test Python Packaging Index](https://test.pypi.org/). The following command will do that.  
+   It will also pull any prequisites from the [Python Packaging Index](https://pypi.org/).
 
-- `pip install --no-cache --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple natlink unimacro vocola2`
+   - `pip install --no-cache --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple natlink unimacro vocola2`
 
-This will install the packages in your Python site-packages area. It will also add the following commands, which should be
-in your path now in your commmand prompt:
+   This will install the packages in your Python site-packages area. It will also add the following commands, which should be
+   in your path now in your commmand prompt:
 
-- natlinkconfigfunctions
-- natlinkstatus
-- startnatlinkconfig
+   - natlinkconfigfunctions
+   - natlinkstatus
+   - startnatlinkconfig
 
-Run startnatlinkconfig to configure Natlink.
+3. Run startnatlinkconfig to configure Natlink.
 
 ## Instructions for Developers
 
@@ -71,7 +71,7 @@ The Visual Studio project file needs to be set up to the specific location of yo
 
 - Error: `Python.h: No such file or directory`
   You should be able to include dir that contains `Python.h`
-  1. Right click on the Project ``Properties -> Configuration Properties -> C/C++ -> General Menu`
+  1. Right click on the Project `Properties -> Configuration Properties -> C/C++ -> General Menu`
   2. In the field `Additional Include Directories` add path `;C:\Users\Main\AppData\Local\Programs\Python\Python38-32\include\`
 
 - Error: `LINK : fatal error LNK1104: cannot open file 'python38.lib'`
@@ -87,7 +87,7 @@ This is because there are import statements in macrosystem/core `import natlink`
 This is particularly problematic for scripts end-users might run while setting up natlink. This probably won't be resolved
 by moving natlink.pyd to another folder or name.
 
-The package is specified in 'pyproject.toml' and built with [flit](https://pypi.org/project/flit/). The build_package command
+The package is specified in `pyproject.toml` and built with [flit](https://pypi.org/project/flit/). The build_package command
 (a batch file in the root folder of natlink) builds a source distribution.
 
 Several scripts are specfied in pyproject.toml in the scripts section. Scripts are automatically generated
