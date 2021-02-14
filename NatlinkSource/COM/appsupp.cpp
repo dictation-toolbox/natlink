@@ -104,7 +104,12 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
     m_pNatLinkMain = PyImport_ImportModule( "natlinkmain" );
   
 	//doug todo call the function start_natlink in natlinkmain.?  what will happen?
-
+		
+	//Quintijn: or... load module start_natlinkmain, which does the same but in python
+	//only does:
+	// import natlinkmain
+	// natlinkmain.start_natlink()
+	//
 
 	m_pDragCode->setDuringInit( FALSE );
 
