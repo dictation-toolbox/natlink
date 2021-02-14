@@ -149,6 +149,7 @@ if canStartNatlink:
         print('do extra output at (re)loading time: %s'% debugLoad)
     if debugCallback:
         print('do extra output at callback time: %s'% debugCallback)
+
 ApplicationFrameHostTitles = {}
 ApplicationFrameHostTitles["Photos"] = "photos"
 ApplicationFrameHostTitles["Foto's"] = "photos"
@@ -666,7 +667,8 @@ def setSearchImportDirs():
     global searchImportDirs
     searchImportDirs = []
     if vocolaIsEnabled:
-        print('include Vocola in grammars to load')
+        if debugLoad:
+            print('include Vocola in grammars to load')
         if vocolaDirectory and os.path.isdir(vocolaDirectory):
             searchImportDirs.append(vocolaDirectory)
         if vocolaGrammarsDirectory and os.path.isdir(vocolaGrammarsDirectory):
@@ -674,7 +676,8 @@ def setSearchImportDirs():
     else:
         print('Vocola is disabled')
     if unimacroIsEnabled:
-        print('include Unimacro in grammars to load')
+        if debugLoad:
+            print('include Unimacro in grammars to load')
         if unimacroDirectory and os.path.isdir(unimacroDirectory):
             searchImportDirs.append(unimacroDirectory)
         if unimacroGrammarsDirectory and os.path.isdir(unimacroGrammarsDirectory):
@@ -682,7 +685,8 @@ def setSearchImportDirs():
     else:
         print('Unimacro is disabled')
     if userDirectory and os.path.isdir(userDirectory):
-        print(f'include UserDirectory: "{userDirectory}" in grammars to load')
+        if debugLoad:
+            print(f'include UserDirectory: "{userDirectory}" in grammars to load')
         searchImportDirs.append(userDirectory)
     else:
         print("no UserDirectory specified")
@@ -694,7 +698,8 @@ def setSearchImportDirs():
     added = False
     for searchdir in reversed(searchImportDirs):
         if not searchdir in sys.path:
-            print('from setSearchImportDirs add to path: %s'% searchdir)
+            if debugLoad:
+                print('from setSearchImportDirs add to path: %s'% searchdir)
             sys.path.insert(0, searchdir)
             added = True
     # if added:
@@ -1192,11 +1197,6 @@ if canStartNatlink:
         print('do extra output at (re)loading time: %s'% debugLoad)
     if debugCallback:
         print('do extra output at callback time: %s'% debugCallback)
-ApplicationFrameHostTitles = {}
-ApplicationFrameHostTitles["Photos"] = "photos"
-ApplicationFrameHostTitles["Foto's"] = "photos"
-ApplicationFrameHostTitles["Calculator"] = "calc"
-ApplicationFrameHostTitles["Rekenmachine"] = "calc"
 
 ## always set as global variables:
 baseDirectory = status.getBaseDirectory()    ## MacroSystem folder

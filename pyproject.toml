@@ -4,9 +4,11 @@ build-backend = "flit_core.buildapi"
 
 [tool.flit.metadata]
 module="natlinkpy"
-author = "quintijn"
-author-email = "quintijn@me.uk"
-home-page = "https://github.com/dictation-toolbox/unimacro"
+author = "Joel Gould"
+author-email = "joelg@alum.mit.edu"
+maintainer = "Quintijn Hoogenboom"
+maintainer-email = "q.hoogenboom@antenna.nl"
+home-page = "https://qh.antenna.nl/unimacro/"
 description-file = "README.md"
 
 requires=[ 

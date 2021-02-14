@@ -6,6 +6,10 @@
 # natlinkutils.py
 #   This file contains utility classes and functions for grammar files.
 #
+#
+# February 2021 (QH) skip import of natlinkmain
+#     only the function getCurrentApplicationName copied from natlinkmain...
+#
 # November 2018 (QH)
 #   Accept unicode input, convert to python 2.6 string
 #
@@ -86,7 +90,7 @@ import types
 import struct
 import time
 import natlink
-import natlinkmain
+# import natlinkmain
 import gramparser
 import natlinkstatus
 import utilsqh
@@ -176,6 +180,49 @@ dgnwordflag_space_bar		= 0x08000000
 dgnwordflag_topicadded		= 0x40000000
 dgnwordflag_DNS8newwrdProp  = 0x20000000
  
+## temporary fix, remove as soon as natlinkmain is more secure QH (Febr 2021) 
+ 
+ApplicationFrameHostTitles = {}
+ApplicationFrameHostTitles["Photos"] = "photos"
+ApplicationFrameHostTitles["Foto's"] = "photos"
+ApplicationFrameHostTitles["Calculator"] = "calc"
+ApplicationFrameHostTitles["Rekenmachine"] = "calc"
+ 
+## copy of function in natlinkmain, in order to get free from natlinkmain here:
+def getCurrentApplicationName(moduleInfo):
+    """get the module name from currentModule info
+
+    normally: the application name from currentModule[0]
+
+    if this is applicationframhost, try from title in above dict, ApplicationFrameHostTitles
+    """
+            # return os.path.splitext(
+        #     os.path.split(self.currentModule[0]) [1]) [0].lower()
+
+    try:
+        curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
+    except:
+        print(f'getCurrentApplicationName: invalid modulename, skipping moduleInfo: {moduleInfo}')
+        return
+    if not curModule:
+        return
+
+    progname = curModule.lower()
+    if curModule == 'ApplicationFrameHost':
+        title = moduleInfo[1]
+        for progname in title.split()[0], title.split()[-1]:
+            # print(f'ApplicationFrameHost, try title word: {progname}')
+            if progname in ApplicationFrameHostTitles:
+                progname = ApplicationFrameHostTitles[progname]
+                # print(f'ApplicationFrameHost, found progname: {progname}')
+                break
+        else:
+            print(f'ApplicationFrameHost with title: {title} not found in titles, enter in configuration')
+            return
+        # print(f'getCurrentApplicationName,  from ApplicationFrameHost, return progName: {progname}')
+    # print(f'getCurrentApplicationName,  return progName: {progname}')
+
+    return progname
 
 #---------------------------------------------------------------------------
 # matchWindow
@@ -188,7 +235,9 @@ dgnwordflag_DNS8newwrdProp  = 0x20000000
 
 def matchWindow(moduleInfo, modName, wndText):
     if len(moduleInfo)<3 or not moduleInfo[0]: return None
-    curName = natlinkmain.getCurrentApplicationName(moduleInfo)
+    
+    # copy of function from natlinkmain here (above)
+    curName = getCurrentApplicationName(moduleInfo)
     if curName != modName: return None
     if moduleInfo[1].find(wndText) == -1: return None
     return moduleInfo[2]
