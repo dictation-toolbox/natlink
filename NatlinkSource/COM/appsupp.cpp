@@ -102,6 +102,10 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	m_pDragCode->setDuringInit( TRUE );
     m_pNatLinkMain = PyImport_ImportModule( "redirect_output" );
     m_pNatLinkMain = PyImport_ImportModule( "natlinkmain" );
+  
+	//doug todo call the function start_natlink in natlinkmain.?  what will happen?
+
+
 	m_pDragCode->setDuringInit( FALSE );
 
 
