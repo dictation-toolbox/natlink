@@ -310,7 +310,7 @@ PyObject * CResultObject::getWave()
 	onNOTENOUGHDATA( rc, "The wave data is no longer available for this result" );
 	RETURNIFERROR( rc, "ISRResAudio::GetWAV" );
 
-	PyObject * pData = Py_BuildValue( "s#", (char *)(sData.pData), sData.dwSize );
+	PyObject * pData = Py_BuildValue( "y#", (char *)(sData.pData), sData.dwSize );
 	CoTaskMemFree( sData.pData );
 	return pData;
 }
