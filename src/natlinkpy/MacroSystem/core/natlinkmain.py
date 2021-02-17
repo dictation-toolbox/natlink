@@ -511,7 +511,7 @@ def findAndLoadFiles(curModule=None):
                     nVocolaGrammars += 1
                     modName = res.group(1)
                     addToFilesToLoad( filesToLoad, modName, vocolaGrammarsDirectory, moduleHasDot )
-            if debugLoad and nVocolaGrammars:
+            if debugLoad:
                 print(f"natlinkmain: {nVocolaGrammars} Vocola Compiled grammars checking to load")
 
     for x in baseDirFiles:
@@ -523,7 +523,7 @@ def findAndLoadFiles(curModule=None):
             addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
 
     keysToLoad = list(filesToLoad.keys())
-    if len(keysToLoad) and debugLoad:
+    if debugLoad:
         print(f'natlinkmain: {len(keysToLoad)} grammars checking load')
     for x in keysToLoad:
         if x == doVocolaFirst:
@@ -691,10 +691,12 @@ def setSearchImportDirs():
     else:
         print("no UserDirectory specified")
     if baseDirectory and os.path.isdir(baseDirectory):
-        print(f'include baseDirectory "{baseDirectory}" in grammars to load')
+        if debugLoad:
+            print(f'include baseDirectory "{baseDirectory}" in grammars to load')
         searchImportDirs.append(baseDirectory)
     else:
-        print('no baseDirectory specified (any more)')
+        if debugLoad:
+            print('no baseDirectory specified (any more)')
     added = False
     for searchdir in reversed(searchImportDirs):
         if not searchdir in sys.path:
@@ -1547,7 +1549,7 @@ def findAndLoadFiles(curModule=None):
                     nVocolaGrammars += 1
                     modName = res.group(1)
                     addToFilesToLoad( filesToLoad, modName, vocolaGrammarsDirectory, moduleHasDot )
-            if debugLoad or nVocolaGrammars:
+            if debugLoad:
                 print(f"natlinkmain: {nVocolaGrammars} Vocola Compiled grammars to load")
         else:
             vocolaGrammarFiles = []
@@ -1561,7 +1563,7 @@ def findAndLoadFiles(curModule=None):
             addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
 
     keysToLoad = list(filesToLoad.keys())
-    if len(keysToLoad) or debugLoad:
+    if debugLoad:
         print(f'natlinkmain: {len(keysToLoad)} grammars to load')
     for x in keysToLoad:
         if x == doVocolaFirst:

@@ -696,9 +696,14 @@ Please try to correct this by running the Natlink Config Program (with administr
             pythonInFileName = setting[0] + '.' + setting[-1]
             pyth, drag = int(setting), 11  # which can also mean pre 11...
 
+        if pyth < 17:
+            fatal_error(f'This is Natlink for Python 3, only version 3.7 and above are supported, not: {pythonInFileName}')
+
         if drag <= 11:
+            fatal_error(f'With python version 3 only DPI 15 and above are supported, not {drag}')
             ansiUnicode = 'ANSI'
         elif drag <= 14:
+            fatal_error(f'With python version 3 only DPI 15 and above are supported, not {drag}')
             ansiUnicode= 'UNICODE'
         else:
             ansiUnicode = 'Ver15'

@@ -1,5 +1,4 @@
 #! python3
-#! python3
 #
 # natlinkconfigfunctions.py
 #   This module performs the configuration functions.
@@ -94,7 +93,7 @@ sys.path.append(str(coreDir))
 
 
 
-print(f"Core dir {coreDir}\nsys.path: {sys.path}")
+# print(f"Core dir {coreDir}\nsys.path: {sys.path}")
 
 try:
     from pathqh import path
