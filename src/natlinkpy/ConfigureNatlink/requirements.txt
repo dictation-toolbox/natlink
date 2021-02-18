@@ -1,6 +1,7 @@
 ###### Requirements without Version Specifiers ######`
 debugpy
 future
+wheel
 
 
 ###### Requirements with Version Specifiers ######`
