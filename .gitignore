@@ -102,3 +102,4 @@ src/*_vcl.py
 #ConfigureNatlink Error 
 /ConfigureNatlink/configurenatlink_error.txt
 /configurenatlink_error.txt
+/PyTest/Natlinktimertestresult.txt
