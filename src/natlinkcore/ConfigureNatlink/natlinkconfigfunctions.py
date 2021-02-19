@@ -50,7 +50,7 @@ More at the bottom, with the CLI description...
 import os
 import shutil
 import sys
-import pywintypes
+# import pywintypes
 import traceback
 import types
 import ctypes
@@ -69,7 +69,7 @@ def CoreDirectory():
     """Returns the CoreDirectory as a pathlib.path"""
     thisDir=WindowsPath(__file__).parent.resolve()
     # print(f"this dir {thisDir}")
-    coreDir=thisDir.parent/"MacroSystem/core"
+    coreDir=thisDir.parent
     return coreDir
 
 def NatlinkStatusIniFileName():
@@ -864,14 +864,14 @@ Natlink is now disabled.
         key1 = self.key1
         value1 = self.value1
         #
-        try:
-            win32api.WriteProfileVal(section1, key1, value1, nssystemini)
-        except pywintypes.error as details:
-            if details[0] == 5:
-                print('cannot enable Natlink (1), you probably need administrator rights')
-            else:
-                print('unexpected error at enable Natlink (1)')
-                raise
+        # try:
+        win32api.WriteProfileVal(section1, key1, value1, nssystemini)
+        # except pywintypes.error as details:
+        #     if details[0] == 5:
+        #         print('cannot enable Natlink (1), you probably need administrator rights')
+        #     else:
+        #         print('unexpected error at enable Natlink (1)')
+        #         raise
 
         result = self.NatlinkIsEnabled(silent=1)
         if (result is None) or (not result):
@@ -879,14 +879,14 @@ Natlink is now disabled.
             section2 = self.section2
             key2 = self.key2
             value2 = self.value2
-            try:
-                win32api.WriteProfileVal(section2, key2, value2, nsappsini)
-            except pywintypes.error as details:
-                if details[0] == 5:
-                    print('cannot enable Natlink (2), you probably need administrator rights')
-                else:
-                    print('unexpected error at enable Natlink (2)')
-                    raise
+            # try:
+            win32api.WriteProfileVal(section2, key2, value2, nsappsini)
+            # except pywintypes.error as details:
+            #     if details[0] == 5:
+            #         print('cannot enable Natlink (2), you probably need administrator rights')
+            #     else:
+            #         print('unexpected error at enable Natlink (2)')
+            #         raise
             result = self.NatlinkIsEnabled(silent=1)
             if result == None:
                 text = \
@@ -916,14 +916,14 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         key1 = self.key1
         # trick with None, see testConfigureFunctions...
         # this one disables Natlink:
-        try:
-            win32api.WriteProfileVal(section1, key1, None, nssystemini)
-        except pywintypes.error as details:
-            if details[0] == 5:
-                print('cannot disable Natlink, you probably need administrator rights')
-            else:
-                print('unexpected error at disable Natlink')
-                raise
+        # try:
+        win32api.WriteProfileVal(section1, key1, None, nssystemini)
+        # except pywintypes.error as details:
+        #     if details[0] == 5:
+        #         print('cannot disable Natlink, you probably need administrator rights')
+        #     else:
+        #         print('unexpected error at disable Natlink')
+        #         raise
         result = self.NatlinkIsEnabled(silent=1)
         if result:
             t = 'Natlink is NOT disabled, you probably need administrator rights, please restart the config program in "elevated mode"'
