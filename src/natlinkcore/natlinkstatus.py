@@ -1218,15 +1218,13 @@ Please try to correct this by running the Natlink Config Program (with administr
         when installed as  a package, that will not be the case.
 
         """
-        if not self.UnimacroDirectory is None: return self.UnimacroDirectory
-        uDir = path(self.NatlinkDirectory)/".."/"Unimacro/src/unimacro"
-        if not uDir.isdir():
-            uDir = path(self.NatlinkDirectory)/".."/".."/".."/"Unimacro/src/unimacro"
-            
-        if not uDir.isdir():
-            spDir = path(sys.prefix)/"lib"/"site-packages"
-            if spDir.isdir():
-                uDir = spDir/"unimacro"
+        spDir = path(sys.prefix)/"lib"/"site-packages"
+        if spDir.isdir():
+            uDir = spDir/"unimacro"
+        else:
+            print(f'Cannot find the python site-packages directory {spDir}')
+            self.UnimacroDirectory = ''
+            return ''
 
         if uDir.isdir():
             uFile = "_control.py"
@@ -1275,6 +1273,8 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getBaseDirectory(self):
         """return the path of the baseDirectory, MacroSystem
         """
+        print("Warning: the BaseDirectory is obsolete with the python 3 version of Natlink")
+        self.BaseDirectory = ''
         return self.BaseDirectory
 
     def getCoreDirectory(self):
@@ -1332,34 +1332,33 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getVocolaDirectory(self):
         if not self.VocolaDirectory is None: return self.VocolaDirectory
 
-        vDir = None        
-        # first try in Gir area, related to NatlinkDirectory
-        vDir1 = path(self.NatlinkDirectory)/".."/".."/".."/"Vocola/src/vocola2"
-        vDir2 = path(self.NatlinkDirectory)/".."/".."/".."/"Vocola2/src/vocola2"
-
-        if vDir1.isdir():
-            vDir = vDir1
-        elif vDir2.isdir():
-            vDir = vDir2
-        
-        else:
-            ## try in site-packages:
-            spDir = path(sys.prefix)/"lib"/"site-packages"
-            if spDir.isdir():
-                vocDir = spDir/"vocola2"
+        ## try in site-packages:
+        spDir = path(sys.prefix)/"lib"/"site-packages"
+        if spDir.isdir():
+            vocDir = spDir/"vocola2"
+            if vocDir.isdir():
+                vDir = vocDir
+            else:
+                vocDir = spDir/"vocola"
                 if vocDir.isdir():
                     vDir = vocDir
-        if vDir:
-            vFile = "_vocola_main.py"
-            controlGrammar = vDir/vFile
-            if controlGrammar.isfile():
+                else:
+                    print(f'Cannot find a Vocola (or Vocola2) directory in site-packages')
+                    self.VocolaDirectory = ''
+                    return ''
+        else:
+            print(f'Cannot find the python site-packages directory {spDir}')
+            self.VocolaDirectory = ''
+            return ''
+
+        vFile = "_vocola_main.py"
+        controlGrammar = vDir/vFile
+        if controlGrammar.isfile():
                 self.VocolaDirectory = vDir.normpath()
                 self.addToPath(self.VocolaDirectory)
                 return self.VocolaDirectory
-            else:
-                print(f'VocolaDirectory found in "{vDir}", but no file "{vFile}" found, return ""')
         else:
-            print(f'VocolaDirectory not found in Git area or in "lib/site-packages/vocola2", return ""')
+            print(f'VocolaDirectory found in "{vDir}", but no file "{vFile}" found, return ""')
         ## not found:
         self.VocolaDirectory = ""
         return ""
