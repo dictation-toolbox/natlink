@@ -3,7 +3,7 @@ requires = ["flit_core >=2,<4"]
 build-backend = "flit_core.buildapi"
 
 [tool.flit.metadata]
-module="natlinkpy"
+module="natlinkcore"
 author = "Joel Gould"
 author-email = "joelg@alum.mit.edu"
 maintainer = "Quintijn Hoogenboom"
@@ -33,7 +33,7 @@ keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
 #are not in the python path, so the import statements won't find the other modules in 
 #the folder.
 
-natlinkconfigfunctions="natlinkpy.ConfigureNatlink.natlinkconfigfunctions:main"
-start_natlinkconfig="natlinkpy.ConfigureNatlink.start_configurenatlink:main"
+natlinkconfigfunctions="natlinkcore.ConfigureNatlink.natlinkconfigfunctions:main"
+start_natlinkconfig="natlinkcore.ConfigureNatlink.start_configurenatlink:main"
 
 
