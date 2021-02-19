@@ -342,7 +342,8 @@ def loadFile(modName, origPath=None, origDate=None):
             fndFile.close()
             return None
         if debugLoad:
-            print(f'Loading {modName}') 
+            pass
+            # print(f'Loading {modName}') 
 
     if modName in wrongFiles:
         wrongPath, sourceDate = wrongFiles[modName]

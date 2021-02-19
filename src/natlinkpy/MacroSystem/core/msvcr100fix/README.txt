@@ -23,3 +23,4 @@ Please report your experiences to q.hoogenboom@antenna.nl
 
 December 2016
 
+With python 3 hopefully obsolete. Keep for the time being, just in case. Quintijn Hoogenboom, February 2021

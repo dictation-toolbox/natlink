@@ -639,7 +639,7 @@ class GrammarBase(GramClassBase):
             else:
                 if debugLoad: print('change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window))
                 self.gramObj.deactivate(ruleName)
-        if debugLoad: print('activate rule %s (window: %s)'% (ruleName, window))
+        # if debugLoad: print('activate rule %s (window: %s)'% (ruleName, window))
         self.gramObj.activate(ruleName,window)
         self.activeRules[ruleName] = window
         if not exclusive is None:
@@ -681,9 +681,9 @@ class GrammarBase(GramClassBase):
             if x in rulenames:
                 if curWindow == window:
                     rulenames.remove(x)
-                    if debugLoad: print('activateSet, rule %s already active for %s'% (x, window))
+                    # if debugLoad: print('activateSet, rule %s already active for %s'% (x, window))
                 else:
-                    if debugLoad: print('activateSet, rule %s, change from window %s to window %s'% (x, curWindow, window))
+                    # if debugLoad: print('activateSet, rule %s, change from window %s to window %s'% (x, curWindow, window))
                     self.deactivate(x)
                     # self.activate(x, window)
                     # rulenames.remove(x)
@@ -724,7 +724,7 @@ class GrammarBase(GramClassBase):
         if exceptlist:
             for x in exceptlist:
                 allRules.remove(x)
-            if debugLoad: print('activateAll except %s'% exceptlist)
+            # if debugLoad: print('activateAll except %s'% exceptlist)
             
         self.activateSet(allRules, window=window, exclusive=exclusive)
         if not exclusive is None:

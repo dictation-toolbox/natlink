@@ -426,7 +426,7 @@ def printAllEnvVariables():
     for k in sorted(recentEnv.keys()):
         print("%s\t%s"% (k, recentEnv[k]))
 
-class InifileSection(object):
+class InifileSection:
     """simulate a part of the registry through inifiles
     
         basic file is natlinkstatus.ini
