@@ -2,7 +2,7 @@
 debugpy
 future
 wheel
-
+pywintypes
 
 ###### Requirements with Version Specifiers ######`
 #flit is only required for developers

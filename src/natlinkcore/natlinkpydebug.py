@@ -69,7 +69,7 @@ def start_dap():
 
 def debug_check_on_startup():
     global  __debug_started,__debugpy_debug_port,__debugger
-    debug_instructions = f"{__status.getCoreDirectory()}\\debugging python instructions.docx"
+    debug_instructions = f"{__status.getNatlinkDirectory()}\\debugging python instructions.docx"
     print(f"Instructions for attaching a python debugger are in {debug_instructions} ")
     if __natLinkPythonDebugPortEnviornmentVar in os.environ:
         start_dap()

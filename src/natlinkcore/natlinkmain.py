@@ -157,9 +157,8 @@ ApplicationFrameHostTitles["Calculator"] = "calc"
 ApplicationFrameHostTitles["Rekenmachine"] = "calc"
         
 ## always set as global variables:
-baseDirectory = status.getBaseDirectory()    ## MacroSystem folder
-coreDirectory = status.getCoreDirectory()
-natlinkDirectory = status.getNatlinkDirectory()  ## root of Natlink area, two above the core directory
+# baseDirectory = status.getBaseDirectory()    ## MacroSystem folder
+natlinkDirectory = status.getNatlinkDirectory()
 userDirectory = status.getUserDirectory()
 unimacroDirectory = status.getUnimacroDirectory()
 unimacroGrammarsDirectory = status.getUnimacroGrammarsDirectory()
@@ -462,12 +461,12 @@ def findAndLoadFiles(curModule=None):
                     modName = res.group(1)
                     addToFilesToLoad( filesToLoad, modName, unimacroGrammarsDirectory, moduleHasDot )
 
-    # baseDirectory:
-    if baseDirectory:
-        baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
-    else:
-        baseDirFiles = []
-
+    # # baseDirectory:
+    # if baseDirectory:
+    #     baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
+    # else:
+    #     baseDirFiles = []
+    # 
     ## _vocola_main:
     if debugLoad:
         print(f'_natlinkmain, vocolaDirectory: {vocolaDirectory}')
@@ -515,13 +514,13 @@ def findAndLoadFiles(curModule=None):
             if debugLoad:
                 print(f"natlinkmain: {nVocolaGrammars} Vocola Compiled grammars checking to load")
 
-    for x in baseDirFiles:
-        res = pat.match(x)
-        if res:
-            modName = res.group(1)
-            if debugLoad and curModule:
-                print("application specific, baseDirFile MATCH: %s, group1: %s"% (x, modName))
-            addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
+    # for x in baseDirFiles:
+    #     res = pat.match(x)
+    #     if res:
+    #         modName = res.group(1)
+    #         if debugLoad and curModule:
+    #             print("application specific, baseDirFile MATCH: %s, group1: %s"% (x, modName))
+    #         addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
 
     keysToLoad = list(filesToLoad.keys())
     if debugLoad:
@@ -662,7 +661,7 @@ def setSearchImportDirs():
     
     and add them to sys.path if needed...
 
-    either [userDirectory, baseDirectory, unimacroDirectory, ] or less (if no userDirectory or no unimacroDirectory)
+    either [userDirectory, unimacroDirectory, ] or less (if no userDirectory or no unimacroDirectory)
 
     """
     global searchImportDirs
@@ -691,13 +690,6 @@ def setSearchImportDirs():
         searchImportDirs.append(userDirectory)
     else:
         print("no UserDirectory specified")
-    if baseDirectory and os.path.isdir(baseDirectory):
-        if debugLoad:
-            print(f'include baseDirectory "{baseDirectory}" in grammars to load')
-        searchImportDirs.append(baseDirectory)
-    else:
-        if debugLoad:
-            print('no baseDirectory specified (any more)')
     added = False
     for searchdir in reversed(searchImportDirs):
         if not searchdir in sys.path:
@@ -856,7 +848,7 @@ def changeCallback(Type,args):
 
     # if debugCallback:
     #     print('=== debugCallback info ===')
-    #     for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
+    #     for name in ['natlinkDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
     #      'unimacroDirectory', 'userDirectory',
     #      'windowsVersion', 'BaseModel', 'BaseTopic',
     #      'language', 'userLanguage', 'userTopic']:
@@ -925,10 +917,6 @@ def start_natlink(doNatConnect=None):
         print("----natlink.natConnect succeeded")
 
     # for modname in ['natlink', 'natlinkmain']:
-    if not baseDirectory in sys.path:
-        sys.path.insert(0,baseDirectory)
-        if debugLoad:
-            print('insert baseDirectory: %s to sys.path!'% baseDirectory)
     if debugLoad: print(("Natlink base dir" + baseDirectory))
 
     # get the current user information from the Natlink module
@@ -1202,17 +1190,17 @@ if canStartNatlink:
         print('do extra output at callback time: %s'% debugCallback)
 
 ## always set as global variables:
-baseDirectory = status.getBaseDirectory()    ## MacroSystem folder
-coreDirectory = status.getCoreDirectory()
-natlinkDirectory = status.getNatlinkDirectory()  ## root of Natlink area, two above the core directory
-userDirectory = status.getUserDirectory()
-unimacroDirectory = status.getUnimacroDirectory()
-unimacroGrammarsDirectory = status.getUnimacroGrammarsDirectory()
-vocolaDirectory = status.getVocolaDirectory()
-vocolaGrammarsDirectory = status.getVocolaGrammarsDirectory()
-DNSVersion = status.getDNSVersion()
-windowsVersion = status.getWindowsVersion()
-
+# baseDirectory = status.getBaseDirectory()    ## MacroSystem folder
+# natlinkDirectory = status.getCoreDirectory()
+# natlinkDirectory = status.getNatlinkDirectory()  ## root of Natlink area, two above the core directory
+# userDirectory = status.getUserDirectory()
+# unimacroDirectory = status.getUnimacroDirectory()
+# unimacroGrammarsDirectory = status.getUnimacroGrammarsDirectory()
+# vocolaDirectory = status.getVocolaDirectory()
+# vocolaGrammarsDirectory = status.getVocolaGrammarsDirectory()
+# DNSVersion = status.getDNSVersion()
+# windowsVersion = status.getWindowsVersion()
+# 
 
 # QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
 # otherwise no grammar change checking is performed, only at microphone toggle
@@ -1877,7 +1865,7 @@ def changeCallback(Type,args):
 
     # if debugCallback:
     #     print('=== debugCallback info ===')
-    #     for name in ['coreDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
+    #     for name in ['natlinkDirectory', 'baseDirectory', 'DNSuserDirectory', 'userName',
     #      'unimacroDirectory', 'userDirectory',
     #      'windowsVersion', 'BaseModel', 'BaseTopic',
     #      'language', 'userLanguage', 'userTopic']:
