@@ -55,7 +55,7 @@ import sys
 import os
 import os.path
 import traceback
-import utilsqh ## convertToBinary
+from natlinkcore import utilsqh ## convertToBinary
 import importlib
 import locale
 from collections import OrderedDict

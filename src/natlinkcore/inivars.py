@@ -8,8 +8,8 @@ import os.path
 import sys
 import re
 import copy
-import utilsqh
-from pathqh import path
+from natlinkcore import utilsqh
+from natlinkcore.pathqh import path
 from utilsqh import peek_ahead
 import locale
 locale.setlocale(locale.LC_ALL, '')

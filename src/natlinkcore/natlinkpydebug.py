@@ -9,7 +9,7 @@ There are several, Microsoft Visual Studio COde is known to work.
 If you know how to add support for another debugger please add it.
 """
 import debugpy
-import natlinkstatus
+from natlinkcore import natlinkstatus
 import os
 
 __status = natlinkstatus.NatlinkStatus()

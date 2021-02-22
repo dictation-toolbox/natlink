@@ -396,7 +396,7 @@ True
             if not recentEnv:
                 recentEnv.update(getAllFolderEnvironmentVariables())
                 try:
-                    import natlinkstatus
+                    from natlinkcore import natlinkstatus
                     recentEnv.update(natlinkstatus.AddNatlinkEnvironmentVariables())
                 except ModuleNotFoundError:
                     pass

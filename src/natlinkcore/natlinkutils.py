@@ -92,8 +92,8 @@ import time
 import natlink
 # import natlinkmain
 import gramparser
-import natlinkstatus
-import utilsqh
+from natlinkcore import natlinkstatus
+from natlinkcore import utilsqh
 import sys
 import traceback
 import locale

@@ -237,8 +237,10 @@ class NatlinkStatus:
     section2 = ".Natlink"
     key2 = "App Support GUID"
     value2 = NATLINK_CLSID
-
-    userArgsDict = {}
+    try:
+        userArgsDict
+    except NameError:
+        userArgsDict = {}
 
     # for quicker access (only once lookup in a run)
     NatlinkDirectory = None
@@ -262,6 +264,8 @@ class NatlinkStatus:
     hadWarning = []
 
     def __init__(self, skipSpecialWarning=None):
+
+        print(f'userArgsDict at start of instance: {self.userArgsDict}')
 
         self.skipSpecialWarning = skipSpecialWarning
 
@@ -604,9 +608,9 @@ Please try to correct this by running the Natlink Config Program (with administr
             return
 
         userName = args[0]
-        self.userArgsDict['userName'] = userName
+        self.__class__.userArgsDict['userName'] = userName
         DNSuserDirectory = args[1]
-        self.userArgsDict['DNSuserDirectory'] = DNSuserDirectory
+        self.__class__.userArgsDict['DNSuserDirectory'] = DNSuserDirectory
         if len(args) == 2:
             userLanguage = self.getUserLanguageFromInifile()
             try:
@@ -619,9 +623,9 @@ Please try to correct this by running the Natlink Config Program (with administr
                     print('natlinkstatus, setUserInfo: no language found for userLanguage: %s'% userLanguage)
                     print('=== please report to q.hoogenboom@antenna.nl ===')
                     language = ''
-            self.userArgsDict['language'] = language
-            self.userArgsDict['userLanguage'] = userLanguage
-            self.userArgsDict['userTopic'] = self.getUserTopic() # will be the basetopic...
+            self.__class__.userArgsDict['language'] = language
+            self.__class__.userArgsDict['userLanguage'] = userLanguage
+            self.__class__.userArgsDict['userTopic'] = self.getUserTopic() # will be the basetopic...
 
         elif len(args) == 4:
             print('natlinkstatus, setUserInfo: this case seems to be obsolete, (len(args) == 4!!): %s'% userLanguage)
@@ -663,13 +667,13 @@ Please try to correct this by running the Natlink Config Program (with administr
                 print('got language: %s, userLanguageIni: %s'% (language, userLanguageIni))
                 print('natlinkstatus, languages: %s'% languages)
                 language = 'xyz'
-            self.userArgsDict['language'] = language
-            self.userArgsDict['userLanguage'] = userLanguageIni
-            self.userArgsDict['userTopic'] = self.getBaseTopic()
+            self.__class__.userArgsDict['language'] = language
+            self.__class__.userArgsDict['userLanguage'] = userLanguageIni
+            self.__class__.userArgsDict['userTopic'] = self.getBaseTopic()
         # print '--- natlinkstatus, set userArgsDict: %s'% self.userArgsDict
 
     def clearUserInfo(self):
-        self.userArgsDict.clear()
+        self.__class__.userArgsDict.clear()
 
     def getUserName(self):
         try:

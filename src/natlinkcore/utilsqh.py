@@ -19,7 +19,7 @@ import time
 import filecmp
 import collections
 # path moved to pathqh.py
-from pathqh import path
+from natlinkcore.pathqh import path
 
 if sys.platform != 'linux2':
     import win32com.client

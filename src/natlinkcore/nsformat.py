@@ -14,7 +14,7 @@
 import types
 import copy
 import natlink
-import natlinkstatus
+from natlinkcore import natlinkstatus
 
 ## make DNSVersion global variable:
 try: DNSVersion

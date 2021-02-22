@@ -5,7 +5,7 @@ import re
 import shutil
 import sys
 
-import natlinkstatus
+from natlinkcore import natlinkstatus
 
 
 #

@@ -404,7 +404,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         try:
             nc = __import__('natlinkcorefunctions')
         except:
-            self.error('could not import natlinkcorefunctions')
+            self.error('could not from natlinkcore import natlinkcorefunctions')
             error = 1
         if not error:
             self.config = self.cli.config

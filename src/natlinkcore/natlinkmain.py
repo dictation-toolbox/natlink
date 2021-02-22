@@ -96,7 +96,6 @@
 # A few print statements are commented out.  Remove the pound sign during
 # debugging to print information about when a module is loaded.
 #
-import natlink
 import sys
 import traceback
 import types
@@ -111,10 +110,8 @@ import glob             # new way to collect the grammar files
 from pprint import pprint
 import inspect
 
+import natlink
 import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
-
-
-
 
     # print("at start of natlinkmain, after redirect stderr and stdout")
 
@@ -796,10 +793,12 @@ def changeCallback(Type,args):
 ## this is not longer needed here, as we fixed the userDirectory
 ##        changeUserDirectory()
         status.clearUserInfo()
-        # if debugLoad: print('setUserInfo of natlinkstatus to: %s"'% repr(args))
+        if debugLoad:
+            pass
+        print('setUserInfo of natlinkstatus to: %s"'% repr(args))
         status.setUserInfo(args)
         language = status.getLanguage()
-        
+        print(f'language in natlinkmain: {language}')
         DNSuserDirectory = status.getDNSuserDirectory()
         userLanguage = status.getUserLanguage()
         userTopic = status.getUserTopic()
@@ -916,9 +915,6 @@ def start_natlink(doNatConnect=None):
 
         print("----natlink.natConnect succeeded")
 
-    # for modname in ['natlink', 'natlinkmain']:
-    if debugLoad: print(("Natlink base dir" + baseDirectory))
-
     # get the current user information from the Natlink module
     if userDirectory and os.path.isdir(userDirectory):
         if not userDirectory in sys.path:
@@ -967,11 +963,11 @@ def start_natlink(doNatConnect=None):
     changeCallback('user', natlink.getCurrentUser())
 
     print(('natlinkmain started from %s:\n  Natlink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
-              (status.getCoreDirectory(), status.getInstallVersion(),
+              (status.getNatlinkDirectory(), status.getInstallVersion(),
                DNSVersion, status.getPythonVersion(), windowsVersion, )))
 
     if debugLoad:
-        print("userDirectory: %s\nbaseDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, baseDirectory, unimacroDirectory))
+        print("userDirectory: %s\nvocolaDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, vocolaDirectory, unimacroDirectory))
         print("loadedFiles: %s"% loadedFiles)
         print("natlinkmain imported-----------------------------------")
     elif natlinkmainPrintsAtEnd:
@@ -1157,7 +1153,7 @@ import natlinkpydebug as pd
 
     # print("at start of natlinkmain, after redirect stderr and stdout")
 
-import natlinkstatus    # for extracting status info (QH)
+from natlinkcore import natlinkstatus    # for extracting status info (QH)
 import natlinkstartup
 debugTiming=0
 # bookkeeping for Vocola:
@@ -1490,11 +1486,11 @@ def findAndLoadFiles(curModule=None):
         else:
             unimacroGrammarDirFiles = []
 
-    # baseDirectory:
-    if baseDirectory:
-        baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
-    else:
-        baseDirFiles = []
+    # # baseDirectory:
+    # if baseDirectory:
+    #     baseDirFiles = [x for x in os.listdir(baseDirectory) if x.endswith('.py')]
+    # else:
+    #     baseDirFiles = []
 
     ## _vocola_main:
     if vocolaIsEnabled:
@@ -1543,13 +1539,13 @@ def findAndLoadFiles(curModule=None):
         else:
             vocolaGrammarFiles = []
 
-    for x in baseDirFiles:
-        res = pat.match(x)
-        if res:
-            modName = res.group(1)
-            if debugLoad and curModule:
-                print("application specific, baseDirFile MATCH: %s, group1: %s"% (x, modName))
-            addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
+    # for x in baseDirFiles:
+    #     res = pat.match(x)
+    #     if res:
+    #         modName = res.group(1)
+    #         if debugLoad and curModule:
+    #             print("application specific, baseDirFile MATCH: %s, group1: %s"% (x, modName))
+    #         addToFilesToLoad( filesToLoad, modName, baseDirectory, moduleHasDot )
 
     keysToLoad = list(filesToLoad.keys())
     if debugLoad:
@@ -1690,7 +1686,7 @@ def setSearchImportDirs():
 
     and add them to sys.path if needed...
 
-    either [userDirectory, baseDirectory, unimacroDirectory, ] or less (if no userDirectory or no unimacroDirectory)
+    either [userDirectory, vocolaDirectory, unimacroDirectory, ] or less (if no userDirectory or no unimacroDirectory)
 
     """
     global searchImportDirs
@@ -1706,7 +1702,7 @@ def setSearchImportDirs():
     if unimacroGrammarsDirectory != '':
         searchImportDirs.append(unimacroGrammarsDirectory)
 
-    searchImportDirs.append(baseDirectory)
+    # searchImportDirs.append(baseDirectory)
     added = False
     for searchdir in reversed(searchImportDirs):
         if not searchdir in sys.path:
@@ -1934,11 +1930,11 @@ def start_natlink(doNatConnect=None):
         print("----natlink.natConnect succeeded")
 
     # for modname in ['natlink', 'natlinkmain']:
-    if not baseDirectory in sys.path:
-        sys.path.insert(0,baseDirectory)
-        if debugLoad:
-            print('insert baseDirectory: %s to sys.path!'% baseDirectory)
-    if debugLoad: print(("Natlink base dir" + baseDirectory))
+    # if not baseDirectory in sys.path:
+    #     sys.path.insert(0,baseDirectory)
+    #     if debugLoad:
+    #         print('insert baseDirectory: %s to sys.path!'% baseDirectory)
+    # if debugLoad: print(("Natlink base dir" + baseDirectory))
 
     # get the current user information from the Natlink module
     if userDirectory and os.path.isdir(userDirectory):
@@ -1988,12 +1984,12 @@ def start_natlink(doNatConnect=None):
     changeCallback('user', natlink.getCurrentUser())
 
     print(('natlinkmain started from %s:\n  Natlink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
-              (status.getCoreDirectory(), status.getInstallVersion(),
+              (status.getNatlinkDirectory(), status.getInstallVersion(),
                DNSVersion, status.getPythonVersion(), windowsVersion, )))
 
 
     if debugLoad:
-        print("userDirectory: %s\nbaseDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, baseDirectory, unimacroDirectory))
+        print("userDirectory: %s\nvocolaDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, vocolaDirectory, unimacroDirectory))
         print("loadedFiles: %s"% loadedFiles)
         print("natlinkmain imported-----------------------------------")
     elif natlinkmainPrintsAtEnd:

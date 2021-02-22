@@ -36,7 +36,7 @@ from win32com.shell import shell, shellcon
 # import win32api
 # for extended environment variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
-from inivars import IniVars
+import inivars
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -454,7 +454,7 @@ class InifileSection:
         
         """
         self.section = section
-        self.ini = IniVars(filename) # want strings to be returned
+        self.ini = inivars.IniVars(filename) # want strings to be returned
           
     def __repr__(self):
         """return contents of sections

@@ -96,7 +96,7 @@ sys.path.append(str(coreDir))
 # print(f"Core dir {coreDir}\nsys.path: {sys.path}")
 
 try:
-    from pathqh import path
+    from natlinkcore.pathqh import path
 
 except Exception as e:
     print(f"not loading pathqh, e {e}")
@@ -197,8 +197,16 @@ def fatal_error(message, new_raise=None):
     if new_raise:
         raise new_raise
 #-----------------------------------------------------
-from win32com.shell import shell
+import winreg
+import os
+import os.path
+import sys
+import getopt
+import cmd
+import types
+import win32con
 
+from win32com.shell import shell
 import win32api
 
 thisDir = getBaseFolder(globals())
@@ -215,10 +223,8 @@ if not os.path.normpath(thisDir) in sys.path:
 
 
 # from core directory, use registry entries from CURRENT_USER/Software/Natlink:
-import natlinkstatus
-import natlinkcorefunctions
-import winreg
-import os, os.path, sys, getopt, cmd, types, string, win32con
+from natlinkcore import natlinkstatus
+from natlinkcore import natlinkcorefunctions
 
 # import natlink  # to see if NatSpeak is running...
 
