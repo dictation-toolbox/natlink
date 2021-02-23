@@ -27,7 +27,7 @@ from natlinkutils import *
 import natlinkutils
 import win32gui
 from nsformat import *
-import utilsqh
+from natlinkcore import utilsqh
 
 class TestError(Exception):
     pass
@@ -62,7 +62,7 @@ thisDir = getBaseFolder(globals())
 logFileName = os.path.join(thisDir, "nsformattestresult.txt")
 
 # make different versions testing possible:
-import natlinkstatus
+from natlinkcore import natlinkstatus
 nlstatus = natlinkstatus.NatlinkStatus()
 DNSVersion = nlstatus.getDNSVersion()
 

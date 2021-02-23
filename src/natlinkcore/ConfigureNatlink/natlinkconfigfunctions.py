@@ -249,7 +249,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     def checkCoreDirectory(self):
         """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
         """
-        coreDir2 = self.getCoreDirectory()
+        coreDir2 = self.getNatlinkDirectory()
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
@@ -293,7 +293,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if self.getDNSIniDir == -1:
             return
 
-        coreDir2 = self.getCoreDirectory()
+        coreDir2 = self.getNatlinkDirectory()
         if coreDir2.lower() != coreDir.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
@@ -362,7 +362,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         if not self.isElevated: raise ElevationError("needed for removing your previous natlink.pyd. Also close Dragon.")
         # if self.isNatSpeakRunning(): raise NatSpeakRunningError("needed for removing your previous natlink.pyd")
-        coreDir = self.getCoreDirectory()
+        coreDir = self.getNatlinkDirectory()
         currentPydFile = os.path.join(coreDir, 'natlink.pyd')
         if os.path.isfile(currentPydFile):
             try:
@@ -460,7 +460,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
            return
         natlinkkey, natlinkvalue = result
 
-        coreDir = path(self.getCoreDirectory())
+        coreDir = path(self.getNatlinkDirectory())
         coreFromRegistry = path(natlinkvalue)
         if coreDir == coreFromRegistry:
             return 1
@@ -580,7 +580,7 @@ from the correct place.
             if result == None:
 
                 text = \
-"""Natlink INI file settings are inconsistent,
+"""Natlink INI file settings are inconsistent,  comd
 and cannot automatically be disabled.
 
 Try to disable again, acquire administrator rights or report this issue
@@ -724,7 +724,7 @@ Natlink is now disabled.
 
     def printInifileSettings(self):
 
-        print(('Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getCoreDirectory()))
+        print(('Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getNatlinkDirectory()))
         Keys = list(self.userregnl.keys())
         Keys.sort()
         for k in Keys:

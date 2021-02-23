@@ -237,11 +237,6 @@ class NatlinkStatus:
     section2 = ".Natlink"
     key2 = "App Support GUID"
     value2 = NATLINK_CLSID
-    try:
-        userArgsDict
-    except NameError:
-        userArgsDict = {}
-
     # for quicker access (only once lookup in a run)
     NatlinkDirectory = None
     UserDirectory = None # for Dragonfly mainly, and for user defined grammars
@@ -265,7 +260,11 @@ class NatlinkStatus:
 
     def __init__(self, skipSpecialWarning=None):
 
-        print(f'userArgsDict at start of instance: {self.userArgsDict}')
+        try:
+            self.__class__.UserArgsDict
+        except AttributeError:
+            self.__class__.UserArgsDict = {}
+        print(f'UserArgsDict at start of instance: {self.UserArgsDict}')
 
         self.skipSpecialWarning = skipSpecialWarning
 
@@ -608,9 +607,9 @@ Please try to correct this by running the Natlink Config Program (with administr
             return
 
         userName = args[0]
-        self.__class__.userArgsDict['userName'] = userName
+        self.__class__.UserArgsDict['userName'] = userName
         DNSuserDirectory = args[1]
-        self.__class__.userArgsDict['DNSuserDirectory'] = DNSuserDirectory
+        self.__class__.UserArgsDict['DNSuserDirectory'] = DNSuserDirectory
         if len(args) == 2:
             userLanguage = self.getUserLanguageFromInifile()
             try:
@@ -623,67 +622,26 @@ Please try to correct this by running the Natlink Config Program (with administr
                     print('natlinkstatus, setUserInfo: no language found for userLanguage: %s'% userLanguage)
                     print('=== please report to q.hoogenboom@antenna.nl ===')
                     language = ''
-            self.__class__.userArgsDict['language'] = language
-            self.__class__.userArgsDict['userLanguage'] = userLanguage
-            self.__class__.userArgsDict['userTopic'] = self.getUserTopic() # will be the basetopic...
-
-        elif len(args) == 4:
-            print('natlinkstatus, setUserInfo: this case seems to be obsolete, (len(args) == 4!!): %s'% userLanguage)
-            language = ''
-            print('=== please report to q.hoogenboom@antenna.nl ===')
-            # # 
-            # # 
-            # # userLanguage = args[2]
-            # # try:
-            # #     language = languages[userLanguage]
-            # # except KeyError:
-            # #     englishDialect = userLanguage.split()[-1]
-            # #     if englishDialect == 'English':
-            # #         language = 'enx'
-            # #     else:
-            # #         print('natlinkstatus, setUserInfo: no language found for userLanguage (len(args) == 4!!): %s'% userLanguage)
-            # #         language = ''
-            # #         print('=== please report to q.hoogenboom@antenna.nl ===')
-            # #     userLanguageIni = self.getUserLanguageFromInifile()
-            # #     try:
-            # #         language = languages[userLanguageIni]
-            # #     except KeyError:
-            # #         print('SERIOUS ERROR: natlinkstatus, setUserInfo: cannot get language from  ini file either: %s'% userLanguageIni)
-            # #         print('languages: %s'% languages)
-            # #         language = 'zxz'
-            # #     print('got language: %s, userLanguage1: %s, userLanguageIni (from config files): %s'% (language, userLanguage, userLanguageIni))
-            # self.userArgsDict['language'] = language
-            # self.userArgsDict['userLanguage'] = userLanguage
-            # self.userArgsDict['userTopic'] = args[3]
+            self.__class__.UserArgsDict['language'] = language
+            self.__class__.UserArgsDict['userLanguage'] = userLanguage
+            self.__class__.UserArgsDict['userTopic'] = self.getUserTopic() # will be the basetopic...
         else:
-            print('natlinkstatus, setUserInfo: unexpected length of args for userArgsDict: %s (%s)'% (len(args), repr(args)))
+            print('natlinkstatus, setUserInfo: unexpected length of args for UserArgsDict: %s (%s)'% (len(args), repr(args)))
             print('=== please report to q.hoogenboom@antenna.nl ===')
-            userLanguageIni = self.getUserLanguageFromInifile()
-            try:
-                language = ''
-                language = languages[userLanguageIni]
-            except KeyError:
-                print('SERIOUS ERROR, natlinkstatus setUserInfo: cannot find language for %s'% userLanguageIni)
-                print('got language: %s, userLanguageIni: %s'% (language, userLanguageIni))
-                print('natlinkstatus, languages: %s'% languages)
-                language = 'xyz'
-            self.__class__.userArgsDict['language'] = language
-            self.__class__.userArgsDict['userLanguage'] = userLanguageIni
-            self.__class__.userArgsDict['userTopic'] = self.getBaseTopic()
-        # print '--- natlinkstatus, set userArgsDict: %s'% self.userArgsDict
 
     def clearUserInfo(self):
-        self.__class__.userArgsDict.clear()
+        
+        self.__class__.UserArgsDict.clear()
 
     def getUserName(self):
         try:
-            return self.userArgsDict['userName']
+            return self.UserArgsDict['userName']
         except KeyError:
             return ''
 
     def getDNSuserDirectory(self):
         try:
-            return self.userArgsDict['DNSuserDirectory']
+            return self.UserArgsDict['DNSuserDirectory']
         except KeyError:
             return ''
 
@@ -1545,34 +1503,34 @@ Please try to correct this by running the Natlink Config Program (with administr
         from DPI15 returned by changeCallback user, before identical to BaseTopic
         """
         try:
-            return self.userArgsDict['userTopic']
+            return self.UserArgsDict['userTopic']
         except KeyError:
             return self.getBaseTopic()
 
     def getLanguage(self):
-        """get language from userArgsDict
+        """get language from UserArgsDict
 
         '' if not set, probably no speech profile on then
 
         """
-        if self.userArgsDict:
+        if self.UserArgsDict:
             try:
-                lang = self.userArgsDict['language']
-                return self.userArgsDict['language']
+                lang = self.UserArgsDict['language']
+                return self.UserArgsDict['language']
             except KeyError:
-                print('Serious error, natlinkstatus.getLanguage: no language found in userArgsDict return ""')
+                print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return ""')
                 return ''
         else:
-            print('natlinkstatus.getLanguage: no speech profile loaded, no userArgsDict available, used for testing only, return language "tst"')
+            print('natlinkstatus.getLanguage: no speech profile loaded, no UserArgsDict available, used for testing only, return language "tst"')
             return 'tst'
 
     def getUserLanguage(self):
-        """get userLanguage from userArgsDict
+        """get userLanguage from UserArgsDict
 
         '' if not set, probably no speech profile on then
         """
         try:
-            return self.userArgsDict['userLanguage']
+            return self.UserArgsDict['userLanguage']
         except KeyError:
             return ''
 

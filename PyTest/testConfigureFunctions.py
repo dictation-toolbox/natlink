@@ -81,11 +81,11 @@ configDir = os.path.normpath(os.path.join(thisDir, '..', 'ConfigureNatlink'))
 if not os.path.normpath(configDir) in sys.path:
     sys.path.append(configDir)
 import natlinkconfigfunctions
-import natlinkstatus
+from natlinkcore import natlinkstatus
 from natlinkstatus import isValidPath ## used a lot in the test procedures!
 from natlinkcorefunctions import InifileSection  # to test own inifile data
 
-import natlinkcorefunctions
+from natlinkcore import natlinkcorefunctions
 
 
 defaultFilename = "natlinkstatustest.ini"

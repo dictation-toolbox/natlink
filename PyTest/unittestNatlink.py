@@ -136,7 +136,7 @@ import natlinkutils
 import win32gui
 
 # make different versions testing possible:
-import natlinkstatus
+from natlinkcore import natlinkstatus
 nlstatus = natlinkstatus.NatlinkStatus()
 DNSVersion = nlstatus.getDNSVersion()
 import natlink

@@ -15,7 +15,7 @@ currently:
 import unittest
 import TestCaseWithHelpers
 import os, os.path
-import utilsqh
+from natlinkcore import utilsqh
 import time
 
 baseFolder = utilsqh.getValidPath("(C|D):/projects/unittest/testutilsqh")

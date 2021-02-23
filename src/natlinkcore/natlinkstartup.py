@@ -5,9 +5,9 @@ import re
 import shutil
 import sys
 
+print(f'natlinkstartup: {__file__}')
+
 from natlinkcore import natlinkstatus
-
-
 #
 # This function is called by natlinkmain when starting up just before
 # loading grammars for the first time:
@@ -79,7 +79,7 @@ def create_new_language_subdirectory_if_needed():
     status        = natlinkstatus.NatlinkStatus()
     VocolaEnabled = not not status.getVocolaUserDirectory()
     language      = status.getLanguage()
-    commandFolder = natlinkstatus.NatlinkStatus().getVocolaUserDirectory()
+    commandFolder = status.getVocolaUserDirectory()
     if not os.path.isdir(commandFolder):                      
         commandFolder = None
 
@@ -103,12 +103,13 @@ def copyVclFileLanguageVersion(Input, Output):
     """
     # let include lines to relative paths point to the folder above ..\
     # so you can take the same include file for the alternate language.
+    status = NatlinkStatus()
     reInclude = re.compile(r'^(\s*include\b\s*[\'\"]?)([^\s;=][^;=\n]*\s*;.*)$')
     Input     = os.path.normpath(Input)
     Output    = os.path.normpath(Output)
     input     = open(Input, 'r').read()
     output    = open(Output, 'w')
-    language      = natlinkstatus.NatlinkStatus().getLanguage()
+    language      = status.getLanguage()
     output.write("# vocola file for alternate language: %s\n"% language)
     lines = list(map(lambda s: s.strip(), str(input).split('\n')))
     for line in lines:
