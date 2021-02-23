@@ -89,9 +89,6 @@ natlink_status_ini_file_name=NatlinkStatusIniFileName()
 
 #Core directory must be added to the path;  Required for when runing from the Python scripts folder:
 coreDir = CoreDirectory()
-sys.path.append(str(coreDir))
-
-
 
 # print(f"Core dir {coreDir}\nsys.path: {sys.path}")
 
@@ -211,7 +208,6 @@ import win32api
 
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
-print(f'This dir: {thisDir}')
 print(f'Core dir: {coreDir}')
 if thisDir == coreDir:
     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
@@ -249,10 +245,16 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     def checkCoreDirectory(self):
         """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
         """
+        global coreDir
         coreDir2 = self.getNatlinkDirectory()
+        
         if coreDir2.lower() != coreDir.lower():
-            fatal_error('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
+            print('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
+        coreDir = coreDir2   ## fingers crossed
+        if coreDir not in sys.path:
+            sys.path.append(coreDir)
+            
     def checkDNSInstallDir(self):
         """check if install directory of Dragon is found
 

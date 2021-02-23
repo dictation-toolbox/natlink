@@ -275,6 +275,7 @@ class NatlinkStatus:
             # self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
             thisDir = os.path.split(__file__)[0]
             
+            
             self.__class__.NatlinkDirectory = thisDir
             assert os.path.isdir(self.NatlinkDirectory)
             

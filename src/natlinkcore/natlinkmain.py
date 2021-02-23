@@ -223,6 +223,10 @@ natlinkmainPrintsAtEnd = 1
 # - baseDirectory (MacroSystem, mainly for Vocola)
 # - unimacroDirectory
 # - userDirectory (Dragonfly and descendants and user defined grammar files)
+import pprint
+print('sys.path except for importdirs')
+pprint.pprint(sys.path)
+
 
 for name in ['DNSuserDirectory', 'userName',
              'windowsVersion', 'BaseModel', 'BaseTopic',
