@@ -100,16 +100,36 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit( TRUE );
+	m_pDragCode->displayText("Importing redirect_output");
     m_pNatLinkMain = PyImport_ImportModule( "redirect_output" );
+
+	m_pDragCode->displayText("Importing natlinkmain");
+
     m_pNatLinkMain = PyImport_ImportModule( "natlinkmain" );
   
-	//doug todo call the function start_natlink in natlinkmain.?  what will happen?
-		
-	//Quintijn: or... load module start_natlinkmain, which does the same but in python
-	//only does:
-	// import natlinkmain
-	// natlinkmain.start_natlink()
-	//
+	m_pDragCode->displayText("Imported natlinkmain");
+
+	if(m_pNatLinkMain)
+	{ 
+		//call the function start_natlink in natlinkmain.  what will happen?
+		//TODO test this.
+		m_pDragCode->displayText("calling natlinkmain:start_natlink");
+		OutputDebugString(
+			TEXT("Calling natlinkmain:start_natlink"));  
+		MessageBox(0, L"Calling natlinkmain:start_natlink", L"appsup.cpp", MB_OK);
+
+		PyObject* natLinkMain_dict = PyModule_GetDict(m_pNatLinkMain);
+		static char const function[] = "start_natlink";
+		PyObject * pnatlinkMainFunc = PyDict_GetItemString(natLinkMain_dict,function );
+		PyObject * result = PyObject_CallObject(pnatlinkMainFunc, 0);
+		OutputDebugString(
+			TEXT("Called natlinkmain:start_natlink"));
+		MessageBox(0, L"Called natlinkmain:start_natlink", L"appsup.cpp", MB_OK);
+		Py_XDECREF(natLinkMain_dict);
+		Py_XDECREF(pnatlinkMainFunc);
+		Py_XDECREF(result);
+
+	}
 
 	m_pDragCode->setDuringInit( FALSE );
 
