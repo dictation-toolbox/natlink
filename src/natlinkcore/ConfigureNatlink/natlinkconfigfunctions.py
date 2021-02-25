@@ -5,7 +5,7 @@
 #   called from natlinkconfig (a wxPython GUI),
 #   or directly, see below
 #
-#   Quintijn Hoogenboom, January 2008/april 2020
+#   Quintijn Hoogenboom, January 2008/april 2020/February 2021
 #
 """
 With the functions in this module Natlink can be configured.
@@ -65,11 +65,16 @@ from pathlib import WindowsPath
 #this simplified the lookForCoreDirectory function from previous versions of natlink
 
 
-def CoreDirectory():
-    """Returns the CoreDirectory as a pathlib.path"""
+def getCoreDirectory():
+    """Returns the CoreDirectory, relative to thisDir
+    
+    thisDir is the directory of this (calling) module. 
+    
+    return one directory above thisDir (as str, normalized), path resolved by WindowsPath from pathlib.path    
+    """
     thisDir=WindowsPath(__file__).parent.resolve()
     # print(f"this dir {thisDir}")
-    coreDir=thisDir.parent
+    coreDir=str(thisDir.parent)
     return coreDir
 
 def NatlinkStatusIniFileName():
@@ -88,20 +93,21 @@ def NatlinkStatusIniFileName():
 natlink_status_ini_file_name=NatlinkStatusIniFileName()
 
 #Core directory must be added to the path;  Required for when runing from the Python scripts folder:
-coreDir = CoreDirectory()
+coreDir = getCoreDirectory()
+if coreDir not in sys.path:
+    print(f'add to sys.path: {coreDir}')
+    sys.path.append(coreDir)
 
 # print(f"Core dir {coreDir}\nsys.path: {sys.path}")
 
 try:
     from natlinkcore.pathqh import path
-
 except Exception as e:
     print(f"not loading pathqh, e {e}")
 try:
     from win32com.shell.shell import IsUserAnAdmin
 except:
     IsUserAnAdmin = ctypes.windll.shell32.IsUserAnAdmin
-
 
 try:
     from win32ui import MessageBox
@@ -138,42 +144,6 @@ class NatSpeakRunningError(Exception):
         self.message += '\nPlease close Dragon and this program and try it again'
 
 ObsoleteStatusKeys = ('VocolaUsesSimpscrp', 'VocolaCommandFilesEditor', 'NatlinkDebug')
-#--------- two utility functions:
-def getBaseFolder(globalsDict=None):
-    """get the folder of the calling module.
-
-    either sys.argv[0] (when run direct) or
-    __file__, which can be empty. In that case take the working directory
-    """
-    globalsDictHere = globalsDict or globals()
-    baseFolder = ""
-    if globalsDictHere['__name__']  == "__main__":
-        baseFolder = os.path.split(sys.argv[0])[0]
-        # print(('baseFolder from argv: %s'% baseFolder))
-    elif globalsDictHere['__file__']:
-        baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        # print(('baseFolder from __file__: %s'% baseFolder))
-    if not baseFolder or baseFolder == '.':
-        baseFolder = os.getcwd()
-        # print(('baseFolder was empty, take wd: %s'% baseFolder))
-    return baseFolder
-
-def getCoreDir(thisDir):
-    """get the Natlink core folder, relative from the current folder
-
-    This folder should be relative to this with ../MacroSystem/core and should
-    contain natlinkmain.p, natlink.pyd, and natlinkstatus.py
-
-    If not found like this, prints a line and returns thisDir
-    SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
-
-
-    """
-    coreFolder = str(CoreDirectory())
-    # print(('coreDirectory: %s'% coreFolder))
-    #the stuff testing for existance of natlinkmain.py etc has been removed, no
-    #longer required.
-    return coreFolder
 
 hadFatalErrors = []
 def fatal_error(message, new_raise=None):
@@ -206,18 +176,6 @@ import win32con
 from win32com.shell import shell
 import win32api
 
-thisDir = getBaseFolder(globals())
-coreDir = getCoreDir(thisDir)
-print(f'Core dir: {coreDir}')
-if thisDir == coreDir:
-    raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
-# appending to path if necessary:
-if not os.path.normpath(thisDir) in sys.path:
-    thisDir = os.path.normpath(thisDir)
-    print(f'inserting {thisDir} to pythonpath...')
-    sys.path.insert(0, thisDir)
-
-
 # from core directory, use registry entries from CURRENT_USER/Software/Natlink:
 from natlinkcore import natlinkstatus
 from natlinkcore import natlinkcorefunctions
@@ -245,12 +203,14 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     def checkCoreDirectory(self):
         """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
         """
-        global coreDir
+        coreDir = getCoreDirectory()
         coreDir2 = self.getNatlinkDirectory()
         
         if coreDir2.lower() != coreDir.lower():
             print('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
+        #   ccoreDir2 = pathqh.path(coreDir).normpath()
+        # 
         coreDir = coreDir2   ## fingers crossed
         if coreDir not in sys.path:
             sys.path.append(coreDir)
