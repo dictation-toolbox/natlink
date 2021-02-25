@@ -129,7 +129,8 @@ import win32con
 import sys
 import pprint
 import stat
-import winreg 
+import winreg
+import pathlib
 import natlinkcorefunctions
 import time
 import types
@@ -273,10 +274,10 @@ class NatlinkStatus:
             # CoreDirectory = natlinkcorefunctions.getBaseFolder()
             # self.__class__.CoreDirectory = CoreDirectory
             # self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
-            thisDir = os.path.split(__file__)[0]
+            thisDir=pathlib.WindowsPath(__file__).parent.resolve()
+            coreDir=str(thisDir)
             
-            
-            self.__class__.NatlinkDirectory = thisDir
+            self.__class__.NatlinkDirectory = coreDir
             assert os.path.isdir(self.NatlinkDirectory)
             
             self.correctIniSettings() # change to newer conventions
@@ -1743,8 +1744,8 @@ Please try to correct this by running the Natlink Config Program (with administr
                 self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled")
             else:
                 self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
-            key = 'CoreDirectory'
-            self.appendAndRemove(L, D, key)
+            # key = 'CoreDirectory'
+            # self.appendAndRemove(L, D, key)
             for key in ['DebugLoad', 'DebugCallback',
                     'VocolaTakesLanguages',
                     'vocolaIsEnabled']:
