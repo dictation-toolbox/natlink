@@ -239,7 +239,7 @@ class NatlinkStatus:
     key2 = "App Support GUID"
     value2 = NATLINK_CLSID
     # for quicker access (only once lookup in a run)
-    NatlinkDirectory = None
+    # NatlinkDirectory = None ## in __init__
     UserDirectory = None # for Dragonfly mainly, and for user defined grammars
     # BaseDirectory = None
     # CoreDirectory = None
@@ -270,54 +270,58 @@ class NatlinkStatus:
         self.skipSpecialWarning = skipSpecialWarning
 
         ## start setting the CoreDirectory and BaseDirectory and other variables:
-        if self.NatlinkDirectory is None:
-            # CoreDirectory = natlinkcorefunctions.getBaseFolder()
-            # self.__class__.CoreDirectory = CoreDirectory
-            # self.__class__.BaseDirectory = os.path.normpath(os.path.join(CoreDirectory, '..'))
-            thisDir=pathlib.WindowsPath(__file__).parent.resolve()
-            coreDir=str(thisDir)
-            
-            self.__class__.NatlinkDirectory = coreDir
-            assert os.path.isdir(self.NatlinkDirectory)
-            
-            self.correctIniSettings() # change to newer conventions
+        try:
+            self.__class__.NatlinkDirectory
+        except AttributeError:
+            pass
+        else:
+            return
+
+        # initialize settings for this session:
+        thisDir=pathlib.WindowsPath(__file__).parent
+        thisDirResolved = thisDir.resolve()
+        coreDir=str(thisDir)
+        self.__class__.NatlinkDirectory = self.getNatlinkDirectory(coreDir=coreDir)
+        assert os.path.isdir(self.NatlinkDirectory)
         
-            ## initialise DNSInstallDir, DNSVersion and DNSIniDir
-            ## other "cached" variables, like UserDirectory, are done at first call.
+        self.correctIniSettings() # change to newer conventions
+    
+        ## initialise DNSInstallDir, DNSVersion and DNSIniDir
+        ## other "cached" variables, like UserDirectory, are done at first call.
+        try:
+            result = self.getDNSInstallDir()
+        except IOError:
+            result = -1
+        else:
+            result = result or -1
+        self.__class__.DNSInstallDir = result
+            
+            
+        if result == -1:
+            ## also DNSIniDir is hopeless, set value and return.
+            self.__class__.DNSIniDir = result
+            self.__class__.DNSVersion = result
+            return
+        else:
+            ## proceed with other __class__ variables:
+            self.__class__.DNSVersion = self.getDNSVersion()
+
+            ## DNSIniDir:
             try:
-                result = self.getDNSInstallDir()
+                result = self.getDNSIniDir()
             except IOError:
                 result = -1
             else:
                 result = result or -1
-            self.__class__.DNSInstallDir = result
-                
-                
+
+            self.__class__.DNSIniDir = result
             if result == -1:
-                ## also DNSIniDir is hopeless, set value and return.
-                self.__class__.DNSIniDir = result
-                self.__class__.DNSVersion = result
-                return
-            else:
-                ## proceed with other __class__ variables:
-                self.__class__.DNSVersion = self.getDNSVersion()
+                return  # serious problem.
 
-                ## DNSIniDir:
-                try:
-                    result = self.getDNSIniDir()
-                except IOError:
-                    result = -1
-                else:
-                    result = result or -1
-
-                self.__class__.DNSIniDir = result
-                if result == -1:
-                    return  # serious problem.
-
-            result = self.checkNatlinkPydFile()
-            if result is None:
-                if not skipSpecialWarning:
-                    self.warning('WARNING: invalid or no version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
+        result = self.checkNatlinkPydFile()
+        if result is None:
+            if not skipSpecialWarning:
+                self.warning('WARNING: invalid or no version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
 
     def getWarningText(self):
         """return a printable text if there were warnings
@@ -344,6 +348,8 @@ class NatlinkStatus:
         PythonPath / Natlink setting, for natlink be able to be started.
 
         """
+        print(f'checkSysPath with PythonPath setting in registry not needed any more')
+        return 1
         NatlinkDirectory = self.getNatlinkDirectory()
 
         if NatlinkDirectory.lower().endswith('natlinkcore'):
@@ -363,36 +369,6 @@ Please try to correct this by running the Natlink Config Program (with administr
             if not coreDirectory.isdir():
                 print(f'''Natlink setting "{coreDirectory}" in the registry is not a valid directory\n
 Please try to correct this by running the Natlink Config Program (with administration rights)''')
-#             if setting.lower() == CoreDirectory.lower():
-#                 baseDir = os.path.normpath(os.path.join(CoreDirectory, ".."))
-#                 self.InsertToSysPath(CoreDirectory)
-#                 self.InsertToSysPath(baseDir)
-#             else:
-#                 print(("""PythonPath/Natlink setting in registry does not match this core directory\n
-# registry: %s\nCoreDirectory: %s\n
-# Please try to correct this by running the Natlink Config Program (with administration rights)"""% (
-#                 setting, CoreDirectory)))
-#                 return
-#         else:
-#             baseDir = None
-#             print('non expected core directory %s, cannot find baseDirectory\nTry to run the Config Program with administrator rights'% CoreDirectory)
-#         userDir = self.getUserDirectory()
-#         # special for other user directories, insert also unimacro for actions etc.
-#         if userDir:
-#             self.InsertToSysPath(userDir)
-# 
-#         includeUnimacroDirectory =  self.UnimacroIsEnabled() or (self.VocolaIsEnabled() and self.getVocolaTakesUnimacroActions())
-#         if  includeUnimacroDirectory:
-#             if not baseDir:
-#                 print('no baseDir found, cannot "IncludeUnimacroInPythonPath"')
-#                 return
-#             unimacroDir = os.path.join(baseDir, '..', '..', 'Unimacro')
-#             unimacroDir = os.path.normpath(unimacroDir)
-#             if os.path.isdir(unimacroDir):
-#                 self.InsertToSysPath(unimacroDir)
-#             else:
-#                 print(('no valid UnimacroDir found(%s), cannot "IncludeUnimacroInPythonPath"'% \
-#                     unimacroDir))
 
         return 1
 
@@ -416,22 +392,22 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         
         NatlinkDirectory = self.getNatlinkDirectory()
-        pydDir = path(NatlinkDirectory)/'PYD'
-        if not (pydDir and pydDir.isdir()):
+        pydDir = os.path.join(NatlinkDirectory, 'PYD')
+        if not (pydDir and os.path.isdir(pydDir)):
             return 1
 
         originalPyd = self.getOriginalNatlinkPydFile()   # original if previously registerd (from natlinkstatus.ini file)
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
-        wantedPydPath = pydDir/wantedPyd
-        currentPydPath = path(NatlinkDirectory)/'natlink.pyd'
+        wantedPydPath = os.path.join(pydDir, wantedPyd)
+        currentPydPath = os.path.join(NatlinkDirectory, 'natlink.pyd')
 
-        if not wantedPydPath.isfile():
+        if not os.path.isfile(wantedPydPath):
             if not fromConfig:
                 print(f'The wanted pyd "{wantedPydPath}" does not exist, Dragon/python combination not valid.')
             return
 
         # first check existence of natlink.pyd (probably never comes here)
-        if not currentPydPath.isfile():
+        if not os.path.isfile(currentPydPath):
             if not fromConfig:
                 print(f'pyd path "{currentPydPath}" does not exist...')
             return
@@ -1255,7 +1231,6 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         try: del self.UnimacroGrammarsDirectory
         except AttributeError: pass
-        self.UnimacroGrammarsDirectory= ""   # meaning is not set, for future calls.
         return self.UnimacroGrammarsDirectory
 
     # def getBaseDirectory(self):
@@ -1270,10 +1245,52 @@ Please try to correct this by running the Natlink Config Program (with administr
     #     """
     #     return self.CoreDirectory
 
-    def getNatlinkDirectory(self):
+    def getNatlinkDirectory(self, coreDir=None):
         """return the path of the NatlinkDirectory, two above the coreDirectory
         """
-        return self.NatlinkDirectory
+        if not coreDir:
+            # should be preserved after first call:
+            return self.NatlinkDirectory
+
+        if coreDir.find("site-packages") > 0:
+            cdPath = pathlib.WindowsPath(coreDir)
+            if cdPath.is_symlink():
+                cdResolved = cdPath.resolve()
+                print(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}')
+                return coreDir
+        elif coreDir.find('\\src\\') > 0:
+            # opened from github clone, find site-packages directory
+            spCoreDir = self.findInSitePackages(coreDir)
+            return spCoreDir
+    
+    def findInSitePackages(self, cloneDir):
+        """get corresponding directory in site-packages
+        
+        This directory should be a symlink, otherwise the calling from the github clone directory is invalid.
+        This is the situation when the package is "flit installed --symlink", so you can work in your clone and
+        see the results happen. Only for developers
+        
+        """
+        if cloneDir.find('\\src\\') < 0:
+            raise IOErrorprint(f'This function should only be called when "\\src\\" is in the path')
+        commonpart = cloneDir.split('\\src\\')[-1]
+        spDirectory = os.path.join(sys.prefix, 'Lib', 'site-packages', commonpart)
+        spPath = pathlib.WindowsPath(spDirectory)
+        if spPath.is_dir():
+            if spPath.is_symlink():
+                spResolve = spPath.resolve()
+                if str(spResolve) == cloneDir:
+                    print(f'directory is symlink: {spPath} and resolves to {cloneDir} all right')
+                    return str(spPath)
+                else:
+                    print(f'directory is symlink: {spPath} but does NOT resolve to {cloneDir}, but to {spResolve}')
+                    return
+            else:
+                print(f'directory is not a symlink: {spPath}')
+                return
+        else:
+            print('findInSitePackages, not a valid directory: {spPath}')
+    
 
     def getUserDirectory(self, force=None):
         """return the path to the Natlink User directory
