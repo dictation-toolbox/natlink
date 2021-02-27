@@ -17,8 +17,7 @@ This can be done in three ways:
 -Through the configure GUI (natlinkconfig.py), which calls into this module
  This last one needs wxPython to be installed.
 
-*** the core directory is relative to this directory ...
-    ...and will be searched for first.
+*** the core directory is relative to this directory (one up)
 
 Afterwards can be set:
 
@@ -59,10 +58,8 @@ from pathlib import WindowsPath
 
 
 
-#under the new regime, the core directory must be ../MacroSystem/Core
-#as it will be installed  there by the packaging system, and lives there in the source.
-
-#this simplified the lookForCoreDirectory function from previous versions of natlink
+# With python3, the core directory is directly in the root of natlinkcore (when installing natlink via pip)
+# and the ConfigureNatlink directory is a subdirectory of natlinkcore.
 
 
 def getCoreDirectory():
@@ -199,18 +196,22 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
         self.changesInInitPhase = 0
         self.isElevated = IsUserAnAdmin()
+        self.checkedUrgent = None
 
     def checkCoreDirectory(self):
         """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
         """
         coreDir = getCoreDirectory()
+        coreDirSitePackes = self.findInSitePackages(coreDir)
+        if coreDirSitePackes and coreDirSitePackes != coreDir:
+            coreDir = self.findInSitePackages(coreDir)
+            print(f'Take current natlinkcore directory in site-packages: {coreDir}')
         coreDir2 = self.getNatlinkDirectory()
         
         if coreDir2.lower() != coreDir.lower():
             print('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
-        #   ccoreDir2 = pathqh.path(coreDir).normpath()
-        # 
+        # this is probably not what we want: QH
         coreDir = coreDir2   ## fingers crossed
         if coreDir not in sys.path:
             sys.path.append(coreDir)
@@ -256,9 +257,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return
 
         coreDir2 = self.getNatlinkDirectory()
-        if coreDir2.lower() != coreDir.lower():
+        coreDirSitePackages = self.findInSitePackages(coreDir)
+        if coreDir2.lower() != coreDirSitePackages.lower():
             fatal_error('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
-                                              (coreDir, coreDir2))
+                                              (coreDirSitePackages, coreDir2))
         currentPydPath = os.path.join(coreDir, 'natlink.pyd')
 
         if not os.path.isfile(currentPydPath):
@@ -310,10 +312,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.registerNatlinkPyd(silent=silent)
         
         # now also put this in the registry:
-        if result:
-            result = self.setRegistryPythonPathNatlink(coreDir, silent=silent)
-            if not result:
-                print('Setting the registry to the new setting (%s) failed'% coreDir)
+        # if result:
+        #     result = self.setRegistryPythonPathNatlink(coreDir, silent=silent)
+        #     if not result:
+        #         print('Setting the registry to the new setting (%s) failed'% coreDir)
 
         return result  # None if something went wrong 1 if all OK
 
@@ -363,164 +365,21 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return
         return 1
 
-    def setRegistryPythonPathNatlink(self, coreDir, flags=win32con.KEY_ALL_ACCESS, silent=None):
-        """set the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
+    def clearRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
+        """clear the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
         
         this function should be in elevated mode, which should be checked before calling this
         """
         pythonpath_key = self.getRegistryPythonPathKey()
         if not pythonpath_key:
-            print(f'setRegistryPythonPathNatlink, cannot find pythonpath_key')
-            return
+            return True
 
         result = self.getRegistryPythonPathNatlink()
         if result:
+            if not self.isElevated: raise ElevationError("needed for deleting the registry key of the obsolete Natlink pythonpath variable")
             natlink_key, natlinkdir_from_registry = result
-            if coreDir == natlinkdir_from_registry:
-                print(f'setRegistryPythonPathNatlink, coreDir already OK: {coreDir}')
-                return 1
-            else:
-                result = winreg.DeleteKeyEx(pythonpath_key, "natlink", winreg.KEY_WOW64_32KEY | flags)
-                pass
-        # Natlink section not exists (possibly just deleted)
-        value, flags = ("Natlink", winreg.KEY_WOW64_32KEY | flags)
-        natlink_key = winreg.CreateKeyEx(pythonpath_key, "Natlink", 0, flags)
-        if not natlink_key:
-            print(f'setRegistryPythonPathNatlink, cannot create "Natlink" key in registy')
-            return
-
-        value, flags = (coreDir, winreg.KEY_WOW64_32KEY | flags)
-        result = winreg.SetValueEx(natlink_key, "", 0, winreg.REG_SZ, coreDir)            
+            result = winreg.DeleteKeyEx(pythonpath_key, "natlink", winreg.KEY_WOW64_32KEY | flags)
         return True
-
-    def checkPythonPathAndRegistry(self):
-        """checks if core directory is
-
-        1. in the sys.path
-        2. in the registry keys of HKLM or HKCU /SOFTWARE/Python/PythonCore/{pythonversion}/PythonPath/Natlink
-
-        Instead the status.checkSysPath() function checks the existence of the core
-        directories in the sys.path and sets then if necessary.
-
-        If this last key is not there or empty
-        ---set paths of coreDirectory
-        ---register natlink.pyd
-        It is probably the first time to run this program.
-
-        If the settings are conflicting, either
-        ---you want to reconfigure Natlink in a new place (these directories)
-        ---you ran this program from a wrong place, exit and start again from the correct directory
-
-        """
-        self.checkedUrgent = None
-        # if __name__ == '__main__':
-            # print("checking PythonPathAndRegistry")
-        result = self.getRegistryPythonPathNatlink(silent=False)
-        # print(result)
-        if result is None:
-           fatal_error('Cannot find valid PythonPath section in registry')
-           return
-        natlinkkey, natlinkvalue = result
-
-        coreDir = path(self.getNatlinkDirectory())
-        coreFromRegistry = path(natlinkvalue)
-        if coreDir == coreFromRegistry:
-            return 1
-
-        if not coreFromRegistry:
-            ## probably first time install
-            ## silently register
-            print(f'silently register (first time use of Natlink) in {coreDir}')
-            pass
-            return 1
-
-        if not self.isElevated:
-            raise ElevationError("Run in Elevated mode. This is needed for making changes in the PythonPath registry settings and register natlink.pyd.")
-
-        print(f'now should exit, Natlink in "{natlinkvalue}", or reregister to "{coreDir}"')
-        return 0
-        pathString = coreDir
-        result = lmPythonPathDict['Natlink']
-        if result and '' in result:
-            coreDirFromRegistry = lmPythonPathDict['Natlink']['']
-            if coreDirFromRegistry.lower() != coreDir.lower():
-                self.doFatalRegistryProblem(coreDirFromRegistry, coreDir)
-                return
-        else:
-            if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings and register natlink.pyd.")
-            # first time install, silently register
-            self.registerNatlinkPyd(silent=1)
-            self.setNatlinkInPythonPathRegistry()
-            return 1
-
-        lmNatlinkPathDict = lmPythonPathDict['Natlink' ]
-        Keys = list(lmNatlinkPathDict.keys())
-        if not Keys:
-            # first time install Section is there, but apparently empty
-            if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings and register natlink.pyd.")
-
-            self.registerNatlinkPyd(silent=1)
-            self.setNatlinkInPythonPathRegistry()
-            return 1
-        if Keys != [""]:
-            if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings.")
-
-            if '' in Keys:
-                Keys.remove("")
-            fatal_error("The registry section of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\\%s\ncontains invalid keys: %s, remove them with the registry editor (regedit)\nAnd rerun this program"%
-                        (pythonPathSectionName+r'\Natlink', Keys))
-
-
-        # now section has default "" key, proceed:
-        oldPathString = lmNatlinkPathDict[""]
-        if oldPathString.find(';') > 0:
-            print('remove double entry, go back to single entry')
-            self.setNatlinkInPythonPathRegistry()
-
-        oldPathString = lmNatlinkPathDict[""]
-        if oldPathString.find(';') > 0:
-            fatal_error("did not fix double entry in registry setting  of the pythonPathSection of HKEY_LOCAL_MACHINE:\n\tHKLM\\%s\ncontains more entries separated by ';'. Remove with the registry editor (regedit)\nAnd rerun this program"%pythonPathSectionName+r'\Natlink')
-        if not oldPathString:
-            # empty setting, silently register
-            if not self.isElevated: raise ElevationError("needed for making changes in the PythonPath registry settings and register natlink.pyd.")
-
-            self.registerNatlinkPyd(silent=1)
-            self.setNatlinkInPythonPathRegistry()
-            return 1
-
-        if oldPathString.lower() == pathString.lower():
-            return 1 # OK
-        ## not ok:
-        self.doFatalRegistryProblem(oldPathString, pathString)
-
-
-    def doFatalRegistryProblem(self, CoreDirFromRegistry, currentCoreDir):
-        """registry does not match, make text and report
-        """
-        # now for something more serious:::
-        text = \
-"""
-The PythonPath for Natlink does not match in registry with what this program
-expects
-
----settings in Registry: %s
----wanted settings: %s
-
-You probably just installed Natlink in a new location
-and you ran the config program for the first time.
-
-If you want the new settings, (re)register natlink.pyd (r)
-
-And rerun this program...
-
-Close %s (including Quick Start Mode), and all other Python applications
-before rerunning this program.  Possibly you have to restart your computer.
-
-If you do NOT want these new settings, simply close this program and run
-from the correct place.
-"""% (CoreDirFromRegistry, currentCoreDir, self.DNSName)
-        self.warning(text)
-        self.checkedUrgent = 1
 
     def checkIniFiles(self):
         """check if INI files are consistent
@@ -1493,38 +1352,19 @@ class CLI(cmd.Cmd):
     """
     def __init__(self, Config=None):
         cmd.Cmd.__init__(self)
-        self.prompt = '\nNatLink/Vocola/Unimacro config> '
+        self.prompt = '\nConfig Natlink> '
         self.info = "type 'u' for usage"
         if Config:
             self.config = Config   # initialized instance of NatlinkConfig
         else:
             self.config = NatlinkConfig()
+            
         try:
-            self.config.checkDNSInstallDir()
+            self.config.checkDNSInstallDir()  ## checks if DNS install directory is found
             self.config.checkCoreDirectory()
             self.config.correctIniSettings()
-            # check pyd file
-            result = self.config.configCheckNatlinkPydFile(silent=1)
-            if result is None:
-                if __name__ == "__main__":
-                    print("Error starting NatlinkConfig, Type 'u' for a usage message")
-                self.checkedConfig = self.config.checkedUrgent
-                return
-
-            # warning if path from which this is run does not match the registry
-            result = self.config.checkPythonPathAndRegistry()
-            if result is None:
-                if __name__ == "__main__":
-                    print("Error starting NatlinkConfig, Type 'u' for a usage message")
-
-                self.checkedConfig = self.config.checkedUrgent
-                return
-
-
-                self.checkedConfig = self.config.checkedUrgent
-                return
-
             self.config.checkIniFiles()
+            self.config.clearRegistryPythonPathNatlink()  # not needed any more for python 3
             self.checkedConfig = self.config.checkedUrgent
             self.isValidPath = self.config.isValidPath  ## convenient
             for key in ObsoleteStatusKeys:
@@ -2034,10 +1874,6 @@ of Natlink, so keep off (X and Y) most of the time.
             self.config.enableNatlink()
         else:
             raise ElevationError(self.message)
-
-        #
-        #
-        #self.config.registerNatlinkPyd(silent=None)
 
     def do_R(self, arg):
         self.message = "Unregister natlink.pyd and disable Natlink"

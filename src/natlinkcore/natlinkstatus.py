@@ -547,24 +547,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         the new value should have 25;12 (so python version and dragon version)
         """
-        ini = self.userregnl
-        oldSetting = ini.get('NatlinkDllRegistered')
-        newSetting = ini.get('NatlinkPydRegistered')
-        if oldSetting and not newSetting:
-            if len(oldSetting) <= 2:
-                dragonVersion = self.getDNSVersion()
-                if dragonVersion <= 11:
-                    # silently go over to new settings:
-                    oldSetting = "%s;%s"% (oldSetting, dragonVersion)
-            print('correct setting from "NatlinkDllRegistered" to "NatlinkPydRegistered"')
-            ini.set('NatlinkPydRegistered', oldSetting)
-            ini.delete('NatlinkDllRegistered')
-        oldSetting = ini.get('UserDirectory')
-        if oldSetting and oldSetting.find('Unimacro') > 0:
-            ini.delete('UserDirectory')
-        oldSetting = ini.get('IncludeUnimacroInPythonPath')
-        if oldSetting:
-            ini.delete('IncludeUnimacroInPythonPath')
+        return # obsolete python 3 release. May come into action later again...
 
     def setUserInfo(self, args):
         """set username and userdirectory at change callback user
@@ -997,18 +980,12 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         """
         try:
-            isEnabled = self.cache_NatlinkIsEnabled
+            self.cache_NatlinkIsEnabled
         except AttributeError:
-            pass
+            self.cache_NatlinkIsEnabled = True
         else:
             return self.cache_NatlinkIsEnabled
 
-        result = self.getRegistryPythonPathNatlink()
-        if not result:
-            self.cache_NatlinkIsEnabled = False
-            return   ## registry setting not of pythonpath to core directory is not OK
-        registry_key, coredir_from_registry = result
-        
         if self.DNSInstallDir == -1:
             self.cache_NatlinkIsEnabled = False
             return
@@ -1018,9 +995,19 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.NatlinkDirectory:
             self.cache_NatlinkIsEnabled = False
             return
-        if self.NatlinkDirectory.lower() != coredir_from_registry.lower():
+
+        try:
+            import natlink
+        except ModuleNotFoundError:
+            print(f'natlink module not found')
             self.cache_NatlinkIsEnabled = False
-            return
+        
+        
+
+
+        if self.cache_NatlinkIsEnabled is False:
+            return 1
+
             
         nssystemini = self.getNSSYSTEMIni() or ''
         if not os.path.isfile(nssystemini):
@@ -1028,7 +1015,6 @@ Please try to correct this by running the Natlink Config Program (with administr
             return 0
             # raise IOError("NatlinkIsEnabled, not a valid file: %s"% nssystemini)
         actual1 = win32api.GetProfileVal(self.section1, self.key1, "", nssystemini)
-
 
         nsappsini = self.getNSAPPSIni()
         if not os.path.isfile(nsappsini):
