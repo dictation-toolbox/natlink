@@ -67,7 +67,6 @@ def getCoreDirectory():
     
     thisDir is the directory of this (calling) module. 
     
-    return one directory above thisDir (as str, normalized), path resolved by WindowsPath from pathlib.path    
     """
     thisDir=WindowsPath(__file__).parent.resolve()
     # print(f"this dir {thisDir}")
@@ -183,7 +182,7 @@ from natlinkcore import natlinkcorefunctions
 class NatlinkConfig(natlinkstatus.NatlinkStatus):
     """performs the configuration tasks of Natlink
 
-    userregnl got from natlinkstatus, as a Class (not instance) variable, so
+    userinisection got from natlinkstatus, as a Class (not instance) variable, so
     should be the same among instances of this class...
 
     the checkCoreDirectory function is automatically performed at start, to see if the initialisation does not
@@ -271,7 +270,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
             key = 'NatlinkPydRegistered'
             # print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
-            self.userregnl.delete(key)
+            self.userinisection.delete(key)
             natlinkPydWasAlreadyThere = 0
             self.checkedUrgent = None
         else:
@@ -380,7 +379,6 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             natlink_key, natlinkdir_from_registry = result
             result = winreg.DeleteKeyEx(pythonpath_key, "natlink", winreg.KEY_WOW64_32KEY | flags)
         return True
-
     def checkIniFiles(self):
         """check if INI files are consistent
         this is done through the
@@ -476,80 +474,13 @@ Natlink is now disabled.
         """
         return natlinkstatus.isValidPath(Path, wantDirectory=wantDirectory, wantFile=wantFile)
 
-    def setNatlinkInPythonPathRegistry(self):
-        """sets the HKLM setting of the Python registry
-
-        do this only when needed...
-
-        """
-        lmPythonPathDict, pythonPathSectionName = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
-        pathString = os.path.normpath(os.path.abspath(coreDir))
-        NatlinkSection = lmPythonPathDict.get('Natlink' , None)
-        if NatlinkSection:
-            oldPath = NatlinkSection.get('', '')
-        else:
-            oldPath = ''
-        if oldPath.lower() != pathString.lower():
-            try:
-                lmPythonPathDict['Natlink' ]  = {'': pathString}
-                self.warning('Set registry setting PythonPath/Natlink to: %s"'% pathString)
-            except:
-                self.warning("cannot set PythonPath for Natlink in registry, probably you have insufficient rights to do this, try to run the config program with administrator rights")
-
-
-    def checkNatlinkRegistryPathSettings(self, secondTry=None):
-        """check if the register pythonpath variable present and matches with the previous path
-
-        """
-        regDict, sectionName = self.getRegistryPythonPathDict(flags=win32con.KEY_ALL_ACCESS)
-        try:
-            value = regDict['Natlink' ]
-        except:
-            # new install, new key:
-            if not secondTry:
-                try:
-                    regDict['Natlink' ] = coreDir
-                except:
-                    self.error("cannot set PythonPath/Natlink setting, run Config program with administrator rights")
-                    return
-                else:
-                    # check if setting is completed:
-                    return self.checkNatlinkRegistryPathSettings(secondTry=1)
-        # key was there already:
-        wantedValue = coreDir
-        if value == wantedValue:
-            print(('registry PythonPath/Natlink setting ok: %s'% value))
-            return 1
-        # value different from current value:
-        if secondTry:
-            self.error("cannot set correct PythonPath/Natlink setting, run config program with administrator rights")
-            return
-
-        # now change to new value:
-        self.warning("change PythonPath/Natlink setting in registry (HKLM section) to: %s"% coreDir)
-        regDict['Natlink' ] = coreDir
-        return self.checkNatlinkRegistryPathSettings(secondTry=1)
-
-
-
-    #def clearNatlinkFromPythonPathRegistry(self):
-    #    """clears the HKLM setting of the Python registry"""
-    #    lmPythonPathDict, pythonPathSectionName = self.getRegistryPythonPathDict()
-    #    baseDir = os.path.join(coreDir, '..')
-    #    pathString = ';'.join(map(os.path.normpath, [coreDir, baseDir]))
-    #    if 'Natlink'  in lmPythonPathDict.keys():
-    #        try:
-    #            del lmPythonPathDict['Natlink' ]
-    #        except:
-    #            self.warning("cannot clear Python path for Natlink in registry (HKLM section), probably you have insufficient rights to do this")
-
     def printInifileSettings(self):
 
         print(('Settings in file "natlinkstatus.ini" in\ncore directory: "%s"\n'% self.getNatlinkDirectory()))
-        Keys = list(self.userregnl.keys())
+        Keys = list(self.userinisection.keys())
         Keys.sort()
         for k in Keys:
-            print(("\t%  s:\t%s"% (k, self.userregnl.get(k))))
+            print(("\t%  s:\t%s"% (k, self.userinisection.get(k))))
         print(("-"*60))
 
     def setDNSInstallDir(self, new_dir):
@@ -569,8 +500,8 @@ Natlink is now disabled.
 
         if self.checkDNSProgramDir(checkDir):
             # print 'set DNS Install Directory to: %s'% new_dir
-            self.userregnl.delete("Old"+key)
-            self.userregnl.set(key, checkDir)
+            self.userinisection.delete("Old"+key)
+            self.userinisection.set(key, checkDir)
             self.getDNSInstallDir(force=1)  ## new settings
             return
         else:
@@ -583,10 +514,10 @@ Natlink is now disabled.
 
         """
         key = 'DNSInstallDir'
-        oldvalue = self.userregnl.get(key)
+        oldvalue = self.userinisection.get(key)
         if oldvalue and self.isValidPath(oldvalue):
-            self.userregnl.set("Old"+key, oldvalue)
-        self.userregnl.delete(key)
+            self.userinisection.set("Old"+key, oldvalue)
+        self.userinisection.delete(key)
         self.getDNSInstallDir(force=1)  ## new settings
 
 
@@ -608,8 +539,8 @@ Natlink is now disabled.
                 mess =  'folder %s does not have the INI file %s'% (new_dir, self.NSAppsIni)
                 print(mess)
                 return mess
-            self.userregnl.set(key, new_dir)
-            self.userregnl.delete("Old"+key)
+            self.userinisection.set(key, new_dir)
+            self.userinisection.delete("Old"+key)
             self.getDNSIniDir(force=1)
             return  # OK
         else:
@@ -623,29 +554,29 @@ Natlink is now disabled.
 
         """
         key = 'DNSIniDir'
-        oldvalue = self.userregnl.get(key)
+        oldvalue = self.userinisection.get(key)
         if oldvalue and self.isValidPath(oldvalue):
-            self.userregnl.set("Old"+key, oldvalue)
-        self.userregnl.delete(key)
+            self.userinisection.set("Old"+key, oldvalue)
+        self.userinisection.delete(key)
         self.getDNSIniDir(force=1)
 
     def setUserDirectory(self, v):
         key = 'UserDirectory'
         if v and self.isValidPath(v):
             print(("Setting the UserDirectory of Natlink to %s"% v))
-            self.userregnl.set(key, v)
-            self.userregnl.delete("Old"+key)
+            self.userinisection.set(key, v)
+            self.userinisection.delete("Old"+key)
         else:
             print(('Setting the UserDirectory of Natlink failed, not a valid directory: %s'% v))
 
 
     def clearUserDirectory(self):
         key = 'UserDirectory'
-        oldvalue = self.userregnl.get(key)
+        oldvalue = self.userinisection.get(key)
         if oldvalue and self.isValidPath(oldvalue):
-            self.userregnl.set("Old"+key, oldvalue)
-        if self.userregnl.get(key):
-            self.userregnl.delete(key)
+            self.userinisection.set("Old"+key, oldvalue)
+        if self.userinisection.get(key):
+            self.userinisection.delete(key)
             print('clearing UserDirectory of Natlink')
         else:
             print('The UserDirectory of Natlink was not set, nothing changed...')
@@ -657,9 +588,9 @@ Natlink is now disabled.
         Unimacro is expected at ../../Unimacro relative to the Core directory
         """
         key = 'IncludeUnimacroInPythonPath'
-        Keys = list(self.userregnl.keys())
+        Keys = list(self.userinisection.keys())
         print(('set %s'% key))
-        self.userregnl.set(key, 1)
+        self.userinisection.set(key, 1)
 
     def ignoreUnimacroDirectoryInPathIfNotUserDirectory(self):
         """clear variable so natlinkstatus knows to not include Unimacro in path
@@ -669,11 +600,11 @@ Natlink is now disabled.
         Unimacro is expected at ../../Unimacro relative to the Core directory
         """
         key = 'IncludeUnimacroInPythonPath'
-        Keys = list(self.userregnl.keys())
+        Keys = list(self.userinisection.keys())
 
         if key in Keys:
             print(('clearing variable %s'% key))
-            self.userregnl.delete(key)
+            self.userinisection.delete(key)
         else:
             print(('was not set %s'% key))
 
@@ -763,7 +694,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     # def getVocolaUserDir(self):
     #     key = 'VocolaUserDirectory'
-    #     value = self.userregnl.get(key, None)
+    #     value = self.userinisection.get(key, None)
     #     return value
 
     def setVocolaUserDirectory(self, v):
@@ -771,11 +702,11 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         v = os.path.normpath(os.path.expanduser(v))
         if self.isValidPath(v, wantDirectory=1):
             # print(f'Enable Vocola, with setting VocolaUserDirectory {v}')
-            self.userregnl.set(key, v)
-            self.userregnl.delete("Old"+key)
+            self.userinisection.set(key, v)
+            self.userinisection.delete("Old"+key)
             self.VocolaUserDirectory = v
         else:
-            oldvocdir = self.userregnl.get(key)
+            oldvocdir = self.userinisection.get(key)
             if oldvocdir and self.isValidPath(oldvocdir, wantDirectory=1):
                 mess = 'not a valid directory: %s, Vocola remains enabled with VocolaUserDirectory: %s'% (v, oldvocdir)
             else:
@@ -784,12 +715,12 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def clearVocolaUserDirectory(self):
         key = 'VocolaUserDirectory'
-        oldvalue = self.userregnl.get(key)
+        oldvalue = self.userinisection.get(key)
         if oldvalue and self.isValidPath(oldvalue):
-            self.userregnl.set("Old"+key, oldvalue)
+            self.userinisection.set("Old"+key, oldvalue)
         self.VocolaUserDirectory = "" 
-        if self.userregnl.get(key):
-            self.userregnl.delete(key)
+        if self.userinisection.get(key):
+            self.userinisection.delete(key)
         else:
             mess = 'no valid VocolaUserDirectory, so Vocola was already disabled'
             return mess
@@ -797,7 +728,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     ## autohotkey (January 2014)
     def getAhkExeDir(self):
         key = 'AhkExeDir'
-        value = self.userregnl.get(key)
+        value = self.userinisection.get(key)
         return value
 
     def setAhkExeDir(self, v):
@@ -809,8 +740,8 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             exepath = os.path.join(ahkexedir, 'autohotkey.exe')
             if os.path.isfile(exepath):
                 print(('Set AutoHotkey Exe Directory (AhkExeDir) to %s'% v))
-                self.userregnl.set(key, v)
-                self.userregnl.delete('Old'+key)
+                self.userinisection.set(key, v)
+                self.userinisection.delete('Old'+key)
                 return
             else:
                 mess = 'path does not contain "autohotkey.exe": %s'% v
@@ -820,11 +751,11 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def clearAhkUserDir(self):
         key = 'AhkUserDir'
-        oldvalue = self.userregnl.get(key)
+        oldvalue = self.userinisection.get(key)
         if oldvalue and self.isValidPath(oldvalue):
-            self.userregnl.set("Old"+key, oldvalue)
-        if self.userregnl.get(key):
-            self.userregnl.delete(key)
+            self.userinisection.set("Old"+key, oldvalue)
+        if self.userinisection.get(key):
+            self.userinisection.delete(key)
             print('Clear AutoHotkey User Directory (AhkUserDir)')
         else:
             mess = 'AutoHotkey User Directory (AhkUserDir) was not set, do nothing'
@@ -832,7 +763,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def getAhkUserDir(self):
         key = 'AhkUserDir'
-        value = self.userregnl.get(key, None)
+        value = self.userinisection.get(key, None)
         return value
 
     def setAhkUserDir(self, v):
@@ -840,8 +771,8 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         ahkuserdir = self.isValidPath(v, wantDirectory=1)
         if ahkuserdir:
             print(('Set AutoHotkey User Directory (AhkUserDir) to %s'% v))
-            self.userregnl.set(key, v)
-            self.userregnl.delete('Old'+key)
+            self.userinisection.set(key, v)
+            self.userinisection.delete('Old'+key)
             return
         else:
             mess = 'not a valid directory: %s'% v
@@ -849,11 +780,11 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def clearAhkExeDir(self):
         key = 'AhkExeDir'
-        oldvalue = self.userregnl.get(key)
+        oldvalue = self.userinisection.get(key)
         if oldvalue and self.isValidPath(oldvalue):
-            self.userregnl.set("Old"+key, oldvalue)
-        if self.userregnl.get(key):
-            self.userregnl.delete(key)
+            self.userinisection.set("Old"+key, oldvalue)
+        if self.userinisection.get(key):
+            self.userinisection.delete(key)
             print('Clear AutoHotkey Exe Directory (AhkExeDir)')
         else:
             mess = 'AutoHotkey Exe Directory (AhkExeDir) was not set, do nothing'
@@ -876,14 +807,14 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 print(f'\n-----------\nChanging your UnimacroUserDirectory\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
                       'from old: "{oldDir}" to the\n' \
                       'new UnimacroUserDirectory "{uuDir}"\n--------\n')
-            self.userregnl.set(key, v)
+            self.userinisection.set(key, v)
             
             self.UnimacroUserDirectory = uuDir
             
             # clear this one, in order to refresh next time it is called:
             self.UnimacroGrammarsDirectory = None
             
-            self.userregnl.delete('Old'+key)
+            self.userinisection.delete('Old'+key)
             print(f'Enable Unimacro, and set UnimacroUserDirectory to {uuDir}')
             return
         mess = f'natlinkconfigfunctions, could not Enable Unimacro, and set the UnimacroUserDirectory to "{v}"'
@@ -892,17 +823,17 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     def clearUnimacroUserDirectory(self):
         """clear but keep previous value"""
         key = 'UnimacroUserDirectory'
-        oldValue = self.userregnl.get(key)
+        oldValue = self.userinisection.get(key)
         self.UnimacroUserDirectory = ""
 
         ## also clear this one:
         self.UnimacroGrammarsDirectory = ""
 
-        self.userregnl.delete(key)
+        self.userinisection.delete(key)
         oldDirectory = self.isValidPath(oldValue)
         if oldDirectory:
             keyOld = 'Old' + key
-            self.userregnl.set(keyOld, oldValue)
+            self.userinisection.set(keyOld, oldValue)
         else:
             print('- UnimacroUserDirectory seems to be already cleared, Unimacro remains disabled')
             
@@ -910,8 +841,8 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         key = "UnimacroIniFilesEditor"
         exefile = self.isValidPath(v, wantFile=1)
         if exefile and v.endswith(".exe"):
-            self.userregnl.set(key, v)
-            self.userregnl.delete("Old"+key)
+            self.userinisection.set(key, v)
+            self.userinisection.delete("Old"+key)
             try:
                 del self.UnimacroIniFilesEditor
             except AttributeError:
@@ -923,11 +854,11 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
     def clearUnimacroIniFilesEditor(self):
         key = "UnimacroIniFilesEditor"
-        oldvalue = self.userregnl.get(key)
+        oldvalue = self.userinisection.get(key)
         oldexefile = self.isValidPath(oldvalue, wantFile=1)
         if oldexefile:
-            self.userregnl.set("Old"+key, oldvalue)
-        self.userregnl.delete(key)
+            self.userinisection.set("Old"+key, oldvalue)
+        self.userinisection.delete(key)
         print('UnimacroIniFilesEditor cleared')
 
     def registerNatlinkPyd(self, silent=1):
@@ -940,9 +871,12 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         Also sets the pythonpath in the HKLM pythonpath section
         """
         # give fatal error if Python is not OK...
-        result = self.getRegistryPythonPathNatlink()
-        if result:
-            natlink_key, natlinkdir_from_registry = result
+        # result = self.getRegistryPythonPathNatlink()
+        # if result:
+        #     natlink_key, natlinkdir_from_registry = result
+        pass
+        
+        
         
         pythonVersion = self.getPythonVersion()
         dragonVersion = self.getDNSVersion()
@@ -979,12 +913,12 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                     self.config.set('NatlinkPydRegistered', 0)
                     return
                 else:
-                    self.userregnl.set('NatlinkPydRegistered', newIniSetting)
+                    self.userinisection.set('NatlinkPydRegistered', newIniSetting)
 
     #                    print 'registered %s '% PydPath
 
             except:
-                self.userregnl.set('NatlinkPydRegistered', 0)
+                self.userinisection.set('NatlinkPydRegistered', 0)
                 fatal_error("cannot register |%s|"% PydPath)
                 return
         else:
@@ -992,10 +926,10 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             result = os.system('regsvr32 "%s"'% PydPath)
             if result:
                 print(('failed to register %s (result: %s)'% (PydPath, result)))
-                self.userregnl.set('NatlinkPydRegistered', 0)
+                self.userinisection.set('NatlinkPydRegistered', 0)
                 return
             else:
-                self.userregnl.set('NatlinkPydRegistered', newIniSetting)
+                self.userinisection.set('NatlinkPydRegistered', newIniSetting)
                 print(('Registring pyd file succesful: %s'% PydPath))
 
         
@@ -1073,28 +1007,28 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
         """
         key = "NatlinkmainDebugLoad"
-        self.userregnl.set(key, 1)
+        self.userinisection.set(key, 1)
 
 
     def disableDebugLoadOutput(self):
         """disables the Natlink debug output of loading of natlinkmain is given
         """
         key = "NatlinkmainDebugLoad"
-        self.userregnl.delete(key)
+        self.userinisection.delete(key)
 
     def enableDebugCallbackOutput(self):
         """setting registry key so debug output of callback functions of natlinkmain is given
 
         """
         key = "NatlinkmainDebugCallback"
-        self.userregnl.set(key, 1)
+        self.userinisection.set(key, 1)
 
 
     def disableDebugCallbackOutput(self):
         """disables the Natlink debug output of callback functions of natlinkmain
         """
         key = "NatlinkmainDebugCallback"
-        self.userregnl.delete(key)
+        self.userinisection.delete(key)
 
     # def enableDebugOutput(self):
     #     """setting registry key so debug output is in NatSpeak logfile
@@ -1103,7 +1037,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     #     to this option...
     #     """
     #     key = "NatlinkDebug"
-    #     self.userregnl.set(key, 1)
+    #     self.userinisection.set(key, 1)
     #     # double in registry, natlink.pyd takes this one:
     #     print 'Enable %s, this setting is obsolete)'% key
     #     #self.userregnlOld[key] = 1
@@ -1112,7 +1046,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
     #     """disables the Natlink lengthy debug output to NatSpeak logfile
     #     """
     #     key = "NatlinkDebug"
-    #     self.userregnl.delete(key)
+    #     self.userinisection.delete(key)
     #     # double in registry, natlink.pyd takes this one:
     #     print 'Disable NatlinkDebug, this setting is obsolete'% key
     #     #self.userregnlOld[key] = 0
@@ -1274,28 +1208,28 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
         """
         key = "VocolaTakesLanguages"
-        self.userregnl.set(key, 1)
+        self.userinisection.set(key, 1)
 
 
     def disableVocolaTakesLanguages(self):
         """disables so Vocola cannot take different languages
         """
         key = "VocolaTakesLanguages"
-        self.userregnl.set(key, 0)
+        self.userinisection.set(key, 0)
 
     def enableVocolaTakesUnimacroActions(self):
         """setting registry  so Vocola can divide different languages
 
         """
         key = "VocolaTakesUnimacroActions"
-        self.userregnl.set(key, 1)
+        self.userinisection.set(key, 1)
 
 
     def disableVocolaTakesUnimacroActions(self):
         """disables so Vocola does not take Unimacro Actions
         """
         key = "VocolaTakesUnimacroActions"
-        self.userregnl.set(key, 0)
+        self.userinisection.set(key, 0)
 
 
 
@@ -1369,9 +1303,9 @@ class CLI(cmd.Cmd):
             self.isValidPath = self.config.isValidPath  ## convenient
             for key in ObsoleteStatusKeys:
                 # see at top of this file!
-                if key in list(self.config.userregnl.keys()):
+                if key in list(self.config.userinisection.keys()):
                     print(('remove obsolete key from natlinkstatus.ini: "%s"'% key))
-                    self.config.userregnl.delete(key)
+                    self.config.userinisection.delete(key)
             self.DNSName = self.config.getDNSName()
         except ElevationError:
             e = sys.exc_info()[1]
@@ -1857,7 +1791,7 @@ of Natlink, so keep off (X and Y) most of the time.
         self.message = "(Re) register and enable natlink.pyd"
         if self.config.isElevated:
             print('do action: %s'% self.message)
-            isRegistered = self.config.userregnl.get("NatlinkPydRegistered")
+            isRegistered = self.config.userinisection.get("NatlinkPydRegistered")
             #if isRegistered:
             #    print "If you have problems re-registering natlink.pyd, please try the following:"
             #    print "Un-register natlink.pyd first, then"

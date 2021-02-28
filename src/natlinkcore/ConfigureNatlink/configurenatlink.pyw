@@ -868,7 +868,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         ## search for Unimacro directory as proposal:
         old_path = self.config.isValidPath(D['UnimacroIniFilesEditor'], wantFile=1)
         if not old_path:
-            old_path = self.config.isValidPath(self.config.userregnl.get('OldUnimacroIniFilesEditor'),
+            old_path = self.config.isValidPath(self.config.userinisection.get('OldUnimacroIniFilesEditor'),
                                                wantFile=1)
         if old_path:
             dlg.SetPath(old_path)
@@ -1030,7 +1030,7 @@ More about this in the "Vocola Compatibility" dialog.
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
               style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
         ## search for Unimacro User directory as proposal:
-        oldPath = self.config.userregnl.get('OldUnimacroUserDirectory')
+        oldPath = self.config.userinisection.get('OldUnimacroUserDirectory')
         if oldPath:
             oldPath = self.config.isValidPath(oldPath)
         if not oldPath:
@@ -1078,7 +1078,7 @@ More about this in the "Vocola Compatibility" dialog.
         dlg = wx.DirDialog(self.frame, "Please choose the UserDirectory, where your Natlink grammar files are located.",
               style=wx.DD_DEFAULT_STYLE-wx.DD_NEW_DIR_BUTTON)
         ## search for previous directory or other default:
-        oldPath = self.config.userregnl.get('OldUserDirectory')
+        oldPath = self.config.userinisection.get('OldUserDirectory')
         if oldPath:
             oldPath = self.config.isValidPath(oldPath)
         if not oldPath:
@@ -1130,7 +1130,7 @@ More about this in the "Vocola Compatibility" dialog.
         dlg = wx.DirDialog(self.frame, "Choose a directory please",
               style=wx.DD_DEFAULT_STYLE)
         ## search for Vocola directory as proposal:
-        oldPath = self.config.userregnl.get('OldVocolaUserDirectory')
+        oldPath = self.config.userinisection.get('OldVocolaUserDirectory')
         if oldPath:
             oldPath = self.config.isValidPath(oldPath)
         if not oldPath:

@@ -175,9 +175,9 @@ class TestConfigureFunctions(unittest.TestCase):
         self.tmpTest = tmpTest
         self.cli = natlinkconfigfunctions.CLI()
         config = self.cli.config
-        config.userregnl = NatlinkstatusTestInifileSection()
-        config.userregnl.clear()
-        self.testinisection = config.userregnl
+        config.userinisection = NatlinkstatusTestInifileSection()
+        config.userinisection.clear()
+        self.testinisection = config.userinisection
 
 
     def tearDown(self):
@@ -690,9 +690,9 @@ class TestConfigureFunctions(unittest.TestCase):
         key = "UnimacroUserDirectory"
         keyOld = "OldUnimacroUserDirectory"
         cli = self.cli
-        old = cli.config.userregnl[key]
+        old = cli.config.userinisection[key]
         self.assertTrue(old == "", "key %s should not be set at start of test: %s"% (key, testName))
-        old = cli.config.userregnl[keyOld]
+        old = cli.config.userinisection[keyOld]
         self.assertTrue(old == "", "key %s should not be set at start of test: %s"% (keyOld, testName))
 
         # not a valid folder:
