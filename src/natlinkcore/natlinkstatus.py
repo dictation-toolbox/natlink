@@ -135,8 +135,8 @@ from natlinkcore import natlinkcorefunctions
 import time
 import types
 from natlinkcore import inivars
-from pathqh import path
-import __init__
+from natlinkcore.pathqh import path
+from natlinkcore import __init__
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -1656,7 +1656,8 @@ Please try to correct this by running the Natlink Config Program (with administr
             return value
 
     def getInstallVersion(self):
-        return __init__.__version__
+        return 'must do version(TODOQH)'
+        # return __init__.__version__
 
     def getNatlinkPydRegistered(self):
         value = self.userregnl.get('NatlinkDllRegistered', None)
