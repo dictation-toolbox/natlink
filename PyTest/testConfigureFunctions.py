@@ -253,10 +253,10 @@ class TestConfigureFunctions(unittest.TestCase):
         result = func(self.tmpTest, wantDirectory=1)
         self.assertTrue( result == self.tmpTest, "should exist")
         result = func(self.tmpTest, wantFile=1)
-        self.assertTrue( result == None, "should fail, exists but is not a file")
+        self.assertTrue( result is None, "should fail, exists but is not a file")
         
         result = func("notValid")
-        self.assertTrue( result == None, "should fail all the time")
+        self.assertTrue( result is None, "should fail all the time")
         
         testinifile = os.path.join(self.tmpTest, 'nsapps.ini')
         f1 = open(testinifile, 'w')
@@ -265,7 +265,7 @@ class TestConfigureFunctions(unittest.TestCase):
         result = func(testinifile)
         self.assertTrue( result == testinifile, "should exist")
         result = func(testinifile, wantDirectory=1)
-        self.assertTrue( result == None, "should fail, is not a directory")
+        self.assertTrue( result is None, "should fail, is not a directory")
         result = func(testinifile, wantFile=1)
         self.assertTrue( result == testinifile,  "should exist and should be a file")
     

@@ -517,7 +517,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 
                 if key in self.functions and self.functions[key]:
                     func = self.functions[key]
-##                    if func == None:
+##                    if func is None:
 ##                        print "no getter function for %s"% key
 ##                        continue
                     value = D[key]

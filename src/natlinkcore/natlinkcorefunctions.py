@@ -36,7 +36,7 @@ from win32com.shell import shell, shellcon
 # import win32api
 # for extended environment variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
-import inivars
+from natlinkcore import inivars
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -207,7 +207,7 @@ def getExtendedEnv(var, envDict=None, displayMessage=1):
     This is merely for "caching results"
 
     """
-    if envDict == None:
+    if envDict is None:
         myEnvDict = recentEnv
     else:
         myEnvDict = envDict
@@ -341,7 +341,7 @@ def substituteEnvVariableAtStart(filepath, envDict=None):
     asked for in the session, so no complete list!
 
     """
-    if envDict == None:
+    if envDict is None:
         envDict = recentEnv
     Keys = list(envDict.keys())
     # sort, longest result first, shortest keyname second:

@@ -449,7 +449,7 @@ def wordInfoToFlags(wordInfo):
     
     """
     emptySet = set(())
-    if wordInfo == None:
+    if wordInfo is None:
         return emptySet
     elif wordInfo == 0:
         return emptySet

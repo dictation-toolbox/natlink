@@ -11,7 +11,7 @@
 With the functions in this module Natlink can be configured.
 
 This can be done in three ways:
--Through the command line interface (CLI) which is started automatically
+-Through the command line interface (CLI) which is started automaticallyh
  when this module is run (with Pythonwin, IDLE, or command line of Python)
 -On the command line, using one of the different command line options
 -Through the configure GUI (natlinkconfig.py), which calls into this module
@@ -43,7 +43,7 @@ enableNatlink()  (e)/disableNatlink() (E)
 setUserDirectory(path) (n path) or clearUserDirectory() (N)
 etc.
 
-More at the bottom, with the CLI description...
+More at the bottom, with the CLI description... 
 
 """
 import os
@@ -88,13 +88,12 @@ def NatlinkStatusIniFileName():
 
 natlink_status_ini_file_name=NatlinkStatusIniFileName()
 
-#Core directory must be added to the path;  Required for when runing from the Python scripts folder:
+#Core directory must be added to the path;  Required for when running from the Python scripts folder:
+#?? now switched off, TODOQH
 coreDir = getCoreDirectory()
-if coreDir not in sys.path:
-    print(f'add to sys.path: {coreDir}')
-    sys.path.append(coreDir)
-
-# print(f"Core dir {coreDir}\nsys.path: {sys.path}")
+# if coreDir not in sys.path:
+#     print(f'add to sys.path: {coreDir}')
+#     sys.path.append(coreDir)
 
 try:
     from natlinkcore.pathqh import path
@@ -139,7 +138,7 @@ class NatSpeakRunningError(Exception):
         # self.message += '\nPlease close Dragon and repeat your command'
         self.message += '\nPlease close Dragon and this program and try it again'
 
-ObsoleteStatusKeys = ('VocolaUsesSimpscrp', 'VocolaCommandFilesEditor', 'NatlinkDebug')
+ObsoleteStatusKeys = ('VocolaUsesSimpscrp', 'VocolaCommandFilesEditor', 'NatlinkDebug', 'NatlinkPydRegistered')
 
 hadFatalErrors = []
 def fatal_error(message, new_raise=None):
@@ -150,7 +149,8 @@ def fatal_error(message, new_raise=None):
     if not hadFatalErrors:
         mess = ['natlinkconfigfunctions failed because of fatal error:',
                 '', message, '',
-                'So if Dragon is running, close it and then rerun this program (in elevated mode).']
+                'So if Dragon is running, close it.', 'Then rerun this program in elevated mode,',
+                'via "start_configurenatlink" (GUI) or "start_natlinkconfigfunctions" (CLI).']
         mess = '\n'.join(mess)
         print(mess)
         print("\n\n*** See also the messageBox, and close it")
@@ -171,7 +171,7 @@ import win32con
 
 from win32com.shell import shell
 import win32api
-
+ 
 # from core directory, use registry entries from CURRENT_USER/Software/Natlink:
 from natlinkcore import natlinkstatus
 from natlinkcore import natlinkcorefunctions
@@ -210,10 +210,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if coreDir2.lower() != coreDir.lower():
             print('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
-        # this is probably not what we want: QH
-        coreDir = coreDir2   ## fingers crossed
-        if coreDir not in sys.path:
-            sys.path.append(coreDir)
+        # this is probably not what we want: TODOQH
+        # coreDir = coreDir2   ## fingers crossed
+        # if coreDir not in sys.path:
+        #     sys.path.append(coreDir)
             
     def checkDNSInstallDir(self):
         """check if install directory of Dragon is found
@@ -231,22 +231,17 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     def configCheckNatlinkPydFile(self, silent=None):
         """see if natlink.pyd is in core directory, if not copy from correct version
 
-        In this function the essential parts of the install are done if needed
-        Last changes QH, April 2020
+        changes with python3 version of Natlink:
+        - registry is not needed any more
+        - original path of pyd file is kept in NatlinkPydOrigin
         
-        If it already is, if the correct version is there, or a newer version is there
-        
-        Finally, also put the correct path to the Natlink pyd file in the registry,
-        the Natlink section of PythonPath of your current python install.
-        
-        if DNSInstallDir or DNSIniDir is not properly set, all goes wrong.
         """
         self.checkedUrgent = 1
         if sys.version.find("64 bit") >= 0:
-            print('=============================================')
+            print('=============================================') 
             print('You installed a 64 bit version of python.')
             print('Natlink cannot run with this version, please uninstall and')
-            print('install a 32 bit version of python, see http://qh.antenna.nl/unimacro,,,')
+            print('install a 32 bit version of python, see https://qh.antenna.nl/unimacro,,,')
             print('=============================================')
             return
 
@@ -255,67 +250,59 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if self.getDNSIniDir == -1:
             return
 
+        ## unlikely case:
         coreDir2 = self.getNatlinkDirectory()
         coreDirSitePackages = self.findInSitePackages(coreDir)
         if coreDir2.lower() != coreDirSitePackages.lower():
-            fatal_error('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
-                                              (coreDirSitePackages, coreDir2))
+            fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDirSitePackages}\nfrom natlinkstatus.getNatlinkDirectory: "{coreDir2}"')
         currentPydPath = os.path.join(coreDir, 'natlink.pyd')
-
-        if not os.path.isfile(currentPydPath):
-            if not self.isElevated: raise ElevationError("natlink.pyd is not found")
-            mess = "natlink.pyd is not found, try to repair this."
-            # windowsMessageBox(mess)
-            # self.message("natlink.pyd is not found, try to repair this.")
-
-            key = 'NatlinkPydRegistered'
-            # print '%s does not exist, remove "%s" from natlinkstatus.ini and setup up new pyd file...'% (currentPydPath, key)
-            self.userinisection.delete(key)
-            natlinkPydWasAlreadyThere = 0
-            self.checkedUrgent = None
+        NatlinkOrigin = self.userinisection.get('NatlinkPydOrigin')
+ 
+        firstInstall = False
+        if not (currentPydPath and os.path.isfile(currentPydPath)):
+            if NatlinkOrigin and os.path.isfile(NatlinkOrigin):
+                print(f'no natlink.pyd, clear "NatlinkPydOrigin" setting')
+                # no current .pyd, clear NatlinkOrigin:
+                self.userinisection.delete('NatlinkPydOrigin')
+            FirstInstall = True
         else:
-            natlinkPydWasAlreadyThere = 1
+            if not (NatlinkOrigin and os.path.isfile(NatlinkOrigin)):
+                print(f'no valid "NatlinkPydOrigin" setting, remove natlink.pyd')
+                mess = f'"NatlinkPydOrigin" setting not valid, natlink.pyd should be removed'
+                if not self.isElevated: raise ElevationError(mess )
+                self.removeNatlinkPyd()
+                assert not os.path.isfile(currentPydPath)
+                FirstInstall = True
+
         wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
-        if self.checkNatlinkPydFile(fromConfig=1) == 1:  # check the need for replacing natlink.pyd without messages...
-            self.checkedUrgent = None
-            return 1 # all is well
-
-
-        result = None
-        # for message:
-        #fatal_error("The current file natlink.pyd is not available, the correct version or outdated, try to replace it by the proper (newer) version...")
-        ## now go on with trying to replace natlink.pyd with the correct version and register it...
         wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
-        if not wantedPyd:
-            fatal_error('natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find filename for wantedPydPath\ncoreDir: %s, wantedPyd: %s'% (coreDir, wantedPyd))
-            return
         if not os.path.isfile(wantedPydPath):
-            fatal_error('natlinkconfigfunctions, configCheckNatlinkPydFile: wantedPydPath does not exits: %s'% wantedPydPath)
+            fatal_error(f'natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find wantedPydPath: {wantedPydPath}')
             return
-        if natlinkPydWasAlreadyThere:
-            if not self.isElevated: raise ElevationError("natlink.pyd should be changed")
-            # if self.isNatSpeakRunning(): raise NatSpeakRunningError("natlink.pyd should be changed")
-            self.changesInInitPhase = 1
-            result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
+        targetPydPath = currentPydPath
+    
+        if FirstInstall:
+            result = self.copyNatlinkPydPythonVersion(wantedPydPath, targetPydPath)
             if not result:
                 return
-            result = self.registerNatlinkPyd()
-            if result:
-                print(('-'*30))
-                print('Copying and registering the latest natlink.pyd was succesful.')
-                print('You can now close this program and restart Dragon.')
-                print(('-'*30))
-        else:
-            if not self.isElevated: raise ElevationError("first run of configure program must be done in elevated mode")
-            result = self.copyNatlinkPydPythonVersion(wantedPydPath, currentPydPath)
-            self.registerNatlinkPyd(silent=silent)
-        
-        # now also put this in the registry:
-        # if result:
-        #     result = self.setRegistryPythonPathNatlink(coreDir, silent=silent)
-        #     if not result:
-        #         print('Setting the registry to the new setting (%s) failed'% coreDir)
-
+            self.userinisection.set('NatlinkOrigin', wantedPydPath)
+            self.registerNatlinkPyd()
+            return 1
+            
+            
+        if self.PydChangedPath():
+            warning('current pyd file does not match "origing", Reregister to solve')
+            
+        # not FirstInstall, check dates...
+        if self.checkPydChanges(target, wanted) is True:
+            print(f'no changes Pyds')
+            return 1
+            pass
+        # TODOQH this part to  checkPydChanges in natlinkstatus.py.            
+        # wantedModTime = getFileDate(wantedPydPath)
+        # targetModTime = getFileDate(targetPydPath)
+        # if wantedModTime > targetModTime:
+        #     print(f'wanted pyd file newer than actual {wantedPydPath}')
         return result  # None if something went wrong 1 if all OK
 
     def removeNatlinkPyd(self):
@@ -355,7 +342,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if os.path.isfile(wantedPydFile):
             try:
                 shutil.copyfile(wantedPydFile, currentPydFile)
-                print(('copied pyd (=dll) file %s to %s'% (wantedPydFile, currentPydFile)))
+                print('copied pyd (=dll) file %s to %s'% (wantedPydFile, currentPydFile))
             except:
                 fatal_error("Could not copy %s to %s\nProbably you need to exit Dragon first."% (wantedPydFile, currentPydFile))
                 return
@@ -390,13 +377,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return
 
         result = self.NatlinkIsEnabled(silent=1)
-        if result == None:
+        if result is None:
             if not self.isElevated: raise ElevationError("needed for fixing the natlink enabled state")
             # if self.isNatSpeakRunning(): raise NatSpeakRunningError("needed for fixing the natlink enabled state")
 
             self.disableNatlink(silent=1)
             result = self.NatlinkIsEnabled(silent=1)
-            if result == None:
+            if result is None:
 
                 text = \
 """Natlink INI file settings are inconsistent,  comd
@@ -868,37 +855,16 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
         if NOT silent, go through os.system, and produce a message window.
 
-        Also sets the pythonpath in the HKLM pythonpath section
+        Note: NO registry setting any more! (March 2021)
         """
-        # give fatal error if Python is not OK...
-        # result = self.getRegistryPythonPathNatlink()
-        # if result:
-        #     natlink_key, natlinkdir_from_registry = result
-        pass
-        
-        
-        
-        pythonVersion = self.getPythonVersion()
-        dragonVersion = self.getDNSVersion()
-        if not (pythonVersion and len(pythonVersion) == 2):
-            fatal_error('not a valid python version found: |%s|'%
-                        pythonVersion)
-
-        # for safety unregister always:
-        # print 'first unregister, just to be sure...'
-        # self.unregisterNatlinkPyd(silent=1)
-
-        PydPath = os.path.join(coreDir, 'natlink.pyd')
-        # result = self.PydIsRegistered(PydPath)
-        # print 'register function before: registered: %s'% result
-
+        PydPath = os.path.join(self.NatlinkDirectory, 'natlink.pyd')
 
         if not os.path.isfile(PydPath):
             fatal_error("Pyd file not found in core folder: %s"% PydPath)
 
-        baseDir = os.path.join(coreDir, '..')
+        result = self.PydIsRegistered(PydPath)
+        print(f'natlink.pyd was already registered: {PydPath}, still do it again...')
 
-        newIniSetting = "%s;%s"% (pythonVersion, dragonVersion)
         if silent:
             try:
                 import win32api
@@ -906,35 +872,24 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 fatal_error("cannot import win32api, please see if win32all of python is properly installed")
 
             try:
-
-                result = win32api.WinExec('regsvr32 /s "%s"'% PydPath)
+                result = win32api.WinExec(f'regsvr32 /s "{PydPath}"')
                 if result:
-                    fatal_error('failed to register %s (result: %s)\nPossibly exit Dragon and run this program in Elevated (admin) mode'% (PydPath, result))
-                    self.config.set('NatlinkPydRegistered', 0)
+                    fatal_error(f'failed to register {PydPath} (result: {result})')
                     return
                 else:
-                    self.userinisection.set('NatlinkPydRegistered', newIniSetting)
-
-    #                    print 'registered %s '% PydPath
-
+                    print(f'registered "{PydPath}"')
             except:
-                self.userinisection.set('NatlinkPydRegistered', 0)
-                fatal_error("cannot register |%s|"% PydPath)
+                fatal_error(f'cannot register "{PydPath}"')
                 return
         else:
             # os.system:
-            result = os.system('regsvr32 "%s"'% PydPath)
+            result = os.system(f'regsvr32 "{PydPath}"')
             if result:
-                print(('failed to register %s (result: %s)'% (PydPath, result)))
-                self.userinisection.set('NatlinkPydRegistered', 0)
-                return
+                fatal_error(f'Failed to register "{PydPath}" (result: {result})')
             else:
-                self.userinisection.set('NatlinkPydRegistered', newIniSetting)
-                print(('Registring pyd file succesful: %s'% PydPath))
+                print(f'Registering pyd file succesful: "{PydPath}"')
 
-        
-
-
+        ## should return True then:
         return result is None
 
     def PydIsRegistered(self, PydPath):
@@ -1296,7 +1251,7 @@ class CLI(cmd.Cmd):
         try:
             self.config.checkDNSInstallDir()  ## checks if DNS install directory is found
             self.config.checkCoreDirectory()
-            self.config.correctIniSettings()
+            # self.config.correctIniSettings()  
             self.config.checkIniFiles()
             self.config.clearRegistryPythonPathNatlink()  # not needed any more for python 3
             self.checkedConfig = self.config.checkedUrgent
@@ -1307,6 +1262,7 @@ class CLI(cmd.Cmd):
                     print(('remove obsolete key from natlinkstatus.ini: "%s"'% key))
                     self.config.userinisection.delete(key)
             self.DNSName = self.config.getDNSName()
+            self.config.configCheckNatlinkPydFile()
         except ElevationError:
             e = sys.exc_info()[1]
             print(('You need to run this program in elevated mode. (%s).'% e.message))
@@ -1789,25 +1745,14 @@ of Natlink, so keep off (X and Y) most of the time.
     # register natlink.pyd
     def do_r(self, arg):
         self.message = "(Re) register and enable natlink.pyd"
-        if self.config.isElevated:
-            print('do action: %s'% self.message)
-            isRegistered = self.config.userinisection.get("NatlinkPydRegistered")
-            #if isRegistered:
-            #    print "If you have problems re-registering natlink.pyd, please try the following:"
-            #    print "Un-register natlink.pyd first, then"
-            #    print "If you want to try a new natlink.pyd, first exit this program,"
-            #    print "Remove %s\\natlink.pyd"% coreDir
-            #    print "and restart (in elevated mode) this program."
-            #    print "The correct python version of natlink.pyd will be copied to natlink.pyd"
-            #    print "and it will be registered again."
-            #    return
-            if not self.config.removeNatlinkPyd():
-                return
-            self.config.configCheckNatlinkPydFile(silent=None)
-
-            self.config.enableNatlink()
-        else:
+        if not self.config.isElevated:
             raise ElevationError(self.message)
+        print('do action: %s'% self.message)
+        if not self.config.removeNatlinkPyd():
+            return
+        self.config.configCheckNatlinkPydFile(silent=None)
+
+        self.config.enableNatlink()
 
     def do_R(self, arg):
         self.message = "Unregister natlink.pyd and disable Natlink"
@@ -1976,6 +1921,11 @@ uppercase commands usually clear/disable something
 Informational commands: i and I
 """)
     help_usage = help_u
+
+def getFileDate(modName):
+    try: return os.stat(modName)[ST_MTIME]
+    except OSError: return 0        # file not found
+
 
 def main():
     if len(sys.argv) == 1:

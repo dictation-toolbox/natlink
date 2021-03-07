@@ -14,7 +14,7 @@ import os
 import os.path
 import time
 # use utilities of Unimacro:
-import readwritefile
+from natlinkcore import readwritefile
 import natlinkutilsqh
 from unimacro import actions
 import TestCaseWithHelpers

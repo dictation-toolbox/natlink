@@ -131,10 +131,10 @@ import pprint
 import stat
 import winreg
 import pathlib
-import natlinkcorefunctions
+from natlinkcore import natlinkcorefunctions
 import time
 import types
-import inivars
+from natlinkcore import inivars
 from pathqh import path
 import __init__
 # for getting generalised env variables:
@@ -220,7 +220,7 @@ class NatlinkStatus:
     in the PyTest folder there are/come test functions in TestNatlinkStatus
 
     """
-    userinisection = natlinkcorefunctions.NatlinkstatusInifileSection()
+    userregnl = natlinkcorefunctions.NatlinkstatusInifileSection()
 
     ### from previous modules, needed or not...
     NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
@@ -421,9 +421,22 @@ Please try to correct this by running the Natlink Config Program (with administr
                     self.warning('incorrect originalPyd (from natlinkstatus.ini): %s, wanted: %s'% (originalPyd, wantedPyd))
             return
 
+        result = self.checkPydChanges(currentPydPath, wantedPydPath)
+
+    def checkPydChanges(self, currentPath, wantedPath):
+        """check if currentPath should be updated to wantedPath
+        """
+        print(f'will be finished ASAP')
+        return True
+        currentDir, currentFile = os.path.split(currentPath)
+        wantedDir, wantedFile = os.path.split(wantedPath)
+        
+        if currentFile != wantedFile:
+            print(f'')
+        
         # now check for updates:
-        timeWantedPyd = getFileDate(wantedPydPath)
-        timeCurrentPyd = getFileDate(currentPydPath)
+        timeWanted = getFileDate(wantedPath)
+        timeCurrent = getFileDate(currentPath)
 
         # check for newer (changed version) of original pyd:
         if timeCurrentPyd or timeWantedPyd:
@@ -547,7 +560,24 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         the new value should have 25;12 (so python version and dragon version)
         """
-        return # obsolete python 3 release. May come into action later again...
+        ini = self.userregnl
+        oldSetting = ini.get('NatlinkDllRegistered')
+        newSetting = ini.get('NatlinkPydRegistered')
+        if oldSetting and not newSetting:
+            if len(oldSetting) <= 2:
+                dragonVersion = self.getDNSVersion()
+                if dragonVersion <= 11:
+                    # silently go over to new settings:
+                    oldSetting = "%s;%s"% (oldSetting, dragonVersion)
+            print('correct setting from "NatlinkDllRegistered" to "NatlinkPydRegistered"')
+            ini.set('NatlinkPydRegistered', oldSetting)
+            ini.delete('NatlinkDllRegistered')
+        oldSetting = ini.get('UserDirectory')
+        if oldSetting and oldSetting.find('Unimacro') > 0:
+            ini.delete('UserDirectory')
+        oldSetting = ini.get('IncludeUnimacroInPythonPath')
+        if oldSetting:
+            ini.delete('IncludeUnimacroInPythonPath')
 
     def setUserInfo(self, args):
         """set username and userdirectory at change callback user
@@ -611,7 +641,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         "" if not registered before
         """
-        setting = self.userinisection.get("NatlinkPydRegistered")
+        setting = self.userregnl.get("NatlinkPydRegistered")
         if not setting:
             return ""
         if ";" in setting:
@@ -697,7 +727,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             return self.DNSIniDir
 
         key = 'DNSIniDir'
-        P = self.userinisection.get(key)
+        P = self.userregnl.get(key)
         if P:
             os.path.normpath(P)
             if os.path.isdir(P):
@@ -831,7 +861,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         ## get first time value:
         key = 'DNSInstallDir'
-        P = self.userinisection.get(key)
+        P = self.userregnl.get(key)
         if P:
             if self.checkDNSProgramDir(P):
                 return P
@@ -980,12 +1010,18 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         """
         try:
-            self.cache_NatlinkIsEnabled
+            isEnabled = self.cache_NatlinkIsEnabled
         except AttributeError:
-            self.cache_NatlinkIsEnabled = True
+            pass
         else:
             return self.cache_NatlinkIsEnabled
 
+        result = self.getRegistryPythonPathNatlink()
+        if not result:
+            self.cache_NatlinkIsEnabled = False
+            return   ## registry setting not of pythonpath to core directory is not OK
+        registry_key, coredir_from_registry = result
+        
         if self.DNSInstallDir == -1:
             self.cache_NatlinkIsEnabled = False
             return
@@ -995,19 +1031,9 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.NatlinkDirectory:
             self.cache_NatlinkIsEnabled = False
             return
-
-        try:
-            import natlink
-        except ModuleNotFoundError:
-            print(f'natlink module not found')
+        if self.NatlinkDirectory.lower() != coredir_from_registry.lower():
             self.cache_NatlinkIsEnabled = False
-        
-        
-
-
-        if self.cache_NatlinkIsEnabled is False:
-            return 1
-
+            return
             
         nssystemini = self.getNSSYSTEMIni() or ''
         if not os.path.isfile(nssystemini):
@@ -1015,6 +1041,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             return 0
             # raise IOError("NatlinkIsEnabled, not a valid file: %s"% nssystemini)
         actual1 = win32api.GetProfileVal(self.section1, self.key1, "", nssystemini)
+
 
         nsappsini = self.getNSAPPSIni()
         if not os.path.isfile(nsappsini):
@@ -1116,7 +1143,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getUnimacroUserDirectory(self):
         if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
         key = 'UnimacroUserDirectory'
-        value = self.userinisection.get(key)
+        value = self.userregnl.get(key)
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
@@ -1294,7 +1321,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         elif not self.UserDirectory is None:
             return self.UserDirectory
         key = 'UserDirectory'
-        value = self.userinisection.get(key)
+        value = self.userregnl.get(key)
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
@@ -1309,7 +1336,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not self.VocolaUserDirectory is None: return self.VocolaUserDirectory
         key = 'VocolaUserDirectory'
 
-        value = self.userinisection.get(key)
+        value = self.userregnl.get(key)
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
@@ -1373,7 +1400,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getAhkUserDirFromIni(self):
         key = 'AhkUserDir'
 
-        value = self.userinisection.get(key)
+        value = self.userregnl.get(key)
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
@@ -1390,7 +1417,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def getAhkExeDirFromIni(self):
         key = 'AhkExeDir'
-        value = self.userinisection.get(key)
+        value = self.userregnl.get(key)
         if value:
             Path = isValidPath(value, wantDirectory=1)
             if Path:
@@ -1404,7 +1431,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
-        value = self.userinisection.get(key)
+        value = self.userregnl.get(key)
         if not value:
             value = 'notepad'
         if self.UnimacroIsEnabled():
@@ -1587,26 +1614,26 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getDebugLoad(self):
         """gets value for extra info at loading time of natlinkmain"""
         key = 'NatlinkmainDebugLoad'
-        value = self.userinisection.get(key, None)
+        value = self.userregnl.get(key, None)
         return value
     def getDebugCallback(self):
         """gets value for extra info at callback time of natlinkmain"""
         key = 'NatlinkmainDebugCallback'
-        value = self.userinisection.get(key, None)
+        value = self.userregnl.get(key, None)
         return value
 
     # def getNatlinkDebug(self):
     #     """gets value for debug output in DNS logfile"""
     # obsolete (for a long time, 2015 and earlier)
     #     key = 'NatlinkDebug'
-    #     value = self.userinisection.get(key, None)
+    #     value = self.userregnl.get(key, None)
     #     return value
 
     # def getIncludeUnimacroInPythonPath(self):
     #     """gets the value of alway include Unimacro directory in PythonPath"""
     #
     #     key = 'IncludeUnimacroInPythonPath'
-    #     value = self.userinisection.get(key, None)
+    #     value = self.userregnl.get(key, None)
     #     return value
 
     # get additional options Vocola
@@ -1616,7 +1643,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         """
         key = 'VocolaTakesLanguages'
         if self.VocolaIsEnabled():
-            value = self.userinisection.get(key, None)
+            value = self.userregnl.get(key, None)
             return value
 
     def getVocolaTakesUnimacroActions(self):
@@ -1625,14 +1652,14 @@ Please try to correct this by running the Natlink Config Program (with administr
         """
         key = 'VocolaTakesUnimacroActions'
         if self.VocolaIsEnabled():
-            value = self.userinisection.get(key, None)
+            value = self.userregnl.get(key, None)
             return value
 
     def getInstallVersion(self):
         return __init__.__version__
 
     def getNatlinkPydRegistered(self):
-        value = self.userinisection.get('NatlinkDllRegistered', None)
+        value = self.userregnl.get('NatlinkDllRegistered', None)
         return value
   
     def getDNSName(self):

@@ -527,7 +527,7 @@ class peek_ahead:
     def peek(self, n=None):
         """gives next item, without exhausting the iter, or a list of 0 or more next items
         
-        with n == None, you can also use the self.preview variable, which is the first item
+        with n is None, you can also use the self.preview variable, which is the first item
         to come.
         """
         self._fillcache(n)
@@ -2546,7 +2546,7 @@ False
 
     def strarray(self, doublelist=None):
         """give str format of whole array"""
-        if doublelist == None:
+        if doublelist is None:
             doublelist = self.doublelistarray()
         if type(doublelist) == list:
             return '\n'.join([justify(r) for r in doublelist])
@@ -2564,7 +2564,7 @@ False
             R = []
             for c in range (maxCol +1):
                 v = self[r][c]
-                if v == None:
+                if v is None:
                     R.append('-')
                 else:
                     R.append(v)
@@ -2595,7 +2595,7 @@ False
                     vnum = int(v)
                 except:
                     vnum = 0
-                if v == None:
+                if v is None:
                     R.append('-')
                 else:
                     rowSum += vnum

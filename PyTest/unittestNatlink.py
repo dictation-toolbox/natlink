@@ -531,7 +531,7 @@ class UnittestNatlink(unittest.TestCase):
 
     def doTestFuncPronsReturn(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
+        if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
@@ -625,7 +625,7 @@ class UnittestNatlink(unittest.TestCase):
 
     def doTestFuncReturn(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
+        if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
@@ -639,7 +639,7 @@ class UnittestNatlink(unittest.TestCase):
         
         # account for different values in case of [None, 0] (wordFuncs)
         # expected is a tuple of alternatives, which one of them should be equal to expected
-        if localVars == None:
+        if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
@@ -655,7 +655,7 @@ class UnittestNatlink(unittest.TestCase):
 
     def doTestFuncReturnWordFlag(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
+        if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
@@ -668,7 +668,7 @@ class UnittestNatlink(unittest.TestCase):
 
     def doTestFuncReturnNoneOr0(self, command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
+        if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
@@ -3012,7 +3012,7 @@ class UnittestNatlink(unittest.TestCase):
         testActiveRules(testGram, expActRules)
         self.log('now active for dragonpad: one, three (%s)'% dragonpadHndle)
 
-        # here recogType == None, recognition is dictate:
+        # here recogType is None, recognition is dictate:
         testCommandRecognition(['normal','rule','two'], shouldWork=0, testGram=testGram) 
 
         testGram.activate('two', window=calcHndle)
@@ -3791,7 +3791,7 @@ class CallbackTester:
         # callbacks in a row, especially when dealing with scratch that, we
         # ignore all but the first callback
         #self.log("hit callbacktester")
-        if self.sawTextChange == None:
+        if self.sawTextChange is None:
             self.sawTextChange = (delStart,delEnd,newText,selStart,selEnd)
         elif self.sawTextChange != (delStart,delEnd,newText,selStart,selEnd):
             ds, de, nt, ss, se = self.sawTextChange
@@ -3837,7 +3837,7 @@ class CallbackTester:
     def doTestResults(self,moduleInfo,results):
         if self.sawBegin != moduleInfo:
             raise TestError("Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo)))
-        if self.sawResults == None and results != None:
+        if self.sawResults is None and results != None:
             raise TestError("Did not see results callback")
         if self.sawResults != None and self.sawResults[0] != results:
             raise TestError("Wrong results from results callback\n  saw: %s\n  expecting: %s "%(repr(self.sawResults[0]),repr(results)))
@@ -3878,7 +3878,7 @@ class RecordCommandOrDictation(GrammarBase):
         # because of the bug in NatSpeak where we can get two change
         # callbacks in a row, especially when dealing with scratch that, we
         # ignore all but the first callback
-        if self.sawTextChange == None:
+        if self.sawTextChange is None:
             self.sawTextChange = (delStart,delEnd,newText,selStart,selEnd)
         elif self.sawTextChange != (delStart,delEnd,newText,selStart,selEnd):
             ds, de, nt, ss, se = self.sawTextChange

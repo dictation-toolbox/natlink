@@ -123,7 +123,7 @@ class UnittestNsformat(unittest.TestCase):
 
     def doTestFuncReturn(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
+        if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)

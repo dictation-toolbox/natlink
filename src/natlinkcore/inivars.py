@@ -10,10 +10,10 @@ import re
 import copy
 from natlinkcore import utilsqh
 from natlinkcore.pathqh import path
-from utilsqh import peek_ahead
+from natlinkcore.utilsqh import peek_ahead
 import locale
 locale.setlocale(locale.LC_ALL, '')
-import readwritefile
+from natlinkcore import readwritefile
 
 try:
     from collections import UserDict
@@ -1208,7 +1208,7 @@ Warning inivars: returnStrings is Obsolete, inivars only returns str, not any by
             self[s] = IniSection(parent = self)
 
         # no key: empty section:
-        if k == None:
+        if k is None:
             if v != None:
                 raise IniError('setting empty section with nonempty value: %s'% v)
             return
@@ -1396,7 +1396,7 @@ Warning inivars: returnStrings is Obsolete, inivars only returns str, not any by
         try:
             value = self[section][key]
         except (KeyError, TypeError):
-            if default == None:
+            if default is None:
                 return []
             elif type(default) == list:
                 return copy.copy(default)
@@ -1477,14 +1477,14 @@ Warning inivars: returnStrings is Obsolete, inivars only returns str, not any by
         try:
             value = self[section][key]
         except (TypeError, KeyError):
-            if default == None:
+            if default is None:
                 return {}
             elif type(default) == dict:
                 return copy.copy(default)
             else:
                 raise IniError('invalid type for default of getDict: |%s|%`default`')
         if not value:
-            if default == None:
+            if default is None:
                 return {}
             elif type(default) == dict:
                 return copy.copy(default)
@@ -2119,7 +2119,7 @@ def formatReverseNumbersDict(D):
     #L = []
     #for i in range(minNum, maxNum+1):
     #    v = D.get(i, None)
-    #    if v == None:
+    #    if v is None:
     #        hadPrev = 0
     #    if len(v) > 1:
     #        L.append(', '.join(v))
@@ -2222,7 +2222,7 @@ def readExplicit(ini,mode=None ):
                 v = ini.getList(s, k)
             elif mode == "dict":
                 v = ini.getDict(s, k)
-            elif mode == None:
+            elif mode is None:
                 v = ini.get(s, k)
             else:
                 raise InivarsError('invalid mode for test function readExplicit: %s'% mode)
