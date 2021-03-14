@@ -138,7 +138,7 @@ class NatSpeakRunningError(Exception):
         # self.message += '\nPlease close Dragon and repeat your command'
         self.message += '\nPlease close Dragon and this program and try it again'
 
-ObsoleteStatusKeys = ('VocolaUsesSimpscrp', 'VocolaCommandFilesEditor', 'NatlinkDebug', 'NatlinkPydRegistered')
+ObsoleteStatusKeys = ('VocolaUsesSimpscrp', 'VocolaCommandFilesEditor', 'NatlinkDebug')
 
 hadFatalErrors = []
 def fatal_error(message, new_raise=None):
@@ -256,17 +256,17 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if coreDir2.lower() != coreDirSitePackages.lower():
             fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDirSitePackages}\nfrom natlinkstatus.getNatlinkDirectory: "{coreDir2}"')
         currentPydPath = os.path.join(coreDir, 'natlink.pyd')
-        NatlinkOrigin = self.userinisection.get('NatlinkPydOrigin')
+        NatlinkPydOrigin = self.userinisection.get('NatlinkPydOrigin')
  
-        firstInstall = False
+        FirstInstall = False
         if not (currentPydPath and os.path.isfile(currentPydPath)):
-            if NatlinkOrigin and os.path.isfile(NatlinkOrigin):
+            if NatlinkPydOrigin and os.path.isfile(NatlinkPydOrigin):
                 print(f'no natlink.pyd, clear "NatlinkPydOrigin" setting')
-                # no current .pyd, clear NatlinkOrigin:
+                # no current .pyd, clear NatlinkPydOrigin:
                 self.userinisection.delete('NatlinkPydOrigin')
             FirstInstall = True
         else:
-            if not (NatlinkOrigin and os.path.isfile(NatlinkOrigin)):
+            if not (NatlinkPydOrigin and os.path.isfile(NatlinkPydOrigin)):
                 print(f'no valid "NatlinkPydOrigin" setting, remove natlink.pyd')
                 mess = f'"NatlinkPydOrigin" setting not valid, natlink.pyd should be removed'
                 if not self.isElevated: raise ElevationError(mess )
@@ -274,7 +274,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                 assert not os.path.isfile(currentPydPath)
                 FirstInstall = True
 
-        wantedPyd = self.getWantedNatlinkPydFile()       # wanted original based on python version and Dragon version
+        wantedPyd = self.getWantedNatlinkPydFileName()       # wanted original based on python version and Dragon version
         wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
         if not os.path.isfile(wantedPydPath):
             fatal_error(f'natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find wantedPydPath: {wantedPydPath}')
@@ -285,25 +285,43 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             result = self.copyNatlinkPydPythonVersion(wantedPydPath, targetPydPath)
             if not result:
                 return
-            self.userinisection.set('NatlinkOrigin', wantedPydPath)
+            self.userinisection.set('NatlinkPydOrigin', wantedPydPath)
             self.registerNatlinkPyd()
+            self.enableNatlink()
             return 1
             
             
-        if self.PydChangedPath():
+        if self.PydChangedPath() is True:
             warning('current pyd file does not match "origing", Reregister to solve')
             
         # not FirstInstall, check dates...
-        if self.checkPydChanges(target, wanted) is True:
-            print(f'no changes Pyds')
-            return 1
-            pass
+        if self.PydChangedContent(targetPydPath, wantedPydPath) is True:
+            print(f'a re-register of natlink.pyd should be done, newer version available')
+        
         # TODOQH this part to  checkPydChanges in natlinkstatus.py.            
         # wantedModTime = getFileDate(wantedPydPath)
         # targetModTime = getFileDate(targetPydPath)
         # if wantedModTime > targetModTime:
         #     print(f'wanted pyd file newer than actual {wantedPydPath}')
-        return result  # None if something went wrong 1 if all OK
+        # return result  # None if something went wrong 1 if all OK
+
+    def PydChangedPath(self):
+        """return True if the path of natlink has been changed
+        
+        False or None: all is well
+        """
+        return
+    
+    def PydChangedContent(self, target, wanted):
+        """check if the pyd file in the PYD directory has been changed and is different
+        
+        return True if content has been changed. A re-register should be done in the config program
+        
+        Otherwise, (None, False) all is well
+        
+        """
+        return
+        
 
     def removeNatlinkPyd(self):
         """remove the natlink.pyd file (Dragon should be switched off)
@@ -366,6 +384,10 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             natlink_key, natlinkdir_from_registry = result
             result = winreg.DeleteKeyEx(pythonpath_key, "natlink", winreg.KEY_WOW64_32KEY | flags)
         return True
+    
+    
+    
+    
     def checkIniFiles(self):
         """check if INI files are consistent
         this is done through the
@@ -377,7 +399,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return
 
         result = self.NatlinkIsEnabled(silent=1)
-        if result is None:
+        if not result:
             if not self.isElevated: raise ElevationError("needed for fixing the natlink enabled state")
             # if self.isNatSpeakRunning(): raise NatSpeakRunningError("needed for fixing the natlink enabled state")
 
@@ -1252,7 +1274,7 @@ class CLI(cmd.Cmd):
             self.config.checkDNSInstallDir()  ## checks if DNS install directory is found
             self.config.checkCoreDirectory()
             # self.config.correctIniSettings()  
-            self.config.checkIniFiles()
+            # self.config.checkIniFiles()
             self.config.clearRegistryPythonPathNatlink()  # not needed any more for python 3
             self.checkedConfig = self.config.checkedUrgent
             self.isValidPath = self.config.isValidPath  ## convenient

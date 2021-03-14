@@ -370,7 +370,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.OnButtonRegister, id=ID_BUTTONregister)
 
         try:
-            nf = __import__('natlinkconfigfunctions')
+            import natlinkconfigfunctions as nf
         except:
 
             self.error('natlinkconfigfunctions import failed')
@@ -398,11 +398,11 @@ class ConfigureNatlinkPanel(wx.Panel):
             mess += '\n\nPlease Close and run via start_configurenatlink.pyw'
             windowsMessageBox(mess)
             error = 1
-        except:
-            self.error('could not start CLI instance')
-            error = 1
+        # except:
+        #     self.error('could not start CLI instance')
+        #     error = 1
         try:
-            nc = __import__('natlinkcorefunctions')
+            from natlinkcore import natlinkcorefunctions as nc
         except:
             self.error('could not from natlinkcore import natlinkcorefunctions')
             error = 1
