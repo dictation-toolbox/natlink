@@ -1308,6 +1308,8 @@ Please try to correct this by running the Natlink Config Program (with administr
                 cdResolved = cdPath.resolve()
                 print(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}')
                 return coreDir
+            else:
+                return cdPath
         elif coreDir.find('\\src\\') > 0:
             # opened from github clone, find site-packages directory
             spCoreDir = self.findInSitePackages(coreDir)
@@ -1322,7 +1324,8 @@ Please try to correct this by running the Natlink Config Program (with administr
         
         """
         if cloneDir.find('\\src\\') < 0:
-            raise IOErrorprint(f'This function should only be called when "\\src\\" is in the path')
+            return cloneDir
+            # raise IOErrorprint(f'This function should only be called when "\\src\\" is in the path')
         commonpart = cloneDir.split('\\src\\')[-1]
         spDirectory = os.path.join(sys.prefix, 'Lib', 'site-packages', commonpart)
         spPath = pathlib.WindowsPath(spDirectory)

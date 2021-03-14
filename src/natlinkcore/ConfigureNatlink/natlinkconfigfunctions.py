@@ -207,7 +207,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             print(f'Take current natlinkcore directory in site-packages: {coreDir}')
         coreDir2 = self.getNatlinkDirectory()
         
-        if coreDir2.lower() != coreDir.lower():
+        if str(coreDir2).lower() != coreDir.lower():
             print('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
         # this is probably not what we want: TODOQH
@@ -253,7 +253,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         ## unlikely case:
         coreDir2 = self.getNatlinkDirectory()
         coreDirSitePackages = self.findInSitePackages(coreDir)
-        if coreDir2.lower() != coreDirSitePackages.lower():
+        if str(coreDir2).lower() != coreDirSitePackages.lower():
             fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDirSitePackages}\nfrom natlinkstatus.getNatlinkDirectory: "{coreDir2}"')
         currentPydPath = os.path.join(coreDir, 'natlink.pyd')
         NatlinkPydOrigin = self.userinisection.get('NatlinkPydOrigin')
