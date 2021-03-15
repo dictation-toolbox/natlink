@@ -1,0 +1,64 @@
+
+
+Packages are build without a setup.py, and source only, as any PIP recent enough will be PEP517 compliant.
+Flit is the simplest packaging tool that will work. Read about it here https://flit.readthedocs.io/en/latest/cmdline.html.
+
+Getting Ready to Publish a Package.
+9
+Get your credentials for pypi and testpypi and add them to your ~\.pypirc.  ~\.pypirc
+seems very finicky even though it looks like a text file.  If publishing to pypi or testpypi is
+new it is suggested you copy pypirc_template to ~/.pypirc and add your token from your accounts for PyPi/TestPyPi.
+(see in the natlink repository for this template)
+ 
+Customizing the Package for PyPi:
+
+Read https://flit.readthedocs.io/en/latest/pyproject_toml.html  to see how to customize the description on PyPi,
+licensing, etc.   
+ 
+To build a package:
+
+Ensure you have flit ("pip install flit")
+
+Update the version number of the package.  Make the number bigger in src/unimacro/__init__.py than it was the last time
+a package was uploaded to TestPypi or PyPi.  Flit uses that number as the release number on pypi.
+
+Start a power shell in the root of your git clone.  if you are used to command shell, type "powershell" and that 
+will launch a windows powershell.  
+
+enter the command "build-package".   That should work.  if you have untraccked git files you need to 
+address them by addding to .gitignore or adding to git.
+
+
+To test  a package.
+
+If that works, and you want to see if it works, i suggest uploading to testpypi.
+use the powershell command:
+
+publish_package_testpypi
+
+if it publishes, then you will see the updated version number in natlink on testpypi https://test.pypi.org/search/?q=natlink
+
+Now install it using pip with this:
+
+pip --no-cache install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple  unimacro
+
+Remove any local projects for natlink from any Python Path variables, so that the version in site-packages gets loaded by
+natlink.  You can rename your dictation-toolbox root temporarily below which natlink lies, or your can temporarily rename
+natlink to something like dev_natlink.
+ 
+ 
+
+To Publish a Package on PyPi after testing.
+
+You can't undo publishing a package on PyPi, so get it working on TestPyPi first.
+
+Then publish to testpypi using publish_package_pypy in powershell.
+
+
+
+
+
+
+
+
+
