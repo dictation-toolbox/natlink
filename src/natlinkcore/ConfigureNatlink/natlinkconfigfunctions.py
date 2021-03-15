@@ -625,7 +625,10 @@ Natlink is now disabled.
         if not self.isElevated: raise ElevationError("needed for enabling Natlink")
         # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed for enabling Natlink")
 
-        self.registerNatlinkPyd(silent=1)
+        result = self.registerNatlinkPyd(silent=1)
+        if not result:
+            self.warning(f'Cannot enable Natlink, because registering natlink.pyd failed')
+            return
         nssystemini = self.getNSSYSTEMIni()
         section1 = self.section1
         key1 = self.key1
@@ -633,37 +636,22 @@ Natlink is now disabled.
         #
         # try:
         win32api.WriteProfileVal(section1, key1, value1, nssystemini)
-        # except pywintypes.error as details:
-        #     if details[0] == 5:
-        #         print('cannot enable Natlink (1), you probably need administrator rights')
-        #     else:
-        #         print('unexpected error at enable Natlink (1)')
-        #         raise
 
-        result = self.NatlinkIsEnabled(silent=1)
-        if (result is None) or (not result):
-            nsappsini = self.getNSAPPSIni()
-            section2 = self.section2
-            key2 = self.key2
-            value2 = self.value2
-            # try:
-            win32api.WriteProfileVal(section2, key2, value2, nsappsini)
-            # except pywintypes.error as details:
-            #     if details[0] == 5:
-            #         print('cannot enable Natlink (2), you probably need administrator rights')
-            #     else:
-            #         print('unexpected error at enable Natlink (2)')
-            #         raise
-            result = self.NatlinkIsEnabled(silent=1)
-            if result == None:
-                text = \
-"""Cannot set the nsapps.ini setting in order to complete enableNatlink.
+        nsappsini = self.getNSAPPSIni()
+        section2 = self.section2
+        key2 = self.key2
+        value2 = self.value2
+        # try:
+        win32api.WriteProfileVal(section2, key2, value2, nsappsini)
+        result = self.NatlinkIsEnabled(silent=1, force=True)
+        if not result:
+            text = \
+"""Cannot set the nssystem.ini or the nsapps.ini setting in order to complete enableNatlink.
 
-Probably you did not run this program in "elevated mode". Please try to do so.
+Probably you did not run this program in "elevated mode". Please try to do so. 
 """
-                self.warning(text)
-                return
-        result = self.NatlinkIsEnabled(silent=1)
+            self.warning(text)
+            return
         if result:
             if not silent:
                 print(('Natlink enabled, you can now restart %s'% self.DNSName))
@@ -691,7 +679,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         #     else:
         #         print('unexpected error at disable Natlink')
         #         raise
-        result = self.NatlinkIsEnabled(silent=1)
+        result = self.NatlinkIsEnabled(silent=1, force=True)
         if result:
             t = 'Natlink is NOT disabled, you probably need administrator rights, please restart the config program in "elevated mode"'
             print(t)
@@ -885,7 +873,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             fatal_error("Pyd file not found in core folder: %s"% PydPath)
 
         result = self.PydIsRegistered(PydPath)
-        print(f'natlink.pyd was already registered: {PydPath}, still do it again...')
+        # print(f'natlink.pyd was already registered: {PydPath}, still do it again...')
 
         if silent:
             try:
@@ -1605,7 +1593,7 @@ Vocola command.
     # enable/disable Natlink------------------------------------------------
     def do_e(self, arg):
         self.message = "Enabling Natlink:"
-        print(('do action: %s'% self.message))
+        print(f'do action: {self.message}')
         self.config.enableNatlink()
     def do_E(self, arg):
         self.message = "Disabling Natlink:"

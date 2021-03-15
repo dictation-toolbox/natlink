@@ -1310,10 +1310,13 @@ class MyFrame(wx.Frame):
 
     def OnMenuHelp(self, event):
         text = ['This configure GUI makes it possible to configure Natlink, ',
-                'including Vocola and Unimacro',"",
-                'Detailed help is given through various help buttons and in the "log" panel',""
-                'Written by Quintijn Hoogenboom, February, 2008/May, 2009/April, 2018',
-                'See also http://qh.antenna.nl/unimacro']
+                'including Vocola and Unimacro and via the ',
+                'UserDirectory: Dragonfly, Caster and other packages',
+                '',
+                'Detailed help is given through various help buttons and in the "log" panel',
+                '',
+                'Written by Quintijn Hoogenboom, February, 2008/(...)/March 2021',
+                'See also https://qh.antenna.nl/unimacro']
         self.warning('\n'.join(text))
 
 
