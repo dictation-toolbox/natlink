@@ -429,9 +429,8 @@ class ConfigureNatlinkPanel(wx.Panel):
                 else:
                     self.urgentMessage = "See the log panel for startup information, the init phase was succesful"
 
+            self.DNSName = self.config.getDNSName() 
             self.setInfo()
-        # now self.DNSName is known (NatSpeak or Dragon)
-            self.DNSName = self.config.getDNSName()
 
     def warning(self, text, title='Message from Configure Natlink GUI'):
         if isinstance(text, str):
@@ -446,18 +445,10 @@ class ConfigureNatlinkPanel(wx.Panel):
     def getGetterFunctions(self):
         D = {}
 
-##         '',
-##        '', '', 'CoreDirectory',
-##        '', '',
-##        'VocolaUserDirectory'
-        # checkboxes should have a getter, an event (OnCB...) and
-        # be included in self.checkboxes list.
-        ##QH: should include DNSName maybe (2014)
-
         D['DNSVersion'] = self.frame.infopanel.GetTextctrldnsversion
         D['DNSInstallDir'] = self.frame.infopanel.GetTextctrldnsinstallpath
         D['PythonVersion'] = self.frame.infopanel.GetTextctrlpythonversion
-        D['CoreDirectory'] = self.frame.infopanel.GetTextctrlnatlinkcorepath
+        D['NatlinkDirectory'] = self.frame.infopanel.GetTextctrlnatlinkcorepath
         D['UserDirectory'] = self.GetTextctrlnatlinkuserdirectory
         D['VocolaUserDirectory'] = self.GetTextctrlvocolauserdirectory
         D['UnimacroUserDirectory'] = self.GetTextctrlunimacrouserdirectory
@@ -512,6 +503,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         try:
             changed = 0
             for key in D:
+                # print(f'D, key: {key}')
                 if key in ["DNSInstallDir", "DNSIniDir"]:
                     pass
                 
@@ -1062,7 +1054,7 @@ More about this in the "Vocola Compatibility" dialog.
         if D['userIsEnabled']:
             doLetter = letter.upper()
             undoLetter = letter.lower()
-            statustext = 'User Grammars are DISABLED, this will take effect after you restart %s'% self.DNSName
+            statustext = 'User Grammars are DISABLED, this will take effect after you restart %s'% self.config.DNSName
             prevPath = D['UserDirectory']
             undoCmd = (undoLetter, prevPath)
             self.do_command(doLetter, undo=undoCmd)
@@ -1072,7 +1064,7 @@ More about this in the "Vocola Compatibility" dialog.
         # now go for enable:
         doLetter = letter.lower()
         undoLetter = letter.upper()
-        statustext = 'User Grammars are ENABLED, this will take effect after you restart %s'% self.DNSName
+        statustext = f'UserDirectory for Natlink grammar files is ENABLED, this will take effect after you restart {self.DNSName}'
 
         # ask for the correct directory:
         dlg = wx.DirDialog(self.frame, "Please choose the UserDirectory, where your Natlink grammar files are located.",
@@ -1081,22 +1073,22 @@ More about this in the "Vocola Compatibility" dialog.
         oldPath = self.config.userinisection.get('OldUserDirectory')
         if oldPath:
             oldPath = self.config.isValidPath(oldPath)
-        if not oldPath:
-            tryNatlink = os.path.join(D['CoreDirectory'], '..', '..', '..')
-            oldPath = self.config.isValidPath(tryNatlink)
+        # if not oldPath:
+        #     tryNatlink = os.path.join(D['CoreDirectory'], '..', '..', '..')
+        #     oldPath = self.config.isValidPath(tryNatlink)
         if oldPath:
             dlg.SetPath(oldPath)
-        dlg.SetMessage('Please specify the UserDirectory, where user grammar files are located')
+        dlg.SetMessage('Please specify the UserDirectory, where your Natlink grammar files are located')
         if dlg.ShowModal() == wx.ID_OK:
             new_path = dlg.GetPath()
             new_path = self.config.isValidPath(new_path, wantDirectory=1)
             if not new_path:
                 self.setstatus("no new valid directory specified")
-            elif new_path == D['UnimacroDirectory']:
-                self.setstatus("Please do not specify Unimacro as UserDirectory")
+            elif new_path == D['UnimacroUserDirectory']:
+                self.setstatus("Please do not specify UnimacroUserDirectory as UserDirectory")
                 return
-            elif new_path == D['BaseDirectory']:
-                self.setstatus("Please do not specify BaseDirectory, used by Vocola, as UserDirectory")
+            elif new_path == D['VocolaUserDirectory']:
+                self.setstatus("Please do not specify VocolaUserDirectory as UserDirectory")
                 return
         else:
             self.setstatus("nothing specified")

@@ -191,8 +191,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
     """
     def __init__(self):
-        self.DNSName = 'Dragon'
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
+        self.DNSName = self.getDNSName()
         self.changesInInitPhase = 0
         self.isElevated = IsUserAnAdmin()
         self.checkedUrgent = None
@@ -1468,11 +1468,14 @@ again search for its INI files in the "default/normal" place(s).
         if not arg:
             print('also enter a valid folder')
             return
+
         arg = arg.strip()
+        self.message = f'Set UserDirectory for Natlink grammar files to {arg}'
+
         self.config.setUserDirectory(arg)
 
     def do_N(self, arg):
-        self.message = "Clears Natlink User Directory"
+        self.message = "Clears UserDirectory for Natlink grammar files"
         self.config.clearUserDirectory()
 
     # def do_f(self, arg):
@@ -1769,6 +1772,7 @@ of Natlink, so keep off (X and Y) most of the time.
         # if self.isNatSpeakRunning(): raise NatSpeakRunningError("Probably needed before you can unregister natlink.pyd")
 
         if self.config.isElevated:
+            print(f'do action: {self.message}')
             self.config.disableNatlink(silent=1)
             self.config.unregisterNatlinkPyd(silent=None)
         else:
