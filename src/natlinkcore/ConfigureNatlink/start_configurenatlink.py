@@ -36,10 +36,9 @@ def main():
         import wx
         from win32api import ShellExecute, GetVersionEx
     except (Exception, e):
-        print(f'''Unable to run the GUI configuration program of Natlink/Unimacro/Vocola\n
+        print(f'''Unable to run the GUI configuration program of Natlink/Unimacro/Vocola/Dragonfly\n
     because a module was not found.  An error occurred during import.  This is probably due to a missing or incorrect prequisite.\n
     Please run 'pip install -r requirements.txt in {thisDir}\n
-    More information https://qh.antenna.nl/unimacro/installation/problemswithinstallation.html\n\n
     Exception Details:\n{e}''')
         time.sleep(30)
         sys.exit()
@@ -47,7 +46,7 @@ def main():
     try:
         import natlinkconfigfunctions
     except ImportError:
-        print('''Unable to start the configuration program of Natlink/Unimacro/Vocola:\n
+        print('''Unable to start the configuration program of Natlink/Unimacro/Vocola/Dragonfly:\n
     the python module natlinkconfigfunctions.py gives an error.\n
     Please report this error message to the Natlink developers,\n
     preferably to q.hoogenboom@antenna.nl\n''')
@@ -60,12 +59,7 @@ def main():
 
     try:
         # see natlinkstatus.py for windows versions (getWindowsVersion)
-        wversion = GetVersionEx()
-        if wversion[3] == 2 and wversion[0] >= 6:
-            # Vista and later, run as administrator, so elevated mode:
-            openpar = "runas"
-        else:
-            openpar = "open"
+        openpar = "runas"
         #python and pythonw.exe may be in a scripts directory in virtualenvs.  
         #to find the path of the python executable, 
         pathToPythonExecutables="\\".join(sys.executable.split('\\')[0:-1])
@@ -78,7 +72,7 @@ def main():
 
         configPath = os.path.join(os.path.dirname(__file__), "configurenatlink.pyw")
         if not os.path.isfile(configPath):
-            print("cannot find the Natlink/Unimacro/Vocola configuration program: %s"% configPath)
+            print("cannot find the Natlink/Unimacro/Vocola/Dragonfly configuration program: %s"% configPath)
             # time.sleep(30)
             sys.exit()
 

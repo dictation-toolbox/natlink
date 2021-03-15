@@ -39,21 +39,19 @@ import os
 thisDir = os.path.split(__file__)[0]
 
 import sys
-if sys.version[0] == '2' and sys.version[2] in ['3', '5']:
+if sys.version[0] == '2':
     pyVersion = sys.version[:3]
-    mess = ["Warning, this Configure Natlink GUI possibly does not work for this old python version: %s."% pyVersion,
-            "Also the natlink.pyd files (natlink.dll) that work with python %s are for older versions of NatSpeak (10 and before) only."% pyVersion,
-            'Now the good news: you can still use Natlink for NatSpeak 10 and before even with this python version.',
-            'But if the Configure Natlink GUI does not work, you should do the configuration via "natlinkconfigfunctions.py".',
-            'Please start that program, preferably in elevated mode via "start_configurenatlinkfunctions.py" or via "Configure Natlink via Command Line Interface" in the start menu.',
-            "For Dragon 11 and later, some things may work, but it is better to upgrade to Python 2.6 or 2.7"]
-
+    mess = [f'Warning, this Configure Natlink GUI not work for this old python version: {pyVersion}',
+            'You can run the python 2.7 version from SourceForge, or start with Python3.8-32']
     mess = '\n\n'.join(mess)
     windowsMessageBox(mess)
 
 import sys, traceback
 from configurenatlink_wdr import *
-import os, os.path, string, copy, types
+import os
+import os.path
+import copy
+import types
 from natlinkconfigfunctions import ElevationError
 # nf: natlinkinstallfunctions, imported at end of init...
 nf = None
@@ -1199,7 +1197,7 @@ More about this in the "Vocola Compatibility" dialog.
 
     def OnButtonHelp2(self, event):
         print('---help on Enable/disable Vocola:')
-        print('note the letters correspond to the commands in the self.cli (command line interface)')
+        print('note the letters correspond to the commands in the CLI (command line interface)')
         self.cli.help_b()
         self.cli.help_a()
         print('---help on additional Vocola options:')
@@ -1211,30 +1209,29 @@ More about this in the "Vocola Compatibility" dialog.
         L.append("")
         L.append('When you use more languages, eg speech profiles for English and Dutch, please read the log panel for the "Vocola multi languages" option.')
         L.append("")
-        L.append('When you want to use Unimacro actions in your Vocola comman files, you can check the "Vocola takes Unimacro Actions" option.')
+        L.append('When you want to use Unimacro actions in your Vocola command files, you can check the "Vocola takes Unimacro Actions" option.')
         L.append("More information about this on the Natlink/Vocola/Unimacro website")
         L.append("")
         self.warning('\n'.join(L))
 
     def OnButtonHelp1(self, event):
         print('---help on Enable Natlink and corresponding functions:')
-        print('note the letters correspond to the commands in the self.cli (command line interface)')
+        print('note the letters correspond to the commands in the CLI (command line interface)')
         self.cli.help_e()
         print('---help on Natlink debug options:')
         self.cli.help_x()
         text = """
 
-This Enables or Disables Natlink. The state of Natlink is shown in the Status bar above, and is the opposite of the button text.
+This Enables or Disables Natlink. At first run, this is done automatically.
 
-Natlink should be enabled before you can use Vocola and/or Unimacro or other python grammars, like Dragonfly.
+The state of Natlink is shown in the Status bar above, and is the opposite of the button text.
 
-When Natlink is disabled, Vocola and Unimacro will -- consequently -- be disabled too.
+Natlink should be enabled before you can use Vocola and/or Unimacro or other python grammars, like Dragonfly, via the UserDirectory.
 
-Note that you need elevated mode and possibly Dragon be switched off before you can Enable or Disable Natlink.
+When Natlink is disabled, Vocola, Unimacro and Dragonfly will -- consequently -- be disabled too.
 
-At first run after you installed Natlink, natlink.pyd is registered silently, but Natlink is still Disabled.
+Note that you need elevated mode before you can Enable or Disable Natlink.
 
-So in that case click on Enable for getting started.
 """
         self.warning(text)
 
@@ -1242,14 +1239,14 @@ So in that case click on Enable for getting started.
 
     def OnButtonUnregister(self, event):
         self.do_command('R')
-        self.warning("Close this program, and also close %s\n\nthen you run this program again in elevated mode via start_configurenatlink.py"% self.DNSName)
+        self.warning(f'Close this program, and also close {self.DNSName}\n\nthen you run this program again in elevated mode via start_configurenatlink.py')
         # self.urgentMessage = "Close this program, restart %s, possibly computer"% self.DNSName
         self.setInfo()
 
     def OnButtonRegister(self, event):
         self.do_command('r')
-        self.warning("Close this program, %s, all Python applications and\n\npossibly restart your computer\n\nbefore you run this program again!"% self.DNSName)
-        self.urgentMessage = "Close this program, restart %s, possibly computer"% self.DNSName
+        self.warning(f'Now restart {self.DNSName}')
+        # self.urgentMessage = "Close this program, restart %s, possibly computer"% self.DNSName
         self.setInfo()
 
 
@@ -1263,7 +1260,7 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnMenuClose, id=ID_MENUClose)
 
         self.CreateStatusBar(1)
-        self.SetStatusText("This is the Configure Natlink & Vocola & Unimacro GUI")
+        self.SetStatusText("This is the Configure Natlink & Vocola & Unimacro & Dragonfly GUI")
         self.CreateMyMenuBar()
         # insert main window here
         self.nb = wx.Notebook(self, -1, name='panel',
@@ -1303,7 +1300,7 @@ class MyFrame(wx.Frame):
     def OnMenuHelp(self, event):
         text = ['This configure GUI makes it possible to configure Natlink, ',
                 'including Vocola and Unimacro and via the ',
-                'UserDirectory: Dragonfly, Caster and other packages',
+                'UserDirectory: Dragonfly, Caster and other packages.',
                 '',
                 'Detailed help is given through various help buttons and in the "log" panel',
                 '',
@@ -1346,7 +1343,7 @@ class Stderr:
 class MyApp(wx.App):
     def OnInit(self):
         # wx.InitAllImageHandlers()
-        self.frame = MyFrame( None, -1, "Configure Natlink & Vocola & Unimacro",
+        self.frame = MyFrame( None, -1, "Configure Natlink, Vocola, Unimacro, Dragonfly ",
                               [110,80], [750,735] )
         self.frame.Show(True)
         return True

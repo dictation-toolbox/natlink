@@ -259,14 +259,14 @@ class NatlinkStatus:
 
     def __init__(self, skipSpecialWarning=None):
 
-        print(f'natlinkstatus.__ini__, skipSpecialWarning input skipSW: {skipSpecialWarning}')
+        # print(f'natlinkstatus.__ini__, skipSpecialWarning input skipSW: {skipSpecialWarning}')
         try:
             self.__class__.skipSpecialWarning
         except AttributeError:
             self.__class__.skipSpecialWarning = skipSpecialWarning
-        print(f'natlinkstatus.__ini__, self.skipSpecialWarning after: {self.skipSpecialWarning}')
-        print(f'natlinkstatus.__ini__, self.__class__.skipSpecialWarning after: {self.__class__.skipSpecialWarning}')
-        print('-'*50)
+        # print(f'natlinkstatus.__ini__, self.skipSpecialWarning after: {self.skipSpecialWarning}')
+        # print(f'natlinkstatus.__ini__, self.__class__.skipSpecialWarning after: {self.__class__.skipSpecialWarning}')
+        # print('-'*50)
         try:
             self.__class__.userinisection
         except AttributeError:
@@ -276,7 +276,7 @@ class NatlinkStatus:
             self.__class__.UserArgsDict
         except AttributeError:
             self.__class__.UserArgsDict = {}
-        print(f'UserArgsDict at start of instance: {self.UserArgsDict}')
+        # print(f'UserArgsDict at start of instance: {self.UserArgsDict}')
 
         ## start setting the CoreDirectory and BaseDirectory and other variables:
         try:
@@ -304,7 +304,7 @@ class NatlinkStatus:
         else:
             result = result or -1
         self.__class__.DNSInstallDir = result
-            
+        self.DNSName = self.getDNSName()
             
         if result == -1:
             ## also DNSIniDir is hopeless, set value and return.
@@ -460,7 +460,9 @@ Please try to correct this by running the Natlink Config Program (with administr
         if wantedPyd != wantedFile:
             mess = f'Dragon or python version changed. current: {wantedPyd}, needed forthis version of python or Dragon: {wantedFile}'
             fatal_error(mess)
+            
         # now check for updates:
+        
         timeWanted = getFileDate(wantedPydPath)
         timeCurrent = getFileDate(currentPydPath)
 
@@ -472,6 +474,24 @@ Please try to correct this by running the Natlink Config Program (with administr
                 return
         # all well
         return 1
+
+    def PydChangedPath(self):
+        """return True if the path of natlink has been changed
+        
+        False or None: all is well
+        """
+        return
+    
+    def PydChangedContent(self, target, wanted):
+        """check if the pyd file in the PYD directory has been changed and is different
+        
+        return True if content has been changed. A re-register should be done in the config program
+        
+        Otherwise, (None, False) all is well
+        
+        """
+        return
+
     
     def getHiveKeyReadable(self, hive): 
         if hive == winreg.HKEY_LOCAL_MACHINE: return 'HKLM'
@@ -1016,7 +1036,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         print('Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)')
 
 
-    def NatlinkIsEnabled(self, silent=None):
+    def NatlinkIsEnabled(self, silent=None, force=None):
         """check if the INI file settings are correct
 
     in  nssystem.ini check for:
@@ -1040,12 +1060,13 @@ Please try to correct this by running the Natlink Config Program (with administr
     Also check if the registry is set properly...
 
         """
-        try:
-            isEnabled = self.cache_NatlinkIsEnabled
-        except AttributeError:
-            pass
-        else:
-            return self.cache_NatlinkIsEnabled
+        if not force:
+            try:
+                isEnabled = self.cache_NatlinkIsEnabled
+            except AttributeError:
+                pass
+            else:
+                return self.cache_NatlinkIsEnabled
 
         # result = self.getRegistryPythonPathNatlink()
         # if not result:
@@ -1086,7 +1107,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             if self.value2 == actual2:
                 # enabled:
                 self.cache_NatlinkIsEnabled = True
-                return 1
+                return True
             else:
                 #
                 mess = ['Error while checking if Natlink is enabled, unexpected result: ',
@@ -1307,9 +1328,9 @@ Please try to correct this by running the Natlink Config Program (with administr
             if cdPath.is_symlink():
                 cdResolved = cdPath.resolve()
                 print(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}')
-                return coreDir
+                return os.path.normpath(coreDir)
             else:
-                return cdPath
+                return os.path.normpath(str(cdPath))
         elif coreDir.find('\\src\\') > 0:
             # opened from github clone, find site-packages directory
             spCoreDir = self.findInSitePackages(coreDir)
@@ -1334,7 +1355,7 @@ Please try to correct this by running the Natlink Config Program (with administr
                 spResolve = spPath.resolve()
                 if str(spResolve) == cloneDir:
                     # print(f'directory is symlink: {spPath} and resolves to {cloneDir} all right')
-                    return str(spPath)
+                    return spPath.normpath()
                 else:
                     print(f'directory is symlink: {spPath} but does NOT resolve to {cloneDir}, but to {spResolve}')
                     return
@@ -1696,9 +1717,9 @@ Please try to correct this by running the Natlink Config Program (with administr
             return value
 
     def getInstallVersion(self):
-        return 'must do version(TODOQH)'
-        # return __init__.__version__
-
+        from natlinkcore.__init__ import __version__
+        return __version__
+        
     def getNatlinkPydRegistered(self):
         value = self.userinisection.get('NatlinkDllRegistered', None)
         return value

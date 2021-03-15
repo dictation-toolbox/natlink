@@ -192,7 +192,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
     """
     def __init__(self):
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
-        self.DNSName = self.getDNSName()
+        # self.DNSName = self.getDNSName()
         self.changesInInitPhase = 0
         self.isElevated = IsUserAnAdmin()
         self.checkedUrgent = None
@@ -210,10 +210,6 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if str(coreDir2).lower() != coreDir.lower():
             print('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
-        # this is probably not what we want: TODOQH
-        # coreDir = coreDir2   ## fingers crossed
-        # if coreDir not in sys.path:
-        #     sys.path.append(coreDir)
             
     def checkDNSInstallDir(self):
         """check if install directory of Dragon is found
@@ -305,22 +301,6 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         #     print(f'wanted pyd file newer than actual {wantedPydPath}')
         # return result  # None if something went wrong 1 if all OK
 
-    def PydChangedPath(self):
-        """return True if the path of natlink has been changed
-        
-        False or None: all is well
-        """
-        return
-    
-    def PydChangedContent(self, target, wanted):
-        """check if the pyd file in the PYD directory has been changed and is different
-        
-        return True if content has been changed. A re-register should be done in the config program
-        
-        Otherwise, (None, False) all is well
-        
-        """
-        return
         
 
     def removeNatlinkPyd(self):
@@ -654,7 +634,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             return
         if result:
             if not silent:
-                print(('Natlink enabled, you can now restart %s'% self.DNSName))
+                print(f'Natlink is enabled, you can now restart Dragon')
         else:
             if not silent:
                 self.warning("failed to enable Natlink")
@@ -1411,26 +1391,26 @@ After you change settings, restart %s.
         if not arg:
             self.message = "please enter a directory"
             return
-        self.message = "Change Dragon directory to: %s"% arg
+        self.message = f'Change DNS directory to: "{arg}"'
         return self.config.setDNSInstallDir(arg)
 
     def do_D(self, arg):
-        self.message = "Clear DNS directory in registry"
+        self.message = "Clear DNS directory in usersettings"
         print(('do action: %s'% self.message))
         return self.config.clearDNSInstallDir()
 
     def help_d(self):
         print(('-'*60))
-        print(("""Set (d <path>) or clear (D) the directory where %s is installed.
+        print(f'''Set (d <path>) or clear (D) the directory where {self.DNSName} is installed.
+              
+The setting is preserved in the usersettings in natlinkstatus.ini in the ~/.Natlink directory
 
-Setting is only needed when %s is not found at one of the "normal" places.
+Setting is only needed when {self.DNSName} is not found at one of the "normal" places.
 So setting is seldom not needed.
 
-When you have a pre-8 version of NatSpeak, setting this option might work.
-
 After you clear this setting, Natlink will, at starting time, again
-search for the %s install directory in the "normal" place(s).
-"""% (self.DNSName, self.DNSName, self.DNSName)))
+search for the {self.DNSName} install directory in the "normal" place
+''')
         print(('='*60))
     help_D = help_d
 
@@ -1439,27 +1419,26 @@ search for the %s install directory in the "normal" place(s).
         arg = self.stripCheckDirectory(arg)  # also quotes
         if not arg:
             return
-        self.message = "Change %s INI files directory to: %s"% (self.DNSName, arg)
+        self.message = f'Change the {self.DNSName} INI files directory to: "{arg}"'
         return self.config.setDNSIniDir(arg)
 
 
 
     def do_C(self, arg):
-        self.message = "Clear %s INI files directory in registry"% self.DNSName
-        print(('do action: %s'% self.message))
+        self.message = f'Clear {self.DNSName} INI files directory in the usersettings'
+        print(f'do action: {self.message}')
         return self.config.clearDNSIniDir()
     def help_c(self):
         print(('-'*60))
-        print(("""Set (c <path>) or clear (C) the directory where %s INI file locations
+        print(f'''Set (c <path>) or clear (C) the directory where {self.DNSName} INI file locations
 (nssystem.ini and nsapps.ini) are located.
 
-Only needed if these cannot be found in the normal place(s):
+This is only rarely needed if these cannot be found in the normal place(s):
 -if you have an "alternative" place where you keep your speech profiles
--if you have a pre-8 version of NatSpeak.
 
-After Clearing this registry entry Natlink will, when it is started by %s,
+After Clearing this registry entry Natlink will, when it is started by {self.DNSName},
 again search for its INI files in the "default/normal" place(s).
-"""% (self.DNSName, self.DNSName)))
+''')
         print(('='*60))
     help_C = help_c
 
@@ -1470,12 +1449,12 @@ again search for its INI files in the "default/normal" place(s).
             return
 
         arg = arg.strip()
-        self.message = f'Set UserDirectory for Natlink grammar files to {arg}'
+        self.message = f'Set UserDirectory for Natlink grammar files (and Dragonfly etc) to {arg}'
 
         self.config.setUserDirectory(arg)
 
     def do_N(self, arg):
-        self.message = "Clears UserDirectory for Natlink grammar files"
+        self.message = "Clears UserDirectory for Natlink grammar files and Dragonfly etc"
         self.config.clearUserDirectory()
 
     # def do_f(self, arg):

@@ -53,12 +53,7 @@ except ImportError:
 
 
 # see natlinkstatus.py for windows versions (getWindowsVersion)
-wversion = GetVersionEx()
-if wversion[3] == 2 and wversion[0] >= 6:
-    # Vista and later
-    openpar = "runas"
-else:
-    openpar = "open"
+openpar = "runas"
     
 pathToPython = os.path.join(sys.prefix, "python.exe")
 if not os.path.isfile(pathToPython):
@@ -69,7 +64,7 @@ try:
     import natlinkconfigfunctions
 except:
     print('Unable to start the command line interface configuration program of')
-    print('Natlink/Unimacro/Vocola:')
+    print('Natlink/Unimacro/Vocola/Dragonfly:')
     print('the python module natlinkconfigfunctions.py gives an error.')
     print('')
     print('Please report this error message to the Natlink developers,')
