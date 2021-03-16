@@ -140,25 +140,6 @@ class NatSpeakRunningError(Exception):
 
 ObsoleteStatusKeys = ('VocolaUsesSimpscrp', 'VocolaCommandFilesEditor', 'NatlinkDebug')
 
-hadFatalErrors = []
-def fatal_error(message, new_raise=None):
-    """prints a fatal error when running this module
-
-    print only the first!
-    """
-    if not hadFatalErrors:
-        mess = ['natlinkconfigfunctions failed because of fatal error:',
-                '', message, '',
-                'So if Dragon is running, close it.', 'Then rerun this program in elevated mode,',
-                'via "start_configurenatlink" (GUI) or "start_natlinkconfigfunctions" (CLI).']
-        mess = '\n'.join(mess)
-        print(mess)
-        print("\n\n*** See also the messageBox, and close it")
-        windowsMessageBox(mess)
-    if message not in hadFatalErrors:
-        hadFatalErrors.append(message)
-    if new_raise:
-        raise new_raise
 #-----------------------------------------------------
 import winreg
 import os
@@ -191,11 +172,12 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
     """
     def __init__(self):
-        natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
+        self.hadFatalErrors = False
         # self.DNSName = self.getDNSName()
         self.changesInInitPhase = 0
         self.isElevated = IsUserAnAdmin()
         self.checkedUrgent = None
+        natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
 
     def checkCoreDirectory(self):
         """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
@@ -1176,6 +1158,30 @@ Probably you did not run this program in "elevated mode". Please try to do so.
         key = "VocolaTakesUnimacroActions"
         self.userinisection.set(key, 0)
 
+    def fatal_error(self, message, new_raise=None):
+        """prints a fatal error when running this module
+    
+        """
+        if not self.hadFatalErrors:
+            if self.isElevated:
+                mess = ['natlinkconfigfunctions failed because of fatal error:',
+                    '', message, '',
+                    'So if Dragon is running, close it.', '',
+                    'Then try to Re-register Natlink (CLI: r)',
+                    ]
+            else:    
+                mess = ['natlinkconfigfunctions failed because of fatal error:',
+                    '', message, '',
+                    'So if Dragon is running, close it.', 'Then rerun this program in elevated mode,',
+                    'via "start_configurenatlink" (GUI) or "start_natlinkconfigfunctions" (CLI).','',]
+                
+            mess = '\n'.join(mess)
+            print(mess)
+            print("\n\n*** See also the messageBox, and close it")
+            windowsMessageBox(mess)
+            self.hadFatalErrors = True
+        if new_raise:
+            raise new_raise
 
 
 
@@ -1261,14 +1267,6 @@ class CLI(cmd.Cmd):
         if __name__ == "__main__":
             print("Type 'u' for a usage message")
 
-    def getFatalErrors(self):
-        """get the fatal errors from this module and clear them automatically
-        """
-        global hadFatalErrors
-        if hadFatalErrors:
-            text = '\n'.join(hadFatalErrors)
-            hadFatalErrors = []
-            return text
 
     def stripCheckDirectory(self, dirName):
         """allow quotes in input, and strip them.

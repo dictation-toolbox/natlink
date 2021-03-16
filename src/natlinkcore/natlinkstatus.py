@@ -154,20 +154,6 @@ for v in DNSVersions:
         globals()[varname] = "Nuance\\NaturallySpeaking%s"% v
     DNSPaths.append(globals()[varname])
 
-# utility functions:
-## report function:
-def fatal_error(message, new_raise=None):
-    """prints a fatal error when running this module"""
-    print()
-    print('natlinkconfigfunctions fails because of fatal error:')
-    print()
-    print(message)
-    print()
-    print('This can (hopefully) be solved by closing Dragon and then running the Natlink/Unimacro/Vocola Config program with administrator rights.')
-    print()
-    if new_raise:
-        raise
-
 # Nearly obsolete table, for extracting older windows versions:
 # newer versions go via platform.platform()
 Wversions = {'1/4/10': '98',
@@ -382,7 +368,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         return 1
 
 
-    def checkNatlinkPydFile(self, fromConfig=None):
+    def checkNatlinkPydFile(self):
         """see if natlink.dll is in core directory, and uptodate, if not stop and point to the configurenatlink program
 
         if fromConfig, print less messages...
@@ -409,23 +395,20 @@ Please try to correct this by running the Natlink Config Program (with administr
         currentPydPath = os.path.join(NatlinkDirectory, 'natlink.pyd')
 
         if not os.path.isfile(wantedPydPath):
-            if not fromConfig:
-                print(f'The wanted pyd "{wantedPydPath}" does not exist, Dragon/python combination not valid.')
+            print(f'The wanted pyd "{wantedPydPath}" does not exist, Dragon/python combination not valid.')
             return
 
         # first check existence of natlink.pyd (probably never comes here)
         if not os.path.isfile(currentPydPath):
-            if not fromConfig:
-                print(f'pyd path "{currentPydPath}" does not exist...')
+            print(f'pyd path "{currentPydPath}" does not exist...')
             return
 
         # check correct pyd version, with python version and Dragon version:
         if wantedPyd != originalPydFile:
-            if not fromConfig:
-                if not originalPydFile:
-                    self.warning('originalPyd setting is missing in natlinkstatus.ini')
-                else:
-                    self.warning('incorrect originalPydFile (from natlinkstatus.ini): %s, wanted: %s'% (originalPydFile, wantedPyd))
+            if not originalPydFile:
+                self.warning('originalPyd setting is missing in natlinkstatus.ini')
+            else:
+                self.fatal_error('incorrect originalPydFile (from natlinkstatus.ini): %s, wanted: %s'% (originalPydFile, wantedPyd))
             return
 
         result = self.checkPydChanges(currentPydPath=None, wantedPydPath=None)
@@ -459,21 +442,21 @@ Please try to correct this by running the Natlink Config Program (with administr
         
         if wantedPyd != wantedFile:
             mess = f'Dragon or python version changed. current: {wantedPyd}, needed forthis version of python or Dragon: {wantedFile}'
-            fatal_error(mess)
+            self.fatal_error(mess)
             
         # now check for updates:
         
-        timeWanted = getFileDate(wantedPydPath)
-        timeCurrent = getFileDate(currentPydPath)
-
-        # check for newer (changed version) of original pyd:
-        if timeCurrent or timeWanted:
-            if timeWanted > timeCurrent:
-                if not fromConfig:
-                    self.warning('Current pyd file (%s) out of date, compared with\n%s'% (currentPydPath, wantedPydPath))
-                return
-        # all well
-        return 1
+        # timeWanted = getFileDate(wantedPydPath)
+        # timeCurrent = getFileDate(currentPydPath)
+        # 
+        # # check for newer (changed version) of original pyd:
+        # if timeCurrent or timeWanted:
+        #     if timeWanted > timeCurrent:
+        #         if not fromConfig:
+        #             self.warning('Current pyd file (%s) out of date, compared with\n%s'% (currentPydPath, wantedPydPath))
+        #         return
+        # # all well
+        # return 1
 
     def PydChangedPath(self):
         """return True if the path of natlink has been changed
@@ -1355,7 +1338,7 @@ Please try to correct this by running the Natlink Config Program (with administr
                 spResolve = spPath.resolve()
                 if str(spResolve) == cloneDir:
                     # print(f'directory is symlink: {spPath} and resolves to {cloneDir} all right')
-                    return spPath.normpath()
+                    return os.path.normpath(spPath)
                 else:
                     print(f'directory is symlink: {spPath} but does NOT resolve to {cloneDir}, but to {spResolve}')
                     return
@@ -1879,6 +1862,20 @@ Please try to correct this by running the Natlink Config Program (with administr
         if Dir3 not in sys.path:
             print(f"natlinkstatus, addToPath: {Dir3}")
             sys.path.append(Dir3)
+
+    def fatal_error(self, message, new_raise=None):
+        """prints a fatal error when running this module"""
+        print()
+        print('natlinkstatus fails because of fatal error:')
+        print()
+        print(message)
+        print()
+        print('This can (hopefully) be solved by closing Dragon and then running the Natlink Config program (start_configurenatlink) with administrator rights.')
+        print()
+        if new_raise:
+            raise
+
+
 
 def getFileDate(modName):
     try: return os.stat(modName)[stat.ST_MTIME]

@@ -424,8 +424,8 @@ class ConfigureNatlinkPanel(wx.Panel):
                 # changed installation, message from natlinkconfigfunctions
                 self.urgentMessage = "REREGISTER natlink.pyd and Close (restart) or Close right away to cancel (see log panel)"
                 self.cli.checkedConfig = None
-            if self.config.changesInInitPhase:
-                if self.cli.getFatalErrors():
+            if True: ###self.config.changesInInitPhase:
+                if self.config.hadFatalErrors:
                     self.urgentMessage = "See the log panel for urgent startup information!!"
                 else:
                     self.urgentMessage = "See the log panel for startup information, the init phase was succesful"
@@ -933,13 +933,13 @@ Help about re(register) natlink.pyd you will find in the log panel
 About this configure program:
 
 All actions are performed immediate, mostly doing something
-in the natlinkstatus.ini file of Natlink (in the MacroSystem/Core directory).
+in the natlinkstatus.ini file of Natlink (in the ~\.natlink directory).
 
 What is changed is shown in red. The Undo button undoes these actions.
 
 If, for example, Vocola shows the button "Enable", it is currently disabled.
 
-In order to let the changes take effect, you have to restart NatSpeak.
+In order to let the changes take effect, you have to restart Dragon.
 
 For the actions Enable/Disable Natlink and unregister/(re)register natlink.pyd
 you need "elevated mode".
@@ -953,9 +953,10 @@ This is established by running "start_configurenatlink.py".
         text = \
 """User Grammar files can be activated/deactivated by specifying the UserDirectory.
 
-This directory should NOT be Unimacro or MacroSystem, as these are for Vocola and Unimacro.
+This directory should separate from Unimacro or Vocola.
 
-Dragonfly users can use this option.
+Dragonfly users can use this option. Also for packages that are built upon Dragonfly,
+like Caster, Mathfly etc.
 """
         self.warning(text)
 
@@ -979,7 +980,7 @@ Vocola can use Unimacro features, by checking the checkbox in the Vocola section
 
 Via the dialog Vocola Compatibility, you can handle things around the include file, Unimacro.vch.
 
-This file is automatically copied from  (...)\\Unimacro\vocola_compatibility into the VocolaUserDirectory when Vocola is started.
+This file is automatically copied from  (...)\\Unimacro\\vocola_compatibility into the VocolaUserDirectory when Vocola is started.
 
 More about this in the "Vocola Compatibility" dialog.
 """
@@ -1358,7 +1359,7 @@ except:
     errorfile = natlink_ini_folder/"configurenatlink_error.txt"
     Type, Value, tb = sys.exc_info()
     
-    traceback.print_stack(file=open(errorfile, "w"))
+    traceback.print_exc(file=open(errorfile, "w"))
     mess  = traceback.format_exc()
     mess += f'\nType: {Type}'
     mess += f'\nValue: {Value}'

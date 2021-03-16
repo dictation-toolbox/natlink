@@ -1,5 +1,3 @@
-
-
 Packages are build without a setup.py, and source only, as any PIP recent enough will be PEP517 compliant.
 Flit is the simplest packaging tool that will work. Read about it here https://flit.readthedocs.io/en/latest/cmdline.html.
 
@@ -40,7 +38,7 @@ if it publishes, then you will see the updated version number in natlink on test
 
 Now install it using pip with this:
 
-pip --no-cache install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple  unimacro
+pip --no-cache install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple natlink
 
 Remove any local projects for natlink from any Python Path variables, so that the version in site-packages gets loaded by
 natlink.  You can rename your dictation-toolbox root temporarily below which natlink lies, or your can temporarily rename
