@@ -46,13 +46,15 @@ if sys.version[0] == '2':
     mess = '\n\n'.join(mess)
     windowsMessageBox(mess)
 
-import sys, traceback
+import sys
+import traceback
 from configurenatlink_wdr import *
 import os
 import os.path
 import copy
 import types
 from natlinkconfigfunctions import ElevationError
+from pathlib import WindowsPath
 # nf: natlinkinstallfunctions, imported at end of init...
 nf = None
 nc = None  # natlinkcorefunctions
@@ -384,6 +386,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 #self.parent.warning(text)
 
         self.firstThaw = True  # set to true first time and at undo action...
+        
         self.GUI = NatlinkConfigGUI(parent=self)
         error = 0
         try:
@@ -1350,11 +1353,16 @@ class MyApp(wx.App):
 try:
     app = MyApp(True)
 except:
-    import sys, traceback
     # traceback.print_exception(type, value, traceback[, limit[, file]])
-    traceback.print_exc(file=open("configurenatlink_error.txt", "w"))
+    natlink_ini_folder = WindowsPath.home() / ".natlink"
+    errorfile = natlink_ini_folder/"configurenatlink_error.txt"
+    Type, Value, tb = sys.exc_info()
+    
+    traceback.print_stack(file=open(errorfile, "w"))
     mess  = traceback.format_exc()
-    mess += f'\n\nMore info in configurenatlink_error.txt in the directory "{thisDir}"'
+    mess += f'\nType: {Type}'
+    mess += f'\nValue: {Value}'
+    mess += f'\n\nMore info in "configurenatlink_error.txt" in the directory "{natlink_ini_folder}"'
     windowsMessageBox(mess, "Error at startup of configurenatlink")
     sys.exit(1)
 else:
