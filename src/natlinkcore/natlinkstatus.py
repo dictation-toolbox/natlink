@@ -254,6 +254,11 @@ class NatlinkStatus:
         # print(f'natlinkstatus.__ini__, self.__class__.skipSpecialWarning after: {self.__class__.skipSpecialWarning}')
         # print('-'*50)
         try:
+            self.__class__.hadFatalErrors
+        except AttributeError:
+            self.__class__.hadFatalErrors = False
+        
+        try:
             self.__class__.userinisection
         except AttributeError:
             self.__class__.userinisection = natlinkcorefunctions.NatlinkstatusInifileSection()
@@ -268,16 +273,12 @@ class NatlinkStatus:
         try:
             self.__class__.NatlinkDirectory
         except AttributeError:
-            pass
-        else:
-            return
-
+            thisDir=pathlib.WindowsPath(__file__).parent
+            thisDirResolved = thisDir.resolve()
+            coreDir=self.findInSitePackages(str(thisDir))
+            self.__class__.NatlinkDirectory = self.getNatlinkDirectory(coreDir=coreDir)
+            assert os.path.isdir(self.NatlinkDirectory)
         # initialize settings for this session:
-        thisDir=pathlib.WindowsPath(__file__).parent
-        thisDirResolved = thisDir.resolve()
-        coreDir=str(thisDir)
-        self.__class__.NatlinkDirectory = self.getNatlinkDirectory(coreDir=coreDir)
-        assert os.path.isdir(self.NatlinkDirectory)
         
         self.correctIniSettings() # change to newer conventions
     
@@ -313,10 +314,7 @@ class NatlinkStatus:
             if result == -1:
                 return  # serious problem.
 
-        result = self.checkNatlinkPydFile()
-        if result is None:
-            if not self.skipSpecialWarning:
-                self.warning('WARNING: invalid or no version of natlink.pyd found\nClose Dragon and then run the\nconfiguration program "configurenatlink.pyw" via "start_configurenatlink.py"')
+        self.checkNatlinkPydFile()
 
     def getWarningText(self):
         """return a printable text if there were warnings
@@ -416,7 +414,11 @@ Please try to correct this by running the Natlink Config Program (with administr
     def checkPydChanges(self, currentPydPath=None, wantedPydPath=None):
         """check if currentPath should be updated to wantedPath
         
-        This leads to a warning at startup, and an advice to re-register natlink.pyd with the config program
+        First check also different paths current compared with NatlinkPydOrigin in natlinkstatus.ini.
+        Inconsistenceis lead to a fatal_error, asking the user to Re-register via config program.
+        
+        When the current natlink.pyd seems to be outdated (and changed), 
+        a warning at startup is given, advicing the user to Re-register natlink.pyd with the config program
         """
         # NatlinkDirectory = self.getNatlinkDirectory()
         if  currentPydPath is None:
@@ -434,37 +436,51 @@ Please try to correct this by running the Natlink Config Program (with administr
         NatlinkPydOrigin = self.userinisection.get('NatlinkPydOrigin')
         if NatlinkPydOrigin and os.path.isfile(NatlinkPydOrigin):
             originalPydDir, originalPydFile = os.path.split(NatlinkPydOrigin)
+            originalNatlinkcoreDir = os.path.normpath(os.path.join(originalPydDir, '..'))
         else:
             self.warning(f'No original pyd file found in settings "NatlinkPydOrigin"')
             return
         
         currentDir, currentFile = os.path.split(currentPydPath)
+        if currentDir.endswith('ConfigureNatlink'):
+            currentConfigDir = currentDir
+            runFromConfig = True
+        else:
+            currentConfigDir = os.path.join(currentDir, 'ConfigureNatlink')
+            runFromConfig = False
         
         if wantedPyd != wantedFile:
-            mess = f'Dragon or python version changed. current: {wantedPyd}, needed forthis version of python or Dragon: {wantedFile}'
+            mess = f'Dragon or python version changed. current: {wantedPyd}, needed for this version of python or Dragon: {wantedFile}'
             self.fatal_error(mess)
             
-        # now check for updates:
-        
-        # timeWanted = getFileDate(wantedPydPath)
-        # timeCurrent = getFileDate(currentPydPath)
-        # 
-        # # check for newer (changed version) of original pyd:
-        # if timeCurrent or timeWanted:
-        #     if timeWanted > timeCurrent:
-        #         if not fromConfig:
-        #             self.warning('Current pyd file (%s) out of date, compared with\n%s'% (currentPydPath, wantedPydPath))
-        #         return
-        # # all well
-        # return 1
+        if originalPydFile != wantedFile:
+            mess = f'Dragon or python version changed. From NatlinkPydOrigin (natlinkstatus.ini): {originalPydFile}, needed for this version of python or Dragon: {wantedFile}'
+            self.fatal_error(mess)
 
-    def PydChangedPath(self):
-        """return True if the path of natlink has been changed
-        
-        False or None: all is well
-        """
-        return
-    
+        if originalNatlinkcoreDir.lower() != currentDir.lower():
+            if runFromConfig:
+                mess = [f'The program started from the subdirectory "ConfigureNatlink" of {self.NatlinkDirectory}.', '']
+            else:
+                ## run from natlinkstatus
+                mess = [f'The program started from {self.NatlinkDirectory}.']
+            
+            
+            mess.extend([f'This is another location than is kept in natlinkstatus.ini: {originalNatlinkcoreDir}.', '',
+                    f'When you want this new location, "{self.NatlinkDirectory}",', 'you need to Re-register Natlink in the Configure Program (GUI) or CLI.',''])
+            if runFromConfig:                
+                mess.extend([f'When you want to keep the "original location", quit the config program,',
+                             f'and be sure your Dragon starts Natlink from from {originalNatlinkcoreDir}.'])
+            else:
+                ##natlinkstatus:
+                mess.extend([f'When you want to keep the "original location", be sure your Dragon starts Natlink from from {originalNatlinkcoreDir}.'])
+                
+            self.fatal_error('\n'.join(mess))
+            
+        result = self.PydChangedContent(target=currentPydPath, wanted=wantedPydPath)
+        if result:
+            self.warning(result)   #ask user to re-register 
+            
+   
     def PydChangedContent(self, target, wanted):
         """check if the pyd file in the PYD directory has been changed and is different
         
@@ -473,8 +489,15 @@ Please try to correct this by running the Natlink Config Program (with administr
         Otherwise, (None, False) all is well
         
         """
-        return
-
+        timeWanted = getFileDate(wanted)
+        timeTarget = getFileDate(target)
+         
+        # check for newer (changed version) of original pyd:
+        if timeWanted > timeTarget:
+            same = open(wanted, "rb").read() == open(target, "rb").read()
+            if not same:
+                mess = f'Current pyd file {target} is out of date, compared with {wanted}, and not identical.'
+                return mess
     
     def getHiveKeyReadable(self, hive): 
         if hive == winreg.HKEY_LOCAL_MACHINE: return 'HKLM'
@@ -1306,7 +1329,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             # should be preserved after first call:
             return self.NatlinkDirectory
 
-        if coreDir.find("site-packages") > 0:
+        if str(coreDir).find("site-packages") > 0:
             cdPath = pathlib.WindowsPath(coreDir)
             if cdPath.is_symlink():
                 cdResolved = cdPath.resolve()
@@ -1326,7 +1349,10 @@ Please try to correct this by running the Natlink Config Program (with administr
         This is the situation when the package is "flit installed --symlink", so you can work in your clone and
         see the results happen. Only for developers
         
+        If not found, return the input directory (cloneDir)
+        
         """
+        cloneDir = str(cloneDir)
         if cloneDir.find('\\src\\') < 0:
             return cloneDir
             # raise IOErrorprint(f'This function should only be called when "\\src\\" is in the path')
@@ -1338,16 +1364,14 @@ Please try to correct this by running the Natlink Config Program (with administr
                 spResolve = spPath.resolve()
                 if str(spResolve) == cloneDir:
                     # print(f'directory is symlink: {spPath} and resolves to {cloneDir} all right')
-                    return os.path.normpath(spPath)
+                    return str(spPath)
                 else:
                     print(f'directory is symlink: {spPath} but does NOT resolve to {cloneDir}, but to {spResolve}')
-                    return
             else:
                 print(f'directory is not a symlink: {spPath}')
-                return
         else:
             print('findInSitePackages, not a valid directory: {spPath}')
-    
+        return cloneDir        
 
     def getUserDirectory(self, force=None):
         """return the path to the Natlink User directory
@@ -1865,13 +1889,16 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def fatal_error(self, message, new_raise=None):
         """prints a fatal error when running this module"""
-        print()
-        print('natlinkstatus fails because of fatal error:')
-        print()
-        print(message)
-        print()
-        print('This can (hopefully) be solved by closing Dragon and then running the Natlink Config program (start_configurenatlink) with administrator rights.')
-        print()
+        if not self.hadFatalErrors:
+            
+            print()
+            print('natlinkstatus fails because of fatal error:')
+            print()
+            print(message)
+            print()
+            print('This can (hopefully) be solved by closing Dragon and then running the Natlink Config program (start_configurenatlink) with administrator rights.')
+            print()
+            self.__class__.hadFatalErrors = True
         if new_raise:
             raise
 

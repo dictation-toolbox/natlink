@@ -189,7 +189,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             print(f'Take current natlinkcore directory in site-packages: {coreDir}')
         coreDir2 = self.getNatlinkDirectory()
         
-        if str(coreDir2).lower() != coreDir.lower():
+        if str(coreDir2).lower() != str(coreDir).lower():
             print('ambiguous core directory,\nfrom this module: %s\nfrom status in natlinkstatus: %s'%
                                               (coreDir, coreDir2))
             
@@ -230,10 +230,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         ## unlikely case:
         coreDir2 = self.getNatlinkDirectory()
-        coreDirSitePackages = self.findInSitePackages(coreDir)
-        if str(coreDir2).lower() != coreDirSitePackages.lower():
-            fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDirSitePackages}\nfrom natlinkstatus.getNatlinkDirectory: "{coreDir2}"')
-        currentPydPath = os.path.join(coreDir, 'natlink.pyd')
+        ## proceed with the local coreDir
+        coreDir3 = self.findInSitePackages(coreDir)
+        
+        
+        if str(coreDir2).lower() != coreDir3.lower():
+            fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDir3}\nfrom natlinkstatus.getNatlinkDirectory: "{coreDir2}"')
+        currentPydPath = os.path.join(coreDir3, 'natlink.pyd')
         NatlinkPydOrigin = self.userinisection.get('NatlinkPydOrigin')
  
         FirstInstall = False
@@ -253,7 +256,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                 FirstInstall = True
 
         wantedPyd = self.getWantedNatlinkPydFileName()       # wanted original based on python version and Dragon version
-        wantedPydPath = os.path.join(coreDir, 'PYD', wantedPyd)
+        wantedPydPath = os.path.join(coreDir3, 'PYD', wantedPyd)
         if not os.path.isfile(wantedPydPath):
             fatal_error(f'natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find wantedPydPath: {wantedPydPath}')
             return
@@ -267,23 +270,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.registerNatlinkPyd()
             self.enableNatlink()
             return 1
-            
-            
-        if self.PydChangedPath() is True:
-            warning('current pyd file does not match "origing", Reregister to solve')
-            
-        # not FirstInstall, check dates...
-        if self.PydChangedContent(targetPydPath, wantedPydPath) is True:
-            print(f'a re-register of natlink.pyd should be done, newer version available')
-        
-        # TODOQH this part to  checkPydChanges in natlinkstatus.py.            
-        # wantedModTime = getFileDate(wantedPydPath)
-        # targetModTime = getFileDate(targetPydPath)
-        # if wantedModTime > targetModTime:
-        #     print(f'wanted pyd file newer than actual {wantedPydPath}')
-        # return result  # None if something went wrong 1 if all OK
 
-        
+        # not FirstInstall, check dates...
+        result = self.PydChangedContent(targetPydPath, wantedPydPath)
+        if result:
+            self.warning(result)
 
     def removeNatlinkPyd(self):
         """remove the natlink.pyd file (Dragon should be switched off)
@@ -390,14 +381,21 @@ Natlink is now disabled.
 
     def warning(self,text):
         """is currently overloaded in GUI"""
-        if type(text) in (bytes, str):
+        if type(text) is str:
             T = text
         else:
             # list probably:
             T = '\n'.join(text)
         print(('-'*60))
         print(T)
+        print('')
+        print('Most often, you solve this by running the')
+        print('ConfigureNatlink program and Re-register natlink.pyd')
+        print('(Or run the Command Line Interface with option "r").')
+        print(f'start_configurenatlink or start_natlinkconfigfunctions in directory "{sys.prefix}\\Scripts".')
         print(('='*60))
+        
+        
         return T
 
     def error(self,text):
@@ -1167,7 +1165,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 mess = ['natlinkconfigfunctions failed because of fatal error:',
                     '', message, '',
                     'So if Dragon is running, close it.', '',
-                    'Then try to Re-register Natlink (CLI: r)',
+                    'Then try, if you choose to do so, to Re-register Natlink with this program', '(option "r" in the CLI, Command Line Interface).',
                     ]
             else:    
                 mess = ['natlinkconfigfunctions failed because of fatal error:',
