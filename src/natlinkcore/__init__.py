@@ -1,5 +1,5 @@
 """natlinkcore"""
 
-__version__ = '0.0.0.1.6'  # Quintijn to test
+__version__ = '0.0.0.1.7'  # Quintijn to test
 
  
