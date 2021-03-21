@@ -1522,7 +1522,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         section = "Options"
         inisection = natlinkcorefunctions.InifileSection(section=section,
-                                                         filename=optionsini)
+                                                         filepath=optionsini)
         keyname = "Last Used Acoustics"
         keyToModel = inisection.get(keyname)
         if not keyToModel:
@@ -1546,7 +1546,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         section = "Options"
         inisection = natlinkcorefunctions.InifileSection(section=section,
-                                                         filename=optionsini)
+                                                         filepath=optionsini)
         keyname = "Last Used Topic"
         keyToModel = inisection.get(keyname)
         if not keyToModel:
@@ -1573,7 +1573,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         acousticini = os.path.join(Dir, 'acoustic.ini')
         section = "Base Acoustic"
         basesection = natlinkcorefunctions.InifileSection(section=section,
-                                                         filename=acousticini)
+                                                         filepath=acousticini)
         BaseModel = basesection.get(keyToModel, "")
         # print 'getBaseModel: %s'% BaseModel
         return BaseModel
@@ -1592,7 +1592,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         topicsini = os.path.join(Dir, 'topics.ini')
         section = "Base Topic"
         topicsection = natlinkcorefunctions.InifileSection(section=section,
-                                                         filename=topicsini)
+                                                         filepath=topicsini)
         BaseTopic = topicsection.get(keyToModel, "")
         # print 'getBaseTopic: %s'% BaseTopic
         return BaseTopic
@@ -1648,7 +1648,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             print('getLanguage: Warning, language of the user cannot be found, acoustic.ini not a file in directory %s'% dir)
             return 'yyy'
         inisection = natlinkcorefunctions.InifileSection(section=section,
-                                                         filename=acousticini)
+                                                         filepath=acousticini)
         # print 'get data from section %s, key: %s, file: %s'% (section, keyToModel, acousticini)
         # print 'keys of inisection: %s'% inisection.keys()
         # print 'inisection:\n%s\n========'% repr(inisection)

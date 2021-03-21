@@ -449,12 +449,12 @@ class InifileSection:
         __repr__: give contents of a section
         
     """
-    def __init__(self, section, filename):
+    def __init__(self, section, filepath):
         """open a section in a inifile
         
         """
         self.section = section
-        self.ini = inivars.IniVars(filename) # want strings to be returned
+        self.ini = inivars.IniVars(filepath) # want strings to be returned
           
     def __repr__(self):
         """return contents of sections
@@ -533,16 +533,17 @@ defaultSection = 'usersettings'
 class NatlinkstatusInifileSection(InifileSection):
     """subclass with fixed filename and section"""
     
-    def __init__(self):
+    def __init__(self, filename=defaultFilename, section=defaultSection):
         """get the default inifile:
-        In the users home diretory/.natlink  the ini file natlinkstatus.ini
+        
+        In the users home diretory/.natlink  the ini file natlinkstatus.ini 
         with section defaultSection
         """        
         natlink_ini_path=WindowsPath.home() / ".natlink"
         if not natlink_ini_path.is_dir():
             raise ValueError(f"Natlink folder  {natlink_ini_path} missing.")
-        filename = str(natlink_ini_path/defaultFilename)
-        InifileSection.__init__(self, section=defaultSection, filename=filename)
+        filepath = str(natlink_ini_path/filename)
+        InifileSection.__init__(self, section=section, filepath=filepath)
 
 
 if __name__ == "__main__":

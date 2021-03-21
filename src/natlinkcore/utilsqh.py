@@ -1008,7 +1008,7 @@ def _sendkeys_escape(s):
 
 
 ##import sys, traceback
-def print_exc_plus(filename=None, skiptypes=None, takemodules=None,
+def print_exc_plus(filepath=None, skiptypes=None, takemodules=None,
                    specials=None):
     """ Print the usual traceback information, followed by a listing of
     all the local variables in each frame.
