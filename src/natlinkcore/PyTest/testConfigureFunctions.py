@@ -15,95 +15,100 @@ import os
 import win32con
 import copy
 import shutil
+from pathlib import WindowsPath
 
 ##Accessories = 'Accessories'
 ## for Dutch windows system:
 Accessories = 'Bureau-accessoires'
 
-# need this bunch to get connection with the core folder...
-#--------- two utility functions:
-def getBaseFolder(globalsDict=None):
-    """get the folder of the calling module.
-
-    either sys.argv[0] (when run direct) or
-    __file__, which can be empty. In that case take the working directory
-    """
-    globalsDictHere = globalsDict or globals()
-    baseFolder = ""
-    if globalsDictHere['__name__']  == "__main__":
-        baseFolder = os.path.split(sys.argv[0])[0]
-##        print 'baseFolder from argv: %s'% baseFolder
-    elif globalsDictHere['__file__']:
-        baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-##        print 'baseFolder from __file__: %s'% baseFolder
-    if not baseFolder or baseFolder == '.':
-        baseFolder = os.getcwd()
-##        print 'baseFolder was empty, take wd: %s'% baseFolder
-    return baseFolder
-
-def getCoreDir(thisDir):
-    """get the natlink core folder, relative from the current folder
-
-    This folder should be relative to this with ../macrosystem/core and should contain
-    natlinkmain.py and natlink.pyd and natlinkstatus.py
-
-    If not found like this, prints a line and returns thisDir
-    SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
-    """
-    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'macrosystem', 'core') )
-    if not os.path.isdir(coreFolder):
-        print('not a directory: %s'% coreFolder)
-        return thisDir
-    pydPath = os.path.join(coreFolder, 'natlink.pyd')
-    mainPath = os.path.join(coreFolder, 'natlinkmain.py')
-    statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-    if not os.path.isfile(pydPath):
-        print('natlink.pyd not found in core directory: %s'% coreFolder)
-        return thisDir
-    if not os.path.isfile(mainPath):
-        print('natlinkmain.py not found in core directory: %s'% coreFolder)
-        return thisDir
-    if not os.path.isfile(statusPath):
-        print('natlinkstatus.py not found in core directory: %s'% coreFolder)
-        return thisDir
-    return coreFolder
+# # need this bunch to get connection with the core folder...
+# #--------- two utility functions:
+# def getBaseFolder(globalsDict=None):
+#     """get the folder of the calling module.
+# 
+#     either sys.argv[0] (when run direct) or
+#     __file__, which can be empty. In that case take the working directory
+#     """
+#     globalsDictHere = globalsDict or globals()
+#     baseFolder = ""
+#     if globalsDictHere['__name__']  == "__main__":
+#         baseFolder = os.path.split(sys.argv[0])[0]
+# ##        print 'baseFolder from argv: %s'% baseFolder
+#     elif globalsDictHere['__file__']:
+#         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
+# ##        print 'baseFolder from __file__: %s'% baseFolder
+#     if not baseFolder or baseFolder == '.':
+#         baseFolder = os.getcwd()
+# ##        print 'baseFolder was empty, take wd: %s'% baseFolder
+#     return baseFolder
+# 
+# def getCoreDir(thisDir):
+#     """get the natlink core folder, relative from the current folder
+# 
+#     This folder should be relative to this with ../macrosystem/core and should contain
+#     natlinkmain.py and natlink.pyd and natlinkstatus.py
+# 
+#     If not found like this, prints a line and returns thisDir
+#     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
+#     """
+#     coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'macrosystem', 'core') )
+#     if not os.path.isdir(coreFolder):
+#         print('not a directory: %s'% coreFolder)
+#         return thisDir
+#     pydPath = os.path.join(coreFolder, 'natlink.pyd')
+#     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
+#     statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
+#     if not os.path.isfile(pydPath):
+#         print('natlink.pyd not found in core directory: %s'% coreFolder)
+#         return thisDir
+#     if not os.path.isfile(mainPath):
+#         print('natlinkmain.py not found in core directory: %s'% coreFolder)
+#         return thisDir
+#     if not os.path.isfile(statusPath):
+#         print('natlinkstatus.py not found in core directory: %s'% coreFolder)
+#         return thisDir
+#     return coreFolder
 #-----------------------------------------------------
-
-thisDir = getBaseFolder(globals())
-coreDir = getCoreDir(thisDir)
-if thisDir == coreDir:
-    raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
-# appending to path if necessary:
-if not os.path.normpath(coreDir) in sys.path:
-    sys.path.append(coreDir)
-# now we can import:::
-configDir = os.path.normpath(os.path.join(thisDir, '..', 'ConfigureNatlink'))
-if not os.path.normpath(configDir) in sys.path:
-    sys.path.append(configDir)
-import natlinkconfigfunctions
-from natlinkcore import natlinkstatus
-from natlinkstatus import isValidPath ## used a lot in the test procedures!
-from natlinkcorefunctions import InifileSection  # to test own inifile data
-
-from natlinkcore import natlinkcorefunctions
-
+# 
+# thisDir = getBaseFolder(globals())
+# coreDir = getCoreDir(thisDir)
+# if thisDir == coreDir:
+#     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
+# # appending to path if necessary:
+# if not os.path.normpath(coreDir) in sys.path:
+#     sys.path.append(coreDir)
+# # now we can import:::
+# configDir = os.path.normpath(os.path.join(thisDir, '..', 'ConfigureNatlink'))
+# if not os.path.normpath(configDir) in sys.path:
+#     sys.path.append(configDir)
+from natlinkcore.ConfigureNatlink import natlinkconfigfunctions as natlinkconfigfunctions
+from natlinkcore import natlinkstatus as natlinkstatus
+from natlinkcore.natlinkstatus import isValidPath ## used a lot in the test procedures!
+from natlinkcore import natlinkcorefunctions as natlinkcorefunctions
+from natlinkcore.natlinkcorefunctions import InifileSection
 
 defaultFilename = "natlinkstatustest.ini"
 defaultSection = 'usersettingstest'
+# status = natlinkstatus.NatlinkStatus()
+
 class NatlinkstatusTestInifileSection(InifileSection):
     """subclass with fixed filename and section"""
     
     def __init__(self):
-        """get the default inifile:
-        In baseDirectory (this directory) the ini file natlinkstatus.ini
-        with section defaultSection
-        """        
-        dirName = getBaseFolder()
-        if not os.path.isdir(dirName):
-            raise ValueError("starting inifilesection, invalid directory: %s"%
-                            dirName)
-        filename = os.path.join(dirName, defaultFilename)
-        InifileSection.__init__(self, section=defaultSection, filename=filename)
+        """get the default inifile
+        
+        in the .natlink directory...
+        """
+        natlink_ini_path=WindowsPath.home() / ".natlink"
+        if not natlink_ini_path.is_dir():
+            raise IOError(f"Natlink folder  {natlink_ini_path} missing.")
+        
+        filename = 'natlinkstatus.ini'
+        filepath = str(natlink_ini_path/filename)
+        
+        section = "usersettingstest"
+        filepath = "natlinkstatustest.ini"
+        InifileSection.__init__(self, section=section, filepath=filepath)
 
     def clear(self):
         for key in self:
@@ -185,8 +190,10 @@ class TestConfigureFunctions(unittest.TestCase):
         #  for setting getting values test:        
         # self.restoreRegistrySettings(self.backuptestinisection,
         # leave tmpTest en natlinkstatustest.ini (in this directory) for inspection, is refreshed at each setUp
-        shutil.rmtree(self.vocolausertest)
-        shutil.rmtree(self.unimacrousertest)
+        if os.path.isdir(self.vocolausertest):
+            shutil.rmtree(self.vocolausertest)
+        if os.path.isdir(self.unimacrousertest):
+            shutil.rmtree(self.unimacrousertest)
         pass
     
     

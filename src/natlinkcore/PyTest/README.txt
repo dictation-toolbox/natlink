@@ -1,3 +1,6 @@
+This is now very old stuff, and should be updated ASAP with the python 3 version of Natlink...
+(QH, March 2021)
+
 instead of testnatlink now testing can be done with unittest:
 
 - unittestNatlink.py
