@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "dllmain.h"
 #include "initguid.h"
+#include "COM/appsupp.h"
 BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(__uuidof(NatLink), CDgnAppSupport)
 END_OBJECT_MAP()

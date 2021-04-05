@@ -16,8 +16,8 @@
 #endif
 
 #define STRICT
-#define WINVER 0x0500
-#define _WIN32_WINNT 0x0500
+#define WINVER_UNUSED 0x0500
+#define _WIN32_WINNT_UNUSED 0x0500
 
 //#define _WIN32_WINNT 0x0403
 #define _ATL_APARTMENT_THREADED
