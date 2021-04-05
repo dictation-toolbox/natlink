@@ -224,6 +224,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="COM\appsupp.cpp" />
     <ClCompile Include="DictationObject.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
@@ -239,6 +240,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="DragonCode.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="GrammarObject.cpp" />
     <ClCompile Include="MessageWindow.cpp" />
@@ -257,6 +259,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="pythwrap.cpp" />
+    <ClCompile Include="ResultObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="natlink.rc" />

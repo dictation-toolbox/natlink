@@ -1,12 +1,29 @@
 // natlink.cpp : Implementation of DLL Exports.
 
+/*
+ Python Macro Language for Dragon NaturallySpeaking
+	(c) Copyright 1999 by Joel Gould
+	Portions (c) Copyright 1999 by Dragon Systems, Inc.
+
+ natlink.cpp
+	This file was originally constructed by the Visual C++ AppWizard.  Then
+	it was reconstructed by wizard uing Visual Studio 2019.  This
+	file contains the basic code necessary to allow natlink.dll to function
+	as a COM server.
+*/
 
 #include "pch.h"
 #include "framework.h"
 #include "resource.h"
 #include "natlink_i.h"
 #include "dllmain.h"
-
+#include "atlcom.h"
+#include "stdafx.h"
+#include "dllmain.h"
+#include "initguid.h"
+BEGIN_OBJECT_MAP(ObjectMap)
+	OBJECT_ENTRY(__uuidof(NatLink), CDgnAppSupport)
+END_OBJECT_MAP()
 
 using namespace ATL;
 

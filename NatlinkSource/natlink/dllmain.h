@@ -1,5 +1,10 @@
 // dllmain.h : Declaration of module class.
+#ifndef dllmain_h
+#define dllmain_h
 
+#include "initguid.h"
+#include "Resource.h"
+#include "natlink_i.h"
 class CnatlinkModule : public ATL::CAtlDllModuleT< CnatlinkModule >
 {
 public :
@@ -8,3 +13,4 @@ public :
 };
 
 extern class CnatlinkModule _AtlModule;
+#endif

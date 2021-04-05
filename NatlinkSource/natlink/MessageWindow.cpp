@@ -152,7 +152,7 @@ DWORD CALLBACK threadMain( void * pArg )
 
 	// create a dialog box to display the messages
 
-	HINSTANCE hInstance = _Module.GetModuleInstance();
+	HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 
 	HWND hWnd = CreateDialogParam(
 		hInstance,						// instance handle

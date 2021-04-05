@@ -24,9 +24,10 @@
 
 
 //You may derive a class from CComModule and use it if you want to override
-//something, but do not change the name of _Module
+//something, but do not change the name of _AtlModule
 #include <atlbase.h>
-extern CComModule _Module;
+
+#include "dllmain.h"
 
 #include <atlcom.h>
 #include <comdef.h>
