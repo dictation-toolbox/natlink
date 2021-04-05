@@ -11,6 +11,9 @@
 
 #ifndef appsupp_h
 #define appsupp_h
+#include <atlbase.h>
+#include <atlcom.h>
+#include "dspeech.h"
 
 class DECLSPEC_UUID("DD990001-BB89-11d2-B031-0060088DC929") NatLink;
 #define IID_IDgnAppSupportA __uuidof(IDgnAppSupportA)
@@ -18,10 +21,18 @@ class DECLSPEC_UUID("DD990001-BB89-11d2-B031-0060088DC929") NatLink;
 /////////////////////////////////////////////////////////////////////////////
 // CDgnAppSupport
 
+
+class ATL_NO_VTABLE CDgnAppSupport1 :
+	public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
+{
+
+};
+
+class CDragonCode;
 class ATL_NO_VTABLE CDgnAppSupport : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CDgnAppSupport, &__uuidof(NatLink)>,
-	public IDgnAppSupport
+	public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
+	public ATL::CComCoClass<CDgnAppSupport, &__uuidof(NatLink)>,
+	public IDgnAppSupport 
 {
 public:
 	CDgnAppSupport();
@@ -35,7 +46,8 @@ DECLARE_NOT_AGGREGATABLE(CDgnAppSupport)
 
 BEGIN_COM_MAP(CDgnAppSupport)
 	COM_INTERFACE_ENTRY(IDgnAppSupport)
-END_COM_MAP()
+END_COM_MAP() 
+
 
 // IDgnAppSupport
 public:

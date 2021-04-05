@@ -1502,7 +1502,7 @@ BOOL CDragonCode::initSecondWindow()
 {
 	// create a window for posting ourself messages
 
-	HINSTANCE hInstance = _Module.GetModuleInstance();
+	HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 
 	WNDCLASSEX regCls;
 	memset( &regCls, 0, sizeof(WNDCLASSEX) );
@@ -2548,7 +2548,7 @@ BOOL CDragonCode::waitForSpeech( int nTimeout )
 
 	MY_BEGIN_ALLOW_THREADS
 
-	HINSTANCE hInstance = _Module.GetModuleInstance();
+	HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 	DialogBoxParam(
 		hInstance, MAKEINTRESOURCE( IDD_WAITFOR ),
 		NULL /* no parent */, waitDialogProc, (LPARAM) nTimeout );
@@ -3499,7 +3499,7 @@ BOOL CDragonCode::setTrayIcon(
 	char * iconName, char * toolTip, PyObject * pCallback )
 {
 	HICON hIcon = NULL;
-	HINSTANCE hInstance = _Module.GetModuleInstance();
+	HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 
 	Py_XDECREF( m_pTrayIconCallback );
 	m_pTrayIconCallback = NULL;
