@@ -14,7 +14,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include "dspeech.h"
-
+#include <iostream>
 class DECLSPEC_UUID("DD990001-BB89-11d2-B031-0060088DC929") NatLink;
 #define IID_IDgnAppSupportA __uuidof(IDgnAppSupportA)
 

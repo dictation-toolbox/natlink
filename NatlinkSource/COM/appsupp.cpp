@@ -50,6 +50,8 @@ CDgnAppSupport::~CDgnAppSupport()
 STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 {
 	BOOL bSuccess;
+	MessageBeep(MB_ICONQUESTION);
+	DebugBreak();
 	// load and initialize the Python system
 	Py_Initialize();
 
