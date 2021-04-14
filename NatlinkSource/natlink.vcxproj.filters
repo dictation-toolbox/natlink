@@ -103,6 +103,7 @@
     <None Include="CDgnAppSupport1.rgs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="natlink.idl">

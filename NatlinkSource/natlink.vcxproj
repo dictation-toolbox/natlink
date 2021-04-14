@@ -70,6 +70,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
+    <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -276,6 +277,7 @@
     <None Include="CDgnAppSupport1.rgs" />
     <None Include="natlink.def" />
     <None Include="natlink.rgs" />
+    <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="natlink.idl" />
