@@ -20,6 +20,9 @@ class CMessageStack;
 typedef const char * PCCHAR;
 
 //---------------------------------------------------------------------------
+#ifndef DRAGONCODE_H
+#define DRAGONCODE_H
+
 
 class CDragonCode
 {
@@ -286,3 +289,4 @@ class CDragonCode
 
 
 };
+#endif // !DRAGONCODE_H

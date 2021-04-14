@@ -123,9 +123,10 @@
 #include "GrammarObject.h"
 #include "ResultObject.h"
 #include "DictationObject.h"
-#include "COM/appsupp.h"
 #include "MessageWindow.h"
 #include "Exceptions.h"
+#include "CDgnAppSupport.h"
+
 #include <cstring>
 
 // defined in PythWrap.cpp

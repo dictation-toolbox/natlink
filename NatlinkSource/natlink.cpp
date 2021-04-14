@@ -21,7 +21,6 @@
 #include "stdafx.h"
 #include "dllmain.h"
 #include "initguid.h"
-#include "COM/appsupp.h"
 #include <iostream>
 //"$(OUTDIR)$(TargetName)$(TargetExt)"
 /*
