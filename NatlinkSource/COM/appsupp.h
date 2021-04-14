@@ -22,11 +22,6 @@ class DECLSPEC_UUID("DD990001-BB89-11d2-B031-0060088DC929") NatLink;
 // CDgnAppSupport
 
 
-class ATL_NO_VTABLE CDgnAppSupport1 :
-	public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>
-{
-
-};
 
 class CDragonCode;
 class ATL_NO_VTABLE CDgnAppSupport : 

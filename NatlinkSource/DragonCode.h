@@ -48,6 +48,7 @@ class CDragonCode
 		m_bHasTrayIcon = FALSE;
 		m_pTrayIconCallback = NULL;
 		m_pMessageStack = NULL;
+		m_pAppClass = 0;
 	}
 
 	~CDragonCode() {

@@ -23,10 +23,14 @@
 #include "initguid.h"
 #include "COM/appsupp.h"
 #include <iostream>
-
+//"$(OUTDIR)$(TargetName)$(TargetExt)"
+/*
 BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(__uuidof(NatLink), CDgnAppSupport)
-END_OBJECT_MAP()
+END_OBJECT_MAP
+*/
+
+/*OBJECT_ENTRY_AUTO(__uuidof(NatLink), CDgnAppSupport)*/
 
 using namespace ATL;
 
@@ -49,7 +53,7 @@ STDAPI DllRegisterServer(void)
 {
 	std::cerr << "Register Server" << std::flush;
 	MessageBeep(-1);
-	MessageBox(0, L"Attached debugger now", L"DLL Registere Server", MB_OK);
+	MessageBox(0, L"Attached debugger now", L"DLL Register Server", MB_OK);
 	std::cerr << "HI";
 			// registers object, typelib and all interfaces in typelib
 	HRESULT hr = _AtlModule.DllRegisterServer();

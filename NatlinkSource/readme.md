@@ -74,13 +74,18 @@ The compiled library natlink.pyd/natlink.dll is registered with natspeak as a CO
  
  ### Support module registration
  
+ the natlink class id is 821d45e5-2c64-41cb-a363-2797dfda4dd0.  it used to be `dd990001-bb89-11d2-b031-0060088dc929`.  it was changed from rerunning the wizard
+ and it is difficult to reuse the old one.
+
+
  First we need to register our COM-Server with the windows registry. To do pass the dll/pyd to `regsvr32`. 
- Windows will associate the path of the libary with the GUID that we choose for Natlink (`dd990001-bb89-11d2-b031-0060088dc929`) which will set the ``HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{dd990001-bb89-11d2-b031-0060088dc929}\InprocServer32``for x64 systems.
+ Windows will associate the Natlink classid    
+ which will set the ``HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{clsid}\InprocServer32``for x64 systems.
  
  Then we need to inform dragon of the new module. To do so we add
   ```
 [.Natlink]
-App Support GUID={dd990001-bb89-11d2-b031-0060088dc929}
+App Support GUID={class id}
 ```
  to `C:\ProgramData\Nuance\NaturallySpeaking15\nsapps.ini` which also gives the module the identifier `.Natlink`
  

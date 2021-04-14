@@ -1,0 +1,26 @@
+HKCR
+{
+	natlink.dragonsupport.1 = s 'CDgnAppSupport class'
+	{
+		CLSID = s '{c087b466-6ed3-47ad-bdad-780d345d0236}'
+	}
+	natlink.dragonsupport = s 'CDgnAppSupport class'
+	{		
+		CurVer = s 'natlink.dragonsupport.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {c087b466-6ed3-47ad-bdad-780d345d0236} = s 'CDgnAppSupport class'
+		{
+			ProgID = s 'natlink.dragonsupport.1'
+			VersionIndependentProgID = s 'natlink.dragonsupport'
+			ForceRemove Programmable
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			TypeLib = s '{d1277b20-15d9-4f65-bacc-3e3257e89efd}'
+			Version = s '1.0'
+		}
+	}
+}

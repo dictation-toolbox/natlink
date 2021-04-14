@@ -49,6 +49,9 @@
     <ClInclude Include="COM\speech.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CDgnAppSupport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="natlink.cpp">
@@ -75,13 +78,13 @@
     <ClCompile Include="DragonCode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="COM\appsupp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ResultObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pythwrap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CDgnAppSupport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -96,6 +99,9 @@
     </None>
     <None Include="natlink.def">
       <Filter>Source Files</Filter>
+    </None>
+    <None Include="CDgnAppSupport1.rgs">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
