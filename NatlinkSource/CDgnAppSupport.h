@@ -67,6 +67,8 @@ public:
 #endif
 	STDMETHOD(Register)(IServiceProvider*);
 
+	
+
 protected:
 
 	// this is a pointer to the NatSpeak python code module
@@ -74,7 +76,6 @@ protected:
 
 	// this is a pointer to the CDragonCode module
 	CDragonCode* m_pDragCode;
-
 
 
 };

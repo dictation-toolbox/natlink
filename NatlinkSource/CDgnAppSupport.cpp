@@ -14,6 +14,8 @@ CDgnAppSupport::~CDgnAppSupport()
 
 CDgnAppSupport::CDgnAppSupport()
 {
+
+	OutputDebugString(L"CDgnAppSupport::CDgnAppSupport");
 	m_pNatLinkMain = NULL;
 	m_pDragCode = NULL;
 }
@@ -31,8 +33,8 @@ CDgnAppSupport::CDgnAppSupport()
 STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 {
 	BOOL bSuccess;
-	MessageBeep(MB_ICONQUESTION);
-	DebugBreak();
+//	MessageBeep(MB_ICONQUESTION);
+//	DebugBreak();
 	// load and initialize the Python system
 	Py_Initialize();
 

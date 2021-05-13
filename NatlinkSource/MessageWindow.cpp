@@ -154,12 +154,36 @@ DWORD CALLBACK threadMain( void * pArg )
 
 	HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 
+	MessageBox(0, L"threadMain", L"threadMain",0);
+
 	HWND hWnd = CreateDialogParam(
 		hInstance,						// instance handle
 		MAKEINTRESOURCE( IDD_STDOUT ), 	// dialog box template
 		NULL,							// parent window
 		dialogProc,						// dialog box window proc
 		(LPARAM)pThis );				// parameter to pass
+
+
+	if (!hWnd)
+	{
+		DWORD last = GetLastError();
+		LPVOID lpMsgBuf=0;
+		LPVOID lpDisplayBuf=0;
+		FormatMessage(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_FROM_SYSTEM |
+			FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			last,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPTSTR)&lpMsgBuf,
+			0, NULL);
+
+		static const wchar_t fmt[] = L"CreateDialogParm failed, last error is %x (dec %d) : %s";
+		wchar_t buf[500];  //just a big buff relative to fmt
+		swprintf(buf, 500, fmt, last,last,lpMsgBuf);
+		MessageBox(0, buf, L"MessageWindow.cpp", 0);
+	}
 	assert( hWnd );
 
 	pThis->setOutWnd( hWnd );
