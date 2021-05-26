@@ -27,7 +27,7 @@ a command shell with adminstrator privileges.
 
 1. Upgrade pip immediately:
 
-   - pip install --upgrade pip`
+   - `pip install --upgrade pip`
 
 2. Install natlink, Unimacro, and Vocola2 from [Test Python Packaging Index](https://test.pypi.org/). The following command will do that.  
    It will also pull any prequisites from the [Python Packaging Index](https://pypi.org/).
