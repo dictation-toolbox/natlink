@@ -1,14 +1,21 @@
 #! python3
+#pylint:disable=C0415, W0611, W0703, W0702
+"""starting the configure natlink gui program in elevated mode
+"""
 import os
+import os.path
 import sys
 import time
-import re
+# import re
 import pathlib
+thisDir = os.path.split(__file__)[0]
 
 #all this code is in main so that it is possible for the package 
 #to create a script in site-packages/scripts.
 def main():
-
+    """main module
+    """
+    #pylint:disable=E0611  ## the win32api imports ?!?
     #we have to add the current path and its parent to the search path.
     current_dir = pathlib.WindowsPath(__file__)
     parent_dir =current_dir.parent
@@ -20,7 +27,6 @@ def main():
     #
     print('Starting start_configurenatlink.py,')
     print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')
-    print()
 
     if sys.version.find("64 bit") >= 0:
         print('''=============================================\n
@@ -35,11 +41,11 @@ def main():
     try:
         import wx
         from win32api import ShellExecute, GetVersionEx
-    except (Exception, e):
+    except:
         print(f'''Unable to run the GUI configuration program of Natlink/Unimacro/Vocola/Dragonfly\n
     because a module was not found.  An error occurred during import.  This is probably due to a missing or incorrect prequisite.\n
     Please run 'pip install -r requirements.txt in {thisDir}\n
-    Exception Details:\n{e}''')
+    ''')
         time.sleep(30)
         sys.exit()
 
@@ -62,11 +68,11 @@ def main():
         openpar = "runas"
         #python and pythonw.exe may be in a scripts directory in virtualenvs.  
         #to find the path of the python executable, 
-        pathToPythonExecutables="\\".join(sys.executable.split('\\')[0:-1])
+        # pathToPythonExecutables="\\".join(sys.executable.split('\\')[0:-1])
 
-        pathToPythonW = f"{pathToPythonExecutables}\\pythonw.exe" 
+        pathToPythonW = f'{sys.prefix}\\pythonw.exe'
         if not os.path.isfile(pathToPythonW):
-            print("cannot find the Pythonw exectutable: %s"% pathToPythonW)
+            print(f'Cannot find the Pythonw exectutable: {pathToPythonW}')
             # time.sleep(30)
             sys.exit()
 
@@ -81,8 +87,6 @@ def main():
         #print('sys.version: ', sys.version
         #time.sleep(5)
         ShellExecute(0, openpar, pathToPythonW, configPath, "", 1)
-        import traceback
-        traceback.print_exc()
     except:
         import traceback
         traceback.print_exc()

@@ -1,3 +1,4 @@
+#pylint:disable=C0115, C0114, C0116, R0201
 # new redirect trick, starting june 2020 (by Jan Scheffczyk)
 # this module is imported by natlink.pyd.
 # So apart from starting natlink via natlink.pyd (as called from Dragon),
@@ -7,7 +8,7 @@ import sys
 
 import natlink
 
-class NewStdout(object):
+class NewStdout:
     softspace=1
     def write(self,text):
         # if text.find('\x00') >= 0:
@@ -19,7 +20,7 @@ class NewStdout(object):
     def flush(self):
         pass
 
-class NewStderr(object):
+class NewStderr:
     softspace=1
     def write(self,text):
         # if text.find('\x00') >= 0:

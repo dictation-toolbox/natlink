@@ -1,6 +1,5 @@
 #! python3
 """this script should start the module natlinkconfigfunctions.py in elevated mode.
-
     
 """
 import os

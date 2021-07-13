@@ -1,4 +1,4 @@
-#
+#pylint:disable=C0302, C0321
 # Python Macro Language for Dragon NaturallySpeaking
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc..
@@ -64,9 +64,8 @@
 #     were deleted
 #   - fixed a bug where we would load .pyc files without a matching .py
 #
-# TODO - known bug: if you change the name of a user while it is active we
+# known bug: if you change the name of a user while it is active we
 # throw an exception!
-
 ############################################################################
 #
 # natlinkmain
@@ -95,30 +94,32 @@
 #
 # A few print statements are commented out.  Remove the pound sign during
 # debugging to print information about when a module is loaded.
-#
+"""natlinkmain module, imported from natlink.pyd
+
+working version without natlink.pyd starting start_natlink.py
+this is the previous way for starting natlink
+"""
+
 import sys
 import traceback
-import types
 import time
 import copy
 import os
 import os.path
+import shutil
 import imp              # module reloading
 import re     
 from stat import ST_MTIME      # file statistics
-import glob             # new way to collect the grammar files
 from pprint import pprint
-import inspect
-
 import natlink
 import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
+import natlinkstartup
 
     # print("at start of natlinkmain, after redirect stderr and stdout")
 
 import natlinkstatus    # for extracting status info (QH)
 status = natlinkstatus.NatlinkStatus()
 
-import natlinkstartup
 
 debugTiming=0
 # bookkeeping for Vocola:
@@ -181,16 +182,18 @@ def getCurrentApplicationName(moduleInfo):
 
     if this is applicationframhost, try from title in above dict, ApplicationFrameHostTitles
     """
-            # return os.path.splitext(
-        #     os.path.split(self.currentModule[0]) [1]) [0].lower()
+    #pylint:disable=W0702
+    
+    # return os.path.splitext(
+    #     os.path.split(self.currentModule[0]) [1]) [0].lower()
 
     try:
         curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
     except:
         print(f'getCurrentApplicationName: invalid modulename, skipping moduleInfo: {moduleInfo}')
-        return
+        return None
     if not curModule:
-        return
+        return None
     
     progname = curModule.lower()
     if curModule == 'ApplicationFrameHost':
@@ -203,7 +206,7 @@ def getCurrentApplicationName(moduleInfo):
                 break
         else:
             print(f'ApplicationFrameHost with title: {title} not found in titles, enter in configuration')
-            return
+            return None
         # print(f'getCurrentApplicationName,  from ApplicationFrameHost, return progName: {progname}')
     # print(f'getCurrentApplicationName,  return progName: {progname}')
         
@@ -211,6 +214,7 @@ def getCurrentApplicationName(moduleInfo):
 
 def setCheckForGrammarChanges(value):
     """switching on or off (1 or 0), for continuous checking or only a mic toggle"""
+    #pylint:disable=W0603, W0601
     global checkForGrammarChanges
     checkForGrammarChanges = value
 
@@ -223,19 +227,17 @@ natlinkmainPrintsAtEnd = 1
 # - baseDirectory (MacroSystem, mainly for Vocola)
 # - unimacroDirectory
 # - userDirectory (Dragonfly and descendants and user defined grammar files)
-import pprint
 print('sys.path except for importdirs')
-pprint.pprint(sys.path)
+pprint(sys.path)
 
-
-for name in ['DNSuserDirectory', 'userName',
+for _name in ['DNSuserDirectory', 'userName',
              'windowsVersion', 'BaseModel', 'BaseTopic',
              'language', 'userLanguage', 'userTopic']:
-    if not name in globals():
-        globals()[name] = ''
+    if not _name in globals():
+        globals()[_name] = ''
     else:
         if debugCallback:
-            print('natlinkmain starting, global variable was already set: %s: %s'% (name, globals()[name]))
+            print('natlinkmain starting, global variable was already set: %s: %s'% (_name, globals()[_name]))
 # set in findAndLoadFiles:
 try: searchImportDirs
 except NameError: searchImportDirs = []
@@ -281,6 +283,7 @@ def unloadModule(modName):
 
     used in _control for specific unloading and reloading of modules
     """
+    #pylint:disable=W0603
     global lastModule, loadedFiles
     safelyCall(modName, 'unload')
     if modName in loadedFiles:
@@ -302,6 +305,7 @@ def loadModule(modName):
     mostly this goes with findAndLoadFiles, this is for a single module,
     called from _control (Unimacro)
     """
+    #pylint:disable=W0603
     global loadedFiles
     result = loadFile(modName)
     if result:
@@ -310,6 +314,9 @@ def loadModule(modName):
         print('loading module %s failed, put in "wrongFiles"'% modName)
 
 def loadFile(modName, origPath=None, origDate=None):
+    """load a module
+    """
+    #pylint:disable=W0603, R0911, R0912, W0702
     global wrongFiles  # keep track of non edited files with errors
     try: fndFile,fndName,fndDesc = imp.find_module(modName, searchImportDirs)
     except ImportError: return None     # module not found
@@ -352,12 +359,11 @@ def loadFile(modName, origPath=None, origDate=None):
         if not newDate:
             print('-- wrong grammar file removed: %s'% fndName)
             del wrongFiles[modName]
-            return
-        elif newDate <= sourceDate:
+            return None
+        if newDate <= sourceDate:
             print('-- skip unchanged wrong grammar file: %s'% wrongPath)
-            return
-        else:
-            print('-- retry changed grammar: %s'% modName)
+            return None
+        print('-- retry changed grammar: %s'% modName)
 
     try:
         imp.load_module(modName,fndFile,fndName,fndDesc)
@@ -371,11 +377,13 @@ def loadFile(modName, origPath=None, origDate=None):
         traceback.print_exc()
         sourceDate = getFileDate(fndName)
         wrongFiles[modName] = fndName, sourceDate
-        return
+        return None
 
 # Returns the date on a file or 0 if the file does not exist
 
 def getFileDate(modName):
+    """get date of file, zero if non existing
+    """
     try: return os.stat(modName)[ST_MTIME]
     except OSError: return 0        # file not found
 
@@ -383,17 +391,20 @@ def getFileDate(modName):
 # if the function does not exist and cleans up in the case of errors.
 
 def safelyCall(modName,funcName):
+    """check if modName and funcName are valid, then call
+    """
+    #pylint:disable=W0702
     try:
         func = getattr(sys.modules[modName], funcName)
     except AttributeError:
         # unload function does not exist
-        return None
+        return 
     try:
         func(*[])
     except:
         sys.stderr.write( 'Error calling '+modName+'.'+funcName+'\n' )
         traceback.print_exc()
-        return None
+        return 
 
 #
 # This routine loads two types of files.  If curModule is empty then we will
@@ -412,7 +423,10 @@ def safelyCall(modName,funcName):
 #
 
 def findAndLoadFiles(curModule=None):
-    global loadedFiles, vocolaIsLoaded, vocolaModule
+    """find grammar files and load, global or for curModule only
+    """
+    #pylint:disable=W0603, R0914, R0912, R0915
+    global loadedFiles, vocolaIsLoaded, vocolaModule, vocolaEnabled
     moduleHasDot = None
     if curModule:
         # special case, encountered with Vocola modules with . in name:
@@ -442,7 +456,7 @@ def findAndLoadFiles(curModule=None):
                 addToFilesToLoad( filesToLoad, modName, userDirectory, moduleHasDot )
 
     unimacroDirFiles = []
-    unimacroGrammarDirFiles = []
+    # unimacroGrammarDirFiles = []
 
     ## unimacro, the main file, _control:
     if unimacroIsEnabled:
@@ -537,7 +551,6 @@ def findAndLoadFiles(curModule=None):
             loadedFiles[x] = loadFile(x, origPath, origDate)
         else:
             loadedFiles[x] = loadFile(x)
-        pass
 
     # Unload any files which have been deleted
     filesToUnload = []
@@ -614,7 +627,8 @@ def unloadFile(name):
     
     some special treatment of vocola
     """
-    global loadedFiles
+    #pylint:disable=W0603
+    global loadedFiles, vocolaIsLoaded, vocolaModule
     if name in loadedFiles:
         safelyCall(name, 'unload')
         del loadedFiles[name]
@@ -622,13 +636,16 @@ def unloadFile(name):
             vocolaIsLoaded = None
             vocolaModule = None
     else:
-        print("??? unloadFile(%s) loadedFiles is False???"% x)
+        print(f'??? unloadFile({name}) loadedFiles is False???')
 #
 # This function is called when we change users.  It calls the unload member
 # function in each loaded module.
 #
 
 def unloadEverything():
+    """onload all loaded files
+    """
+    #pylint:disable=W0603
     global loadedFiles
     for x in list(loadedFiles.keys()):
         unloadFile(x)
@@ -649,6 +666,7 @@ def loadModSpecific(moduleInfo,onlyIfChanged=0):
     So in beginCallback you can call this one with onlyIfChanged=1 in order to
     minimise the reloadings.
     """
+    #pylint:disable=W0603
     global lastModule
 
     curModule = getCurrentApplicationName(moduleInfo)
@@ -666,6 +684,7 @@ def setSearchImportDirs():
     either [userDirectory, unimacroDirectory, ] or less (if no userDirectory or no unimacroDirectory)
 
     """
+    #pylint:disable=W0603, R0912
     global searchImportDirs
     searchImportDirs = []
     if vocolaIsEnabled:
@@ -692,13 +711,13 @@ def setSearchImportDirs():
         searchImportDirs.append(userDirectory)
     else:
         print("no UserDirectory specified")
-    added = False
+    _added = False
     for searchdir in reversed(searchImportDirs):
         if not searchdir in sys.path:
             if debugLoad:
                 print('from setSearchImportDirs add to path: %s'% searchdir)
             sys.path.insert(0, searchdir)
-            added = True
+            _added = True
     # if added:
     #     print('from setSearchImportDirs: ')
     #     pprint(sys.path)
@@ -718,6 +737,9 @@ def setSearchImportDirs():
 
 prevModInfo = None
 def beginCallback(moduleInfo, checkAll=None):
+    """callback at begin of utterance
+    """
+    #pylint:disable=W0603, R0912
     global loadedFiles, prevModInfo
     cbd = natlink.getCallbackDepth()
     if debugCallback:
@@ -770,6 +792,9 @@ def beginCallback(moduleInfo, checkAll=None):
 #
 
 def changeCallback(Type,args):
+    """callback at change of microphone or user profile
+    """
+    #pylint:disable=W0603, R0915, W0601, W0612
     global userName, DNSuserDirectory, language, userLanguage, userTopic, \
             BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
 
@@ -867,6 +892,7 @@ def changeCallbackLoadedModules(Type,args):
 
     in those cases the cancelMode can be called, so exclusiveMode is finished
     """
+    #pylint:disable=W0603
     global loadedFiles
     sysmodules = sys.modules
     for x in list(loadedFiles.keys()):
@@ -892,6 +918,7 @@ def start_natlink(doNatConnect=None):
     
     Better not use doNatConnect, but ensure this is done before calling, and with a finally: natlink.natDisconnect() call
     """
+    #pylint:disable=W0603, R0912, R0915
     global loadedFiles
     print('--')
     nGrammarsLoaded = len(loadedFiles)
@@ -992,10 +1019,6 @@ def start_natlink(doNatConnect=None):
         print('='*30)
         status.emptyWarning()
 
-## in order to test the pyd file of James with the old natlinkmain:
-def run():
-    start_natlink()
-
 ###################################################################
 #
 # Here is the initialization code.
@@ -1008,7 +1031,11 @@ def run():
 Testing = False
 
 def run():
+    """run natlink
+    """
+    #pylint:disable=C0415, W0611
     if not Testing:
+        import redirect_output
         start_natlink()
     else:
         print("natlinkmain is in testing mode...")
@@ -1040,4 +1067,3 @@ elif __name__  == "__main__":
             natlink.natDisconnect()
     else:
         print("run interactive, do nothing, enable Testing if you want to start Natlink from this module")
-    pass
