@@ -112,7 +112,7 @@ def getCoreDir(thisDir):
 thisDir = getBaseFolder(globals())
 coreDir = getCoreDir(thisDir)
 if thisDir == coreDir:
-    raise IOError('unittestNatlink cannot proceed, coreDir not found...')
+    raise OSError('unittestNatlink cannot proceed, coreDir not found...')
 # appending to path if necessary:
 if not os.path.normpath(coreDir) in sys.path:
     print('inserting %s to pythonpath...'% coreDir)

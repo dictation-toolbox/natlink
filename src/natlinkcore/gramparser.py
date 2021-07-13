@@ -157,7 +157,7 @@ class GrammarParserError(Exception):
         try:
             open(filepath, 'w').write('\n'.join(L))
             return '(more info in file: %s)'% filepath
-        except IOError as message:
+        except OSError as message:
             return '(could not write more info to error file %s (%s))'% (filepath, message)
                          
 class SyntaxError(GrammarParserError):

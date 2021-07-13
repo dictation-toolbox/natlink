@@ -73,7 +73,7 @@ Accessories = 'Bureau-accessoires'
 # thisDir = getBaseFolder(globals())
 # coreDir = getCoreDir(thisDir)
 # if thisDir == coreDir:
-#     raise IOError('natlinkconfigfunctions cannot proceed, coreDir not found...')
+#     raise OSError('natlinkconfigfunctions cannot proceed, coreDir not found...')
 # # appending to path if necessary:
 # if not os.path.normpath(coreDir) in sys.path:
 #     sys.path.append(coreDir)
@@ -101,7 +101,7 @@ class NatlinkstatusTestInifileSection(InifileSection):
         """
         natlink_ini_path=WindowsPath.home() / ".natlink"
         if not natlink_ini_path.is_dir():
-            raise IOError(f"Natlink folder  {natlink_ini_path} missing.")
+            raise OSError(f"Natlink folder  {natlink_ini_path} missing.")
         
         filename = 'natlinkstatus.ini'
         filepath = str(natlink_ini_path/filename)
@@ -680,7 +680,7 @@ class TestConfigureFunctions(unittest.TestCase):
         wordpad = os.path.join(natlinkcorefunctions.getExtendedEnv("PROGRAMFILES"), 'Windows NT',
                                Accessories, "wordpad.exe")
         if not os.path.isfile(wordpad):
-            raise IOError("Test error, cannot find wordpad on: %s"% wordpad)
+            raise OSError("Test error, cannot find wordpad on: %s"% wordpad)
         
         cli.do_w(wordpad)
         self.checkusertestinifile(key, wordpad, "%s, VocolaCommandFilesEditor should be changed now"% testName)

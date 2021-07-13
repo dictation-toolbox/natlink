@@ -72,11 +72,11 @@
 # making this experiment final:
 useMarkSendInput = 1
 if useMarkSendInput:
-    import ExtendedSendDragonKeys
-    import SendInput
+    from natlinkcore import ExtendedSendDragonKeys
+    from natlinkcore import SendInput
 
-    from ExtendedSendDragonKeys import senddragonkeys_to_events
-    from SendInput import send_input
+    from natlinkcore.ExtendedSendDragonKeys import senddragonkeys_to_events
+    from natlinkcore.SendInput import send_input
     # print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is "
     # print "used for all normal playString calls!  If you do not want this,"
     # print "change the variable useMarkSendInput to 0 in line 65 of"
@@ -89,9 +89,10 @@ import copy
 import types
 import struct
 import time
-import natlink
+
+from natlinkcore import natlink
 # import natlinkmain
-import gramparser
+from natlinkcore import gramparser
 from natlinkcore import natlinkstatus
 from natlinkcore import utilsqh
 import sys

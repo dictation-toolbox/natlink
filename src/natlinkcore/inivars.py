@@ -1,6 +1,7 @@
 """contains class IniVars, that does inifiles
 
 """
+
 import win32api
 import types
 import os
@@ -240,8 +241,6 @@ def getIniList(t, sep=(";", "\n")):
     l = len(t)
     state = 0
     hadQuote = ''
-    if type(t) == bytes:
-        t = utilsqh.convertToUnicode(t)
 ##    print '---------------------------length: %s'% l
     for j in range(l):
         c = t[j]
@@ -567,7 +566,7 @@ class IniVars(UserDict):
 >>> ini.getFilename()
 'simple.ini'
 >>> ini2 = IniVars('simple.ini', returnStrings=True)
-Warning inivars: returnStrings is Obsolete, inivars only returns str, not any bytes any more
+Warning inivars: returnStrings is Obsolete, inivars only returns Unicode
 >>> ini2.get('s', 'k')
 'v'
 >>> ini2.get('s')

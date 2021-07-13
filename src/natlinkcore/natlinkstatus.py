@@ -286,7 +286,7 @@ class NatlinkStatus:
         ## other "cached" variables, like UserDirectory, are done at first call.
         try:
             result = self.getDNSInstallDir()
-        except IOError:
+        except OSError:
             result = -1
         else:
             result = result or -1
@@ -305,7 +305,7 @@ class NatlinkStatus:
             ## DNSIniDir:
             try:
                 result = self.getDNSIniDir()
-            except IOError:
+            except OSError:
                 result = -1
             else:
                 result = result or -1
@@ -935,7 +935,7 @@ Please try to correct this by running the Natlink Config Program (with administr
                     print('In Config GUI, with button in the info panel, or')
                     print('Via natlinkconfigfunctions.py with option d')
                     print('-'*60)
-                    raise IOError('Invalid value of DNSInstallDir: %s'% P)
+                    raise OSError('Invalid value of DNSInstallDir: %s'% P)
                 else:
                     print('invalid DNSInstallDir: %s, but proceed...'% P)
                     return ''
@@ -945,7 +945,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         ## only [a-z0-9_] is accepted, case independent.
         pf = path('%PROGRAM_FILESX86%')
         if not pf.isdir():
-            raise IOError("no valid folder for program files: %s"% pf)
+            raise OSError("no valid folder for program files: %s"% pf)
         for dnsdir in DNSPaths:
             cand = pf/dnsdir
             # print('cand: %s'% cand)
@@ -963,7 +963,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             print('In Config GUI, with button in the info panel, or')
             print('Via natlinkconfigfunctions.py with option d')
             print('-'*60)
-            raise IOError('No valid DNSInstallDir found in the default settings of Natlink')
+            raise OSError('No valid DNSInstallDir found in the default settings of Natlink')
         else:
             print('-'*60)
             print('No valid DNSInstallDir is found in the default settings of Natlink.')
@@ -1094,7 +1094,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not os.path.isfile(nssystemini):
             self.cache_NatlinkIsEnabled = False
             return 0
-            # raise IOError("NatlinkIsEnabled, not a valid file: %s"% nssystemini)
+            # raise OSError("NatlinkIsEnabled, not a valid file: %s"% nssystemini)
         # filename: nssystem.ini
         # key1: .Natlink
         # section1: Global Clients
@@ -1103,7 +1103,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         nsappsini = self.getNSAPPSIni()
         if not os.path.isfile(nsappsini):
-            raise IOError("NatlinkIsEnabled, not a valid file: %s"% nsappsini)
+            raise OSError("NatlinkIsEnabled, not a valid file: %s"% nsappsini)
         
         # filename: nsapps.ini
         # section2: .Natlink

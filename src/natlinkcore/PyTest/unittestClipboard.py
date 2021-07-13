@@ -259,7 +259,7 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
             if hndle:
                 self.allWindows[hndle] = explDir
             else:
-                raise IOError('could not open test directory %s'%  explDir)
+                raise OSError('could not open test directory %s'%  explDir)
         for txtFile in txtFiles:
             hndle = self.openTestFile(os.path.join(thisDir, 'test_clipboardfiles', txtFile))
             if hndle:
@@ -305,7 +305,7 @@ class UnittestClipboard(TestCaseWithHelpers.TestCaseWithHelpers):
             if hndle:
                 self.allWindows[hndle] = explDir
             else:
-                raise IOError('could not open test directory %s'%  explDir)
+                raise OSError('could not open test directory %s'%  explDir)
         # for txtFile in txtFiles:
         #     hndle = self.openTestFile(os.path.join(thisDir, 'test_clipboardfiles', txtFile))
         #     if hndle:

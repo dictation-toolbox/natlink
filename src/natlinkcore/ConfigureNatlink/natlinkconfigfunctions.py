@@ -200,7 +200,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         """
         try:
             dnsDir = self.getDNSInstallDir()
-        except IOError:
+        except OSError:
             dnsDir = None
         if not dnsDir:
             fatal_error('no valid DNSInstallDir found, please repair in Config program or Configuration GUI')
@@ -288,7 +288,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         if os.path.isfile(currentPydFile):
             try:
                 os.remove(currentPydFile)
-            except (WindowsError, IOError):
+            except (WindowsError, OSError):
                 fatal_error('cannot remove natlink.pyd from the core directory: %s\nProbably Dragon is running'% coreDir)
                 return
         if os.path.isfile(currentPydFile):

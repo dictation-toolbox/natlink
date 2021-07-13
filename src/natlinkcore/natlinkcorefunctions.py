@@ -143,7 +143,7 @@ def getDropboxFolder(containsFolder=None):
     Searching is done in all 'C:\\Users' folders, and in the root of "C:"
     (See DirsToTry)
     
-    raises IOError if more folders are found (should not happen, I think)
+    raises OSError if more folders are found (should not happen, I think)
     if containsFolder is not passed, the dropbox main folder is returned
     if containsFolder is passed, this folder is returned if it is found in the dropbox folder
     
@@ -174,7 +174,7 @@ def getDropboxFolder(containsFolder=None):
     if not results:
         return
     if len(results) > 1:
-        raise IOError('getDropboxFolder, more dropbox folders found: %s')
+        raise OSError('getDropboxFolder, more dropbox folders found: %s')
     return results[0]                 
 
 def matchesStart(listOfDirs, checkDir, caseSensitive):

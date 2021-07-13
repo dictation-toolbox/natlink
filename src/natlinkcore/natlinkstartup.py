@@ -53,7 +53,7 @@ or switch off the option "Vocola Takes Unimacro Actions".
     if destTime < sourceTime:
         try:
             shutil.copyfile(sourcePath, destPath)
-        except IOError:
+        except OSError:
             print("""\n
 Warning: Could not copy example "Unimacro.vch" to:
     "%s".

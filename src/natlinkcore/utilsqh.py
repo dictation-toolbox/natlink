@@ -2196,7 +2196,7 @@ def copyIfOutOfDate(inf, out, reverse=None):
     elif dateIn > dateOut:
         try:
             shutil.copy2(inf, out)
-        except (IOError, OSError):
+        except OSError:
             exc_value = sys.exc_info()[1]
 
             raise QHError('Cannot copy file %s to %s\n\nMogelijk is de uitvoerfile geopend. Soms moet je de computer opnieuw starten om deze melding kwijt te raken.\n\nMessage: %s' % (inf, out, exc_value))
@@ -2216,7 +2216,7 @@ def copyIfOutOfDate(inf, out, reverse=None):
             if res:
                 try:
                     shutil.copy2(out, inf)
-                except (IOError, OSError):
+                except OSError:
                     raise QHError('Cannot copy (back) file %s to %s\n\nWaarschijnlijk is de invoerfile geopend. Soms moet je de computer opnieuw starten om deze melding kwijt te raken.\n' % (inf, out))
         ##                print('answer was y'')
             else:
@@ -2226,7 +2226,7 @@ def copyIfOutOfDate(inf, out, reverse=None):
             # no prompt...
             try:
                 shutil.copy2(out, inf)
-            except (IOError, OSError):
+            except OSError:
                 raise QHError('Cannot copy (back) file %s to %s\n\nWaarschijnlijk is de invoerfile geopend. Soms moet je de computer opnieuw starten om deze melding kwijt te raken.\n' % (inf, out))
 
 def checkIfOutOfDate(inputfiles, outputfile):
@@ -2257,13 +2257,13 @@ False
     if isStringLike(inputfiles):
         inDate = getFileDate(inputfiles)
         if inDate == 0:
-            raise IOError("checkIfOutOfDate: inputfile not present: %s"% inputfiles)
+            raise OSError("checkIfOutOfDate: inputfile not present: %s"% inputfiles)
         return inDate >= outDate
     else:
         for inp in inputfiles:
             inDate = getFileDate(inp)
             if inDate == 0:
-                raise IOError("checkIfOutOfDate: inputfile not present: %s"% inp)
+                raise OSError("checkIfOutOfDate: inputfile not present: %s"% inp)
             if inDate >= outDate:
                 return True
         else:
@@ -2764,7 +2764,7 @@ def getRoot(*rootList):
             d = d.replace('\\', '/')
             if os.path.isdir(d):
                 return path(d)
-    raise IOError('getRoot, no valid folder found in list: %s'% repr(rootList))
+    raise OSError('getRoot, no valid folder found in list: %s'% repr(rootList))
 
 def fixCrLf(tRaw):
     """replace crlf into lf
@@ -2854,7 +2854,7 @@ def makeReadable(t):
 #     import urllib
 #     try:
 #         return urllib.urlopen(sourceslash)
-#     except (IOError, OSError):
+#     except OSError:
 #         pass
 # 
 #     # if not ascii, it seems that sometimes a file is recognised as ISO-8859-2, while it is
@@ -2907,8 +2907,8 @@ def makeReadable(t):
 #     except OSError:
 #         # print('OSError'')
 #         pass
-#     except IOError:
-#         # print "IOError"
+#     except OSError:
+#         # print "OSError"
 #         pass
 #     # treat source as string, so now always return as a stri
 #     import StringIO
@@ -2944,11 +2944,11 @@ def checkKnownTest(basis, known="known", test="test", **kw):
         raise ValueError('for windiff, no spaces in path allowed: %s'% basis)
 
     if not basis.isdir():
-        raise IOError('not a folder: %s'% basis)
+        raise OSError('not a folder: %s'% basis)
     test = basis/test
 
     if not test.isdir():
-        raise IOError('nothing to test: %s'% test)
+        raise OSError('nothing to test: %s'% test)
 
     known = basis/known
     if not known.isdir():
@@ -3011,11 +3011,11 @@ def checkKnownTestFiles(known, test, **kw):
         raise Exception('for windiff, no spaces in path allowed: %s'% basis)
 
     if not basis.isdir():
-        raise IOError('not a folder: %s'% basis)
+        raise OSError('not a folder: %s'% basis)
     test = basis/test
 
     if not test.isdir():
-        raise IOError('nothing to test: %s'% test)
+        raise OSError('nothing to test: %s'% test)
 
     known = basis/known
     if not known.isdir():
