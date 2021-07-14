@@ -235,13 +235,16 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return None
 
         ## unlikely case:
-        coreDir = self.getNatlinkDirectory()
-        ## proceed with the local coreDir
-        coreDir3 = self.findInSitePackages(coreDir)
+        CoreDir = self.getNatlinkDirectory()
+        ## proceed with the local CoreDir
+        coreDir3 = self.findInSitePackages(CoreDir)
+        ## coreDir is global variable, set at top
         
-        
-        if str(coreDir).lower() != coreDir3.lower():
-            self.fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDir3}\nfrom natlinkstatus.getNatlinkDirectory: "{coreDir2}"')
+        if str(CoreDir).lower() != coreDir3.lower():
+            self.fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDir3}\nfrom natlinkstatus.getNatlinkDirectory: "{CoreDir}"')
+        if coreDir != CoreDir:
+            self.fatal_error(f'Ambiguous core directory,\nfrom this module (global): "{coreDir}\nfrom natlinkstatus.getNatlinkDirectory: "{CoreDir}"')
+            
         currentPydPath = os.path.join(coreDir3, 'natlink.pyd')
         NatlinkPydOrigin = self.userinisection.get('NatlinkPydOrigin')
  
@@ -276,7 +279,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.userinisection.set('NatlinkPydOrigin', wantedPydPath)
             self.registerNatlinkPyd()
             ## TODOQH: temporary, remove if Doug compile is complete
-            result = self.setRegistryPythonPathNatlink(coreDir, silent=silent)
+            ## use global coreDir
+            result = self.setRegistryPythonPathNatlink(silent=silent)
             self.enableNatlink()
             return 1
 
@@ -334,7 +338,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return None
         return 1
 
-    def setRegistryPythonPathNatlink(self, coreDir, flags=win32con.KEY_ALL_ACCESS, silent=None):
+    def setRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
         """set the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
         
         this function should be in elevated mode, which should be checked before calling this
@@ -342,11 +346,12 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         Temporary, should be not necessary when good compild of Doug is present.
         
         """
+        #pylint:disable=W0613
         ## TODOQH remove if Doug made his compile!!
         pythonpath_key = self.getRegistryPythonPathKey()
         if not pythonpath_key:
-            print(f'setRegistryPythonPathNatlink, cannot find pythonpath_key')
-            return
+            print('setRegistryPythonPathNatlink, cannot find pythonpath_key')
+            return None
 
         result = self.getRegistryPythonPathNatlink()
         if result:
@@ -354,17 +359,16 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             if coreDir == natlinkdir_from_registry:
                 print(f'setRegistryPythonPathNatlink, coreDir already OK: {coreDir}')
                 return 1
-            else:
-                result = winreg.DeleteKeyEx(pythonpath_key, "natlink", winreg.KEY_WOW64_32KEY | flags)
-                pass
+            result = winreg.DeleteKeyEx(pythonpath_key, "natlink", winreg.KEY_WOW64_32KEY | flags)
+
         # Natlink section not exists (possibly just deleted)
-        value, flags = ("Natlink", winreg.KEY_WOW64_32KEY | flags)
+        _value, flags = ("Natlink", winreg.KEY_WOW64_32KEY | flags)
         natlink_key = winreg.CreateKeyEx(pythonpath_key, "Natlink", 0, flags)
         if not natlink_key:
-            print(f'setRegistryPythonPathNatlink, cannot create "Natlink" key in registy')
-            return
+            print('setRegistryPythonPathNatlink, cannot create "Natlink" key in registy')
+            return None
 
-        value, flags = (coreDir, winreg.KEY_WOW64_32KEY | flags)
+        _value, flags = (coreDir, winreg.KEY_WOW64_32KEY | flags)
         result = winreg.SetValueEx(natlink_key, "", 0, winreg.REG_SZ, coreDir)            
         return True
 
