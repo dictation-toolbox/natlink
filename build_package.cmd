@@ -1,1 +1,1 @@
-flit build --format sdist  --no-setup-py
+flit build --format sdist  --no-setup-py --use-feature=in-tree-build
