@@ -235,12 +235,12 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             return None
 
         ## unlikely case:
-        coreDir2 = self.getNatlinkDirectory()
+        coreDir = self.getNatlinkDirectory()
         ## proceed with the local coreDir
         coreDir3 = self.findInSitePackages(coreDir)
         
         
-        if str(coreDir2).lower() != coreDir3.lower():
+        if str(coreDir).lower() != coreDir3.lower():
             self.fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDir3}\nfrom natlinkstatus.getNatlinkDirectory: "{coreDir2}"')
         currentPydPath = os.path.join(coreDir3, 'natlink.pyd')
         NatlinkPydOrigin = self.userinisection.get('NatlinkPydOrigin')
@@ -275,6 +275,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
                 return None
             self.userinisection.set('NatlinkPydOrigin', wantedPydPath)
             self.registerNatlinkPyd()
+            ## TODOQH: temporary, remove if Doug compile is complete
+            result = self.setRegistryPythonPathNatlink(coreDir, silent=silent)
             self.enableNatlink()
             return 1
 
@@ -331,6 +333,42 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.fatal_error("wantedPydFile %s is missing! Cannot copy to natlink.pyd/natlink.pyd"% wantedPydFile)
             return None
         return 1
+
+    def setRegistryPythonPathNatlink(self, coreDir, flags=win32con.KEY_ALL_ACCESS, silent=None):
+        """set the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
+        
+        this function should be in elevated mode, which should be checked before calling this
+        
+        Temporary, should be not necessary when good compild of Doug is present.
+        
+        """
+        ## TODOQH remove if Doug made his compile!!
+        pythonpath_key = self.getRegistryPythonPathKey()
+        if not pythonpath_key:
+            print(f'setRegistryPythonPathNatlink, cannot find pythonpath_key')
+            return
+
+        result = self.getRegistryPythonPathNatlink()
+        if result:
+            natlink_key, natlinkdir_from_registry = result
+            if coreDir == natlinkdir_from_registry:
+                print(f'setRegistryPythonPathNatlink, coreDir already OK: {coreDir}')
+                return 1
+            else:
+                result = winreg.DeleteKeyEx(pythonpath_key, "natlink", winreg.KEY_WOW64_32KEY | flags)
+                pass
+        # Natlink section not exists (possibly just deleted)
+        value, flags = ("Natlink", winreg.KEY_WOW64_32KEY | flags)
+        natlink_key = winreg.CreateKeyEx(pythonpath_key, "Natlink", 0, flags)
+        if not natlink_key:
+            print(f'setRegistryPythonPathNatlink, cannot create "Natlink" key in registy')
+            return
+
+        value, flags = (coreDir, winreg.KEY_WOW64_32KEY | flags)
+        result = winreg.SetValueEx(natlink_key, "", 0, winreg.REG_SZ, coreDir)            
+        return True
+
+
 
     def clearRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
         """clear the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core

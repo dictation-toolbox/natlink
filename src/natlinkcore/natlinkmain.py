@@ -227,8 +227,8 @@ natlinkmainPrintsAtEnd = 1
 # - baseDirectory (MacroSystem, mainly for Vocola)
 # - unimacroDirectory
 # - userDirectory (Dragonfly and descendants and user defined grammar files)
-print('sys.path except for importdirs')
-pprint(sys.path)
+# print('sys.path except for importdirs')
+# pprint(sys.path)
 
 for _name in ['DNSuserDirectory', 'userName',
              'windowsVersion', 'BaseModel', 'BaseTopic',
@@ -826,7 +826,7 @@ def changeCallback(Type,args):
         status.clearUserInfo()
         if debugLoad:
             pass
-        print('setUserInfo of natlinkstatus to: %s"'% repr(args))
+        # print('setUserInfo of natlinkstatus to: %s"'% repr(args))
         status.setUserInfo(args)
         language = status.getLanguage()
         print(f'language in natlinkmain: {language}')
@@ -993,7 +993,8 @@ def start_natlink(doNatConnect=None):
     natlink.setChangeCallback(changeCallback)
 
     # init things identical to when user changes:
-    changeCallback('user', natlink.getCurrentUser())
+    # skip this at startup, first mic on hits a changeCallback...
+    # changeCallback('user', natlink.getCurrentUser())
 
     print(('natlinkmain started from %s:\n  Natlink version: %s\n  DNS version: %s\n  Python version: %s\n  Windows Version: %s'% \
               (status.getNatlinkDirectory(), status.getInstallVersion(),

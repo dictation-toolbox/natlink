@@ -655,7 +655,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if there is no connection with natlink (no speech profile on, when debugging) language 'tst' is returned in getLanguage
         
         """
-        print(f'-----setUserInfo, args: {args}')
+        # print(f'-----setUserInfo, args: {args}')
         if len(args) < 2:
             print('UNEXPECTED ERROR: natlinkstatus, setUserInfo: length of args to small, should be at least 2: %s (%s)'% (len(args), repr(args)))
             return
