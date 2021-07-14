@@ -7,7 +7,8 @@
 #
 #----------------------------------------------------------------------------
 # previous version history to be found in git versions up to FinalCommitWithVocola, 21-8-2020
-### final version of python2.7 versions: "4.2"
+#pylint:disable=C0302 
+
 
 """The following functions are provided in this module:
 (to be used by either natlinkmain.py or natlinkconfigfunctions.py)
@@ -124,17 +125,16 @@ getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in def
 """
 import os
 import re
-import win32api
-import win32con
 import sys
 import pprint
 import stat
 import winreg
 import pathlib
+from pathlib import Path   # and dismiss pathqh!!
+import win32api
+# import time
 from natlinkcore import natlinkcorefunctions
-import time
-import types
-from natlinkcore import inivars
+# from natlinkcore import inivars
 from natlinkcore.pathqh import path
 from natlinkcore import __init__
 # for getting generalised env variables:
@@ -148,10 +148,10 @@ lowestSupportedPythonVersion = 37
 
 DNSPaths = []
 DNSVersions = list(range(19,14,-1))
-for v in DNSVersions:
-    varname = "NSExt%sPath"%v
-    if "NSExt%sPath"% v not in globals():
-        globals()[varname] = "Nuance\\NaturallySpeaking%s"% v
+for _v in DNSVersions:
+    varname = "NSExt%sPath"%_v
+    if "NSExt%sPath"% _v not in globals():
+        globals()[varname] = "Nuance\\NaturallySpeaking%s"% _v
     DNSPaths.append(globals()[varname])
 
 # Nearly obsolete table, for extracting older windows versions:
@@ -206,6 +206,7 @@ class NatlinkStatus:
     in the PyTest folder there are/come test functions in TestNatlinkStatus
 
     """
+    #pylint:disable=R0902, R0904
     ### from previous modules, needed or not...
     NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
@@ -274,7 +275,7 @@ class NatlinkStatus:
             self.__class__.NatlinkDirectory
         except AttributeError:
             thisDir=pathlib.WindowsPath(__file__).parent
-            thisDirResolved = thisDir.resolve()
+            # thisDirResolved = thisDir.resolve()
             coreDir=self.findInSitePackages(str(thisDir))
             self.__class__.NatlinkDirectory = self.getNatlinkDirectory(coreDir=coreDir)
             assert os.path.isdir(self.NatlinkDirectory)
@@ -298,21 +299,21 @@ class NatlinkStatus:
             self.__class__.DNSIniDir = result
             self.__class__.DNSVersion = result
             return
+        # else:
+        ## proceed with other __class__ variables:
+        self.__class__.DNSVersion = self.getDNSVersion()
+
+        ## DNSIniDir:
+        try:
+            result = self.getDNSIniDir()
+        except OSError:
+            result = -1
         else:
-            ## proceed with other __class__ variables:
-            self.__class__.DNSVersion = self.getDNSVersion()
+            result = result or -1
 
-            ## DNSIniDir:
-            try:
-                result = self.getDNSIniDir()
-            except OSError:
-                result = -1
-            else:
-                result = result or -1
-
-            self.__class__.DNSIniDir = result
-            if result == -1:
-                return  # serious problem.
+        self.__class__.DNSIniDir = result
+        if result == -1:
+            return  # serious problem.
 
         self.checkNatlinkPydFile()
 
@@ -341,8 +342,8 @@ class NatlinkStatus:
         PythonPath / Natlink setting, for natlink be able to be started.
 
         """
-        print(f'checkSysPath with PythonPath setting in registry not needed any more')
-        return 1
+        # print(f'checkSysPath with PythonPath setting in registry not needed any more')
+        # return 1
         NatlinkDirectory = self.getNatlinkDirectory()
 
         if NatlinkDirectory.lower().endswith('natlinkcore'):
@@ -351,15 +352,15 @@ class NatlinkStatus:
             if not result:
                 print('''Natlink setting not found in Natlink section of PythonPath setting\n
 Please try to correct this by running the Natlink Config Program (with administration rights)\n''')
-                return
-            natlinkkey, natlinkvalue,  = result
+                return None
+            _natlinkkey, natlinkvalue,  = result
             if not natlinkvalue:
-                print(f'''Natlink setting not found in Natlink section of PythonPath setting in registry\n
+                print('''Natlink setting not found in Natlink section of PythonPath setting in registry\n
 Please try to correct this by running the Natlink Config Program (with administration rights)''')
-                return
+                return None
 
-            coreDirectory = path(natlinkvalue)
-            if not coreDirectory.isdir():
+            coreDirectory = Path(natlinkvalue)
+            if not coreDirectory.is_dir():
                 print(f'''Natlink setting "{coreDirectory}" in the registry is not a valid directory\n
 Please try to correct this by running the Natlink Config Program (with administration rights)''')
 
@@ -387,19 +388,19 @@ Please try to correct this by running the Natlink Config Program (with administr
             return 1
 
         originalPyd = self.getNatlinkPydOrigin()   # original if previously registerd (from natlinkstatus.ini file)
-        originalPydDir, originalPydFile = os.path.split(originalPyd)
+        _originalPydDir, originalPydFile = os.path.split(originalPyd)
         wantedPyd = self.getWantedNatlinkPydFileName()       # wanted original based on python version and Dragon version
         wantedPydPath = os.path.join(pydDir, wantedPyd)
         currentPydPath = os.path.join(NatlinkDirectory, 'natlink.pyd')
 
         if not os.path.isfile(wantedPydPath):
             print(f'The wanted pyd "{wantedPydPath}" does not exist, Dragon/python combination not valid.')
-            return
+            return None
 
         # first check existence of natlink.pyd (probably never comes here)
         if not os.path.isfile(currentPydPath):
             print(f'pyd path "{currentPydPath}" does not exist...')
-            return
+            return None
 
         # check correct pyd version, with python version and Dragon version:
         if wantedPyd != originalPydFile:
@@ -407,9 +408,10 @@ Please try to correct this by running the Natlink Config Program (with administr
                 self.warning('originalPyd setting is missing in natlinkstatus.ini')
             else:
                 self.fatal_error('incorrect originalPydFile (from natlinkstatus.ini): %s, wanted: %s'% (originalPydFile, wantedPyd))
-            return
+            return None
 
-        result = self.checkPydChanges(currentPydPath=None, wantedPydPath=None)
+        self.checkPydChanges(currentPydPath=None, wantedPydPath=None)
+        return None
 
     def checkPydChanges(self, currentPydPath=None, wantedPydPath=None):
         """check if currentPath should be updated to wantedPath
@@ -420,6 +422,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         When the current natlink.pyd seems to be outdated (and changed), 
         a warning at startup is given, advicing the user to Re-register natlink.pyd with the config program
         """
+        #pylint:disable=R0912, R0914        
         # NatlinkDirectory = self.getNatlinkDirectory()
         if  currentPydPath is None:
             currentPydPath = os.path.join(self.NatlinkDirectory, 'natlink.pyd')
@@ -438,16 +441,11 @@ Please try to correct this by running the Natlink Config Program (with administr
             originalPydDir, originalPydFile = os.path.split(NatlinkPydOrigin)
             originalNatlinkcoreDir = os.path.normpath(os.path.join(originalPydDir, '..'))
         else:
-            self.warning(f'No original pyd file found in settings "NatlinkPydOrigin"')
+            self.warning('No original pyd file found in settings "NatlinkPydOrigin"')
             return
         
-        currentDir, currentFile = os.path.split(currentPydPath)
-        if currentDir.endswith('ConfigureNatlink'):
-            currentConfigDir = currentDir
-            runFromConfig = True
-        else:
-            currentConfigDir = os.path.join(currentDir, 'ConfigureNatlink')
-            runFromConfig = False
+        currentDir, _currentFile = os.path.split(currentPydPath)
+        runFromConfig = (currentDir.endswith('ConfigureNatlink'))
         
         if wantedPyd != wantedFile:
             mess = f'Dragon or python version changed. current: {wantedPyd}, needed for this version of python or Dragon: {wantedFile}'
@@ -468,7 +466,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             mess.extend([f'This is another location than is kept in natlinkstatus.ini: {originalNatlinkcoreDir}.', '',
                     f'When you want this new location, "{self.NatlinkDirectory}",', 'you need to Re-register Natlink in the Configure Program (GUI) or CLI.',''])
             if runFromConfig:                
-                mess.extend([f'When you want to keep the "original location", quit the config program,',
+                mess.extend(['When you want to keep the "original location", quit the config program,',
                              f'and be sure your Dragon starts Natlink from from {originalNatlinkcoreDir}.'])
             else:
                 ##natlinkstatus:
@@ -489,6 +487,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         Otherwise, (None, False) all is well
         
         """
+        #pylint:disable=R0201
         timeWanted = getFileDate(wanted)
         timeTarget = getFileDate(target)
          
@@ -498,8 +497,13 @@ Please try to correct this by running the Natlink Config Program (with administr
             if not same:
                 mess = f'Current pyd file {target} is out of date, compared with {wanted}, and not identical.'
                 return mess
-    
-    def getHiveKeyReadable(self, hive): 
+        return None
+        
+        
+    def getHiveKeyReadable(self, hive):
+        """return the text of the hive key
+        """
+        #pylint:disable=R0201, C0321
         if hive == winreg.HKEY_LOCAL_MACHINE: return 'HKLM'
         if hive == winreg.HKEY_CURRENT_USER: return 'HKCU'
         return 'HK??'
@@ -516,6 +520,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         LOCAL_MACHINE (python installed for all users)
         
         """
+        #pylint:disable=W0613, R0201
         dottedVersion = sys.winver
         
         pythonPathSectionName = r"SOFTWARE\Python\PythonCore\%s\PythonPath"% dottedVersion
@@ -527,8 +532,8 @@ Please try to correct this by running the Natlink Config Program (with administr
                     return pythonpath_key
             except FileNotFoundError:
                 continue
-            print(f'no valid PythonPath/Natlink key found in registry')
-            return
+        print('no valid PythonPath/Natlink key found in registry')
+        return None
 
     def getRegistryPythonPathNatlink(self, flags=winreg.KEY_READ, silent=True):
         """returns the path-to-core of Natlink and the PythonPath key in the registry
@@ -545,19 +550,20 @@ Please try to correct this by running the Natlink Config Program (with administr
         pass winreg.KEY_ALL_ACCESS as flags.
 
         """
+        #pylint:disable=R1710, W0613
         pythonpath_key = self.getRegistryPythonPathKey()
         if not pythonpath_key:
             print('no valid pythonpath key in registry found')
-            return
+            return None
         for i in range(10):
             try:
                 keyName = winreg.EnumKey(pythonpath_key, i)
                 if keyName.lower() == 'natlink':
                     natlink_key = winreg.OpenKey(pythonpath_key, keyName)
-                    for i in range(10):
-                        natlink_value = winreg.EnumValue(natlink_key, i)
+                    for j in range(10):
+                        natlink_value = winreg.EnumValue(natlink_key, j)
                         # print(f'Value from registry: {natlink_value}')
-                        if type(natlink_value) == tuple and len(natlink_value) == 3:
+                        if isinstance(natlink_value, tuple) and len(natlink_value) == 3:
                             natlinkdir_from_registry = natlink_value[1]
                         else:
                             natlinkdir_from_registry = "Natlink value wrong type in registry"
@@ -581,18 +587,22 @@ Please try to correct this by running the Natlink Config Program (with administr
                     #         raise FileNotFoundError
                             
             except OSError:
-                return 
+                pass
+            return None
         
     def InsertToSysPath(self, newdir):
         """leave "." in the first place if it is there"""
-        if not newdir: return
+        #pylint:disable=R0201
+        if not newdir:
+            return
         newdir = os.path.normpath(newdir)
         newdir = win32api.GetLongPathName(newdir)
         # keep the convention of capitalizing the drive letter:
         if len(newdir) > 1 and newdir[1] == ":":
             newdir = newdir[0].upper() + newdir[1:]
 
-        if newdir in sys.path: return
+        if newdir in sys.path:
+            return
         if sys.path[0] in ("", "."):
             sys.path.insert(1, newdir)
         else:
@@ -602,6 +612,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def copyRegSettingsToInifile(self, reg, ini):
         """for firsttime use, copy values from
         """
+        #pylint:disable=R0201
         for k,v in list(reg.items()):
             ini.set(k, v)
         #except:
@@ -673,16 +684,21 @@ Please try to correct this by running the Natlink Config Program (with administr
             print('=== please report to q.hoogenboom@antenna.nl ===')
 
     def clearUserInfo(self):
-        
+        """clear UserInfo
+        """
         self.__class__.UserArgsDict.clear()
 
     def getUserName(self):
+        """get UserName from UserArgsDict
+        """
         try:
             return self.UserArgsDict['userName']
         except KeyError:
             return ''
 
     def getDNSuserDirectory(self):
+        """get DNSuserDirectory from UserArgsDict
+        """
         try:
             return self.UserArgsDict['DNSuserDirectory']
         except KeyError:
@@ -692,9 +708,6 @@ Please try to correct this by running the Natlink Config Program (with administr
         """return the path of the original dll/pyd file
 
         in previous versions, this was pythonversion;dragonversion (eg 38;15).
-        
-        
-        
         """
         setting = self.userinisection.get("NatlinkPydOrigin")
         return setting 
@@ -755,6 +768,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         return 1 of the predefined values above, or just return what the system
         call returns
         """
+        #pylint:disable=R0201, C0415
         tup = win32api.GetVersionEx()
         version = "%s/%s/%s"% (tup[3], tup[0], tup[1])
         try:
@@ -764,9 +778,9 @@ Please try to correct this by running the Natlink Config Program (with administr
             wVersion = platform.platform()
             if '-' in wVersion:
                 return wVersion.split('-')[1]
-            else:
-                print('Warning, probably cannot find correct Windows Version... (%s)'% wVersion)
-                return wVersion
+            # else:
+            print(f'Warning, probably cannot find correct Windows Version... ({wVersion}')
+            return wVersion
         else:
             return windowsVersion
 
@@ -778,6 +792,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if force == True, refresh value (for use in config program)
 
         """
+        #pylint:disable=W0603, W0613
         global reportDNSIniDirErrors
         # first try if set (by configure dialog/natlinkinstallfunctions.py) if regkey is set:
         if self.DNSIniDir and force is None:
@@ -789,10 +804,10 @@ Please try to correct this by running the Natlink Config Program (with administr
             os.path.normpath(P)
             if os.path.isdir(P):
                 return P
-        if calledFrom is None:
-            knownDNSVersion = str(self.getDNSVersion())
-        else:
-            knownDNSVersion = None
+        # if calledFrom is None:
+        #     knownDNSVersion = str(self.getDNSVersion())
+        # else:
+        #     knownDNSVersion = None
     
         # the nssystem.ini and nsapps.ini are in the ProgramData directory
         # version 15: C:\ProgramData\Nuance\NaturallySpeaking15\Users
@@ -836,7 +851,8 @@ Please try to correct this by running the Natlink Config Program (with administr
             report.append('Note: The path must end with "NaturallySpeaking%s"'% self.getDNSVersion())
             print('Errors in getDNSIniDir:')
             print('\n'.join(report))
-
+        return None
+    
     def getDNSFullVersion(self):
         """find the Full version string of DNS
 
@@ -849,7 +865,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if not iniDir:
             return 0
         nssystemini = self.getNSSYSTEMIni()
-        nsappsini = self.getNSAPPSIni()
+        # nsappsini = self.getNSAPPSIni()
         if nssystemini and os.path.isfile(nssystemini):
             version =win32api.GetProfileVal( "Product Attributes", "Version" , "",
                                           nssystemini)
@@ -922,23 +938,21 @@ Please try to correct this by running the Natlink Config Program (with administr
         if P:
             if self.checkDNSProgramDir(P):
                 return P
-            else:
-                if not self.skipSpecialWarning:
-                    print('-'*60)
-                    print('DNSInstallDir is set in natlinkstatus.ini to "%s", ...'% P)
-                    print('... this does not match a valid Dragon Program Directory.')
-                    print('This directory should hold a Program subdirectory or')
-                    print('or the subdirectories "App\\Program"')
-                    print('in which the Dragon program is located.')
-                    print()
-                    print('Please set or clear DNSInstallDir:')
-                    print('In Config GUI, with button in the info panel, or')
-                    print('Via natlinkconfigfunctions.py with option d')
-                    print('-'*60)
-                    raise OSError('Invalid value of DNSInstallDir: %s'% P)
-                else:
-                    print('invalid DNSInstallDir: %s, but proceed...'% P)
-                    return ''
+            if not self.skipSpecialWarning:
+                print('-'*60)
+                print('DNSInstallDir is set in natlinkstatus.ini to "%s", ...'% P)
+                print('... this does not match a valid Dragon Program Directory.')
+                print('This directory should hold a Program subdirectory or')
+                print('or the subdirectories "App\\Program"')
+                print('in which the Dragon program is located.')
+                print()
+                print('Please set or clear DNSInstallDir:')
+                print('In Config GUI, with button in the info panel, or')
+                print('Via natlinkconfigfunctions.py with option d')
+                print('-'*60)
+                raise OSError('Invalid value of DNSInstallDir: %s'% P)
+            print('invalid DNSInstallDir: %s, but proceed...'% P)
+            return ''
                 
         ## get the program files (x86) directory via extended Environment variables,
         ## now in the path class. Note %PROGRAMFILES(X86)% does not work, because
@@ -964,25 +978,27 @@ Please try to correct this by running the Natlink Config Program (with administr
             print('Via natlinkconfigfunctions.py with option d')
             print('-'*60)
             raise OSError('No valid DNSInstallDir found in the default settings of Natlink')
-        else:
-            print('-'*60)
-            print('No valid DNSInstallDir is found in the default settings of Natlink.')
-            print()
-            print('Please specify a valid DNSInstallDir:')
-            print('In Config GUI, with button in the info panel, or')
-            print('Via natlinkconfigfunctions.py with option d')
-
+        print('-'*60)
+        print('No valid DNSInstallDir is found in the default settings of Natlink.')
+        print()
+        print('Please specify a valid DNSInstallDir:')
+        print('In Config GUI, with button in the info panel, or')
+        print('Via natlinkconfigfunctions.py with option d')
+        return ''
+    
     def checkDNSProgramDir(self, checkDir):
         """check if directory is a Dragon directory
 
         it must be a directory, and have as subdirectories App/Program (reported by Udo) or Program.
         In this subdirectory there should be natspeak.exe
         """
+        #pylint:disable=R0201
+
         if not checkDir:
-            return
+            return None
         if not os.path.isdir(checkDir):
             print('checkDNSProgramDir, %s is not a directory'% checkDir)
-            return
+            return None
         programDirs = os.path.join(checkDir, 'Program'), os.path.join(checkDir, 'App', 'Program')
         for programDir in programDirs:
             programDir = os.path.normpath(programDir)
@@ -990,7 +1006,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             if os.path.isdir(programDir) and os.path.isfile(programFile):
                 return True
         print('checkDNSProgramDir, %s is not a valid Dragon Program Directory'%  checkDir)
-        return
+        return None
     #def getPythonFullVersion(self):
     #    """get the version string from sys
     #    """
@@ -1004,6 +1020,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         
         length 2, without ".", so "38" etc.
         """
+        #pylint:disable=R0201
         version = sys.version[:3]
         version = version.replace(".", "")
         if len(version) != 2:
@@ -1018,12 +1035,18 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getPythonPath(self):
         """return the python path, for checking in config GUI
         """
+        #pylint:disable=R0201
         return sys.path
     def printPythonPath(self):
+        """print the pythonPath
+        """
+        #pylint:disable=R0201
         pprint.pprint(self.getPythonPath())
 
 
     def getNSSYSTEMIni(self):
+        """get NSSYSTEMIni
+        """
         inidir = self.getDNSIniDir()
         if inidir:
             nssystemini = os.path.join(inidir, self.NSSystemIni)
@@ -1031,8 +1054,10 @@ Please try to correct this by running the Natlink Config Program (with administr
                 return os.path.normpath(nssystemini)
         print("Cannot find proper NSSystemIni file")
         print('Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)')
-
+        return None
     def getNSAPPSIni(self):
+        """get NSAPPSInin
+        """
         inidir = self.getDNSIniDir()
         if inidir:
             nsappsini = os.path.join(inidir, self.NSAppsIni)
@@ -1040,7 +1065,7 @@ Please try to correct this by running the Natlink Config Program (with administr
                 return os.path.normpath(nsappsini)
         print("Cannot find proper NSAppsIni file")
         print('Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)')
-
+        return None
 
     def NatlinkIsEnabled(self, silent=None, force=None):
         """check if the INI file settings are correct
@@ -1066,13 +1091,15 @@ Please try to correct this by running the Natlink Config Program (with administr
     Also check if the registry is set properly...
 
         """
+        #pylint:disable=R0911, R0912, E0203, W0201
+
         if not force:
             try:
                 isEnabled = self.cache_NatlinkIsEnabled
             except AttributeError:
                 pass
             else:
-                return self.cache_NatlinkIsEnabled
+                return isEnabled
 
         # result = self.getRegistryPythonPathNatlink()
         # if not result:
@@ -1082,13 +1109,13 @@ Please try to correct this by running the Natlink Config Program (with administr
         # 
         if self.DNSInstallDir == -1:
             self.cache_NatlinkIsEnabled = False
-            return
+            return None
         if self.DNSIniDir == -1:
             self.cache_NatlinkIsEnabled = False
-            return
+            return None
         if not self.NatlinkDirectory:
             self.cache_NatlinkIsEnabled = False
-            return
+            return None
             
         nssystemini = self.getNSSYSTEMIni() or ''
         if not os.path.isfile(nssystemini):
@@ -1114,33 +1141,27 @@ Please try to correct this by running the Natlink Config Program (with administr
                 # enabled:
                 self.cache_NatlinkIsEnabled = True
                 return True
-            else:
-                #
-                mess = ['Error while checking if Natlink is enabled, unexpected result: ',
-                        'nssystem.ini points to NatlinkIsEnabled:',
-                        '    section: %s, key: %s, value: %s'% (self.section1, self.key1, actual1),
-                        'but nsapps.ini points to Natlink is not enabled:',
-                      '    section: %s, key: %s, value: %s'% (self.section2, self.key2, actual2),
-                      '    should have value: %s'% self.value2]
-                if not silent:
-                    self.warning(mess)
-                
-                self.cache_NatlinkIsEnabled = False
-                return None # error!
-        elif actual1:
+            mess = ['Error while checking if Natlink is enabled, unexpected result: ',
+                    'nssystem.ini points to NatlinkIsEnabled:',
+                    '    section: %s, key: %s, value: %s'% (self.section1, self.key1, actual1),
+                    'but nsapps.ini points to Natlink is not enabled:',
+                  '    section: %s, key: %s, value: %s'% (self.section2, self.key2, actual2),
+                  '    should have value: %s'% self.value2]
+            if not silent:
+                self.warning(mess)
+            
+            self.cache_NatlinkIsEnabled = False
+            return None # error!
+        if actual1:
             if not silent:
                 self.warning("unexpected value of nssystem.ini value: %s"% actual1)
             # unexpected value, but not enabled:
             self.cache_NatlinkIsEnabled = False
             return 0
-        else:
-            # GUID in nsapps may be defined, natspeak first checks nssystem.ini
-            # so Natlink NOT enabled
-            self.cache_NatlinkIsEnabled = False
-            return 0
-        self.warning("unexpected, natlinkstatus should not come here!")
+        # GUID in nsapps may be defined, natspeak first checks nssystem.ini
+        # so Natlink NOT enabled
         self.cache_NatlinkIsEnabled = False
-        return None
+        return 0
 
         
 
@@ -1164,13 +1185,14 @@ Please try to correct this by running the Natlink Config Program (with administr
         
         """
         if not self.NatlinkIsEnabled():
-            return
+            return None
         vocUserDir = self.getVocolaUserDirectory()
         if vocUserDir and path(vocUserDir).isdir():
             vocDir = self.getVocolaDirectory()
             vocGrammarsDir = self.getVocolaGrammarsDirectory()
             if vocDir and path(vocDir).isdir() and vocGrammarsDir and path(vocGrammarsDir).isdir():
                 return True
+        return None
 
     def UnimacroIsEnabled(self):
         """UnimacroIsEnabled: see if UserDirectory is there and
@@ -1178,47 +1200,56 @@ Please try to correct this by running the Natlink Config Program (with administr
         _control.py is in this directory
         """
         if not self.NatlinkIsEnabled():
-            return
+            return None
         uuDir = self.getUnimacroUserDirectory()
         if not uuDir:
-            return
+            return None
         uDir = self.getUnimacroDirectory()
         if not uDir:
             # print('no valid UnimacroDirectory, Unimacro is disabled')
-            return
+            return None
         if uDir and path(uDir).isdir():
             files = os.listdir(uDir)
             if not '_control.py' in files:
-                return   # _control.py should be in Unimacro directory
+                return None  # _control.py should be in Unimacro directory
         ugDir = self.getUnimacroGrammarsDirectory()
         if ugDir and path(ugDir).isdir():
             return True  # Unimacro is enabled...            
-                
+        return None                
 
     def UserIsEnabled(self):
+        """return 1 if Natlink is enabled and there is a UserDirectory
+        """
         if not self.NatlinkIsEnabled():
-            return
+            return None
         userDir = self.getUserDirectory()
         if userDir:
             return 1
+        return None
 
     def getUnimacroUserDirectory(self):
-        if self.UnimacroUserDirectory != None: return self.UnimacroUserDirectory
+        """return the UnimacroUserDirectory is Unimacro is enabled
+        """ 
+        if self.UnimacroUserDirectory is not None:
+            return self.UnimacroUserDirectory
         key = 'UnimacroUserDirectory'
         value = self.userinisection.get(key)
         if value:
-            Path = isValidPath(value, wantDirectory=1)
-            if Path:
-                try: del self.UnimacroUserDirectory
-                except AttributeError: pass
+            PATH = isValidPath(value, wantDirectory=1)
+            if PATH:
+                try:
+                    del self.UnimacroUserDirectory
+                except AttributeError:
+                    pass
 
-                self.UnimacroUserDirectory = Path
-                return Path
-            else:
-                print('invalid path for %s: "%s"'% (key, value))
+                self.UnimacroUserDirectory = PATH
+                return PATH
+            print(f'invalid path for "{key}": "{value}"')
 
-        try: del self.UnimacroUserDirectory
-        except AttributeError: pass
+        try:
+            del self.UnimacroUserDirectory
+        except AttributeError:
+            pass
         self.UnimacroUserDirectory = ''
         return ''
 
@@ -1236,12 +1267,13 @@ Please try to correct this by running the Natlink Config Program (with administr
         when installed as  a package, that will not be the case.
 
         """
+        #pylint:disable=C0415
         if not self.UnimacroDirectory is None:
             return self.UnimacroDirectory
         try:
             import unimacro
         except ImportError:
-            print(f'Cannot find UnimacroDirectory, return ""')
+            print('Cannot find UnimacroDirectory, return ""')
             self.UnimacroDirectory = ""
             return ""
 
@@ -1253,31 +1285,6 @@ Please try to correct this by running the Natlink Config Program (with administr
             self.UnimacroDirectory = ""
             return ""
         return self.UnimacroDirectory
-        # self.UnimacroDirectory = unimacro.__dir__
-        # 
-        # except Exception:
-        #     pass
-        # spDir = path(sys.prefix)/"lib"/"site-packages"
-        # if spDir.isdir():
-        #     uDir = spDir/"unimacro"
-        # else:
-        #     print(f'Cannot find the python site-packages directory {spDir}')
-        #     self.UnimacroDirectory = ''
-        #     return ''
-        # 
-        # if uDir.isdir():
-        #     uFile = "_control.py"
-        #     controlGrammar = uDir/uFile
-        #     if controlGrammar.isfile():
-        #         self.UnimacroDirectory = uDir.normpath()
-        #         self.addToPath(self.UnimacroDirectory)
-        #         return self.UnimacroDirectory
-        #     else:
-        #         print(f'UnimacroDirectory found: "{uDir}", but no valid file: "{uFile}", return ""')
-        # else:
-        #     print(f'UnimacroDirectory not found in Git area or in "lib/site-packages/unimacro", return ""')
-        # self.UnimacroDirectory = ""
-        # return ""
         
     def getUnimacroGrammarsDirectory(self):
         """return the path to the directory where the ActiveGrammars of Unimacro are located.
@@ -1286,7 +1293,9 @@ Please try to correct this by running the Natlink Config Program (with administr
         (August 2020)
 
         """
-        if not self.UnimacroGrammarsDirectory is None: return self.UnimacroGrammarsDirectory
+        #pylint:disable=C0321
+        if not self.UnimacroGrammarsDirectory is None:
+            return self.UnimacroGrammarsDirectory
         
         uuDir = self.getUnimacroUserDirectory()
         if uuDir and path(uuDir).isdir():
@@ -1333,14 +1342,13 @@ Please try to correct this by running the Natlink Config Program (with administr
             cdPath = pathlib.WindowsPath(coreDir)
             if cdPath.is_symlink():
                 cdResolved = cdPath.resolve()
-                print(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}')
-                return os.path.normpath(coreDir)
-            else:
-                return os.path.normpath(str(cdPath))
-        elif coreDir.find('\\src\\') > 0:
+                raise OSError(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}\ndo not use --symlink with flit install')
+            return os.path.normpath(str(cdPath))
+        if coreDir.find('\\src\\') > 0:
             # opened from github clone, find site-packages directory
             spCoreDir = self.findInSitePackages(coreDir)
             return spCoreDir
+        return None
     
     def findInSitePackages(self, cloneDir):
         """get corresponding directory in site-packages 
@@ -1352,6 +1360,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         If not found, return the input directory (cloneDir)
         
         """
+        #pylint:disable=R0201
         cloneDir = str(cloneDir)
         if cloneDir.find('\\src\\') < 0:
             return cloneDir
@@ -1365,8 +1374,7 @@ Please try to correct this by running the Natlink Config Program (with administr
                 if str(spResolve) == cloneDir:
                     # print(f'directory is symlink: {spPath} and resolves to {cloneDir} all right')
                     return str(spPath)
-                else:
-                    print(f'directory is symlink: {spPath} but does NOT resolve to {cloneDir}, but to {spResolve}')
+                print(f'directory is symlink: {spPath} but does NOT resolve to {cloneDir}, but to {spResolve}')
             else:
                 print(f'directory is not a symlink: {spPath}')
         else:
@@ -1383,7 +1391,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if force is True, ignore previous value...
         """
         if not self.NatlinkIsEnabled:
-            return
+            return ''
         if force is True:
             pass
         elif not self.UserDirectory is None:
@@ -1391,38 +1399,41 @@ Please try to correct this by running the Natlink Config Program (with administr
         key = 'UserDirectory'
         value = self.userinisection.get(key)
         if value:
-            Path = isValidPath(value, wantDirectory=1)
-            if Path:
-                self.UserDirectory = Path
-                return Path
-            else:
-                print('invalid path for UserDirectory: "%s"'% value)
+            PATH = isValidPath(value, wantDirectory=1)
+            if PATH:
+                self.UserDirectory = PATH
+                return PATH
+            print('invalid path for UserDirectory: "%s"'% value)
         self.UserDirectory = ''
         return ''
 
     def getVocolaUserDirectory(self):
-        if not self.VocolaUserDirectory is None: return self.VocolaUserDirectory
+        """return the VocolaUserDirectory
+        """
+        if not self.VocolaUserDirectory is None:
+            return self.VocolaUserDirectory
         key = 'VocolaUserDirectory'
 
         value = self.userinisection.get(key)
         if value:
-            Path = isValidPath(value, wantDirectory=1)
-            if Path:
-                self.VocolaUserDirectory = Path
-                return Path
-            else:
-                print('invalid path for VocolaUserDirectory: "%s"'% value)
+            PATH = isValidPath(value, wantDirectory=1)
+            if PATH:
+                self.VocolaUserDirectory = PATH
+                return PATH
+            print('invalid path for VocolaUserDirectory: "%s"'% value)
         self.VocolaUserDirectory = ''
         return ''
 
     def getVocolaDirectory(self):
-
+        """return the VocolaDirectory (in the site-packages)
+        """
+        #pylint:disable=C0415
         if not self.VocolaDirectory is None:
             return self.VocolaDirectory
         try:
             import vocola2
         except ImportError:
-            print(f'Cannot find VocolaDirectory, return ""')
+            print('Cannot find VocolaDirectory, return ""')
             self.VocolaDirectory = ""
             return ""
 
@@ -1446,7 +1457,8 @@ Please try to correct this by running the Natlink Config Program (with administr
         If Vocola is not enabled, or anything goes wrong, return ""
         
         """
-        if not self.VocolaGrammarsDirectory is None: return self.VocolaGrammarsDirectory
+        if not self.VocolaGrammarsDirectory is None:
+            return self.VocolaGrammarsDirectory
         vUserDir = self.getVocolaUserDirectory()
         if not vUserDir:
             self.VocolaGrammarsDirectory = ''
@@ -1462,56 +1474,68 @@ Please try to correct this by running the Natlink Config Program (with administr
         return ""
 
     def getAhkUserDir(self):
-        if not self.AhkUserDir is None: return self.AhkUserDir
+        """return the User directory of AutoHotkey
+        """
+        if not self.AhkUserDir is None:
+            return self.AhkUserDir
         return self.getAhkUserDirFromIni()
 
     def getAhkUserDirFromIni(self):
+        """get the AutoHotkey user directory if not yet cached
+        """
         key = 'AhkUserDir'
 
         value = self.userinisection.get(key)
         if value:
-            Path = isValidPath(value, wantDirectory=1)
-            if Path:
-                self.AhkUserDir = Path
-                return Path
-            else:
-                print('invalid path for AhkUserDir: "%s"'% value)
+            PATH = isValidPath(value, wantDirectory=1)
+            if PATH:
+                self.AhkUserDir = PATH
+                return PATH
+            print(f'invalid path for AhkUserDir: "{value}"')
+        else:
+            print(f'no path given for AhkUserDir: "{value}"')
         self.AhkUserDir = ''
         return ''
 
     def getAhkExeDir(self):
-        if not self.AhkExeDir is None: return self.AhkExeDir
+        """get the Exe directory of AutoHotkey
+        """
+        if not self.AhkExeDir is None:
+            return self.AhkExeDir
         return self.getAhkExeDirFromIni()
 
     def getAhkExeDirFromIni(self):
+        """get the Exe directory of AutoHotkey, if not yet cached
+        """
         key = 'AhkExeDir'
         value = self.userinisection.get(key)
         if value:
-            Path = isValidPath(value, wantDirectory=1)
-            if Path:
-                self.AhkExeDir = Path
-                return Path
-            else:
-                print('invalid path for AhkExeDir: "%s"'% value)
+            PATH = isValidPath(value, wantDirectory=1)
+            if PATH:
+                self.AhkExeDir = PATH
+                return PATH
+            print(f'invalid path for AhkExeDir: "{value}"')
         self.AhkExeDir = ''
         return ''
 
-
     def getUnimacroIniFilesEditor(self):
+        """get the editor for Unimacro ini files
+        """
+        #pylint:disable=R0201
         key = 'UnimacroIniFilesEditor'
         value = self.userinisection.get(key)
         if not value:
             value = 'notepad'
         if self.UnimacroIsEnabled():
             return value
-        else:
-            return ''
+        return ''
 
     def _getLastUsedAcoustics(self, DNSuserDirectory):
         """get name of last used acoustics, must have DNSuserDirectory passed
 
         used by getLanguage, getBaseModel and getBaseTopic
         """
+        #pylint:disable=R0201
         if not (DNSuserDirectory and os.path.isdir(DNSuserDirectory)):
             print('probably no speech profile on')
             return ''
@@ -1535,6 +1559,7 @@ Please try to correct this by running the Natlink Config Program (with administr
 
         used by getBaseTopic
         """
+        #pylint:disable=R0201
         # Dir = self.getDNSuserDirectory()
         # #dir = r'D:\projects'  # for testing (at bottom of file)
         if not os.path.isdir(DNSuserDirectory):
@@ -1616,7 +1641,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         if self.UserArgsDict:
             try:
                 lang = self.UserArgsDict['language']
-                return self.UserArgsDict['language']
+                return lang
             except KeyError:
                 print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return ""')
                 return ''
@@ -1713,7 +1738,8 @@ Please try to correct this by running the Natlink Config Program (with administr
         if self.VocolaIsEnabled():
             value = self.userinisection.get(key, None)
             return value
-
+        return None
+    
     def getVocolaTakesUnimacroActions(self):
         """gets and value for optional Vocola takes Unimacro actions
         If Vocola is not enabled, this option will also return False
@@ -1722,22 +1748,27 @@ Please try to correct this by running the Natlink Config Program (with administr
         if self.VocolaIsEnabled():
             value = self.userinisection.get(key, None)
             return value
-
+        return None
+    
     def getInstallVersion(self):
+        """return the version of natlinkcore
+        """
+        #pylint:disable=R0201, C0415
         from natlinkcore.__init__ import __version__
         return __version__
         
     def getNatlinkPydRegistered(self):
+        """return True if NatlinkPyd is registered
+        """
         value = self.userinisection.get('NatlinkDllRegistered', None)
-        return value
+        return bool(value)
   
     def getDNSName(self):
         """return NatSpeak for versions <= 11, and Dragon for versions >= 12
         """
         if self.getDNSVersion() <= 11:
             return 'NatSpeak'
-        else:
-            return "Dragon"
+        return "Dragon"
 
     def getNatlinkStatusDict(self, force=None):
         """return actual status in a dict
@@ -1779,6 +1810,9 @@ Please try to correct this by running the Natlink Config Program (with administr
         return D
 
     def getNatlinkStatusString(self):
+        """get a long string with the status info
+        """
+        #pylint:disable=R0912
         L = []
         D = self.getNatlinkStatusDict()
         if D['userName']:
@@ -1866,11 +1900,13 @@ Please try to correct this by running the Natlink Config Program (with administr
 
 
     def appendAndRemove(self, List, Dict, Key, text=None):
+        #pylint:disable=C0116, R0201
+
         if text:
             List.append(text)
         else:
             value = Dict[Key]
-            if value == None or value == '':
+            if value in (None, ''):
                 value = '-'
             List.append("\t%s\t%s"% (Key,value))
         del Dict[Key]
@@ -1878,6 +1914,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def addToPath(self, directory):
         """add to the python path if not there yet
         """
+        #pylint:disable=R0201
         Dir2 = path(directory)
         if not Dir2.isdir():
             print(f"natlinkstatus, addToPath, not an existing directory: {directory}")
@@ -1889,6 +1926,8 @@ Please try to correct this by running the Natlink Config Program (with administr
 
     def fatal_error(self, message, new_raise=None):
         """prints a fatal error when running this module"""
+        ## Don't know how new_raise did its work... TODOQH
+        #pylint:disable=W0613
         if not self.hadFatalErrors:
             
             print()
@@ -1899,12 +1938,15 @@ Please try to correct this by running the Natlink Config Program (with administr
             print('This can (hopefully) be solved by closing Dragon and then running the Natlink Config program (start_configurenatlink) with administrator rights.')
             print()
             self.__class__.hadFatalErrors = True
-        if new_raise:
-            raise
+        # if new_raise:
+        #     raise
 
 
 
 def getFileDate(modName):
+    """get date/time of file, 0 if non existent
+    """
+    #pylint:disable=C0321, R0201
     try: return os.stat(modName)[stat.ST_MTIME]
     except OSError: return 0        # file not found
 
@@ -1952,8 +1994,9 @@ def isValidPath(spec, wantFile=None, wantDirectory=None):
 
     tested in testConfigfunctions.py
     """
+    #pylint:disable=R0911
     if not spec:
-        return
+        return None
 
     if os.path.exists(spec):
         spec2 = spec
@@ -1966,23 +2009,21 @@ def isValidPath(spec, wantFile=None, wantDirectory=None):
         if wantFile:
             if  os.path.isfile(spec2):
                 return spec2
-            else:
-                print('isValidPath, path exists, but is not a file: "%s"'% spec2)
-                return
+            print('isValidPath, path exists, but is not a file: "%s"'% spec2)
+            return None
         if wantDirectory:
             if os.path.isdir(spec2):
                 return spec2
-            else:
-                print('isValidPath, path exists, but is not a directory: "%s"'% spec2)
-                return
+            print('isValidPath, path exists, but is not a directory: "%s"'% spec2)
+            return None
         return spec2
-
+    return None
 
     
 def main():
+    #pylint:disable=C0116
     status = NatlinkStatus()
-    result = status.checkPydChanges()
-    print(f'result of checkPydChanges: {result}')
+    status.checkPydChanges()
     args = ('QEngels', 'C:\\Users\\Gebruiker\\AppData\\Local\\Nuance\\NS15\\Users\\QEngels\\current')
     status.setUserInfo(args)
     status.checkSysPath()
@@ -1993,7 +2034,7 @@ def main():
 
     # exapmles, for more tests in ...
     print('\n====\nexamples of expanding ~ and %...% variables:')
-    short = path("~/Quintijn")
+    _short = path("~/Quintijn")
     AddExtendedEnvVariables()
     addedListNatlinkVariables = AddNatlinkEnvironmentVariables()
 
@@ -2019,4 +2060,4 @@ def main():
  
 if __name__ == "__main__":
     main()
-    pass
+
