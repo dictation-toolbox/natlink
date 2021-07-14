@@ -799,8 +799,8 @@ def changeCallback(Type,args):
     global userName, DNSuserDirectory, language, userLanguage, userTopic, \
             BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
 
-    if debugCallback:
-        print('changeCallback, Type: %s, args: %s'% (Type, args))
+    # if debugCallback:
+    print('changeCallback, Type: %s, args: %s'% (Type, args))
     if Type == 'mic' and args == 'on':
         if debugCallback:
             print('findAndLoadFiles...')
