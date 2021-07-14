@@ -242,7 +242,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         
         if str(CoreDir).lower() != coreDir3.lower():
             self.fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDir3}\nfrom natlinkstatus.getNatlinkDirectory: "{CoreDir}"')
-        if coreDir != CoreDir:
+        if coreDir.lower() != CoreDir.lower():
             self.fatal_error(f'Ambiguous core directory,\nfrom this module (global): "{coreDir}\nfrom natlinkstatus.getNatlinkDirectory: "{CoreDir}"')
             
         currentPydPath = os.path.join(coreDir3, 'natlink.pyd')
