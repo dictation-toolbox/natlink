@@ -799,8 +799,6 @@ def changeCallback(Type,args):
     global userName, DNSuserDirectory, language, userLanguage, userTopic, \
             BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
 
-    print(f'changeCallback: userName: {userName}, language: {language}, userLanguage: {userLanguage}')
-
     # if debugCallback:
     print('changeCallback, Type: %s, args: %s'% (Type, args))
     if Type == 'mic' and args == 'on':
@@ -813,6 +811,14 @@ def changeCallback(Type,args):
 
     ## user: at start and at user switch:
     if Type == 'user' and userName != args[0]:
+        ## update userInfo
+        ## other user, setUserInfo in status:
+        print(f'setUserInfo in status to {args}')
+        prevLanguage = language
+        status.clearUserInfo()
+        status.setUserInfo(args)
+        language = status.getLanguage()
+        print(f'old language: {prevLanguage}, new language: {language}')
         if debugCallback:
             print('callback user, args: %s'% repr(args))
         moduleInfo = natlink.getCurrentModule()
@@ -822,17 +828,14 @@ def changeCallback(Type,args):
             # first time, no print message, but next time do...
             print("\n--- user changed to: %s"% args[0])
             changeCallbackUserFirst = False
+        if language == prevLanguage:
+            return 
 
         unloadEverything()
 ## this is not longer needed here, as we fixed the userDirectory
 ##        changeUserDirectory()
-        status.clearUserInfo()
         if debugLoad:
             pass
-        # print('setUserInfo of natlinkstatus to: %s"'% repr(args))
-        status.setUserInfo(args)
-        language = status.getLanguage()
-        print(f'language in natlinkmain: {language}')
         DNSuserDirectory = status.getDNSuserDirectory()
         userLanguage = status.getUserLanguage()
         userTopic = status.getUserTopic()
