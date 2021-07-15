@@ -5,6 +5,20 @@ create a more reliable 32-bit python 3.8 or later for dragon 15+ implementation 
 contribute to.
 
 Later on the python 3 port as well as x64 support may be added. 
+# important developer notes
+
+natlink runs as  a COM object hosted in a windows service.
+
+If you are a developer or finding natlink just hangs and you want to debug:
+- check that the Dragon Service Properties, Log On tab,  has the Local System Account as the Log on as, 
+and "Allow service to interact with the desktop" 
+is checked.
+- make sure any Command Shell or Power Shell sessions are opened with administrator privileges (i.e. "run as administrator").  
+Otherwise the regsvr32 command will fail without any useful error messages.
+
+
+
+
 
 # Compile instructions
 Currently only tested on windows 
