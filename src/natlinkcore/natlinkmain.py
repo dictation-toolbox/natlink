@@ -819,6 +819,7 @@ def changeCallback(Type,args):
         status.setUserInfo(args)
         language = status.getLanguage()
         print(f'old language: {prevLanguage}, new language: {language}')
+        print(f'userLanguage: {status.getUserLanguage()}')
         if debugCallback:
             print('callback user, args: %s'% repr(args))
         moduleInfo = natlink.getCurrentModule()
@@ -834,8 +835,6 @@ def changeCallback(Type,args):
         unloadEverything()
 ## this is not longer needed here, as we fixed the userDirectory
 ##        changeUserDirectory()
-        if debugLoad:
-            pass
         DNSuserDirectory = status.getDNSuserDirectory()
         userLanguage = status.getUserLanguage()
         userTopic = status.getUserTopic()

@@ -10,7 +10,8 @@ import natlinkstatus
 status = natlinkstatus.NatlinkStatus()
 
 print(f'natlinkstartup: {__file__}')
-
+language = status.getLanguage()
+print(f'language from status: "{language}')
 #
 # This function is called by natlinkmain when starting up just before
 # loading grammars for the first time:
@@ -19,6 +20,7 @@ def start():
     """starting two features of Vocola
     """
     print('--- natlinkstartup starting...')
+    print('--- language from status: {status.getLanguage()}')
     print(status.getNatlinkStatusString())
     updateUnimacroHeaderIfNeeded()
     create_new_language_subdirectory_if_needed()
