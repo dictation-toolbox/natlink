@@ -91,34 +91,30 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
-	m_pDragCode->displayText("Importing redirect_output");
-	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
+	m_pDragCode->displayText("\nImporting redirect_output");
+	m_pNatLinkMain = PyImport_ImportModule("\nredirect_output");
 
 
 
-	m_pDragCode->displayText("Importing natlinkmain");
+	m_pDragCode->displayText("\nImporting natlinkcore.natlinkmain");
 
-	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
+	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkmain");
 
-	m_pDragCode->displayText("Imported natlinkmain");
+	m_pDragCode->displayText("\nImported natlinkcore.natlinkmain");
 
 	if (m_pNatLinkMain)
 	{
 		//call the function start_natlink in natlinkmain.  what will happen?
 		//TODO test this.
-		m_pDragCode->displayText("calling natlinkmain:start_natlink");
-		OutputDebugString(
-			TEXT("Calling natlinkmain:start_natlink"));
+		m_pDragCode->displayText("\ncalling natlinkmain:start_natlink");
 
-		MessageBox(0, L"Calling natlinkmain:start_natlink", L"appsup.cpp", MB_OK);
+
 
 		PyObject* natLinkMain_dict = PyModule_GetDict(m_pNatLinkMain);
 		static char const function[] = "start_natlink";
 		PyObject* pnatlinkMainFunc = PyDict_GetItemString(natLinkMain_dict, function);
 		PyObject* result = PyObject_CallObject(pnatlinkMainFunc, 0);
-		OutputDebugString(
-			TEXT("Called natlinkmain:start_natlink"));
-		MessageBox(0, L"Called natlinkmain:start_natlink", L"appsup.cpp", MB_OK);
+		m_pDragCode->displayText("\ncalled natlinkmain:start_natlink");
 		Py_XDECREF(natLinkMain_dict);
 		Py_XDECREF(pnatlinkMainFunc);
 		Py_XDECREF(result);

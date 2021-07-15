@@ -19,7 +19,7 @@
 #include "Resource.h"
 #include "MessageWindow.h"
 #include <richedit.h>
-
+#include <iostream>
 // This is the message we send to the other thread to add text to the output
 // window.  wParam = TRUE for error text, FALSE for normal text.  lParam is
 // the pointer to a string to display.  The thread should delete the string
@@ -154,7 +154,7 @@ DWORD CALLBACK threadMain( void * pArg )
 
 	HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 
-	MessageBox(0, L"threadMain", L"threadMain",0);
+//	MessageBox(0, L"threadMain", L"threadMain",0);
 
 	HWND hWnd = CreateDialogParam(
 		hInstance,						// instance handle
@@ -182,7 +182,7 @@ DWORD CALLBACK threadMain( void * pArg )
 		static const wchar_t fmt[] = L"CreateDialogParm failed, last error is %x (dec %d) : %s";
 		wchar_t buf[500];  //just a big buff relative to fmt
 		swprintf(buf, 500, fmt, last,last,lpMsgBuf);
-		MessageBox(0, buf, L"MessageWindow.cpp", 0);
+//		MessageBox(0, buf, L"MessageWindow.cpp", 0);
 	}
 	assert( hWnd );
 
@@ -195,7 +195,7 @@ DWORD CALLBACK threadMain( void * pArg )
 	}
 
 	// enter a Windows message loop
-	MessageBox(0, L"Message window Message Loop", L"MessageWindow.cpp", 0);
+//	MessageBox(0, L"Message window Message Loop", L"MessageWindow.cpp", 0);
 	MSG msg;
 	while( GetMessage( &msg, NULL, NULL, NULL ) )
 	{
@@ -266,5 +266,6 @@ void MessageWindow::displayText(const char * pszText, BOOL bError )
 	{
 		char * pszCopy = _strdup( pszText );
 		PostMessage( m_hOutWnd, WM_SHOWTEXT, bError, (LPARAM)pszCopy );
+		std::cout << pszText;
 	}
 }

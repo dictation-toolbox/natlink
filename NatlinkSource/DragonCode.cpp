@@ -1082,7 +1082,7 @@ LPARAM CDragonCode::messageLoop( UINT message, WPARAM wParam )
 BOOL CDragonCode::displayText(
 	const char * pszText, BOOL bError, BOOL bLogError )
 {
-	MessageBoxA(0, pszText , "CDragonCode::displayText",0);
+//	MessageBoxA(0, pszText , "CDragonCode::displayText",0);
 	if( m_pSecdThrd )
 	{
 		m_pSecdThrd->displayText( pszText, bError );
