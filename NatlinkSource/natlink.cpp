@@ -50,7 +50,8 @@ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID
 // DllRegisterServer - Adds entries to the system registry.
 STDAPI DllRegisterServer(void)
 {
-	MessageBeep(-1);
+	std::cerr << "UNRegister Server" << std::flush;
+	Sleep(1000);
 	//if you want to attached debugger, run regsvr32 and attach to the runnign process.
 	//uncomment the MessageBox so you can set a breakpoint.
 	// MessageBox(0, L"Attached debugger now", L"DLL Register Server", MB_OK);
@@ -66,7 +67,7 @@ STDAPI DllUnregisterServer(void)
 {
 
 	std::cout << "UNRegister Server" << std::flush;
-	MessageBeep(-1);
+
 
 	HRESULT hr = _AtlModule.DllUnregisterServer();
 	return hr;

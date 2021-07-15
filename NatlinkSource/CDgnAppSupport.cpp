@@ -36,6 +36,8 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 //	MessageBeep(MB_ICONQUESTION);
 //	DebugBreak();
 	// load and initialize the Python system
+	MessageBox(0, L"PY_Initialize", L"CDgnAppSupport.cpp", 0);
+
 	Py_Initialize();
 
 	// Set sys.argv so it exists as [''].
@@ -53,6 +55,9 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	if (!bSuccess)
 	{
+
+		MessageBox(0, L"natlink failed to connect", L"CDgnAppSupport.cpp", 0);
+
 		OutputDebugString(
 			TEXT("NatLink: failed to initialize NatSpeak interfaces")); // RW TEXT macro added
 		m_pDragCode->displayText(
@@ -60,6 +65,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 		return S_OK;
 	}
 
+	MessageBox(0, L"natlink connected", L"CDgnAppSupport.cpp", 0);
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
 	* According to PEP514 python should scan this registry location when
@@ -88,6 +94,8 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	m_pDragCode->displayText("Importing redirect_output");
 	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
 
+
+
 	m_pDragCode->displayText("Importing natlinkmain");
 
 	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
@@ -101,6 +109,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 		m_pDragCode->displayText("calling natlinkmain:start_natlink");
 		OutputDebugString(
 			TEXT("Calling natlinkmain:start_natlink"));
+
 		MessageBox(0, L"Calling natlinkmain:start_natlink", L"appsup.cpp", MB_OK);
 
 		PyObject* natLinkMain_dict = PyModule_GetDict(m_pNatLinkMain);

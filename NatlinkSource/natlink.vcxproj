@@ -220,12 +220,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CDgnAppSupport.h" />
-    <ClInclude Include="COM\appsupp.h" />
     <ClInclude Include="COM\comsupp.h" />
     <ClInclude Include="COM\dspeech.h" />
     <ClInclude Include="COM\speech.h" />
     <ClInclude Include="dllmain.h" />
+    <ClInclude Include="DragonCode.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="MessageWindow.h" />
     <ClInclude Include="natlink_i.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />

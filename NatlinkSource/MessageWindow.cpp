@@ -195,7 +195,7 @@ DWORD CALLBACK threadMain( void * pArg )
 	}
 
 	// enter a Windows message loop
-
+	MessageBox(0, L"Message window Message Loop", L"MessageWindow.cpp", 0);
 	MSG msg;
 	while( GetMessage( &msg, NULL, NULL, NULL ) )
 	{

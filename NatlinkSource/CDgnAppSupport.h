@@ -1,4 +1,5 @@
 // CDgnAppSupport.h : Declaration of the CDgnAppSupport
+//replaces appsup.h in previous versions of natlink.
 
 #pragma once
 #include "resource.h"       // main symbols

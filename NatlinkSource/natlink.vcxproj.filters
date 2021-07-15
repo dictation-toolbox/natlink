@@ -37,9 +37,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="COM\appsupp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="COM\comsupp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -50,6 +47,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CDgnAppSupport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DragonCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
