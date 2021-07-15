@@ -133,7 +133,6 @@ vocolaModule = None    # pointer to the module...
 reVocolaModuleName = re.compile(r'_vcl[0-9]?$')
 
 debugLoad = debugCallback = None
-debugCallback = 1
 canStartNatlink = True
 if status.getDNSInstallDir() == -1:
     print('DNSInstallDir not valid, please run the Natlink config GUI to fix this')
@@ -813,13 +812,13 @@ def changeCallback(Type,args):
     if Type == 'user' and userName != args[0]:
         ## update userInfo
         ## other user, setUserInfo in status:
-        print(f'setUserInfo in status to {args}')
+        # print(f'setUserInfo in status to {args}')
         prevLanguage = language
         status.clearUserInfo()
         status.setUserInfo(args)
         language = status.getLanguage()
-        print(f'old language: {prevLanguage}, new language: {language}')
-        print(f'userLanguage: {status.getUserLanguage()}')
+        # print(f'old language: {prevLanguage}, new language: {language}')
+        # print(f'userLanguage: {status.getUserLanguage()}')
         if debugCallback:
             print('callback user, args: %s'% repr(args))
         moduleInfo = natlink.getCurrentModule()
@@ -992,9 +991,7 @@ def start_natlink(doNatConnect=None):
 
     # load all global files in user directory and current directory
     # findAndLoadFiles() is done in the changeCallback function
-    currentUserTuple = natlink.getCurrentUser()
-    print(f'natlinkmain starting, currentUser: {currentUserTuple}')
-    changeCallback('user', currentUserTuple)
+    changeCallback('user', natlink.getCurrentUser())
 
     # initialize our callbacks
     natlink.setBeginCallback(beginCallback)

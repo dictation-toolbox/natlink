@@ -1778,7 +1778,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         """
         D = {}
 
-        for key in ['userName', 'DNSuserDirectory', 'DNSInstallDir',
+        for key in ['userName', 'DNSuserDirectory', 'language', 'DNSInstallDir',
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion',
                     'DNSName',
@@ -1819,6 +1819,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             L.append('user speech profile:')
             self.appendAndRemove(L, D, 'userName')
             self.appendAndRemove(L, D, 'DNSuserDirectory')
+            self.appendAndRemove(L, D, 'language')
         else:
             del D['userName']
             del D['DNSuserDirectory']
@@ -2029,6 +2030,7 @@ def main():
     status.checkSysPath()
 
     print(status.getNatlinkStatusString())
+    print('------ another check of the language:')
     lang = status.getLanguage()
     print('language: %s'% lang)
 

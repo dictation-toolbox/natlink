@@ -8,10 +8,6 @@ import shutil
 import sys
 import natlinkstatus
 status = natlinkstatus.NatlinkStatus()
-
-print(f'natlinkstartup: {__file__}')
-language = status.getLanguage()
-print(f'language from status: "{language}')
 #
 # This function is called by natlinkmain when starting up just before
 # loading grammars for the first time:
