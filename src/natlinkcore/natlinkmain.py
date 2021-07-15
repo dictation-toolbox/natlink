@@ -110,10 +110,8 @@ import shutil
 import imp              # module reloading
 import re     
 from stat import ST_MTIME      # file statistics
-from pprint import pprint
 import natlink
 import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
-import natlinkstartup
 
     # print("at start of natlinkmain, after redirect stderr and stdout")
 
@@ -852,7 +850,8 @@ def changeCallback(Type,args):
         natlinkstatus.AddNatlinkEnvironmentVariables(status=status)
     
         # changed, at each call, not only the first one:
-        natlinkstartup.start()
+        # natlinkstartup.start()
+        # done now in natlinkvocolastartup.py of vocola repository
 
         # changed next two lines QH:
         findAndLoadFiles()
