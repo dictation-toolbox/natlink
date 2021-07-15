@@ -20,7 +20,7 @@ def start():
     """starting two features of Vocola
     """
     print('--- natlinkstartup starting...')
-    print('--- language from status: {status.getLanguage()}')
+    print(f'--- language from status: {status.getLanguage()}')
     print(status.getNatlinkStatusString())
     updateUnimacroHeaderIfNeeded()
     create_new_language_subdirectory_if_needed()
