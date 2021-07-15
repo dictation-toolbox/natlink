@@ -110,7 +110,7 @@ import glob             # new way to collect the grammar files
 from pprint import pprint
 import inspect
 
-import natlink
+import natlinkcore.natlink
 import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
 
     # print("at start of natlinkmain, after redirect stderr and stdout")
