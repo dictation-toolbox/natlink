@@ -36,7 +36,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 //	MessageBeep(MB_ICONQUESTION);
 //	DebugBreak();
 	// load and initialize the Python system
-	MessageBox(0, L"PY_Initialize", L"CDgnAppSupport.cpp", 0);
+//	MessageBox(0, L"PY_Initialize", L"CDgnAppSupport.cpp", 0);
 
 	Py_Initialize();
 
@@ -60,7 +60,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 		OutputDebugString(
 			TEXT("NatLink: failed to initialize NatSpeak interfaces")); // RW TEXT macro added
-		m_pDragCode->displayText(
+		(
 			"Failed to initialize NatSpeak interfaces\r\n", TRUE);
 		return S_OK;
 	}
@@ -100,7 +100,6 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkmain");
 
-	m_pDragCode->displayText("\nImported natlinkcore.natlinkmain");
 
 	if (m_pNatLinkMain)
 	{
