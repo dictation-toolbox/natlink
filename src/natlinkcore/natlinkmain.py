@@ -799,6 +799,8 @@ def changeCallback(Type,args):
     global userName, DNSuserDirectory, language, userLanguage, userTopic, \
             BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
 
+    print(f'changeCallback: userName: {userName}, language: {language}, userLanguage: {userLanguage}')
+
     # if debugCallback:
     print('changeCallback, Type: %s, args: %s'% (Type, args))
     if Type == 'mic' and args == 'on':
@@ -987,7 +989,10 @@ def start_natlink(doNatConnect=None):
 ##    BaseModel, BaseTopic = status.getBaseModelBaseTopic()
 
     # load all global files in user directory and current directory
-    # findAndLoadFiles()  
+    # findAndLoadFiles() is done in the changeCallback function
+    currentUserTuple = natlink.getCurrentUser()
+    print(f'natlinkmain starting, currentUser: {currentUserTuple}')
+    changeCallback('user', currentUserTuple)
 
     # initialize our callbacks
     natlink.setBeginCallback(beginCallback)

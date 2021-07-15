@@ -343,8 +343,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         
         this function should be in elevated mode, which should be checked before calling this
         
-        Temporary, should be not necessary when good compild of Doug is present.
-        
+        Temporary, maybe not necessary any more when good compile of Doug is present.
         """
         #pylint:disable=W0613
         ## TODOQH remove if Doug made his compile!!
