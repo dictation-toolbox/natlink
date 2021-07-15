@@ -676,6 +676,7 @@ Please try to correct this by running the Natlink Config Program (with administr
                     print('natlinkstatus, setUserInfo: no language found for userLanguage: %s'% userLanguage)
                     print('=== please report to q.hoogenboom@antenna.nl ===')
                     language = ''
+            print(f'setUserInfo, setting language to: {language}')
             self.__class__.UserArgsDict['language'] = language
             self.__class__.UserArgsDict['userLanguage'] = userLanguage
             self.__class__.UserArgsDict['userTopic'] = self.getUserTopic() # will be the basetopic...

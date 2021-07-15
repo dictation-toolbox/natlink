@@ -828,6 +828,7 @@ def changeCallback(Type,args):
             print("\n--- user changed to: %s"% args[0])
             changeCallbackUserFirst = False
         if language == prevLanguage:
+            print(f'changeCallback language: {language}, prevLanguage: {prevLanguage}')
             return 
 
         unloadEverything()
