@@ -268,7 +268,7 @@ class NatlinkStatus:
             self.__class__.UserArgsDict
         except AttributeError:
             self.__class__.UserArgsDict = {}
-        # print(f'UserArgsDict at start of instance: {self.UserArgsDict}')
+        # print(f'UserArgsDict at start of instance: {self.__class__.UserArgsDict}')
 
         ## start setting the CoreDirectory and BaseDirectory and other variables:
         try:
@@ -693,7 +693,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         """get UserName from UserArgsDict
         """
         try:
-            return self.UserArgsDict['userName']
+            return self.__class__.UserArgsDict['userName']
         except KeyError:
             return ''
 
@@ -701,7 +701,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         """get DNSuserDirectory from UserArgsDict
         """
         try:
-            return self.UserArgsDict['DNSuserDirectory']
+            return self.__class__.UserArgsDict['DNSuserDirectory']
         except KeyError:
             return ''
 
@@ -1629,7 +1629,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         from DPI15 returned by changeCallback user, before identical to BaseTopic
         """
         try:
-            return self.UserArgsDict['userTopic']
+            return self.__class__.UserArgsDict['userTopic']
         except KeyError:
             return self.getBaseTopic()
 
@@ -1639,9 +1639,9 @@ Please try to correct this by running the Natlink Config Program (with administr
         '' if not set, probably no speech profile on then
 
         """
-        if self.UserArgsDict:
+        if self.__class__.UserArgsDict:
             try:
-                lang = self.UserArgsDict['language']
+                lang = self.__class__.UserArgsDict['language']
                 return lang
             except KeyError:
                 print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return ""')
@@ -1656,7 +1656,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         '' if not set, probably no speech profile on then
         """
         try:
-            return self.UserArgsDict['userLanguage']
+            return self.__class__.UserArgsDict['userLanguage']
         except KeyError:
             return ''
 
