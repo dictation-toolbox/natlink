@@ -40,9 +40,22 @@
 
 /* Forward Declarations */ 
 
+#ifndef __CDgnAppSupport_FWD_DEFINED__
+#define __CDgnAppSupport_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class CDgnAppSupport CDgnAppSupport;
+#else
+typedef struct CDgnAppSupport CDgnAppSupport;
+#endif /* __cplusplus */
+
+#endif 	/* __CDgnAppSupport_FWD_DEFINED__ */
+
+
 /* header files for imported files */
 #include "oaidl.h"
 #include "ocidl.h"
+#include "shobjidl.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -54,10 +67,18 @@ extern "C"{
 #define __natlinkLib_LIBRARY_DEFINED__
 
 /* library natlinkLib */
-/* [version][uuid] */ 
+/* [version][lcid][helpstring][uuid] */ 
 
 
 EXTERN_C const IID LIBID_natlinkLib;
+
+EXTERN_C const CLSID CLSID_CDgnAppSupport;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("8e46795c-a89d-42c2-8c5b-c3f3af274029")
+CDgnAppSupport;
+#endif
 #endif /* __natlinkLib_LIBRARY_DEFINED__ */
 
 /* Additional Prototypes for ALL interfaces */

@@ -70,6 +70,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
+    <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -113,8 +114,10 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\natlink.def</ModuleDefinitionFile>
-      <RegisterOutput>true</RegisterOutput>
+      <RegisterOutput>false</RegisterOutput>
       <AdditionalLibraryDirectories>c:\Python38-32\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <PerUserRedirection>true</PerUserRedirection>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -216,19 +219,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="COM\appsupp.h" />
+    <ClInclude Include="CDgnAppSupport.h" />
     <ClInclude Include="COM\comsupp.h" />
     <ClInclude Include="COM\dspeech.h" />
     <ClInclude Include="COM\speech.h" />
     <ClInclude Include="dllmain.h" />
+    <ClInclude Include="DragonCode.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="MessageWindow.h" />
     <ClInclude Include="natlink_i.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="COM\appsupp.cpp" />
+    <ClCompile Include="CDgnAppSupport.cpp" />
     <ClCompile Include="DictationObject.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
@@ -270,8 +275,10 @@
     <ResourceCompile Include="natlink.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CDgnAppSupport1.rgs" />
     <None Include="natlink.def" />
     <None Include="natlink.rgs" />
+    <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="natlink.idl" />

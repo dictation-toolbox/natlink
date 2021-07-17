@@ -20,6 +20,9 @@ class CMessageStack;
 typedef const char * PCCHAR;
 
 //---------------------------------------------------------------------------
+#ifndef DRAGONCODE_H
+#define DRAGONCODE_H
+
 
 class CDragonCode
 {
@@ -48,6 +51,7 @@ class CDragonCode
 		m_bHasTrayIcon = FALSE;
 		m_pTrayIconCallback = NULL;
 		m_pMessageStack = NULL;
+		m_pAppClass = 0;
 	}
 
 	~CDragonCode() {
@@ -285,3 +289,4 @@ class CDragonCode
 
 
 };
+#endif // !DRAGONCODE_H

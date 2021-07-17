@@ -21,10 +21,15 @@
 #include "stdafx.h"
 #include "dllmain.h"
 #include "initguid.h"
-#include "COM/appsupp.h"
+#include <iostream>
+//"$(OUTDIR)$(TargetName)$(TargetExt)"
+/*
 BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(__uuidof(NatLink), CDgnAppSupport)
-END_OBJECT_MAP()
+END_OBJECT_MAP
+*/
+
+/*OBJECT_ENTRY_AUTO(__uuidof(NatLink), CDgnAppSupport)*/
 
 using namespace ATL;
 
@@ -43,9 +48,14 @@ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID
 }
 
 // DllRegisterServer - Adds entries to the system registry.
-_Use_decl_annotations_
 STDAPI DllRegisterServer(void)
 {
+	std::cerr << "UNRegister Server" << std::flush;
+	Sleep(1000);
+	//if you want to attached debugger, run regsvr32 and attach to the runnign process.
+	//uncomment the MessageBox so you can set a breakpoint.
+	// MessageBox(0, L"Attached debugger now", L"DLL Register Server", MB_OK);
+	
 	// registers object, typelib and all interfaces in typelib
 	HRESULT hr = _AtlModule.DllRegisterServer();
 	return hr;
@@ -55,6 +65,10 @@ STDAPI DllRegisterServer(void)
 _Use_decl_annotations_
 STDAPI DllUnregisterServer(void)
 {
+
+	std::cout << "UNRegister Server" << std::flush;
+
+
 	HRESULT hr = _AtlModule.DllUnregisterServer();
 	return hr;
 }
