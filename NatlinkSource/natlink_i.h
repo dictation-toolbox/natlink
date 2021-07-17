@@ -76,7 +76,7 @@ EXTERN_C const CLSID CLSID_CDgnAppSupport;
 
 #ifdef __cplusplus
 
-class DECLSPEC_UUID("8e46795c-a89d-42c2-8c5b-c3f3af274029")
+class DECLSPEC_UUID("dd990001-bb89-11d2-b031-0060088dc929")
 CDgnAppSupport;
 #endif
 #endif /* __natlinkLib_LIBRARY_DEFINED__ */

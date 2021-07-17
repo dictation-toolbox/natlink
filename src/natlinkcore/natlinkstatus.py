@@ -212,8 +212,6 @@ class NatlinkStatus:
     # NATLINK_CLSID must be in the correct naturally speaking ini
     #files for dragon to load natlink.
     NATLINK_CLSID = "{dd990001-bb89-11d2-b031-0060088dc929}"
-    #it was changed in 2021 to the new one generatred by the ATL wizard in the C++ portion of natlink.
-    # NATLINK_CLSID  = "{8e46795c-a89d-42c2-8c5b-c3f3af274029}" new one Doug changed...
 
     NSSystemIni  = "nssystem.ini"
     NSAppsIni  = "nsapps.ini"
