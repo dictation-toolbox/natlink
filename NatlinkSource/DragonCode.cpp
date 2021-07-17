@@ -123,9 +123,10 @@
 #include "GrammarObject.h"
 #include "ResultObject.h"
 #include "DictationObject.h"
-#include "COM/appsupp.h"
 #include "MessageWindow.h"
 #include "Exceptions.h"
+#include "CDgnAppSupport.h"
+
 #include <cstring>
 
 // defined in PythWrap.cpp
@@ -1081,6 +1082,7 @@ LPARAM CDragonCode::messageLoop( UINT message, WPARAM wParam )
 BOOL CDragonCode::displayText(
 	const char * pszText, BOOL bError, BOOL bLogError )
 {
+//	MessageBoxA(0, pszText , "CDragonCode::displayText",0);
 	if( m_pSecdThrd )
 	{
 		m_pSecdThrd->displayText( pszText, bError );

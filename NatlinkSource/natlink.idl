@@ -8,11 +8,25 @@ import "oaidl.idl";
 import "ocidl.idl";
 
 [
-	uuid(d1277b20-15d9-4f65-bacc-3e3257e89efd),
-	version(1.0),
+	uuid(9B39FCCA-A156-43F8-BC3A-78DB5BFDBC7B),
+	helpstring("Natlink 2021  Type Library"),
+	lcid(0x09),
+	version(20.21)
 ]
+
 library natlinkLib
 {
 	importlib("stdole2.tlb");
+
+	[
+		uuid(8e46795c-a89d-42c2-8c5b-c3f3af274029)
+	]
+	coclass CDgnAppSupport
+	{
+/* wizard generated: 		[default] interface IDgnAppSupport; */
+		[default] interface IUnknown;
+	};
 };
 
+import "shobjidl.idl";
+import "shobjidl.idl";
