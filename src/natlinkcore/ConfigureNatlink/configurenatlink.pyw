@@ -35,7 +35,7 @@ except:
         """
         MessageBoxA(None, message, title, 0)
 
-import os
+import os,argparse as ap
 thisDir = os.path.split(__file__)[0]
 
 import sys
@@ -45,6 +45,13 @@ if sys.version[0] == '2':
             'You can run the python 2.7 version from SourceForge, or start with Python3.8-32']
     mess = '\n\n'.join(mess)
     windowsMessageBox(mess)
+
+
+parser = ap.ArgumentParser(description='Natlink Config GUI')
+parser.add_argument("--dev_natlink",help=
+"""A complete path to a natlink dll/pyd file.  This will override the
+published natlink.pyd.  This is for developers who are building natlink binaries locally""")
+args = vars(parser.parse_args())
 
 import sys
 import traceback
