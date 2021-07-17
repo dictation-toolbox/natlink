@@ -813,9 +813,10 @@ def changeCallback(Type,args):
         ## other user, setUserInfo in status:
         # print(f'setUserInfo in status to {args}')
         prevLanguage = language
-        status.clearUserInfo()
+        # status.clearUserInfo()
         status.setUserInfo(args)
         language = status.getLanguage()
+        print(f'after setting userInfo: language: {language}, prev: {prevLanguage}')
         # print(f'old language: {prevLanguage}, new language: {language}')
         # print(f'userLanguage: {status.getUserLanguage()}')
         if debugCallback:
