@@ -1273,13 +1273,16 @@ def _main(Options=None):
     """Catch the options and perform the resulting command line functions
 
     options: -i, --info: give status info
+            --dev_natlink dllpath   : full path to a development dll/pyd (locally built) to register.
 
              -I, --reginfo: give the info in the registry about Natlink
              etc., usage above...
 
     """
     cli = CLI()
-    longOptions = "--dev_natlink"
+    dev_natlink_opt = "dev_natlink="
+    dev_natlink_key  = "--dev_natlink"
+    longOptions = [dev_natlink_opt]
     shortOptions = "aAiIeEfFgGyYxXDCVbBNOPlmMrRzZuq"
     shortArgOptions = "d:c:v:n:o:p:"
     if Options:
@@ -1301,13 +1304,14 @@ def _main(Options=None):
         print(('should not have extraneous arguments: %s'% repr(args)))
     global dll_to_reg
     try:
-        dll_to_reg= (dd:= dict(options))[ "--dev_natlink"]
-        print(f"\nDeveloper dll to reg{dll_to_reg} ")
-        dd.pop("--dev_natlink")
-        #remove --dev_natlink from options for futhre processing
-        options=list(dd.items)
+        dd=dict(options)
+        dll_to_reg= dd[dev_natlink_key]
+        #remove the option from options for futher processing
+        dd.pop(dev_natlink_key)
 
-    except e:
+        options=list(dd.items())
+
+    except:
         print("\nNo developer override for natlink dll")
 
 
@@ -1407,6 +1411,9 @@ j       - print PythonPath variable
 
 [Natlink]
 
+-- dev_natlink full_path_to_natlink.pyd  : use the specified dll rather than a  published one for registering or unregistering.  useful for developers
+buildnig natlink.pyd locally or using one other than from the src/natlinkcore/PYD folder.
+
 e/E     - enable/disable Natlink
 
 y/Y     - enable/disable debug callback output of natlinkmain
@@ -1414,6 +1421,7 @@ x/X     - enable/disable debug load output     of natlinkmain
 
 d/D     - set/clear DNSInstallDir, the directory where NatSpeak/Dragon is installed
 c/C     - set/clear DNSINIDir, where NatSpeak/Dragon INI files are located
+
 
 [Vocola]
 
