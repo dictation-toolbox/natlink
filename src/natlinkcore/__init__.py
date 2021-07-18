@@ -1,6 +1,6 @@
 """natlinkcore"""
 
-__version__ = '0.0.0.1.8'  # Quintijn to test
+__version__ = '0.0.0.1.9'  # Quintijn to test
 
 """utility functions, to get calling directory of module (in site-packages),
 
