@@ -75,7 +75,8 @@ import win32api
 from natlinkcore import natlinkstatus
 from natlinkcore import natlinkcorefunctions
 
-
+#indicates to user a specific dll/pyd
+dev_override_natlink_pyd=None
 
 # With python3, the core directory is directly in the root of natlinkcore (when installing natlink via pip)
 # and the ConfigureNatlink directory is a subdirectory of natlinkcore.
@@ -267,6 +268,11 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         wantedPyd = self.getWantedNatlinkPydFileName()       # wanted original based on python version and Dragon version
         wantedPydPath = os.path.join(coreDir3, 'PYD', wantedPyd)
+
+        if  not (dev_override_natlink_pyd is None):
+            #if a dll/pyd has been speficied on the command line, then that is the one to use
+            wantedPydPath = dev_override_natlink_pyd
+
         if not os.path.isfile(wantedPydPath):
             self.fatal_error(f'natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find wantedPydPath: {wantedPydPath}')
             return None
@@ -1302,10 +1308,13 @@ def _main(Options=None):
     #this warning can be ignored when overriding natlink.pyd
     if args:
         print(('should not have extraneous arguments: %s'% repr(args)))
-    global dll_to_reg
+    global dev_override_natlink_pyd
     try:
         dd=dict(options)
         dll_to_reg= dd[dev_natlink_key]
+
+        #save it in a global for later use
+        dev_override_natlink_pyd = dll_to_reg
         #remove the option from options for futher processing
         dd.pop(dev_natlink_key)
 
