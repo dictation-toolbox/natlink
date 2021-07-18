@@ -51,7 +51,7 @@ parser = ap.ArgumentParser(description='Natlink Config GUI')
 parser.add_argument("--dev_natlink",help=
 """A complete path to a natlink dll/pyd file.  This will override the
 published natlink.pyd.  This is for developers who are building natlink binaries locally""")
-args = vars(parser.parse_args())
+config_args = vars(parser.parse_args())
 
 import sys
 import traceback
