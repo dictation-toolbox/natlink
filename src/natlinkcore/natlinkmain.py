@@ -130,7 +130,7 @@ vocolaModule = None    # pointer to the module...
 
 reVocolaModuleName = re.compile(r'_vcl[0-9]?$')
 
-debugLoad = debugCallback = None
+debugLoad = debugCallback = True
 canStartNatlink = True
 if status.getDNSInstallDir() == -1:
     print('DNSInstallDir not valid, please run the Natlink config GUI to fix this')

@@ -275,7 +275,7 @@
     <ResourceCompile Include="natlink.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CDgnAppSupport1.rgs" />
+    <None Include="CDgnAppSupport.rgs" />
     <None Include="natlink.def" />
     <None Include="natlink.rgs" />
     <None Include="readme.md" />

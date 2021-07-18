@@ -60,7 +60,8 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	m_pDragCode = initModule();
 	m_pDragCode->setAppClass(this);
 
-
+	m_pDragCode->displayText(
+		"\nCDgnAppSupport::Register calling natConnect\r\n", TRUE);
 	// simulate calling natlink.natConnect() except share the site object
 	bSuccess = m_pDragCode->natConnect(pIDgnSite);
 
@@ -99,7 +100,11 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
+	m_pDragCode->displayText(
+		"\nCDgnAppSupport::Register importing redirect output\r\n", TRUE);
 	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
+	m_pDragCode->displayText(
+		"\nCDgnAppSupport::Register importing natlinkmaint\r\n", TRUE);
 	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
 	m_pDragCode->setDuringInit(FALSE);
 

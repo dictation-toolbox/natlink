@@ -103,10 +103,10 @@
     <None Include="natlink.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="CDgnAppSupport1.rgs">
+    <None Include="readme.md" />
+    <None Include="CDgnAppSupport.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="natlink.idl">
