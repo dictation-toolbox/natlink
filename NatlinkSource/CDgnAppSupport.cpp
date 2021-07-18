@@ -64,8 +64,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 			"Failed to initialize NatSpeak interfaces\r\n", TRUE);
 		return S_OK;
 	}
-
-	MessageBox(0, L"natlink connected", L"CDgnAppSupport.cpp", 0);
+	m_pDragCode->displayText("natlink connected CDgnAppSupport");
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
 	* According to PEP514 python should scan this registry location when
@@ -86,6 +85,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	if (PyRun_SimpleString("core_path = winreg.QueryValue(natlink_key, \"\")")) {
 		m_pDragCode->displayText("Failed to extract value from Natlink key.\r\n");
 	}
+
 	PyRun_SimpleString("sys.path.append(core_path)");
 	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 
@@ -93,8 +93,6 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	m_pDragCode->setDuringInit(TRUE);
 	m_pDragCode->displayText("\nImporting redirect_output");
 	m_pNatLinkMain = PyImport_ImportModule("\nredirect_output");
-
-
 
 	m_pDragCode->displayText("\nImporting natlinkcore.natlinkmain");
 
