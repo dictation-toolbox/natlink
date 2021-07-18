@@ -1279,6 +1279,7 @@ def _main(Options=None):
 
     """
     cli = CLI()
+    longOptions = "--dev_natlink"
     shortOptions = "aAiIeEfFgGyYxXDCVbBNOPlmMrRzZuq"
     shortArgOptions = "d:c:v:n:o:p:"
     if Options:
@@ -1289,14 +1290,28 @@ def _main(Options=None):
         Options = sys.argv[1:]
 
     try:
-        options, args = getopt.getopt(Options, shortOptions+shortArgOptions)
+        options, args = getopt.getopt(Options, shortOptions+shortArgOptions,longOptions)
     except getopt.GetoptError:
         print(('invalid option: %s'% repr(Options)))
         cli.usage()
         return
 
+    #this warning can be ignored when overriding natlink.pyd
     if args:
         print(('should not have extraneous arguments: %s'% repr(args)))
+    global dll_to_reg
+    try:
+        dll_to_reg= (dd:= dict(options))[ "--dev_natlink"]
+        print(f"\nDeveloper dll to reg{dll_to_reg} ")
+        dd.pop("--dev_natlink")
+        #remove --dev_natlink from options for futhre processing
+        options=list(dd.items)
+
+    except e:
+        print("\nNo developer override for natlink dll")
+
+
+
     for o, v in options:
         o = o.lstrip('-')
         funcName = 'do_%s'% o

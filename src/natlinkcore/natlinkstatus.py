@@ -247,9 +247,13 @@ class NatlinkStatus:
     AhkExeDir = None
     hadWarning = []
 
-    def __init__(self, skipSpecialWarning=None):
 
-        # print(f'natlinkstatus.__ini__, skipSpecialWarning input skipSW: {skipSpecialWarning}')
+    def __init__(self, skipSpecialWarning=None,devnatlink_dll=None):
+        """ devnatlink_dll is the path of a dll to use rather than a published one.
+        usesful during development. """
+
+        self.devnatlink_dll = devnatlink_dll
+       # print(f'natlinkstatus.__ini__, skipSpecialWarning input skipSW: {skipSpecialWarning}')
         try:
             self.__class__.skipSpecialWarning
         except AttributeError:
