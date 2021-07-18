@@ -17,7 +17,11 @@ is checked.
 Otherwise the regsvr32 command will fail without any useful error messages.
 
 
+#Installation Instructions.
 
+IF you are building natlink.pyd locally with Visual studio, the easiest way to have dragon use your natlink.pyd is:
+- make sure you have registered natlink already with `natlinkconfig_cli -r` or use the `natlinkconfig` GUI.
+- simply copy the natlink.pyd you build (it will be n the debug Folder) to your python Lib/site-packages/natlinkcore folder.  No need to re-register.
 
 
 # Compile instructions
@@ -88,15 +92,14 @@ The compiled library natlink.pyd/natlink.dll is registered with natspeak as a CO
  
  ### Support module registration
  
- the natlink class id is 821d45e5-2c64-41cb-a363-2797dfda4dd0.  it used to be `dd990001-bb89-11d2-b031-0060088dc929`.  it was changed from rerunning the wizard
- and it is difficult to reuse the old one.
+ the natlink class id is  `dd990001-bb89-11d2-b031-0060088dc929`.  
 
 
  First we need to register our COM-Server with the windows registry. To do pass the dll/pyd to `regsvr32`. 
  Windows will associate the Natlink classid    
  which will set the ``HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{clsid}\InprocServer32``for x64 systems.
  
- Then we need to inform dragon of the new module. To do so we add
+ Then we need to inform dragon of the new module. this is done via the natlinkconfig_cli command or the python script natlinkconfigfunctions
   ```
 [.Natlink]
 App Support GUID={class id}
@@ -111,7 +114,8 @@ App Support GUID={class id}
  in``confignatlinkvocolaunimacro/natlinkconfigfunctions.py`` line 1045: ``registerNatlinkPyd()``
  
  ### COM-Server implementation
-``appsupp.h/appsupp.cpp``
+
+``CDgnAppSupport.cpp``  (used to be in ``appsupp.h/appsupp.cpp``)
 
 Apparently we do not have access to the IDL (interface definition language) files. 
 

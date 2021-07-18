@@ -93,6 +93,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.;C:\Python38-32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>UninitializedLocalUsageCheck</BasicRuntimeChecks>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
