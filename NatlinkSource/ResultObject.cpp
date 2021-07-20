@@ -145,8 +145,9 @@ void CResultObject::destroy()
 
 PyObject * CResultObject::getResults(int nChoice )
 {
-	HRESULT rc;
+	HRESULT rc=0;
 
+	m_pDragCode->displayText("getResults", TRUE);
 	MUSTBETINITED( "ResObj.getResults" );
 
 	// our goal is to produce a Python array of tuples where each tuple is
@@ -164,10 +165,13 @@ PyObject * CResultObject::getResults(int nChoice )
 	// not include something larger
 
 	DWORD aPath[ 512 ];
-	DWORD pathSize;
+	DWORD pathSize=0;
 	rc = pGraph->BestPathWord( nChoice, aPath, sizeof(aPath), &pathSize );
+
 	onVALUEOUTOFRANGE( rc, "There is no result number %d", nChoice );
 	RETURNIFERROR( rc, "ISRResGraph::BestPathWord" );
+
+	m_pDragCode->displayText("getResults::aPath", TRUE);
 
 	// value returned is actually the byte count
 	DWORD nCount = pathSize / sizeof(DWORD);
@@ -185,6 +189,8 @@ PyObject * CResultObject::getResults(int nChoice )
 			aPath[i], &node, pWord, sizeof(aBuffer), &sizeNeeded );
 		RETURNIFERROR( rc, "ISRResGraph::GetWordNode" );
 		#ifdef UNICODE
+			m_pDragCode->displayText("getResults unicode", TRUE);
+
 			int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, NULL, 0,  NULL, NULL);
 			char * szWordA = new char[ size_needed ];
 			::WideCharToMultiByte( CP_UTF8, 0, pWord->szWord, -1, szWordA, size_needed, NULL, NULL );
@@ -195,11 +201,19 @@ PyObject * CResultObject::getResults(int nChoice )
 			if ( szWordA )
 				delete [] szWordA;
 		#else
+		m_pDragCode->displayText("getResults ascii", TRUE);
+
 			PyObject * pTuple =
 				Py_BuildValue( "(si)", pWord->szWord, node.dwCFGParse );
 #endif
+		m_pDragCode->displayText("getResults appending", TRUE);
+
 		PyList_Append( pList, pTuple );
+		m_pDragCode->displayText("getResults appended", TRUE);
+
 		Py_XDECREF( pTuple );
+		m_pDragCode->displayText("getResults XDECREF", TRUE);
+
 	}
 
 	return pList;
