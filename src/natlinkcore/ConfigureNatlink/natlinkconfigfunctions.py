@@ -75,8 +75,7 @@ import win32api
 from natlinkcore import natlinkstatus
 from natlinkcore import natlinkcorefunctions
 
-#indicates to user a specific dll/pyd
-dev_override_natlink_pyd=None
+
 
 # With python3, the core directory is directly in the root of natlinkcore (when installing natlink via pip)
 # and the ConfigureNatlink directory is a subdirectory of natlinkcore.
@@ -268,11 +267,6 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
         wantedPyd = self.getWantedNatlinkPydFileName()       # wanted original based on python version and Dragon version
         wantedPydPath = os.path.join(coreDir3, 'PYD', wantedPyd)
-
-        if  not (dev_override_natlink_pyd is None):
-            #if a dll/pyd has been speficied on the command line, then that is the one to use
-            wantedPydPath = dev_override_natlink_pyd
-
         if not os.path.isfile(wantedPydPath):
             self.fatal_error(f'natlinkconfigfunctions, configCheckNatlinkPydFile: Could not find wantedPydPath: {wantedPydPath}')
             return None
@@ -1279,16 +1273,12 @@ def _main(Options=None):
     """Catch the options and perform the resulting command line functions
 
     options: -i, --info: give status info
-            --dev_natlink dllpath   : full path to a development dll/pyd (locally built) to register.
 
              -I, --reginfo: give the info in the registry about Natlink
              etc., usage above...
 
     """
     cli = CLI()
-    dev_natlink_opt = "dev_natlink="
-    dev_natlink_key  = "--dev_natlink"
-    longOptions = [dev_natlink_opt]
     shortOptions = "aAiIeEfFgGyYxXDCVbBNOPlmMrRzZuq"
     shortArgOptions = "d:c:v:n:o:p:"
     if Options:
@@ -1299,32 +1289,14 @@ def _main(Options=None):
         Options = sys.argv[1:]
 
     try:
-        options, args = getopt.getopt(Options, shortOptions+shortArgOptions,longOptions)
+        options, args = getopt.getopt(Options, shortOptions+shortArgOptions)
     except getopt.GetoptError:
         print(('invalid option: %s'% repr(Options)))
         cli.usage()
         return
 
-    #this warning can be ignored when overriding natlink.pyd
     if args:
         print(('should not have extraneous arguments: %s'% repr(args)))
-    global dev_override_natlink_pyd
-    try:
-        dd=dict(options)
-        dll_to_reg= dd[dev_natlink_key]
-
-        #save it in a global for later use
-        dev_override_natlink_pyd = dll_to_reg
-        #remove the option from options for futher processing
-        dd.pop(dev_natlink_key)
-
-        options=list(dd.items())
-
-    except:
-        print("\nNo developer override for natlink dll")
-
-
-
     for o, v in options:
         o = o.lstrip('-')
         funcName = 'do_%s'% o
@@ -1420,9 +1392,6 @@ j       - print PythonPath variable
 
 [Natlink]
 
--- dev_natlink full_path_to_natlink.pyd  : use the specified dll rather than a  published one for registering or unregistering.  useful for developers
-buildnig natlink.pyd locally or using one other than from the src/natlinkcore/PYD folder.
-
 e/E     - enable/disable Natlink
 
 y/Y     - enable/disable debug callback output of natlinkmain
@@ -1430,7 +1399,6 @@ x/X     - enable/disable debug load output     of natlinkmain
 
 d/D     - set/clear DNSInstallDir, the directory where NatSpeak/Dragon is installed
 c/C     - set/clear DNSINIDir, where NatSpeak/Dragon INI files are located
-
 
 [Vocola]
 
