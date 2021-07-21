@@ -1,8 +1,13 @@
-#register the natlink.pyd build by visual studio locally
+#copy the the local natlink.pyd built by visual studio to the install directory for natlinkcore.
 
-$natlink_binary=Get-ChildItem NatlinkSource/Debug/*.pyd
+$natlink_binary=Get-ChildItem NatlinkSource/Debug/natlink.pyd
+$natlink_symbols=Get-ChildItem NatlinkSource/Debug/natlink.pdb
+echo "Natlink binary $natlink_binary"
 
-cp $natlink_binary  C:\Python38-32\Lib\site-packages\natlinkcore\
-cp NatlinkSource/Debug/natlink.pdb  C:\Python38-32\Lib\site-packages\natlinkcore\
+$site_packages=$(pye_purelib)
 
-echo "copied natlink.dll to site packages\natlinkcore\"
+Copy-Item    $natlink_binary -Destination $site_packages\natlinkcore\
+Copy-Item    $natlink_symbols -Destination $site_packages\natlinkcore\
+
+
+echo "copied natlink.dll and natlink.pyd to $site_packages\natlinkcore"
