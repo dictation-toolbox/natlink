@@ -108,4 +108,4 @@ src/*_vcl.py
 /PyTest/Natlinktimertestresult.txt
 
 #documentation (QH)
-documentation/_build_html
+documentation/_build/
