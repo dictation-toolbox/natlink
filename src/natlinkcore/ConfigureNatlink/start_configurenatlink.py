@@ -86,10 +86,7 @@ def main():
         #print('run with "%s": %s'% (openpar, configPath)
         #print('sys.version: ', sys.version
         #time.sleep(5)
-        #if there were command line arguments pass them on
-
-        args = ' '.join([configPath]+sys.argv[1:])
-        ShellExecute(0, openpar, pathToPythonW, args, "", 1)
+        ShellExecute(0, openpar, pathToPythonW, configPath, "", 1)
     except:
         import traceback
         traceback.print_exc()

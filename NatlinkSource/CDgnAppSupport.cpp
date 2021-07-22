@@ -1,24 +1,40 @@
-// CDgnAppSupport.cpp : Implementation of CDgnAppSupport
+/*
+ Python Macro Language for Dragon NaturallySpeaking
+	(c) Copyright 1999 by Joel Gould
+	Portions (c) Copyright 1999 by Dragon Systems, Inc.
 
-#include "pch.h"
-#include "CDgnAppSupport.h"
+ appsupp.cpp
+	This module implements the COM interface which Dragon NaturallySpeaking
+	calls when it connects with a compatibility module.  This implementation
+	is designed to be a global client and not a app-specific client.  That
+	decision simplifies the design somewhat.
+*/
+#include <string>
+#include "stdafx.h"
+#include "CdgnAppSupport.h"
 
-
+// #include <plog/Log.h>
+// from PythWrap.cpp
 CDragonCode* initModule();
 
+/////////////////////////////////////////////////////////////////////////////
 // CDgnAppSupport
+
+//---------------------------------------------------------------------------
+
+CDgnAppSupport::CDgnAppSupport()
+{
+	m_pNatLinkMain = NULL;
+	m_pDragCode = NULL;
+}
+
+//---------------------------------------------------------------------------
 
 CDgnAppSupport::~CDgnAppSupport()
 {
 }
 
-CDgnAppSupport::CDgnAppSupport()
-{
 
-	OutputDebugString(L"CDgnAppSupport::CDgnAppSupport");
-	m_pNatLinkMain = NULL;
-	m_pDragCode = NULL;
-}
 
 //---------------------------------------------------------------------------
 // Called by NatSpeak once when the compatibility module is first loaded.
@@ -33,11 +49,7 @@ CDgnAppSupport::CDgnAppSupport()
 STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 {
 	BOOL bSuccess;
-//	MessageBeep(MB_ICONQUESTION);
-//	DebugBreak();
 	// load and initialize the Python system
-//	MessageBox(0, L"PY_Initialize", L"CDgnAppSupport.cpp", 0);
-
 	Py_Initialize();
 
 	// Set sys.argv so it exists as [''].
@@ -48,24 +60,21 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	m_pDragCode = initModule();
 	m_pDragCode->setAppClass(this);
 
-
+	m_pDragCode->displayText(
+		"\nCDgnAppSupport::Register calling natConnect\r\n", TRUE);
 	// simulate calling natlink.natConnect() except share the site object
 	bSuccess = m_pDragCode->natConnect(pIDgnSite);
 
 
 	if (!bSuccess)
 	{
-
-		MessageBox(0, L"natlink failed to connect", L"CDgnAppSupport.cpp", 0);
-
 		OutputDebugString(
 			TEXT("NatLink: failed to initialize NatSpeak interfaces")); // RW TEXT macro added
-		(
+		m_pDragCode->displayText(
 			"Failed to initialize NatSpeak interfaces\r\n", TRUE);
 		return S_OK;
 	}
 
-	MessageBox(0, L"natlink connected", L"CDgnAppSupport.cpp", 0);
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
 	* According to PEP514 python should scan this registry location when
@@ -91,35 +100,12 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
-	m_pDragCode->displayText("\nImporting redirect_output");
-	m_pNatLinkMain = PyImport_ImportModule("\nredirect_output");
-
-
-
-	m_pDragCode->displayText("\nImporting natlinkcore.natlinkmain");
-
-	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkmain");
-
-
-	if (m_pNatLinkMain)
-	{
-		//call the function start_natlink in natlinkmain.  what will happen?
-		//TODO test this.
-		m_pDragCode->displayText("\ncalling natlinkmain:start_natlink");
-
-
-
-		PyObject* natLinkMain_dict = PyModule_GetDict(m_pNatLinkMain);
-		static char const function[] = "start_natlink";
-		PyObject* pnatlinkMainFunc = PyDict_GetItemString(natLinkMain_dict, function);
-		PyObject* result = PyObject_CallObject(pnatlinkMainFunc, 0);
-		m_pDragCode->displayText("\ncalled natlinkmain:start_natlink");
-		Py_XDECREF(natLinkMain_dict);
-		Py_XDECREF(pnatlinkMainFunc);
-		Py_XDECREF(result);
-
-	}
-
+	m_pDragCode->displayText(
+		"\nCDgnAppSupport::Register importing redirect output\r\n", TRUE);
+	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
+	m_pDragCode->displayText(
+		"\nCDgnAppSupport::Register importing natlinkmaint\r\n", TRUE);
+	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
 	m_pDragCode->setDuringInit(FALSE);
 
 

@@ -392,7 +392,7 @@ class ConfigureNatlinkPanel(wx.Panel):
                 super(NatlinkConfigGUI, self).warning(text)
                 #self.parent.warning(text)
 
-        self.firstThaw = True  # set to true first time and at undo action...
+        sel f.firstThaw = True  # set to true first time and at undo action...
         
         self.GUI = NatlinkConfigGUI(parent=self)
         error = 0

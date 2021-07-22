@@ -5,7 +5,7 @@
 #define IDS_PROJNAME                    100
 #define IDR_NATLINK                     101
 #define IDR_APPSUPP                     102
-#define IDR_CDGNAPPSUPPORT1             108
+#define IDR_CDGNAPPSUPPORT             108
 #define IDD_STDOUT                      201
 #define IDC_RICHEDIT                    201
 #define IDR_MENU                        202

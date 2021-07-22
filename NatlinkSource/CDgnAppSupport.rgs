@@ -2,7 +2,7 @@ HKCR
 {
 	natlink.dragonsupport.1 = s 'CDgnAppSupport class'
 	{
-		CLSID = s '{c087b466-6ed3-47ad-bdad-780d345d0236}'
+		CLSID = s '{dd990001-bb89-11d2-b031-0060088dc929}'
 	}
 	natlink.dragonsupport = s 'CDgnAppSupport class'
 	{		
@@ -10,7 +10,7 @@ HKCR
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {c087b466-6ed3-47ad-bdad-780d345d0236} = s 'CDgnAppSupport class'
+		ForceRemove {dd990001-bb89-11d2-b031-0060088dc929} = s 'Python Subsystem for NatSpeak'
 		{
 			ProgID = s 'natlink.dragonsupport.1'
 			VersionIndependentProgID = s 'natlink.dragonsupport'
@@ -20,7 +20,7 @@ HKCR
 				val ThreadingModel = s 'Apartment'
 			}
 			TypeLib = s '{d1277b20-15d9-4f65-bacc-3e3257e89efd}'
-			Version = s '1.0'
+			Version = s '1.0'Presenter
 		}
 	}
 }
