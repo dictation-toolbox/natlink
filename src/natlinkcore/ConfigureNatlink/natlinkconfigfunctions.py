@@ -273,6 +273,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         targetPydPath = currentPydPath
     
         if FirstInstall:
+            # record the python used to run this command.  dragon/natlink.pyd will need to load
+            # this particular python later.
+
+            python_executable = sys.executable
+
+            self.userinisection.set("NatlinkPythonExecutable",python_executable)
+
             result = self.copyNatlinkPydPythonVersion(wantedPydPath, targetPydPath)
             if not result:
                 return None

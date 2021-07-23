@@ -277,6 +277,7 @@
     <ResourceCompile Include="natlink.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\src\natlinkcore\natlinkpythoninfo.py" />
     <None Include="CDgnAppSupport.rgs" />
     <None Include="natlink.def" />
     <None Include="natlink.rgs" />

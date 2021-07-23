@@ -50,18 +50,25 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 {
 	BOOL bSuccess;
 	// load and initialize the Python system
-	Py_Initialize();
 
+	static wchar_t const python_exe[] = L"c:\\users\\dougr\\onedrive\\doug\\codingprojects\\dt\\nl\\scripts\\python.exe";
+	static wchar_t const path_to_natlink[] = L"c:\users\dougr\onedrive\doug\codingprojects\dt\nl\Lib\site-packages\natlinkcore";
+
+	Py_SetProgramName(python_exe);
+	Py_Initialize();
 	// Set sys.argv so it exists as [''].
 	PySys_SetArgvEx(1, NULL, 0);
+	PyRun_SimpleString("import winreg, sys");
+	PyRun_SimpleString("sys.path.append('c:\\users\\dougr\\onedrive\\doug\\codingprojects\\dt\\nl\\Lib\\site-packages\\natlinkcore')");
+
 
 	// load the natlink module into Python and return a pointer to the
 	// shared CDragonCode object
 	m_pDragCode = initModule();
 	m_pDragCode->setAppClass(this);
 
-	m_pDragCode->displayText(
-		"\nCDgnAppSupport::Register calling natConnect\r\n", TRUE);
+//	m_pDragCode->displayText(
+//		"\nCDgnAppSupport::Register calling natConnect\r\n", TRUE);
 	// simulate calling natlink.natConnect() except share the site object
 	bSuccess = m_pDragCode->natConnect(pIDgnSite);
 
@@ -75,6 +82,8 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 		return S_OK;
 	}
 
+
+
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
 	* According to PEP514 python should scan this registry location when
@@ -86,6 +95,8 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	* Exceptions raised here will not cause a crash, so the worst case scenario
 	* is that we add a value to the path which is already there.
 	*/
+
+#if 0  this is all useless now
 	PyRun_SimpleString("import winreg, sys");
 	PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Python\\\\PythonCore\\\\{str(sys.winver)}\\\\PythonPath\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
 	// PyRun_SimpleString returns 0 on success and -1 if an exception is raised.
@@ -98,9 +109,17 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	PyRun_SimpleString("sys.path.append(core_path)");
 	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 
+#endif
+
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
 	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
+	wchar_t * prefix  = Py_GetPrefix();
+
+	PyRun_SimpleString("natlinkpythoninfo.print_python_info()");
+	m_pDragCode->displayText("Printed Python Info");
+ 
+
 	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
 	m_pDragCode->setDuringInit(FALSE);
 

@@ -1374,6 +1374,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             return cloneDir
             # raise IOErrorprint(f'This function should only be called when "\\src\\" is in the path')
         commonpart = cloneDir.split('\\src\\')[-1]
+        print(f"sys.prefix {sys.prefix}  {__file__}")
         spDirectory = os.path.join(sys.prefix, 'Lib', 'site-packages', commonpart)
         spPath = pathlib.WindowsPath(spDirectory)
         if spPath.is_dir():
@@ -2032,7 +2033,8 @@ def main():
     status = NatlinkStatus()
     status.checkPydChanges()
     args = ('QEngels', 'C:\\Users\\Gebruiker\\AppData\\Local\\Nuance\\NS15\\Users\\QEngels\\current')
-    status.setUserInfo(args)
+
+       status.setUserInfo(args)
     status.checkSysPath()
 
     print(status.getNatlinkStatusString())
