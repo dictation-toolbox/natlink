@@ -33,6 +33,13 @@ without confusion on any workstation. Your Python include header and lib files a
 There is a DRAGON_15 set in the preprocessor section of Visual Studio.  If that is not set, there is a UNICODE
 preprocessor varaible that will have the wrong value during compile and natlink will crash at runtime.
 
+If you have to recreate the visual studio project, be sure to set the runtime library option to ""Multi-threaded Debug (/MTd)""
+or you will have problems distributing the natlink.pyd becuase of dependent dlls.
+
+Please do not use a new version of Python than 3.8.  If we let IronPython catch up, we could potentially switch to that
+and eliminate C++ altogther.
+
+
 # Developer workflow
 
 See compile instructions below.
@@ -64,12 +71,18 @@ copied natlink.dll and natlink.pyd to c:\python38-32\Lib\site-packages\natlinkco
 PS C:\Users\dougr\OneDrive\doug\codingprojects\dt\natlinkkb100\natlink>
 ```
 
+When you have a  natlink.pyd ready to check in, 
+```cpnatlink_to_python38_PYD.ps1``` will put the pyd and debug symbols in the correct location, so that when the natlink
+package is built with flit it will include it.
+
+
 You must exit Dragon before running cpnatlink or you will get  errors.
 
  
 
 
 # Compile instructions
+
 
 ** Create a user environment variable "Natlink_Python" pointing to where you installed Python for natlink. If you have installed 
 natlink already with pip, you can run pye_prefix to get the location if you don't know it:
