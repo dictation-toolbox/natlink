@@ -73,6 +73,8 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	BOOL bSuccess;
 	// load and initialize the Python system
 
+	std::string this_module_path = get_this_module_path();
+	size_t const last_slash = this_module_path.find_last_of("\\");
 
 	//site-packages should be located two above the natlink.pyd.
 	//keep this code around lest we decide to support virtual environments.
@@ -116,8 +118,6 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	m_pDragCode->displayText("\ndisplay text");
 	m_pDragCode->displaySprintf(FALSE, TRUE, "\ndisplay_sprintf %d %s", 1, " inserted string");
-	std::string this_module_path = get_this_module_path();
-	size_t const last_slash = this_module_path.find_last_of("\\");
 	
 
 
@@ -145,7 +145,10 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	PyRun_SimpleString("sys.path.append(core_path)");
 	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 
+	//add the site-packages in case it isn't (i.e. becuase of virtualenv).
 
+	std::string site_packages_cmd = std::string("sys.path.append(") + site_packages + ")";
+	PyRun_SimpleString(site_packages.c_str());
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
