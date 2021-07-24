@@ -10,6 +10,7 @@
 	decision simplifies the design somewhat.
 */
 #include <string>
+#include <algorithm>
 #include "stdafx.h"
 #include "CdgnAppSupport.h"
 
@@ -116,8 +117,6 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	PyRun_SimpleString("import winreg, sys");
 
-	m_pDragCode->displayText("\ndisplay text");
-	m_pDragCode->displaySprintf(FALSE, TRUE, "\ndisplay_sprintf %d %s", 1, " inserted string");
 	
 
 
@@ -145,22 +144,25 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	PyRun_SimpleString("sys.path.append(core_path)");
 	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 
-	//add the site-packages in case it isn't (i.e. becuase of virtualenv).
-
-	std::string site_packages_cmd = std::string("sys.path.append(") + site_packages + ")";
-	PyRun_SimpleString(site_packages.c_str());
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
 	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
 	wchar_t * prefix  = Py_GetPrefix();
 
-	PyRun_SimpleString("print(sys.path)");
-	m_pDragCode->displayText("\nprinted path");
-	PyRun_SimpleString("natlinkpythoninfo.print_python_info()");
-	m_pDragCode->displayText("\nPrinted Python Info");
+	//add the site-packages in case it isn't (i.e. becuase of virtualenv).
+	std::replace(site_packages.begin(), site_packages.end(), '\\', '/');
 
-	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
+	
+	PyRun_SimpleString((std::string("natlink_local_site_package = '") +   site_packages + "'").c_str()); 
+
+	std::string site_packages_cmd = std::string("sys.path.insert(0,natlink_local_site_package)");
+	PyRun_SimpleString(site_packages_cmd.c_str());
+
+	m_pDragCode->displayText(FALSE, TRUE, "Displaying Python Environment:");
+	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkpythoninfo");
+
+	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkmain");
 	m_pDragCode->setDuringInit(FALSE);
 
 

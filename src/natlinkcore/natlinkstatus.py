@@ -2034,7 +2034,7 @@ def main():
     status.checkPydChanges()
     args = ('QEngels', 'C:\\Users\\Gebruiker\\AppData\\Local\\Nuance\\NS15\\Users\\QEngels\\current')
 
-       status.setUserInfo(args)
+    status.setUserInfo(args)
     status.checkSysPath()
 
     print(status.getNatlinkStatusString())
