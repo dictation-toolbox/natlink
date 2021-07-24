@@ -73,14 +73,13 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	BOOL bSuccess;
 	// load and initialize the Python system
 
-	static wchar_t const python_exe[] = L"c:\\users\\dougr\\onedrive\\doug\\codingprojects\\dt\\nl\\scripts\\python.exe";
-	static wchar_t const path_to_natlink[] = L"c:\users\dougr\onedrive\doug\codingprojects\dt\nl\Lib\site-packages\natlinkcore";
 
+	//site-packages should be located two above the natlink.pyd.
+	//keep this code around lest we decide to support virtual environments.
 	std::string site_packages = this_module_path;
 	site_packages.erase(last_slash, -1);
 	size_t const last_slash2 = site_packages.find_last_of("\\");
 	site_packages.erase(last_slash2, -1);
-
 
 	
 	Py_Initialize();
@@ -121,10 +120,6 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	size_t const last_slash = this_module_path.find_last_of("\\");
 	
 
-	char const * sp=site_packages.c_str();
-	m_pDragCode->displaySprintf(FALSE, TRUE, "\nsite packages path %s ", sp);
-	PyRun_SimpleString("sys.path.append('c:\\users\\dougr\\onedrive\\doug\\codingprojects\\dt\\nl\\Lib\\site-packages\\natlinkcore')");
-
 
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
@@ -160,7 +155,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	PyRun_SimpleString("print(sys.path)");
 	m_pDragCode->displayText("\nprinted path");
 	PyRun_SimpleString("natlinkpythoninfo.print_python_info()");
-	m_pDragCode->displayText("Printed Python Info");
+	m_pDragCode->displayText("\nPrinted Python Info");
 
 	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
 	m_pDragCode->setDuringInit(FALSE);
