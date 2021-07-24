@@ -79,8 +79,10 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	//site-packages should be located two above the natlink.pyd.
 	//keep this code around lest we decide to support virtual environments.
-	std::string site_packages = this_module_path;
-	site_packages.erase(last_slash, -1);
+	std::string natlink_core = this_module_path;
+
+	natlink_core.erase(last_slash, -1);
+	std::string site_packages = natlink_core;
 	size_t const last_slash2 = site_packages.find_last_of("\\");
 	site_packages.erase(last_slash2, -1);
 
@@ -147,7 +149,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
-	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
+	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.redirect_output");
 	wchar_t * prefix  = Py_GetPrefix();
 
 	//add the site-packages in case it isn't (i.e. becuase of virtualenv).
@@ -159,7 +161,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	std::string site_packages_cmd = std::string("sys.path.insert(0,natlink_local_site_package)");
 	PyRun_SimpleString(site_packages_cmd.c_str());
 
-	m_pDragCode->displayText(FALSE, TRUE, "Displaying Python Environment:");
+	m_pDragCode->displayText("Displaying Python Environment:", FALSE, TRUE );
 	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkpythoninfo");
 
 	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkmain");
