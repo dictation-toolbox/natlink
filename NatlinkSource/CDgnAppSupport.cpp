@@ -17,10 +17,32 @@
 // from PythWrap.cpp
 CDragonCode* initModule();
 
+
+//see https://gist.github.com/pwm1234/05280cf2e462853e183d
+static std::string get_this_module_path()
+{
+	void* address = (void*)get_this_module_path;
+	char path[FILENAME_MAX];
+	HMODULE hm = NULL;
+
+	if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		(LPCSTR)address,
+		&hm))
+	{
+		//if this fails, well just return nonsense.
+		return "";
+	}
+	GetModuleFileNameA(hm, path, sizeof(path));
+
+	std::string p = path;
+	return p;
+}
 /////////////////////////////////////////////////////////////////////////////
 // CDgnAppSupport
 
 //---------------------------------------------------------------------------
+
 
 CDgnAppSupport::CDgnAppSupport()
 {
@@ -54,17 +76,23 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	static wchar_t const python_exe[] = L"c:\\users\\dougr\\onedrive\\doug\\codingprojects\\dt\\nl\\scripts\\python.exe";
 	static wchar_t const path_to_natlink[] = L"c:\users\dougr\onedrive\doug\codingprojects\dt\nl\Lib\site-packages\natlinkcore";
 
-	Py_SetProgramName(python_exe);
+	std::string site_packages = this_module_path;
+	site_packages.erase(last_slash, -1);
+	size_t const last_slash2 = site_packages.find_last_of("\\");
+	site_packages.erase(last_slash2, -1);
+
+
+	
 	Py_Initialize();
+
 	// Set sys.argv so it exists as [''].
 	PySys_SetArgvEx(1, NULL, 0);
 	PyRun_SimpleString("import winreg, sys");
-	PyRun_SimpleString("sys.path.append('c:\\users\\dougr\\onedrive\\doug\\codingprojects\\dt\\nl\\Lib\\site-packages\\natlinkcore')");
-
 
 	// load the natlink module into Python and return a pointer to the
 	// shared CDragonCode object
 	m_pDragCode = initModule();
+
 	m_pDragCode->setAppClass(this);
 
 //	m_pDragCode->displayText(
@@ -82,6 +110,20 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 		return S_OK;
 	}
 
+	//this is the first place to call m_pDragCode->displayText (or the other functions
+	//that write to the message window) where output will appear.
+
+	PyRun_SimpleString("import winreg, sys");
+
+	m_pDragCode->displayText("\ndisplay text");
+	m_pDragCode->displaySprintf(FALSE, TRUE, "\ndisplay_sprintf %d %s", 1, " inserted string");
+	std::string this_module_path = get_this_module_path();
+	size_t const last_slash = this_module_path.find_last_of("\\");
+	
+
+	char const * sp=site_packages.c_str();
+	m_pDragCode->displaySprintf(FALSE, TRUE, "\nsite packages path %s ", sp);
+	PyRun_SimpleString("sys.path.append('c:\\users\\dougr\\onedrive\\doug\\codingprojects\\dt\\nl\\Lib\\site-packages\\natlinkcore')");
 
 
 	/*
@@ -96,8 +138,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	* is that we add a value to the path which is already there.
 	*/
 
-#if 0  this is all useless now
-	PyRun_SimpleString("import winreg, sys");
+
 	PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Python\\\\PythonCore\\\\{str(sys.winver)}\\\\PythonPath\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
 	// PyRun_SimpleString returns 0 on success and -1 if an exception is raised.
 	if (PyRun_SimpleString("natlink_key = winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags)")) {
@@ -109,16 +150,17 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	PyRun_SimpleString("sys.path.append(core_path)");
 	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 
-#endif
+
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
 	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
 	wchar_t * prefix  = Py_GetPrefix();
 
+	PyRun_SimpleString("print(sys.path)");
+	m_pDragCode->displayText("\nprinted path");
 	PyRun_SimpleString("natlinkpythoninfo.print_python_info()");
 	m_pDragCode->displayText("Printed Python Info");
- 
 
 	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
 	m_pDragCode->setDuringInit(FALSE);

@@ -23,6 +23,8 @@ typedef const char * PCCHAR;
 #ifndef DRAGONCODE_H
 #define DRAGONCODE_H
 
+//sprintf bufferer 
+#define CDRAGONCODE_BUFSIZE 5000
 
 class CDragonCode
 {
@@ -68,6 +70,11 @@ class CDragonCode
 	BOOL setChangeCallback( PyObject *pCallback );
 	BOOL playString( const char * pszKeys, DWORD dwFlags );
 	BOOL displayText( const char * pszText, BOOL bError = TRUE, BOOL blogText = TRUE );
+	BOOL wdisplayText(const wchar_t* pszText, BOOL bError = TRUE, BOOL blogText = TRUE);
+
+	BOOL displaySprintf(BOOL bError, BOOL blogText,const char fmt[],... );
+	BOOL displayWsprintf(BOOL bError, BOOL blogText,const wchar_t fmt[],...);
+
 	BOOL setMicState( const char * pszState );
 	BOOL recognitionMimic( PCCHAR * ppWords );
 	BOOL execScript(
