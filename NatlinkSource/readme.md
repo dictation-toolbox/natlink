@@ -92,8 +92,7 @@ c:\python38-32
 
 
 Currently only tested on windows 
-- Install VisulStudio 2022 or later and ensure that you are also installing C++ support (Desktop Develpment with C++).  You can 
-no longer use VisualStudio 2019.  During debugging the project was upgraded as bugs were suspected in VS 2019 (erroneously.).  
+- Visual Studio 2019 only.  
 
 - Install python 3.8 **32  bit build** on your computer, **for all users**.  it is a good idea to install it 
    at c:\python38-32 rather than in c:\Program files (x86)\ to reduce the directory navigation requirements.  
