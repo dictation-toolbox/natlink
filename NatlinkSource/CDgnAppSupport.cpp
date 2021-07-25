@@ -99,8 +99,6 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	m_pDragCode->setAppClass(this);
 
-//	m_pDragCode->displayText(
-//		"\nCDgnAppSupport::Register calling natConnect\r\n", TRUE);
 	// simulate calling natlink.natConnect() except share the site object
 	bSuccess = m_pDragCode->natConnect(pIDgnSite);
 
@@ -117,10 +115,6 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	//this is the first place to call m_pDragCode->displayText (or the other functions
 	//that write to the message window) where output will appear.
 
-	PyRun_SimpleString("import winreg, sys");
-
-	
-
 
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
@@ -134,37 +128,48 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	* is that we add a value to the path which is already there.
 	*/
 
+	
+	if (0) 
+	{
+		//this is no longer useful.
+		PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Python\\\\PythonCore\\\\{str(sys.winver)}\\\\PythonPath\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
+		// PyRun_SimpleString returns 0 on success and -1 if an exception is raised.
+		if (PyRun_SimpleString("natlink_key = winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags)")) {
+			m_pDragCode->displayText("Failed to find Natlink key in Windows registry.\r\n");
+		}
+		if (PyRun_SimpleString("core_path = winreg.QueryValue(natlink_key, \"\")")) {
+			m_pDragCode->displayText("Failed to extract value from Natlink key.\r\n");
+		}
 
-	PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Python\\\\PythonCore\\\\{str(sys.winver)}\\\\PythonPath\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
-	// PyRun_SimpleString returns 0 on success and -1 if an exception is raised.
-	if (PyRun_SimpleString("natlink_key = winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags)")) {
-		m_pDragCode->displayText("Failed to find Natlink key in Windows registry.\r\n");
+		PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 	}
-	if (PyRun_SimpleString("core_path = winreg.QueryValue(natlink_key, \"\")")) {
-		m_pDragCode->displayText("Failed to extract value from Natlink key.\r\n");
-	}
+	std::replace(natlink_core.begin(),natlink_core.end(),'\\','/');
+	std::string set_core ( "natlink_core = '");
+	set_core += (natlink_core + "'.replace('/','\\\\')'");
+
+
+	PyRun_SimpleString(set_core.c_str());
 	PyRun_SimpleString("sys.path.append(core_path)");
-	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
-
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
 	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.redirect_output");
 	wchar_t * prefix  = Py_GetPrefix();
 
-	//add the site-packages in case it isn't (i.e. becuase of virtualenv).
+	//add the site-packages in case it isn't (i.e. in case of virtualenv).
 	std::replace(site_packages.begin(), site_packages.end(), '\\', '/');
 
 	
-	PyRun_SimpleString((std::string("natlink_local_site_package = '") +   site_packages + "'").c_str()); 
+	PyRun_SimpleString((std::string("natlink_local_site_package = '") +   site_packages + 
+		"'.replace('/','\\\\')").c_str());
 
 	std::string site_packages_cmd = std::string("sys.path.insert(0,natlink_local_site_package)");
 	PyRun_SimpleString(site_packages_cmd.c_str());
-
-	m_pDragCode->displayText("Displaying Python Environment:", FALSE, TRUE );
+	m_pDragCode->displayText("\nDisplaying Python Environment\n", FALSE, TRUE );
 	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkpythoninfo");
 
-	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkmain");
+	//import qualified import natlinkcore.natlinkmain is currently not working.
+	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
 	m_pDragCode->setDuringInit(FALSE);
 
 
