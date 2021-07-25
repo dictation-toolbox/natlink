@@ -1041,13 +1041,14 @@ def run():
     """run natlink
     """
     #pylint:disable=C0415, W0611
+
+
+
     if not Testing:
         import redirect_output
         start_natlink()
     else:
         print("natlinkmain is in testing mode...")
-
-
 
 if __name__ == "natlinkmain":
     if canStartNatlink:

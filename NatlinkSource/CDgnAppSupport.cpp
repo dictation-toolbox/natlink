@@ -10,6 +10,7 @@
 	decision simplifies the design somewhat.
 */
 #include <string>
+#include <algorithm>
 #include "stdafx.h"
 #include "CdgnAppSupport.h"
 
@@ -17,10 +18,32 @@
 // from PythWrap.cpp
 CDragonCode* initModule();
 
+
+//see https://gist.github.com/pwm1234/05280cf2e462853e183d
+static std::string get_this_module_path()
+{
+	void* address = (void*)get_this_module_path;
+	char path[FILENAME_MAX];
+	HMODULE hm = NULL;
+
+	if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		(LPCSTR)address,
+		&hm))
+	{
+		//if this fails, well just return nonsense.
+		return "";
+	}
+	GetModuleFileNameA(hm, path, sizeof(path));
+
+	std::string p = path;
+	return p;
+}
 /////////////////////////////////////////////////////////////////////////////
 // CDgnAppSupport
 
 //---------------------------------------------------------------------------
+
 
 CDgnAppSupport::CDgnAppSupport()
 {
@@ -50,18 +73,32 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 {
 	BOOL bSuccess;
 	// load and initialize the Python system
+
+	std::string this_module_path = get_this_module_path();
+	size_t const last_slash = this_module_path.find_last_of("\\");
+
+	//site-packages should be located two above the natlink.pyd.
+	//keep this code around lest we decide to support virtual environments.
+	std::string natlink_core = this_module_path;
+
+	natlink_core.erase(last_slash, -1);
+	std::string site_packages = natlink_core;
+	size_t const last_slash2 = site_packages.find_last_of("\\");
+	site_packages.erase(last_slash2, -1);
+
+	
 	Py_Initialize();
 
 	// Set sys.argv so it exists as [''].
 	PySys_SetArgvEx(1, NULL, 0);
+	PyRun_SimpleString("import winreg, sys");
 
 	// load the natlink module into Python and return a pointer to the
 	// shared CDragonCode object
 	m_pDragCode = initModule();
+
 	m_pDragCode->setAppClass(this);
 
-	m_pDragCode->displayText(
-		"\nCDgnAppSupport::Register calling natConnect\r\n", TRUE);
 	// simulate calling natlink.natConnect() except share the site object
 	bSuccess = m_pDragCode->natConnect(pIDgnSite);
 
@@ -75,6 +112,10 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 		return S_OK;
 	}
 
+	//this is the first place to call m_pDragCode->displayText (or the other functions
+	//that write to the message window) where output will appear.
+
+
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
 	* According to PEP514 python should scan this registry location when
@@ -86,21 +127,48 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	* Exceptions raised here will not cause a crash, so the worst case scenario
 	* is that we add a value to the path which is already there.
 	*/
-	PyRun_SimpleString("import winreg, sys");
-	PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Python\\\\PythonCore\\\\{str(sys.winver)}\\\\PythonPath\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
-	// PyRun_SimpleString returns 0 on success and -1 if an exception is raised.
-	if (PyRun_SimpleString("natlink_key = winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags)")) {
-		m_pDragCode->displayText("Failed to find Natlink key in Windows registry.\r\n");
+
+	
+	if (0) 
+	{
+		//this is no longer useful.
+		PyRun_SimpleString("hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, f\"Software\\\\Python\\\\PythonCore\\\\{str(sys.winver)}\\\\PythonPath\\\\Natlink\", winreg.KEY_WOW64_32KEY)");
+		// PyRun_SimpleString returns 0 on success and -1 if an exception is raised.
+		if (PyRun_SimpleString("natlink_key = winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags)")) {
+			m_pDragCode->displayText("Failed to find Natlink key in Windows registry.\r\n");
+		}
+		if (PyRun_SimpleString("core_path = winreg.QueryValue(natlink_key, \"\")")) {
+			m_pDragCode->displayText("Failed to extract value from Natlink key.\r\n");
+		}
+
+		PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 	}
-	if (PyRun_SimpleString("core_path = winreg.QueryValue(natlink_key, \"\")")) {
-		m_pDragCode->displayText("Failed to extract value from Natlink key.\r\n");
-	}
+	std::replace(natlink_core.begin(),natlink_core.end(),'\\','/');
+	std::string set_core ( "natlink_core = '");
+	set_core += (natlink_core + "'.replace('/','\\\\')'");
+
+
+	PyRun_SimpleString(set_core.c_str());
 	PyRun_SimpleString("sys.path.append(core_path)");
-	PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
-	m_pNatLinkMain = PyImport_ImportModule("redirect_output");
+	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.redirect_output");
+	wchar_t * prefix  = Py_GetPrefix();
+
+	//add the site-packages in case it isn't (i.e. in case of virtualenv).
+	std::replace(site_packages.begin(), site_packages.end(), '\\', '/');
+
+	
+	PyRun_SimpleString((std::string("natlink_local_site_package = '") +   site_packages + 
+		"'.replace('/','\\\\')").c_str());
+
+	std::string site_packages_cmd = std::string("sys.path.insert(0,natlink_local_site_package)");
+	PyRun_SimpleString(site_packages_cmd.c_str());
+	m_pDragCode->displayText("\nDisplaying Python Environment\n", FALSE, TRUE );
+	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.natlinkpythoninfo");
+
+	//import qualified import natlinkcore.natlinkmain is currently not working.
 	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
 	m_pDragCode->setDuringInit(FALSE);
 

@@ -8,7 +8,6 @@ echo "Natlink binary $natlink_binary copying to $target_dir"
 
 
 Copy-Item    $natlink_binary -Destination $target_dir/natlink_3.8_Ver15.pyd
-Copy-Item    $natlink_symbols -Destination $target_dir/natlink_3.8_Ver15.pdb
 
 
-echo "copied natlink.dll and natlink.pyd to $target_dir"
+echo "copied natlink.pyd to $target_dir"

@@ -58,6 +58,9 @@ NatlinkSource/*.user
 NatlinkSource/*.aps
 
 NatlinkSource/natlnkps/
+NatlinkSource/natlinkPS/DebugPS/
+NatlinkSource/x64/
+ 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
 
