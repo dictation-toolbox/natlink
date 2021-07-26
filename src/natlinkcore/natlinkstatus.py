@@ -137,6 +137,7 @@ from natlinkcore import natlinkcorefunctions
 # from natlinkcore import inivars
 from natlinkcore.pathqh import path
 from natlinkcore import __init__
+from natlink import isNatSpeakRunning
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -694,6 +695,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def clearUserInfo(self):
         """clear UserInfo
         """
+        print(f'clear all user info, UserArgsDict (with language {self.__class__.UserArgsDict["languane"]})')
         self.__class__.UserArgsDict.clear()
 
     def getUserName(self):
@@ -1647,12 +1649,14 @@ Please try to correct this by running the Natlink Config Program (with administr
         'tst' if not set, probably no speech profile on then
 
         """
-        # try:
-        lang = self.__class__.UserArgsDict['language']
-        return lang
-        # except KeyError:
-        #     print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return "tst"')
-        #     return 'tst'
+        try:
+            lang = self.__class__.UserArgsDict['language']
+            return lang
+        except KeyError:
+            if isNatSpeakRunning():
+                print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return "tst"')
+            else:
+                print('natlinkstatus.getLanguage, Dragon not active, return ""')
 
     def getUserLanguage(self):
         """get userLanguage from UserArgsDict
@@ -1702,13 +1706,20 @@ Please try to correct this by running the Natlink Config Program (with administr
         """return the shiftkey, for setting in natlinkmain when user language changes.
 
         used for self.playString in natlinkutils, for the dropping character bug. (dec 2015, QH).
+        
+        This option was not correct all the time, as it does not go about the user language,
+        but about the system language doing the keypresses.
+        
+        Moreover with newer versions of doing keystrokes, it seems not sensible to keep this option active.
+        Now reduce to return "{shift}".
         """
-        language = self.getLanguage()
-        try:
-            return "{%s}"% shiftKeyDict[language]
-        except KeyError:
-            print('no shiftKey code provided for language: %s, take empty string.'% language)
-            return ""
+        return "{shift}"
+        # language = self.getLanguage()
+        # try:
+        #     return "{%s}"% shiftKeyDict[language]
+        # except KeyError:
+        #     print('no shiftKey code provided for language: %s, take empty string.'% language)
+        #     return ""
 
     # get different debug options for natlinkmain:
     def getDebugLoad(self):
