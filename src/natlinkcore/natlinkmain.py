@@ -926,6 +926,9 @@ def start_natlink(doNatConnect=None):
     #pylint:disable=W0603, R0912, R0915
     global loadedFiles
     print('--')
+    if list(globals().keys()).__contains__('core'):
+        print("\nstart_natlink core={core}")
+
     nGrammarsLoaded = len(loadedFiles)
     if nGrammarsLoaded:
         if debugLoad:
@@ -1043,13 +1046,14 @@ def run():
     """run natlink
     """
     #pylint:disable=C0415, W0611
+
+
+
     if not Testing:
         import redirect_output
         start_natlink()
     else:
         print("natlinkmain is in testing mode...")
-
-
 
 if __name__ == "natlinkmain":
     if canStartNatlink:

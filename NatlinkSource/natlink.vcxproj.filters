@@ -107,6 +107,7 @@
     <None Include="CDgnAppSupport.rgs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\src\natlinkcore\natlinkpythoninfo.py" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="natlink.idl">

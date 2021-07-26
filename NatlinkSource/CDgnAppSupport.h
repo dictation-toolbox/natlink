@@ -68,6 +68,10 @@ public:
 #endif
 	STDMETHOD(Register)(IServiceProvider*);
 
+	static int pyrun_string(const char python_cmd[]);
+	static int pyrun_string(std::string python_cmd);
+
+
 	
 
 protected:

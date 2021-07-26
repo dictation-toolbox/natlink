@@ -126,8 +126,9 @@
 #include "MessageWindow.h"
 #include "Exceptions.h"
 #include "CDgnAppSupport.h"
-
+#include <memory>
 #include <cstring>
+using namespace std;
 
 // defined in PythWrap.cpp
 CResultObject * resobj_new();
@@ -1093,7 +1094,35 @@ BOOL CDragonCode::displayText(
 	}
 	return TRUE;
 }
+BOOL CDragonCode::wdisplayText(const wchar_t* pszText, BOOL bError, BOOL blogText)
+{
+	char* raw_buf = 0;
+	std::unique_ptr<char>  buf(raw_buf = new char[CDRAGONCODE_BUFSIZE]);
+	wcstombs(raw_buf, pszText, CDRAGONCODE_BUFSIZE);
+	return this->displayText(raw_buf, bError, blogText);
+}
 
+
+BOOL CDragonCode::displaySprintf(BOOL bError, BOOL blogText, const char fmt[], ...)
+{
+	va_list       val;
+	va_start(val, fmt);
+	char* raw_buf=0;
+	std::unique_ptr<char>  buf( raw_buf=new char[CDRAGONCODE_BUFSIZE]);
+	vsnprintf(raw_buf, CDRAGONCODE_BUFSIZE,fmt,val);
+	BOOL rv = this->displayText( raw_buf, bError, blogText );
+	return rv;
+	}
+BOOL CDragonCode::displayWsprintf(BOOL bError, BOOL blogText, const wchar_t fmt[], ...)
+{
+	va_list       val;
+	va_start(val, fmt);
+	wchar_t* raw_buf = 0;
+	std::unique_ptr<wchar_t>  buf(raw_buf = new wchar_t[CDRAGONCODE_BUFSIZE]);
+	vswprintf(raw_buf, CDRAGONCODE_BUFSIZE, fmt, val);
+	BOOL rv = this->wdisplayText(raw_buf, bError, blogText);
+	return rv;
+}
 //---------------------------------------------------------------------------
 
 void CDragonCode::onAttribChanged( WPARAM wParam )
