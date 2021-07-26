@@ -137,7 +137,13 @@ from natlinkcore import natlinkcorefunctions
 # from natlinkcore import inivars
 from natlinkcore.pathqh import path
 from natlinkcore import __init__
-from natlink import isNatSpeakRunning
+try: 
+    from natlinkcore.natlink import isNatSpeakRunning
+except ImportError:
+    def isNatSpeakRunning():
+        """mock up in case natlink is not importable
+        """
+        return False
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
