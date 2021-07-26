@@ -926,6 +926,9 @@ def start_natlink(doNatConnect=None):
     #pylint:disable=W0603, R0912, R0915
     global loadedFiles
     print('--')
+    if list(globals().keys()).__contains__('core'):
+        print("\nstart_natlink core={core}")
+
     nGrammarsLoaded = len(loadedFiles)
     if nGrammarsLoaded:
         if debugLoad:
