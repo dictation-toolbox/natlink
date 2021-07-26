@@ -195,9 +195,10 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
     pyrun_string("npi.output_debug_string_python_info()");
 
 	static const char natlink_imp[] = "natlinkmain";
+	pyrun_string("import natlinkcore.natlinkmain as nlm");
+
 	OutputDebugStringA((std::string("importing ") + natlink_imp).c_str());
 
-	//import qualified import natlinkcore.natlinkmain is currently not working.
 	m_pNatLinkMain = PyImport_ImportModule(natlink_imp);
 	m_pDragCode->setDuringInit(FALSE);
 
