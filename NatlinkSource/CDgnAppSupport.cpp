@@ -74,9 +74,22 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	BOOL bSuccess;
 	// load and initialize the Python system
 
+<<<<<<< HEAD
 	std::string this_module_path = get_this_module_path();
 	size_t const last_slash = this_module_path.find_last_of("\\");
 
+=======
+
+	//please don't take out te OutputDebugString calls.  They are harmless
+	//and we can run DebugView if we need.
+
+	std::string this_module_path = get_this_module_path();
+	size_t const last_slash = this_module_path.find_last_of("\\");
+
+	//to see  OutputDebugString  output run "DebugView" from the sysnternals suite. 
+
+	OutputDebugStringA((std::string("CDGnAppSupport::Register, in DLL") + this_module_path).c_str());
+>>>>>>> feature_virtualenv
 	//site-packages should be located two above the natlink.pyd.
 	//keep this code around lest we decide to support virtual environments.
 	std::string natlink_core = this_module_path;
@@ -85,13 +98,28 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	std::string site_packages = natlink_core;
 	size_t const last_slash2 = site_packages.find_last_of("\\");
 	site_packages.erase(last_slash2, -1);
+<<<<<<< HEAD
 
 	
+=======
+	
+	OutputDebugStringA(("\nnatlink: site_packages dir " + site_packages).c_str());
+
+	OutputDebugString(TEXT("Callng PyInitialize"));
+
+>>>>>>> feature_virtualenv
 	Py_Initialize();
 
 	// Set sys.argv so it exists as [''].
 	PySys_SetArgvEx(1, NULL, 0);
+<<<<<<< HEAD
 	PyRun_SimpleString("import winreg, sys");
+=======
+	pyrun_string("import winreg, sys");
+	pyrun_string("ctypes");
+	//bring in a function o.outputDebugString to write a python to OutputDebugString
+	pyrun_string("import pydebugstring.output as o");
+>>>>>>> feature_virtualenv
 
 	// load the natlink module into Python and return a pointer to the
 	// shared CDragonCode object
@@ -99,6 +127,10 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	m_pDragCode->setAppClass(this);
 
+<<<<<<< HEAD
+=======
+	OutputDebugString(TEXT("Callng natConnect"));
+>>>>>>> feature_virtualenv
 	// simulate calling natlink.natConnect() except share the site object
 	bSuccess = m_pDragCode->natConnect(pIDgnSite);
 
@@ -115,6 +147,10 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	//this is the first place to call m_pDragCode->displayText (or the other functions
 	//that write to the message window) where output will appear.
 
+<<<<<<< HEAD
+=======
+	m_pDragCode->displayText("\nFor diagnosing natlink startup issues use DebugView from sysinternals. \n");
+>>>>>>> feature_virtualenv
 
 	/*
 	* https://www.python.org/dev/peps/pep-0514/
@@ -144,6 +180,7 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 		PyRun_SimpleString("winreg.CloseKey(natlink_key)");
 	}
 	std::replace(natlink_core.begin(),natlink_core.end(),'\\','/');
+<<<<<<< HEAD
 	std::string set_core ( "natlink_core = '");
 	set_core += (natlink_core + "'.replace('/','\\\\')'");
 
@@ -154,11 +191,29 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit(TRUE);
 	m_pNatLinkMain = PyImport_ImportModule("natlinkcore.redirect_output");
+=======
+	std::string set_core ( "core = '");
+	set_core += (natlink_core + "'.replace('/','\\\\')");
+	OutputDebugStringA(set_core.c_str());
+	pyrun_string(set_core);
+	pyrun_string("sys.path.append(core)");
+
+	m_pDragCode->displayText("path: ");
+	pyrun_string("print(sys.path)");
+
+
+	pyrun_string("o.outputDebugString(f'{sys.path}')");
+
+	// now load the Python code which sets all the callback functions
+	m_pDragCode->setDuringInit(TRUE);
+	PyImport_ImportModule("natlinkcore.redirect_output");
+>>>>>>> feature_virtualenv
 	wchar_t * prefix  = Py_GetPrefix();
 
 	//add the site-packages in case it isn't (i.e. in case of virtualenv).
 	std::replace(site_packages.begin(), site_packages.end(), '\\', '/');
 
+<<<<<<< HEAD
 	
 	PyRun_SimpleString((std::string("natlink_local_site_package = '") +   site_packages + 
 		"'.replace('/','\\\\')").c_str());
@@ -170,6 +225,29 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	//import qualified import natlinkcore.natlinkmain is currently not working.
 	m_pNatLinkMain = PyImport_ImportModule("natlinkmain");
+=======
+	pyrun_string(std::string("natlink_local_site_package = '") +   site_packages +
+		"'.replace('/','\\\\')");
+
+	std::string site_packages_cmd = std::string("sys.path.insert(0,natlink_local_site_package)");
+	pyrun_string(site_packages_cmd);
+
+	pyrun_string("o.outputDebugString(f'{sys.path}')");
+
+	m_pDragCode->displayText("\nDisplaying Python Environment\n", FALSE, TRUE );
+
+	OutputDebugStringA("\nnatlinkpythoninfo");
+	pyrun_string("import pydebugstring.output as o");
+	pyrun_string("import natlinkcore.natlinkpythoninfo as npi");
+    pyrun_string("npi.output_debug_string_python_info()");
+
+	static const char natlink_imp[] = "natlinkmain";
+	pyrun_string("import natlinkcore.natlinkmain as nlm");
+
+	OutputDebugStringA((std::string("importing ") + natlink_imp).c_str());
+
+	m_pNatLinkMain = PyImport_ImportModule(natlink_imp);
+>>>>>>> feature_virtualenv
 	m_pDragCode->setDuringInit(FALSE);
 
 
@@ -263,4 +341,15 @@ STDMETHODIMP CDgnAppSupport::EndProcess(DWORD dwProcessID)
 void CDgnAppSupport::reloadPython()
 {
 	PyImport_ReloadModule(m_pNatLinkMain);
+}
+int CDgnAppSupport::pyrun_string(const char python_cmd[])
+{
+	return pyrun_string(std::string(python_cmd));
+}
+int CDgnAppSupport::pyrun_string(std::string python_cmd)
+{
+	std::string message = std::string("CDgnAppSupport Running python: ") + python_cmd;
+	char const* const msg_str = python_cmd.c_str();
+	OutputDebugStringA(msg_str);
+	return PyRun_SimpleString(python_cmd.c_str());
 }

@@ -1,7 +1,11 @@
 
 import sys
 import sysconfig
+<<<<<<< HEAD
 
+=======
+import pydebugstring.output as o
+>>>>>>> feature_virtualenv
 def python_info():
     """ return information about the python version and environment as  a string."""
 # print out python information
@@ -17,5 +21,18 @@ def python_info():
 def print_python_info():
         return print(f"Python Information:\n{python_info()}")
 
+<<<<<<< HEAD
 print_python_info()
 
+=======
+def output_debug_string_python_info():
+    o.outputDebugString(f"{__name__} output_debug_string_info")
+    py_info = python_info()
+    o.outputDebugString( f"Python Information: {py_info}")
+
+o.outputDebugString(f"Loading {__name__}")
+
+
+if __name__ == '__main__':
+    print_python_info()
+>>>>>>> feature_virtualenv
