@@ -992,6 +992,8 @@ def start_natlink(doNatConnect=None):
 
     # load all global files in user directory and current directory
     # findAndLoadFiles() is done in the changeCallback function
+    currentUser = natlink.getCurrentUser()
+    print(f'currentUser at start of Natlink: {currentUser}')
     changeCallback('user', natlink.getCurrentUser())
 
     # initialize our callbacks

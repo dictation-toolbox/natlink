@@ -1646,12 +1646,12 @@ Please try to correct this by running the Natlink Config Program (with administr
         'tst' if not set, probably no speech profile on then
 
         """
-        try:
-            lang = self.__class__.UserArgsDict['language']
-            return lang
-        except KeyError:
-            print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return "tst"')
-            return 'tst'
+        # try:
+        lang = self.__class__.UserArgsDict['language']
+        return lang
+        # except KeyError:
+        #     print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return "tst"')
+        #     return 'tst'
 
     def getUserLanguage(self):
         """get userLanguage from UserArgsDict
