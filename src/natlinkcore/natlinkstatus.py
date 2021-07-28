@@ -1450,12 +1450,12 @@ Please try to correct this by running the Natlink Config Program (with administr
         try:
             import vocola2
         except ImportError:
-            print('Cannot find VocolaDirectory, return ""')
+            print('Vocola is not installed, no VocolaDirectory')
             self.VocolaDirectory = ""
             return ""
 
         self.VocolaDirectory = vocola2.__path__[0]
-        # print(f'VocolaDirectory: {self.VocolaDirectory}')
+        print(f'VocolaDirectory: {self.VocolaDirectory}')
         controlGrammarFile = os.path.join(self.VocolaDirectory, '_vocola_main.py')
         if not os.path.isfile(controlGrammarFile):
             print(f'Cannot find "_vocola_main.py" in VocolaDirectory ({self.VocolaDirectory}), return ""')
