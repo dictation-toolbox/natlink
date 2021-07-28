@@ -137,6 +137,13 @@ from natlinkcore import natlinkcorefunctions
 # from natlinkcore import inivars
 from natlinkcore.pathqh import path
 from natlinkcore import __init__
+
+try:
+    from natlinkcore import natlink
+except (ModuleNotFoundError, ImportError):
+    print('Natlink.dll can not be imported in natlinkstatus')
+    natlink = None
+
 try: 
     from natlinkcore.natlink import isNatSpeakRunning
 except ImportError:
@@ -144,6 +151,14 @@ except ImportError:
         """mock up in case natlink is not importable
         """
         return False
+try: 
+    from natlinkcore.natlink import getCurrentUser
+except ImportError:
+    def getCurrentUser():
+        """mock up in case natlink is not importable
+        """
+        return False
+
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -1649,20 +1664,41 @@ Please try to correct this by running the Natlink Config Program (with administr
         except KeyError:
             return self.getBaseTopic()
 
-    def getLanguage(self):
+    def getLanguage(self, recursive=0):
         """get language from UserArgsDict
 
         'tst' if not set, probably no speech profile on then
 
         """
+        if natlink is None:
+            return 'enx'  ## natlink not loaded
+
         try:
-            lang = self.__class__.UserArgsDict['language']
-            return lang
+            language = self.__class__.UserArgsDict['language']
         except KeyError:
-            if isNatSpeakRunning():
-                print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return "tst"')
-            else:
-                print('natlinkstatus.getLanguage, Dragon not active, return ""')
+            language = 'enx'  # take default for test purposes
+            if recursive:
+                print(f'natlinkstatus.getLanguage, recursive call, return "{language}"')
+                return language
+            
+
+            if not isNatSpeakRunning():
+                print(f'natlinkstatus.getLanguage, Dragon not active, return "{language}"')
+                return language
+
+            try:            
+                args = getCurrentUser()
+            except natlink.NatError:
+                print(f'natlinkstatus.getLanguage, natlink is not connected yet, return "{language}"')
+
+            if not args:
+                print(f'natlinkstatus.getLanguage, cannot get UserInfo from getCurrentUser, return "{language}"')
+                return language                    
+            self.setUserInfo(args)
+            recursive += 1
+            language = self.getLanguage(recursive=recursive)
+            return language
+        return language
 
     def getUserLanguage(self):
         """get userLanguage from UserArgsDict
@@ -1719,6 +1755,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         Moreover with newer versions of doing keystrokes, it seems not sensible to keep this option active.
         Now reduce to return "{shift}".
         """
+        #pylint:disable=R0201
         return "{shift}"
         # language = self.getLanguage()
         # try:

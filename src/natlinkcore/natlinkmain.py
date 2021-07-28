@@ -130,7 +130,7 @@ vocolaModule = None    # pointer to the module...
 
 reVocolaModuleName = re.compile(r'_vcl[0-9]?$')
 
-debugLoad = debugCallback = True
+debugLoad = debugCallback = False
 canStartNatlink = True
 if status.getDNSInstallDir() == -1:
     print('DNSInstallDir not valid, please run the Natlink config GUI to fix this')
@@ -811,11 +811,10 @@ def changeCallback(Type,args):
         ## update userInfo
         ## other user, setUserInfo in status:
         # print(f'setUserInfo in status to {args}')
-        prevLanguage = language
+        # prevLanguage = language   
         # status.clearUserInfo()
         status.setUserInfo(args)
         language = status.getLanguage()
-        print(f'after setting userInfo: language: {language}, prev: {prevLanguage}')
         # print(f'old language: {prevLanguage}, new language: {language}')
         # print(f'userLanguage: {status.getUserLanguage()}')
         if debugCallback:
@@ -827,8 +826,6 @@ def changeCallback(Type,args):
             # first time, no print message, but next time do...
             print("\n--- user changed to: %s"% args[0])
             changeCallbackUserFirst = False
-        if language == prevLanguage:
-            print(f'changeCallback language: {language}, prevLanguage: {prevLanguage}')
             return 
 
         unloadEverything()

@@ -44,11 +44,14 @@ import win32con
 ## 
 
 def send_input(events):
+    #pylint:disable=C0116, 
     inputs = [e.to_input() for e in events]
-    input = (Input * len(events))(*inputs)
-    inserted = windll.user32.SendInput(len(input), byref(input), sizeof(Input))
-    if inserted != len(events):
-        raise ValueError("windll.user32.SendInput: " + FormatMessage())
+    _input = (Input * len(events))(*inputs)
+    inserted = windll.user32.SendInput(len(_input), byref(_input), sizeof(Input))
+    # QH: do not know what to do with this:
+    if int(inserted) != len(events):
+        raise ValueError(f'send_input: wrong length, inserted: {len(inserted)}, events: {len(events)}')
+        # raise ValueError("windll.user32.SendInput: " + FormatMessage())
 
 
 ## 
