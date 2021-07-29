@@ -311,7 +311,13 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             try:
                 os.remove(currentPydFile)
             except (WindowsError, OSError):
-                self.fatal_error('cannot remove natlink.pyd from the core directory: %s\nProbably Dragon is running'% _coreDir)
+                messList = [f'Cannot remove natlink.pyd from the core directory: {_coreDir}',
+                        '', 
+                        'Probably Dragon is running.',
+                        'But if this error occurs while Dragon is NOT running,',
+                        'please try to remove "natlink.pyd" from the core directory (see above)',
+                        'and re-run this program']
+                self.fatal_error('\n'.join(messList))
                 return None
         if os.path.isfile(currentPydFile):
             self.fatal_error('strange, could not remove "natlink.pyd" from the core directory: "%s"Possibly Dragon is running'% _coreDir)
