@@ -2,6 +2,7 @@
 """this script should start the module natlinkconfigfunctions.py in elevated mode.
     
 """
+#pylint:disable=W0611, W0702
 import os
 import sys
 import time
@@ -37,7 +38,7 @@ if sys.version.find("64 bit") >= 0:
     sys.exit()
 
 try:
-    from win32api import ShellExecute, GetVersionEx
+    from win32api import ShellExecute
 except ImportError:
     print('Unable to start the configuration program of')
     print('Natlink/Unimacro/Vocola, because the')
