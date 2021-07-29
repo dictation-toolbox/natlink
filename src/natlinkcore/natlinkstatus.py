@@ -1374,7 +1374,9 @@ Please try to correct this by running the Natlink Config Program (with administr
             if cdPath.is_symlink():
                 cdResolved = cdPath.resolve()
                 raise OSError(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}\ndo not use --symlink with flit install')
-            return os.path.normpath(str(cdPath))
+            CDPath = str(cdPath)
+            del cdPath
+            return os.path.normpath(CDPath)
         if coreDir.find('\\src\\') > 0:
             # opened from github clone, find site-packages directory
             spCoreDir = self.findInSitePackages(coreDir)
