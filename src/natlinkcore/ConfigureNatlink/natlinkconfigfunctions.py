@@ -311,7 +311,9 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             try:
                 os.remove(currentPydFile)
             except (WindowsError, OSError):
-                messList = [f'Cannot remove natlink.pyd from the core directory: {_coreDir}',
+                messList = ['Cannot remove natlink.pyd from the core directory:',
+                            '',
+                            f'{_coreDir}',
                         '', 
                         'Probably Dragon is running.',
                         'But if this error occurs while Dragon is NOT running,',
@@ -1263,7 +1265,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 mess = ['natlinkconfigfunctions failed because of fatal error:',
                     '', message, '',
                     'So if Dragon is running, close it.', '',
-                    'Then try, if you choose to do so, to Re-register Natlink with this program', '(option "r" in the CLI, Command Line Interface).',
+                    'Then try to Re-register natlink.pyd with this program', '(option "r" in the CLI, Command Line Interface).',
                     ]
             else:    
                 mess = ['natlinkconfigfunctions failed because of fatal error:',
