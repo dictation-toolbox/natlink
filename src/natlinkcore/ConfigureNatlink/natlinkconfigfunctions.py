@@ -218,7 +218,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         - original path of pyd file is kept in NatlinkPydOrigin
         
         """
-        #pylint:disable=W0613, R0911
+        #pylint:disable=W0613, R0911, R0912
 
         self.checkedUrgent = 1
         if sys.version.find("64 bit") >= 0:
