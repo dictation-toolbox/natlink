@@ -15,8 +15,6 @@ Start a :code:`Cmd` shell in elevated mode.
    $ pip install natlink
    $ natlinkconfig_cli
 
-       
-   
 The configure program GUI seems not to work, so use the CLI (Command Line Interface).
 
 Next type r ((re)Register)
