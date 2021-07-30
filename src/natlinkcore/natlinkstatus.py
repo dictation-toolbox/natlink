@@ -138,26 +138,6 @@ from natlinkcore import natlinkcorefunctions
 from natlinkcore.pathqh import path
 from natlinkcore import __init__
 
-try:
-    from natlinkcore import natlink
-except (ModuleNotFoundError, ImportError):
-    print('Natlink.dll can not be imported in natlinkstatus')
-    natlink = None
-
-try: 
-    from natlinkcore.natlink import isNatSpeakRunning
-except ImportError:
-    def isNatSpeakRunning():
-        """mock up in case natlink is not importable
-        """
-        return False
-try: 
-    from natlinkcore.natlink import getCurrentUser
-except ImportError:
-    def getCurrentUser():
-        """mock up in case natlink is not importable
-        """
-        return False
 
 # for getting generalised env variables:
 
@@ -1672,34 +1652,39 @@ Please try to correct this by running the Natlink Config Program (with administr
         'tst' if not set, probably no speech profile on then
 
         """
-        if natlink is None:
-            return 'enx'  ## natlink not loaded
-
+        #pylint:disable=C0415
         try:
             language = self.__class__.UserArgsDict['language']
+            if language:
+                return language
         except KeyError:
-            language = 'enx'  # take default for test purposes
             if recursive:
+                language = 'enx'  # take default for test purposes
                 print(f'natlinkstatus.getLanguage, recursive call, return "{language}"')
                 return language
-            
-
-            if not isNatSpeakRunning():
-                print(f'natlinkstatus.getLanguage, Dragon not active, return "{language}"')
-                return language
-
-            try:            
-                args = getCurrentUser()
-            except natlink.NatError:
-                print(f'natlinkstatus.getLanguage, natlink is not connected yet, return "{language}"')
-
-            if not args:
-                print(f'natlinkstatus.getLanguage, cannot get UserInfo from getCurrentUser, return "{language}"')
-                return language                    
-            self.setUserInfo(args)
-            recursive += 1
-            language = self.getLanguage(recursive=recursive)
+        language = 'enx' ## default
+        try:
+            from natlinkcore import natlink
+        except (ModuleNotFoundError, ImportError):
+            print(f'natlink.dll cannot be imported in natlinkstatus, getLanguage, return "{language}"')
             return language
+
+        if not natlink.isNatSpeakRunning():
+            print(f'natlinkstatus.getLanguage, Dragon not active, return "{language}"')
+            return language
+
+        try:            
+            args = natlink.getCurrentUser()
+        except natlink.NatError:
+            print(f'natlinkstatus.getLanguage, natlink is not connected (yet), return "{language}"')
+            return language
+        if not args:
+            print(f'natlinkstatus.getLanguage, cannot get UserInfo from natlink.getCurrentUser, return "{language}"')
+            return language                    
+        self.setUserInfo(args)
+        recursive += 1
+        language = self.getLanguage(recursive=recursive)
+        print(f'natlinkstatus.getLanguage, got language after natlink.getCurrentUser: "{language}"')
         return language
 
     def getUserLanguage(self):
