@@ -99,7 +99,7 @@
 working version without natlink.pyd starting start_natlink.py
 this is the previous way for starting natlink
 """
-
+from pydebugstring.output import outputDebugString
 import sys
 import traceback
 import time
@@ -113,7 +113,10 @@ from stat import ST_MTIME      # file statistics
 import natlink
 import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
 
-    # print("at start of natlinkmain, after redirect stderr and stdout")
+outputDebugString("at start of natlinkmain, after redirect stderr and stdout")
+outputDebugString("globals: {globals()")
+
+
 
 import natlinkstatus    # for extracting status info (QH)
 status = natlinkstatus.NatlinkStatus()
@@ -168,6 +171,18 @@ vocolaIsEnabled = status.VocolaIsEnabled()
 
 #at this point, see if remote debugging is to be enabled at startup
 pd.debug_check_on_startup()
+
+
+def logIfDebugLoad(obj):
+    """
+    If the global debugLoad is set, write the string representation of obj to the natlink display window.
+    Always  outputDebugString.
+    Returns the return value of outputDebugString
+    """
+    rv=outputDebugString(obj)
+    if debugLoad:
+        print(f"{obj}")
+    return rv
 
 # QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
 # otherwise no grammar change checking is performed, only at microphone toggle
@@ -336,8 +351,8 @@ def loadFile(modName, origPath=None, origDate=None):
             if origDate >= sourceDate:
                 fndFile.close()
                 return origPath, origDate
-        if debugLoad:
-            print(f'Reloading {modName}')
+
+            logIfDebugLoad(f'Reloading {modName}')
 
         # if we know we are reloading a module, we call the unload function
         # in that module first to release all objects
@@ -482,8 +497,7 @@ def findAndLoadFiles(curModule=None):
     #     baseDirFiles = []
     # 
     ## _vocola_main:
-    if debugLoad:
-        print(f'_natlinkmain, vocolaDirectory: {vocolaDirectory}')
+    logIfDebugLoad(f'_natlinkmain, vocolaDirectory: {vocolaDirectory}')
     VocolaDirFiles = []
     vocolaGrammarFiles = []
 
@@ -498,8 +512,7 @@ def findAndLoadFiles(curModule=None):
 
         doVocolaFirstModuleName = doVocolaFirst + '.py'
         if VocolaDirFiles and doVocolaFirstModuleName in VocolaDirFiles:
-            if debugLoad:
-                print(f'natlinkmain, load {doVocolaFirst}')
+            logIfDebugLoad((f'natlinkmain, load {doVocolaFirst}')
             x = doVocolaFirst
             loadedFile = loadedFiles.get(x, None)
             if loadedFile:
@@ -513,7 +526,7 @@ def findAndLoadFiles(curModule=None):
                 # vocola module signals vocola is not enabled:
                 vocolaEnabled = 0
                 del loadedFiles[x]
-                if debugLoad: print('Vocola is disabled...')
+                logIfDebugLoad('Vocola is disabled...')
                 vocolaIsLoaded = False
     
         if vocolaGrammarsDirectory:
@@ -931,8 +944,7 @@ def start_natlink(doNatConnect=None):
 
     nGrammarsLoaded = len(loadedFiles)
     if nGrammarsLoaded:
-        if debugLoad:
-            print("unload everything, %s grammars loaded"% nGrammarsLoaded)
+        logIfDebugLoad("unload everything, %s grammars loaded"% nGrammarsLoaded)
         unloadEverything()
     else:
         if debugLoad:
@@ -960,32 +972,25 @@ def start_natlink(doNatConnect=None):
     if userDirectory and os.path.isdir(userDirectory):
         if not userDirectory in sys.path:
             sys.path.insert(0,userDirectory)
-            if debugLoad:
-                print('insert userDirectory: %s to sys.path!'% userDirectory)
+            logIfDebugLoad('insert userDirectory: %s to sys.path!'% userDirectory)
         else:
-            if debugLoad:
-                print('userDirectory: %s'% userDirectory)
+            logIfDebugLoad('userDirectory: %s'% userDirectory)
     else:
-        if debugLoad:
-            print('no userDirectory')
+            logIfDebugLoad('no userDirectory')
 
     # for unimacro, in order to reach unimacro files to be imported:
     if unimacroDirectory and os.path.isdir(unimacroDirectory):
         if status.UnimacroIsEnabled():
             if not unimacroDirectory in sys.path:
                 sys.path.insert(0,unimacroDirectory)
-                if debugLoad:
-                    print('insert unimacroDirectory: %s to sys.path!'% unimacroDirectory)
+                logIfDebugLoad('insert unimacroDirectory: %s to sys.path!'% unimacroDirectory)
             else:
-                if debugLoad:
-                    print('unimacroDirectory: %s'% unimacroDirectory)
+                logIfDebugLoad('unimacroDirectory: %s'% unimacroDirectory)
         else:
-            if debugLoad:
-                print('Unimacro not enabled')
+            logIfDebugLoad('Unimacro not enabled')
 
     else:
-        if debugLoad:
-            print('no unimacroDirectory')
+            logIfDebugLoad('no unimacroDirectory')
 
     # setting searchImportDirs, also insert at front of sys.path if not in the list yet.
     setSearchImportDirs()
@@ -1010,9 +1015,9 @@ def start_natlink(doNatConnect=None):
                DNSVersion, status.getPythonVersion(), windowsVersion, )))
 
     if debugLoad:
-        print("userDirectory: %s\nvocolaDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, vocolaDirectory, unimacroDirectory))
-        print("loadedFiles: %s"% loadedFiles)
-        print("natlinkmain imported-----------------------------------")
+        logIfDebugLoad("userDirectory: %s\nvocolaDirectory: %s\nunimacroDirectory: %s\n"% (userDirectory, vocolaDirectory, unimacroDirectory))
+        logIfDebugLoad("loadedFiles: %s"% loadedFiles)
+        logIfDebugLoad("natlinkmain imported-----------------------------------")
     elif natlinkmainPrintsAtEnd:
         if status.UnimacroIsEnabled():
             print('Unimacro enabled, UnimacroUserDirectory:\n  %s'% status.getUnimacroUserDirectory())

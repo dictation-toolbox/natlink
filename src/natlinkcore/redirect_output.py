@@ -3,9 +3,10 @@
 # this module is imported by natlink.pyd.
 # So apart from starting natlink via natlink.pyd (as called from Dragon),
 # redirection of stdout and stderr is never done (unless you import this module)
+# in 2021, added outputDebugString to stderr.
 
 import sys
-
+from pydebugstring.output import outputDebugString
 import natlink
 
 class NewStdout:
@@ -28,7 +29,9 @@ class NewStderr:
         #     text = "===Warning, text contains null bytes===\n" + text
         # if type(text) == str:
         #     text = text.encode('cp1252')
+
         natlink.displayText(text, 1)
+        outputDebugString(text)
     def flush(self):
         pass
 
