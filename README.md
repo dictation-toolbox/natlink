@@ -11,8 +11,8 @@ Natlink code has been updated from Python 2 to Python 3. It is relatively stable
 it with Vocola2, Unimacro, etc. You can ask for
 help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25&entercat=y&CFTREEITEMKEY=25) forums if you have difficulty in getting Natlink, Unimacro, or Vocola2 working.
 
-The packages are ccurrently published in the [Test Python Packaging Index](https://test.pypi.org/) rather than
-the [Python Packaging Index](https://pypi.org/). The pip commands are a bit more complicated for this.
+The packages are ccurrently published in the 
+the [Python Packaging Index](https://pypi.org/). 
 
 ## Instructions for End Users
 
@@ -22,26 +22,23 @@ Install a [**Python 3.8 32 bit**](https://www.python.org/downloads/) on your sys
 It is wise, but not required, to install python into a c:/python38 folder instead of c:/program files(x86)/... This will save
 you a lot of typing and mouse clicking over the long run.
 
-Start a command prompt as **adminstrator**. All command line actions described for end users must be performed in
+Start a command prompt or powershell as **adminstrator**. All command line actions described for end users must be performed in
 a command shell with adminstrator privileges.
 
 1. Upgrade pip immediately:
 
    - pip install --upgrade pip`
 
-2. Install natlink, Unimacro, and Vocola2 from [Test Python Packaging Index](https://test.pypi.org/). The following command will do that.  
-   It will also pull any prequisites from the [Python Packaging Index](https://pypi.org/).
-
-   - `pip install --no-cache --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple natlink unimacro vocola2`
+2. Install natlink, Unimacro, and Vocola2.
+   - `pip install  natlink unimacro vocola2`
 
    This will install the packages in your Python site-packages area. It will also add the following commands, which should be
    in your path now in your commmand prompt:
 
-   - natlinkconfigfunctions
-   - natlinkstatus
-   - startnatlinkconfig
+   - natlinkconfig_cli
+   - natlinkconfig
 
-3. Run startnatlinkconfig to configure Natlink.
+3. Run natlinkconfig to configure Natlink.
 
 ## Instructions for Developers
 
@@ -67,19 +64,7 @@ reognized as a subfolder of site-packages.
 
 ### FAQ for compiling with Visual Studio
 
-The Visual Studio project file needs to be set up to the specific location of your system Python install.
-
-- Error: `Python.h: No such file or directory`
-  You should be able to include dir that contains `Python.h`
-  1. Right click on the Project `Properties -> Configuration Properties -> C/C++ -> General Menu`
-  2. In the field `Additional Include Directories` add path `;C:\Users\Main\AppData\Local\Programs\Python\Python38-32\include\`
-
-- Error: `LINK : fatal error LNK1104: cannot open file 'python38.lib'`
-  1. Right click on the Project `Properties -> Linker -> Input`
-  2. In the field `AdditionalDependencies` type `;C:\Users\Main\AppData\Local\Programs\Python\Python38-32\libs\python38.lib`
-- Warning: `This function or variable may be unsafe when compling`
-  1. Right click on the Project `Properties -> Configuration Properties -> C/C++ -> Preprocessor`
-  2. In the field `PreprocessorDefinitions` add `;_CRT_SECURE_NO_WARNINGS` to turn those warnings off.
+If you need to build natlinksource (the C++ code) refer to the readme.md in the NatlinkSource folder.
 
 ## Notes About Packaging for Developers
 
@@ -95,11 +80,9 @@ and placed in the python distribution "Scripts" folder. Those scripts are then a
 users to run. Note the `flit install --symlink` will install scripts as batchfiles; `pip install natlink ...` will install
 scripts as .exe files.
 
-Version numbers of the packages must be increased before your publish to [Test Python Packaging Index](https://test.pypi.org/)
-or [Python Packaging Index](https://pypi.org/). These are specified in **init**.py in `src/natlink`. Don't bother changing the
+Version numbers of the packages must be increased before your publish to  [Python Packaging Index](https://pypi.org/). These are specified in **init**.py in `src/natlink`. Don't bother changing the
 version numbers unless you are publishing.
 
-This command will publish to [Test Python Packaging Index](https://test.pypi.org/): `publish_package_testpypi`.
 This will publish to [Python Packaging Index](https://pypi.org/): `publish_package_pypy`.
 
 If you are going to publish to a package index, you will need a .pypirc in your home directory. If you don't have one,
