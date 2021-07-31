@@ -1,11 +1,26 @@
 #! python3
+"""configurenatlink.pyw
+   This module does the natlinkconfigfunctions through a wxPython GUI
+"""
 #
-#   This module does the natlinkconfigfunctions through a
-#   wxPython GUI
+#  Quintijn Hoogenboom, 2008-2009-2021
 #
-#  Quintijn Hoogenboom, 2008-2009
-#
+#pylint:disable=C0302, C0115, C0116, C0415
+#pylint:disable=E0602, E1101
+#pylint:disable=R1702, R0913, R0902, R0904, R0911, R0912, R0915
+#pylint:disable=W0201, W0702, W0401, W0612, W0613, W0614, W0622, W0621
+## investigate W0612, Unused variable...
 #----------------------------------------------------------------------------
+import sys
+import os
+import os.path
+import argparse
+import traceback
+import copy
+from pathlib import WindowsPath
+
+from configurenatlink_wdr import *
+from natlinkconfigfunctions import ElevationError
 try:
     import wx
 except ImportError:
@@ -35,10 +50,8 @@ except:
         """
         MessageBoxA(None, message, title, 0)
 
-import os,argparse as ap
 thisDir = os.path.split(__file__)[0]
 
-import sys
 if sys.version[0] == '2':
     pyVersion = sys.version[:3]
     mess = [f'Warning, this Configure Natlink GUI not work for this old python version: {pyVersion}',
@@ -47,21 +60,13 @@ if sys.version[0] == '2':
     windowsMessageBox(mess)
 
 
-parser = ap.ArgumentParser(description='Natlink Config GUI')
+parser = argparse.ArgumentParser(description='Natlink Config GUI')
 parser.add_argument("--dev_natlink",help=
 """A complete path to a natlink dll/pyd file.  This will override the
 published natlink.pyd.  This is for developers who are building natlink binaries locally""")
 config_args = vars(parser.parse_args())
 
-import sys
-import traceback
-from configurenatlink_wdr import *
-import os
-import os.path
-import copy
-import types
-from natlinkconfigfunctions import ElevationError
-from pathlib import WindowsPath
+
 # nf: natlinkinstallfunctions, imported at end of init...
 nf = None
 nc = None  # natlinkcorefunctions
@@ -69,11 +74,11 @@ nc = None  # natlinkcorefunctions
 
 class DialogUnimacroVocolaCompatibiliy(wx.Dialog):
     def __init__(self, parent, title=None):
-        parent = parent
+        self.parent = parent
         id = -1
         pos = wx.DefaultPosition
         title = title or "Unimacro/Vocola compatibility"
-        wx.Dialog.__init__(self, parent, id, title, pos)
+        wx.Dialog.__init__(self, self.parent, id, title, pos)
         # WDR: dialog function YesNoAbort for MyYesNoAbortDialog
 
 
@@ -143,15 +148,6 @@ class InfoPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.OnButtonLogInfo, id=ID_BUTTONLogInfo)
 
     # WDR: methods for infopanel
-    def GetTextctrlpythonversion(self):
-        return self.FindWindowById( ID_TEXTCTRLpythonversion )
-
-    def GetTextctrlwindowsversion(self):
-        return self.FindWindowById( ID_TEXTCTRLWindowsVersion )
-
-    def GetTextctrlnatlinkcorepath(self):
-        return self.FindWindowById( ID_TEXTCTRLnatlinkcorepath )
-
     def GetTextctrldnsinifilepath(self):
         return self.FindWindowById( ID_TEXTCTRLdnsinifilepath )
 
@@ -311,10 +307,10 @@ See more help information in the log panel"""
         """
         if len(args) < 1:
             print('empty command %s'% repr(args))
-            return
+            return None
         if len(args) > 2:
             print('too many posional arguments: %s'% repr(args))
-            return
+            return None
         letter = args[0]
         if len(args) == 2:
             pathName = args[1]
@@ -345,6 +341,7 @@ class ConfigureNatlinkPanel(wx.Panel):
     def __init__(self, parent, id, name="configurepanel",
         pos = wx.DefaultPosition, size = wx.DefaultSize,
         style = wx.TAB_TRAVERSAL ):
+        #pylint:disable=W0603
         global nf, nc   # natlinkconfigfunctions, self.cli, natlinkcorefunctions
         wx.Panel.__init__(self, parent, id, pos, size, style)
         self.parent = parent
@@ -386,13 +383,13 @@ class ConfigureNatlinkPanel(wx.Panel):
         class NatlinkConfigGUI(nf.NatlinkConfig):
             def __init__(self, parent=None):
                 self.parent = parent
-                super(NatlinkConfigGUI, self).__init__()
-            def warning(self, text):
-                """overload, to make it also in GUI visible"""
-                super(NatlinkConfigGUI, self).warning(text)
-                #self.parent.warning(text)
+                super().__init__()
+            # def warning(self, text):
+            #     """overload, to make it also in GUI visible"""
+            #     super().warning(text)
+            #     #self.parent.warning(text)
 
-        sel f.firstThaw = True  # set to true first time and at undo action...
+        self.firstThaw = True  # set to true first time and at undo action...
         
         self.GUI = NatlinkConfigGUI(parent=self)
         error = 0
@@ -431,11 +428,11 @@ class ConfigureNatlinkPanel(wx.Panel):
                 # changed installation, message from natlinkconfigfunctions
                 self.urgentMessage = "REREGISTER natlink.pyd and Close (restart) or Close right away to cancel (see log panel)"
                 self.cli.checkedConfig = None
-            if True: ###self.config.changesInInitPhase:
-                if self.config.hadFatalErrors:
-                    self.urgentMessage = "See the log panel for urgent startup information!!"
-                else:
-                    self.urgentMessage = "See the log panel for startup information, the init phase was succesful"
+            # if True: ###self.config.changesInInitPhase:
+            if self.config.hadFatalErrors:
+                self.urgentMessage = "See the log panel for urgent startup information!!"
+            else:
+                self.urgentMessage = "See the log panel for startup information, the init phase was succesful"
 
             self.DNSName = self.config.getDNSName() 
             self.setInfo()
@@ -577,10 +574,8 @@ class ConfigureNatlinkPanel(wx.Panel):
             else:
                 undoButton.Enable(False)
 
-            if D['natlinkIsEnabled']:
-                value = True
-            else:
-                value = False
+            value = bool(D['natlinkIsEnabled'])
+
             for key in ['VocolaTakesLanguages',
                        'vocolaIsEnabled', 'unimacroIsEnabled', 'userIsEnabled',
                         ]:
@@ -633,7 +628,8 @@ class ConfigureNatlinkPanel(wx.Panel):
     def urgentStatusLine(self, statusString=None):
         """writes a urgent message to the status text control
         """
-        if not statusString: return
+        if not statusString:
+            return
         control = self.GetTextctrlstatus()
         control.SetValue(statusString)
         control.SetForegroundColour(wx.RED)
@@ -661,10 +657,10 @@ class ConfigureNatlinkPanel(wx.Panel):
         """
         if len(args) < 1:
             print('empty command %s'% repr(args))
-            return
+            return None
         if len(args) > 2:
             print('too many posional arguments: %s'% repr(args))
-            return
+            return None
         letter = args[0]
         if len(args) == 2:
             pathName = args[1]
@@ -689,11 +685,11 @@ class ConfigureNatlinkPanel(wx.Panel):
             return mess
 
         # append to undoList
-        if not 'undo' in kw:
+        if 'undo' not in kw:
             self.setInfo()
             return result
         undoInfo = kw['undo']
-        if type(undoInfo) == tuple and len(undoInfo) in [1,2]:
+        if isinstance(undoInfo, tuple) and len(undoInfo) in [1,2]:
             undo = undoInfo
         elif isinstance(undoInfo, str):
             undo = (undoInfo,)
@@ -763,9 +759,6 @@ class ConfigureNatlinkPanel(wx.Panel):
 
     def GetButtonundo(self):
         return self.FindWindowById( ID_BUTTONUndo )
-
-    def GetButtonnatlinkenable(self):
-        return self.FindWindowById( ID_BUTTONNatlinkEnable )
 
     def GetButtonnatlinkenable(self):
         return self.FindWindowById( ID_BUTTONNatlinkEnable )
@@ -933,8 +926,7 @@ class ConfigureNatlinkPanel(wx.Panel):
         print('---help on re(register) natlink.pyd')
         print('note the letters correspond to the commands in the self.cli (command line interface)')
         self.cli.help_r()
-        text = \
-"""
+        text = r"""\
 Help about re(register) natlink.pyd you will find in the log panel
 
 About this configure program:
@@ -957,8 +949,8 @@ This is established by running "start_configurenatlink.py".
 
 
     def OnButtonHelp4(self, event):
-        text = \
-"""User Grammar files can be activated/deactivated by specifying the UserDirectory.
+        text = """\
+User Grammar files can be activated/deactivated by specifying the UserDirectory.
 
 This directory should separate from Unimacro or Vocola.
 
@@ -974,8 +966,7 @@ like Caster, Mathfly etc.
         self.cli.help_o()
         self.cli.help_p()
         self.cli.help_l()  # includes help for m and M
-        text = \
-"""
+        text = """
 Unimacro is enabled by specifying the UnimacroUserDirectory.
 
 When you disable Unimacro, this UnimacroUserDirectory setting is cleared from the natlinkstatus.ini file.

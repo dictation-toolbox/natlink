@@ -133,7 +133,7 @@ vocolaModule = None    # pointer to the module...
 
 reVocolaModuleName = re.compile(r'_vcl[0-9]?$')
 
-debugLoad = debugCallback = True
+debugLoad = debugCallback = False
 canStartNatlink = True
 if status.getDNSInstallDir() == -1:
     print('DNSInstallDir not valid, please run the Natlink config GUI to fix this')
@@ -312,19 +312,19 @@ def unloadModule(modName):
 # imported. This routine will also conditionaly reload a module if it has
 # changed.
 #
-def loadModule(modName):
-    """load a single module
-
-    mostly this goes with findAndLoadFiles, this is for a single module,
-    called from _control (Unimacro)
-    """
-    #pylint:disable=W0603
-    global loadedFiles
-    result = loadFile(modName)
-    if result:
-        loadedFiles[modName] = result
-    else:
-        print('loading module %s failed, put in "wrongFiles"'% modName)
+# def loadModule(modName):
+#     """load a single module
+# 
+#     mostly this goes with findAndLoadFiles, this is for a single module,
+#     called from _control (Unimacro)
+#     """
+#     #pylint:disable=W0603
+#     global loadedFiles
+#     result = loadFile(modName)
+#     if result:
+#         loadedFiles[modName] = result
+#     else:
+#         print('loading module %s failed, put in "wrongFiles"'% modName)
 
 def loadFile(modName, origPath=None, origDate=None):
     """load a module
@@ -810,7 +810,6 @@ def changeCallback(Type,args):
             BaseModel, BaseTopic, DNSmode, changeCallbackUserFirst, shiftkey
 
     # if debugCallback:
-    print('changeCallback, Type: %s, args: %s'% (Type, args))
     if Type == 'mic' and args == 'on':
         if debugCallback:
             print('findAndLoadFiles...')
@@ -824,11 +823,10 @@ def changeCallback(Type,args):
         ## update userInfo
         ## other user, setUserInfo in status:
         # print(f'setUserInfo in status to {args}')
-        prevLanguage = language
+        # prevLanguage = language   
         # status.clearUserInfo()
         status.setUserInfo(args)
         language = status.getLanguage()
-        print(f'after setting userInfo: language: {language}, prev: {prevLanguage}')
         # print(f'old language: {prevLanguage}, new language: {language}')
         # print(f'userLanguage: {status.getUserLanguage()}')
         if debugCallback:
@@ -840,8 +838,6 @@ def changeCallback(Type,args):
             # first time, no print message, but next time do...
             print("\n--- user changed to: %s"% args[0])
             changeCallbackUserFirst = False
-        if language == prevLanguage:
-            print(f'changeCallback language: {language}, prevLanguage: {prevLanguage}')
             return 
 
         unloadEverything()
@@ -1000,6 +996,8 @@ def start_natlink(doNatConnect=None):
 
     # load all global files in user directory and current directory
     # findAndLoadFiles() is done in the changeCallback function
+    currentUser = natlink.getCurrentUser()
+    print(f'currentUser at start of Natlink: {currentUser}')
     changeCallback('user', natlink.getCurrentUser())
 
     # initialize our callbacks

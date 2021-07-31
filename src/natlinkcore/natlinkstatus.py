@@ -137,6 +137,8 @@ from natlinkcore import natlinkcorefunctions
 # from natlinkcore import inivars
 from natlinkcore.pathqh import path
 from natlinkcore import __init__
+
+
 # for getting generalised env variables:
 
 ##from win32com.shell import shell, shellcon
@@ -694,6 +696,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def clearUserInfo(self):
         """clear UserInfo
         """
+        print(f'clear all user info, UserArgsDict (with language {self.__class__.UserArgsDict["languane"]})')
         self.__class__.UserArgsDict.clear()
 
     def getUserName(self):
@@ -1351,7 +1354,9 @@ Please try to correct this by running the Natlink Config Program (with administr
             if cdPath.is_symlink():
                 cdResolved = cdPath.resolve()
                 raise OSError(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}\ndo not use --symlink with flit install')
-            return os.path.normpath(str(cdPath))
+            CDPath = str(cdPath)
+            del cdPath
+            return os.path.normpath(CDPath)
         if coreDir.find('\\src\\') > 0:
             # opened from github clone, find site-packages directory
             spCoreDir = self.findInSitePackages(coreDir)
@@ -1442,12 +1447,12 @@ Please try to correct this by running the Natlink Config Program (with administr
         try:
             import vocola2
         except ImportError:
-            print('Cannot find VocolaDirectory, return ""')
+            print('Vocola is not installed, no VocolaDirectory')
             self.VocolaDirectory = ""
             return ""
 
         self.VocolaDirectory = vocola2.__path__[0]
-        # print(f'VocolaDirectory: {self.VocolaDirectory}')
+        print(f'VocolaDirectory: {self.VocolaDirectory}')
         controlGrammarFile = os.path.join(self.VocolaDirectory, '_vocola_main.py')
         if not os.path.isfile(controlGrammarFile):
             print(f'Cannot find "_vocola_main.py" in VocolaDirectory ({self.VocolaDirectory}), return ""')
@@ -1641,18 +1646,46 @@ Please try to correct this by running the Natlink Config Program (with administr
         except KeyError:
             return self.getBaseTopic()
 
-    def getLanguage(self):
+    def getLanguage(self, recursive=0):
         """get language from UserArgsDict
 
         'tst' if not set, probably no speech profile on then
 
         """
+        #pylint:disable=C0415
         try:
-            lang = self.__class__.UserArgsDict['language']
-            return lang
+            language = self.__class__.UserArgsDict['language']
+            if language:
+                return language
         except KeyError:
-            print('Serious error, natlinkstatus.getLanguage: no language found in UserArgsDict return "tst"')
-            return 'tst'
+            if recursive:
+                language = 'enx'  # take default for test purposes
+                print(f'natlinkstatus.getLanguage, recursive call, return "{language}"')
+                return language
+        language = 'enx' ## default
+        try:
+            from natlinkcore import natlink
+        except (ModuleNotFoundError, ImportError):
+            print(f'natlink.dll cannot be imported in natlinkstatus, getLanguage, return "{language}"')
+            return language
+
+        if not natlink.isNatSpeakRunning():
+            print(f'natlinkstatus.getLanguage, Dragon not active, return "{language}"')
+            return language
+
+        try:            
+            args = natlink.getCurrentUser()
+        except natlink.NatError:
+            print(f'natlinkstatus.getLanguage, natlink is not connected (yet), return "{language}"')
+            return language
+        if not args:
+            print(f'natlinkstatus.getLanguage, cannot get UserInfo from natlink.getCurrentUser, return "{language}"')
+            return language                    
+        self.setUserInfo(args)
+        recursive += 1
+        language = self.getLanguage(recursive=recursive)
+        print(f'natlinkstatus.getLanguage, got language after natlink.getCurrentUser: "{language}"')
+        return language
 
     def getUserLanguage(self):
         """get userLanguage from UserArgsDict
@@ -1702,13 +1735,21 @@ Please try to correct this by running the Natlink Config Program (with administr
         """return the shiftkey, for setting in natlinkmain when user language changes.
 
         used for self.playString in natlinkutils, for the dropping character bug. (dec 2015, QH).
+        
+        This option was not correct all the time, as it does not go about the user language,
+        but about the system language doing the keypresses.
+        
+        Moreover with newer versions of doing keystrokes, it seems not sensible to keep this option active.
+        Now reduce to return "{shift}".
         """
-        language = self.getLanguage()
-        try:
-            return "{%s}"% shiftKeyDict[language]
-        except KeyError:
-            print('no shiftKey code provided for language: %s, take empty string.'% language)
-            return ""
+        #pylint:disable=R0201
+        return "{shift}"
+        # language = self.getLanguage()
+        # try:
+        #     return "{%s}"% shiftKeyDict[language]
+        # except KeyError:
+        #     print('no shiftKey code provided for language: %s, take empty string.'% language)
+        #     return ""
 
     # get different debug options for natlinkmain:
     def getDebugLoad(self):

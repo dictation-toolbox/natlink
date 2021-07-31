@@ -218,7 +218,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         - original path of pyd file is kept in NatlinkPydOrigin
         
         """
-        #pylint:disable=W0613, R0911
+        #pylint:disable=W0613, R0911, R0912
 
         self.checkedUrgent = 1
         if sys.version.find("64 bit") >= 0:
@@ -311,7 +311,15 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             try:
                 os.remove(currentPydFile)
             except (WindowsError, OSError):
-                self.fatal_error('cannot remove natlink.pyd from the core directory: %s\nProbably Dragon is running'% _coreDir)
+                messList = ['Cannot remove natlink.pyd from the core directory:',
+                            '',
+                            f'{_coreDir}',
+                        '', 
+                        'Probably Dragon is running.',
+                        'But if this error occurs while Dragon is NOT running,',
+                        'please try to remove "natlink.pyd" from the core directory (see above)',
+                        'and re-run this program']
+                self.fatal_error('\n'.join(messList))
                 return None
         if os.path.isfile(currentPydFile):
             self.fatal_error('strange, could not remove "natlink.pyd" from the core directory: "%s"Possibly Dragon is running'% _coreDir)
@@ -1257,7 +1265,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
                 mess = ['natlinkconfigfunctions failed because of fatal error:',
                     '', message, '',
                     'So if Dragon is running, close it.', '',
-                    'Then try, if you choose to do so, to Re-register Natlink with this program', '(option "r" in the CLI, Command Line Interface).',
+                    'Then try to Re-register natlink.pyd with this program', '(option "r" in the CLI, Command Line Interface).',
                     ]
             else:    
                 mess = ['natlinkconfigfunctions failed because of fatal error:',

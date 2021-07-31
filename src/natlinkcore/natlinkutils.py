@@ -70,18 +70,23 @@
 ############################################################################
 # experiment Mark (Vocola Extension)
 # making this experiment final:
-useMarkSendInput = 1
+useMarkSendInput = 0
 if useMarkSendInput:
     from natlinkcore import ExtendedSendDragonKeys
     from natlinkcore import SendInput
 
-    from natlinkcore.ExtendedSendDragonKeys import senddragonkeys_to_events
-    from natlinkcore.SendInput import send_input
+    # from natlinkcore.ExtendedSendDragonKeys import senddragonkeys_to_events
+    # from natlinkcore.SendInput import send_input
     # print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is "
     # print "used for all normal playString calls!  If you do not want this,"
     # print "change the variable useMarkSendInput to 0 in line 65 of"
     # print "natlinkutils.py.  This file is located in the directory "
     # print "Natlink\MacroSystem\Core.  Then restart Dragon...\n======"
+
+useDtactionsSendkeys = 1   ## via dtactions to dragonfly
+if useDtactionsSendkeys:
+    from dtactions.sendkeys import sendkeys
+
 # 
 import os
 import os.path
@@ -359,14 +364,22 @@ def playString(keys, hooks=None):
         return
     # if type(keys) == str:
     #     keys = utilsqh.convertToBinary(keys)
-    if hooks is None and useMarkSendInput:
-        SendInput.send_input(
-            ExtendedSendDragonKeys.senddragonkeys_to_events(keys))
-    else:    
-        if hooks not in (None, 0x100):
-            natlink.playString(keys, hooks)
+    if hooks is None:
+        if useMarkSendInput:
+            SendInput.send_input(
+                ExtendedSendDragonKeys.senddragonkeys_to_events(keys))
+        elif useDtactionsSendkeys:
+            sendkeys(keys)   # via dtactions to dragonfly
         else:
-            natlink.playString(shiftkey + keys)
+            natlink.playString(keys)
+        return
+    # with hooks:
+    if hooks != 0x100:
+        natlink.playString(keys, hooks)
+    else:
+        ## try with the shiftkey trick to prevent doubling of the keystrokes (obsolete)
+        ## better choose useDtactionsSendkeys, of useMarkSendInput if that one is repaired.
+        natlink.playString(shiftkey + keys)
 
 #---------------------------------------------------------------------------
 # (internal use) shared base class for all Grammar base classes.  Do not use

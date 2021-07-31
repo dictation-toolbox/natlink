@@ -109,3 +109,6 @@ src/*_vcl.py
 /ConfigureNatlink/configurenatlink_error.txt
 /configurenatlink_error.txt
 /PyTest/Natlinktimertestresult.txt
+
+#documentation (QH)
+documentation/_build/
