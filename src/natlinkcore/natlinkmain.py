@@ -114,7 +114,10 @@ import natlink
 import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
 
 outputDebugString("at start of natlinkmain, after redirect stderr and stdout")
-outputDebugString("globals: {globals()")
+g=list( f"{a} : {b}" for (a,b) in list(globals().items()))
+gstring = "\n".join(g)
+outputDebugString(f"globals: {gstring}")
+del g,gstring
 
 
 
@@ -181,7 +184,7 @@ def logIfDebugLoad(obj):
     """
     rv=outputDebugString(obj)
     if debugLoad:
-        print(f"{obj}")
+        print(f"debugLoad: {obj}")
     return rv
 
 # QH added:checkForGrammarChanges is set when calling "edit grammar ..." in the control grammar,
@@ -512,7 +515,7 @@ def findAndLoadFiles(curModule=None):
 
         doVocolaFirstModuleName = doVocolaFirst + '.py'
         if VocolaDirFiles and doVocolaFirstModuleName in VocolaDirFiles:
-            logIfDebugLoad((f'natlinkmain, load {doVocolaFirst}')
+            logIfDebugLoad(f'natlinkmain, load {doVocolaFirst}')
             x = doVocolaFirst
             loadedFile = loadedFiles.get(x, None)
             if loadedFile:
