@@ -20,7 +20,6 @@ def print_python_info():
         return print(f"Python Information:\n{python_info()}")
 
 
-print_python_info()
 
 def output_debug_string_python_info():
     o.outputDebugString(f"{__name__} output_debug_string_info")
@@ -31,4 +30,5 @@ o.outputDebugString(f"Loading {__name__}")
 
 
 if __name__ == '__main__':
+    pass
     print_python_info()

@@ -187,7 +187,6 @@ STDMETHODIMP CDgnAppSupport::Register(IServiceProvider* pIDgnSite)
 
 	pyrun_string("o.outputDebugString(f'{sys.path}')");
 
-	m_pDragCode->displayText("\nDisplaying Python Environment\n", FALSE, TRUE );
 
 	OutputDebugStringA("\nnatlinkpythoninfo");
 	pyrun_string("import pydebugstring.output as o");
