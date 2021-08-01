@@ -1,8 +1,6 @@
-"""natlinkcore"""
+"""natlinkcore __init__
 
-__version__ = '5.0.0'  # 
-
-"""utility functions, to get calling directory of module (in site-packages),
+Utility functions, to get calling directory of module (in site-packages),
 
 ...and to check the existence of a directory, for example .natlink in the home directory.
 
@@ -28,6 +26,15 @@ checkDirectory(dirpath, create=True)
     when create=False is passed, no new directory is created, but an error is thrown if
     the directory does not exist.
 """
+
+import os
+import sys
+
+## change this before a new release on pypi is made:
+__version__ = '5.1.0'    # no registry depencde any more
+# __version__ = '5.0.0'  # with registry dependence
+##-----------------------
+
 
 def getThisDir(fileOfModule):
     """get directory of calling module, if possible in site-packages
@@ -80,7 +87,7 @@ def checkDirectory(newDir, create=True):
     """
     if os.path.isdir(newDir):
         return
-    elif create is False:
+    if create is False:
         raise OSError(f'Cannot find directory {newDir}, but it should be there.')
     if os.path.exists(newDir):
         raise OSError(f'path exists, but is not a directory: {newDir}')
