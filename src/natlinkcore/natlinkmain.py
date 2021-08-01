@@ -1059,28 +1059,28 @@ def run():
     else:
         print("natlinkmain is in testing mode...")
 
-if __name__ == "natlinkmain":
-    if canStartNatlink:
-        if Testing is False:
-            #sys.stdout = NewStdout()  # this is done at the top already
-            #sys.stderr = NewStderr()
-            start_natlink()
-        else:
-            print('natlinkmain imported only, Testing in progress')
-            print('\nDo not forget to put "Testing = False" again near bottom of natlinkmain.py in order to resume normal use...')
-            print('\n... and then restart Dragon.')
-    else:
-        print('Cannot start Natlink')
-elif __name__  == "__main__":
-    if Testing:
-        print("starting all Natlink stuff from natlinkmain.py")
-        natlink.natConnect(1)
-        try:
-            print("start_natlink starting...")
-            start_natlink()
-            print("after start_natlink...")
-        finally:
-            print("finally do natDisconnect()")
-            natlink.natDisconnect()
-    else:
-        print("run interactive, do nothing, enable Testing if you want to start Natlink from this module")
+# if __name__ == "natlinkmain":
+#     if canStartNatlink:
+#         if Testing is False:
+#             #sys.stdout = NewStdout()  # this is done at the top already
+#             #sys.stderr = NewStderr()
+#             start_natlink()
+#         else:
+#             print('natlinkmain imported only, Testing in progress')
+#             print('\nDo not forget to put "Testing = False" again near bottom of natlinkmain.py in order to resume normal use...')
+#             print('\n... and then restart Dragon.')
+#     else:
+#         print('Cannot start Natlink')
+# elif __name__  == "__main__":
+#     if Testing:
+#         print("starting all Natlink stuff from natlinkmain.py")
+#         natlink.natConnect(1)
+#         try:
+#             print("start_natlink starting...")
+#             start_natlink()
+#             print("after start_natlink...")
+#         finally:
+#             print("finally do natDisconnect()")
+#             natlink.natDisconnect()
+#     else:
+#         print("run interactive, do nothing, enable Testing if you want to start Natlink from this module")
