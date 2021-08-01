@@ -12,7 +12,7 @@ home-page = "https://qh.antenna.nl/unimacro/"
 description-file = "README.md"
 
 requires=[ 
-		  "pywin32 >= 300",
+		  "pywin32 == 300",
 		  "debugpy",
 		  "pyenvutils",
 		  "pydebugstring",
@@ -25,7 +25,7 @@ classifiers=[	"Development Status :: 4 - Beta",
 				"Topic :: Scientific/Engineering :: Human Machine Interfaces",
 				]
 				
-requires-python = ">=3.8"
+requires-python = "==3.8.*"
 dist-name="natlink"
 keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
 
