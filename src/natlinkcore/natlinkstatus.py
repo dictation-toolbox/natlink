@@ -351,8 +351,8 @@ class NatlinkStatus:
         PythonPath / Natlink setting, for natlink be able to be started.
 
         """
-        # print(f'checkSysPath with PythonPath setting in registry not needed any more')
-        # return 1
+        print(f'\ncheckSysPath with PythonPath setting in registry not needed any more')
+        return 1
         NatlinkDirectory = self.getNatlinkDirectory()
 
         if NatlinkDirectory.lower().endswith('natlinkcore'):
@@ -2076,7 +2076,7 @@ def main():
     args = ('QEngels', 'C:\\Users\\Gebruiker\\AppData\\Local\\Nuance\\NS15\\Users\\QEngels\\current')
 
     status.setUserInfo(args)
-    status.checkSysPath()
+    # status.checkSysPath()
 
     print(status.getNatlinkStatusString())
     print('------ another check of the language:')
