@@ -110,10 +110,12 @@ import imp              # module reloading
 import re     
 from stat import ST_MTIME      # file statistics
 
+import natlink   # this one only imports if it is installed in the site-packages/natlinkcore directory and
+                 # natlink.pyd is registered.
+
 from pydebugstring.output import outputDebugString
 import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
 
-import natlink
 import natlinkstatus    # for extracting status info (QH)
 
 outputDebugString("at start of natlinkmain, after redirect stderr and stdout")
@@ -136,21 +138,21 @@ vocolaModule = None    # pointer to the module...
 reVocolaModuleName = re.compile(r'_vcl[0-9]?$')
 
 debugLoad = debugCallback = False
-canStartNatlink = True
-if status.getDNSInstallDir() == -1:
-    print('DNSInstallDir not valid, please run the Natlink config GUI to fix this')
-    canStartNatlink = False
-if status.getDNSIniDir() == -1:
-    print('DNSIniDir not valid, please run the Natlink config GUI to fix this')
-    canStartNatlink = False
-if canStartNatlink:
-    status.checkSysPath()
-    debugLoad = status.getDebugLoad()
-    debugCallback = status.getDebugCallback()
-    if debugLoad:
-        print('do extra output at (re)loading time: %s'% debugLoad)
-    if debugCallback:
-        print('do extra output at callback time: %s'% debugCallback)
+# canStartNatlink = True
+# if status.getDNSInstallDir() == -1:
+#     print('DNSInstallDir not valid, please run the Natlink config GUI to fix this')
+#     canStartNatlink = False
+# if status.getDNSIniDir() == -1:
+#     print('DNSIniDir not valid, please run the Natlink config GUI to fix this')
+#     canStartNatlink = False
+# if canStartNatlink:
+#     status.checkSysPath()
+#     debugLoad = status.getDebugLoad()
+#     debugCallback = status.getDebugCallback()
+#     if debugLoad:
+#         print('do extra output at (re)loading time: %s'% debugLoad)
+#     if debugCallback:
+#         print('do extra output at callback time: %s'% debugCallback)
 
 ApplicationFrameHostTitles = {}
 ApplicationFrameHostTitles["Photos"] = "photos"
