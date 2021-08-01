@@ -17,6 +17,7 @@ requires=[
 		  "pyenvutils",
 		  "pydebugstring",
 		  "dtactions",
+		  "dragonfly2",
 		  "wxpython == 4.0.7; python_version>='3.8'",
 		  "wxpython == 4.0.3; python_version<'3.7'"]
 	  
