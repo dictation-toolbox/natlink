@@ -100,11 +100,24 @@ You must exit Dragon before running cpnatlink or you will get  errors.
 # Compile instructions
 
 
-** Create a user environment variable "Natlink_Python" pointing to where you installed Python for natlink. If you have installed 
+Create a user or system environment variable "Natlink_Python" pointing to where you installed Python for natlink. If you have installed 
 natlink already with pip, you can run pye_prefix to get the location if you don't know it:
+
 ```...\natlink> pye_prefix
 c:\python38-32
 ```
+
+
+
+THe easiest way to set the environment variable:   launch an adminstrative power shell,
+change to the natlink project root folder, and run 
+```setup_compile_environment.ps1```.  You must have already done a 'pip install natlink'.
+
+You only have to set that variable once.
+
+
+
+
 
 
 Currently only tested on windows 
