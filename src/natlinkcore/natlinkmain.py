@@ -99,7 +99,6 @@
 working version without natlink.pyd starting start_natlink.py
 this is the previous way for starting natlink
 """
-from pydebugstring.output import outputDebugString
 import sys
 import traceback
 import time
@@ -110,20 +109,20 @@ import shutil
 import imp              # module reloading
 import re     
 from stat import ST_MTIME      # file statistics
-import natlink
+
+from pydebugstring.output import outputDebugString
 import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
 
-outputDebugString("at start of natlinkmain, after redirect stderr and stdout")
-g=list( f"{a} : {b}" for (a,b) in list(globals().items()))
-gstring = "\n".join(g)
-outputDebugString(f"globals: {gstring}")
-del g,gstring
-
-
-
+import natlink
 import natlinkstatus    # for extracting status info (QH)
-status = natlinkstatus.NatlinkStatus()
 
+outputDebugString("at start of natlinkmain, after redirect stderr and stdout")
+glist=list( f"{a} : {b}" for (a,b) in list(globals().items()))
+gstring = "\n".join(glist)
+outputDebugString(f"globals: {gstring}")
+del glist, gstring
+
+status = natlinkstatus.NatlinkStatus()
 
 debugTiming=0
 # bookkeeping for Vocola:
@@ -975,7 +974,7 @@ def start_natlink(doNatConnect=None):
         else:
             logIfDebugLoad('userDirectory: %s'% userDirectory)
     else:
-            logIfDebugLoad('no userDirectory')
+        logIfDebugLoad('no userDirectory')
 
     # for unimacro, in order to reach unimacro files to be imported:
     if unimacroDirectory and os.path.isdir(unimacroDirectory):
@@ -989,7 +988,7 @@ def start_natlink(doNatConnect=None):
             logIfDebugLoad('Unimacro not enabled')
 
     else:
-            logIfDebugLoad('no unimacroDirectory')
+        logIfDebugLoad('no unimacroDirectory')
 
     # setting searchImportDirs, also insert at front of sys.path if not in the list yet.
     setSearchImportDirs()
@@ -999,8 +998,8 @@ def start_natlink(doNatConnect=None):
 
     # load all global files in user directory and current directory
     # findAndLoadFiles() is done in the changeCallback function
-    currentUser = natlink.getCurrentUser()
-    print(f'currentUser at start of Natlink: {currentUser}')
+    # currentUser = natlink.getCurrentUser()
+    # print(f'currentUser at start of Natlink: {currentUser}')
     changeCallback('user', natlink.getCurrentUser())
 
     # initialize our callbacks

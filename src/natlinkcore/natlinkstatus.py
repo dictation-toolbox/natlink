@@ -1284,7 +1284,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         try:
             import unimacro
         except ImportError:
-            print('Cannot find UnimacroDirectory, return ""')
+            print('\nUnimacro is not installed')
             self.UnimacroDirectory = ""
             return ""
 
@@ -1447,7 +1447,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         try:
             import vocola2
         except ImportError:
-            print('Vocola is not installed, no VocolaDirectory')
+            print('Vocola is not installed.')
             self.VocolaDirectory = ""
             return ""
 
