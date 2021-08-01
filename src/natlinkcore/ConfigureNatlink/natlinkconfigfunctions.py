@@ -389,7 +389,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
 
 
-    def hoearRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
+    def clearRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
         """clear the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
         
         this function should be in elevated mode, which should be checked before calling this
