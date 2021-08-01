@@ -287,7 +287,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
             self.registerNatlinkPyd()
             ## TODOQH: temporary, remove if Doug compile is complete
             ## use global coreDir
-            result = self.setRegistryPythonPathNatlink(silent=silent)
+            # result = self.setRegistryPythonPathNatlink(silent=silent)
             self.enableNatlink()
             return 1
 
@@ -361,7 +361,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         Temporary, maybe not necessary any more when good compile of Doug is present.
         """
         #pylint:disable=W0613
-        ## TODOQH remove if Doug made his compile!!
+        ## TODOQH remove if Doug made his compilehoe!!
+        print('setRegistryPythonPathNatlink should be switched off with natlink 5.1.0!!!, should not come here')
         pythonpath_key = self.getRegistryPythonPathKey()
         if not pythonpath_key:
             print('setRegistryPythonPathNatlink, cannot find pythonpath_key')
@@ -388,7 +389,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
 
 
-    def clearRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
+    def hoearRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
         """clear the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
         
         this function should be in elevated mode, which should be checked before calling this
