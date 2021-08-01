@@ -31,7 +31,7 @@ import os
 import sys
 
 ## change this before a new release on pypi is made:
-__version__ = '5.1.0'    # no registry depencde any more
+__version__ = '5.1.1'    # no registry depencde any more
 # __version__ = '5.0.0'  # with registry dependence
 ##-----------------------
 
