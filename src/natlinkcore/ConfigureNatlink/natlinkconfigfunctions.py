@@ -182,7 +182,6 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         self.changesInInitPhase = 0
         self.isElevated = IsUserAnAdmin()
         self.checkedUrgent = None
-        self.natlinkJustRegistered = False
         natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
 
     def checkCoreDirectory(self):
@@ -390,7 +389,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
 
 
 
-    def clearRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
+    def hoearRegistryPythonPathNatlink(self, flags=win32con.KEY_ALL_ACCESS, silent=None):
         """clear the registry setting in PythonPath to the coreDir .../Natlink/MacroSystem/Core
         
         this function should be in elevated mode, which should be checked before calling this
@@ -930,8 +929,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
         result = self.PydIsRegistered(PydPath)
         # print(f'natlink.pyd was already registered: {PydPath}, still do it again...')
-        if result and self.natlinkJustRegistered:
-            return
+
         if silent:
             # try:
             #     import win32api
@@ -953,8 +951,8 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             if result:
                 self.fatal_error(f'Failed to register "{PydPath}" (result: {result})')
             else:
-                self.natlinkJustRegistered = True
-            return result is None
+                print(f'Registering pyd file succesful: "{PydPath}"')
+
         ## should return True then:
         return result is None
 
@@ -996,9 +994,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
             print(PydPath)
             dll = ctypes.windll.LoadLibrary(PydPath) ###.replace("\\", "/"))
             result = dll.DllUnregisterServer()
-            if result:
-                self.natlinkJustRegistered = False
-            else:
+            if result != 0:
                 print(('could not unregister %s'% PydPath))
         except KeyError:
             if os.path.isfile(PydPath):
