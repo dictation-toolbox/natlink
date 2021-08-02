@@ -3,16 +3,20 @@
 NatLink is an OpenSource extension module for the speech recognition program Dragon. It is required
 for add on packages such as Unimacro, Vocola2, and Dragonfly.
 
-This document describes how to instlall Natlink for end users and for developers.
+This document describes how to install Natlink for end users and for developers.
 
 ## Status
 
-Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. You can use
-it with Vocola2, Unimacro, etc. You can ask for
-help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25&entercat=y&CFTREEITEMKEY=25) forums if you have difficulty in getting Natlink, Unimacro, or Vocola2 working.
+Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. 
 
-The packages are ccurrently published in the [Test Python Packaging Index](https://test.pypi.org/) rather than
-the [Python Packaging Index](https://pypi.org/). The pip commands are a bit more complicated for this.
+Release 5.1.0 (August 1, 2021): should work reasonable for the UserDirectory users, so Dragonfly users could try this release. Note this release is done from the makeflitinstall branch.
+
+For Unimacro and Vocola(2), please wait a little bit longer...
+
+You can ask for help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25&entercat=y&CFTREEITEMKEY=25) forums if you have difficulty in getting Natlink, Unimacro, or Vocola2 working.
+
+The packages are currently published in the 
+the [Python Packaging Index](https://pypi.org/). 
 
 ## Instructions for End Users
 
