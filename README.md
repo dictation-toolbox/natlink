@@ -31,11 +31,12 @@ a command shell with adminstrator privileges.
 
 1. Check and upgrade pip immediately:
    
-   - pip -V   (should give something like:)
-     pip 21.1 from c:\python38-32\lib\site-packages\pip (python 3.8)
+   - pip -V   # should give something like:
+              # pip 21.1 from c:\python38-32\lib\site-packages\pip (python 3.8)
    - pip install --upgrade pip`
 
 2. Install natlink
+   - Exit Dragon...
    - pip install natlink
 
    - pip install dragonfly  (natlink also needs some action modules from dragonfly)
@@ -48,6 +49,10 @@ a command shell with adminstrator privileges.
    - natlinkconfig
 
 3. Run natlinkconfig to configure Natlink.
+   - do a (re)register command, "r" in the natlinkconfig_cli
+   - specify a UserDirectory, "u path-to-userdirectoery" in the natlinkconfig_cli
+
+4. Start Dragon
 
 ## Instructions for Developers
 
