@@ -9,7 +9,7 @@ This document describes how to install Natlink for end users and for developers.
 
 Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. 
 
-Release 5.1.0 (August 1, 2021): should work reasonable for the UserDirectory users, so Dragonfly users could try this release.
+Release 5.1.0 (August 1, 2021): should work reasonable for the UserDirectory users, so Dragonfly users could try this release. Note this release is done from the makeflitinstall branch.
 
 For Unimacro and Vocola(2), please wait a little bit longer...
 
