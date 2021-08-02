@@ -3,15 +3,19 @@
 NatLink is an OpenSource extension module for the speech recognition program Dragon. It is required
 for add on packages such as Unimacro, Vocola2, and Dragonfly.
 
-This document describes how to instlall Natlink for end users and for developers.
+This document describes how to install Natlink for end users and for developers.
 
 ## Status
 
-Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. You can use
-it with Vocola2, Unimacro, etc. You can ask for
-help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25&entercat=y&CFTREEITEMKEY=25) forums if you have difficulty in getting Natlink, Unimacro, or Vocola2 working.
+Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. 
 
-The packages are ccurrently published in the 
+Release 5.1.0 (August 1, 2021): should work reasonable for the UserDirectory users, so Dragonfly users could try this release.
+
+For Unimacro and Vocola(2), please wait a little bit longer...
+
+You can ask for help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25&entercat=y&CFTREEITEMKEY=25) forums if you have difficulty in getting Natlink, Unimacro, or Vocola2 working.
+
+The packages are currently published in the 
 the [Python Packaging Index](https://pypi.org/). 
 
 ## Instructions for End Users
@@ -19,20 +23,25 @@ the [Python Packaging Index](https://pypi.org/).
 If you would like to install Natlink for use, but not as a developer, here are the instructions:
 
 Install a [**Python 3.8 32 bit**](https://www.python.org/downloads/) on your system, and select install for **all users**.  
-It is wise, but not required, to install python into a c:/python38 folder instead of c:/program files(x86)/... This will save
+It is wise, but not required, to install python into a c:/python38-32 folder instead of c:/program files (x86)/... This will save
 you a lot of typing and mouse clicking over the long run.
 
 Start a command prompt or powershell as **adminstrator**. All command line actions described for end users must be performed in
 a command shell with adminstrator privileges.
 
-1. Upgrade pip immediately:
-
+1. Check and upgrade pip immediately:
+   
+   - pip -V   (should give something like:)
+     pip 21.1 from c:\python38-32\lib\site-packages\pip (python 3.8)
    - pip install --upgrade pip`
 
-2. Install natlink, Unimacro, and Vocola2.
-   - `pip install  natlink unimacro vocola2`
+2. Install natlink
+   - pip install natlink
 
-   This will install the packages in your Python site-packages area. It will also add the following commands, which should be
+   - pip install dragonfly  (natlink also needs some action modules from dragonfly)
+
+   This will install the packages in your Python site-packages area. 
+   It will also add the following commands, which should be
    in your path now in your commmand prompt:
 
    - natlinkconfig_cli
@@ -41,6 +50,13 @@ a command shell with adminstrator privileges.
 3. Run natlinkconfig to configure Natlink.
 
 ## Instructions for Developers
+
+- Natlink and other packages are all installed as packages in (\python38-32)\Lib\site-packges. 
+- As all packages (the root directory) are recognised in the PythonPath, we do not need a special reference in the registry any more, that
+  points to the natlinkcore directory where natlink.pyd is copied to (in the natlinkconfig program) and registered.
+- For all these packages we need qualified imports, for example:
+=== from natlinkcore import natlink
+=== from dtactions import sendkeys 
 
 Your local git repository can be anywhere conveninent. It no longer needs to be in a specific location relative to other
 [dictation-toolbox](https://github.com/dictation-toolbox) packages.
