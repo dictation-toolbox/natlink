@@ -31,9 +31,9 @@ a command shell with adminstrator privileges.
 
 1. Check and upgrade pip immediately:
    
-   - pip -V   # should give something like:
-              # pip 21.1 from c:\python38-32\lib\site-packages\pip (python 3.8)
-   - pip install --upgrade pip`
+   - `pip -V   # should give something like:
+              # pip 21.1 from c:\python38-32\lib\site-packages\pip (python 3.8)`
+   - `pip install --upgrade pip`
 
 2. Install natlink
    - Exit Dragon...
