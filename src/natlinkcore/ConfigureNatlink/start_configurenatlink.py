@@ -72,7 +72,7 @@ def main():
 
         pathToPythonW = f'{sys.prefix}\\pythonw.exe'
         if not os.path.isfile(pathToPythonW):
-            print(f'Cannot find the Pythonw exectutable: {pathToPythonW}')
+            print(f'Cannot find the Pythonw executable: {pathToPythonW}')
             # time.sleep(30)
             sys.exit()
 
@@ -92,4 +92,5 @@ def main():
         traceback.print_exc()
         time.sleep(60)
 
-main()
+if "__main__"  == __name__:
+    main()
