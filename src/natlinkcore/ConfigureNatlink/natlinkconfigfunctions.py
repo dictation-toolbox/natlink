@@ -75,11 +75,9 @@ import win32api
 from natlinkcore import natlinkstatus
 from natlinkcore import natlinkcorefunctions
 
-
-
 # With python3, the core directory is directly in the root of natlinkcore (when installing natlink via pip)
 # and the ConfigureNatlink directory is a subdirectory of natlinkcore.
-
+from natlinkcore.__init__ import getNatlinkDirectory, getNatlinkUserDirectory
 
 def getCoreDirectory():
     """Returns the CoreDirectory, relative to thisDir
@@ -92,20 +90,20 @@ def getCoreDirectory():
     _coreDir=str(thisDir.parent)
     return _coreDir
 
-def NatlinkStatusIniFileName():
-    """
-    make the users ./natlink folder if required in their home directory.
-    returns the file name of the ini file with full path
-    :return:
-    """
-    natlink_ini_folder = WindowsPath.home() / ".natlink"
-    natlink_ini_file = natlink_ini_folder / "natlinkstatus.ini"
-    #make the folder if it doesn't exists
-    if not natlink_ini_folder.is_dir():
-        natlink_ini_folder.mkdir()   #make it if it doesn't exist
-    return  str(natlink_ini_file)
-
-natlink_status_ini_file_name=NatlinkStatusIniFileName()
+# def NatlinkStatusIniFileName():
+#     """
+#     make the users ./natlink folder if required in their home directory.
+#     returns the file name of the ini file with full path
+#     :return:
+#     """
+#     natlink_ini_folder = WindowsPath.home() / ".natlink"
+#     natlink_ini_file = natlink_ini_folder / "natlinkstatus.ini"
+#     #make the folder if it doesn't exists
+#     if not natlink_ini_folder.is_dir():
+#         natlink_ini_folder.mkdir()   #make it if it doesn't exist
+#     return  str(natlink_ini_file)
+# 
+# natlink_status_ini_file_name=NatlinkStatusIniFileName()
 
 #Core directory must be added to the path;  Required for when running from the Python scripts folder:
 #?? now switched off, TODOQH
@@ -182,7 +180,7 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         self.changesInInitPhase = 0
         self.isElevated = IsUserAnAdmin()
         self.checkedUrgent = None
-        natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1)
+        natlinkstatus.NatlinkStatus.__init__(self, skipSpecialWarning=1, from_config=True)
 
     def checkCoreDirectory(self):
         """check if coreDir (from this file) and coreDirectory (from natlinkstatus) match, if not, raise error
