@@ -37,7 +37,8 @@ NOTE: these two directories can also be obtained via natlinkstatus:
 ```
 import natlinkstatus
 status = natlinkstatus.NatlinkStatus()
-status.
+status.getNatlinkDirectory()
+status.getNatlinkUserDirectory()
 ```
 
 checkDirectory(dirpath, create=True)
@@ -51,7 +52,8 @@ import sys
 import pathlib
 
 ## change this before a new release on pypi is made:
-__version__ = '5.1.1'    # no registry depencde any more
+__version__ = '5.1.2'    # introduce DICTATIONTOOLBOXUSER for alternative user directory
+# __version__ = '5.1.1'    # no registry depencde any more
 # __version__ = '5.0.0'  # with registry dependence
 ##-----------------------
 
@@ -64,8 +66,22 @@ def getNatlinkUserDirectory():
     """get the NatlinkUserDirectory
     
     Here are config files, especially .natlink
+    
+    By default the users home directory is taken. This directory can be overridden by setting
+    the environment variable DICTATIONTOOLBOXUSER to an existing directory.
+    Restart then the calling program
     """
-    natlink_ini_folder = pathlib.WindowsPath.home() / ".natlink"
+    # default dtHome:
+    dictation_toolbox_user = os.getenv("DICTATIONTOOLBOXUSER")
+    if dictation_toolbox_user:
+        dtHome = pathlib.Path(dictation_toolbox_user)
+        if not dtHome.is_dir():
+            print(f'environment variable DICTATIONTOOLBOXUSER does not point to a valid directory: {dictation_toolbox_user}')
+            dtHome = pathlib.WindowsPath.home()
+    else:
+        dtHome = pathlib.WindowsPath.home()
+
+    natlink_ini_folder = dtHome / ".natlink"
     if not natlink_ini_folder.is_dir():
         natlink_ini_folder.mkdir()   #make it if it doesn't exist
     return str(natlink_ini_folder)
@@ -139,4 +155,7 @@ def checkDirectory(newDir, create=True):
         print('created directory: {newDir}')
     else:
         raise OSError(f'did not manage to create directory: {newDir}')
-                      
+
+if __name__ == "__main__":
+    print(f'natlink_user_directory: "{getNatlinkUserDirectory()}"')
+    

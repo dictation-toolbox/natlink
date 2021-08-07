@@ -136,7 +136,7 @@ from natlinkcore import natlinkcorefunctions
 # from natlinkcore import inivars
 from natlinkcore.pathqh import path
 import natlinkcore
-
+import dtactions
 
 # for getting generalised env variables:
 
@@ -145,7 +145,7 @@ import natlinkcore
 # adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
 
-lowestSupportedPythonVersion = 37
+lowestSupportedPythonVersion = 38
 
 DNSPaths = []
 DNSVersions = list(range(19,14,-1))
@@ -1345,6 +1345,21 @@ class NatlinkStatus:
     #     """
     #     return self.CoreDirectory
 
+    def getDtactionsDirectory(self):    ### coreDir=None):
+        """return the path of the DtactionsDirectory
+        
+        """
+        #pylint:disable=R0201        
+        return dtactions.getDtactionsDirectory()
+
+    def getDtactionsUserDirectory(self): ##, coreDir=None):
+        """return the path of the DtactionsDirectory
+        
+        if coreDir is given, check for symlink (only for developers)
+        """
+        #pylint:disable=R0201          
+        return dtactions.getDtactionsUserDirectory()
+    
     def getNatlinkDirectory(self):    ### coreDir=None):
         """return the path of the NatlinkDirectory
         
@@ -1877,6 +1892,7 @@ class NatlinkStatus:
                     'PythonVersion',
                     'DNSName',
                     'NatlinkDirectory', 'NatlinkUserDirectory',
+                    'DtactionsDirectory', 'DtactionsUserDirectory',
                     'UnimacroDirectory', 'UnimacroUserDirectory', 'UnimacroGrammarsDirectory',
                     'DebugLoad', 'DebugCallback',
                     'VocolaDirectory', 'VocolaUserDirectory', 'VocolaGrammarsDirectory',
