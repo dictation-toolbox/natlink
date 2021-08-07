@@ -920,7 +920,7 @@ Probably you did not run this program in "elevated mode". Please try to do so.
 
         Note: NO registry setting any more! (March 2021)
         """
-        PydPath = os.path.join(self.NatlinkDirectory(), 'natlink.pyd')
+        PydPath = os.path.join(self.getNatlinkDirectory(), 'natlink.pyd')
 
         if not os.path.isfile(PydPath):
             self.fatal_error("Pyd file not found in core folder: %s"% PydPath)
