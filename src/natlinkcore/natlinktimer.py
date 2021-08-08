@@ -4,11 +4,10 @@ Quintijn Hoogenboom, 25-4-2020
 
 """
 #---------------------------------------------------------------------------
-import copy
 import time
-import natlink
-import sys
 import traceback
+
+from natlinkcore import natlink
 
 natlinktimer = None
 
@@ -17,6 +16,7 @@ class GrammarTimer:
     """object which specifies how to call the natlinkTimer
     
     """
+    #pylint:disable=R0913
     def __init__(self, callback, interval, startNow=False, stopAtMicOff=False, maxIterations=None):
         curTime = self.starttime = round(time.time()*1000)
         self.callback = callback
@@ -25,7 +25,6 @@ class GrammarTimer:
         self.stopAtMicOff = stopAtMicOff
         self.startNow = startNow
         self.maxIterations = maxIterations
-        pass
 
     def __str__(self):
         """make string with nextTime value relative to the starttime of the grammarTimer instance
@@ -53,7 +52,7 @@ class NatlinkTimer:
     First written by Christo Butcher for Dragonfly, now enhanced by Quintijn Hoogenboom, May 2020
     
     """
-
+    #pylint:disable=R0201
     def __init__(self, minInterval=None):
         """initialize the natlink timer instance
         
@@ -89,13 +88,15 @@ class NatlinkTimer:
 
         if interval <= 0:
             self.removeCallback(callback)
-            return
+            return None
         if interval <= self.minInterval:
-            if self.debug: print(f"addCallback {callback.__name}, set interval from {interval} to minInterval: {self.minInterval}")
+            if self.debug:
+                print(f"addCallback {callback.__name}, set interval from {interval} to minInterval: {self.minInterval}")
         interval = round(interval)
         gt = GrammarTimer(callback, interval)
         self.callbacks[callback] = gt
-        if self.debug: print("set new timer %s: %s (%s)"% (callback.__name__, interval, now))
+        if self.debug:
+            print("set new timer %s: %s (%s)"% (callback.__name__, interval, now))
         self.hittimer()
         return gt
 
@@ -103,14 +104,16 @@ class NatlinkTimer:
         """remove a callback function
         """
         self.debug = self.debug or debug
-        if self.debug: print("remove timer for %s"% callback.__name__)
+        if self.debug:
+            print("remove timer for %s"% callback.__name__)
 
         try:
             del self.callbacks[callback]
         except KeyError:
             pass
         if not self.callbacks:
-            if self.debug: print("last timer removed, setTimerCallback to 0")
+            if self.debug:
+                print("last timer removed, setTimerCallback to 0")
 
             self.stopTimer()
             return
@@ -120,9 +123,11 @@ class NatlinkTimer:
     def hittimer(self):
         """move to a next callback point
         """
+        #pylint:disable=R0914, R0912, R0915, W0702
         now = self.getnow()
         nowRel = now - self.timerStartTime
-        if self.debug: print("start hittimer at", nowRel)
+        if self.debug:
+            print("start hittimer at", nowRel)
 
         toBeRemoved = []
         # c = callbackFunc, g = grammarTimer
@@ -133,7 +138,8 @@ class NatlinkTimer:
         for interval, callbackFunc, grammarTimer in sortedList:
             now = self.getnow()
             # for printing: 
-            if self.debug: nowRel, nextTimeRel = now - self.timerStartTime, grammarTimer.nextTime - self.timerStartTime
+            if self.debug:
+                nowRel, nextTimeRel = now - self.timerStartTime, grammarTimer.nextTime - self.timerStartTime
             if grammarTimer.nextTime > (now + self.tolerance):
                 if self.debug:
                     print(f'no need for {callbackFunc.__name__}, now: {nowRel}, nextTime: {nextTimeRel}')
@@ -172,7 +178,8 @@ class NatlinkTimer:
             else:
                 spentInCallback = endCallback - startCallback
                 if spentInCallback > interval:
-                    if self.debug: print(f"spent too much time in {callbackFunc.__name__}, increase interval from {interval} to: {spentInCallback*2}")
+                    if self.debug:
+                        print(f"spent too much time in {callbackFunc.__name__}, increase interval from {interval} to: {spentInCallback*2}")
                     grammarTimer.interval = interval = spentInCallback*2
                 grammarTimer.nextTime += interval
                 if self.debug:
@@ -183,18 +190,22 @@ class NatlinkTimer:
             del self.callbacks[gt]
         
         if not self.callbacks:
-            if self.debug: print("no callbackFunction any more, switch off the natlink timerCallback")
+            if self.debug:
+                print("no callbackFunction any more, switch off the natlink timerCallback")
             self.stopTimer()
             return
         
         nownow = self.getnow()
         timeincallbacks = nownow - now
-        if self.debug: print("time in callbacks: %s"% timeincallbacks)
+        if self.debug:
+            print("time in callbacks: %s"% timeincallbacks)
         nextTime = min(gt.nextTime-nownow for gt in self.callbacks.values())
         if nextTime < self.minInterval:
-            if self.debug: print(f"warning, nextTime too small: {nextTime}, set at minimum {self.minInterval}")
+            if self.debug:
+                print(f"warning, nextTime too small: {nextTime}, set at minimum {self.minInterval}")
             nextTime = self.minInterval
-        if self.debug: print("set nextTime to: %s"% nextTime)
+        if self.debug:
+            print("set nextTime to: %s"% nextTime)
         natlink.setTimerCallback(self.hittimer, nextTime)
         if self.debug:
             nownownow = self.getnow()
@@ -219,6 +230,7 @@ def setTimerCallback(callback, interval, debug=None):
     Interval in seconds, unless larger than 24
     callback: the function to be called
     """
+    #pylint:disable=W0603
     global natlinktimer
     if not natlinktimer:
         natlinktimer = NatlinkTimer()
@@ -231,14 +243,16 @@ def setTimerCallback(callback, interval, debug=None):
     if interval:
         gt = natlinktimer.addCallback(callback, interval, debug=debug)
         return gt
-    else:
-        natlinktimer.removeCallback(callback, debug=debug)
+    natlinktimer.removeCallback(callback, debug=debug)
+    return None
+    
 
 def removeTimerCallback(callback, debug=None):
     """This function removes a callback from the callbacks dict
     
     callback: the function to be called
     """
+    #pylint:disable=W0603
     global natlinktimer
     if not natlinktimer:
         print("no timers active, cannot remove %s from natlinktimer"% callback)
@@ -252,10 +266,8 @@ def removeTimerCallback(callback, debug=None):
 def stopTimerCallback():
     """should be called at destroy of Natlink
     """
+    #pylint:disable=W0603    
     global natlinktimer
     if natlinktimer:
         del natlinktimer
 
-if __name__ == "__main__":
-    to = GrammarTimer(interval=100, curTime=10340, t=123, u=None)
-    pass

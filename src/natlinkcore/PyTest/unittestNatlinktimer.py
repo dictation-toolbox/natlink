@@ -1,49 +1,58 @@
-#
-# Python Macro Language for Dragon NaturallySpeaking
-#   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
-#
-# unittestNatlinktimer.py
-#   This script performs tests of the Natlinktimer module
-#   natlinktimer.py, for multiplexing timer instances acrross different grammars
-#   Quintijn Hoogenboom, summer 2020
-#
+"""unittestNatlinktimer
 
-import sys
+Python Macro Language for Dragon NaturallySpeaking
+  (c) Copyright 1999 by Joel Gould
+  Portions (c) Copyright 1999 by Dragon Systems, Inc.
+
+unittestNatlinktimer.py
+
+  This script performs tests of the Natlinktimer module
+  natlinktimer.py, for multiplexing timer instances acrross different grammars
+  Quintijn Hoogenboom, summer 2020
+""" 
+#pylint:disable=C0115, C0116, R0201
+
+# import sys
 import unittest
 import time
-import traceback        # for printing exceptions
+# import traceback        # for printing exceptions
 
-from pathqh import path
-
-import natlink
-from natlinkutils import GrammarBase
-import natlinktimer
+# from pathqh import path
+from pathlib import Path
+import natlinkcore
+from natlinkcore import natlink
+from natlinkcore.natlinkutils import GrammarBase
+from natlinkcore import natlinktimer
+from natlinkcore import natlinkstatus
 
 class TestError(Exception):
-    pass
+    """TestError"""
+    
 ExitQuietly = 'ExitQuietly'
-
 
 # try some experiments more times, because gotBegin sometimes seems
 # not to hit
 nTries = 10
 natconnectOption = 1 # or 1 for threading, 0 for not. Seems to make difference
                      # with spurious error (if set to 1), missing gotBegin and all that...
-def getBaseFolder(globalsDict=None):
-    """get the folder of the calling module.
 
-    return a str...
-    """
-    baseFolder = path(".").normpath()
-    return baseFolder
+thisDir = natlinkcore.getThisDir(__file__)
+# 
+# 
+# def getBaseFolder(globalsDict=None):
+#     """get the folder of the calling module.
+# 
+#     return a str...
+#     """
+#     baseFolder = path(".").normpath()
+#     return baseFolder
+# 
+# thisDir = getBaseFolder(globals())
 
-thisDir = getBaseFolder(globals())
 
-logFileName = path(thisDir)/"Natlinktimertestresult.txt"
+logFileName = Path(thisDir)/"Natlinktimertestresult.txt"
 
 # make different versions testing possible:
-import natlinkstatus
 nlstatus = natlinkstatus.NatlinkStatus()
 DNSVersion = nlstatus.getDNSVersion()
 
@@ -66,7 +75,6 @@ class UnittestNatlinktimer(unittest.TestCase):
         finally:
             natlinktimer.stopTimerCallback()
             self.disconnect()
-
         
     def connect(self):
         # start with 1 for thread safety when run from pythonwin:
@@ -91,7 +99,10 @@ class UnittestNatlinktimer(unittest.TestCase):
     # an exception (of the expected type) is raised.  Otherwise a TestError
     # exception is raised
 
-    def doTestForException(self, exceptionType,command,localVars={}):
+    def doTestForException(self, exceptionType,command,localVars=None):
+        #pylint:disable=W0122
+        if localVars is None:
+            localVars = dict()
         try:
             exec(command,globals(),localVars)
         except exceptionType:
@@ -103,7 +114,8 @@ class UnittestNatlinktimer(unittest.TestCase):
 
     def doTestFuncReturn(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
+        #pylint:disable=W0123
+        if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
@@ -114,6 +126,7 @@ class UnittestNatlinktimer(unittest.TestCase):
                           (command, expected, actual))
 
     def testSingleTimer(self):
+        #pylint:disable=W0201
         testName = "testSingleTimer"
         self.log(testName)
 
@@ -121,7 +134,6 @@ class UnittestNatlinktimer(unittest.TestCase):
         # This grammar then sets the timer, and after 3 times expires
 
         class TestGrammar(GrammarBase):
-
             def __init__(self):
                 GrammarBase.__init__(self)
                 self.resetExperiment()
@@ -131,6 +143,7 @@ class UnittestNatlinktimer(unittest.TestCase):
                 self.MaxHit = 5
                 self.sleepTime = 0 # to be specified by calling instance, the sleeping time after each hit
                 self.results = []
+                
 
             def report(self):
                 """print the results lines
@@ -152,12 +165,13 @@ class UnittestNatlinktimer(unittest.TestCase):
                 if currentInterval > 150:
                     newInterval = currentInterval - 10
                     return newInterval
+                return None
 
         testGram = TestGrammar()
         testGram.interval = 200
         testGram.sleepTime = 30  # all milliseconds now
         testGram.grammarTimer = natlinktimer.setTimerCallback(testGram.doTimer, interval=testGram.interval, debug=1)
-        for i in range(5):
+        for _i in range(5):
             if testGram.Hit >= testGram.MaxHit :
                 printInfo = str(testGram.grammarTimer)
                 self.log(f"timer seems to be ready. results: {printInfo}")
@@ -179,6 +193,7 @@ def wait(tmilli=100):
 def log(t, refresh=None):
     """logging is a mess, just print here...
     """
+    #pylint:disable=W0613
     print(t)
     # openOption = 'a' if not refresh else 'w'
     # with open(logFileName, openOption) as lf:
@@ -214,11 +229,8 @@ def run():
     log('starting unittestNatlinktimer')
     suite = unittest.makeSuite(UnittestNatlinktimer, 'test')
     log('\nstarting tests with threading: %s\n'% natconnectOption)
-    result = unittest.TextTestRunner().run(suite)
-    # log(result)
+    unittest.TextTestRunner().run(suite)
 
 if __name__ == "__main__":
-    baseFolder = getBaseFolder()
-    log(f"baseFolder: {baseFolder}", refresh=True)
     log("no log file, just printing on console")
     run()
