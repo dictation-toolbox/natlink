@@ -132,11 +132,12 @@ import winreg
 import pathlib
 import win32api
 # import time
+import dtactions
 from natlinkcore import natlinkcorefunctions
 # from natlinkcore import inivars
 from natlinkcore.pathqh import path
 import natlinkcore
-import dtactions
+
 
 # for getting generalised env variables:
 
@@ -1349,8 +1350,11 @@ class NatlinkStatus:
         """return the path of the DtactionsDirectory
         
         """
-        #pylint:disable=R0201        
-        return dtactions.getDtactionsDirectory()
+        #pylint:disable=R0201
+        print('ask for dtactions directory')
+        dtactionsDirectory = dtactions.getDtactionsDirectory()
+        print(f'got dtactions directory {dtactionsDirectory}')
+        return dtactionsDirectory
 
     def getDtactionsUserDirectory(self): ##, coreDir=None):
         """return the path of the DtactionsDirectory
@@ -1923,7 +1927,7 @@ class NatlinkStatus:
     def getNatlinkStatusString(self):
         """get a long string with the status info
         """
-        #pylint:disable=R0912
+        #pylint:disable=R0912, R0915
         L = []
         D = self.getNatlinkStatusDict()
         if D['userName']:
