@@ -85,7 +85,7 @@ def getCoreDirectory():
     thisDir is the directory of this (calling) module. 
     
     """
-    thisDir=WindowsPath(__file__).parent.resolve()
+    thisDir=WindowsPath(__file__).parent
     # print(f"this dir {thisDir}")
     _coreDir=str(thisDir.parent)
     return _coreDir
@@ -240,8 +240,8 @@ class NatlinkConfig(natlinkstatus.NatlinkStatus):
         
         if str(CoreDir).lower() != coreDir3.lower():
             self.fatal_error(f'Ambiguous core directory,\nfrom this module: "{coreDir3}\nfrom natlinkstatus.getNatlinkDirectory: "{CoreDir}"')
-        if coreDir.lower() != CoreDir.lower():
-            self.fatal_error(f'Ambiguous core directory,\nfrom this module (global): "{coreDir}\nfrom natlinkstatus.getNatlinkDirectory: "{CoreDir}"')
+        # if coreDir.lower() != CoreDir.lower():
+        #     self.fatal_error(f'Ambiguous core directory,\nfrom this module (global): "{coreDir}\nfrom natlinkstatus.getNatlinkDirectory: "{CoreDir}"')
             
         currentPydPath = os.path.join(coreDir3, 'natlink.pyd')
         NatlinkPydOrigin = self.userinisection.get('NatlinkPydOrigin')
