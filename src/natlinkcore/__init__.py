@@ -6,19 +6,39 @@ Utility functions, to get calling directory of module (in site-packages),
 
 Note: -as user, having pipped the package, the scripts run from the site-packages directory
       -as developer, you have to clone the package, then `build_package` and,
-       after a `pip uninstall natlinkcore`, `flit install --symlink`.
+       after a `pip uninstall natlinkcore`, `flit install`.
+       
+       Note: `flit install --symlink` gives problems, due to natlink.pyd.
+       Possibly `flit install -pth  
        See instructions in the file README.md in the source directory of the package.
 
 getThisDir: can be called in the calling module like:
 
 ```
 try:
-    from dtactions.__init__ import getThisDir, checkDirectory
+    from natlinkcore.__init__ import getThisDir, checkDirectory
 except ModuleNotFoundError:
     print(f'Run this module after "build_package" and "flit install --symlink"\n')
     raise
 
 thisDir = getThisDir(__file__)
+```
+
+Also retrieve the NatlinkDirectory and NatlinkUserDirectory from here:
+
+```
+from natlinkcore.__init__ import getNatlinkDirectory, getNatlinkUserDirectory
+
+print(f'NatlinkDirectory: {getNatlinkDirectory()})
+print(f'NatlinkUserDirectory: {getNatlinkUserDirectory()})
+```
+
+NOTE: these two directories can also be obtained via natlinkstatus:
+```
+import natlinkstatus
+status = natlinkstatus.NatlinkStatus()
+status.getNatlinkDirectory()
+status.getNatlinkUserDirectory()
 ```
 
 checkDirectory(dirpath, create=True)
@@ -29,12 +49,52 @@ checkDirectory(dirpath, create=True)
 
 import os
 import sys
+import pathlib
 
 ## change this before a new release on pypi is made:
-__version__ = '5.1.1'    # no registry depencde any more
+__version__ = '5.1.3'    # try DICTATIONTOOLBOXUSER trick again and getDtactionsDirectory
+# __version__ = '5.1.2'    # introduce DICTATIONTOOLBOXUSER for alternative user directory
+# __version__ = '5.1.1'    # no registry depencde any more
 # __version__ = '5.0.0'  # with registry dependence
 ##-----------------------
 
+def getNatlinkDirectory():
+    """return the directory of natlinkcore, where natlink.pyd is
+    """
+    return getThisDir(__file__)
+
+def getNatlinkUserDirectory():
+    """get the NatlinkUserDirectory
+    
+    Here are config files, especially .natlink
+    
+    By default the users home directory is taken. This directory can be overridden by setting
+    the environment variable DICTATIONTOOLBOXUSER to an existing directory.
+    Restart then the calling program
+    """
+    # default dtHome:
+    dictation_toolbox_user = os.getenv("DICTATIONTOOLBOXUSER")
+    if dictation_toolbox_user:
+        dtHome = pathlib.Path(dictation_toolbox_user)
+        if not dtHome.is_dir():
+            print(f'environment variable DICTATIONTOOLBOXUSER does not point to a valid directory: {dictation_toolbox_user}')
+            dtHome = pathlib.WindowsPath.home()
+    else:
+        dtHome = pathlib.WindowsPath.home()
+
+    natlink_ini_folder = dtHome / ".natlink"
+    if not natlink_ini_folder.is_dir():
+        natlink_ini_folder.mkdir()   #make it if it doesn't exist
+    return str(natlink_ini_folder)
+
+def getNatlinkInifile():
+    """return the complete path of the natlink inifile
+    
+    this will be (%HOME%)/Natlink/"natlinkstatus.ini"
+    """
+    natlink_ini_folder = getNatlinkUserDirectory()
+    natlink_ini_file = pathlib.Path(natlink_ini_folder) / "natlinkstatus.ini"
+    return  str(natlink_ini_file)
 
 def getThisDir(fileOfModule):
     """get directory of calling module, if possible in site-packages
@@ -96,4 +156,7 @@ def checkDirectory(newDir, create=True):
         print('created directory: {newDir}')
     else:
         raise OSError(f'did not manage to create directory: {newDir}')
-                      
+
+if __name__ == "__main__":
+    print(f'natlink_user_directory: "{getNatlinkUserDirectory()}"')
+    

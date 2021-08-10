@@ -130,13 +130,13 @@ import pprint
 import stat
 import winreg
 import pathlib
-from pathlib import Path   # and dismiss pathqh!!
 import win32api
 # import time
+import dtactions
 from natlinkcore import natlinkcorefunctions
 # from natlinkcore import inivars
 from natlinkcore.pathqh import path
-from natlinkcore import __init__
+import natlinkcore
 
 
 # for getting generalised env variables:
@@ -146,7 +146,7 @@ from natlinkcore import __init__
 # adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
 
-lowestSupportedPythonVersion = 37
+lowestSupportedPythonVersion = 38
 
 DNSPaths = []
 DNSVersions = list(range(19,14,-1))
@@ -250,10 +250,14 @@ class NatlinkStatus:
     hadWarning = []
 
 
-    def __init__(self, skipSpecialWarning=None,devnatlink_dll=None):
+    def __init__(self, skipSpecialWarning=None,devnatlink_dll=None, from_config=None):
         """ devnatlink_dll is the path of a dll to use rather than a published one.
-        usesful during development. """
-
+        usesful during development.
+        
+        from_config can be set when calling from natlinkconfigfunctions,
+        in order to prevent natlink.pyd loading unwanted.
+        """
+        self.from_config = from_config
         self.devnatlink_dll = devnatlink_dll
        # print(f'natlinkstatus.__ini__, skipSpecialWarning input skipSW: {skipSpecialWarning}')
         try:
@@ -283,10 +287,10 @@ class NatlinkStatus:
         try:
             self.__class__.NatlinkDirectory
         except AttributeError:
-            thisDir=pathlib.WindowsPath(__file__).parent
+            # thisDir=pathlib.WindowsPath(__file__).parent
             # thisDirResolved = thisDir.resolve()
-            coreDir=self.findInSitePackages(str(thisDir))
-            self.__class__.NatlinkDirectory = self.getNatlinkDirectory(coreDir=coreDir)
+            # coreDir=self.findInSitePackages(str(thisDir))
+            self.__class__.NatlinkDirectory = self.getNatlinkDirectory()   ##(coreDir=coreDir)
             assert os.path.isdir(self.NatlinkDirectory)
         # initialize settings for this session:
         
@@ -351,29 +355,31 @@ class NatlinkStatus:
         PythonPath / Natlink setting, for natlink be able to be started.
 
         """
-        print(f'\ncheckSysPath with PythonPath setting in registry not needed any more')
+        #pylint:disable=R0201
+        print('\ncheckSysPath with PythonPath setting in registry not needed any more')
         return 1
-        NatlinkDirectory = self.getNatlinkDirectory()
 
-        if NatlinkDirectory.lower().endswith('natlinkcore'):
-            # check the registry setting:
-            result = self.getRegistryPythonPathNatlink()
-            if not result:
-                print('''Natlink setting not found in Natlink section of PythonPath setting\n
-Please try to correct this by running the Natlink Config Program (with administration rights)\n''')
-                return None
-            _natlinkkey, natlinkvalue,  = result
-            if not natlinkvalue:
-                print('''Natlink setting not found in Natlink section of PythonPath setting in registry\n
-Please try to correct this by running the Natlink Config Program (with administration rights)''')
-                return None
-
-            coreDirectory = Path(natlinkvalue)
-            if not coreDirectory.is_dir():
-                print(f'''Natlink setting "{coreDirectory}" in the registry is not a valid directory\n
-Please try to correct this by running the Natlink Config Program (with administration rights)''')
-
-        return 1
+#         NatlinkDirectory = self.getNatlinkDirectory()
+# 
+#         if NatlinkDirectory.lower().endswith('natlinkcore'):
+#             # check the registry setting:
+#             result = self.getRegistryPythonPathNatlink()
+#             if not result:
+#                 print('''Natlink setting not found in Natlink section of PythonPath setting\n
+# Please try to correct this by running the Natlink Config Program (with administration rights)\n''')
+#                 return None
+#             _natlinkkey, natlinkvalue,  = result
+#             if not natlinkvalue:
+#                 print('''Natlink setting not found in Natlink section of PythonPath setting in registry\n
+# Please try to correct this by running the Natlink Config Program (with administration rights)''')
+#                 return None
+# 
+#             coreDirectory = Path(natlinkvalue)
+#             if not coreDirectory.is_dir():
+#                 print(f'''Natlink setting "{coreDirectory}" in the registry is not a valid directory\n
+# Please try to correct this by running the Natlink Config Program (with administration rights)''')
+# 
+#         return 1
 
 
     def checkNatlinkPydFile(self):
@@ -1340,28 +1346,83 @@ Please try to correct this by running the Natlink Config Program (with administr
     #     """
     #     return self.CoreDirectory
 
-    def getNatlinkDirectory(self, coreDir=None):
+    def getDtactionsDirectory(self):    ### coreDir=None):
+        """return the path of the DtactionsDirectory
+        
+        """
+        #pylint:disable=R0201
+        print('ask for dtactions directory')
+        dtactionsDirectory = dtactions.getDtactionsDirectory()
+        print(f'got dtactions directory {dtactionsDirectory}')
+        return dtactionsDirectory
+
+    def getDtactionsUserDirectory(self): ##, coreDir=None):
+        """return the path of the DtactionsDirectory
+        
+        if coreDir is given, check for symlink (only for developers)
+        """
+        #pylint:disable=R0201          
+        return dtactions.getDtactionsUserDirectory()
+    
+    def getNatlinkDirectory(self):    ### coreDir=None):
         """return the path of the NatlinkDirectory
         
         if coreDir is given, check for symlink (only for developers)
         """
-        if not coreDir:
-            # should be preserved after first call:
-            return self.NatlinkDirectory
+        #pylint:disable=R0201        
+        # try:
+        #     import natlinkcore.__init__
+        # except ModuleNotFoundError:
+        #     print(f'Run this module after "build_package" and "flit install"\n')
+        #     return ""
+        return natlinkcore.getNatlinkDirectory()
 
-        if str(coreDir).find("site-packages") > 0:
-            cdPath = pathlib.WindowsPath(coreDir)
-            if cdPath.is_symlink():
-                cdResolved = cdPath.resolve()
-                raise OSError(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}\ndo not use --symlink with flit install')
-            CDPath = str(cdPath)
-            del cdPath
-            return os.path.normpath(CDPath)
-        if coreDir.find('\\src\\') > 0:
-            # opened from github clone, find site-packages directory
-            spCoreDir = self.findInSitePackages(coreDir)
-            return spCoreDir
-        return None
+    def getNatlinkUserDirectory(self): ##, coreDir=None):
+        """return the path of the NatlinkDirectory
+        
+        if coreDir is given, check for symlink (only for developers)
+        """
+        #pylint:disable=R0201          
+        # try:
+        #     import natlinkcore.__init__
+        # except ModuleNotFoundError:
+        #     print(f'Run this module after "build_package" and "flit install"\n')
+        #     return ""
+        return natlinkcore.getNatlinkUserDirectory()
+
+    def getNatlinkInifile(self):   #, coreDir=None):
+        """return the path to the natlink config file
+        
+        if coreDir is given, check for symlink (only for developers)
+        """
+        #pylint:disable=R0201          
+        # try:
+        #     import natlinkcore.__init__
+        # except ModuleNotFoundError:
+        #     print(f'Run this module after "build_package" and "flit install"\n')
+        #     return ""
+        return natlinkcore.getNatlinkInifile()
+        #     
+        # 
+        # thisDir = getThisDir(__file__)
+        # 
+        # if not coreDir:
+        #     # should be preserved after first call:
+        #     return self.NatlinkDirectory
+        # 
+        # if str(coreDir).find("site-packages") > 0:
+        #     cdPath = pathlib.WindowsPath(coreDir)
+        #     if cdPath.is_symlink():
+        #         cdResolved = cdPath.resolve()
+        #         raise OSError(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}\ndo not use --symlink with flit install')
+        #     CDPath = str(cdPath)
+        #     del cdPath
+        #     return os.path.normpath(CDPath)
+        # if coreDir.find('\\src\\') > 0:
+        #     # opened from github clone, find site-packages directory
+        #     spCoreDir = self.findInSitePackages(coreDir)
+        #     return spCoreDir
+        # return None
     
     def findInSitePackages(self, cloneDir):
         """get corresponding directory in site-packages 
@@ -1652,7 +1713,7 @@ Please try to correct this by running the Natlink Config Program (with administr
         'tst' if not set, probably no speech profile on then
 
         """
-        #pylint:disable=C0415
+        #pylint:disable=C0415, R0911
         try:
             language = self.__class__.UserArgsDict['language']
             if language:
@@ -1663,6 +1724,10 @@ Please try to correct this by running the Natlink Config Program (with administr
                 print(f'natlinkstatus.getLanguage, recursive call, return "{language}"')
                 return language
         language = 'enx' ## default
+        if self.from_config:
+            print(f'from_config is set, don\'t try to import natlink, return language: "{language}"')
+            return language
+        
         try:
             from natlinkcore import natlink
         except (ModuleNotFoundError, ImportError):
@@ -1830,6 +1895,8 @@ Please try to correct this by running the Natlink Config Program (with administr
                     'DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion',
                     'DNSName',
+                    'NatlinkDirectory', 'NatlinkUserDirectory',
+                    'DtactionsDirectory', 'DtactionsUserDirectory',
                     'UnimacroDirectory', 'UnimacroUserDirectory', 'UnimacroGrammarsDirectory',
                     'DebugLoad', 'DebugCallback',
                     'VocolaDirectory', 'VocolaUserDirectory', 'VocolaGrammarsDirectory',
@@ -1847,7 +1914,7 @@ Please try to correct this by running the Natlink Config Program (with administr
             D[key] = func()
             # execstring = "D['%s'] = self.get%s()"% (key, keyCap)
             # exec(execstring)
-        D['NatlinkDirectory'] = self.NatlinkDirectory
+        # D['NatlinkDirectory'] = self.NatlinkDirectory
         D['UserDirectory'] = self.getUserDirectory(force=force)
         D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
@@ -1860,7 +1927,7 @@ Please try to correct this by running the Natlink Config Program (with administr
     def getNatlinkStatusString(self):
         """get a long string with the status info
         """
-        #pylint:disable=R0912
+        #pylint:disable=R0912, R0915
         L = []
         D = self.getNatlinkStatusDict()
         if D['userName']:
@@ -1876,6 +1943,8 @@ Please try to correct this by running the Natlink Config Program (with administr
         if D['natlinkIsEnabled']:
             self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is enabled")
             key = 'NatlinkDirectory'
+            self.appendAndRemove(L, D, key)
+            key = 'NatlinkUserDirectory'
             self.appendAndRemove(L, D, key)
             key = 'InstallVersion'
             self.appendAndRemove(L, D, key)
