@@ -69,7 +69,7 @@ Your local git repository can be anywhere conveninent. It no longer needs to be 
 - Install as per the instructions for end users, to get any python prequisites in.
 - Install [flit](https://pypi.org/project/flit/) `pip install flit`. This is a python package build tool that is required for developer workflow.
 - Uninstall the packages you wish to develop. i.e pip if you want to work on natlink:
-  `pip uninstall natlinkpy natlink` and answer yes to all the questions about removing files from your python scripts folder.
+  `pip uninstall natlink` and answer yes to all the questions about removing files from your python scripts folder.
 - Build the Python packages. In the root folder of your natlink repository, run `build_package` in your shell. This creates the package.  
   At this step, if you have any untracked files
   in your git repository, you will have to correct them with a `git add` command or adding those files to .gitignore.
@@ -108,3 +108,16 @@ This will publish to [Python Packaging Index](https://pypi.org/): `publish_packa
 
 If you are going to publish to a package index, you will need a .pypirc in your home directory. If you don't have one,
 it is suggested you start with pypirc_template as the file format is rather finicky.
+
+### Debugging
+
+A lot of extra diagnostic information is written using outputDebugString (```from pydebugstring.output import outputDebugString```).  
+You can add extra diagnostic information to natlink or your own code and leave it in.  To view this diagnostic 
+information you an use DebugView from https://docs.microsoft.com/en-us/sysinternals/.  There are some diagnostics for natlink startup that are always 
+available if you start DebugView.
+
+If you want to attach a python debugger, the instructions are in a word document "debugging python instructions.doc" in natlinkcore. 
+
+
+
+
