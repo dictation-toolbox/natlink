@@ -39,8 +39,6 @@ a command shell with adminstrator privileges.
    - Exit Dragon...
    - pip install natlink
 
-   - pip install dragonfly  (natlink also needs some action modules from dragonfly)
-
    This will install the packages in your Python site-packages area. 
    It will also add the following commands, which should be
    in your path now in your commmand prompt:
