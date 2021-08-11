@@ -21,9 +21,6 @@ def main():
     parent_dir =current_dir.parent
     for p in (current_dir,parent_dir):
         sys.path.append(str(p))
-    
-    
-    
     #
     print('Starting start_configurenatlink.py,')
     print('Try to run configurenatlink.py, the Natlink Config GUI, in Elevated mode...')

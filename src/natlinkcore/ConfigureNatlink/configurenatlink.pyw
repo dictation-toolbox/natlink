@@ -17,7 +17,7 @@ import os.path
 import argparse
 import traceback
 import copy
-from pathlib import WindowsPath
+from pathlib import Path
 
 from configurenatlink_wdr import *
 from natlinkconfigfunctions import ElevationError
@@ -1353,11 +1353,11 @@ try:
     app = MyApp(True)
 except:
     # traceback.print_exception(type, value, traceback[, limit[, file]])
-    natlink_ini_folder = WindowsPath.home() / ".natlink"
-    errorfile = natlink_ini_folder/"configurenatlink_error.txt"
+    natlink_ini_folder = natlinkcore.getNatlinkUserdirectory()
+    errorfile = Path(natlink_ini_folder)/"configurenatlink_error.txt"
     Type, Value, tb = sys.exc_info()
     
-    traceback.print_exc(file=open(errorfile, "w"))
+    traceback.print_exc(file=open(str(errorfile), "w"))
     mess  = traceback.format_exc()
     mess += f'\nType: {Type}'
     mess += f'\nValue: {Value}'

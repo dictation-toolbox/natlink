@@ -542,7 +542,7 @@ Natlink is now disabled.
             self.userinisection.set(key, checkDir)
             self.getDNSInstallDir(force=1)  ## new settings
             return None
-        mess =  'setDNSInstallDir, directory "%s" is not a correct Dragon Program Directory: %s'% checkDir
+        mess =  f'setDNSInstallDir, directory "{checkDir}" is not a correct Dragon Program Directory'
         print(mess)
         
 
@@ -1340,7 +1340,12 @@ class CLI(cmd.Cmd):
         if Config:
             self.config = Config   # initialized instance of NatlinkConfig
         else:
-            self.config = NatlinkConfig()
+            result = NatlinkConfig()
+            print(f'result of NatlinkConfig in natlinkconfigfunctions: "{result}"')
+            self.config = result
+# # 
+# # 
+            # # self.config = NatlinkConfig()
             
         try:
             self.config.checkDNSInstallDir()  ## checks if DNS install directory is found

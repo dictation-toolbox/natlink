@@ -287,9 +287,6 @@ class NatlinkStatus:
         try:
             self.__class__.NatlinkDirectory
         except AttributeError:
-            # thisDir=pathlib.WindowsPath(__file__).parent
-            # thisDirResolved = thisDir.resolve()
-            # coreDir=self.findInSitePackages(str(thisDir))
             self.__class__.NatlinkDirectory = self.getNatlinkDirectory()   ##(coreDir=coreDir)
             assert os.path.isdir(self.NatlinkDirectory)
         # initialize settings for this session:
@@ -1402,27 +1399,6 @@ class NatlinkStatus:
         #     print(f'Run this module after "build_package" and "flit install"\n')
         #     return ""
         return natlinkcore.getNatlinkInifile()
-        #     
-        # 
-        # thisDir = getThisDir(__file__)
-        # 
-        # if not coreDir:
-        #     # should be preserved after first call:
-        #     return self.NatlinkDirectory
-        # 
-        # if str(coreDir).find("site-packages") > 0:
-        #     cdPath = pathlib.WindowsPath(coreDir)
-        #     if cdPath.is_symlink():
-        #         cdResolved = cdPath.resolve()
-        #         raise OSError(f'site-packages is symlink! {coreDir}, resolved: {cdResolved}, return {coreDir}\ndo not use --symlink with flit install')
-        #     CDPath = str(cdPath)
-        #     del cdPath
-        #     return os.path.normpath(CDPath)
-        # if coreDir.find('\\src\\') > 0:
-        #     # opened from github clone, find site-packages directory
-        #     spCoreDir = self.findInSitePackages(coreDir)
-        #     return spCoreDir
-        # return None
     
     def findInSitePackages(self, cloneDir):
         """get corresponding directory in site-packages 

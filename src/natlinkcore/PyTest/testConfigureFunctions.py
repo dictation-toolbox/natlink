@@ -5,87 +5,25 @@
 #
 #  (C) Copyright Quintijn Hoogenboom, 2008-2009
 #
+#pylint:disable=C0114, C0116 W0107, R0201, R0915, R0914
 #----------------------------------------------------------------------------
-
-
-import sys
-import unittest
-import win32api
 import os
-import win32con
-import copy
+import unittest
 import shutil
-from pathlib import WindowsPath
+from pathlib import Path
+import win32api
+# import win32con
+
+import natlinkcore
+from natlinkcore.ConfigureNatlink import natlinkconfigfunctions
+# from natlinkcore import natlinkstatus
+from natlinkcore.natlinkstatus import isValidPath ## used a lot in the test procedures!
+from natlinkcore import natlinkcorefunctions
+from natlinkcore.natlinkcorefunctions import InifileSection
 
 ##Accessories = 'Accessories'
 ## for Dutch windows system:
 Accessories = 'Bureau-accessoires'
-
-# # need this bunch to get connection with the core folder...
-# #--------- two utility functions:
-# def getBaseFolder(globalsDict=None):
-#     """get the folder of the calling module.
-# 
-#     either sys.argv[0] (when run direct) or
-#     __file__, which can be empty. In that case take the working directory
-#     """
-#     globalsDictHere = globalsDict or globals()
-#     baseFolder = ""
-#     if globalsDictHere['__name__']  == "__main__":
-#         baseFolder = os.path.split(sys.argv[0])[0]
-# ##        print 'baseFolder from argv: %s'% baseFolder
-#     elif globalsDictHere['__file__']:
-#         baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-# ##        print 'baseFolder from __file__: %s'% baseFolder
-#     if not baseFolder or baseFolder == '.':
-#         baseFolder = os.getcwd()
-# ##        print 'baseFolder was empty, take wd: %s'% baseFolder
-#     return baseFolder
-# 
-# def getCoreDir(thisDir):
-#     """get the natlink core folder, relative from the current folder
-# 
-#     This folder should be relative to this with ../macrosystem/core and should contain
-#     natlinkmain.py and natlink.pyd and natlinkstatus.py
-# 
-#     If not found like this, prints a line and returns thisDir
-#     SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
-#     """
-#     coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'macrosystem', 'core') )
-#     if not os.path.isdir(coreFolder):
-#         print('not a directory: %s'% coreFolder)
-#         return thisDir
-#     pydPath = os.path.join(coreFolder, 'natlink.pyd')
-#     mainPath = os.path.join(coreFolder, 'natlinkmain.py')
-#     statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-#     if not os.path.isfile(pydPath):
-#         print('natlink.pyd not found in core directory: %s'% coreFolder)
-#         return thisDir
-#     if not os.path.isfile(mainPath):
-#         print('natlinkmain.py not found in core directory: %s'% coreFolder)
-#         return thisDir
-#     if not os.path.isfile(statusPath):
-#         print('natlinkstatus.py not found in core directory: %s'% coreFolder)
-#         return thisDir
-#     return coreFolder
-#-----------------------------------------------------
-# 
-# thisDir = getBaseFolder(globals())
-# coreDir = getCoreDir(thisDir)
-# if thisDir == coreDir:
-#     raise OSError('natlinkconfigfunctions cannot proceed, coreDir not found...')
-# # appending to path if necessary:
-# if not os.path.normpath(coreDir) in sys.path:
-#     sys.path.append(coreDir)
-# # now we can import:::
-# configDir = os.path.normpath(os.path.join(thisDir, '..', 'ConfigureNatlink'))
-# if not os.path.normpath(configDir) in sys.path:
-#     sys.path.append(configDir)
-from natlinkcore.ConfigureNatlink import natlinkconfigfunctions as natlinkconfigfunctions
-from natlinkcore import natlinkstatus as natlinkstatus
-from natlinkcore.natlinkstatus import isValidPath ## used a lot in the test procedures!
-from natlinkcore import natlinkcorefunctions as natlinkcorefunctions
-from natlinkcore.natlinkcorefunctions import InifileSection
 
 defaultFilename = "natlinkstatustest.ini"
 defaultSection = 'usersettingstest'
@@ -99,7 +37,7 @@ class NatlinkstatusTestInifileSection(InifileSection):
         
         in the .natlink directory...
         """
-        natlink_ini_path=WindowsPath.home() / ".natlink"
+        natlink_ini_path=Path(natlinkcore.getNatlinkUserDirectory())
         if not natlink_ini_path.is_dir():
             raise OSError(f"Natlink folder  {natlink_ini_path} missing.")
         
@@ -115,7 +53,7 @@ class NatlinkstatusTestInifileSection(InifileSection):
             self.delete(key)
 
 class TestError(Exception):
-    pass
+    "TestError"
 
 class TestConfigureFunctions(unittest.TestCase):
     """test INI file functions from win32api
@@ -246,7 +184,7 @@ class TestConfigureFunctions(unittest.TestCase):
 
 
 
-    def tttestIsValidPath(self):
+    def testIsValidPath(self):
         """this tests the isValidPath function of natlinkstatus.py
         
         this function returns the (normalised) path if it exists, None if the input is invalid.
@@ -279,15 +217,15 @@ class TestConfigureFunctions(unittest.TestCase):
         # now ~ (HOME)
         homedirectory = "~"
         result = func(homedirectory)
-        self.assertTrue( result != None, "should hold some value")
+        self.assertTrue( result is not None, "should hold some value")
         result = func(homedirectory, wantDirectory=1)
-        self.assertTrue( result != None,  "should hold some value")
+        self.assertTrue( result is not None,  "should hold some value")
         
         pass
 
 
 
-    def tttest_setting_values(self):
+    def test_setting_values(self):
         
         """this test is needed, because deleting a key from inifile is not trivial.
 
@@ -308,9 +246,8 @@ class TestConfigureFunctions(unittest.TestCase):
         section = win32api.GetProfileSection('s1', testinifile)
         expected = ['k1=v1']
         self.assertTrue(expected == section, "section |%s| after deleted keys is not as expected: |%s|"% (section, expected))
-        pass        
         
-    def tttest_getExtendedEnv(self):
+    def test_getExtendedEnv(self):
         """Test the different functions in natlinkcorefunctions that do environment variables
 
         Assume if HOME is set in os.environ (system environment variables), it is identical to PERSONAL.
@@ -339,7 +276,7 @@ class TestConfigureFunctions(unittest.TestCase):
         # unknown CSIDL_ variable should give ValueError:
         self.assertRaises(ValueError, natlinkcorefunctions.getExtendedEnv, 'ABACADABRA')
 
-    def tttest_expandAndSubstituteEnv(self):
+    def test_expandAndSubstituteEnv(self):
         """Test expanding and substituting back env variables
 
         This is done in different combinations, with private envDict AND using the global recentEnv
@@ -349,7 +286,7 @@ class TestConfigureFunctions(unittest.TestCase):
         As you see the different combinations are quite tricky, but they seem to work.
 
         """
-
+        #pylint:disable=W0107        
         # try expanding paths and putting back, using global recentEnv
         filename = '~/speech/index.html'
         expanded = natlinkcorefunctions.expandEnvVariableAtStart(filename)
@@ -468,7 +405,7 @@ class TestConfigureFunctions(unittest.TestCase):
                      (filenameStartmenu, squeezedStartmenu))
 
     # now for the real work, the install functions:
-    def tttest_enableDisableNatlinkDebugOutput(self):
+    def test_enableDisableNatlinkDebugOutput(self):
         """This option should set DebugOutput in the registry to 0 or 1
         
         obsolete, NatlinkDebug is disabled (2015, even earlier, by Rudiger)
@@ -483,7 +420,7 @@ class TestConfigureFunctions(unittest.TestCase):
         self.checkusertestinifile(key, 0, "key %s not set, obsolete option"% key)
         
         
-    def tttest_setClearDNSInstallDir(self):
+    def test_setClearDNSInstallDir(self):
         """This option should set or clear the natspeak install directory
         """
         key = "DNSInstallDir"
@@ -507,7 +444,7 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_D("dummy")
         self.checkusertestinifile(key, None, "DNSInstallDir should be cleared now")
         
-    def tttest_setClearUnimacroIniFilesEditor(self):
+    def test_setClearUnimacroIniFilesEditor(self):
         """This option should set or clear the editor program for Unimacro ini files
         
         default is Notepad. set to wordpad for test, which is in the "old" Program files directory.
@@ -550,20 +487,24 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_p(wordpadExe)
         self.checkusertestinifile(key, wordpadExe, "UnimacroIniFilesEditor, should again be set now to: %s"% wordpadExe)
         self.checkusertestinifile(oldKey, "", "OldUnimacroIniFilesEditor, should be cleared again")
-
-        pass
     
     def test_setClearDirectoryOptions(self):
-        """This option tests the different directory functions of natlinkconfigfunctions
+        r"""This option tests the different directory functions of natlinkconfigfunctions
         
         UserDirectory is NOT Unimacro any more.
         
         assume %HOME% and "~" point to C:\Documenten.
-        assume testing with Dragon12 on a 64 bits machine
+        assume testing with Dragon15 on a 64 bits machine
         
         
         """
-        dnsinstalldir = "%PROGRAMFILES%/Nuance/NaturallySpeaking12"
+        progFiles = Path(os.getenv("PROGRAMFILES"))
+        if not progFiles.is_dir():
+            raise OSError("program files directory not where expected")
+        dnsinstalldir = progFiles/"Nuance/NaturallySpeaking15"
+        if not dnsinstalldir.is_dir():
+            raise OSError(f'dnsinstalldir not where expected: "{dnsinstalldir}"')
+
         wordpadexe = r"C:\Program Files\Windows NT\Accessories\wordpad.exe"
         if not os.path.isfile(wordpadexe):
             raise TestError("should have a path to wordpad.exe, %s does not exist"% wordpadexe)
@@ -583,69 +524,69 @@ class TestConfigureFunctions(unittest.TestCase):
             ("UnimacroIniFilesEditor", "p", wordpadexe), 
             ("AhkExeDir", "h", self.tmpTest),
             ("AhkUserDir", "k", self.tmpTest)]:
-                print('---- start testing "%s", letter: "%s"'% (key, functionLetter))
+            print('---- start testing "%s", letter: "%s"'% (key, functionLetter))
 
-                oldKey = "Old" + key
-                cli = self.cli
-                # make clean section:
-                self.testinisection.clear()
-                funcSetName = 'do_'+functionLetter
-                funcClearName = 'do_'+functionLetter.upper()
-                funcSet = getattr(cli, funcSetName)
-                funcClear = getattr(cli, funcClearName)
-                # not a valid folder:
-                funcSet("notAValidFolder")
-                self.checkusertestinifile(key, "", "%s, should be there yet"% key)
-                self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet")
+            oldKey = "Old" + key
+            cli = self.cli
+            # make clean section:
+            self.testinisection.clear()
+            funcSetName = 'do_'+functionLetter
+            funcClearName = 'do_'+functionLetter.upper()
+            funcSet = getattr(cli, funcSetName)
+            funcClear = getattr(cli, funcClearName)
+            # not a valid folder:
+            funcSet("notAValidFolder")
+            self.checkusertestinifile(key, "", "%s, should be there yet"% key)
+            self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet")
+    
+            checkTestFolder = isValidPath(testFolder)
+            if not checkTestFolder:
+                raise TestError("testFolder  should be a valid directory, not: %s"% testFolder)
+            # setting the variable:
+            funcSet(testFolder)
+            if functionLetter == 'c':
+                self.checkusertestinifile(key,"", "%s, nothing should be changed yet (Inifiles do not exist)"% key)
         
-                checkTestFolder = isValidPath(testFolder)
-                if not checkTestFolder:
-                    raise TestError("testFolder  should be a valid directory, not: %s"% testFolder)
-                # setting the variable:
+                #existence of these two files is checked:
+                testinifile = os.path.join(self.tmpTest, 'nsapps.ini')
+                f1 = open(testinifile, 'w')
+                f1.close()
+        
+                testinifile = os.path.join(self.tmpTest, 'nssystem.ini')
+                f1 = open(testinifile, 'w')
+                f1.close()
+        
                 funcSet(testFolder)
-                if functionLetter == 'c':
-                    self.checkusertestinifile(key,"", "%s, nothing should be changed yet (Inifiles do not exist)"% key)
-            
-                    #existence of these two files is checked:
-                    testinifile = os.path.join(self.tmpTest, 'nsapps.ini')
-                    f1 = open(testinifile, 'w')
-                    f1.close()
-            
-                    testinifile = os.path.join(self.tmpTest, 'nssystem.ini')
-                    f1 = open(testinifile, 'w')
-                    f1.close()
-            
-                    funcSet(testFolder)
-            
-                self.checkusertestinifile(key, testFolder, "%s, should be set now to: %s"% (key, testFolder))
-                self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet"% key)
         
-                # repeated has no effect:
-                funcSet(testFolder)
-                self.checkusertestinifile(key, testFolder, "%s, should be set now to: %s"% (key, testFolder))
-                self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet"% key)
-        
-        
-                # now remove again:
-                funcClear("dummy")
-                self.checkusertestinifile(key, "", "%s, should be clear now")
-                self.checkusertestinifile(oldKey, testFolder, "Old%s, should be set now to: %s"% (key, testFolder))
-        
-                # repeat has no effect:
-                funcClear("dummy")
-                self.checkusertestinifile(key, "", "%s, should be still clear")
-                self.checkusertestinifile(oldKey, testFolder, "Old%s, should still be set now to: %s"%  (key, testFolder))
-                
-                # setting again:
-                funcSet(testFolder)
-                self.checkusertestinifile(key, testFolder, "%s, should again be set now to: %s"% (key,  testFolder))
-                self.checkusertestinifile(oldKey, "", "Old%s, should be cleared again"% key)
-                print('==== end of testing "%s", letter: "%s"'% (key, functionLetter))
+            self.checkusertestinifile(key, testFolder, "%s, should be set now to: %s"% (key, testFolder))
+            self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet"% key)
+    
+            # repeated has no effect:
+            funcSet(testFolder)
+            self.checkusertestinifile(key, testFolder, "%s, should be set now to: %s"% (key, testFolder))
+            self.checkusertestinifile(oldKey, "", "Old%s, should not be there yet"% key)
+    
+    
+            # now remove again:
+            funcClear("dummy")
+            self.checkusertestinifile(key, "", "%s, should be clear now")
+            self.checkusertestinifile(oldKey, testFolder, "Old%s, should be set now to: %s"% (key, testFolder))
+    
+            # repeat has no effect:
+            funcClear("dummy")
+            self.checkusertestinifile(key, "", "%s, should be still clear")
+            self.checkusertestinifile(oldKey, testFolder, "Old%s, should still be set now to: %s"%  (key, testFolder))
+            
+            # setting again:
+            funcSet(testFolder)
+            self.checkusertestinifile(key, testFolder, "%s, should again be set now to: %s"% (key,  testFolder))
+            self.checkusertestinifile(oldKey, "", "Old%s, should be cleared again"% key)
+            print('==== end of testing "%s", letter: "%s"'% (key, functionLetter))
 
 
         
 
-    def tttest_setClearVocolaUserDirectory(self):
+    def test_setClearVocolaUserDirectory(self):
         """This option should set or clear the vocola user directory
         """
         testName = 'test_setClearVocolaUserDirectory'
@@ -664,33 +605,34 @@ class TestConfigureFunctions(unittest.TestCase):
         cli.do_V("dummy")
         self.checkusertestinifile(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
         
-    def tttest_setClearVocolaCommandFilesEditor(self):
-        """This option should set or clear the vocola command files editor
-        """
-        testName = 'test_setClearVocolaCommandFilesEditor'
-        key = "VocolaCommandFilesEditor"
-        cli = natlinkconfigfunctions.CLI()
-        old = self.testinisection.get(key, None)
-
-        # not a valid folder:
-        cli.do_w("not a valid file")
-        self.checkusertestinifile(key, old, "%s, nothing should be changed yet"% testName)
-
-        # change to notepad:
-        wordpad = os.path.join(natlinkcorefunctions.getExtendedEnv("PROGRAMFILES"), 'Windows NT',
-                               Accessories, "wordpad.exe")
-        if not os.path.isfile(wordpad):
-            raise OSError("Test error, cannot find wordpad on: %s"% wordpad)
-        
-        cli.do_w(wordpad)
-        self.checkusertestinifile(key, wordpad, "%s, VocolaCommandFilesEditor should be changed now"% testName)
-
-        # now clear:
-        cli.do_W("dummy")
-        self.checkusertestinifile(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
-
+    # def test_setClearVocolaCommandFilesEditor(self):
+    #     """This option should set or clear the vocola command files editor
+    #     """
+    #     ## not a function of config program any more, I think (QH, 2021)
+    #     testName = 'test_setClearVocolaCommandFilesEditor'
+    #     key = "VocolaCommandFilesEditor"
+    #     cli = natlinkconfigfunctions.CLI()
+    #     old = self.testinisection.get(key, None)
+    # 
+    #     # not a valid folder:
+    #     cli.do_w("not a valid file")
+    #     self.checkusertestinifile(key, old, "%s, nothing should be changed yet"% testName)
+    # 
+    #     # change to notepad:
+    #     wordpad = os.path.join(natlinkcorefunctions.getExtendedEnv("PROGRAMFILES"), 'Windows NT',
+    #                            Accessories, "wordpad.exe")
+    #     if not os.path.isfile(wordpad):
+    #         raise OSError("Test error, cannot find wordpad on: %s"% wordpad)
+    #     
+    #     cli.do_w(wordpad)
+    #     self.checkusertestinifile(key, wordpad, "%s, VocolaCommandFilesEditor should be changed now"% testName)
+    # 
+    #     # now clear:
+    #     cli.do_W("dummy")
+    #     self.checkusertestinifile(key, None, "%s VocolaUserDirectory should be cleared now"% testName)
+    # 
                 
-    def tttest_setClearUnimacroUserDirectory(self):
+    def test_setClearUnimacroUserDirectory(self):
         """This option should set or clear the unimacro (ini files) user directory
         """
         testName = 'test_setClearUnimacroUserDirectory'
@@ -721,7 +663,7 @@ class TestConfigureFunctions(unittest.TestCase):
 
 
     # Testing addition vocola options
-    def tttest_enableDisableOnOffOptions(self):
+    def test_enableDisableOnOffOptions(self):
         """This option should set and clear the different options
         """
         key = "VocolaTakesLanguages"
@@ -740,7 +682,7 @@ class TestConfigureFunctions(unittest.TestCase):
         self.doTestOnOffOption(key, 'a', 'A')
         
         
-##    def tttest_RegistrySettings(self):
+##    def test_RegistrySettings(self):
 ##        """test if registry settings are saved and restored correctly
 ##
 ##        make a backup in setup, and restore in teardown, see example with testinisection.
@@ -758,7 +700,7 @@ class TestConfigureFunctions(unittest.TestCase):
 ##
 
 def _run():
-     unittest.main()
+    unittest.main()
     
 
 if __name__ == "__main__":

@@ -30,13 +30,12 @@ Note: for extension with %NATLINK% etc. see natlinkstatus.py
 import os
 import sys
 import re
-import copy
-from pathlib import PurePath,WindowsPath
 from win32com.shell import shell, shellcon
 # import win32api
 # for extended environment variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
 from natlinkcore import inivars
+import natlinkcore   ## for __init__ and getNatlinkUserdirectory
 
 def getBaseFolder(globalsDict=None):
     """get the folder of the calling module.
@@ -539,10 +538,7 @@ class NatlinkstatusInifileSection(InifileSection):
         In the users home diretory/.natlink  the ini file natlinkstatus.ini 
         with section defaultSection
         """        
-        natlink_ini_path=WindowsPath.home() / ".natlink"
-        if not natlink_ini_path.is_dir():
-            raise ValueError(f"Natlink folder  {natlink_ini_path} missing.")
-        filepath = str(natlink_ini_path/filename)
+        natlink_ini_file = natlinkcore.getNatlinkInifile()
         InifileSection.__init__(self, section=section, filepath=filepath)
 
 

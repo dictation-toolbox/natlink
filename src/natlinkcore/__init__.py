@@ -77,8 +77,8 @@ def getNatlinkUserDirectory():
     if dictation_toolbox_user:
         dtHome = pathlib.Path(dictation_toolbox_user)
         if not dtHome.is_dir():
-            print(f'environment variable DICTATIONTOOLBOXUSER does not point to a valid directory: {dictation_toolbox_user}')
             dtHome = pathlib.WindowsPath.home()
+            print(f'natlinkcore.getNatlinkUserDirectory: environment variable DICTATIONTOOLBOXUSER does not point to a valid directory: "{dictation_toolbox_user}", take "{dtHome}"')
     else:
         dtHome = pathlib.WindowsPath.home()
 
@@ -90,7 +90,8 @@ def getNatlinkUserDirectory():
 def getNatlinkInifile():
     """return the complete path of the natlink inifile
     
-    this will be (%HOME%)/Natlink/"natlinkstatus.ini"
+    this will be (%HOME%)/Natlink/"natlinkstatus.ini", or
+    another "home" path if DICTATIONTOOLBOXUSER is set...
     """
     natlink_ini_folder = getNatlinkUserDirectory()
     natlink_ini_file = pathlib.Path(natlink_ini_folder) / "natlinkstatus.ini"
