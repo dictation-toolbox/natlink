@@ -1340,9 +1340,7 @@ class CLI(cmd.Cmd):
         if Config:
             self.config = Config   # initialized instance of NatlinkConfig
         else:
-            result = NatlinkConfig()
-            print(f'result of NatlinkConfig in natlinkconfigfunctions: "{result}"')
-            self.config = result
+            self.config = NatlinkConfig()
 # # 
 # # 
             # # self.config = NatlinkConfig()

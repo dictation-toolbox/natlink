@@ -37,29 +37,9 @@ reEnv = re.compile('(%[A-Z_]+%)', re.I)
 from natlinkcore import inivars
 import natlinkcore   ## for __init__ and getNatlinkUserdirectory
 
-def getBaseFolder(globalsDict=None):
-    """get the folder of the calling module.
-
-    either sys.argv[0] (when run direct) or
-    __file__, which can be empty. In that case take the working directory
-    """
-    globalsDictHere = globalsDict or globals()
-    baseFolder = ""
-    if globalsDictHere['__name__']  == "__main__":
-        baseFolder = os.path.split(sys.argv[0])[0]
-        # print( 'baseFolder from argv: %s'% baseFolder)
-    elif globalsDictHere['__file__']:
-        # print(f"__file__ {__file__}")
-        baseFolder = str(PurePath(__file__).parent)
-        # print( 'baseFolder from __file__: %s'% baseFolder)
-    if not baseFolder or baseFolder == '.':
-        baseFolder = os.getcwd()
-        # print ('baseFolder was empty, take wd: %s'% baseFolder)
-    return baseFolder
-
 # the Natlink Base directory, core/..:
-thisBaseFolder = getBaseFolder()
-
+thisBaseFolder = natlinkcore.getThisDir(__file__)
+coreDirectory = natlinkcore.getNatlinkDirectory()
 
 # report function:
 def fatal_error(message, new_raise=None):
@@ -539,7 +519,7 @@ class NatlinkstatusInifileSection(InifileSection):
         with section defaultSection
         """        
         natlink_ini_file = natlinkcore.getNatlinkInifile()
-        InifileSection.__init__(self, section=section, filepath=filepath)
+        InifileSection.__init__(self, section=section, filepath=natlink_ini_file)
 
 
 if __name__ == "__main__":

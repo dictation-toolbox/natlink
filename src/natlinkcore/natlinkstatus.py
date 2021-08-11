@@ -1348,10 +1348,7 @@ class NatlinkStatus:
         
         """
         #pylint:disable=R0201
-        print('ask for dtactions directory')
-        dtactionsDirectory = dtactions.getDtactionsDirectory()
-        print(f'got dtactions directory {dtactionsDirectory}')
-        return dtactionsDirectory
+        return dtactions.getDtactionsDirectory()
 
     def getDtactionsUserDirectory(self): ##, coreDir=None):
         """return the path of the DtactionsDirectory
@@ -2096,6 +2093,9 @@ def isValidPath(spec, wantFile=None, wantDirectory=None):
         spec2 = spec
     else:
         spec2 = natlinkcorefunctions.getExtendedEnv(spec)
+    if not spec2:
+        return False
+
     spec2 = os.path.normpath(spec2)
     if os.path.exists(spec2):
         if wantDirectory and wantFile:

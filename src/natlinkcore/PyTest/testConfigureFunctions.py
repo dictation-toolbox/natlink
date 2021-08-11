@@ -99,7 +99,7 @@ class TestConfigureFunctions(unittest.TestCase):
         
         
         os.mkdir(tmpTest)
-        homeDir = isValidPath("~")
+        homeDir = Path(natlinkcore.getNatlinkUserDirectory()).parent
         if homeDir:
             vocolausertest = os.path.join(homeDir, "vocolausertest")
             if not isValidPath(vocolausertest):
@@ -146,7 +146,7 @@ class TestConfigureFunctions(unittest.TestCase):
     def checkusertestinifile(self, key, value, mess=""):
         if value and value != "0":
             if key in self.testinisection:
-                actual = self.testinisection[key]
+                actual = self.testinisection.get(key)
                 self.assertTrue(value == actual, "testinisection has not expected result for key: %s, expected: %s, got %s\n%s"%
                              (key, value, actual, mess))
             else:
@@ -639,9 +639,9 @@ class TestConfigureFunctions(unittest.TestCase):
         key = "UnimacroUserDirectory"
         keyOld = "OldUnimacroUserDirectory"
         cli = self.cli
-        old = cli.config.userinisection[key]
+        old = cli.config.userinisection.get(key)
         self.assertTrue(old == "", "key %s should not be set at start of test: %s"% (key, testName))
-        old = cli.config.userinisection[keyOld]
+        old = cli.config.userinisection.get(keyOld)
         self.assertTrue(old == "", "key %s should not be set at start of test: %s"% (keyOld, testName))
 
         # not a valid folder:
