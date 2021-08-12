@@ -52,8 +52,7 @@ import sys
 import pathlib
 
 ## change this before a new release on pypi is made:
-__version__ = '5.1.5'    # hope to have solved DICTATIONTOOLBOXUSER trick again + update readme.md
-# __version__ = '5.1.3'    # try DICTATIONTOOLBOXUSER trick again and getDtactionsDirectory
+__version__ = '5.1.6'      # adding improved readme.md instructions
 # __version__ = '5.1.2'    # introduce DICTATIONTOOLBOXUSER for alternative user directory
 # __version__ = '5.1.1'    # no registry depencde any more
 # __version__ = '5.0.0'  # with registry dependence

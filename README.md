@@ -46,11 +46,16 @@ a command shell with adminstrator privileges.
    - natlinkconfig_cli
    - natlinkconfig
 
-3. Run natlinkconfig to configure Natlink.
+3. Change the location for the config files, if you wish
+   - By default, config files for Natlink are stored in the `.natlink` subdirectory of the Home directory (something like `C:\Users\User`).
+   - When you want to change this default location, specify a valid directory in the environment variable DICTATIONTOOLBOXUSER (for example `C:\Users\User\Documents\.dictationtoolbox`).
+     The `.natlink` directory (with config file `natlinkstatus.ini`) will be created in this directory.
+
+4. Run natlinkconfig to configure Natlink.
    - do a (re)register command, "r" in the natlinkconfig_cli
    - specify a UserDirectory, "u path-to-userdirectoery" in the natlinkconfig_cli
 
-4. Start Dragon
+5. Start Dragon
 
 ## Instructions for Developers
 
@@ -79,7 +84,7 @@ Oddly, when you follow this workflow and register natlink by running startnatlin
 python paths those commands pickup, you will find that the natlinkcorepath will be in our git repository.
 
 If you uninstall natlink, and install it with pip, and reregister natlink, you will find the core diretory is
-reognized as a subfolder of site-packages.
+recognized as a subfolder of site-packages.
 
 ### FAQ for compiling with Visual Studio
 
