@@ -316,19 +316,19 @@ def unloadModule(modName):
 # imported. This routine will also conditionaly reload a module if it has
 # changed.
 #
-# def loadModule(modName):
-#     """load a single module
-# 
-#     mostly this goes with findAndLoadFiles, this is for a single module,
-#     called from _control (Unimacro)
-#     """
-#     #pylint:disable=W0603
-#     global loadedFiles
-#     result = loadFile(modName)
-#     if result:
-#         loadedFiles[modName] = result
-#     else:
-#         print('loading module %s failed, put in "wrongFiles"'% modName)
+def loadModule(modName):
+    """load a single module
+
+    mostly this goes with findAndLoadFiles, this is for a single module,
+    called from _control (Unimacro)
+    """
+    #pylint:disable=W0603
+    global loadedFiles
+    result = loadFile(modName)
+    if result:
+        loadedFiles[modName] = result
+    else:
+        print('loading module %s failed, put in "wrongFiles"'% modName)
 
 def loadFile(modName, origPath=None, origDate=None):
     """load a module
