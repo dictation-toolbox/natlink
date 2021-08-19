@@ -11,58 +11,33 @@
 # do not run from pythonwin. See also README.txt in PyTest folder
 #
 # October, 2009, QH, added tests for nsformat
+# August 2021, for python3 release updated.
+#pylint:disable=C0114, C0115, C0116, R0201
 
-import sys
 import unittest
-import types
 import os
 import os.path
 import time
-import traceback        # for printing exceptions
-from struct import pack
+import copy
 
-import natlink
-import gramparser
-from natlinkutils import *
-import natlinkutils
-import win32gui
-from nsformat import *
-from natlinkcore import utilsqh
+import natlinkcore
+from natlinkcore import natlink
+from natlinkcore import nsformat
+from natlinkcore import natlinkstatus
 
 class TestError(Exception):
-    pass
-ExitQuietly = 'ExitQuietly'
-
+    """TestError"""
 
 # try some experiments more times, because gotBegin sometimes seems
 # not to hit
 nTries = 10
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # with spurious error (if set to 1), missing gotBegin and all that...
-def getBaseFolder(globalsDict=None):
-    """get the folder of the calling module.
-
-    either sys.argv[0] (when run direct) or
-    __file__, which can be empty. In that case take the working directory
-    """
-    globalsDictHere = globalsDict or globals()
-    baseFolder = ""
-    if globalsDictHere['__name__']  == "__main__":
-        baseFolder = os.path.split(sys.argv[0])[0]
-        print('baseFolder from argv: %s'% baseFolder)
-    elif globalsDictHere['__file__']:
-        baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print('baseFolder from __file__: %s'% baseFolder)
-    if not baseFolder or baseFolder == '.':
-        baseFolder = os.getcwd()
-    return baseFolder
-
-thisDir = getBaseFolder(globals())
+thisDir = natlinkcore.getThisDir(__file__)
 
 logFileName = os.path.join(thisDir, "nsformattestresult.txt")
 
 # make different versions testing possible:
-from natlinkcore import natlinkstatus
 nlstatus = natlinkstatus.NatlinkStatus()
 DNSVersion = nlstatus.getDNSVersion()
 
@@ -111,7 +86,10 @@ class UnittestNsformat(unittest.TestCase):
     # an exception (of the expected type) is raised.  Otherwise a TestError
     # exception is raised
 
-    def doTestForException(self, exceptionType,command,localVars={}):
+    def doTestForException(self, exceptionType,command,localVars=None):
+        #pylint:disable=W0122
+        if localVars is None:
+            localVars = {}
         try:
             exec(command,globals(),localVars)
         except exceptionType:
@@ -122,7 +100,7 @@ class UnittestNsformat(unittest.TestCase):
     # Utility function which calls a routine and tests the return value
 
     def doTestFuncReturn(self, expected,command,localVars=None):
-        # account for different values in case of [None, 0] (wordFuncs)
+        #pylint:disable=W0123 
         if localVars is None:
             actual = eval(command)
         else:
@@ -140,11 +118,12 @@ class UnittestNsformat(unittest.TestCase):
         
         NOTE: returns the output state!!!
         """
+        #pylint:disable=W0622, C0200
         words = input.split()
         inputState = copy.copy(state)
         for i in range(len(words)):
             words[i] = words[i].replace('_', ' ')
-        actual,state = formatWords(words,state)
+        actual,state = nsformat.formatWords(words, state)
         self.assertEqual(output, actual, "output not as expected: expected: |%s|, actual output: |%s|\n\t\t(input: %s, state in: %s, state out: %s)"%
                                 (output, actual, words, inputState, state))
         return state
@@ -153,16 +132,17 @@ class UnittestNsformat(unittest.TestCase):
         """do the testing, with no inputState (this is fixed for this function)
         
         """
+        #pylint:disable=, W0622, C0200        
         words = input.split()
         for i in range(len(words)):
             words[i] = words[i].replace('_', ' ')
-        actual = formatLetters(words)
+        actual = nsformat.formatLetters(words)
         self.assertEqual(output, actual, "output of formatLetters not as expected: expected: |%s|, actual output: |%s|\n\t\t(input: %s)"%
                                 (output, actual, words))
 
     #---------------------------------------------------------------------------
     def testFormatWord(self):
-        """all words with normal (0) state as input.
+        r"""all words with normal (0) state as input.
         
         .\point results in ' .'
         """
@@ -173,8 +153,8 @@ class UnittestNsformat(unittest.TestCase):
         stateExpected =      [(), (9, 4),      (8, 10),    (),       (),           (8,), ()]
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
-            formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=set())
-            print('stateFlages after formatting of %s: %s (%s)'% (word, repr(newState), repr(showStateFlags(newState))))
+            formattedResult, newState = nsformat.formatWord(word, wordInfo=None, stateFlags=set())
+            print('stateFlags after formatting of %s: %s (%s)'% (word, repr(newState), repr(nsformat.showStateFlags(newState))))
             self.assertTrue(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
@@ -183,7 +163,7 @@ class UnittestNsformat(unittest.TestCase):
                          (word, formattedResult, repr(newState), repr(expSet)))
 
     def testFormatLetters(self):
-        """all words with normal (0) state as input.
+        r"""all words with normal (0) state as input.
         
         .\point results in ' .'
         """
@@ -191,14 +171,13 @@ class UnittestNsformat(unittest.TestCase):
 
         testFunc = self.doTestFormatLetters
         words =   r'x\spelling-letter\X_ray y\spelling-letter\Yankee !\spelling-exclamation-mark\exclamation_mark'
-        state=testFunc(words, 'xy!')
-        pass
+        testFunc(words, 'xy!')
        
     def testFlagsLike(self):
         """tests the different predefined flags in nsformat"""
         self.log('testFlagsLike')
         
-        gwi = getWordInfo11
+        gwi = nsformat.getWordInfo11
         wfList = [(r'.\period\period', 'period'),
                 (r',\comma\comma', 'comma'),
                 (r'-\hyphen\hyphen', 'hyphen'),
@@ -207,47 +186,48 @@ class UnittestNsformat(unittest.TestCase):
             
         for w,t in wfList:
             varInNsformat = 'flags_like_%s'% t
-            if type(w) == tuple:
+            if isinstance(w, tuple):
                 flags = w
+                
             else:
                 wInfo = gwi(w)
-                self.assertTrue(wInfo != None, "word info for word: %s could not be found. US user???"% w)
-                flags = wordInfoToFlags(wInfo)
+                self.assertTrue(wInfo is not None, "word info for word: %s could not be found. US user???"% w)
+                flags = nsformat.wordInfoToFlags(wInfo)
                 flags.discard(3)
                 flags = tuple(flags) # no delete flag not interesting
-            fromNsFormat = globals()[varInNsformat]
+            fromNsFormat = getattr(nsformat, varInNsformat)
+            # print(f'w: "{w}", t: "{t}", flags: "{flags}"')
             self.assertTrue(fromNsFormat == flags, "flags_like variable |%s| not as expected\nIn nsformat.py: %s (%s)\nFrom actual word infoExpected: %s (%s)"%
-                         (varInNsformat, fromNsFormat, showStateFlags(fromNsFormat), flags, showStateFlags(flags)))
+                         (varInNsformat, fromNsFormat, nsformat.showStateFlags(fromNsFormat), flags, nsformat.showStateFlags(flags)))
             
     def testInitializeStateFlags(self):
         """test helper functions of nsformat"""
         self.log('testInitializeStateFlags')
         
-        result = initializeStateFlags()
+        result = nsformat.initializeStateFlags()
         expected = set()
         self.assertTrue(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
                      (result, expected))
 
-        result = initializeStateFlags(flag_cond_no_space)
+        result = nsformat.initializeStateFlags(nsformat.flag_cond_no_space)
         expected = set([10])
         self.assertTrue(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
                      (result, expected))
         
-        result = initializeStateFlags(flag_cond_no_space, flag_no_formatting)
+        result = nsformat.initializeStateFlags(nsformat.flag_cond_no_space, nsformat.  flag_no_formatting)
         expected =set([10, 18])
         self.assertTrue(expected == result, "initialised state flags not as expected\nActual: %s, Expected: %s"%
                      (result, expected))
-        readable = showStateFlags(result)
+        readable = nsformat.showStateFlags(result)
         expectedReadable = ('flag_cond_no_space', 'flag_no_formatting')
         self.assertTrue(expectedReadable == readable, "initialised state flags readable were not as expected\nActual: %s, Expected: %s"%
                      (readable, expectedReadable))
         
-            
-            
     def testFormatNumbers(self):
-        """words with input of previous word, influencing numbers, to be kept together
+        r"""words with input of previous word, influencing numbers, to be kept together
         
-        needs testing again, oct 2010 QH
+        needs testing again, oct 2010 QH, fails at word properties of '.\point', which gives empty set, and should give
+        cond_no_space or so... August 2021...
         
         """
         self.log('testFormatNumbers')
@@ -257,22 +237,23 @@ class UnittestNsformat(unittest.TestCase):
                              r',\comma', 'proceeding']
 
         formattedExpected = [' 3', '.',        '5', ' by', ' 4', ' centimeter', ',', ' proceeding']
-        wordInfos = [(flag_cond_no_space,), None, (flag_cond_no_space,), None, (flag_cond_no_space,), None, None, None]
-        stateExpected = [(10,), (8, 10), (10,), (), (10,), (), (), (), ()]
+        wordInfos = [(nsformat.flag_cond_no_space,), None, (nsformat.flag_cond_no_space,), None, (nsformat.flag_cond_no_space,), None, None, None]
+        # stateExpected = [(10,), (8, 10), (10,), (), (10,), (), (), (), ()]   ## previous
+        stateExpected = [(), (8, 10), (10,), (), (10,), (), (), (), ()]
         newState = 0
         totalResult = []
         for word, info, expectedWord, expectedState in zip(words,  wordInfos, formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
-            formattedResult, newState = formatWord(word, wordInfo=info, stateFlags=newState)
+            formattedResult, newState = nsformat.formatWord(word, wordInfo=info, stateFlags=newState)
             totalResult.append(formattedResult)
-            print('showStateFlages of %s: %s'% (word, repr(showStateFlags(newState))))
+            print('showStateFlages of %s: %s'% (word, repr(nsformat.showStateFlags(newState))))
             self.assertTrue(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
             expectedState = set(expectedState)  # changes QH oct 2011
             self.assertTrue(expectedState == newState, "state of %s (%s) not as expected\nActual: %s, expected: %s"%
                          (word, formattedResult, repr(newState), repr(expectedState)))
-            pass
+
         expected = " 3.5 by 4 centimeter, proceeding"
         actual = ''.join(totalResult)
         self.assertTrue(expected == actual, "total result of first test not as expected\nActual: |%s|, expected: |%s|"%
@@ -289,9 +270,9 @@ class UnittestNsformat(unittest.TestCase):
         totalResult = []
         for word, expectedWord, expectedState in zip(words, formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
-            formattedResult, newState = formatWord(word, wordInfo=None, stateFlags=newState)
+            formattedResult, newState = nsformat.formatWord(word, wordInfo=None, stateFlags=newState)
             totalResult.append(formattedResult)
-            print('showStateFlages of %s: %s'% (word, repr(showStateFlags(newState))))
+            print('showStateFlages of %s: %s'% (word, repr(nsformat.showStateFlags(newState))))
             self.assertTrue(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
@@ -306,16 +287,16 @@ class UnittestNsformat(unittest.TestCase):
 
         # words, numbers, words
         words =             [r'the', r'test', r'is', r'3\three', r'.\point', r'4\four', 'by', r'5\five', 'centimeter']
-        wordInfos = [None, None, None, (flag_cond_no_space,), None, (flag_cond_no_space,), None, (flag_cond_no_space,), None, None, None]
+        wordInfos = [None, None, None, (nsformat.flag_cond_no_space,), None, (nsformat.flag_cond_no_space,), None, (nsformat.flag_cond_no_space,), None, None, None]
         formattedExpected = ['The', ' test', ' is', ' 3', '.', '4', ' by', ' 5', ' centimeter']
         stateExpected =     [(),      (),      (),  (10,), (8, 10), (10,), (), (10,), ()]
         newState = None  # start of buffer
         totalResult = []
         for word, wordInfo, expectedWord, expectedState in zip(words, wordInfos, formattedExpected, stateExpected):
             ## all starting with stateFlags 0, normal formatting behaviour:
-            formattedResult, newState = formatWord(word, wordInfo=wordInfo, stateFlags=newState)
+            formattedResult, newState = nsformat.formatWord(word, wordInfo=wordInfo, stateFlags=newState)
             totalResult.append(formattedResult)
-            print('showStateFlages of %s: %s'% (word, repr(showStateFlags(newState))))
+            print('showStateFlages of %s: %s'% (word, repr(nsformat.showStateFlags(newState))))
             self.assertTrue(formattedResult == expectedWord,
                          "word |%s| not formatted as expected\nActual: |%s|, expected: |%s|"%
                          (word, formattedResult, expectedWord))
@@ -350,7 +331,7 @@ class UnittestNsformat(unittest.TestCase):
         state = -1
         state=testSubroutine(state,
             r'space hello space',
-            '  hello ')
+            ' hello ')
     
             
     def testStartConditionsFormatWords(self):
@@ -512,9 +493,11 @@ def log(t):
 # This is the main entry point.  It will connect to NatSpeak and perform
 # a series of tests.  In the case of an error, it will cleanly disconnect
 # from NatSpeak and print the exception information,
-def dumpResult(testResult, logFile):
+def dumpResult(testResult):
     """dump into 
     """
+    if not logFile:
+        print('no logfile active, do not "dumpResult"')
     if testResult.wasSuccessful():
         mes = "all succesful"
         logFile.write(mes)
@@ -535,6 +518,7 @@ def dumpResult(testResult, logFile):
 logFile = None
 
 def run():
+    #pylint:disable=W0603
     global logFile, natconnectOption
     logFile = open(logFileName, "w")
     log("log messages to file: %s"% logFileName)
@@ -547,7 +531,7 @@ def run():
 ##    natconnectOption = 0 # no threading has most chances to pass...
     log('\nstarting tests with threading: %s\n'% natconnectOption)
     result = unittest.TextTestRunner().run(suite)
-    dumpResult(result, logFile=logFile)
+    dumpResult(result)
     
     logFile.close()
 

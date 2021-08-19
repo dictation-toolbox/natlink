@@ -10,14 +10,14 @@
 # adapted for Dragon 11, oct 2011, Quintijn
 # now for python3 version, with (normally) DNSVersion 15 (QH, June 2020)
 #
-
-import types
+#pylint:disable=C0114, C0116
 import copy
-import natlink
+from natlinkcore import natlink
 from natlinkcore import natlinkstatus
 
 ## make DNSVersion global variable:
-try: DNSVersion
+try:
+    DNSVersion
 except NameError:
     status = natlinkstatus.NatlinkStatus()
     DNSVersion = status.getDNSVersion()
@@ -60,7 +60,7 @@ flag_topicadded = 30
 flagNames = {}
 name = ''
 for name in globals():
-    if name.startswith('flag_') and type(globals()[name]) == int and 0 < globals()[name] < 32:
+    if name.startswith('flag_') and isinstance(globals()[name], int) and 0 < globals()[name] < 32:
         flagNames[globals()[name]] = name    
 #
 flags_like_period = (9, 4, 21, 17)  # flag_two_spaces_next = 9,  flag_passive_cap_next = 4, flag_no_space_before = 21
@@ -125,6 +125,7 @@ propDict['uppercase-letter'] = (flag_no_space_next,)
 # tuples of (wordName,wordInfo) instead of just the list of words.
 
 def formatWords(wordList,state=None):
+    #pylint:disable=R0912, W0603
     global flags_like_period
     language = 'enx'
     if language != 'enx':
@@ -138,12 +139,11 @@ def formatWords(wordList,state=None):
         gwi = getWordInfo10
 
     output = ''
-    emptySet = set( () )
     for entry in wordList:
         if DNSVersion >= 11 and entry == 'space':
             entry = r'\space-bar\space-bar'
-        if type(entry)==type(()):
-            assert( len(entry)==2 )
+        if isinstance(entry, tuple):
+            assert len(entry)==2 
             wordName = entry[0]
             wordInfo = entry[1]
         else:
@@ -153,20 +153,20 @@ def formatWords(wordList,state=None):
             wordInfo = gwi(wordName)
         if wordInfo is None:
             wordInfo = set()
-        if type(wordInfo) != type(emptySet):
+        if isinstance(wordInfo, set):
             wordInfo = wordInfoToFlags(wordInfo)
 
         # init state to a set:
         if state == 0:
-            state = set([])
+            state = set()
         elif state == -1:
             #print "no space next at start"
             state = set([flag_no_space_next])
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
-        elif type(state) in (list, tuple):
+        elif isinstance(state, (list, tuple)):
             state = set(state)
-        elif type(state) != type(emptySet):
+        elif not isinstance(state, set):
             state = wordInfoToFlags(state)
             #print 'formatWords starting with: %s'% state
 
@@ -207,9 +207,8 @@ def formatLetters(wordList):
         
         obsolete with Dragon 11...
     """
-    result = []
     inputState = (flag_no_space_all,)
-    res, state = formatWords(wordList, inputState)
+    res, _state = formatWords(wordList, inputState)
             
     return res
                           
@@ -220,7 +219,7 @@ def formatLetters(wordList):
 # This code was adapted from shared\resobj.cpp
 def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     ##adapted: wordInfo and stateFlags are now sets of state flags
-    emptySet = set()
+    #pylint:disable=R0912, R0915, R0916
     if gwi is None:
         # get the proper getWordInfo function
         # DNSVersion = status.DNSVersion
@@ -232,22 +231,20 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     #-----
     # Preparation
     # assume wordInfo is a set already
-    if type(wordInfo) == type(emptySet):
+    if isinstance(wordInfo, set):
         wordFlags = wordInfo
     else:
         # should not come here:
         wordFlags = gwi(wordName)
 
-    if wordFlags == set(flags_like_open_quote):
-        pass
+    # if wordFlags == set(flags_like_open_quote):
+    #     pass
 
     # for faster lookup in Python, we convert the bit arrays am array of
     # bits that are set:
     # uncomment when more info is wanted:
     #print 'wordFlags of |%s| are: %s (%s)'% (wordName, `wordFlags`, `showStateFlags(wordFlags)`)
-    if type(stateFlags) == type(emptySet):
-        pass
-    else:
+    if not isinstance(stateFlags, set):
         # for testing only, this function should not be called direct, but this is
         # done from the testing routines
         state = copy.copy(stateFlags)
@@ -257,7 +254,7 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
             state = set(flag_no_space_next)
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
-        elif type(state) in (list, tuple):
+        elif isinstance(state, (list, tuple)):
             state = set(state)
         else:
             raise ValueError("formatWord, invalid stateFlags: %s"% repr(stateFlags))
@@ -397,12 +394,13 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     return output, stateFlags
 
 def getWordInfo11(word):
-    """new getWordInfo function, extracts the word flags from
+    r"""new getWordInfo function, extracts the word flags from
     the middle word  like .\period\period
     
     return the resulting tuple of flags
     
     """
+    #pylint:disable=R0911
     if word.find('\\') == -1:
         return set()  # no flags
     wList = word.split('\\')
@@ -412,16 +410,14 @@ def getWordInfo11(word):
             return set()
         if prop in propDict:
             return set(propDict[prop])
-        elif prop.startswith('left-'):
+        if prop.startswith('left-'):
             return set(propDict['left-double-quote'])
-        elif prop.startswith('right-'):
+        if prop.startswith('right-'):
             return set(propDict['right-double-quote'])
-        else:
-            print('getWordInfo11, unknown word property: "%s" ("%s")'% (prop, word))          
-            return set()  # empty tuple
-    else:
-        # should not come here
-        return set()
+        print('getWordInfo11, unknown word property: "%s" ("%s")'% (prop, word))          
+        return set()  # empty tuple
+    # should not come here
+    return set()
 
 
 def getWordInfo10(word):
@@ -451,25 +447,22 @@ def wordInfoToFlags(wordInfo):
     emptySet = set(())
     if wordInfo is None:
         return emptySet
-    elif wordInfo == 0:
+    if wordInfo == 0:
         return emptySet
     wordFlags = set()
-    if type(wordInfo) == int:
+    if isinstance(wordInfo, int):
         if  wordInfo:
             for i in range(32):
                 if wordInfo & (1<<i):
                     wordFlags.add(i)
-            else:
-                pass # wordInfo == 0
-    elif type(wordInfo) in (tuple, list):
+    elif isinstance(wordInfo, (tuple, list)):
         wordFlags = set(wordInfo)
-    elif type(wordInfo) == type(emptySet):
+    elif isinstance(wordInfo, set):
         wordFlags = copy.copy(wordInfo)
     return wordFlags
 
 def showStateFlags(state):
     """returns an array of the state flags, that are set  (3,5) 
-
 
     """
     return tuple([flagNames[num] for num in state])
@@ -478,7 +471,7 @@ def showStateFlags(state):
 #---------------------------------------------------------------------------
 
 def testSubroutine(state,input,output):
-
+    #pylint:disable=W0622, C0200
     words = input.split()
     for i in range(len(words)):
         words[i] = words[i].replace('_', ' ')
@@ -486,7 +479,7 @@ def testSubroutine(state,input,output):
     if actual != output:
         print('Expected "%s"'%output)
         print('Actually "%s"'%actual)
-        raise
+        raise ValueError("output not valid...")
     return state
 
 #---------------------------------------------------------------------------
@@ -530,6 +523,7 @@ if __name__=='__main__':
     import doctest
     natlink.natConnect()
     doctest.testmod()
+    # testFormatting11()
     natlink.natDisconnect()
     
 

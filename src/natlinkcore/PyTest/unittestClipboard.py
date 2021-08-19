@@ -16,7 +16,7 @@ import time
 # use utilities of Unimacro:
 from natlinkcore import readwritefile
 import natlinkutilsqh
-from unimacro import actions
+from dtactions.unimacro import unimacroactions as actions
 import TestCaseWithHelpers
 import natlink
 import natlinkclipboard  # module we are testing, adapted version of Christo's clipboard.py

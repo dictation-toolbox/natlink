@@ -113,3 +113,4 @@ src/*_vcl.py
 #documentation (QH)
 documentation/_build/
 /src/natlinkcore/PyTest/natlinkstatustest.ini
+/src/natlinkcore/PyTest/nsformattestresult.txt
