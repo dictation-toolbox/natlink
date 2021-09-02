@@ -2,15 +2,17 @@
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
-# This code simulates the basic text formatting from NatSpeak.
-#
-# code written by Joel Gould, posted on the natpython discussion list on Wed, 28 Aug 2002
-#
-# inserted in the unimacro package june 2006
-# adapted for Dragon 11, oct 2011, Quintijn
-# now for python3 version, with (normally) DNSVersion 15 (QH, June 2020)
-#
-#pylint:disable=C0114, C0116
+#pylint:disable=C0116
+"""This code simulates the basic text formatting from NatSpeak (Dragon)
+
+Code written by Joel Gould, posted on the natpython discussion list on Wed, 28 Aug 2002
+
+Adapted for Dragon 11, oct 2011, Quintijn Hoogenboom
+Revision for python3 version, with (normally) DNSVersion 15 (QH, June 2020)
+
+unittests in PyTest/unittestNsformat.py
+"""
+
 import copy
 from natlinkcore import natlink
 from natlinkcore import natlinkstatus
