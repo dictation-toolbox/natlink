@@ -1,7 +1,7 @@
 # Goal
 
 Create a minimal working version of Natlink a dragonspeak to python API. The immediate goal is to
-create a more reliable 32-bit python 3.8 or later for dragon 15+ implementation that is easy to compile, understand and 
+create a more reliable 32-bit python 3.8 or later for dragon 13+ implementation that is easy to compile, understand and 
 contribute to.
 
  
@@ -51,8 +51,8 @@ the are in the readme.md at the project root.
 Please avoid  goofing with the Visual Studio settings to customize to your local machine.  It needs to build
 without confusion on any workstation. Your Python include header and lib files are found using an environment variable.
 
-There is a DRAGON_15 set in the preprocessor section of Visual Studio.  If that is not set, there is a UNICODE
-preprocessor varaible that will have the wrong value during compile and natlink will crash at runtime.
+There is a DRAGON_VERSION to set in the preprocessor section of Visual Studio. DRAGON_VERSION preprocessor varaible are 13, 14 and 15 and version < 15 uses UNICODE.
+Each version must be compiled per DNS/DPI version or natlink will crash at runtime.
 
 If you have to recreate the visual studio project, be sure to set the runtime library option to ""Multi-threaded Debug (/MTd)""
 or you will have problems distributing the natlink.pyd becuase of dependent dlls.

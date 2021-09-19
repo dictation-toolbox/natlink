@@ -149,7 +149,7 @@ VocIniFile  = r"Vocola\Exec\vocola.ini"
 lowestSupportedPythonVersion = 37
 
 DNSPaths = []
-DNSVersions = list(range(19,14,-1))
+DNSVersions = list(range(19,12,-1))
 for _v in DNSVersions:
     varname = "NSExt%sPath"%_v
     if "NSExt%sPath"% _v not in globals():
