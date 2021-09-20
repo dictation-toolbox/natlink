@@ -109,3 +109,4 @@ documentation/_build/
 
 #ConfigureNatlink Error 
 /ConfigureNatlink/configurenatlink_error.txt
+/src/natlinkcore/PyTest/nsformattestresult.txt
