@@ -98,7 +98,10 @@ src/*_vcl.py
 #flit build stuff
 /natlinkdev/dist
 
+# Sphinx documentation
+documentation/_build/
 
 #ConfigureNatlink Error 
 /ConfigureNatlink/configurenatlink_error.txt
 /configurenatlink_error.txt
+/src/natlinkcore/PyTest/nsformattestresult.txt
