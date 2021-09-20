@@ -486,7 +486,7 @@ class CallbackTester:
         # because of the bug in NatSpeak where we can get two change
         # callbacks in a row, especially when dealing with scratch that, we
         # ignore all but the first callback
-        if self.sawTextChange == None:
+        if self.sawTextChange is None:
             self.sawTextChange = (delStart,delEnd,newText,selStart,selEnd)
 
     # begin callback of natlink,GramObj and DictObj
@@ -528,7 +528,7 @@ class CallbackTester:
     def testResults(self,moduleInfo,results):
         if self.sawBegin != moduleInfo:
             raise TestError,"Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo))
-        if self.sawResults == None and results != None:
+        if self.sawResults is None and results != None:
             raise TestError,"Did not see results callback"
         if self.sawResults != None and self.sawResults[0] != results:
             raise TestError,"Wrong results from results callback\n  saw: %s\n  expecting: %s "%(repr(self.sawResults[0]),repr(results))

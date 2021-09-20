@@ -1,0 +1,32 @@
+// natlink.idl : IDL source for natlink
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (natlink.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(9B39FCCA-A156-43F8-BC3A-78DB5BFDBC7B),
+	helpstring("Natlink 2021  Type Library"),
+	lcid(0x09),
+	version(20.21)
+]
+
+library natlinkLib
+{
+	importlib("stdole2.tlb");
+
+	[
+		uuid(dd990001-bb89-11d2-b031-0060088dc929)
+	]
+	coclass CDgnAppSupport
+	{
+/* wizard generated: 		[default] interface IDgnAppSupport; */
+		[default] interface IUnknown;
+	};
+};
+
+import "shobjidl.idl";
+import "shobjidl.idl";

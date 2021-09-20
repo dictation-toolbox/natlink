@@ -1,77 +1,106 @@
+// natlink.cpp : Implementation of DLL Exports.
+
 /*
  Python Macro Language for Dragon NaturallySpeaking
 	(c) Copyright 1999 by Joel Gould
 	Portions (c) Copyright 1999 by Dragon Systems, Inc.
 
  natlink.cpp
-	This file was originally constructed by the Visual C++ AppWizard.  This
+	This file was originally constructed by the Visual C++ AppWizard.  Then
+	it was reconstructed by wizard uing Visual Studio 2019.  This
 	file contains the basic code necessary to allow natlink.dll to function
 	as a COM server.
 */
 
+#include "pch.h"
+#include "framework.h"
+#include "resource.h"
+#include "natlink_i.h"
+#include "dllmain.h"
+#include "atlcom.h"
 #include "stdafx.h"
-#include "Resource.h"
+#include "dllmain.h"
 #include "initguid.h"
-#include "DragonCode.h"
-#include "COM/appsupp.h"
-
-CComModule _Module;
-
+#include <iostream>
+//"$(OUTDIR)$(TargetName)$(TargetExt)"
+/*
 BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(__uuidof(NatLink), CDgnAppSupport)
-END_OBJECT_MAP()
+END_OBJECT_MAP
+*/
 
-/////////////////////////////////////////////////////////////////////////////
-// DLL Entry Point
+/*OBJECT_ENTRY_AUTO(__uuidof(NatLink), CDgnAppSupport)*/
 
-extern "C"
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
-{
-	if (dwReason == DLL_PROCESS_ATTACH)
-	{
-		_Module.Init(ObjectMap, hInstance);
-		DisableThreadLibraryCalls(hInstance);
-		
-		// this is needed for when you run this module from within Python
-		// and you use the second thread with its dialog box
-		LoadLibrary( TEXT( "riched32" ) ); // RW TEXT macro added
-	}
-	else if (dwReason == DLL_PROCESS_DETACH)
-		_Module.Term();
-	return TRUE;    // ok
-}
+using namespace ATL;
 
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
-
+// Used to determine whether the DLL can be unloaded by OLE.
+_Use_decl_annotations_
 STDAPI DllCanUnloadNow(void)
 {
-	return (_Module.GetLockCount()==0) ? S_OK : S_FALSE;
+	return _AtlModule.DllCanUnloadNow();
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+// Returns a class factory to create an object of the requested type.
+_Use_decl_annotations_
+STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID* ppv)
 {
-	return _Module.GetClassObject(rclsid, riid, ppv);
+	return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-
+// DllRegisterServer - Adds entries to the system registry.
 STDAPI DllRegisterServer(void)
 {
-	// registers object (see appsupp.reg)
-
-	return _Module.RegisterServer(FALSE);
+	std::cerr << "UNRegister Server" << std::flush;
+	Sleep(1000);
+	//if you want to attached debugger, run regsvr32 and attach to the runnign process.
+	//uncomment the MessageBox so you can set a breakpoint.
+	// MessageBox(0, L"Attached debugger now", L"DLL Register Server", MB_OK);
+	
+	// registers object, typelib and all interfaces in typelib
+	HRESULT hr = _AtlModule.DllRegisterServer();
+	return hr;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
+// DllUnregisterServer - Removes entries from the system registry.
+_Use_decl_annotations_
 STDAPI DllUnregisterServer(void)
 {
-	_Module.UnregisterServer();
-	return S_OK;
+
+	std::cout << "UNRegister Server" << std::flush;
+
+
+	HRESULT hr = _AtlModule.DllUnregisterServer();
+	return hr;
 }
+
+// DllInstall - Adds/Removes entries to the system registry per user per machine.
+STDAPI DllInstall(BOOL bInstall, _In_opt_  LPCWSTR pszCmdLine)
+{
+	HRESULT hr = E_FAIL;
+	static const wchar_t szUserSwitch[] = L"user";
+
+	if (pszCmdLine != nullptr)
+	{
+		if (_wcsnicmp(pszCmdLine, szUserSwitch, _countof(szUserSwitch)) == 0)
+		{
+			ATL::AtlSetPerUserRegistration(true);
+		}
+	}
+
+	if (bInstall)
+	{
+		hr = DllRegisterServer();
+		if (FAILED(hr))
+		{
+			DllUnregisterServer();
+		}
+	}
+	else
+	{
+		hr = DllUnregisterServer();
+	}
+
+	return hr;
+}
+
+

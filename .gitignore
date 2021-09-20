@@ -50,11 +50,17 @@ MacroSystem/_**
 cmake-build-*/
 
 #Visual Studio
+/.vs/*
 NatlinkSource/Debug/*
-NatlinkSource/.vs/
+NatlinkSource/.vs/*
 NatlinkSource/*.sln
 NatlinkSource/*.user
+NatlinkSource/*.aps
 
+NatlinkSource/natlnkps/
+NatlinkSource/natlinkPS/DebugPS/
+NatlinkSource/x64/
+ 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
 
@@ -103,5 +109,3 @@ documentation/_build/
 
 #ConfigureNatlink Error 
 /ConfigureNatlink/configurenatlink_error.txt
-/configurenatlink_error.txt
-/src/natlinkcore/PyTest/nsformattestresult.txt

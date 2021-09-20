@@ -3,7 +3,7 @@ requires = ["flit_core >=2,<4"]
 build-backend = "flit_core.buildapi"
 
 [tool.flit.metadata]
-module="natlinkpy"
+module="natlinkcore"
 author = "Joel Gould"
 author-email = "joelg@alum.mit.edu"
 maintainer = "Quintijn Hoogenboom"
@@ -12,8 +12,12 @@ home-page = "https://qh.antenna.nl/unimacro/"
 description-file = "README.md"
 
 requires=[ 
-		  "pywin32 >= 300",
+		  "pywin32 == 300",
 		  "debugpy",
+		  "pyenvutils",
+		  "pydebugstring",
+		  "dtactions",
+		  "dragonfly2",
 		  "wxpython == 4.0.7; python_version>='3.8'",
 		  "wxpython == 4.0.3; python_version<'3.7'"]
 	  
@@ -23,7 +27,7 @@ classifiers=[	"Development Status :: 4 - Beta",
 				"Topic :: Scientific/Engineering :: Human Machine Interfaces",
 				]
 				
-requires-python = ">=3.8"
+requires-python = "==3.8.*"
 dist-name="natlink"
 keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
 
@@ -33,7 +37,7 @@ keywords="dragon,speech,dictation,dictation-toolobx,unimacro,natlink"
 #are not in the python path, so the import statements won't find the other modules in 
 #the folder.
 
-natlinkconfigfunctions="natlinkpy.ConfigureNatlink.natlinkconfigfunctions:main"
-start_natlinkconfig="natlinkpy.ConfigureNatlink.start_configurenatlink:main"
+natlinkconfig_cli="natlinkcore.ConfigureNatlink.natlinkconfigfunctions:main"
+natlinkconfig="natlinkcore.ConfigureNatlink.start_configurenatlink:main"
 
 

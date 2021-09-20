@@ -13,7 +13,7 @@ Release 5.1.0 (August 1, 2021): should work reasonable for the UserDirectory use
 
 For Unimacro and Vocola(2), please wait a little bit longer...
 
-You can ask for help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25&entercat=y&CFTREEITEMKEY=25) forums if you have difficulty in getting Natlink working.
+You can ask for help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25&entercat=y&CFTREEITEMKEY=25) forums if you have difficulty in getting Natlink, Unimacro, or Vocola2 working.
 
 The packages are currently published in the 
 the [Python Packaging Index](https://pypi.org/). 
@@ -120,3 +120,7 @@ information you an use DebugView from https://docs.microsoft.com/en-us/sysintern
 available if you start DebugView.
 
 If you want to attach a python debugger, the instructions are in a word document "debugging python instructions.doc" in natlinkcore. 
+
+
+
+

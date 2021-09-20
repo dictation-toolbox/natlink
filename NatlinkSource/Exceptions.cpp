@@ -21,9 +21,10 @@ PyObject * ErrObjects[ ERROR_COUNT ];
 
 void createException( PyObject * pDict, int errorType, char * errorName )
 {
-	char * fullName = new char[ 10+strlen(errorName) ];
-	strcpy( fullName, "natlink." );
-	strcat( fullName, errorName );
+	size_t dest_size = 10+strlen(errorName);
+	char * fullName = new char[ dest_size ];
+	strcpy_s( fullName, dest_size, "natlink." );
+	strcat_s( fullName, dest_size, errorName );
 
     ErrObjects[errorType] = PyErr_NewException( fullName, ErrObjects[0], NULL );
     PyDict_SetItemString( pDict, errorName, ErrObjects[errorType] );
