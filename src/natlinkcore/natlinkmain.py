@@ -110,13 +110,12 @@ import imp              # module reloading
 import re     
 from stat import ST_MTIME      # file statistics
 
-import natlink   # this one only imports if it is installed in the site-packages/natlinkcore directory and
-                 # natlink.pyd is registered.
-
 from pydebugstring.output import outputDebugString
-import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
+from natlinkcore import natlinkpydebug as pd  #this will load debug and possibly start it and the time of load
 
-import natlinkstatus    # for extracting status info (QH)
+from natlinkcore import natlink   # this one only imports if it is installed in the site-packages/natlinkcore directory and
+                 # natlink.pyd is registered.
+from natlinkcore import natlinkstatus    # for extracting status info (QH)
 
 outputDebugString("at start of natlinkmain, after redirect stderr and stdout")
 glist=list( f"{a} : {b}" for (a,b) in list(globals().items()))

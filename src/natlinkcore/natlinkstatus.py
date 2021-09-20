@@ -27,39 +27,39 @@ getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/Natl
 
 The functions below should not change anything in settings, only  get information.
 
-getDNSInstallDir:
+getDNSInstallDir
     returns the directory where NatSpeak is installed.
     if the registry key NatspeakInstallDir exists(CURRENT_USER/Software/Natlink),
     this path is taken (if it points to a valid folder)
     Otherwise one of the default paths is taken,
-    %PROGRAMFILES%/Nuance/... or %PROGRAMFILES%/ScanSoft/...
+    `%PROGRAMFILES%/Nuance/...` or `%PROGRAMFILES%/ScanSoft/...`
     It must contain at least a Program subdirectory or App/Program subdirectory
 
-getDNSIniDir:
+getDNSIniDir
     returns the directory where the NatSpeak INI files are located,
     notably nssystem.ini and nsapps.ini.
     Can be set in natlinkstatus.ini, but mostly is got from
     %ALLUSERSPROFILE% (C:/ProgramData)
 
-getDNSVersion:
+getDNSVersion
     returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, ... (???)
     note distinction is made here between different subversions.
 (getDNSFullVersion: get longer version string) (obsolete, 2017, QH)
-.
-getWindowsVersion:
+
+getWindowsVersion
     see source below
 
-getLanguage:
+getLanguage
     returns the 3 letter code of the language of the speech profile that
     is open (only possible when NatSpeak/Natlink is running)
 
-getUserLanguage:
+getUserLanguage
     returns the language from changeCallback (>= 15) or config files
 
 getUserTopic
     returns the topic of the current speech profile, via changeCallback (>= 15) or config files
 
-getPythonVersion:
+getPythonVersion
     changed jan 2013, return two character version, so without the dot! eg '26'
 
     new nov 2009: return first three characters of python full version ('2.5')
@@ -68,59 +68,71 @@ getPythonVersion:
 #(getFullPythonVersion: get string of complete version info).
 
 
-getUserDirectory: get the Natlink user directory, 
+getUserDirectory
+    get the Natlink user directory, 
     Especially Dragonfly users will use this directory for putting their grammar files in.
     Also users that have their own custom grammar files can use this user directory
 
-getUnimacroDirectory: get the directory where the Unimacro system is.
+getUnimacroDirectory
+    get the directory where the Unimacro system is.
     When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped). This grammar will (and should) hold the _control.py grammar
     and needs to be included in the load directories list of James' natlinkmain
 
-getUnimacroGrammarsDirectory: get the directory, where the user can put his Unimacro grammars. By default
+getUnimacroGrammarsDirectory
+    get the directory, where the user can put his Unimacro grammars. By default
     this will be the ActiveGrammars subdirectory of the UnimacroUserDirectory.
 
-getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return '' or
-      the Unimacro user directory
+getUnimacroUserDirectory
+    get the directory of Unimacro INI files, if not return '' or
+    the Unimacro user directory
 
-getVocolaDirectory: get the directory where the Vocola system is. When cloned from git, in Vocola, relative to
-      the Core directory. Otherwise (when pipped) in some site-packages directory. It holds (and should hold) the
-      grammar _vocola_main.py.
+getVocolaDirectory
+    get the directory where the Vocola system is. When cloned from git, in Vocola, relative to
+    the Core directory. Otherwise (when pipped) in some site-packages directory. It holds (and should hold) the
+    grammar _vocola_main.py.
 
-getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
+getVocolaUserDirectory
+    get the directory of Vocola User files, if not return ''
     (if run from natlinkconfigfunctions use getVocolaDirectoryFromIni, which checks inifile
-     at each call...)
+    at each call...)
 
-getVocolaGrammarsDirectory: get the directory, where the compiled Vocola grammars are/will be.
+getVocolaGrammarsDirectory
+    get the directory, where the compiled Vocola grammars are/will be.
     This will normally be the "CompiledGrammars" subdirectory of the VocolaUserDirectory.
 
-NatlinkIsEnabled:
+NatlinkIsEnabled
     return 1 or 0 whether Natlink is enabled or not
     returns None when strange values are found
     (checked with the INI file settings of NSSystemIni and NSAppsIni)
 
-getNSSYSTEMIni(): get the path of nssystem.ini
-getNSAPPSIni(): get the path of nsapps.ini
+getNSSYSTEMIni()
+    get the path of nssystem.ini
+getNSAPPSIni()
+    get the path of nsapps.ini
 
-getBaseModelBaseTopic:
+getBaseModelBaseTopic
     return these as strings, not ready yet, only possible when
     NatSpeak/Natlink is running. Obsolete 2018, use
 getBaseModel
     get the acoustic model from config files (for DPI15, obsolescent)
 getBaseTopic
     get the baseTopic, from ini files. Better use getUserTopic in DPI15
-getDebugLoad:
+getDebugLoad
     get value from registry, if set do extra output of natlinkmain at (re)load time
-getDebugCallback:
+getDebugCallback
     get value from registry, if set do extra output of natlinkmain at callbacks is given
-getDebugOutput:
+getDebugOutput
     get value from registry, output in log file of DNS, should be kept at 0
 
-getVocolaTakesLanguages: additional settings for Vocola
+getVocolaTakesLanguages
+    additional settings for Vocola
 
-new 2014:
-getDNSName: return "NatSpeak" for versions <= 11 and "Dragon" for 12 (on)
-getAhkExeDir: return the directory where AutoHotkey is found (only needed when not in default)
-getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.
+getDNSName
+    return "NatSpeak" for versions <= 11 and "Dragon" for 12 (on)
+getAhkExeDir
+    return the directory where AutoHotkey is found (only needed when not in default)
+getAhkUserDir
+    return User Directory of AutoHotkey, not needed when it is in default.
 
 """
 import os
