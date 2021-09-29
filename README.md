@@ -1,61 +1,55 @@
-# Natlink
 
-NatLink is an OpenSource extension module for the speech recognition program Dragon. It is required
-for add on packages such as Unimacro, Vocola2, and Dragonfly.
+# Natlink 
+[![Windows](https://svgshare.com/i/ZhY.svg)](https://svgshare.com/i/ZhY.svg) [![PyPI Version fury.io](https://badge.fury.io/py/natlink.svg)](https://pypi.org/project/natlink/) [![PyPI status](https://img.shields.io/pypi/status/natlink.svg)](https://pypi.python.org/pypi/natlink/)
 
-This document describes how to install Natlink for end users and for developers.
+NatLink is an OpenSource extension module for the speech recognition program [dragon](https://www.nuance.com/dragon.html). NatLink is required
+for add on packages such as [Unimacro](https://github.com/dictation-toolbox/unimacro), [Vocola2](https://github.com/dictation-toolbox/Vocola2), and [Dragonfly](https://github.com/dictation-toolbox/dragonfly).
+
 
 ## Status
 
-Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. 
-
-Release 5.1.0 (August 1, 2021): should work reasonable for the UserDirectory users, so Dragonfly users could try this release. Note this release is done from the makeflitinstall branch.
-
-For Unimacro and Vocola(2), please wait a little bit longer...
-
-You can ask for help in getting in working on the [KnowBrainer Forums](https://www.knowbrainer.com/forums/forum/categories.cfm?catid=25&entercat=y&CFTREEITEMKEY=25) forums if you have difficulty in getting Natlink, Unimacro, or Vocola2 working.
-
-The packages are currently published in the 
-the [Python Packaging Index](https://pypi.org/). 
+Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. Only Dragonfly is supported at this time. Enabling Unimacro and Vocola(2) is not implemented. 
 
 ## Instructions for End Users
 
-If you would like to install Natlink for use, but not as a developer, here are the instructions:
+Preinstall requirements
+- DNS 13, DPI 14, and DPI 15 or derivative of the same versions
+- Install [**Python 3.8.X 32 bit**](https://www.python.org/downloads/release/python-3810/) on your system, and select **add Python to Path**.
+- Make sure any previous versions of Natlink are unregistered and uninstalled. (Dragon must be close during that process)
 
-Install a [**Python 3.8 32 bit**](https://www.python.org/downloads/) on your system, and select install for **all users**.  
-It is wise, but not required, to install python into a c:/python38-32 folder instead of c:/program files (x86)/... This will save
-you a lot of typing and mouse clicking over the long run.
+Natlink Install via CLI
 
-Start a command prompt or powershell as **adminstrator**. All command line actions described for end users must be performed in
-a command shell with adminstrator privileges.
+1. Close Dragon if open
+2. Open cmd/power shell **as administrator**
+3. Upgrade pip: `pip install --upgrade pip`
+4. `pip install natlink` from [PyPI](https://pypi.org/project/natlink/)
+5. `natlinkconfig_cli` # should auto setup and register itself.
+6. Set natlink user directory: type `n C:\your-grammars-folder` Modify path to your dragonfly grammars.
+7. Restart Dragon and "Messages from Natlink" window should start with Dragon.
 
-1. Check and upgrade pip immediately:
-   
-   - `pip -V   # should give something like:
-              # pip 21.1 from c:\python38-32\lib\site-packages\pip (python 3.8)`
-   - `pip install --upgrade pip`
+Extra commands if needed
+- type `u`  to see all CLI options
+- type `r` or `R` register/unregister natlink
+- type `e` or `E` enable/disable Natlink
+- type `n` or `N` set/clear the natlink user directory
 
-2. Install natlink
-   - Exit Dragon...
-   - pip install natlink
-
-   This will install the packages in your Python site-packages area. 
-   It will also add the following commands, which should be
-   in your path now in your commmand prompt:
-
-   - natlinkconfig_cli
-   - natlinkconfig
-
-3. Change the location for the config files, if you wish
-   - By default, config files for Natlink are stored in the `.natlink` subdirectory of the Home directory (something like `C:\Users\User`).
-   - When you want to change this default location, specify a valid directory in the environment variable DICTATIONTOOLBOXUSER (for example `C:\Users\User\Documents\.dictationtoolbox`).
+**Info**
+- By default, config files for Natlink are stored in the `.natlink` subdirectory of the Home directory (something like `C:\Users\User`).
+   - When you want to change this default location, specify a valid directory in the environment variable DICTATIONTOOLBOXUSER (for example `C:\Users\Your-User-Name\Documents\.natlink`).
      The `.natlink` directory (with config file `natlinkstatus.ini`) will be created in this directory.
+   - If natlink is properly registered `natlink.pyd` file path location stored in `natlinkstatus.ini`
 
-4. Run natlinkconfig to configure Natlink.
-   - do a (re)register command, "r" in the natlinkconfig_cli
-   - specify a UserDirectory, "u path-to-userdirectoery" in the natlinkconfig_cli
+**Support**
+ - Review current [issues](https://github.com/dictation-toolbox/natlink/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
+ - Join us on [![Gitter](https://badges.gitter.im/dictation-toolbox/natlink.svg)](https://gitter.im/dictation-toolbox/natlink?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Matrix](https://img.shields.io/matrix/caster:matrix.org?label=Matrix%20Chat&server_fqdn=matrix.org)](https://matrix.to/#/#dictation-toolbox_natlink:gitter.im&via=matrix.org)
+ 
+**Troubleshooting** 
+_On non-administrator accounts_:
+- You may need to manually delete **natlink.pyd** as administrator after closing the CLI
+- Running terminal as administrator changes the user account causing a mismatch between user directories between administrator/non-administrator. This impacts where your settings are stored for natlink.
+   - Fix:- [Create an OS environment variable](https://phoenixnap.com/kb/windows-set-environment-variable) **DICTATIONTOOLBOXUSER** pointing to a directory to store `.natlink`. 
 
-5. Start Dragon
 
 ## Instructions for Developers
 
