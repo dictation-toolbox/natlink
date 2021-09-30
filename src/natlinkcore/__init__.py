@@ -52,7 +52,7 @@ import sys
 import pathlib
 
 ## change this before a new release on pypi is made:
-__version__ = '5.2.0'      # to master branch!!
+__version__ = '5.2.0'      # pretty stable for Dragonfly, including DNS 14 and 14 pyd files
 # __version__ = '5.1.6'      # adding improved readme.md instructions
 # __version__ = '5.1.2'    # introduce DICTATIONTOOLBOXUSER for alternative user directory
 # __version__ = '5.1.1'    # no registry depencde any more
@@ -73,7 +73,6 @@ def getNatlinkUserDirectory():
     the environment variable DICTATIONTOOLBOXUSER to an existing directory.
     Restart then the calling program
     """
-    # default dtHome:
     dictation_toolbox_user = os.getenv("DICTATIONTOOLBOXUSER")
     if dictation_toolbox_user:
         dtHome = pathlib.Path(dictation_toolbox_user)

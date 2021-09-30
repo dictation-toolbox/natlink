@@ -2,20 +2,22 @@
 # Natlink 
 [![Windows](https://svgshare.com/i/ZhY.svg)](https://svgshare.com/i/ZhY.svg) [![PyPI Version fury.io](https://badge.fury.io/py/natlink.svg)](https://pypi.org/project/natlink/) [![PyPI status](https://img.shields.io/pypi/status/natlink.svg)](https://pypi.python.org/pypi/natlink/)
 
-NatLink is an OpenSource extension module for the speech recognition program [dragon](https://www.nuance.com/dragon.html). NatLink is required
-for add on packages such as [Unimacro](https://github.com/dictation-toolbox/unimacro), [Vocola2](https://github.com/dictation-toolbox/Vocola2), and [Dragonfly](https://github.com/dictation-toolbox/dragonfly).
+Natlink is an OpenSource extension module for the speech recognition program [dragon](https://www.nuance.com/dragon.html). Natlink is required
+for add on packages such as [Unimacro](https://github.com/dictation-toolbox/unimacro), [Vocola2](https://github.com/dictation-toolbox/Vocola2), and [Drag  onfly](https://github.com/dictation-toolbox/dragonfly).
 
 
 ## Status
 
-Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. Only Dragonfly is supported at this time. Enabling Unimacro and Vocola(2) is not implemented. 
+Natlink code has been updated from Python 2 to Python 3. It is relatively stable, but not released per se as a stable release. Only Dragonfly is supported at this time.
+
+Enabling Unimacro and Vocola(2) is **not yet** implemented. 
 
 ## Instructions for End Users
 
 Preinstall requirements
 - DNS 13, DPI 14, and DPI 15 or derivative of the same versions
 - Install [**Python 3.8.X 32 bit**](https://www.python.org/downloads/release/python-3810/) on your system, and select **add Python to Path**.
-- Make sure any previous versions of Natlink are unregistered and uninstalled. (Dragon must be close during that process)
+- Make sure any previous versions of Natlink are unregistered and uninstalled. (Dragon must be close during that process.)
 
 Natlink Install via CLI
 
@@ -24,10 +26,16 @@ Natlink Install via CLI
 3. Upgrade pip: `pip install --upgrade pip`
 4. `pip install natlink` from [PyPI](https://pypi.org/project/natlink/)
 5. `natlinkconfig_cli` # should auto setup and register itself.
-6. Set natlink user directory: type `n C:\your-grammars-folder` Modify path to your dragonfly grammars.
-7. Restart Dragon and "Messages from Natlink" window should start with Dragon.
+6. Set Natlink **UserDirectory**: type `n C:\path-to-your-grammars-folder`. Modify this path to where your dragonfly grammars are.
+7. Restart Dragon and the "Messages from Natlink" window should start with Dragon.
 
-Extra commands if needed
+**natlinkconfig_cli** or **natlinkconfig**
+
+These two programs, the latter being the GUI version, the former being the CLI (command line interface) version, can be started from the windows start menu. After the `natlink.pyd` file has been registered and Natlink is enabled, further configuration can be done via these programs.
+
+Note: unfortunately, Vocola and Unimacro cannot be enabled for the time being.
+
+Extra commands if needed in the CLI (`natlinkconfig_cli`)
 - type `u`  to see all CLI options
 - type `r` or `R` register/unregister natlink
 - type `e` or `E` enable/disable Natlink
@@ -35,9 +43,12 @@ Extra commands if needed
 
 **Info**
 - By default, config files for Natlink are stored in the `.natlink` subdirectory of the Home directory (something like `C:\Users\User`).
-   - When you want to change this default location, specify a valid directory in the environment variable DICTATIONTOOLBOXUSER (for example `C:\Users\Your-User-Name\Documents\.natlink`).
-     The `.natlink` directory (with config file `natlinkstatus.ini`) will be created in this directory.
-   - If natlink is properly registered `natlink.pyd` file path location stored in `natlinkstatus.ini`
+   - When you want to change this default location, specify a valid directory in the environment variable DICTATIONTOOLBOXUSER:
+     - For example `C:\Users\Your-User-Name\Documents`.
+     - You can also choose `C:\Users\Your-User-Name\Documents\.dictationtoolbox`.
+   - The `.natlink` directory (with config file `natlinkstatus.ini`) will be created in the Home or DICTATIONTOOBOXUSER directory.
+   - If natlink is properly registered, the `natlink.pyd` file path location stored in `natlinkstatus.ini` in the `.natlink` directory
+   - Other config info, from 
 
 **Support**
  - Review current [issues](https://github.com/dictation-toolbox/natlink/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
