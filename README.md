@@ -31,7 +31,9 @@ Natlink Install via CLI
 
 **natlinkconfig_cli** or **natlinkconfig**
 
-These two programs, the latter being the GUI version, the former being the CLI (command line interface) version, can be started from the windows start menu. After the `natlink.pyd` file has been registered and Natlink is enabled, further configuration can be done via these programs.
+These two programs, the latter being the GUI version, the former being the CLI (command line interface) version, can be started from the windows start menu. You are asked permission to run the program in elevated mode (Admin rights).
+
+After the `natlink.pyd` file has been registered and Natlink is enabled, further configuration can be done via these programs.
 
 Note: unfortunately, Vocola and Unimacro cannot be enabled for the time being.
 
@@ -48,7 +50,7 @@ Extra commands if needed in the CLI (`natlinkconfig_cli`)
      - You can also choose `C:\Users\Your-User-Name\Documents\.dictationtoolbox`.
    - The `.natlink` directory (with config file `natlinkstatus.ini`) will be created in the Home or DICTATIONTOOBOXUSER directory.
    - If natlink is properly registered, the `natlink.pyd` file path location stored in `natlinkstatus.ini` in the `.natlink` directory
-   - Other config info, from 
+   - Other config info, from `natlinkconfig` or `natlinkconfig_cli` will be stored in the same config file `natlinkstatus.ini`.
 
 **Support**
  - Review current [issues](https://github.com/dictation-toolbox/natlink/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
@@ -63,6 +65,8 @@ _On non-administrator accounts_:
 
 
 ## Instructions for Developers
+
+- Also read [Read the docs](https://natlink.readthedocs.io/en/latest/installation.html)
 
 - Natlink and other packages are all installed as packages in (\python38-32)\Lib\site-packges. 
 - As all packages (the root directory) are recognised in the PythonPath, we do not need a special reference in the registry any more, that
