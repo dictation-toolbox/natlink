@@ -3,7 +3,7 @@
 [![Windows](https://svgshare.com/i/ZhY.svg)](https://svgshare.com/i/ZhY.svg) [![PyPI Version fury.io](https://badge.fury.io/py/natlink.svg)](https://pypi.org/project/natlink/) [![PyPI status](https://img.shields.io/pypi/status/natlink.svg)](https://pypi.python.org/pypi/natlink/)
 
 Natlink is an OpenSource extension module for the speech recognition program [dragon](https://www.nuance.com/dragon.html). Natlink is required
-for add on packages such as [Unimacro](https://github.com/dictation-toolbox/unimacro), [Vocola2](https://github.com/dictation-toolbox/Vocola2), and [Drag  onfly](https://github.com/dictation-toolbox/dragonfly).
+for add on packages such as [Unimacro](https://github.com/dictation-toolbox/unimacro), [Vocola2](https://github.com/dictation-toolbox/Vocola2), and [Dragonfly](https://github.com/dictation-toolbox/dragonfly).
 
 
 ## Status
@@ -22,26 +22,28 @@ Preinstall requirements
 Natlink Install via CLI
 
 1. Close Dragon if open
-2. Open cmd/power shell **as administrator**
+2. Open Command Prompt/PowerShell **as administrator**
 3. Upgrade pip: `pip install --upgrade pip`
 4. `pip install natlink` from [PyPI](https://pypi.org/project/natlink/)
-5. `natlinkconfig_cli` # should auto setup and register itself.
-6. Set Natlink **UserDirectory**: type `n C:\path-to-your-grammars-folder`. Modify this path to where your dragonfly grammars are.
-7. Restart Dragon and the "Messages from Natlink" window should start with Dragon.
+6. `natlinkconfig_cli` # should auto setup and register itself.
+7. (Optional) type `u` to see all CLI options
+8. Set Natlink **UserDirectory**: type `n C:\path-to-your-grammars-folder`. Modify this path to where your dragonfly grammars are.
+9. Restart Dragon and the "Messages from Natlink" window should start with Dragon.
 
-**natlinkconfig_cli** or **natlinkconfig**
+Natlink Install via GUI
 
-These two programs, the latter being the GUI version, the former being the CLI (command line interface) version, can be started from the windows start menu. You are asked permission to run the program in elevated mode (Admin rights).
+The program **natlinkconfig**,  being the GUI version, can be launched from a PowerShell running as in elevated mode (Admin Privileges). After the `natlink.pyd` file has been registered and Natlink is enabled, further configuration can be done. Note: unfortunately, Vocola and Unimacro cannot be enabled for the time being.
 
-After the `natlink.pyd` file has been registered and Natlink is enabled, further configuration can be done via these programs.
+**Troubleshooting** 
+_On non-administrator accounts_:
+- You may need to manually delete **natlink.pyd** as administrator after closing the CLI
+- Running terminal as administrator changes the user account causing a mismatch between user directories between administrator/non-administrator. This impacts where your settings are stored for natlink.
+   - Fix:- [Create an OS environment variable](https://phoenixnap.com/kb/windows-set-environment-variable) **DICTATIONTOOLBOXUSER** pointing to a directory to store `.natlink`. 
 
-Note: unfortunately, Vocola and Unimacro cannot be enabled for the time being.
-
-Extra commands if needed in the CLI (`natlinkconfig_cli`)
-- type `u`  to see all CLI options
-- type `r` or `R` register/unregister natlink
-- type `e` or `E` enable/disable Natlink
-- type `n` or `N` set/clear the natlink user directory
+**Support**
+ - Review current [issues](https://github.com/dictation-toolbox/natlink/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
+ - Join us on [![Gitter](https://badges.gitter.im/dictation-toolbox/natlink.svg)](https://gitter.im/dictation-toolbox/natlink?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Matrix](https://img.shields.io/matrix/caster:matrix.org?label=Matrix%20Chat&server_fqdn=matrix.org)](https://matrix.to/#/#dictation-toolbox_natlink:gitter.im&via=matrix.org)
 
 **Info**
 - By default, config files for Natlink are stored in the `.natlink` subdirectory of the Home directory (something like `C:\Users\User`).
@@ -51,18 +53,6 @@ Extra commands if needed in the CLI (`natlinkconfig_cli`)
    - The `.natlink` directory (with config file `natlinkstatus.ini`) will be created in the Home or DICTATIONTOOBOXUSER directory.
    - If natlink is properly registered, the `natlink.pyd` file path location stored in `natlinkstatus.ini` in the `.natlink` directory
    - Other config info, from `natlinkconfig` or `natlinkconfig_cli` will be stored in the same config file `natlinkstatus.ini`.
-
-**Support**
- - Review current [issues](https://github.com/dictation-toolbox/natlink/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
- - Join us on [![Gitter](https://badges.gitter.im/dictation-toolbox/natlink.svg)](https://gitter.im/dictation-toolbox/natlink?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Matrix](https://img.shields.io/matrix/caster:matrix.org?label=Matrix%20Chat&server_fqdn=matrix.org)](https://matrix.to/#/#dictation-toolbox_natlink:gitter.im&via=matrix.org)
- 
-**Troubleshooting** 
-_On non-administrator accounts_:
-- You may need to manually delete **natlink.pyd** as administrator after closing the CLI
-- Running terminal as administrator changes the user account causing a mismatch between user directories between administrator/non-administrator. This impacts where your settings are stored for natlink.
-   - Fix:- [Create an OS environment variable](https://phoenixnap.com/kb/windows-set-environment-variable) **DICTATIONTOOLBOXUSER** pointing to a directory to store `.natlink`. 
-
 
 ## Instructions for Developers
 
