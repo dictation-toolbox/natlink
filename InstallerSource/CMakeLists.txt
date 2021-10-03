@@ -1,7 +1,8 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 
 project ("Installer")
-find_program(ISCC iscc)
+
+find_program(ISCC NAMES ISCC ISCC.exe PATH_SUFFIXES "Inno Setup 6")
 if(NOT ISCC)
 	message(STATUS "ISCC not found")
 else()
@@ -13,7 +14,7 @@ add_custom_target(natlink-installer ALL DEPENDS "${INSTALLER_FILE_BASE}.exe")
 add_custom_command(
     OUTPUT "${INSTALLER_FILE_BASE}.exe"
     DEPENDS NatlinkPyd
-    COMMAND ISCC
+    COMMAND ${ISCC}
         ${CMAKE_CURRENT_SOURCE_DIR}/inno-setup-natlink.iss
         /O"${CMAKE_CURRENT_BINARY_DIR}"
         /F"${INSTALLER_FILE_BASE}"
