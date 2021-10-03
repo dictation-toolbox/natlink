@@ -51,7 +51,7 @@ only_loaded_if_profile_userspanish_active=C:\User\user\spanish-only-scripts
 log_level=INFO
 ````
 
-#### Section: \[directories\] (optional)
+### Section: \[directories\] 
 These are directories that Natlink will look for scripts to load in.
 Each directory has a name that may be used for debugging purposes
 and a value that is the absolute path to the directory.
@@ -62,13 +62,13 @@ loaded first if it exists.
 If no directories are listed or this section is omitted,
 then no scripts will be loaded.
 
-#### Section: \[\<user\>-directories\] (optional)
+### Section: \[\<user\>-directories\] (optional)
 Same as \[directories\], but scripts are only loaded if the active user profile is \<user\>.
 This section may be repeated any number of times for different users.
 This is useful e.g. if you have multiple user profiles for different languages.
 The relative load order between global and user directories is the order of appearance in the config.
 
-#### Section: \[settings\] (optional)
+### Section: \[settings\] (optional)
 The currently supported settings are:
 
 - log_level: the log level to set the Natlink logger to. 
