@@ -9,6 +9,7 @@
 # run from a (preferably clean) US user profile, easiest from IDLE.
 # do not run from pythonwin. See also README.txt in PyTest folder
 #
+# October 2021: moved testNatlinkmain to separate file: unittestNatlinkmain.py (QH)
 # February 2020, testing with Python3 version of natlink.pyd (QH)
 #
 #
@@ -52,71 +53,37 @@
 # April 1, 2000
 #   - added testParser, testGramimar, testDictGram, testSelectGram
 #
+#pylint:disable=C0302, C0114, C0115, C0116, R0902, R0904, R0201, R0912, R0913, R0915, W0201, W0702, W0613, W0622, E1121
 import sys
 import unittest
-import types
 import os
 import os.path
-import glob
 import time
-import traceback        # for printing exceptions
-from struct import pack
+from pathlib import Path
+from natlinkcore import natlink
+from natlinkcore import natlinkstatus
+from natlinkcore import natlinkmain  # for Dragon 12, need recognitionMimic from natlinkmain
+from natlinkcore import gramparser
+import natlinkcore  ## getThisDir
+from natlinkcore.natlinkutils import getBaseName, getModifierKeyCodes
+from natlinkcore.natlinkutils import GrammarBase, DictGramBase, SelectGramBase
+from natlinkcore.natlinkutils import dgnwordflag_useradded, dgnwordflag_nodelete, dgnwordflag_no_space_before 
+from natlinkcore.natlinkutils import dgnwordflag_no_space_next, dgnwordflag_is_period
+from natlinkcore import natlinkutils
+from dtactions.sendkeys import sendkeys
+import win32gui
+import win32clipboard   # clearClipboard, refactor
 
+# make different versions testing possible:
+nlstatus = natlinkstatus.NatlinkStatus()
+DNSVersion = nlstatus.getDNSVersion()
 
-#--------- two utility functions:
-def getBaseFolder(globalsDict=None):
-    """get the folder of the calling module.
-
-    either sys.argv[0] (when run direct) or
-    __file__, which can be empty. In that case take the working directory
-    """
-    globalsDictHere = globalsDict or globals()
-    baseFolder = ""
-    if globalsDictHere['__name__']  == "__main__":
-        baseFolder = os.path.split(sys.argv[0])[0]
-        print('baseFolder from argv: %s'% baseFolder)
-    elif globalsDictHere['__file__']:
-        baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print('baseFolder from __file__: %s'% baseFolder)
-    if not baseFolder or baseFolder == '.':
-        baseFolder = os.getcwd()
-    return baseFolder
-
-def getCoreDir(thisDir):
-    """get the Natlink core folder, relative from the current folder
-
-    This folder should be relative to this with ../MacroSystem/core and should
-    contain natlinkmain.p, natlink.dll, and natlinkstatus.py
-
-    If not found like this, prints a line and returns thisDir
-    SHOULD ONLY BE CALLED BY natlinkconfigfunctions.py
-    """
-    coreFolder = os.path.normpath( os.path.join(thisDir, '..', 'MacroSystem', 'core') )
-    if not os.path.isdir(coreFolder):
-        print('not a directory: %s'% coreFolder)
-        return thisDir
-##    dllPath = os.path.join(coreFolder, 'natlink.dll')
-    mainPath = os.path.join(coreFolder, 'natlinkmain.py')
-    statusPath = os.path.join(coreFolder, 'natlinkstatus.py')
-##    if not os.path.isfile(dllPath):
-##        print 'natlink.dll not found in core directory: %s'% coreFolder
-##        return thisDir
-    if not os.path.isfile(mainPath):
-        print('natlinkmain.py not found in core directory: %s'% coreFolder)
-        return thisDir
-    if not os.path.isfile(statusPath):
-        print('natlinkstatus.py not found in core directory: %s'% coreFolder)
-        return thisDir
-    return coreFolder
-
-thisDir = getBaseFolder(globals())
-coreDir = getCoreDir(thisDir)
-if thisDir == coreDir:
-    raise OSError('unittestNatlink cannot proceed, coreDir not found...')
+thisDir = natlinkcore.getThisDir(__file__)
+coreDir = natlinkcore.getNatlinkDirectory()
 # appending to path if necessary:
-if not os.path.normpath(coreDir) in sys.path:
-    print('inserting %s to pythonpath...'% coreDir)
-    sys.path.insert(0, coreDir)
+# if not os.path.normpath(coreDir) in sys.path:
+#     print('inserting %s to pythonpath...'% coreDir)
+#     sys.path.insert(0, coreDir)
 
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # at least some errors in testNatlinkMain seem to be raised when set to 0
@@ -128,49 +95,11 @@ doSleep = 0.2
                      # 0.1 seems to fit, 0.05 seems to be too short...
                      # see testNatlinkutilsPlayString and testPlayString
 
-import natlink
-import natlinkmain  # for Dragon 12, need recognitionMimic from natlinkmain
-import gramparser
-from natlinkutils import *
-import natlinkutils
-import win32gui
-
-# make different versions testing possible:
-from natlinkcore import natlinkstatus
-nlstatus = natlinkstatus.NatlinkStatus()
-DNSVersion = nlstatus.getDNSVersion()
-import natlink
 class TestError(Exception):
-    pass
+    """TestError"""
 class ShouldBeCommandError(Exception):
-    pass # for testing commands to be commands, not dictate...
+    """ShouldBeCommandError"""
 ExitQuietly = 'ExitQuietly'
-
-# natlinkmain.start_natlink(natconnectOption) #?? otherwise baseDirectory etc have no values...
-
-
-
-def getBaseFolder(globalsDict=None):
-    """get the folder of the calling module.
-
-    either sys.argv[0] (when run direct) or
-    __file__, which can be empty. In that case take the working directory
-    """
-    globalsDictHere = globalsDict or globals()
-    baseFolder = ""
-    if globalsDictHere['__name__']  == "__main__":
-        baseFolder = os.path.split(sys.argv[0])[0]
-        print('baseFolder from argv: %s'% baseFolder)
-    elif globalsDictHere['__file__']:
-        baseFolder = os.path.split(globalsDictHere['__file__'])[0]
-        print('baseFolder from __file__: %s'% baseFolder)
-    if not baseFolder or baseFolder == '.':
-        baseFolder = os.getcwd()
-        print('baseFolder was empty, take wd: %s'% baseFolder)
-    return baseFolder
-
-thisDir = getBaseFolder(globals())
-
 
 # try some experiments more times, because gotBegin sometimes seems
 # not to hit
@@ -203,9 +132,9 @@ class UnittestNatlink(unittest.TestCase):
 ##
 ##      # minimize natspeak which should display the Python window
 ##      switchToNatSpeak()
-##      natlink.playString('{Alt+space}n')
+##      sendkeys('{Alt+space}n')
     def setUp(self):
-        self.clearTestFiles()
+        # self.clearTestFiles()
         if not natlink.isNatSpeakRunning():
             raise TestError('NatSpeak is not currently running')
         self.connect()
@@ -226,8 +155,8 @@ class UnittestNatlink(unittest.TestCase):
             # kill things
             self.killCalc()
             self.lookForDragonPad()
-            natlink.playString("\n\ntearDown, reopen user: '%s'"% self.user)
-            self.clearTestFiles()
+            sendkeys("\n\ntearDown, reopen user: '%s'"% self.user)
+            # self.clearTestFiles()
             self.clearDragonPad()
             # reopen user:
             #natlink.openUser(self.user)
@@ -239,16 +168,16 @@ class UnittestNatlink(unittest.TestCase):
     def connect(self):
         # start with 1 for thread safety when run from pythonwin:
         natlink.natConnect(natconnectOption)
-        natlinkmain.start_natlink()
+        # natlinkmain.start_natlink()
 
     def disconnect(self):
         natlink.natDisconnect()
         
-    def log(self, t, doPlaystring=None):
+    def log(self, t, doSendkeys=None):
         # displayText seems not to work:
         natlink.displayText(t, 0)
-        if doPlaystring:
-            natlink.playString(t+'\n')
+        if doSendkeys:
+            sendkeys(t+'\n')
         # do the global log function:
         log(t)
 
@@ -263,18 +192,18 @@ class UnittestNatlink(unittest.TestCase):
         i = 0
         while i < 50:
             time.sleep(0.2)
-            mod, title, hndle = natlink.getCurrentModule()
+            mod, _title, _hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
             print('mod: %s'% mod)
             if mod == 'winword':
                 print('got word after %s steps'% i)
                 break
             i += 1
-        natlink.playString("{ctrl+a}{ctrl+c}")
+        sendkeys("{ctrl+a}{ctrl+c}")
         self.wait(1)
         t = natlink.getClipboard()
         if t:
-            natlink.playString("{ctrl+n}")
+            sendkeys("{ctrl+n}")
             self.wait(0.5)
         
 
@@ -293,10 +222,11 @@ class UnittestNatlink(unittest.TestCase):
         i = 0
         while i < 50:
             time.sleep(0.2)
-            mod, title, hndle = natlink.getCurrentModule()
+            mod, _title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
             # print 'mod: %s'% mod
-            if mod == "natspeak": break
+            if mod == "natspeak":
+                break
             i += 1
             print('waiting for DragonPad: %s'% i)
         else:
@@ -312,12 +242,12 @@ class UnittestNatlink(unittest.TestCase):
 ##        except natlink.NatError:
 ##            raise TestError,'The NatSpeak user interface is not running'
 ##         ??? Start instead of start ???
-        mod, title, hndle = natlink.getCurrentModule()
+        mod, _title, _hndle = natlink.getCurrentModule()
         mod = getBaseName(mod)
         print('mod: %s'% mod)
         if mod != "natspeak":
             raise TestError("clearDragonPad: DragonPad should be in the foreground, not: %s"% mod)
-        natlink.playString("{ctrl+a}{del}")
+        sendkeys("{ctrl+a}{del}")
         time.sleep(0.2)
     
     def lookForCalc(self):
@@ -330,20 +260,19 @@ class UnittestNatlink(unittest.TestCase):
             hndle = self.CalcHndle
             try:
                 win32gui.SetForegroundWindow(hndle)
-            except:
-                raise TestError("cannot get Calc back into foreground, hndle: %s"% hndle)
+            except Exception as exc:
+                raise TestError("cannot get Calc back into foreground, hndle: %s"% hndle) from exc
     
             # wait for the right window to appear:        
             i = 0
             while i < 10:
                 time.sleep(0.1)
-                mod, title, hndle = natlink.getCurrentModule()
+                mod, _title, hndle = natlink.getCurrentModule()
                 mod = getBaseName(mod)
                 if mod in ["calc", "ApplicationFrameHost"]:
                     return hndle
                 i += 1
-            else:
-                raise TestError("in lookForCalc, cannot get back to Calc window, have: %s"% mod)
+            raise TestError("in lookForCalc, cannot get back to Calc window, have: %s"% mod)
 
         ## now for new Calc window:
         natlink.execScript('AppBringUp "calc"')
@@ -353,9 +282,10 @@ class UnittestNatlink(unittest.TestCase):
         while i < 10:
             time.sleep(0.1)
             print('waiting for calc window %s'% i)
-            mod, title, hndle = natlink.getCurrentModule()
+            mod, _title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
-            if mod in ["calc", "ApplicationFrameHost"]: break
+            if mod in ["calc", "ApplicationFrameHost"]:
+                break
             i += 1
         else:
             raise TestError("Not the correct application: %s is brought to the front, should be calc"% mod)
@@ -366,7 +296,7 @@ class UnittestNatlink(unittest.TestCase):
 
     def emptyDragonPad(self):
         """assume DragonPad is in front already"""
-        natlink.playString('{ctrl+a}{del}')
+        sendkeys('{ctrl+a}{del}')
         self.doTestWindowContents('')
         
 
@@ -384,43 +314,45 @@ class UnittestNatlink(unittest.TestCase):
         
         try:
             win32gui.SetForegroundWindow(hndle)
-        except:
-            raise TestError("cannot get DragonPad foreground, hndle: %s"% hndle)
+        except Exception as exc:
+            raise TestError("cannot get DragonPad foreground, hndle: %s"% hndle) from exc
 
         # wait for the right window to appear:        
         i = 0
         while i < 10:
             time.sleep(0.1)
-            mod, title, hndle = natlink.getCurrentModule()
+            mod, _title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
-            if mod == "natspeak": break
+            if mod == "natspeak":
+                break
             i += 1
         else:
             raise TestError("in killDragonPad, could not get back to DragonPad window, have: %s"% mod)
 
-        natlink.playString("{alt+f4}")
+        sendkeys("{alt+f4}")
         print('closing dragonpad')
         # wait for the window to disappear (possibly get child window y n dialog)
         i = 0
         while i < 10:
             time.sleep(0.1)
-            mod, title, hndle = natlink.getCurrentModule()
-            if hndle != self.DragonPadHndle: break
+            mod, _title, hndle = natlink.getCurrentModule()
+            if hndle != self.DragonPadHndle:
+                break
             i += 1
         else:
             raise TestError("in killDragonPad, could not close the DragonPad window")
         del self.DragonPadHndle
 
         # if gets into child window press n (not save)
-##        mod, title, hndle = natlink.getCurrentModule()
-##        sys.stderr.write('mod, title, hndle: %s, %s, %s'% (mod, title, hndle))
+##        mod, _title, hndle = natlink.getCurrentModule()
+##        sys.stderr.write('mod, _title, hndle: %s, %s, %s'% (mod, _title, hndle))
 ##        if mod != "natspeak":
 ##            return   # finished
         
         if not self.isTopWindow(hndle):
-            natlink.playString("n")
+            sendkeys("n")
             time.sleep(0.1)
-        mod, title, hndle = natlink.getCurrentModule()
+        mod, _title, hndle = natlink.getCurrentModule()
         if not self.isTopWindow(hndle):
             raise TestError("in killDragonPad, did not return to a top window")
 
@@ -441,32 +373,33 @@ class UnittestNatlink(unittest.TestCase):
             except:
                 pass
             time.sleep(0.1)
-            mod, title, hndle = natlink.getCurrentModule()
+            mod, _title, hndle = natlink.getCurrentModule()
             mod = getBaseName(mod)
-            if mod in ["calc", "ApplicationFrameHost"] and hndle == wantHndle : break
-            natlink.playString("{alt+tab}", 0x200)
+            if mod in ["calc", "ApplicationFrameHost"] and hndle == wantHndle :
+                break
+            sendkeys("{alt+tab}")
             i += 1
         else:
             raise TestError("in killCalc, could not get back to Calc window")
         if i:
             print('got calc after %s steps')
-        natlink.playString("{alt+f4}", 0x200)
+        sendkeys("{alt+f4!}")   # should do with use_hardware
         self.CalcHndle = None
         time.sleep(0.5)
 
-    def clearTestFiles(self):
-        """remove .py and .pyc files from the natlinkmain test
-
-        """
-        baseDirectory = natlinkmain.baseDirectory
-        userDirectory = natlinkmain.userDirectory
-        unimacroDirectory = natlinkmain.unimacroDirectory
-        for Dir in (baseDirectory, unimacroDirectory, userDirectory):
-            for trunk in ('__jMg1', '__jMg2', 'calc__jMg1',
-                          specialFilenameGlobal, specialFilenameCalc,
-                          spacesFilenameGlobal, spacesFilenameCalcValid, spacesFilenameCalcInvalid,
-                          "_", "calc_", "calculator"):
-                safeRemove(Dir, trunk + ".py")
+    # def clearTestFiles(self):
+    #     """remove .py and .pyc files from the natlinkmain test
+    # 
+    #     """
+    #     baseDirectory = natlinkmain.baseDirectory
+    #     userDirectory = natlinkmain.userDirectory
+    #     unimacroDirectory = natlinkmain.unimacroDirectory
+    #     for Dir in (baseDirectory, unimacroDirectory, userDirectory):
+    #         for trunk in ('__jMg1', '__jMg2', 'calc__jMg1',
+    #                       specialFilenameGlobal, specialFilenameCalc,
+    #                       spacesFilenameGlobal, spacesFilenameCalcValid, spacesFilenameCalcInvalid,
+    #                       "_", "calc_", "calculator"):
+    #             safeRemove(Dir, trunk + ".py")
 
     def isTopWindow(self, hndle):
         """return 1 if it is a top window, child otherwise
@@ -486,7 +419,7 @@ class UnittestNatlink(unittest.TestCase):
         if t is None:
             t = doSleep or 0.1
         if t < 0:
-            t = -t
+            t = t*-1
         
         wmilli = round(t*1000) if t < 50 else round(t)
         if wmilli < 25:
@@ -518,19 +451,22 @@ class UnittestNatlink(unittest.TestCase):
     # an exception (of the expected type) is raised.  Otherwise a TestError
     # exception is raisedhello world
 
-    def doTestForException(self, exceptionType,command,localVars={}):
+    def doTestForException(self, exceptionType, command, localVars=None):
+        #pylint:disable=W0122, W0123
+        localVars = localVars or {}
         try:
-            exec(command,globals(),localVars)
+            exec(command, globals(), localVars)
         except exceptionType:
             return
-        except:
+        except Exception as exc:
             excType = sys.exc_info()[0]
-            raise TestError('Expecting another exception %s, got exception %s, while parsing grammar %s'% (exceptionType, excType,command))
+            raise TestError('Expecting another exception %s, got exception %s, while parsing grammar %s'% (exceptionType, excType,command)) from exc
         else:
             raise TestError('Expecting exception %s, command: %s'% (exceptionType, command))
 
     def doTestFuncPronsReturn(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
+        #pylint:disable=W0123
         if localVars is None:
             actual = eval(command)
         else:
@@ -540,12 +476,11 @@ class UnittestNatlink(unittest.TestCase):
 
         if actual is None:
             self.fail('doTestFuncPronsReturn: word does not exist: command; "%s"'% command)
-        if type(expected) == tuple:
+        if isinstance(expected, tuple):
             for e in expected:
                 if actual == e:
                     return
-            else:
-                self.fail('doTestFuncPronsReturn: actual (%s) does not match one of the expected results (%s), command: "%s"'%
+            self.fail('doTestFuncPronsReturn: actual (%s) does not match one of the expected results (%s), command: "%s"'%
                           (actual, repr(expected), command))
         else:
             self.assertEqual(expected, actual,
@@ -556,9 +491,9 @@ class UnittestNatlink(unittest.TestCase):
         """gram must be a grammar instance, sort the rules to be expected and got
         """
         got = gram.activeRules
-        if type(got) != dict:
+        if isinstance(got, dict):
             raise TestError('doTestActiveRules, activeRules should be a dict, not: %s (%s)'% (repr(got), type(got)))
-        if type(expected) != dict:
+        if isinstance(expected, dict):
             raise TestError('doTestActiveRules, expected should be a dict, not: %s (%s)'% (repr(expected), type(expected)))
         
         self.assertEqual(expected, got,
@@ -569,9 +504,9 @@ class UnittestNatlink(unittest.TestCase):
         """gram must be a grammar instance, sort the rules to be expected and got
         """
         got = gram.validRules
-        if type(got) != list:
+        if isinstance(got, list):
             raise TestError('doTestValidRules, activeRules should be a list: %s (%s)'% (repr(got), type(got)))
-        if type(expected) != list:
+        if isinstance(expected, list):
             raise TestError('doTestValidRules, expected should be a list, not: %s (%s)'% (repr(expected), type(expected)))
         got.sort()
         expected.sort()
@@ -593,13 +528,13 @@ class UnittestNatlink(unittest.TestCase):
         """
         clearClipboard()
         self.wait(0.2)
-        natlink.playString('{ctrl+end}x{ctrl+a}')
+        sendkeys('{ctrl+end}x{ctrl+a}')
         self.wait(0.2)
-        natlink.playString('{ctrl+c}')
+        sendkeys('{ctrl+c}')
         self.wait(0.2)
         contents = natlink.getClipboard()
         self.wait(0.2)
-        natlink.playString('{ctrl+end}{backspace}')
+        sendkeys('{ctrl+end}{backspace}')
         if contents == '':
             return ''
         if contents[-1:] !='x':
@@ -609,7 +544,8 @@ class UnittestNatlink(unittest.TestCase):
     def doTestWindowContents(self, expected,testName=None, stripResult=None):
         """test contents of the windows, slowing down if doSleep is set
         """
-        if doSleep: time.sleep(doSleep)
+        if doSleep:
+            time.sleep(doSleep)
         contents = self.getWindowContents()
         if stripResult:
             contents, expected = contents.strip(), expected.strip()
@@ -625,6 +561,7 @@ class UnittestNatlink(unittest.TestCase):
 
     def doTestFuncReturn(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
+        #pylint:disable=W0123
         if localVars is None:
             actual = eval(command)
         else:
@@ -639,12 +576,13 @@ class UnittestNatlink(unittest.TestCase):
         
         # account for different values in case of [None, 0] (wordFuncs)
         # expected is a tuple of alternatives, which one of them should be equal to expected
+        #pylint:disable=W0123
         if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
 
-        if type(expected) != tuple:
+        if isinstance(expected, tuple):
             raise TestError("doTestFuncReturnAlternatives, invalid input %s, tuple expected"% repr(expected))
         for exp in expected:
             if actual == exp:
@@ -655,19 +593,20 @@ class UnittestNatlink(unittest.TestCase):
 
     def doTestFuncReturnWordFlag(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
+        #pylint:disable=W0123
         if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
 
-        if not (actual == expected or
-                actual == expected  + dgnwordflag_DNS8newwrdProp):
+        if actual != expected:
             time.sleep(1)
             self.fail('Function call "%s" returned unexpected result(accounting for DNS8newwrdProp)\nExpected: %s (+prop8: %s), got: %s'%
-                          (command, expected, expected+dgnwordflag_DNS8newwrdProp, actual))
+                          (command, expected, expected, actual))
 
     def doTestFuncReturnNoneOr0(self, command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
+        #pylint:disable=W0123
         if localVars is None:
             actual = eval(command)
         else:
@@ -700,7 +639,7 @@ class UnittestNatlink(unittest.TestCase):
     # by the OS, we must send as system keys.
 
     def playAltEsc(self):
-        natlink.playString('{alt+esc}',hook_f_systemkeys)
+        sendkeys('{alt+esc!}')   # with sendsystemkeys
 
     #---------------------------------------------------------------------------
 
@@ -753,7 +692,7 @@ class UnittestNatlink(unittest.TestCase):
         if micState == 'on':
             self.log('start of test, mic is on, switching off')
             natlink.setMicState('off')
-            self.wait(0.5)
+            self.wait(w)
             # natlink.waitForSpeech(round(w*1000))
             self.doTestFuncReturn('off', "natlink.getMicState()")
 
@@ -765,11 +704,6 @@ class UnittestNatlink(unittest.TestCase):
             # natlink.waitForSpeech(round(w*1000))
             self.doTestFuncReturn(state, "natlink.getMicState()")
         self.log("leaving test function testMicState, latest state: %s"% state)
-        ''
-##        try:
-    #---------------------------------------------------------------------------
-    # Note 1: testWindowContents will clobber the clipboard.
-    # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
     def obsoletetestPlayString(self):
         """the natlink.playString function could be dismissed, often presents problems.
@@ -779,42 +713,29 @@ class UnittestNatlink(unittest.TestCase):
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
         # test some obvious error cases
-        testForException(TypeError,"natlink.playString()")
-        testForException(TypeError,"natlink.playString(1)")
-        testForException(TypeError,"natlink.playString('','')")
+        testForException(TypeError,"sendkeys()")
+        testForException(TypeError,"sendkeys(1)")
+        testForException(TypeError,"sendkeys('','')")
         self.wait()
-        natlink.playString('This is a test')
+        sendkeys('This is a test')
         testWindowContents('This is a test','playString')
 
-        natlink.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
+        sendkeys('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
         testWindowContents('This is a testThis i','playString')
 
-        natlink.playString('{ctrl+a}{del}')
-        natlink.playString('testing',hook_f_shift)
-        testWindowContents('Testing','playString')
+        sendkeys('{ctrl+a}{del}')
 
-        natlink.playString(' again')
-        natlink.playString('a{ctrl+c}{del}',hook_f_ctrl)
+        sendkeys(' again')
+        # sendkeys('a{ctrl+c}{del}',hook_f_ctrl) now:
+        sendkeys('{ctrl:a}{ctrl+c}{del}')
         # paste contents via menu command using alt:
-        natlink.playString('ep',hook_f_alt)
+        # sendkeys('ep',hook_f_alt)   now:
+        sendkeys('{a;t+e}p')
         testWindowContents('Testing again\r\n','playString')
 
-        natlink.playString('a{ctrl+c}{del}',hook_f_rightctrl)
-        natlink.playString('ep',hook_f_rightalt)
-        natlink.playString('now',hook_f_rightshift)
-        testWindowContents('Testing again\r\n\r\nNow','playString')
-
-        natlink.playString('{ctrl+a}{del}')
-        natlink.playString('oneWORD ',genkeys_f_uppercase)
-        natlink.playString('twoWORDs ',genkeys_f_lowercase)
-        natlink.playString('threeWORDs',genkeys_f_capitalize)
-        testWindowContents('ONEWORD twowords ThreeWORDs','playString')
-
-        natlink.playString('{ctrl+a}{del}')
-        testWindowContents('','playString')
         
         # now try accented characters and unicode strings:
-        natlink.playString('ge\xe9\xfatest{backspace}')
+        sendkeys('ge\xe9\xfatest{backspace}')
         testWindowContents('ge\xe9\xfates','playString')
         #
         ## open and close a dialog
@@ -823,109 +744,8 @@ class UnittestNatlink(unittest.TestCase):
         natlinkutils.playString('{ctrl+o}{esc}')
         testWindowContents('Testing dialog window')
 
-        natlink.playString('{ctrl+a}{del}')
+        sendkeys('{ctrl+a}{del}')
         testWindowContents('','playString empty')
-
-
-
-    def problemstestNatlinkutilsPlayString(self):
-        """this version captions accented and unicode characters (possibly)
-        
-        The str with accented characters are NOT handled correct with SendInput(mdl)
-        TODOQH
-        
-        
-        The old natlink.playString presents problems and should be declared obsolete.
-        
-        Can also work around the double or drop first character by using the shift key trick
-        
-        Works with SendInput (mdl), if option has been chosen in natlinkutils
-                
-        """
-        self.log("testNatlinkutilsPlayString", 0) # not to DragonPad!
-        testForException =self.doTestForException
-        testWindowContents = self.doTestWindowContents
-
-        ## sendinput has problems with accented character: TODOQH
-        # natlinkutils.playString('ge\xe9\xfatest{backspace}')
-        # testWindowContents('ge\xe9\xfates','playString')
-
-
-        natlinkutils.playString('This is a test')
-        testWindowContents('This is a test','playString')
-
-        # here play with the sleeps necessary:
-        natlinkutils.playString('{ctrl+a}{ctrl+c}')
-        if doSleep: self.wait(doSleep)
-        natlinkutils.playString('{end}xxxx{ctrl+v}')
-        if doSleep: self.wait(doSleep)
-        natlinkutils.playString('{backspace 9}')
-        if doSleep: self.wait(doSleep)
-        self.wait(4)
-        testWindowContents('This is a testxxxxThis is','playString')
-
-        ## this one does not clear the Dragonpad window:
-        natlinkutils.playString('{ctrl+a}{del}')
-        self.wait(4)
-        if doSleep: self.wait(doSleep)
-        testWindowContents('')
-        
-        # this goes via natlink.playString, and seems to need a pause
-        natlinkutils.playString('testing',hook_f_shift)
-        self.wait(0.5)
-        testWindowContents('Testing','playString')
-
-        natlinkutils.playString(' again')
-        self.wait(3)
-        
-        testWindowContents('Testing again','playString')
-        natlinkutils.playString('a{ctrl+c}{del}',hook_f_ctrl)
-        # paste contents via menu command using alt:
-        # this one is sent through to natlink.playString:
-        natlinkutils.playString('ep',hook_f_alt)
-        if doSleep: self.wait(doSleep)
-        testWindowContents('Testing again\r\n','playString')
-
-        natlinkutils.playString('a{ctrl+c}{del}',hook_f_rightctrl)
-        natlinkutils.playString('ep',hook_f_rightalt)
-        if doSleep: self.wait(doSleep)
-        natlinkutils.playString('now hook rightctrl',hook_f_rightshift)
-        testWindowContents('Testing again\r\n\r\nNow hook rightctrl','playString')
-        # this one should be handled by the SendKeys of Mark:
-        natlinkutils.playString('{backspace 26} with only SendKeys')
-        self.wait()
-        testWindowContents('Testing with only SendKeys','playString')
-  
-        # problems here, test later TODOQH
-        # natlinkutils.playString('{ctrl+a}{ctrl+c}')
-        # self.wait(0.3)
-        # natlinkutils.playString('{del}')
-        # self.wait(0.3)
-        # # paste contents via menu command using alt:
-        # natlinkutils.playString('{alt+e}p')
-        # testWindowContents('Testing with only SendKeys\r\n','playString')
-
-        natlinkutils.playString('{ctrl+a}{del}')
-        testWindowContents('','playString empty')
-
-        natlinkutils.playString('simple string')
-        testWindowContents('simple string','natlinkutils.playString')        
-
-        natlinkutils.playString('{ctrl+a}{del}')
-        testWindowContents('','empty window playString')        
-
-
-        natlinkutils.playString('\u0041-xyz-\u00e9-abc-')
-        testWindowContents('A-xyz-\xe9-abc-','natlinkutils.playString')
-
-
-        #
-        ## open and close a dialog
-        natlinkutils.playString("{ctrl+a}Testing dialog window")
-        testWindowContents('Testing dialog window')
-        natlinkutils.playString('{ctrl+o}{esc}')
-        testWindowContents('Testing dialog window')
-        
 
     #---------------------------------------------------------------------------
 
@@ -1127,94 +947,94 @@ class UnittestNatlink(unittest.TestCase):
         callTest.doTestTextChange(moduleInfo,(3,3,',',4,4))
 
         self.log("OK untile line of testDictObj")  
-        # lots of problems, must be sorted out, QH, august 2011
-        return
-
-
-        dictObj.setTextSel(5)
-        natlink.recognitionMimic(['another','phrase'])
-##        self.wait()
-        testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
-        # unimacro version stops here, no beginCallback:::
-        
-        
-        # versions 10 and 11 seem to have an intermediate result, just selecting with empty text
-        # this is also apparent in _kaiser_dictation, not tested very thorough...
-        #callTest.doTestTextChange(moduleInfo,(4,4,'', 4, 10))
-        
-        # from here problems, should be sorted out (QH, august 2011, working on Dragon 11)
-        return
-    
-    
-        callTest.doTestTextChange(moduleInfo,(4,10,' another phrase',19,19))
-    #else        callTest.doTestTextChange(moduleInfo,(5,10,'another phrase',19,19))
-
-        natlink.recognitionMimic(['more'])
-##        self.wait()
-        testFuncReturn('And, another phrase more',"dictObj.getText(0)",locals())
-        callTest.doTestTextChange(moduleInfo,(19,19,' more',24,24))
-
-        # the scratch that command undoes one recognition
-        natlink.recognitionMimic(['scratch','that'])
-##        self.wait()
-        testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
-        callTest.doTestTextChange(moduleInfo,(19,24,'',19,19))
-
-        # NatSpeak optimizes the changed block so we only change 'ther' not
-        # 'there' -- the last e did not change.
-        natlink.recognitionMimic(['scratch','that'])
-        self.wait(2)
-        
-        testFuncReturn('And, there',"dictObj.getText(0)",locals())
-        callTest.doTestTextChange(moduleInfo,(5,18,'ther',5,10))
-
-        # fill the buffer with a block of text
-        # char index:    0123456789 123456789 123456789 123456789 123456789 123456789 
-        dictObj.setText('This is a block of text.  Lets count one two three.  All done.',0)
-        dictObj.setTextSel(0,0)
-        dictObj.setVisibleText(0)
-
-        # ok, test selection command
-        natlink.recognitionMimic(['select','block','of','text'])
-##        self.wait()
-        
-        testFuncReturn((10,23),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,(10,10,'',10,23))
-        
-        natlink.recognitionMimic(['select','one','through','three'])
-##        self.wait()
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
-
-        # text selection of non-existant text
-        testForException(natlink.MimicFailed,"natlink.recognitionMimic(['select','helloxxx'])")
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,None)
-
-        # now we clamp down on the visible range and prove that we can select
-        # within the range but not outside the range
-        dictObj.setVisibleText(10,50)
-        dictObj.setTextSel(0,0)
-        
-        natlink.recognitionMimic(['select','one','through','three'])
-##        self.wait()
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
-
-        #This is a block of text.  Lets count one two three.  All done.
-        natlink.recognitionMimic(['select','this','is'])
-##        self.wait()
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,None)
-
-        natlink.recognitionMimic(['select','all','done'])
-##        self.wait()
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,None)
-           
-  
-        # close the calc (now done in tearDown)
-##        natlink.playString('{Alt+F4}')
+        # lots of problems, must be sorted out, QH, august 2011, may still be relevant, October 2021
+        ## TODOQH ##
+# 
+# 
+#         dictObj.setTextSel(5)
+#         natlink.recognitionMimic(['another','phrase'])
+# ##        self.wait()
+#         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
+#         # unimacro version stops here, no beginCallback:::
+#         
+#         
+#         # versions 10 and 11 seem to have an intermediate result, just selecting with empty text
+#         # this is also apparent in _kaiser_dictation, not tested very thorough...
+#         #callTest.doTestTextChange(moduleInfo,(4,4,'', 4, 10))
+#         
+#         # from here problems, should be sorted out (QH, august 2011, working on Dragon 11)
+#         return
+#     
+#     
+#         callTest.doTestTextChange(moduleInfo,(4,10,' another phrase',19,19))
+#     #else        callTest.doTestTextChange(moduleInfo,(5,10,'another phrase',19,19))
+# 
+#         natlink.recognitionMimic(['more'])
+# ##        self.wait()
+#         testFuncReturn('And, another phrase more',"dictObj.getText(0)",locals())
+#         callTest.doTestTextChange(moduleInfo,(19,19,' more',24,24))
+# 
+#         # the scratch that command undoes one recognition
+#         natlink.recognitionMimic(['scratch','that'])
+# ##        self.wait()
+#         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
+#         callTest.doTestTextChange(moduleInfo,(19,24,'',19,19))
+# 
+#         # NatSpeak optimizes the changed block so we only change 'ther' not
+#         # 'there' -- the last e did not change.
+#         natlink.recognitionMimic(['scratch','that'])
+#         self.wait(2)
+#         
+#         testFuncReturn('And, there',"dictObj.getText(0)",locals())
+#         callTest.doTestTextChange(moduleInfo,(5,18,'ther',5,10))
+# 
+#         # fill the buffer with a block of text
+#         # char index:    0123456789 123456789 123456789 123456789 123456789 123456789 
+#         dictObj.setText('This is a block of text.  Lets count one two three.  All done.',0)
+#         dictObj.setTextSel(0,0)
+#         dictObj.setVisibleText(0)
+# 
+#         # ok, test selection command
+#         natlink.recognitionMimic(['select','block','of','text'])
+# ##        self.wait()
+#         
+#         testFuncReturn((10,23),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,(10,10,'',10,23))
+#         
+#         natlink.recognitionMimic(['select','one','through','three'])
+# ##        self.wait()
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
+# 
+#         # text selection of non-existant text
+#         testForException(natlink.MimicFailed,"natlink.recognitionMimic(['select','helloxxx'])")
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,None)
+# 
+#         # now we clamp down on the visible range and prove that we can select
+#         # within the range but not outside the range
+#         dictObj.setVisibleText(10,50)
+#         dictObj.setTextSel(0,0)
+#         
+#         natlink.recognitionMimic(['select','one','through','three'])
+# ##        self.wait()
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
+# 
+#         #This is a block of text.  Lets count one two three.  All done.
+#         natlink.recognitionMimic(['select','this','is'])
+# ##        self.wait()
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,None)
+# 
+#         natlink.recognitionMimic(['select','all','done'])
+# ##        self.wait()
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,None)
+#            
+#   
+#         # close the calc (now done in tearDown)
+# ##        sendkeys('{Alt+F4}')
 
 
     def testRecognitionMimicCommands(self):
@@ -1227,7 +1047,8 @@ class UnittestNatlink(unittest.TestCase):
         class TestGrammar(GrammarBase):
 
             gramSpec = """
-                <runone> exported = mimicss runone;
+                <runzero> exported = mimicss runzero;
+                <runone> exported = mimiccs runone (north | east | south | west);
                 <runtwo> exported = mimicss two {colors};
                 <runthree> exported = mimicss three [<qualification>] <extraword> [{colors}]+;
                 <runsix> exported = mimicss six {colors}+;
@@ -1256,10 +1077,10 @@ class UnittestNatlink(unittest.TestCase):
             def gotBegin(self,moduleInfo):
                 self.resetExperiment()
 
-            def gotResultsObject(self,recogType,resObj):
+            def gotResultsObject(self, recogType, resObj):
                 self.recogType = recogType
 
-        self.log("test recognitionMimicCommands, version: %s"% DNSVersion, doPlaystring=1)
+        self.log("test recognitionMimicCommands, version: %s"% DNSVersion, doSendkeys=1)
 
         testCommandRecognition = self.doTestCommandRecognition
         testGram = TestGrammar()
@@ -1276,7 +1097,8 @@ class UnittestNatlink(unittest.TestCase):
 
         ## ruleone:
         testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)  
-        testCommandRecognition(['mimicss', 'runone'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'runzero'], shouldWork=1, testGram=testGram)  
+        testCommandRecognition(['mimicss', 'runone', 'north'], shouldWork=1, testGram=testGram)  
             
         ## this one already misses:
         testCommandRecognition(['mimicss', 'two', 'green'], shouldWork=1, testGram=testGram)  
@@ -1348,7 +1170,7 @@ class UnittestNatlink(unittest.TestCase):
                      ([r'I\pronoun'], 'A AaAI I'),
                      ([r'X\letter', r'I\pronoun', r'Y\letter'], 'A AaAI I X I Y'),
                      ]:
-            if type(word) == str:
+            if isinstance(word, str):
                 words = [word]
                 total.append(word)
             else:
@@ -1374,7 +1196,7 @@ class UnittestNatlink(unittest.TestCase):
                      (['two', 'three', 'four', 'five'], '2345'), 
                      (['six', 'seven', 'eight', 'nine'], '6789')]:
         
-            if type(word) == str:
+            if isinstance(word, str):
                 words = [word]
                 total.append(word)
             else:
@@ -1651,7 +1473,7 @@ class UnittestNatlink(unittest.TestCase):
         
         if DNSVersion < 11:
             ## period just seems to return 8 in DPI15. Should be investigated TODO!
-            testFuncReturnWordFlag(dgnwordflag_is_period,"natlink.getWordInfo(r'.\period\period')")
+            testFuncReturnWordFlag(dgnwordflag_is_period,r"natlink.getWordInfo(r'.\period\period')")
             testFuncReturnWordFlag(1,"natlink.addWord('Szymanskii',dgnwordflag_is_period)")
             testFuncReturnWordFlag(dgnwordflag_is_period,"natlink.getWordInfo('Szymanskii')")
         else:
@@ -1661,20 +1483,9 @@ class UnittestNatlink(unittest.TestCase):
         # deleteWord #
         testForException(TypeError,"natlink.deleteWord()")
         testForException(TypeError,"natlink.deleteWord(1)")
-        if DNSVersion < 11: 
-            testFuncReturn(dgnwordflag_is_period+dgnwordflag_DNS8newwrdProp,"natlink.getWordInfo('Szymanskii')")
         natlink.deleteWord('Szymanskii')
         testFuncReturn(None, "natlink.getWordInfo('Szymanskii',0)")
         
-        if DNSVersion < 11:
-            # word not in active or backup dict:
-            testFuncReturn(None, "natlink.getWordInfo('Szymanskii',1)")  # looking in backup dictionary broken in Dragon 11
-        
-        if DNSVersion < 11:
-            # word FrotzBlatz never added, so is not there (???) in the past
-            # was the word added or activated when setting the word info??
-            #testFuncReturn(dgnwordflag_useradded,"natlink.getWordInfo('FrotzBlatz')&~0x20000000")
-            pass
         if not natlink.getWordInfo('FrotzBlatz') is None:
             natlink.deleteWord('FrotzBlatz')
         testFuncReturn(None, "natlink.getWordInfo('FrotzBlatz')")
@@ -1704,12 +1515,12 @@ class UnittestNatlink(unittest.TestCase):
         getModifierKeyCodes: transforms modifiers ctrl alt (or menu) and shift into
         a list of playEvent keycodes
         """
+        #pylint:disable=W0641
         self.log("testNatlinkUtilsFunctions")
         # constants from from natlinkutils:        
         vk_shift = 0x10
         vk_control = 0x11
         vk_menu = 0x12      # alt-key
-
 
         func = getModifierKeyCodes
         testForException = self.doTestForException
@@ -1730,230 +1541,12 @@ class UnittestNatlink(unittest.TestCase):
 
         testForException(KeyError, "getModifierKeyCodes('typo')")
 
-    def tttestNatLinkMain(self):
+    def xxxtestNatLinkMain(self):
         """test the workings of natlinkmain, loading and unloading of grammar files
-        
-        when microphone toggles, new files should be in, note the toggleMicrophone function uses
-        natlink.waitForSpeech in order to let the callback of the Mic on (and off) come through.
-        
-        The "strangeword" around (line 1733) seems to be kept in Dragon for future sessions. Why is not
-        clear to me. So when the tests do not come through the first few lines, change this word to something else.
-        
-        Or restart Dragon
+            
+        This test is now in unittestNatlinkmain
         
         """
-        
-        ## see one remark at the bottom...(QH, 2020)
-
-        # through this grammar we get the recogtype:
-        # recCmdDict = RecordCommandOrDictation()
-        # recCmdDict.initialize()
-
-        testRecognition = self.doTestRecognition
-        coreDirectory = os.path.split(sys.modules['natlinkutils'].__dict__['__file__'])[0]
-        userDirectory = natlink.getCurrentUser()[1]
-        baseDirectory = natlinkmain.baseDirectory
-        unimacroDirectory = natlinkmain.unimacroDirectory
-        userDirectory = natlinkmain.userDirectory
-        toggleMicrophone = self.toggleMicrophone
-        # Basic test of globals.  Make sure that our macro file is not
-        # loaded.  Then load the file and make sure it is loaded.
-        ## set microphone off:
-        natlink.setMicState('off')
-
-        messages = ['testNatLinkMain testing',
-               'clearing previous macro files from:',
-               'userDirectory: %s'% userDirectory,
-               'unimacroDirectory: %s'% unimacroDirectory,
-               'baseDirectory: %s\n\n'% baseDirectory]
-        for t in messages:
-            self.log(t)
-        ## for extra safety:
-        self.clearTestFiles()
-        toggleMicrophone()
- 
-        # self.log("\nSet Command Mode on")
-        # self.setCommandMode(1)
-  
-        self.log('create jMg1, seventeen', 'seventeen')
-        createMacroFile(baseDirectory,'__jMg1.py', 'seventeen')
-        # direct after create no recognition yet
-        testRecognition(['strangeword', 'Natlink', 'commands','seventeen'], 0, log=1)
-        
-        toggleMicrophone()
-
-        # after toggle it should be in:
-        testRecognition(['strangeword', 'Natlink', 'commands','seventeen'], 1)
-        testRecognition(['strangeword', 'Natlink', 'commands','one'], 0, log=1)
-        self.log('create jMg1, one', 'one')
-        
-        createMacroFile(baseDirectory,'__jMg1.py','one')
-        #here the grammar is created, but not should not be recognised by Natlink yet
-        testRecognition(['strangeword', 'Natlink', 'commands','one'], 0, log=1)
-
-        self.log('\ntoggle mic, to get jMg1 in loadedGrammars', 1)
-        toggleMicrophone()
-    
-        ## after toggling, this one should hit:    
-        testRecognition(['strangeword', 'Natlink', 'commands','one'], 1, log=1)
-        self.lookForDragonPad()
-
-        # now separate two parts. Note this cannot be checked here together,
-        # because changes in natlinkmain take no effect when done from this
-        # program!
-        if natlinkmain.checkForGrammarChanges:
-            # Modify the macro file and make sure the modification takes effect
-            # even if the microphone is not toggled.
-            self.log('\nNow change grammar file jMg1 to "two", check for changes at each utterance', 1)
-            createMacroFile(baseDirectory,'__jMg1.py','two')
-            self.wait(0.5)    #natlink.waitForSpeech(500)
-            ## with checking at each utterance next two lines should pass
-            testRecognition(['strangeword', 'Natlink', 'commands','two'], 1, log=1)
-            testRecognition(['strangeword', 'Natlink', 'commands','one'], 0, log=1)
-        else:
-            self.log('\nNow change grammar file jMg1 to 2, no recognise immediate, only after mic toggle', 1)
-            createMacroFile(baseDirectory,'__jMg1.py','two')
-            self.wait(0.5)
-            # natlink.waitForSpeech(500)
-            # If next line fails, the checking is immediate, in spite of checkForGrammarChanges being on:
-            testRecognition(['strangeword', 'Natlink', 'commands','two'], 0, log=1)
-            testRecognition(['strangeword', 'Natlink', 'commands','one'], 1, log=1)
-            toggleMicrophone(1)
-            testRecognition(['strangeword', 'Natlink', 'commands','two'], 1, log=1)
-            testRecognition(['strangeword', 'Natlink', 'commands','one'], 0, log=1)
-
-        # Make sure a user specific file also works
-        # now with extended file names (glob.glob, request of Mark Lillibridge) (QH):
-        self.log('now new grammar file: %s'% specialFilenameGlobal, 1)
-        testRecognition(['strangeword', 'Natlink', 'commands','seven'], 0, log=1)
-        createMacroFile(userDirectory,specialFilenameGlobal+'.py','seven')
-        toggleMicrophone()
-        if userDirectory:
-            testRecognition(['strangeword', 'Natlink', 'commands','seven'], 1, log=1)
-        else:
-            # no userDirectory, so this can be no recognition
-            testRecognition(['strangeword', 'Natlink', 'commands','seven'], 0, log=1)
-
-        self.log('now new grammar file: %s'% spacesFilenameGlobal, 1)
-        self.log('See if this file is accepted (with thirty)', 1)
-
-        # should be unknown command:
-        testRecognition(['strangeword', 'Natlink', 'commands','thirty'], 0, log=1)
-        createMacroFile(userDirectory,spacesFilenameGlobal+'.py','thirty')
-        # no automatic update of commands:
-        testRecognition(['strangeword', 'Natlink', 'commands','thirty'], 0, log=1)
-        toggleMicrophone()
-        if userDirectory:
-            # only after mic toggle should the grammar be recognised:
-            testRecognition(['strangeword', 'Natlink', 'commands','thirty'], 1)
-        else:
-            self.log('this test cannot been done if there is no userDirectory')
-
-        self.log('now new grammar file (should not be recognised)... %s'% "_.py", 1)
-        testRecognition(['strangeword', 'Natlink', 'commands','eight'], 0, log=1)
-        createMacroFile(userDirectory,"_.py",'eight')
-        toggleMicrophone()
-        testRecognition(['strangeword', 'Natlink', 'commands','eight'], 0, log=1)
-
-        # Make sure user specific files have precidence over global files
-
-        if userDirectory:
-            self.log('now new grammar file: jMg2, four', 1)
-    
-            createMacroFile(baseDirectory,'__jMg2.py','four')
-            createMacroFile(userDirectory,'__jMg2.py','three')
-            toggleMicrophone()
-            # this one seems to go wrong if the dictation box is automatically loaded for non-standard applications, switch
-            # this option off for the test-speech profile:
-            testRecognition(['strangeword', 'Natlink', 'commands','three'], 1, log=1)
-        else:
-            self.log("not userDirectory, cannot test order of command recognition between baseDirectory and userDirectory")
-
-        # Make sure that we do the right thing with application specific
-        # files.  They get loaded when the application is activated.
-        self.log('now new grammar file: calc_jMg1, five', 1)
-        createMacroFile(baseDirectory,'calc__jMg1.py','five')
-        if userDirectory:
-            self.log("userDirectory: %s"% userDirectory)
-            self.log('and create in userDirectory new grammar file: calc_jMg1, six', 1)
-            createMacroFile(userDirectory,'calc__jMg1.py','six')
-            self.lookForCalc()
-            toggleMicrophone()
-            print('loadedFiles: %s'% natlinkmain.loadedFiles)
-            self.log(' grammar with six (userDirectory) should take precedence over five (baseDirectory)', 1)
-            testRecognition(['strangeword', 'Natlink', 'commands','five'], 0, log=0)
-            testRecognition(['strangeword', 'Natlink', 'commands','six'], 1, log=0)
-        else:
-            self.log("without a userDirectory (Unimacro) switched on, this test is unneeded, so not done...")
-
-        self.lookForCalc()
-        # priority for user macro file:
-
-        # more intricate filename:
-        createMacroFile(baseDirectory,specialFilenameCalc+'.py','eight')
-        self.log("work to be done, which file names accept??? application specific")
-        self.log("see if specialFilenameCalc hits: %s"% specialFilenameCalc)
-        toggleMicrophone()
-        testRecognition(['strangeword', 'Natlink', 'commands','eight'], 1, log=1)
-
-        # filenames with spaces (not valid)
-        self.log("work to be done, which file names accept??? application specific")
-        self.log("see if spacesFilenameCalcInvalid hits: %s"% spacesFilenameCalcInvalid)
-        createMacroFile(baseDirectory,spacesFilenameCalcInvalid+'.py','fourty')
-        toggleMicrophone()
-        ### febr 2020, python3: fails...
-        testRecognition(['strangeword', 'Natlink', 'commands','fourty'], 0, log=1)
-        # filenames with spaces (valid)
-        createMacroFile(baseDirectory,spacesFilenameCalcValid+'.py','fifty')
-        toggleMicrophone()
-        testRecognition(['strangeword', 'Natlink', 'commands','fifty'], 1, log=1)
-        
-        #other filenames:
-##        createMacroFile(baseDirectory,'calc.py', '9')  # chances are calc is already there, so skip now...
-        createMacroFile(baseDirectory,'calc_.py', 'ten')
-        # this name should be invalid:
-        createMacroFile(baseDirectory,'calculator.py', 'eleven')
-        toggleMicrophone()
-##        testRecognition(['strangeword', 'Natlink', 'commands','9'],1)
-        testRecognition(['strangeword', 'Natlink', 'commands','ten'], 1, log=1)
-        testRecognition(['strangeword', 'Natlink', 'commands','eleven'], 0, log=1)
-        
-        self.killCalc()
-        ### seems to go correct, no calc window any more, so rule six (specific for calc) should NOT respond
-        #was a problem: OOPS, rule 6 remains valid, must be deactivated in gotBegin, user responsibility:
-        #was a problem: testRecognition(['strangeword', 'Natlink', 'commands','six'], 1)
-        # no recognition because calc is not there any more:
-        testRecognition(['strangeword', 'Natlink', 'commands','six'], 0, log=1)
-        
-    ##        natlink.playString('{Alt+F4}')
-#-----------------------------------------------------------
-        # clean up any files created during this test
-        safeRemove(baseDirectory,'__jMg1.py')
-        safeRemove(baseDirectory,'__jMg2.py')
-        safeRemove(userDirectory,'__jMg2.py')
-        safeRemove(userDirectory,specialFilenameGlobal+'.py')
-        safeRemove(baseDirectory,'calc__jMg1.py')
-        safeRemove(baseDirectory,'calc_.py')
-        safeRemove(baseDirectory,'calculator.py')
-        safeRemove(userDirectory,'calc__jMg1.py')
-        safeRemove(baseDirectory,specialFilenameCalc+'.py')
-        toggleMicrophone()
-
-        # now that the files are gone, make sure that we no longer recognize
-        # from them
-        testRecognition(['strangeword', 'Natlink', 'commands','one'], 0)
-        testRecognition(['strangeword', 'Natlink', 'commands','two'], 0)
-        testRecognition(['strangeword', 'Natlink', 'commands','three'], 0)
-        testRecognition(['strangeword', 'Natlink', 'commands','four'], 0)
-
-        # some of the specialFilename cases:
-        ## why does this one still hit?
-        ## do they only vanish when calc is in the foreground? (calc == ApplicationFrameHost)
-        ## TODOQH  TODOMIKE 
-        testRecognition(['strangeword', 'Natlink', 'commands','five'], 0)
-        testRecognition(['strangeword', 'Natlink', 'commands','seven'], 0)
-        testRecognition(['strangeword', 'Natlink', 'commands','eight'], 0)
-
     
     #---------------------------------------------------------------------------
 
@@ -1979,7 +1572,7 @@ class UnittestNatlink(unittest.TestCase):
         self.log("testWordProns", 1)
 
         # if DNSVersion >= 11:
-        #     natlink.playString('Dragon 11 getWordProns seems not valid any more...')
+        #     sendkeys('Dragon 11 getWordProns seems not valid any more...')
         #     print('Dragon 11 getWordProns seems not valid any more...')
         #     time.sleep(1)
         #     return
@@ -2067,6 +1660,7 @@ class UnittestNatlink(unittest.TestCase):
     # as expected.
 
     def doTestRecognition(self, words, shouldWork=1, log=None):
+        #pylint:disable=W0621
         if shouldWork:
             try:
                 natlink.recognitionMimic(words)
@@ -2081,8 +1675,8 @@ class UnittestNatlink(unittest.TestCase):
             except natlink.MimicFailed:
                 if log:
                     self.log('recognitionMimic "%s" not recognized, as expected' % words)
-            except:
-                raise TestError('recognitionMimic "%s", expecting another exception %s, got exception %s'% (words, natlink.MimicFailed, excType, words))
+            except Exception as exc:
+                raise TestError(f'recognitionMimic "{words}", expecting another exception "{natlink.MimicFailed}", "{exc}"') from exc
             else:
                 raise TestError('recognitionMimic of "%s" should have failed'% words)
 
@@ -2099,15 +1693,15 @@ class UnittestNatlink(unittest.TestCase):
         
         see: testRecognitionChangingRulesExclusive  (Febr 2018 QH)
         """
-        if not shouldWork in (0, 1, None, 'self', 'other', 'reject', 'exclusive'):
+        #pylint:disable=W0621
+        if shouldWork not in (0, 1, None, 'self', 'other', 'reject', 'exclusive'):
             raise TestError('doTestCommandRecognition, shouldWork has invalid value: %s'% shouldWork)
         try:
             natlink.recognitionMimic(words)
         except natlink.MimicFailed:
             if shouldWork == 0:
                 return  # succes
-            else:
-                self.fail("===test failed: MimicFailed, but expected %s (words: %s)"% (shouldWork, words))
+            self.fail("===test failed: MimicFailed, but expected %s (words: %s)"% (shouldWork, words))
         ## mimic ok, now result:
         recogType = testGram.recogType
         if recogType == shouldWork:
@@ -2116,19 +1710,16 @@ class UnittestNatlink(unittest.TestCase):
             ## not clear if recogType should be None if dictate is recognised, I think it should be None. (QH)
             if shouldWork:
                 raise TestError('recognition mimic succeeded, but got no recogType from testGram, words: %s (shouldWork: %s)'% (words, shouldWork))
-            else:
-                return
+            return
             
         if shouldWork == 1:
             if recogType == 'self':
                 return # ok
-            else:
-                self.fail("recognition mimic succeeded, but got wrong recogType from testGram '%s', words: %s (expected 'self'"% (recogType, words))
+            self.fail("recognition mimic succeeded, but got wrong recogType from testGram '%s', words: %s (expected 'self'"% (recogType, words))
         elif shouldWork == 0:
             if recogType == 'self':
                 self.fail("recognition mimic succeeded, but got wrong recogType from testGram %s, words: %s (expected 'reject' or 'other'"% (recogType, words))
-            else:
-                return # reject and other is ok
+            return # reject and other is ok
         
     def doTestMimicResult(self, words, expected):
         """test the mimic of words (a list) and check the expected window contents
@@ -2160,9 +1751,9 @@ class UnittestNatlink(unittest.TestCase):
                 parser.checkForErrors()
             except exceptionType:
                 return
-            except:
+            except Exception as exc:
                 excType = sys.exc_info()[0]
-                raise TestError('Expecting another exception %s, got exception %s, while parsing grammar %s'% (exceptionType, excType,gramSpec))
+                raise TestError('Expecting another exception %s, got exception %s, while parsing grammar %s'% (exceptionType, excType,gramSpec)) from exc
             else:
                 raise TestError('Expecting exception %s, while parsing grammar %s'% (exceptionType, gramSpec))
 
@@ -2276,7 +1867,7 @@ class UnittestNatlink(unittest.TestCase):
         # handle so we switch to the NatSpeak window to get its handle)
 ##        switchToNatSpeak()
 ##        natWindow = natlink.getCurrentModule()[2]
-##        natlink.playString('{Alt+space}n')
+##        sendkeys('{Alt+space}n')
 ##        natlink.execScript('AppBringUp "calc"')
         natWindow = self.lookForDragonPad()
         calcWindow = self.lookForCalc()
@@ -2454,7 +2045,7 @@ class UnittestNatlink(unittest.TestCase):
         # clean up
         testGram.unload()
         otherGram.unload()
-##        natlink.playString('{Alt+F4}')
+##        sendkeys('{Alt+F4}')
 
     def oktestSampleMacros(self):
         """test the sample macro's scripts
@@ -2633,25 +2224,24 @@ class UnittestNatlink(unittest.TestCase):
         
         testGram = TestGrammar()
         testRecognition = self.doTestRecognition
-        testForException = self.doTestForException
-        testActiveRules = self.doTestActiveRules
+        # testForException = self.doTestForException
+        # testActiveRules = self.doTestActiveRules
 
         testGram.unload()
         testGram.resetExperiment()
 
-    # test working of dgnwords:
+    # test working of words:
     # because of a clash with one of the Unimacro grammars 'dictate' in now made 'DICTOOOTE'
-        if True:
-            # broken with Dragon 11
-            self.log("testing dgnwords")
-            testGram.load("""<dgnwords> imported;
-                          <Start> exported = DICTOOOTE word <dgnwords>;""")
-            testGram.activateAll(window=0)
-            testRecognition(['DICTOOOTE','word','hello'])
-            testGram.checkExperiment(1,'self',['DICTOOOTE', 'word', 'hello'],
-                                     [('DICTOOOTE', 'Start'), ('word', 'Start'), ('hello', 'dgnwords')])
-            testGram.unload()
-            testGram.resetExperiment()
+        # broken with Dragon 11??
+        self.log("testing dgnwords")
+        testGram.load("""<dgnwords> imported;
+                      <Start> exported = DICTOOOTE word <dgnwords>;""")
+        testGram.activateAll(window=0)
+        testRecognition(['DICTOOOTE','word','hello'])
+        testGram.checkExperiment(1,'self',['DICTOOOTE', 'word', 'hello'],
+                                 [('DICTOOOTE', 'Start'), ('word', 'Start'), ('hello', 'dgnwords')])
+        testGram.unload()
+        testGram.resetExperiment()
       
     # test working of dgnletters:
     # dgnletters stp[
@@ -2659,27 +2249,26 @@ class UnittestNatlink(unittest.TestCase):
                       <Start> exported = DICTOOOTE letters <dgnletters>;""")
         testGram.activateAll(window=0)
 
-        if True:
-            self.log("test dgnletters")
-            testRecognition(['DICTOOOTE','letters','b',])
-            testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', 'b\\spelling-letter\\B'],
-                                    [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
+        self.log("test dgnletters")
+        testRecognition(['DICTOOOTE','letters','b',])
+        testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', 'b\\spelling-letter\\B'],
+                                [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
         # elif DNSVersion >= 11:
-            # Dragon 11, 12
-            testRecognition(['DICTOOOTE','letters', r'b\spelling-letter\B'])
-            testGram.checkExperiment(1, 'self', ['DICTOOOTE','letters', r'b\spelling-letter\B'],
-                                    [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
+        # Dragon 11, 12 ????
+        testRecognition(['DICTOOOTE','letters', r'b\spelling-letter\B'])
+        testGram.checkExperiment(1, 'self', ['DICTOOOTE','letters', r'b\spelling-letter\B'],
+                                [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\B', 'dgnletters')])
 
-            testRecognition(['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'])
-            testGram.checkExperiment(1, 'self', ['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'],
-                                    [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
-                                     ('!\\spelling-exclamation-mark\\exclamation mark', 'dgnletters')])
-            
-            
-            testRecognition(['DICTOOOTE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', ',\spelling-comma\comma'])
-            testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', ',\spelling-comma\comma'],
-                                    [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('c\\spelling-letter\\C', 'dgnletters'),
-                                        ('d\\spelling-letter\\delta', 'dgnletters'), (',\\spelling-comma\\comma', 'dgnletters')])
+        testRecognition(['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'])
+        testGram.checkExperiment(1, 'self', ['DICTOOOTE','letters',r'b\spelling-letter\bravo', r'!\spelling-exclamation-mark\exclamation mark'],
+                                [('DICTOOOTE', 'Start'), ('letters', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
+                                 ('!\\spelling-exclamation-mark\\exclamation mark', 'dgnletters')])
+        
+        
+        testRecognition(['DICTOOOTE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', r',\spelling-comma\comma'])
+        testGram.checkExperiment(1,'self',['DICTOOOTE', 'letters', r'c\spelling-letter\C', r'd\spelling-letter\delta', r',\spelling-comma\comma'],
+                                [('DICTOOOTE', 'Start'), ('letters', 'Start'), (r'c\spelling-letter\C', 'dgnletters'),
+                                    (r'd\spelling-letter\delta', 'dgnletters'), (r',\spelling-comma\comma', 'dgnletters')])
             
 
         testGram.unload()
@@ -2757,11 +2346,10 @@ class UnittestNatlink(unittest.TestCase):
         #     testGram.checkExperiment(1,'self',['DICTOOOTE', 'b\\bravo\\h', 'k\\kilo\\h'],
         #                              [('DICTOOOTE', 'Start'), ('b\\bravo\\h', 'dgnletters'), ('k\\kilo\\h', 'dgnletters')])
 
-        if True:    #elif DNSVersion < 14:
-            # also swith new Natlink this works again with Dragon 15
-            testRecognition(['DICTOOOTE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
-            testGram.checkExperiment(1,'self', ['DICTOOOTE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
-                                     [('DICTOOOTE', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
+        # also swith new Natlink this works again with Dragon 15
+        testRecognition(['DICTOOOTE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'])
+        testGram.checkExperiment(1,'self', ['DICTOOOTE', r'b\spelling-letter\bravo', r'k\spelling-letter\K'],
+                                 [('DICTOOOTE', 'Start'), ('b\\spelling-letter\\bravo', 'dgnletters'),
                                       ('k\\spelling-letter\\K', 'dgnletters')])
 
 ## this experiment sometimes shows the rule dgndictation and sometimes dgnwords
@@ -2844,7 +2432,7 @@ class UnittestNatlink(unittest.TestCase):
         # reject = not recognized, other = dictate or other grammar.
         testCommandRecognition = self.doTestCommandRecognition
         testRecognition = self.doTestRecognition
-        testForException = self.doTestForException
+        # testForException = self.doTestForException
         testActiveRules = self.doTestActiveRules
         testValidRules = self.doTestValidRules
 
@@ -2871,21 +2459,21 @@ class UnittestNatlink(unittest.TestCase):
         # loaded, not active yet:
         testValidRules(testGram, ['one', 'two', 'three', 'four'])
         testActiveRules(testGram, dict())
-        self.assertEquals(testGram.isExclusive(), False)
-        self.assertEquals(testGram.isActive(), False)
-        self.assertEquals(testGram.isLoaded(), True)
+        self.assertEqual(testGram.isExclusive(), False)
+        self.assertEqual(testGram.isActive(), False)
+        self.assertEqual(testGram.isLoaded(), True)
         
-        self.log("\n=== grammar loaded, but not active yet...", doPlaystring=1)
+        self.log("\n=== grammar loaded, but not active yet...", doSendkeys=1)
         
         testCommandRecognition(['xclusaif', 'rule', 'one'], 0, testGram=testGram)
-        self.assertEquals(testGram.isExclusive(), False)
+        self.assertEqual(testGram.isExclusive(), False)
         
         # try setting exclusive with no rules on:
         testGram.setExclusive(1)
-        self.assertEquals(testGram.isExclusive(), True)
+        self.assertEqual(testGram.isExclusive(), True)
         
         # not activated yet, check if dictate is recognised:
-        self.log("\n=== grammar is now exclusive but not active yet, so leaves through recognitions...", doPlaystring=1)
+        self.log("\n=== grammar is now exclusive but not active yet, so leaves through recognitions...", doSendkeys=1)
         
         testCommandRecognition(['xclusaif', 'rule', 'one'], 0, testGram=testGram)
         testRecognition(['normal', 'rule', 'two'])
@@ -2894,22 +2482,22 @@ class UnittestNatlink(unittest.TestCase):
         testRecognition(['scratch', 'that'])
         
         # activate one, should be exclusive now:
-        self.log("\n=== activate rule one now, grammar should be exclusive now...", doPlaystring=1)
+        self.log("\n=== activate rule one now, grammar should be exclusive now...", doSendkeys=1)
         testGram.activate('one')
         expActRules = dict(one=0)
         testActiveRules(testGram, expActRules)
-        self.assertEquals(testGram.isExclusive(), True)
+        self.assertEqual(testGram.isExclusive(), True)
         
         testCommandRecognition(['normal', 'rule', 'two'], 0, testGram=testGram) # no recognition, exclusive is on
         testCommandRecognition(['xclusaif', 'rule', 'one'], 1, testGram=testGram)  # this is the exclusive command
         testRecognition(['normal', 'rule', 'two'], 0)
         testRecognition(['scratch', 'that'], 0)
         
-        self.log("\n=== activateSet['one', 'four'] grammar should still be exclusive ...", doPlaystring=1)
+        self.log("\n=== activateSet['one', 'four'] grammar should still be exclusive ...", doSendkeys=1)
         testGram.activateSet(['one', 'four'])
         expActRules = dict(one=0, four=0)
         testActiveRules(testGram, expActRules)
-        self.assertEquals(testGram.isExclusive(), True)
+        self.assertEqual(testGram.isExclusive(), True)
         
         testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
         testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)  
@@ -2917,11 +2505,11 @@ class UnittestNatlink(unittest.TestCase):
         
         testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)  
         
-        self.log("\n=== switch off exclusive mode, keep set ['one', 'four'] ...", doPlaystring=1)
+        self.log("\n=== switch off exclusive mode, keep set ['one', 'four'] ...", doSendkeys=1)
         testGram.setExclusive(0)
         expActRules = dict(one=0, four=0)
         testActiveRules(testGram, expActRules)
-        self.assertEquals(testGram.isExclusive(), False)
+        self.assertEqual(testGram.isExclusive(), False)
         
         testCommandRecognition(['normal','rule','three'], shouldWork='other', testGram=testGram, log=1)  
         testRecognition(['scratch', 'that'])
@@ -2935,14 +2523,14 @@ class UnittestNatlink(unittest.TestCase):
         testCommandRecognition(['hello', 'world'], shouldWork='other', testGram=testGram)  
         testRecognition(['scratch', 'that'])
         
-        self.log("\n=== switch off exclusive mode, keep set ['one', 'four'] ...", doPlaystring=1)
+        self.log("\n=== switch off exclusive mode, keep set ['one', 'four'] ...", doSendkeys=1)
         testGram.setExclusive(0)
         testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
         testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)  
         
-        self.log("\n=== switch on 'one' and 'three' for dragonpad and 'two', 'three' and 'four'  (non exclusive)...", doPlaystring=1)
+        self.log("\n=== switch on 'one' and 'three' for dragonpad and 'two', 'three' and 'four'  (non exclusive)...", doSendkeys=1)
         testGram.deactivateAll()
-        thisHndle = natlink.getCurrentModule()[2] # test, this is my python ide, komode
+        # thisHndle = natlink.getCurrentModule()[2] # test, this is my python ide, komode
         self.lookForDragonPad()
         dragonpadHndle = natlink.getCurrentModule()[2]
         # expActRules = dict(one=0, four=0)
@@ -2984,7 +2572,7 @@ class UnittestNatlink(unittest.TestCase):
         
         self.lookForDragonPad()
         dragonpadHndle = natlink.getCurrentModule()[2]
-        self.log("\n=== switch on Dragonpad again, with rule one...", doPlaystring=1)
+        self.log("\n=== switch on Dragonpad again, with rule one...", doSendkeys=1)
         testGram.deactivateAll()  # try this
         expActRules = dict()
         testActiveRules(testGram, expActRules)
@@ -3029,7 +2617,7 @@ class UnittestNatlink(unittest.TestCase):
         # note: nothing exclusive here, this seems not to work for window specific rules:
         testCommandRecognition(['hello', 'world'], shouldWork=0, testGram=testGram)
         testCommandRecognition(['normal','rule','three'], shouldWork=1, testGram=testGram)
-        return
+        # return
         ## from here things go wrong, probably because more hndles are set exclusive together.
         ## later.. TODOQH
    
@@ -3041,16 +2629,16 @@ class UnittestNatlink(unittest.TestCase):
 #   File "<string>", line 2021, in doTestCommandRecognition
 # AssertionError: recognition mimic succeeded, but got wrong recogType from testGram 'other', words: ['normal', 'rule', 'two'] (expected 'self'
 
-
-        testGram.setExclusive(0)
-        self.lookForDragonPad()
-        dragonpadHndle2 = natlink.getCurrentModule()[2]
-        if dragonpadHndle2 != dragonpadHndle:
-            raise TestError("hndles DragonPad not same, expected them to be so")
-        testGram.setExclusive(1)
-
-        expActRules = dict(one=dragonpadHndle, four=self.IDEHndle)
-        # testActiveRules(testGram, expActRules)
+        # 
+        # testGram.setExclusive(0)
+        # self.lookForDragonPad()
+        # dragonpadHndle2 = natlink.getCurrentModule()[2]
+        # if dragonpadHndle2 != dragonpadHndle:
+        #     raise TestError("hndles DragonPad not same, expected them to be so")
+        # testGram.setExclusive(1)
+        # 
+        # expActRules = dict(one=dragonpadHndle, four=self.IDEHndle)
+        # # testActiveRules(testGram, expActRules)
 # 
 #   File "<string>", line 2932, in testRecognitionChangingRulesExclusive
 #   File "<string>", line 521, in doTestActiveRules
@@ -3061,9 +2649,9 @@ class UnittestNatlink(unittest.TestCase):
 # 
 #         
 
-        self.log("\n=== Now exclusive with rule one for Dragonpad...", doPlaystring=1)
+        self.log("\n=== Now exclusive with rule one for Dragonpad...", doSendkeys=1)
         testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)
-        self.log("\n=== Rule one passed exclusive...", doPlaystring=1)
+        self.log("\n=== Rule one passed exclusive...", doSendkeys=1)
 
 # Traceback (most recent call last):
 #   File "<string>", line 2944, in testRecognitionChangingRulesExclusive
@@ -3076,12 +2664,12 @@ class UnittestNatlink(unittest.TestCase):
         testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
         testCommandRecognition(['xclusaif','rule','four'], shouldWork=0, testGram=testGram, log=1)  
 
-        self.log("\n=== Rules two three four passed exclusive...", doPlaystring=1)
+        self.log("\n=== Rules two three four passed exclusive...", doSendkeys=1)
 
         testGram.setExclusive(0)
-        self.log("\n=== Non exclusive with rule one for Dragonpad...", doPlaystring=1)
+        self.log("\n=== Non exclusive with rule one for Dragonpad...", doSendkeys=1)
         testCommandRecognition(['xclusaif','rule','one'], shouldWork=1, testGram=testGram, log=1)
-        self.log("\n=== Rule one passed non exclusive...", doPlaystring=1)
+        self.log("\n=== Rule one passed non exclusive...", doSendkeys=1)
         
         
         
@@ -3089,7 +2677,7 @@ class UnittestNatlink(unittest.TestCase):
         testCommandRecognition(['normal','rule','three'], shouldWork=0, testGram=testGram, log=1)  
         testCommandRecognition(['xclusaif','rule','four'], shouldWork=0, testGram=testGram, log=1)  
 
-        self.log("\n=== Rules two three four passed non exclusive...", doPlaystring=1)
+        self.log("\n=== Rules two three four passed non exclusive...", doSendkeys=1)
 
         
         testGram.unload()
@@ -3188,7 +2776,7 @@ class UnittestNatlink(unittest.TestCase):
         # handle so we switch to the NatSpeak window to get its handle)
 ##        switchToNatSpeak()
 ##        natWindow = natlink.getCurrentModule()[2]
-##        natlink.playString('{Alt+space}n')
+##        sendkeys('{Alt+space}n')
 ##        natlink.execScript('AppBringUp "calc"')
         natWindow = self.lookForDragonPad()
         calcWindow = self.lookForCalc()
@@ -3245,7 +2833,7 @@ class UnittestNatlink(unittest.TestCase):
         testGram.unload()
         otherGram.unload()
 ##        the test must close calc! now closed in tearDown...
-##        natlink.playString('{Alt+F4}')
+##        sendkeys('{Alt+F4}')
         
     #---------------------------------------------------------------------------
     # Here we test recognition of selection grammars using SelectGramBase
@@ -3307,13 +2895,13 @@ class UnittestNatlink(unittest.TestCase):
                 self.resetExperiment()            
 
         testGram = TestSelectGram()
-        testRecognition = self.doTestRecognition
-        testForException =self.doTestForException
+        # testRecognition = self.doTestRecognition
+        # testForException =self.doTestForException
         # load the calculator again
         #time.sleep(5) # let the calculator recover from last test
 ##        natlink.execScript('AppBringUp "calc"')
 ##        calcWindow = natlink.getCurrentModule()[2]
-        calcWindow = self.lookForCalc()
+        # calcWindow = self.lookForCalc()   ## TODOQH
 
 ####    numbers  giving problems QH:::
 ####        buffer = '0 1 2 3 4 5 6 7 8 9' 
@@ -3326,80 +2914,81 @@ class UnittestNatlink(unittest.TestCase):
 ##        testGram.checkExperiment(1,'self',['Insert Before','2'],4,5)
 
         #         012345678901234567890123
-        buffer = 'a simple string of text.'
+        # buffer = 'a simple string of text.'  ## TODOQH
         testGram.load(['Select','Correct','Insert Before'],'Through')
         ## buffer has program name of calc inserted... TODO (Febr 2018)
         ## input : buffer (above)
         ## output : a simple strisWOW64\calc.exe   
         ## or : a simple striocument or a simple stri
-        return
-        testGram.setSelectText(buffer)
-        return
-        gotBuffer = testGram.getSelectText()
-
-        self.assertEqual(buffer, gotBuffer, 
-                         'getSelectText should receive the same as set by setSelectText, not:\n'
-                         'expected: %s\n'
-                         'got: %s'%
-                         (buffer, gotBuffer))
-        testGram.activate(window=calcWindow)
-
-        testRecognition(['Select','text'])
-        testGram.checkExperiment(1,'self',['Select','text'],19,23)
-        
-        testRecognition(['Correct','simple','Through','of'])
-        testGram.checkExperiment(1,'self',['Correct','simple','Through','of'],2,18)
-
-        testRecognition(['Insert Before','simple'])
-        testGram.checkExperiment(1,'self',['Insert Before','simple'],2,8)
-        
-        testRecognition(['Correct','a','Through','of'])
-        
-        if DNSVersion < 11:
-            aResult = 'a'
-        else:
-            aResult = 'a\\determiner'
-
-            
-        testGram.checkExperiment(1,'self',['Correct',aResult,'Through','of'],0,18)
-        testGram.unload()
-
-        ##QH more throughWords:
-        #         01234567890123456789012345678
-        buffer = 'a more complicated string of text.'
-        testGram.load(['Select'],throughWords=['Through', 'Until'])
-        testGram.setSelectText(buffer)
-        testGram.activate(window=calcWindow)
-
-        recog = ['Select','complicated','string']
-        testRecognition(recog)
-        testGram.checkExperiment(1,'self',recog,7,25)
-        
-        recog = ['Select','more', 'Through', 'of']
-        testRecognition(recog)
-        testGram.checkExperiment(1,'self',recog,2,28)
-        if DNSVersion < 11:
-            aResult = 'a'
-        else:
-            aResult = 'a\\determiner'
-            
-        recog = ['Select',aResult, 'more', 'Until', 'of']
-        testRecognition(recog)
-        
-            
-        
-        testGram.checkExperiment(1,'self',recog,0,28)
-
-        # test for command failures
-        testForException(TypeError,"testGram.gramObj.setSelectText(1)",locals())
-        testForException(TypeError,"testGram.gramObj.setSelectText('text','text')",locals())
-        testForException(natlink.WrongType,"testGram.gramObj.emptyList('list')",locals())
-        testForException(natlink.WrongType,"testGram.gramObj.appendList('list','one')",locals())
-        testForException(natlink.WrongType,"testGram.gramObj.setContext('left','right')",locals())
-
-        # clean up
-        testGram.unload()
-##        natlink.playString('{Alt+F4}')
+        ## TODOQH:::::
+#         return
+#         testGram.setSelectText(buffer)
+#         return
+#         gotBuffer = testGram.getSelectText()
+# 
+#         self.assertEqual(buffer, gotBuffer, 
+#                          'getSelectText should receive the same as set by setSelectText, not:\n'
+#                          'expected: %s\n'
+#                          'got: %s'%
+#                          (buffer, gotBuffer))
+#         testGram.activate(window=calcWindow)
+# 
+#         testRecognition(['Select','text'])
+#         testGram.checkExperiment(1,'self',['Select','text'],19,23)
+#         
+#         testRecognition(['Correct','simple','Through','of'])
+#         testGram.checkExperiment(1,'self',['Correct','simple','Through','of'],2,18)
+# 
+#         testRecognition(['Insert Before','simple'])
+#         testGram.checkExperiment(1,'self',['Insert Before','simple'],2,8)
+#         
+#         testRecognition(['Correct','a','Through','of'])
+#         
+#         if DNSVersion < 11:
+#             aResult = 'a'
+#         else:
+#             aResult = 'a\\determiner'
+# 
+#             
+#         testGram.checkExperiment(1,'self',['Correct',aResult,'Through','of'],0,18)
+#         testGram.unload()
+# 
+#         ##QH more throughWords:
+#         #         01234567890123456789012345678
+#         buffer = 'a more complicated string of text.'
+#         testGram.load(['Select'],throughWords=['Through', 'Until'])
+#         testGram.setSelectText(buffer)
+#         testGram.activate(window=calcWindow)
+# 
+#         recog = ['Select','complicated','string']
+#         testRecognition(recog)
+#         testGram.checkExperiment(1,'self',recog,7,25)
+#         
+#         recog = ['Select','more', 'Through', 'of']
+#         testRecognition(recog)
+#         testGram.checkExperiment(1,'self',recog,2,28)
+#         if DNSVersion < 11:
+#             aResult = 'a'
+#         else:
+#             aResult = 'a\\determiner'
+#             
+#         recog = ['Select',aResult, 'more', 'Until', 'of']
+#         testRecognition(recog)
+#         
+#             
+#         
+#         testGram.checkExperiment(1,'self',recog,0,28)
+# 
+#         # test for command failures
+#         testForException(TypeError,"testGram.gramObj.setSelectText(1)",locals())
+#         testForException(TypeError,"testGram.gramObj.setSelectText('text','text')",locals())
+#         testForException(natlink.WrongType,"testGram.gramObj.emptyList('list')",locals())
+#         testForException(natlink.WrongType,"testGram.gramObj.appendList('list','one')",locals())
+#         testForException(natlink.WrongType,"testGram.gramObj.setContext('left','right')",locals())
+# 
+#         # clean up
+#         testGram.unload()
+# ##        sendkeys('{Alt+F4}')
 
     #---------------------------------------------------------------------------
     # Testing the tray icon is hard since we can not conviently interact with
@@ -3428,10 +3017,9 @@ class UnittestNatlink(unittest.TestCase):
         iconFile = baseDirectory+'/../NatlinkSource/idi_nodir.ico'
 ## special test icon, assume baseDirectory is on same level as PyTest:
 ##          QH, cannot get baseDirectory correct...
-        import natlinkmain
-        baseDirectory = natlinkmain.baseDirectory
-        iconFile = baseDirectory+'/../PyTest/unittest_icon.ico'
-        if not os.path.isfile(iconFile):
+        
+        iconFile = Path(thisDir)/'unittest_icon.ico'
+        if not iconFile.is_file():
             raise TestError("cannot find test iconfile: %s"% iconFile)
         natlink.setTrayIcon(iconFile)
         self.wait(2)
@@ -3445,7 +3033,7 @@ class UnittestNatlink(unittest.TestCase):
 
     def OKwithoutliststestNextPrevRulesAndWords(self):
         self.log("testNextPrevRulesAndWords", 1)
-        testForException = self.doTestForException
+        # testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
         class TestGrammar(GrammarBase):
 
@@ -3543,7 +3131,7 @@ class UnittestNatlink(unittest.TestCase):
 
     def tttestNextPrevRulesAndWordsRecursive(self):
         self.log("testNextPrevRulesAndWordsRecursive", 1)
-        testForException = self.doTestForException
+        # testForException = self.doTestForException
         testwordsByRule = self.doTestEqualDicts
         class TestGrammar(GrammarBase):
 
@@ -3689,7 +3277,7 @@ class UnittestNatlink(unittest.TestCase):
         """call recursive into recognitionMimics
         """
         self.log("testNestedMimics", 1)
-        testForException = self.doTestForException
+        # testForException = self.doTestForException
         class TestGrammar(GrammarBase):
 
             gramSpec = """
@@ -3720,7 +3308,6 @@ class UnittestNatlink(unittest.TestCase):
                 print(f'do mimictest with mimicWord:{mimicWord}')
                 # natlink.execScript('HeardWord "test","test","one"')
                 natlink.recognitionMimic(['grtest','test', mimicWord])
-                pass
 
             def gotResults_testone(self,words,fullResults):
                 self.results.append('one')
@@ -3837,9 +3424,9 @@ class CallbackTester:
     def doTestResults(self,moduleInfo,results):
         if self.sawBegin != moduleInfo:
             raise TestError("Wrong results from begin callback\n  saw: %s\n  expecting: %s"%(repr(self.sawBegin),repr(moduleInfo)))
-        if self.sawResults is None and results != None:
+        if self.sawResults is None and results is not None:
             raise TestError("Did not see results callback")
-        if self.sawResults != None and self.sawResults[0] != results:
+        if self.sawResults is not None and self.sawResults[0] != results:
             raise TestError("Wrong results from results callback\n  saw: %s\n  expecting: %s "%(repr(self.sawResults[0]),repr(results)))
         self.reset()
 
@@ -3855,9 +3442,11 @@ class RecordCommandOrDictation(GrammarBase):
         self.load(self.gramSpec, allResults=1)
         self.activateAll()
         self.hadRecog = ''
+        self.sawTextChange = None
     def gotBegin(self,moduleInfo):
         self.hadRecog = 'getbegin'
     def gotResultsObject(self, recogType, resObj):
+        #pylint:disable=W0612
         try:
             words = resObj.getWords(0)
         except (natlink.OutOfRange, IndexError):
@@ -3937,7 +3526,6 @@ def unload():
 def createMacroFile(filePath,fileName,word):
     f = os.path.join(filePath,fileName)
     open(f,'w').write(macroFileTemplate%word)
-    import natlinkmain
     fileDate = natlinkmain.getFileDate(f)
     log('time of change of %s: %s'% (f, fileDate))
     
@@ -3957,8 +3545,8 @@ def log(t):
 # This is the main entry point.  It will connect to NatSpeak and perform
 # a series of tests.  In the case of an error, it will cleanly disconnect
 # from NatSpeak and print the exception information,
-def dumpResult(testResult, logFile):
-    """dump into 
+def dumpResult(testResult):
+    """dump into logFile
     """
     if testResult.wasSuccessful():
         mes = "all succesful"
@@ -3980,7 +3568,6 @@ def clearClipboard():
     No input parameters, no result,
 
     """
-    import win32clipboard
     win32clipboard.OpenClipboard()
     try:
         win32clipboard.EmptyClipboard()
@@ -3991,6 +3578,7 @@ def clearClipboard():
 logFile = None
 
 def run():
+    #pylint:disable=W0603
     global logFile, natconnectOption
     logFile = open(logFileName, "w")
     log("log messages to file: %s"% logFileName)
@@ -4003,7 +3591,7 @@ def run():
 ##    natconnectOption = 0 # no threading has most chances to pass...
     log('\nstarting tests with threading: %s\n'% natconnectOption)
     result = unittest.TextTestRunner().run(suite)
-    dumpResult(result, logFile=logFile)
+    dumpResult(result)
     
     logFile.close()
 

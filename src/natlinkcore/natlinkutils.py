@@ -1205,7 +1205,7 @@ class SelectGramBase(GramClassBase):
             output.append(gramparser.packGrammarChunk(0x1017,wordDict))
         # throughWords maybe more words now:
         if throughWords:
-            if type(throughWords) == str:
+            if isinstance(throughWords, str):
                 throughWords = [throughWords]
             wordDict = {}
             for word in throughWords:

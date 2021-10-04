@@ -10,7 +10,7 @@ import os
 import shutil
 import copy
 import filecmp
-import pywintypes
+# import pywintypes
 import glob
 import re
 import sys
@@ -1293,9 +1293,8 @@ def getWindowWithTitle(wantedTitle, checkendstring=None):
 def isValidWindow(hndle):
     try:
         testHndle = GetWindow(hndle, 0)
-    except pywintypes.error as details:
-        if details[0] == 1400:
-            return
+    except:
+        return 0
     return testHndle
 
 def GetProcIdFromWnd(wHndle):

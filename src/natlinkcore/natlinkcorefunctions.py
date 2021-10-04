@@ -3,6 +3,8 @@
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
+#pylint:disable=E0611, E0401, R0911, R0912, W0702, C0116
+
 """natlinkcorefunctions.py
 
  Quintijn Hoogenboom, January 2008/September 2015
@@ -26,16 +28,16 @@ substituteEnvVariableAtStart: substitute back into a file/folder path an environ
 Note: for extension with %NATLINK% etc. see natlinkstatus.py
     (call getAllEnv, this one first takes Natlink variables and then these extended env variables)
 
-""" 
+"""
 import os
-import sys
 import re
 from win32com.shell import shell, shellcon
+from natlinkcore import inivars
+import natlinkcore   ## for __init__ and getNatlinkUserdirectory
+
 # import win32api
 # for extended environment variables:
 reEnv = re.compile('(%[A-Z_]+%)', re.I)
-from natlinkcore import inivars
-import natlinkcore   ## for __init__ and getNatlinkUserdirectory
 
 # the Natlink Base directory, core/..:
 thisBaseFolder = natlinkcore.getThisDir(__file__)
@@ -43,6 +45,7 @@ coreDirectory = natlinkcore.getNatlinkDirectory()
 
 # report function:
 def fatal_error(message, new_raise=None):
+    #pylint:disable=E0704
     """prints a fatal error when running this module"""
     print('natlinkconfigfunctions fails because of fatal error:')
     print()
@@ -52,8 +55,7 @@ def fatal_error(message, new_raise=None):
     print() 
     if new_raise:
         raise new_raise
-    else:
-        raise
+    raise
 
 # keep track of found env variables, fill, if you wish, with
 # getAllFolderEnvironmentVariables.
@@ -113,8 +115,9 @@ def getFolderFromLibraryName(fName):
         return usersHome
     if fName in ["This PC", "Deze pc"]:
         return "\\"
-    
     print('cannot find folder for Library name: %s'% fName)
+    return ""
+
 
 def getDropboxFolder(containsFolder=None):
     """get the dropbox folder, or the subfolder which is specified.
@@ -144,14 +147,14 @@ def getDropboxFolder(containsFolder=None):
             subsub = os.listdir(subAbs)
             if not ('.dropbox' in subsub and os.path.isfile(os.path.join(subAbs,'.dropbox'))):
                 continue
-            elif containsFolder:
+            if containsFolder:
                 result = matchesStart(subsub, containsFolder, caseSensitive=False)
                 if result:
                     results.append(os.path.join(subAbs,result))
             else:
                 results.append(subAbs)
     if not results:
-        return
+        return ''
     if len(results) > 1:
         raise OSError('getDropboxFolder, more dropbox folders found: %s')
     return results[0]                 
@@ -168,7 +171,7 @@ def matchesStart(listOfDirs, checkDir, caseSensitive):
             ll = l
         if ll.startswith(checkDir):
             return l
-        
+    return False   
         
             
 
@@ -266,6 +269,7 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
     Optionally put them in recentEnv, if you specify fillRecentEnv to 1 (True)
 
     """
+    #pylint:disable=W0603
     global recentEnv
     D = {}
 
@@ -288,7 +292,7 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
             if k in D and D[k] != v:
                 print('warning, CSIDL also exists for key: %s, take os.environ value: %s'% (k, v))
             D[k] = v
-    if type(fillRecentEnv) == dict:
+    if isinstance(fillRecentEnv, dict):
         recentEnv.update(D)
     return D
 
@@ -303,7 +307,7 @@ def getAllFolderEnvironmentVariables(fillRecentEnv=None):
 #    recentEnv[key] = value
 
 def substituteEnvVariableAtStart(filepath, envDict=None): 
-    """try to substitute back one of the (preused) environment variables back
+    r"""try to substitute back one of the (preused) environment variables back
 
     into the start of a filename
 
@@ -351,7 +355,7 @@ def expandEnvVariableAtStart(filepath, envDict=None):
         filepart = filepath[1:]
         filepart = filepart.strip('/\\ ')
         return os.path.normpath(os.path.join(folderpart, filepart))
-    elif reEnv.match(filepath):
+    if reEnv.match(filepath):
         envVar = reEnv.match(filepath).group(1)
         # get the envVar...
         try:
@@ -387,7 +391,8 @@ def expandEnvVariables(filepath, envDict=None):
         #print 'parts: %s'% List
         List2 = []
         for part in List:
-            if not part: continue
+            if not part:
+                continue
             if part == "~" or (part.startswith("%") and part.endswith("%")):
                 try:
                     folderpart = getExtendedEnv(part, envDict)
@@ -479,7 +484,6 @@ class InifileSection:
         else:
             self.ini.set(self.section, key, value)
             self.ini.write()
-            pass
             # win32api.WriteProfileVal( self.section, key, str(value), self.filename)
             # checkValue = win32api.GetProfileVal(self.section, key, 'nonsens', self.filename)
             # if not (checkValue == value or \
@@ -492,7 +496,6 @@ class InifileSection:
         """
         self.ini.delete(self.section, key)
         self.ini.write()
-        pass
         # print 'delete: %s, %s'% (self.section, key)
         # value = win32api.WriteProfileVal( self.section, key, None,
         #                                self.filename)
@@ -511,6 +514,7 @@ defaultFilename = "natlinkstatus.ini"
 defaultSection = 'usersettings'
 class NatlinkstatusInifileSection(InifileSection):
     """subclass with fixed filename and section"""
+    #pylint:disable=W0613
     
     def __init__(self, filename=defaultFilename, section=defaultSection):
         """get the default inifile:
@@ -523,12 +527,12 @@ class NatlinkstatusInifileSection(InifileSection):
 
 
 if __name__ == "__main__":
-    print('this module is in folder: %s'% getBaseFolder(globals()))
-    vars = getAllFolderEnvironmentVariables()
-    for k in sorted(vars):
-        print('%s: %s'% (k, vars[k]))
-        if not os.path.isdir(vars[k]):
-            print('----- not a directory: %s (%s)'% (vars[k], k))
+    print(f'this module is in folder: {thisBaseFolder}')
+    Vars = getAllFolderEnvironmentVariables()
+    for kk in sorted(Vars):
+        print('%s: %s'% (kk, Vars[kk]))
+        if not os.path.isdir(Vars[kk]):
+            print('----- not a directory: %s (%s)'% (Vars[kk], kk))
 
     print('testing       expandEnvVariableAtStart')
     print('also see expandEnvVar in natlinkstatus!!')

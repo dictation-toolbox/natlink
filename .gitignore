@@ -99,6 +99,7 @@ src/*_vcl.py
 /src/core/error_info_natlink_grammar.txt
 **/configurenatlink_error.txt
 /PyTest/nsformattestresult.txt
+/PyTest/testresult.txt
 /Vocola/extensions/extensions.csv
 
 #flit build stuff
