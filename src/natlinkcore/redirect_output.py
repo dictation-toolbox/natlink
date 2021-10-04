@@ -7,7 +7,11 @@
 
 import sys
 from pydebugstring.output import outputDebugString
-import natlink
+from natlinkcore import natlink
+from natlinkcore import natlinkstatus
+
+status = natlinkstatus.NatlinkStatus()
+
 
 class NewStdout:
     softspace=1
@@ -35,6 +39,9 @@ class NewStderr:
     def flush(self):
         pass
 
-
-sys.stdout = NewStdout()
-sys.stderr = NewStderr()
+if status.isTesting():
+    print('Natlink is in TEST MODE, no output in the Messages from Natlink window')
+else:
+    sys.stdout = NewStdout()
+    sys.stderr = NewStderr()
+    

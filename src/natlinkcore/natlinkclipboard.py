@@ -12,7 +12,6 @@ This file implements an interface to the Windows system clipboard.
 """
 
 import copy
-import types
 import time
 import win32clipboard
 import win32con

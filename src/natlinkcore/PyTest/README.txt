@@ -3,7 +3,18 @@ This is now very old stuff, and should be updated ASAP with the python 3 version
 
 instead of testnatlink now testing can be done with unittest:
 
-- unittestNatlink.py
+- unittestNatlink.py   
+    all Natlink things except natlinkmain, loading grammar files etc)
+
+- unittestNatlinkmain.py  
+    loading and unloading of Natlink grammar files. 
+
+    This test needs special TEST precautions, ie normal loading of
+    all grammars is prevented, and printed output is to the calling python 
+    interpreter instead of the Messages from Natlink window.
+
+    TEST mode is setup by changing the 
+
 - unittestPrePost.py
 
 =======================

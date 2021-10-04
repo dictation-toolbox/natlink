@@ -290,6 +290,11 @@ class NatlinkStatus:
             self.__class__.userinisection = natlinkcorefunctions.NatlinkstatusInifileSection()
 
         try:
+            self.__class__.usertestsection
+        except AttributeError:
+            self.__class__.usertestsection = natlinkcorefunctions.NatlinkstatusInifileSection(section='testsettings')
+
+        try:
             self.__class__.UserArgsDict
         except AttributeError:
             self.__class__.UserArgsDict = {}
@@ -336,7 +341,7 @@ class NatlinkStatus:
         self.__class__.DNSIniDir = result
         if result == -1:
             return  # serious problem.
-
+        
         self.checkNatlinkPydFile()
 
     def getWarningText(self):
@@ -729,6 +734,18 @@ class NatlinkStatus:
             return self.__class__.UserArgsDict['DNSuserDirectory']
         except KeyError:
             return ''
+
+    def isTesting(self):
+        """return True if Natlink is in TEST status
+        
+        This is set (manually) by setting in .natlinkstatus.ini (in .natlink):
+        [testsettings]
+        TEST = True
+        
+        Testsettings are got via self.usertestsection (setting via self.__class__.usertestsection)
+        """
+        testing = self.usertestsection.get("TEST")
+        return testing in ['True', '1', 'T']
 
     def getNatlinkPydOrigin(self):
         """return the path of the original dll/pyd file
@@ -1914,6 +1931,10 @@ class NatlinkStatus:
         """
         #pylint:disable=R0912, R0915
         L = []
+        if self.isTesting():
+            mess = 'Natlink is in TEST phase'
+            stars = '*'*len(mess)
+            L.append(f'\n{stars}\n{mess}\n{stars}\n')
         D = self.getNatlinkStatusDict()
         if D['userName']:
             L.append('user speech profile:')

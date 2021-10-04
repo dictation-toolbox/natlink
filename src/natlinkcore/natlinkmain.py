@@ -957,15 +957,23 @@ def start_natlink(doNatConnect=None):
         time.sleep(10)
         return
 
-    if not doNatConnect is None:
+    if doNatConnect is not None:
+        natlink.natDisconnect()
         if doNatConnect:
             print('start_natlink, do natConnect with option 1, threading')
             natlink.natConnect(1) # 0 or 1, should not be needed when automatic startup
         else:
             print('start_natlink, do natConnect with option 0, no threading')
             natlink.natConnect(0) # 0 or 1, should not be needed when automatic startup
+    print("----natlink.natConnect succeeded")
 
-        print("----natlink.natConnect succeeded")
+    if status.isTesting():
+        natlink.displayText("\n\nNatlink is in TEST mode\n\n", 0)
+        natlink.displayText('Change this by removing "TEST = True" in \n', 0)
+        natlink.displayText('section "[testsettings]"\n', 0)
+        natlink.displayText('in the file "natlinkstatus.ini" in the NatlinkUserDirectory:\n', 0)
+        natlink.displayText(f'    "{status.getNatlinkUserDirectory()}"\n\n', 0)
+        natlink.displayText('Then restart Dragon (Natspeak)\n\n', 0)
 
     # get the current user information from the Natlink module
     if userDirectory and os.path.isdir(userDirectory):
@@ -1035,52 +1043,3 @@ def start_natlink(doNatConnect=None):
         print('='*30)
         status.emptyWarning()
 
-###################################################################
-#
-# Here is the initialization code.
-#
-
-# when you want to start natlink modules interactive from this module, set Testing to True
-# natlinkmain (which is the name of natlink.pyd when started from Dragon)
-# will then not start all natlink modules. Whenever you change this value, you need
-# to restart Dragon...
-Testing = False
-
-def run():
-    """run natlink
-    """
-    #pylint:disable=C0415, W0611
-
-
-
-    if not Testing:
-        import redirect_output
-        start_natlink()
-    else:
-        print("natlinkmain is in testing mode...")
-
-# if __name__ == "natlinkmain":
-#     if canStartNatlink:
-#         if Testing is False:
-#             #sys.stdout = NewStdout()  # this is done at the top already
-#             #sys.stderr = NewStderr()
-#             start_natlink()
-#         else:
-#             print('natlinkmain imported only, Testing in progress')
-#             print('\nDo not forget to put "Testing = False" again near bottom of natlinkmain.py in order to resume normal use...')
-#             print('\n... and then restart Dragon.')
-#     else:
-#         print('Cannot start Natlink')
-# elif __name__  == "__main__":
-#     if Testing:
-#         print("starting all Natlink stuff from natlinkmain.py")
-#         natlink.natConnect(1)
-#         try:
-#             print("start_natlink starting...")
-#             start_natlink()
-#             print("after start_natlink...")
-#         finally:
-#             print("finally do natDisconnect()")
-#             natlink.natDisconnect()
-#     else:
-#         print("run interactive, do nothing, enable Testing if you want to start Natlink from this module")
