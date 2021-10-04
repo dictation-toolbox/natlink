@@ -45,11 +45,18 @@ class Mock(MagicMock):
 
 mock_modules = {
     'ctypes',
+    'dtactions',  # DF: uncertain about this one.
+    'pywintypes',
     'win32api',
     'win32clipboard',
+    'win32com',
+    'win32com.client',
+    'win32com.shell',
     'win32con',
+    'win32file',
     'win32gui',
     'win32process',
+    'winreg',
     'winxpgui',
 }
 
