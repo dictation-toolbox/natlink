@@ -1,8 +1,8 @@
-"""Python Macro Language for Dragon NaturallySpeaking
-      (c) Copyright 1999 by Joel Gould
-      Portions (c) Copyright 1999 by Dragon Systems, Inc.
-
-    _sample_directory_infomration.py
+# Python Macro Language for Dragon NaturallySpeaking
+#     (c) Copyright 1999 by Joel Gould
+#     Portions (c) Copyright 1999 by Dragon Systems, Inc.
+"""
+    _sample_directory_information.py
 
     This is a sample macro file with a single command.  When NatSpeak has the
     focus, say "demo directory information".
@@ -18,7 +18,7 @@ status = natlinkstatus.NatlinkStatus()
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <start> exported = sample directory information;
+        <start> exported = sample directory (info|information);
     """
     
     def initialize(self):
