@@ -18,7 +18,7 @@ status = natlinkstatus.NatlinkStatus()
 class ThisGrammar(GrammarBase):
 
     gramSpec = """
-        <start> exported = demo directory (information|info);
+        <start> exported = sample directory information;
     """
     
     def initialize(self):

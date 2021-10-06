@@ -9,13 +9,10 @@ from natlinkcore import natlinkutils
 from natlinkcore import gramparser as gp
 from natlinkcore import nsformat
 
-import unimacro.natlinkutilsbj as natbj
-
 from dtactions.unimacro import unimacroutils
 from dtactions.unimacro.unimacroactions import doAction as action
 
-ancestor = natbj.IniGrammar  #QH1
-class DebugGrammar(ancestor):
+class DebugGrammar(natlinkutils.GrammarBase):
     # language = unimacroutils.getLanguage()
     name = "Natlink Debug"
     gramSpec = """
@@ -36,7 +33,7 @@ class DebugGrammar(ancestor):
     def initialize(self):
         print('debug initialize, by loading self.gramSpec')
         self.load(self.gramSpec)
-        self.switchOnOrOff()   ## based on the ini settings, by default, on
+        self.activateAll()   ## based on the ini settings, by default, on
         
 
 
