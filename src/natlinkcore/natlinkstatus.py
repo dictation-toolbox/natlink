@@ -1515,7 +1515,7 @@ class NatlinkStatus:
             return ""
 
         self.VocolaDirectory = vocola2.__path__[0]
-        print(f'VocolaDirectory: {self.VocolaDirectory}')
+        # print(f'VocolaDirectory: {self.VocolaDirectory}')
         controlGrammarFile = os.path.join(self.VocolaDirectory, '_vocola_main.py')
         if not os.path.isfile(controlGrammarFile):
             print(f'Cannot find "_vocola_main.py" in VocolaDirectory ({self.VocolaDirectory}), return ""')

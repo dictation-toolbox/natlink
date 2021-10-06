@@ -117,11 +117,11 @@ from natlinkcore import natlink   # this one only imports if it is installed in 
                  # natlink.pyd is registered.
 from natlinkcore import natlinkstatus    # for extracting status info (QH)
 
-outputDebugString("at start of natlinkmain, after redirect stderr and stdout")
-glist=list( f"{a} : {b}" for (a,b) in list(globals().items()))
-gstring = "\n".join(glist)
-outputDebugString(f"globals: {gstring}")
-del glist, gstring
+# outputDebugString("at start of natlinkmain, after redirect stderr and stdout")
+# glist=list( f"{a} : {b}" for (a,b) in list(globals().items()))
+# gstring = "\n".join(glist)
+# outputDebugString(f"globals: {gstring}")
+# del glist, gstring
 
 status = natlinkstatus.NatlinkStatus()
 
@@ -146,12 +146,12 @@ debugLoad = debugCallback = False
 #     canStartNatlink = False
 # if canStartNatlink:
 #     status.checkSysPath()
-#     debugLoad = status.getDebugLoad()
-#     debugCallback = status.getDebugCallback()
-#     if debugLoad:
-#         print('do extra output at (re)loading time: %s'% debugLoad)
-#     if debugCallback:
-#         print('do extra output at callback time: %s'% debugCallback)
+debugLoad = status.getDebugLoad()
+debugCallback = status.getDebugCallback()
+if debugLoad:
+    print('do extra output at (re)loading time')
+if debugCallback:
+    print('do extra output at callback time')
 
 ApplicationFrameHostTitles = {}
 ApplicationFrameHostTitles["Photos"] = "photos"
@@ -247,7 +247,7 @@ natlinkmainPrintsAtEnd = 1
 # pprint(sys.path)
 
 for _name in ['DNSuserDirectory', 'userName',
-             'windowsVersion', 'BaseModel', 'BaseTopic',
+              'BaseModel', 'BaseTopic',
              'language', 'userLanguage', 'userTopic']:
     if not _name in globals():
         globals()[_name] = ''
@@ -523,6 +523,7 @@ def findAndLoadFiles(curModule=None):
                 loadedFiles[x] = loadFile(x, origPath, origDate)
             else:
                 loadedFiles[x] = loadFile(x)
+            
             vocolaModule = sys.modules[doVocolaFirst]
             vocolaIsLoaded = True
             if not vocolaModule.VocolaEnabled:

@@ -8,12 +8,14 @@ There are several, Microsoft Visual Studio COde is known to work.
 
 If you know how to add support for another debugger please add it.
 """
+#pylint:disable=C0116, W0603, W0703, W0702
+import os
 import debugpy
 from natlinkcore import natlinkstatus
-import os
+
 
 __status = natlinkstatus.NatlinkStatus()
-__natLinkPythonDebugPortEnviornmentVar= "NatlinkPyDebugPort"
+__natLinkPythonDebugPortEnvironmentVar= "NatlinkPyDebugPort"
 __natLinkPythonDebugOnStartupVar="NatlinkPyDebugStartup"
 
 __pyDefaultPythonExecutor = "python.exe"
@@ -38,12 +40,17 @@ def start_dap():
     if __debug_started:
         print(f"DAP already started with debugpy for port {__debugpy_debug_port}")
         return
+    if __natLinkPythonDebugPortEnvironmentVar in os.environ:
+        natLinkPythonPortStringVal = os.environ[__natLinkPythonDebugPortEnvironmentVar] or None
+        try:
+            __debugpy_debug_port = int(natLinkPythonPortStringVal)
+        except:
+            print(f'failed to take port number from environment variable "NatlinkPyDebugPort", take default "{__debugpy_debug_port}"')
+
+
     try:
 
-        if __natLinkPythonDebugPortEnviornmentVar in os.environ:
-            natLinkPythonPortStringVal = os.environ[__natLinkPythonDebugPortEnviornmentVar]
-            __debugpy_debug_port = int(natLinkPythonPortStringVal)
-        print(f"Starting debugpy on port {natLinkPythonPortStringVal}")
+        print(f"Starting debugpy on port {__debugpy_debug_port}")
 
         python_exec =  __pyDefaultPythonExecutor  #for now, only the python in system path can be used for natlink and this module
         print(f"Python Executable (required for debugging): '{python_exec}'")
@@ -62,16 +69,16 @@ def start_dap():
                 debugpy.wait_for_client()
 
 
-    except Exception as ee:
+    except Exception as exc:
         print(f"""
-    Exception {ee} while starting debug.  Possible cause is incorrect python executable specified {python_exec}
+    Exception {exc} while starting debug.  Possible cause is incorrect python executable specified {python_exec}
 """     )
 
 def debug_check_on_startup():
     global  __debug_started,__debugpy_debug_port,__debugger
     debug_instructions = f"{__status.getNatlinkDirectory()}\\debugging python instructions.docx"
     print(f"Instructions for attaching a python debugger are in {debug_instructions} ")
-    if __natLinkPythonDebugPortEnviornmentVar in os.environ:
+    if __natLinkPythonDebugPortEnvironmentVar in os.environ:
         start_dap()
 
 

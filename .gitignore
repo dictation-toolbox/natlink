@@ -111,3 +111,4 @@ documentation/_build/
 #ConfigureNatlink Error 
 /ConfigureNatlink/configurenatlink_error.txt
 /src/natlinkcore/PyTest/nsformattestresult.txt
+/src/natlinkcore/error_info_natlink_grammar.txt
