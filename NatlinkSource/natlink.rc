@@ -58,7 +58,8 @@ VS_VERSION_INFO VERSIONINFO
 #else
  FILEFLAGS 0x0L
 #endif
- FILEOS 0x4L
+// VOS_NT_WINDOWS32
+ FILEOS 0x40004L
  FILETYPE 0x2L
  FILESUBTYPE 0x0L
 BEGIN
@@ -66,13 +67,14 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "FileDescription", "natlink Module"
-            VALUE "FileVersion", "1, 0, 0, 1"
-            VALUE "InternalName", "NATLINK"
-            VALUE "LegalCopyright", "Copyright 1997"
-            VALUE "OriginalFilename", "NATLINK.DLL"
-            VALUE "ProductName", "natlink Module"
-            VALUE "ProductVersion", "1, 0, 0, 1"
+            VALUE "CompanyName", "dication-toolbox"
+            VALUE "FileDescription", "natlink"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "LegalCopyright", "See licensing at https://github.com/dictation-toolbox."
+            VALUE "InternalName", "natlink.pyd"
+            VALUE "OriginalFilename", "natlink.pyd"
+            VALUE "ProductName", "natlink"
+            VALUE "ProductVersion", "6.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -96,7 +98,7 @@ IDR_APPSUPP             REGISTRY                "appsupp.reg"
 
 IDD_STDOUT DIALOGEX 0, 25, 285, 135
 STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Messages from Natlink 11/06/2020"
+CAPTION "Messages from Natlink 6.0"
 //MENU IDR_MENU
 FONT 9, "Courier New", 0, 0, 0x0
 BEGIN

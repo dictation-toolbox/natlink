@@ -14,6 +14,12 @@
 #include "../Resource.h"
 #include "../DragonCode.h"
 #include "appsupp.h"
+#include <winreg.h>
+#include "../extern/WinReg/WinReg.hpp"
+
+#define WQUOTE_(x)    L#x
+#define WQUOTE(x)     WQUOTE_(x)
+
 // #include <plog/Log.h>
 // from PythWrap.cpp
 CDragonCode * initModule();
@@ -35,6 +41,67 @@ CDgnAppSupport::~CDgnAppSupport()
 {
 }
 
+// Add natlink .py file directory to sys.path so that 'natlink' 
+// module can be loaded (and final desired sys.path can be changed if needed)
+// return empty string on success; otherwise return error message
+static std::string AddToPythonSysPath(CDragonCode* pDragCode) {
+	using winreg::RegKey, winreg::RegResult;
+	// _natlinkcore.pyd (this code, dear reader!) doesn't know where it is; find out
+	std::wstring key_wstring(L"SOFTWARE\\Python\\PythonCore\\" WQUOTE(PYTHON_VERSION) "-32" 
+			         L"\\PythonPath\\" TEXT(MYAPP_NAME));
+    RegKey key;
+	RegResult result = key.TryOpen(HKEY_LOCAL_MACHINE, key_wstring.c_str(), KEY_READ);
+	if (!result) {
+		return (std::string("Error: could not open HKLM\\") + 
+				std::string(key_wstring.begin(), key_wstring.end()) + 
+							std::string("\n"));
+	} 
+	else { // now the install location of Natlink pyd and sources is known; add to sys.path
+		wchar_t *wstring = Py_GetPath();
+		std::wstring str_wstring(wstring);
+		std::wstring new_wstring(key.GetStringValue(L"") + std::wstring(L"\\;") + str_wstring);
+		// amend psys.path so that the python package 'natlink' can be loaded
+		Py_SetPath(new_wstring.c_str());
+	    return (std::string(""));
+	}
+}
+
+static void DisplaySysPath(CDragonCode* pDragCode) {
+	// display sys.path 
+	std::wstring str_wstring = std::wstring(Py_GetPath());
+	std::string str_string(str_wstring.begin(), str_wstring.end());
+	pDragCode->displayText((std::string("initial sys.path: ") + str_string + "\n").c_str(), FALSE);
+}
+
+static void DisplayVersions(CDragonCode* pDragCode) {
+#ifdef NATLINK_VERSION
+	const std::string natlinkVersionMsg = std::string("Natlink Version: ") + std::string(NATLINK_VERSION) + 
+										  std::string("\r\n");
+	pDragCode->displayText(natlinkVersionMsg.c_str(), FALSE); // TODO: remove since version is showed in title of window
+#endif
+	const std::string pythonVersionMsg = std::string("Python Version: ") + std::string(Py_GetVersion()) + std::string("\r\n");
+	pDragCode->displayText(pythonVersionMsg.c_str(), FALSE);
+}
+
+static void DisplayPythonException(CDragonCode* pDragCode) {
+	if (PyErr_Occurred()) {
+			PyObject* ptype, * pvalue, * ptraceback;
+			PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+			if (pvalue) {
+				PyObject* pstr = PyObject_Str(pvalue);
+				if (pstr) {
+					const char* pStrErrorMessage = PyUnicode_AsUTF8(pstr);
+					pDragCode->displayText("Python exception: ", TRUE);
+					pDragCode->displayText(pStrErrorMessage, TRUE);
+					pDragCode->displayText("\n", TRUE);
+				}
+				Py_XDECREF(pstr);
+			}
+			PyErr_Restore(ptype, pvalue, ptraceback);
+			PyErr_Clear();
+		}
+}
+
 static void CallPyFunctionOrDisplayError(CDragonCode* pDragCode, PyObject* pMod, const char* szModName, const char* szName)
 {
 	PyObject* result = PyObject_CallMethod(pMod, szName, NULL);
@@ -42,24 +109,11 @@ static void CallPyFunctionOrDisplayError(CDragonCode* pDragCode, PyObject* pMod,
 	{
 		std::string err = std::string("NatLink: an exception occurred in '") + std::string(szModName) + std::string(".") + std::string(szName) + std::string("'.\r\n");
 		pDragCode->displayText(err.c_str(), TRUE);
-		if (PyErr_Occurred()) {
-			PyObject* ptype, * pvalue, * ptraceback;
-			PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-			if (pvalue) {
-				PyObject* pstr = PyObject_Str(pvalue);
-				if (pstr) {
-					const char* pStrErrorMessage = PyUnicode_AsUTF8(pstr);
-					pDragCode->displayText("Error message:\r\n", TRUE);
-					pDragCode->displayText(pStrErrorMessage, TRUE);
-					pDragCode->displayText("\r\n", TRUE);
-				}
-				Py_XDECREF(pstr);
-			}
-			PyErr_Restore(ptype, pvalue, ptraceback);
+		DisplayPythonException(pDragCode);
 		}
-	}
 	Py_XDECREF(result);
 }
+
 
 //---------------------------------------------------------------------------
 // Called by NatSpeak once when the compatibility module is first loaded.
@@ -73,53 +127,52 @@ static void CallPyFunctionOrDisplayError(CDragonCode* pDragCode, PyObject* pMod,
 
 STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 {
-	BOOL bSuccess;
+	// when this code (_natlinkcore.pyd) executes, the python interpreter (included in 
+	// the natlink library as a sibling of of _natlinkcore.pyd) has already been 
+	// dynamically linked to offer CPython calls, but it doesn't know where the natlink
+	// python code is, so help it!
+	std::string syspath_error = AddToPythonSysPath(m_pDragCode);
 	// load and initialize the Python system
 	Py_Initialize();
-
-	// Set sys.argv so it exists as [''].
+	// set sys.argv so it exists as [''].
 	PySys_SetArgvEx(1, NULL, 0);
 
-	// load the natlink module into Python and return a pointer to the
-	// shared CDragonCode object
+	// load the natlink module into Python and return a pointer to shared CDragonCode object
 	m_pDragCode = initModule();
 	m_pDragCode->setAppClass( this );
 
-
 	// simulate calling natlink.natConnect() except share the site object
-	bSuccess = m_pDragCode->natConnect( pIDgnSite );
-
-
-	if( !bSuccess )
-	{
+	BOOL bSuccess = m_pDragCode->natConnect( pIDgnSite );
+	if( !bSuccess )	{
 		OutputDebugString(
-			TEXT( "NatLink: failed to initialize NatSpeak interfaces") ); // RW TEXT macro added
-		m_pDragCode->displayText(
-			"Failed to initialize NatSpeak interfaces\r\n", TRUE );
+			TEXT( "NatLink: failed to initialize NatSpeak interfaces") );
+		m_pDragCode->displayText( "Failed to initialize NatSpeak interfaces\r\n", TRUE ); // TODO: bug? won't show
+		return S_OK;
+	}
+	
+    // only now do we have the window to show info and possible error message from registry lookup
+	DisplayVersions(m_pDragCode);
+	if ( !syspath_error.empty()) {
+		m_pDragCode->displayText(syspath_error.c_str());
 		return S_OK;
 	}
 
-#ifdef NATLINK_VERSION
-	const std::string natlinkVersionMsg = std::string("Natlink Version: ") + std::string(NATLINK_VERSION) + std::string("\r\n");
-	m_pDragCode->displayText(natlinkVersionMsg.c_str());
-#endif
-	const std::string pythonVersionMsg = std::string("Python Version: ") + std::string(Py_GetVersion()) + std::string("\r\n");
-	m_pDragCode->displayText(pythonVersionMsg.c_str());
-
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit( TRUE );
-
     m_pNatlinkModule = PyImport_ImportModule( "natlink" );
 	if ( m_pNatlinkModule == NULL ) {
-		OutputDebugString( TEXT( "NatLink: an exception occurred loading 'natlink' module" ) ); // RW TEXT macro added
-		m_pDragCode->displayText( "An exception occurred loading 'natlink' module\r\n", TRUE );
+		OutputDebugString( TEXT( "NatLink: an exception occurred loading 'natlink' module" ) );
+		DisplaySysPath(m_pDragCode);
+		DisplayPythonException(m_pDragCode);
+		return S_OK;
+	} else {
+		m_pDragCode->displayText( "NatLink: LOADED!\n", FALSE );
 	}
-
 	CallPyFunctionOrDisplayError(m_pDragCode, m_pNatlinkModule, "natlink", "redirect_all_output_to_natlink_window");
+	DisplayPythonException(m_pDragCode);
 	CallPyFunctionOrDisplayError(m_pDragCode, m_pNatlinkModule, "natlink", "run_loader");
-
+	DisplayPythonException(m_pDragCode);
 	m_pDragCode->setDuringInit( FALSE );
-
 	return S_OK;
 }
 

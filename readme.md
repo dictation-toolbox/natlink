@@ -83,18 +83,20 @@ The currently supported settings are:
 The folder NatlinkSource, which contains all the C++ code, 
 is for generating an in-process [Component Object Model (COM)](https://docs.microsoft.com/en-us/windows/win32/com/component-object-model--com--portal)
 server.
-The output is natlink.pyd (a .pyd is essentially a .dll that is also a python module).
-The natlink.pyd can be used both as a COM server or just as a plain python package.
+The output is `natlink.pyd` (a .pyd is essentially a .dll that is also a python module).
+The `natlink.pyd` can be used both as a COM server or just as a plain python package.
 When Dragon starts, it will start natlink.pyd, 
-which does some setup and quickly passes things off to the Python side by importing natlinkmain.py.
-A different version of natlink.pyd is compiled for each supported version of Python.
-
+which does some setup and quickly passes things off to the Python side by importing `natlinkmain.py`.
+*NOTE: Currently, a version tested for v. 14 and 15 is provided.*
+(A different version of `natlink.pyd` is compiled for each supported version of Python. )
 #### Compilation
-To compile, run the CMakeLists.txt file from Visual Studio after selecting the desired Python.
-CMake settings for different versions of Python are included in CMakeSettings.json.
-You must be compiling in 32-bit release mode with debug info using the Microsoft Visual C++ compiler.
-You must have the corresponding Python (and it must be 32 bit) already installed on your system.
-Output will appear under out\\build\\\[PythonVersion\]\\NatlinkSource.
+To compile, run the `CMakeLists.txt` file from Visual Studio after selecting the desired Python. Or, use Visual Studio Code CMake extension. First configure for a compiler version, known as a kit. It must be specified (by suffix) to force crosscompilation from amd64 to x86, that is from 64-bit to 32-bit. This is a CMAKE configuration setting.
+
+After configuration, the build system is generated in the  `build` directory created as the only thing that's changed in the source directoy. At this point, `build` contains all information that relates to the actual build process, such as choice of compilers, build flags, settings configured by CMAKE, and of course the Visual Studio project files. Now, the build can be initated after choosing the 'Debug' variant. The 'Debug' subdirectories in the build tree will be populated by object code and the Python code that is to be part of the installation.  Also, the installer phase of the build wraps everything up in the distributable executable.
+
+CMake settings for different versions of Python are included in `CMakeSettings.json`.
+
+You must have the corresponding Python (and it must be 32 bit) already installed on your system.  
 
 ## Main (Python)
 The Python layer is found in MacroSystem\\core.
@@ -106,7 +108,7 @@ The installer/uninstaller is compiled using [Inno Setup](https://jrsoftware.org/
 The inno setup script is found under the InstallerSource directory.
 Make sure the Inno Setup compiler iscc.exe is in your PATH.
 To compile, run the CMakeLists.txt file from Visual Studio after selecting the desired Python.
-Output will appear under out\\build\\\[PythonVersion\]\\InstallerSource.
+The installer will appear as `\build\InstallerSource\natlinkX.X-pyY.Y-32-setup.exe`  
 The installer executable is self-contained and may be distributed.
 
 

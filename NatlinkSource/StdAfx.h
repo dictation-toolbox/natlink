@@ -16,8 +16,9 @@
 #endif
 
 #define STRICT
-#define WINVER 0x0500
-#define _WIN32_WINNT 0x0500
+// Windows 7 is 0x0601, see https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt?view=msvc-160
+#define WINVER 0x0601
+#define _WIN32_WINNT 0x0601
 
 //#define _WIN32_WINNT 0x0403
 #define _ATL_APARTMENT_THREADED

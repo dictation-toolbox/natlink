@@ -2315,6 +2315,7 @@ extern "C"
 PyMODINIT_FUNC PyInit__natlink_core(void) {
 	PyObject* pMod;
 
+	// initialize COM library on the current thread
 	CoInitialize(NULL);
 
 	if (PyType_Ready(&gramobj_stackType) < 0)
