@@ -1,8 +1,10 @@
+import ast
 import importlib
 import importlib.machinery
 import importlib.util
 import logging
 import os
+import subprocess
 import sys
 import time
 import traceback
@@ -230,8 +232,15 @@ def config_locations() -> Iterable[str]:
         pass
 
 
+def set_sys_path_as_if_command_line_python() -> None:
+    get_syspath_cmd = ["py",  f"-{sys.winver}", "-c", "import os, sys; print(sys.path)"]
+    syspath_as_string = subprocess.run(get_syspath_cmd, capture_output=True)
+    sys.path = ast.literal_eval(syspath_as_string.stdout.decode('UTF-8'))
+
+
 def run() -> None:
     logger = logging.getLogger('natlink')
+    set_sys_path_as_if_command_line_python()
     config = NatlinkConfig.from_first_found_file(config_locations())
     main = NatlinkMain(logger, config)
     main.setup_logger()
