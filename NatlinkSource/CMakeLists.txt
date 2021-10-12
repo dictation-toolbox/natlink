@@ -39,19 +39,25 @@ set(HEADERS_FILES
         )
 source_group("Headers" FILES ${HEADERS_FILES})
 
-if (NOT DEFINED PYTHON_INCLUDE_DIRS)
-    find_package(PythonLibs ${PYTHON_VERSION} EXACT REQUIRED)
-endif (NOT DEFINED PYTHON_INCLUDE_DIRS)
-message(STATUS "Using Python libraries: ${PYTHON_LIBRARIES}")
-message(STATUS "Using Python include: ${PYTHON_INCLUDE_DIRS}")
-include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${Python3_INCLUDE_DIRS})
 include_directories("extern")
 
-add_compile_definitions(DRAGON_VERSION=15)
-add_compile_definitions(NATLINK_VERSION="${NATLINK_VERSION}")
+add_compile_definitions(DRAGON_VERSION=${DRAGON_VERSION}
+                        NATLINK_VERSION="${NATLINK_VERSION}"
+                        PYTHON_DLL="$<TARGET_FILE:python_dll>"
+                        PYTHON_VERSION=${PYTHON_VERSION}
+                        MYAPP_NAME="${MYAPP_NAME}")
+add_compile_options("/std:c++17")
+
 # Asserts that Py_ssize_t is used in argument parsing,
 # see note at top of https://docs.python.org/3/c-api/arg.html
 add_compile_definitions(PY_SSIZE_T_CLEAN)
+
+add_executable(python_dll IMPORTED)
+set_target_properties(python_dll  
+        PROPERTIES
+        IMPORTED_LOCATION ${_Python3_RUNTIME_LIBRARY_RELEASE})
+
 
 # Ensures a Stable Application Binary Interface forpython 3.2+
 #add_compile_definitions(Py_LIMITED_API)
@@ -69,9 +75,8 @@ foreach(flag_var
 endforeach(flag_var)
 
 # Add library to build.
-add_library(${PROJECT_NAME} SHARED
-        ${SRC_FILES} #${HEADERS_FILES}
-        )
+add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
+
 set_target_properties(
         ${PROJECT_NAME}
         PROPERTIES
@@ -79,5 +84,6 @@ set_target_properties(
         SUFFIX ".pyd"
         OUTPUT_NAME "_natlink_core"
         LINKER_LANGUAGE C
+        DEPENDS python_dll
 )
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${PYTHON_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${Python3_LIBRARIES})
