@@ -1,18 +1,5 @@
-#define MyAppName "Natlink"
-#ifndef MyAppVersion
-  #define MyAppVersion "4.2"
-#endif
-#ifndef PythonVersion
-  #define PythonVersion "3.8-32"
-#endif
 #define MyGUID "{{dd990001-bb89-11d2-b031-0060088dc929}"
 #define Bits "32bit"
-#ifndef SourceRoot
-  #define SourceRoot ".."
-#endif
-#ifndef BinaryRoot
-  #define BinaryRoot "..\out\build\3.8-32"
-#endif
 
 #define SitePackagesDir "{app}\site-packages"
 #define CoreDir "{app}\site-packages\natlink"
@@ -37,14 +24,16 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "{#SourceRoot}\natlink\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 Source: "{#SourceRoot}\natlink\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core.pyd"; DestDir: "{#CoreDir}"; Flags: ignoreversion regserver {#Bits}
+Source: "{#PythonDLL}"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
 [Code]
+
+
 var
   DragonIniPage: TInputDirWizardPage;
-
 
 function BestGuessDragonIniDir(): String;
 var
@@ -174,8 +163,6 @@ begin
   Result := DragonIniPage.Values[0];
 end;
 
-
-
 [Registry]
 Root: HKLM; Subkey: "Software\{#MyAppName}"; Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "installPath"; ValueData: "{app}"
@@ -183,6 +170,7 @@ Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "core
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "sitePackagesDir"; ValueData: "{#SitePackagesDir}"
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "dragonIniDir"; ValueData: "{code:GetDragonIniDir}"
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "version"; ValueData: "{#MyAppVersion}"
+; A Python-versioned key is there for _natlinkcore.pyd to find the natlink module's Python code
 Root: HKLM; Subkey: "Software\Python\PythonCore\{#PythonVersion}\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey
 
 [INI]                                                                                                                                                   
