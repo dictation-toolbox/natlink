@@ -124,7 +124,7 @@ end;
 
 function CorrectPythonFound(): Boolean;
 begin
-  Result := RegKeyExists(HKLM, 'Software\Python\PythonCore\{#PythonVersion}')
+  Result := RegKeyExists(HKCU, 'Software\Python\PythonCore\{#PythonVersion}')
 end;
 
 function InitializeSetup(): Boolean;
@@ -171,7 +171,7 @@ Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "site
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "dragonIniDir"; ValueData: "{code:GetDragonIniDir}"
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "version"; ValueData: "{#MyAppVersion}"
 ; A Python-versioned key is there for _natlinkcore.pyd to find the natlink module's Python code
-Root: HKLM; Subkey: "Software\Python\PythonCore\{#PythonVersion}\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Python\PythonCore\{#PythonVersion}\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey
 
 [INI]                                                                                                                                                   
 Filename: "{code:GetDragonIniDir}\nssystem.ini"; Section: "Global Clients"; Key: ".{#MyAppName}"; String: "Python Macro System"; Flags: uninsdeleteentry
