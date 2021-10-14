@@ -1,12 +1,12 @@
 # Natlink
 
-Natlink is a compatibility module for Dragon NaturallySpeaking (DNS) on Windows
+Natlink is a compatibility module for Dragon NaturallySpeaking (DNS/DPI) v13-v15 on Windows
 that allows the user to run Python scripts that interact with DNS.
 This fork does not include
  [Dragonfly](https://github.com/dictation-toolbox/dragonfly),
  [Unimacro, or Vocolo](https://qh.antenna.nl/unimacro/aboutunimacro/index.html).
 These should be installed separately and included in the Natlink config as necessary.
-The currently supported versions of Python are: 3.8-32, 3.7-32, and 3.6-32.
+The currently supported versions of Python are: 3.8-32
 
 ## Installation
 
@@ -16,7 +16,7 @@ please file a bug report.
 
 To install:
  - Install Dragon NaturallySpeaking
- - Install Python (32 bit required), and make sure to check the box to add it to your PATH
+ - Install Python (32 bit required) for your user and do not add to path.
  - Pip install your desired extra packages (e.g. dragonfly)
  - Download and run the Natlink installer
  - Put a .natlink file in your home directory (see example below)
@@ -90,7 +90,7 @@ which does some setup and quickly passes things off to the Python side by import
 *NOTE: Currently, a version tested for v. 14 and 15 is provided.*
 (A different version of `natlink.pyd` is compiled for each supported version of Python. )
 #### Compilation
-To compile, run the `CMakeLists.txt` file from Visual Studio after selecting the desired Python. Or, use Visual Studio Code CMake extension. First configure for a compiler version, known as a kit. It must be specified (by suffix) to force crosscompilation from amd64 to x86, that is from 64-bit to 32-bit. This is a CMAKE configuration setting.
+To compile, run the `CMakeLists.txt` file from Visual Studio 2019 after selecting the desired Python. Or, use Visual Studio Code CMake extension. First configure for a compiler version, known as a kit. It must be specified (by suffix) to force crosscompilation from amd64 to x86, that is from 64-bit to 32-bit. This is a CMAKE configuration setting.
 
 After configuration, the build system is generated in the  `build` directory created as the only thing that's changed in the source directoy. At this point, `build` contains all information that relates to the actual build process, such as choice of compilers, build flags, settings configured by CMAKE, and of course the Visual Studio project files. Now, the build can be initated after choosing the 'Debug' variant. The 'Debug' subdirectories in the build tree will be populated by object code and the Python code that is to be part of the installation.  Also, the installer phase of the build wraps everything up in the distributable executable.
 

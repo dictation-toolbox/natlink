@@ -42,7 +42,7 @@ These files seem to implement the support interface defined in ``COM/dspeech.h``
  ### DLL initialization and python Interpreter 
  ### COM-Python Wrapper
  
- The python natlink module is added to ``HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Python\PythonCore\3.8\PythonPath``
+ The python natlink module is added to ``HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\Python\PythonCore\3.8\PythonPath``
  as a Key/Subentry(?). This allows the sys module loader to find natlinkmain module.
  
  As this library is loaded as support-module the working directory during runtime is that of the dragon system and
