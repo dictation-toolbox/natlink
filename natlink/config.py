@@ -1,3 +1,4 @@
+#pylint:disable=C0114, C0115, C0116, R0913
 import configparser
 import logging
 from collections import OrderedDict
@@ -5,7 +6,6 @@ from enum import IntEnum
 from typing import List, Iterable, Dict
 
 import natlink
-
 
 class NoGoodConfigFoundException(natlink.NatError):
     pass
@@ -48,7 +48,7 @@ class NatlinkConfig:
     @property
     def directories(self) -> List[str]:
         dirs: List[str] = []
-        for u, directories in self.directories_by_user.items():
+        for _u, directories in self.directories_by_user.items():
             dirs.extend(directories)
         return dirs
 
@@ -93,4 +93,4 @@ class NatlinkConfig:
         for fn in files:
             if config.read(fn):
                 return cls.from_config_parser(config)
-        raise NoGoodConfigFoundException(f'No good config found, did you define your ~/.natlink?')
+        raise NoGoodConfigFoundException('No good config found, did you define your ~/.natlink?')

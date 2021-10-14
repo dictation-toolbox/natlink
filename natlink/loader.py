@@ -1,3 +1,4 @@
+#pylint:disable=C0114, C0115, C0116, R1705, R0902, W0703
 import ast
 import importlib
 import importlib.machinery
@@ -93,7 +94,7 @@ class NatlinkMain:
         loader = spec.loader
         if loader is None:
             raise FileNotFoundError(f'Could not find loader for: {mod_name}')
-        elif not isinstance(loader, importlib.machinery.SourceFileLoader):
+        if not isinstance(loader, importlib.machinery.SourceFileLoader):
             raise ValueError(f'module {mod_name} does not have a SourceFileLoader loader')
         module = importlib.util.module_from_spec(spec)
         loader.exec_module(module)
@@ -168,7 +169,7 @@ class NatlinkMain:
         importlib.invalidate_caches()
 
     def trigger_load(self) -> None:
-        self.logger.debug(f'triggering load/reload process')
+        self.logger.debug('triggering load/reload process')
         self.remove_modules_that_no_longer_exist()
         if self._pre_load_callback is not None:
             self.logger.debug('calling pre-load callback')

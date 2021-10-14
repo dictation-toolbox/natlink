@@ -2,7 +2,7 @@
 # this module is imported by natlink.pyd.
 # So apart from starting natlink via natlink.pyd (as called from Dragon),
 # redirection of stdout and stderr is never done (unless you import this module)
-
+#pylint:disable=C0114, C0115, 
 import sys
 from types import TracebackType
 from typing import TextIO, Optional, Type, Iterator, AnyStr, Iterable, List

@@ -4,48 +4,44 @@
 #   (c) Copyright 1999 by Joel Gould
 #   Portions (c) Copyright 1999 by Dragon Systems, Inc.
 #
-# gramparser.py
-#   This module contains the Python code to convert the textual representation
-#   of a command and control grammar in the standard SAPI CFG binary format.
-#
-# April 1, 2000
-#   - we now throw an exception if there is a bad parse instead of just
-#     printing the error
-#   - fixed a few minor bugs detecting errors
-#
-#
-# Grammar format
-#
-#   Rule Definition:
-#       <RuleName> imported ;
-#       <RuleName> = Expression ;
-#       <RuleName> exported = Expression ;
-#
-#   A rule needs the keyword "exported" in order to be activated or visible
-#   to other grammars for importing.
-#
-#   Expression:
-#       <RuleName>                  // no spaces
-#       {ListName}                  // no spaces
-#       Word
-#       "Word"
-#       ( Expression )
-#       [ Expression ]              // optional
-#       Expression +                // repeat
-#       Expression Expression       // sequence
-#       Expression | Expression     // alternative
-#
-# When building grammars there are three built in rules which can be imported:
-#
-#   <dgnletters>    Contains all the letters of the alphabet for spelling.
-#       Letters are spelled like "a\\l", "b\\l", etc.
-#
-#   <dgnwords>      The set of all words active during dictation.
-#
-#   <dgndictation>  A special rule which corresponds to dictation.  It is
-#       roughly equivalent to ( <dgnwords> | "\(noise)" )+  However, the
-#       noise words is filtered out from any results reported to clients.
+#pylint:disable=C0116, C0114, C0115, R0902, R0912
+r"""gramparser.py
+ 
+  This module contains the Python code to convert the textual representation
+  of a command and control grammar in the standard SAPI CFG binary format.
 
+Grammar format
+
+  Rule Definition:
+      <RuleName> imported ;
+      <RuleName> = Expression ;
+      <RuleName> exported = Expression ;
+
+  A rule needs the keyword "exported" in order to be activated or visible
+  to other grammars for importing.
+
+  Expression:
+      <RuleName>                  // no spaces
+      {ListName}                  // no spaces
+      Word
+      "Word"
+      ( Expression )
+      [ Expression ]              // optional
+      Expression +                // repeat
+      Expression Expression       // sequence
+      Expression | Expression     // alternative
+
+When building grammars there are three built in rules which can be imported:
+
+  <dgnletters>    Contains all the letters of the alphabet for spelling.
+      Letters are spelled like "a\\l", "b\\l", etc.
+
+  <dgnwords>      The set of all words active during dictation.
+
+  <dgndictation>  A special rule which corresponds to dictation.  It is
+      roughly equivalent to ( <dgnwords> | "\(noise)" )+  However, the
+      noise words is filtered out from any results reported to clients.
+"""
 import copy
 import locale
 import os
@@ -70,6 +66,7 @@ class GrammarParserError(Exception):
     """
 
     def __init__(self, message: str, scanObj: Optional['GramScanner'] = None) -> None:
+        super().__init__(message)
         self.message = message
         self.scanObj = scanObj
 
@@ -208,10 +205,9 @@ class GramScanner:
     def testAndEatToken(self, token: str) -> Optional[str]:
         if self.token != token:
             raise GrammarSyntaxError("expecting '%s'" % token, self)
-        else:
-            value = self.value
-            self.getAnotherToken()
-            return value
+        value = self.value
+        self.getAnotherToken()
+        return value
 
     def skipWhiteSpace(self) -> None:
         """skip whitespace and comments, but keeps the leading comment/whitespace
@@ -461,8 +457,7 @@ class GramParser:
             moreThanOne = 1
         if moreThanOne:
             return [('start', ElementCode.AltCode.value)] + definition + [('end', ElementCode.AltCode.value)]
-        else:
-            return definition
+        return definition
 
     def parseExpr2(self) -> Definition:
         definition: Definition = []
@@ -474,16 +469,14 @@ class GramParser:
             moreThanOne = 1
         if moreThanOne:
             return [('start', ElementCode.SeqCode.value)] + definition + [('end', ElementCode.SeqCode.value)]
-        else:
-            return definition
+        return definition
 
     def parseExpr3(self) -> Definition:
         definition = self.parseExpr4()
         if self.scanObj.token == '+':
             self.scanObj.getAnotherToken()
             return [('start', ElementCode.RepCode.value)] + definition + [('end', ElementCode.RepCode.value)]
-        else:
-            return definition
+        return definition
 
     def parseExpr4(self) -> Definition:
         if self.scanObj.token in ['word', 'sqword', 'dqword']:
@@ -499,7 +492,7 @@ class GramParser:
             self.scanObj.getAnotherToken()
             return [('word', wordNumber)]
 
-        elif self.scanObj.token == 'list':
+        if self.scanObj.token == 'list':
             listName = self.scanObj.value
             if not listName:
                 raise GrammarSyntaxError("empty word name", self.scanObj)
@@ -516,7 +509,7 @@ class GramParser:
             self.scanObj.getAnotherToken()
             return [('list', listNumber)]
 
-        elif self.scanObj.token == 'rule':
+        if self.scanObj.token == 'rule':
             ruleName = self.scanObj.value
             if not ruleName:
                 raise GrammarSyntaxError("empty word name", self.scanObj)
@@ -533,21 +526,20 @@ class GramParser:
             self.scanObj.getAnotherToken()
             return [('rule', ruleNumber)]
 
-        elif self.scanObj.token == '(':
+        if self.scanObj.token == '(':
             self.scanObj.getAnotherToken()
             definition = self.parseExpr()
             self.scanObj.testAndEatToken(')')
             return definition
 
-        elif self.scanObj.token == '[':
+        if self.scanObj.token == '[':
             self.scanObj.getAnotherToken()
             definition = self.parseExpr()
             self.scanObj.testAndEatToken(']')
             # self.reportOptionalRule(definition)
             return [('start', ElementCode.OptCode.value)] + definition + [('end', ElementCode.OptCode.value)]
 
-        else:
-            raise GrammarSyntaxError("expecting expression (word, rule, etc.)", self.scanObj)
+        raise GrammarSyntaxError("expecting expression (word, rule, etc.)", self.scanObj)
 
     def reportOptionalRule(self, definition: Definition) -> None:
         """print the words that are optional, for testing BestMatch V"""
@@ -558,7 +550,7 @@ class GramParser:
                 print('optional word: %s' % wordsRev[number])
 
     def checkForErrors(self) -> None:
-        if not len(self.exportRules):
+        if not self.exportRules:
             raise GrammarError("no rules were exported")
         for ruleName in list(self.knownRules.keys()):
             if ruleName not in self.importRules and ruleName not in self.ruleDefines:
@@ -622,9 +614,9 @@ class GramParser:
             if var:
                 D[name] = list(var.keys())
         if self.ruleDefines:
-            ruleDefinesNice = dict([(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev, codeRev)
+            ruleDefinesNice = {(rulename, [self.nicenItem(item, rulesRev, wordsRev, listsRev, codeRev)
                                                 for item in ruleList])
-                                    for (rulename, ruleList) in list(self.ruleDefines.items())])
+                                    for (rulename, ruleList) in list(self.ruleDefines.items())}
             D['ruleDefines'] = ruleDefinesNice
         return D
 
@@ -634,14 +626,13 @@ class GramParser:
         i, v = item
         if i == 'word':
             return i, wordsRev[v]
-        elif i == 'list':
+        if i == 'list':
             return i, listsRev[v]
-        elif i == 'rule':
+        if i == 'rule':
             return i, rulesRev[v]
-        elif i in ('start', 'end'):
+        if i in ('start', 'end'):
             return i, codeRev[v]
-        else:
-            raise ValueError('invalid item in nicenItem: %s' % i)
+        raise ValueError('invalid item in nicenItem: %s' % i)
 
 
 def packGrammar(parseObj: GramParser) -> bytes:
@@ -664,15 +655,15 @@ def packGrammar(parseObj: GramParser) -> bytes:
     output = [pack("LL", 0, 0)]
 
     # various chunks
-    if len(parseObj.exportRules):
+    if parseObj.exportRules:
         output.append(packGrammarChunk(4, parseObj.exportRules))
-    if len(parseObj.importRules):
+    if parseObj.importRules:
         output.append(packGrammarChunk(5, parseObj.importRules))
-    if len(parseObj.knownLists):
+    if parseObj.knownLists:
         output.append(packGrammarChunk(6, parseObj.knownLists))
-    if len(parseObj.knownWords):
+    if parseObj.knownWords:
         output.append(packGrammarChunk(2, parseObj.knownWords))
-    if len(parseObj.ruleDefines):
+    if parseObj.ruleDefines:
         output.append(packGrammarRules(3, parseObj.knownRules, parseObj.ruleDefines))
     return b"".join(output)
 
@@ -682,7 +673,7 @@ def packGrammarChunk(chunktype: int, chunkdict: Dict) -> bytes:
     totalLen = 0
 
     for word, value in chunkdict.items():
-        if type(word) == str:
+        if isinstance(word, str):
             word = word.encode(preferredencoding)
         # if type(value) == str: value = value.encode()
         # chunk data entry
