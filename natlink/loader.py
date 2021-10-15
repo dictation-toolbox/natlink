@@ -217,6 +217,12 @@ class NatlinkMain:
             self.logger.setLevel(log_level.value)
             self.logger.debug(f'set log level to: {log_level.name}')
 
+def get_natlink_system_config_filename() -> str:
+    hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, r'Software\Natlink', winreg.KEY_WOW64_32KEY)
+    with winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags) as natlink_key:
+        core_path, _ = winreg.QueryValueEx(natlink_key, "coreDir")
+        return core_path
+
 def config_locations() -> Iterable[str]:
     yield os.path.expanduser('~/.natlink')
     try:
