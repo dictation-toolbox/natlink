@@ -7,6 +7,7 @@ import logging
 import os
 import subprocess
 import sys
+import sysconfig
 import time
 import traceback
 import winreg
@@ -216,14 +217,6 @@ class NatlinkMain:
             self.logger.setLevel(log_level.value)
             self.logger.debug(f'set log level to: {log_level.name}')
 
-
-def get_natlink_system_config_filename() -> str:
-    hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, r'Software\Natlink', winreg.KEY_WOW64_32KEY)
-    with winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags) as natlink_key:
-        core_path, _ = winreg.QueryValueEx(natlink_key, "coreDir")
-        return core_path
-
-
 def config_locations() -> Iterable[str]:
     yield os.path.expanduser('~/.natlink')
     try:
@@ -232,16 +225,8 @@ def config_locations() -> Iterable[str]:
         # installed locally
         pass
 
-
-def set_sys_path_as_if_command_line_python() -> None:
-    get_syspath_cmd = ["py",  f"-{sys.winver}", "-c", "import os, sys; print(sys.path)"]
-    syspath_as_string = subprocess.run(get_syspath_cmd, capture_output=True)
-    sys.path = ast.literal_eval(syspath_as_string.stdout.decode('UTF-8'))
-
-
 def run() -> None:
     logger = logging.getLogger('natlink')
-    set_sys_path_as_if_command_line_python()
     config = NatlinkConfig.from_first_found_file(config_locations())
     main = NatlinkMain(logger, config)
     main.setup_logger()

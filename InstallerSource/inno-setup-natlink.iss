@@ -77,8 +77,6 @@ begin
   DragonIniPage.Values[0] := BestGuessDragonIniDir();
 end;
 
-
-
 function NextButtonClick(CurPageID: Integer): Boolean;
 begin
   Result := True;
@@ -127,6 +125,16 @@ begin
   Result := RegKeyExists(HKCU, 'Software\Python\PythonCore\{#PythonVersion}')
 end;
 
+function GetPythonInstallPath(Param: String): String;
+begin
+ if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\{#PythonVersion}\InstallPath', '', Result) then 
+  begin
+    MsgBox('Could not find registry key HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath',
+           mbError, MB_OK);
+    exit
+  end
+end;
+
 function InitializeSetup(): Boolean;
 begin
   Result := True
@@ -165,13 +173,25 @@ end;
 
 [Registry]
 Root: HKLM; Subkey: "Software\{#MyAppName}"; Flags: uninsdeletekey
+
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "installPath"; ValueData: "{app}"
+
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "coreDir"; ValueData: "{#CoreDir}"
+
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "sitePackagesDir"; ValueData: "{#SitePackagesDir}"
+
+; Register which Dragon software was found and where .ini files were changed
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "dragonIniDir"; ValueData: "{code:GetDragonIniDir}"
+
+; Register 'natlink' version
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "version"; ValueData: "{#MyAppVersion}"
-; A Python-versioned key is there for _natlinkcore.pyd to find the natlink module's Python code
-Root: HKCU; Subkey: "Software\Python\PythonCore\{#PythonVersion}\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey
+
+; Add a key for natlink COM server (_natlink_core.pyd) to find the Python installation
+Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "pythonInstallPath"; ValueData: "{code:GetPythonInstallPath}"
+
+; Register natlink with command line invocations of Python: the Natlink site packages directory
+; is added as an additonal site package directory to sys.path during interpreter initialization.
+Root: HKLM; Subkey: "Software\Python\PythonCore\{#PythonVersion}\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey
 
 [INI]                                                                                                                                                   
 Filename: "{code:GetDragonIniDir}\nssystem.ini"; Section: "Global Clients"; Key: ".{#MyAppName}"; String: "Python Macro System"; Flags: uninsdeleteentry

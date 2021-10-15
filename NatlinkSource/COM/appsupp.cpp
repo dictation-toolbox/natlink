@@ -41,33 +41,59 @@ CDgnAppSupport::~CDgnAppSupport()
 {
 }
 
-// Add natlink .py file directory to sys.path so that 'natlink' 
-// module can be loaded (and final desired sys.path can be changed if needed)
-// return empty string on success; otherwise return error message
-static std::string AddToPythonSysPath(CDragonCode* pDragCode) {
+static std::string AddOurDirToConfig(PyConfig *config) {
 	using winreg::RegKey, winreg::RegResult;
 	// _natlinkcore.pyd (this code, dear reader!) doesn't know where it is; find out
-	std::wstring key_wstring(L"SOFTWARE\\Python\\PythonCore\\" WQUOTE(PYTHON_VERSION) "-32" 
-			         L"\\PythonPath\\" TEXT(MYAPP_NAME));
+
+	std::wstring key_wstring(L"SOFTWARE\\Natlink");
     RegKey key;
 	RegResult result = key.TryOpen(HKEY_CURRENT_USER, key_wstring.c_str(), KEY_READ);
 	if (!result) {
 		return (std::string("Error: could not open HKLM\\") + 
-				std::string(key_wstring.begin(), key_wstring.end()) + 
-							std::string("\n"));
+				std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
 	} 
 	else { // now the install location of Natlink pyd and sources is known; add to sys.path
-		wchar_t *wstring = Py_GetPath();
-		std::wstring str_wstring(wstring);
-		std::wstring new_wstring(key.GetStringValue(L"") + std::wstring(L"\\;") + str_wstring);
-		// amend psys.path so that the python package 'natlink' can be loaded
-		Py_SetPath(new_wstring.c_str());
-	    return (std::string(""));
+	    if (auto new_wstring = key.TryGetStringValue(L"sitePackagesDir")) {
+			// amend psys.path so that the python package 'natlink' can be loaded
+			PyStatus status = PyWideStringList_Append(&(config->module_search_paths), 
+														(*new_wstring).c_str());
+			if (PyStatus_Exception(status))
+				return (std::string("Natlink: could not append: ") +
+						std::string((*new_wstring).begin(), (*new_wstring).end()) + 
+						std::string("\n"));
+			else
+				return std::string("");
+		} else {
+			return (std::string("Error: could not open subkey sitePackagesDir of HKLM\\") + 
+					std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
+		}
 	}
 }
 
+
+static std::string AddPythonInstallPathToConfig(PyConfig *config) {
+	using winreg::RegKey, winreg::RegResult;
+	std::wstring key_wstring(L"SOFTWARE\\Natlink");
+    RegKey key;
+	RegResult result = key.TryOpen(HKEY_LOCAL_MACHINE, key_wstring.c_str(), KEY_READ);
+	if (!result) {
+		return (std::string("Error: could not open HKLM\\") + 
+				std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
+	} 
+	else { // now the install location of Python is known
+		std::wstring new_wstring(key.GetStringValue(L"pythonInstallPath"));
+  	    if (auto new_wstring = key.TryGetStringValue(L"pythonInstallPath")) {
+	    	PyConfig_SetString(config, &(config->prefix), (*new_wstring).c_str());
+			return std::string("");
+		  } else {
+			  return (std::string("Error: could not open subkey pythonInstallPath of HKLM\\") + 
+					std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
+		  }
+	}
+}
+
+
 static void DisplaySysPath(CDragonCode* pDragCode) {
-	// display sys.path 
 	std::wstring str_wstring = std::wstring(Py_GetPath());
 	std::string str_string(str_wstring.begin(), str_wstring.end());
 	pDragCode->displayText((std::string("initial sys.path: ") + str_string + "\n").c_str(), FALSE);
@@ -114,6 +140,48 @@ static void CallPyFunctionOrDisplayError(CDragonCode* pDragCode, PyObject* pMod,
 	Py_XDECREF(result);
 }
 
+// Try to make our customized Python behave like regular Python;
+// see https://docs.python.org/3/c-api/init_config.html#init-python-config
+std::string DoPyConfig(void) {
+	std::string init_error = "";
+    PyStatus status;
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+
+    /* Set the program name. Implicitly preinitialize Python. */
+    status = PyConfig_SetString(&config, &config.program_name,  WQUOTE(PYTHON_DLL));
+    if (PyStatus_Exception(status)) {
+		init_error = "Natlink: failed set program name\n";
+        goto fail;
+    }
+
+	init_error = AddOurDirToConfig(&config);
+	if (!init_error.empty()) {
+		goto fail;
+	}
+
+	init_error = AddPythonInstallPathToConfig(&config);
+	if (!init_error.empty()) {
+		goto fail;
+	}
+
+    status = Py_InitializeFromConfig(&config);
+    if (PyStatus_Exception(status)) {
+		init_error = "Natlink: failed initialize from config\n";
+        goto fail;
+    }
+	
+	return init_error; // success, return ""
+
+fail:
+   //   PyConfig_Clear(&config);
+   //  Py_ExitStatusException(status);
+	OutputDebugString(TEXT( "NatLink: failed python_init") );
+	
+    status = Py_InitializeFromConfig(&config);
+	return init_error;
+}
+
 
 //---------------------------------------------------------------------------
 // Called by NatSpeak once when the compatibility module is first loaded.
@@ -127,17 +195,11 @@ static void CallPyFunctionOrDisplayError(CDragonCode* pDragCode, PyObject* pMod,
 
 STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 {
-	// when this code (_natlinkcore.pyd) executes, the python interpreter (included in 
-	// the natlink library as a sibling of of _natlinkcore.pyd) has already been 
-	// dynamically linked to offer CPython calls, but it doesn't know where the natlink
-	// python code is, so help it!
-	std::string syspath_error = AddToPythonSysPath(m_pDragCode);
 	// load and initialize the Python system
+	std::string init_error =  DoPyConfig();
 	Py_Initialize();
-	// set sys.argv so it exists as [''].
-	PySys_SetArgvEx(1, NULL, 0);
 
-	// load the natlink module into Python and return a pointer to shared CDragonCode object
+	// load the natlink COM interface into Python and return a pointer to shared CDragonCode object
 	m_pDragCode = initModule();
 	m_pDragCode->setAppClass( this );
 
@@ -150,10 +212,11 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 		return S_OK;
 	}
 	
-    // only now do we have the window to show info and possible error message from registry lookup
+    // only now do we have the window to show info and possible error messages from before 
+	// Python init
 	DisplayVersions(m_pDragCode);
-	if ( !syspath_error.empty()) {
-		m_pDragCode->displayText(syspath_error.c_str());
+	if ( !init_error.empty()) {
+		m_pDragCode->displayText(init_error.c_str());
 		return S_OK;
 	}
 
