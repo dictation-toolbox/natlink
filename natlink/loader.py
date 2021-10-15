@@ -227,6 +227,13 @@ def config_locations() -> Iterable[str]:
 
 def run() -> None:
     logger = logging.getLogger('natlink')
+
+    # TODO: remove this hack. As of October 2021, win32api does not load properly, except if
+    # the package pywin32_system32 is explictly put on new dll_directory white-list
+    pywin32_dir = os.path.join(sysconfig.get_path('platlib'), "pywin32_system32")
+    if os.path.isdir(pywin32_dir):
+        os.add_dll_directory(pywin32_dir)
+    
     config = NatlinkConfig.from_first_found_file(config_locations())
     main = NatlinkMain(logger, config)
     main.setup_logger()
