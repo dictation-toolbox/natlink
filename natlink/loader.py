@@ -1,5 +1,4 @@
 #pylint:disable=C0114, C0115, C0116, R1705, R0902, W0703
-import ast
 import importlib
 import importlib.machinery
 import importlib.util
@@ -7,7 +6,6 @@ import logging
 import os
 import subprocess
 import sys
-import sysconfig
 import time
 import traceback
 import winreg

@@ -1,3 +1,7 @@
+# TODO: delete this file. This file is currently not useable because a pip
+# install must update registry entries for initialization code in appsupp.cpp
+# and must install a link to the python3X.dll.
+
 from setuptools import setup, find_packages
 
 setup(
