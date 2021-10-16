@@ -6,6 +6,7 @@ import logging
 import os
 import subprocess
 import sys
+import sysconfig
 import time
 import traceback
 import winreg
