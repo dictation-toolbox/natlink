@@ -21,8 +21,8 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "{#SourceRoot}\natlink\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
-Source: "{#SourceRoot}\natlink\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+Source: "{#SourceRoot}\NatlinkModule\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+Source: "{#SourceRoot}\NatlinkModule\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core.pyd"; DestDir: "{#CoreDir}"; Flags: ignoreversion regserver {#Bits}
 ; copy python3x.dll from Python installation to Natlink installation
 Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: "{#CoreDir}"; Flags: external ignoreversion

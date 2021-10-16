@@ -12,6 +12,7 @@ set(PY_SRCS
     py.typed
     )
 
+# TODO
 foreach(pyfile ${PY_SRCS})
   add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/natlink/${pyfile}"
     COMMAND cmake -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}"
@@ -23,7 +24,7 @@ foreach(pyfile ${PY_SRCS})
 endforeach(pyfile)
 
 set(pyfile setup.py)
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${pyfile}"
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/natlink/${pyfile}"
 
 # TODO: why copying to ${CMAKE_CURRENT_BINARY_DIR}/natlink/? 
 # when inno reads directly from source tree??

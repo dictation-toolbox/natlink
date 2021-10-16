@@ -16,6 +16,6 @@ endif()
 message(STATUS "Using Python installation found at: ${Python3_EXECUTABLE}")
 
 add_subdirectory ("NatlinkSource")
-add_subdirectory ("natlink")
+add_subdirectory ("NatlinkModule")
 
 add_subdirectory ("InstallerSource")
