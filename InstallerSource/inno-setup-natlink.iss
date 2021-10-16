@@ -12,7 +12,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 LicenseFile={#SourceRoot}\LICENSE
 OutputDir={#BinaryRoot}\InstallerSource
-OutputBaseFilename=natlink{#MyAppVersion}-py{#PythonVersion}-setup
+OutputBaseFilename=natlink{#MyAppVersion}-py{#PythonVersion}-32-setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -24,13 +24,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "{#SourceRoot}\natlink\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 Source: "{#SourceRoot}\natlink\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core.pyd"; DestDir: "{#CoreDir}"; Flags: ignoreversion regserver {#Bits}
-Source: "{#PythonDLL}"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+; copy python3x.dll from Python installation to Natlink installation
+Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: "{#CoreDir}"; Flags: external ignoreversion
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
 [Code]
-
 
 var
   DragonIniPage: TInputDirWizardPage;
@@ -122,14 +122,14 @@ end;
 
 function CorrectPythonFound(): Boolean;
 begin
-  Result := RegKeyExists(HKCU, 'Software\Python\PythonCore\{#PythonVersion}')
+  Result := RegKeyExists(HKLM, 'Software\Python\PythonCore\{#PythonVersion}-32')
 end;
 
 function GetPythonInstallPath(Param: String): String;
 begin
- if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\{#PythonVersion}\InstallPath', '', Result) then 
+ if not RegQueryStringValue(HKLM, 'Software\Python\PythonCore\{#PythonVersion}-32\InstallPath', '', Result) then 
   begin
-    MsgBox('Could not find registry key HKLM\Software\Python\PythonCore\{#PythonVersion}\InstallPath',
+    MsgBox('Could not find registry key HKLM\Software\Python\PythonCore\{#PythonVersion}-32\InstallPath',
            mbError, MB_OK);
     exit
   end
@@ -140,7 +140,7 @@ begin
   Result := True
   if not CorrectPythonFound() then
   begin
-    MsgBox('Could not find Python {#PythonVersion}, aborting. '
+    MsgBox('Could not find Python {#PythonVersion}-32 Software\Python\PythonCore\{#PythonVersion}-32, aborting. '
     + 'Please install this Python then try again.', mbError, MB_OK );
     Result := False;
     exit;
@@ -191,7 +191,7 @@ Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "pyth
 
 ; Register natlink with command line invocations of Python: the Natlink site packages directory
 ; is added as an additonal site package directory to sys.path during interpreter initialization.
-Root: HKLM; Subkey: "Software\Python\PythonCore\{#PythonVersion}\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\Python\PythonCore\{#PythonVersion}-32\PythonPath\{#MyAppName}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey
 
 [INI]                                                                                                                                                   
 Filename: "{code:GetDragonIniDir}\nssystem.ini"; Section: "Global Clients"; Key: ".{#MyAppName}"; String: "Python Macro System"; Flags: uninsdeleteentry

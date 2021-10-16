@@ -13,13 +13,10 @@ set (INSTALLER_FILE_BASE "natlink${NATLINK_VERSION}-py${PYTHON_VERSION}-32-setup
 add_custom_target(natlink-installer 
         ALL DEPENDS "${INSTALLER_FILE_BASE}.exe")
 
-add_executable(python_dll IMPORTED)
-set_target_properties(python_dll  
-        PROPERTIES
-        IMPORTED_LOCATION ${_Python3_RUNTIME_LIBRARY_RELEASE})
-
 # TODO: why all this copying when not used? add lots of dependencies:
 # such as .py files (see inno-setup-natlink.iss, which uses source files directly)
+string(REPLACE "." "" PYTHON_VERSION_NO_DOT ${PYTHON_VERSION})
+
 add_custom_command(
     OUTPUT "${INSTALLER_FILE_BASE}.exe"
     DEPENDS NatlinkPyd python_dll "inno-setup-natlink.iss"
@@ -30,8 +27,8 @@ add_custom_command(
         /D"SourceRoot=${CMAKE_SOURCE_DIR}"
         /D"BinaryRoot=${CMAKE_BINARY_DIR}"
         /D"MyAppVersion=${NATLINK_VERSION}"
-        /D"PythonVersion=${PYTHON_VERSION}-32"
-        /D"PythonDLL=$<TARGET_FILE:python_dll>"
+        /D"PythonVersion=${PYTHON_VERSION}"
+        /D"PythonVersionNoDot=${PYTHON_VERSION_NO_DOT}"
         /D"MyAppName=${MYAPP_NAME}"
 )
 

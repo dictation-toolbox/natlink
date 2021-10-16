@@ -47,7 +47,7 @@ static std::string AddOurDirToConfig(PyConfig *config) {
 
 	std::wstring key_wstring(L"SOFTWARE\\Natlink");
     RegKey key;
-	RegResult result = key.TryOpen(HKEY_CURRENT_USER, key_wstring.c_str(), KEY_READ);
+	RegResult result = key.TryOpen(HKEY_LOCAL_MACHINE, key_wstring.c_str(), KEY_READ);
 	if (!result) {
 		return (std::string("Error: could not open HKLM\\") + 
 				std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
