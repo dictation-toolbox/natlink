@@ -19,7 +19,7 @@ string(REPLACE "." "" PYTHON_VERSION_NO_DOT ${PYTHON_VERSION})
 
 add_custom_command(
     OUTPUT "${INSTALLER_FILE_BASE}.exe"
-    DEPENDS NatlinkPyd "inno-setup-natlink.iss"
+    DEPENDS NatlinkPyd "inno-setup-natlink.iss" "inno-code.iss"
     COMMAND ${ISCC}
         ${CMAKE_CURRENT_SOURCE_DIR}/inno-setup-natlink.iss
         /O"${CMAKE_CURRENT_BINARY_DIR}"
@@ -29,6 +29,8 @@ add_custom_command(
         /D"MyAppVersion=${NATLINK_VERSION}"
         /D"PythonVersion=${PYTHON_VERSION}"
         /D"PythonVersionNoDot=${PYTHON_VERSION_NO_DOT}"
+        /D"PythonInstallURL=${PYTHON_INSTALL_URL}"
+        /D"PythonInstallExe=${PYTHON_INSTALL_EXE}"
         /D"MyAppName=${MYAPP_NAME}"
 )
 
