@@ -35,16 +35,26 @@ WelcomeLabel2=Welcome to {#MyAppName} {#MyAppVersion} for%n%nDragon/NaturallySpe
 [Files]
 Source: "{#SourceRoot}\NatlinkModule\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 Source: "{#SourceRoot}\NatlinkModule\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
-Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core.pyd"; DestDir: "{#CoreDir}"; Flags: ignoreversion regserver {#Bits}
+
+Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core15.pyd"; DestDir: "{#CoreDir}"; \
+  Flags: ignoreversion
+Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core1314.pyd"; DestDir: "{#CoreDir}"; \
+  Flags: ignoreversion 
+Source: "{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd"; DestDir: "{#CoreDir}"; DestName: "_natlink_core.pyd"; \
+  Flags: ignoreversion external regserver {#Bits}
+
 ; copy python3x.dll from Python installation to Natlink installation
-Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: "{#CoreDir}"; Flags: external ignoreversion; 
+Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: "{#CoreDir}"; \
+  Flags: external ignoreversion; 
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
 [INI]                                                    
-Filename: "{code:GetDragonIniDir}\nssystem.ini"; Section: "Global Clients"; Key: ".{#MyAppName}"; String: "Python Macro System"; Flags: uninsdeleteentry
-Filename: "{code:GetDragonIniDir}\nsapps.ini"; Section: ".{#MyAppName}"; Key: "App Support GUID"; String: "{#MyGUID}"; Flags: uninsdeletesection
+Filename: "{code:GetDragonIniDir}\nssystem.ini"; Section: "Global Clients"; Key: ".{#MyAppName}"; \
+  String: "Python Macro System"; Flags: uninsdeleteentry
+Filename: "{code:GetDragonIniDir}\nsapps.ini"; Section: ".{#MyAppName}"; Key: "App Support GUID"; \
+  String: "{#MyGUID}"; Flags: uninsdeletesection
 
 [Registry]
 Root: HKLM; Subkey: "Software\{#MyAppName}"; Flags: uninsdeletekey

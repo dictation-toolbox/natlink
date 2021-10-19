@@ -4,7 +4,8 @@ var
   DragonIniPage: TInputDirWizardPage;
   DownloadPage: TDownloadWizardPage;
 
-  CancelWithoutPrompt: boolean;
+  CancelWithoutPrompt: Boolean;
+  DragonVersion: String;
 
 procedure CancelButtonClick(CurPageID: Integer; var Cancel, Confirm: Boolean);
 begin
@@ -20,26 +21,28 @@ begin
   if DirExists(TestDir) then
   begin
     Result := TestDir;
+    DragonVersion := '15';
     exit;
   end;
   TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking14');
   if DirExists(TestDir) then
   begin
     Result := TestDir;
+    DragonVersion := '1314';
     exit;
   end;
   TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking13');
   if DirExists(TestDir) then
   begin
     Result := TestDir;
+    DragonVersion := '1314';
     exit;
   end;
-  TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking12');
-  if DirExists(TestDir) then
-  begin
-    Result := TestDir;
-    exit;
-  end;
+end;
+
+function GetDragonVersion(Param: String): String;
+begin
+  Result := DragonVersion;
 end;
 
 function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
@@ -129,7 +132,7 @@ begin
         end;
       end;
   end;
-  
+
   if CurPageID = wpSelectDir then
   begin
     if not FileExists(DragonIniPage.Values[0]+'\nsapps.ini') then
@@ -183,6 +186,7 @@ function InitializeSetup(): Boolean;
 begin
   Result := True;
   CancelWithoutPrompt := False;
+  DragonVersion := 'XXX'; 
   if IsDragonRunning() then
   begin
     MsgBox('Dragon is running, aborting. '

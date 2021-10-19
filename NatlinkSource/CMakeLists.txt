@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
-set(PROJECT_NAME NatlinkPyd)
+set(PROJECT_NAME NatlinkPyds)
+
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS  ON)
-
-project(${PROJECT_NAME})
 
 set(SRC_FILES
         COM/appsupp.cpp
@@ -42,11 +41,13 @@ source_group("Headers" FILES ${HEADERS_FILES})
 include_directories(${Python3_INCLUDE_DIRS})
 include_directories("extern")
 
-add_compile_definitions(DRAGON_VERSION=${DRAGON_VERSION}
-                        NATLINK_VERSION="${NATLINK_VERSION}"
+add_compile_definitions(NATLINK_VERSION="${NATLINK_VERSION}"
                         PYTHON_DLL="$<TARGET_FILE:python_dll>"
-                        PYTHON_VERSION=${PYTHON_VERSION}
+                        PYTHON_VERSION="${PYTHON_VERSION}"
                         MYAPP_NAME="${MYAPP_NAME}")
+
+
+                        
 add_compile_options("/std:c++17")
 
 # Asserts that Py_ssize_t is used in argument parsing,
@@ -74,16 +75,22 @@ foreach(flag_var
     endif(${flag_var} MATCHES "/MD")
 endforeach(flag_var)
 
-# Add library to build.
-add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
-
-set_target_properties(
-        ${PROJECT_NAME}
-        PROPERTIES
+# Add DLL libraries to build, one for 15 and one for 13, 14.
+add_library(natlink15_pyd SHARED ${SRC_FILES})
+add_library(natlink1314_pyd SHARED ${SRC_FILES})
+# They share some properties
+set_target_properties(natlink15_pyd natlink1314_pyd PROPERTIES
         PREFIX ""
         SUFFIX ".pyd"
-        OUTPUT_NAME "_natlink_core"
         LINKER_LANGUAGE C
-        DEPENDS python_dll
-)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${Python3_LIBRARIES})
+        DEPENDS python_dll)
+# and they both use Python libraries
+set_property(TARGET natlink15_pyd natlink1314_pyd
+             APPEND PROPERTY LINK_LIBRARIES ${Python3_LIBRARIES})
+# Now, define filename for Dragon 15 pyd and the -D passed to the compiler
+set_property(TARGET natlink15_pyd PROPERTY OUTPUT_NAME "_natlink_core15" )
+target_compile_definitions(natlink15_pyd PRIVATE DRAGON_VERSION=15)
+# Same for Dragon 1314
+set_property(TARGET natlink1314_pyd PROPERTY OUTPUT_NAME "_natlink_core1314" )
+target_compile_definitions(natlink1314_pyd PRIVATE DRAGON_VERSION=1314)
+

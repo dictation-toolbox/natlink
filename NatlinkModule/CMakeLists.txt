@@ -35,9 +35,9 @@ DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}"
 list(APPEND pyfile_dest "${CMAKE_CURRENT_BINARY_DIR}/${pyfile}")
 
 add_custom_target(${PROJECT_NAME} ALL DEPENDS ${pyfile_dest})
-add_dependencies(${PROJECT_NAME} NatlinkPyd)
+add_dependencies(${PROJECT_NAME} natlink15_pyd)
 
 # TODO: why copy?
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:NatlinkPyd> "${CMAKE_CURRENT_BINARY_DIR}/natlink"
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:natlink15_pyd> "${CMAKE_CURRENT_BINARY_DIR}/natlink"
 )
