@@ -7,6 +7,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(BUILD_SHARED_LIBS  ON)
 
+configure_file(natlink.rc.in natlink.rc)
+
 set(SRC_FILES
         COM/appsupp.cpp
         DictationObject.cpp
@@ -18,7 +20,7 @@ set(SRC_FILES
         ResultObject.cpp
         MessageWindow.cpp
         StdAfx.cpp
-        natlink.rc
+        ${CMAKE_CURRENT_BINARY_DIR}/natlink.rc
         )
 source_group("Sources" FILES ${SRC_FILES})
 
@@ -38,7 +40,8 @@ set(HEADERS_FILES
         )
 source_group("Headers" FILES ${HEADERS_FILES})
 
-include_directories(${Python3_INCLUDE_DIRS})
+# include CMAKE_CURRENT_SOURCE_DIR for the benefit of natlink.rc (in current_binary_dir)
+include_directories(${Python3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories("extern")
 
 add_compile_definitions(NATLINK_VERSION="${NATLINK_VERSION}"

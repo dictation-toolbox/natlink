@@ -74,7 +74,7 @@ BEGIN
             VALUE "InternalName", "natlink.pyd"
             VALUE "OriginalFilename", "natlink.pyd"
             VALUE "ProductName", "natlink"
-            VALUE "ProductVersion", "6.0"
+            VALUE "ProductVersion", "@NATLINK_VERSION@"
         END
     END
     BLOCK "VarFileInfo"
