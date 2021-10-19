@@ -28,14 +28,14 @@ begin
   if DirExists(TestDir) then
   begin
     Result := TestDir;
-    DragonVersion := '1314';
+    DragonVersion := '13';
     exit;
   end;
   TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking13');
   if DirExists(TestDir) then
   begin
     Result := TestDir;
-    DragonVersion := '1314';
+    DragonVersion := '13';
     exit;
   end;
 end;

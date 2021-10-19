@@ -22,9 +22,6 @@ endif()
 # "python-3.10.0.exe"
 string(REGEX MATCH "[^/]*$" PYTHON_INSTALL_EXE ${PYTHON_INSTALL_URL})
 
-# DEPRECATE
-set(DRAGON_VERSION 15)
-
 # The header files of $(PYTHON_VERSION) must be present
 find_package (Python3 ${PYTHON_VERSION} EXACT REQUIRED
                       COMPONENTS Development)

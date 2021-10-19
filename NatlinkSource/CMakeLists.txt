@@ -77,20 +77,20 @@ endforeach(flag_var)
 
 # Add DLL libraries to build, one for 15 and one for 13, 14.
 add_library(natlink15_pyd SHARED ${SRC_FILES})
-add_library(natlink1314_pyd SHARED ${SRC_FILES})
+add_library(natlink13_pyd SHARED ${SRC_FILES})
 # They share some properties
-set_target_properties(natlink15_pyd natlink1314_pyd PROPERTIES
+set_target_properties(natlink15_pyd natlink13_pyd PROPERTIES
         PREFIX ""
         SUFFIX ".pyd"
         LINKER_LANGUAGE C
         DEPENDS python_dll)
 # and they both use Python libraries
-set_property(TARGET natlink15_pyd natlink1314_pyd
+set_property(TARGET natlink15_pyd natlink13_pyd
              APPEND PROPERTY LINK_LIBRARIES ${Python3_LIBRARIES})
 # Now, define filename for Dragon 15 pyd and the -D passed to the compiler
 set_property(TARGET natlink15_pyd PROPERTY OUTPUT_NAME "_natlink_core15" )
 target_compile_definitions(natlink15_pyd PRIVATE DRAGON_VERSION=15)
-# Same for Dragon 1314
-set_property(TARGET natlink1314_pyd PROPERTY OUTPUT_NAME "_natlink_core1314" )
-target_compile_definitions(natlink1314_pyd PRIVATE DRAGON_VERSION=1314)
+# Same for Dragon 13
+set_property(TARGET natlink13_pyd PROPERTY OUTPUT_NAME "_natlink_core13" )
+target_compile_definitions(natlink13_pyd PRIVATE DRAGON_VERSION=13)
 

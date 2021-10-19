@@ -38,7 +38,7 @@ Source: "{#SourceRoot}\NatlinkModule\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignor
 
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core15.pyd"; DestDir: "{#CoreDir}"; \
   Flags: ignoreversion
-Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core1314.pyd"; DestDir: "{#CoreDir}"; \
+Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core13.pyd"; DestDir: "{#CoreDir}"; \
   Flags: ignoreversion 
 Source: "{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd"; DestDir: "{#CoreDir}"; DestName: "_natlink_core.pyd"; \
   Flags: ignoreversion external regserver {#Bits}
