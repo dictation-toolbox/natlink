@@ -15,7 +15,7 @@ from types import ModuleType
 from typing import List, Dict, Set, Iterable, Any, Tuple, Callable, Optional
 
 import natlink
-from natlink.config import LogLevel, NatlinkConfig
+from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI
 
 
 class NatlinkMain:
@@ -219,15 +219,14 @@ class NatlinkMain:
 def get_natlink_system_config_filename() -> str:
     hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, r'Software\Natlink', winreg.KEY_WOW64_32KEY)
     with winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags) as natlink_key:
-        core_path, _ = winreg.QueryValueEx(natlink_key, "coreDir")
+        core_path, _ = winreg.QueryValueEx(natlink_key, "installPath")
         return core_path
 
 def config_locations() -> Iterable[str]:
-    yield os.path.expanduser('~/.natlink')
+    yield os.path.expanduser(f'~/{NATLINK_INI}')
     try:
-        yield get_natlink_system_config_filename()
+        yield os.path.join(get_natlink_system_config_filename(), "InstallTest", NATLINK_INI)
     except OSError:
-        # installed locally
         pass
 
 def run() -> None:

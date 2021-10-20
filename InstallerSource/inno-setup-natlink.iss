@@ -33,9 +33,11 @@ WelcomeLabel2=Welcome to {#MyAppName} {#MyAppVersion} for%n%nDragon/NaturallySpe
 #include "inno-code.iss"
 
 [Files]
+; The Python sources
 Source: "{#SourceRoot}\NatlinkModule\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 Source: "{#SourceRoot}\NatlinkModule\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 
+; The _natlinkXX.pyd --- and programmatically choose the correct one for _natlink.pyd
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core15.pyd"; DestDir: "{#CoreDir}"; \
   Flags: ignoreversion
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core13.pyd"; DestDir: "{#CoreDir}"; \
@@ -43,9 +45,14 @@ Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core13.pyd"; DestDir: "{#Cor
 Source: "{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd"; DestDir: "{#CoreDir}"; DestName: "_natlink_core.pyd"; \
   Flags: ignoreversion external regserver {#Bits}
 
-; copy python3x.dll from Python installation to Natlink installation
+; Python dll: copy python3x.dll from Python installation to Natlink installation so it'll be
+; dynamically linked at _natlink.pyd launch
 Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: "{#CoreDir}"; \
   Flags: external ignoreversion; 
+
+; InstallTest
+Source: "{#SourceRoot}\NatlinkModule\InstallTest\*"; DestDir: "{app}\InstallTest"; Flags: ignoreversion
+
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"

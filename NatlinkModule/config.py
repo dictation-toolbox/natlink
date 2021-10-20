@@ -7,6 +7,7 @@ from typing import List, Iterable, Dict
 
 import natlink
 
+NATLINK_INI = "natlink.ini"
 class NoGoodConfigFoundException(natlink.NatError):
     pass
 
