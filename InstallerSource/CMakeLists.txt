@@ -14,7 +14,11 @@ add_custom_target(natlink-installer
 string(REPLACE "." "" PYTHON_VERSION_NO_DOT ${PYTHON_VERSION})
 
 add_custom_command(OUTPUT "${INSTALLER_FILE_BASE}.exe"
-    DEPENDS NatlinkModule InstallTest "inno-setup-natlink.iss" "inno-code.iss"
+    DEPENDS StampDriver # otherwise the stamps are not checked
+    ${PROJECT_BINARY_DIR}/NatlinkModule/NatlinkModule.STAMP 
+    ${PROJECT_BINARY_DIR}/NatlinkModule/InstallTest.STAMP
+    inno-setup-natlink.iss inno-code.iss
+    COMMENT "Now Building Installer"
     COMMAND ${ISCC}
         ${CMAKE_CURRENT_SOURCE_DIR}/inno-setup-natlink.iss
         /O"${CMAKE_CURRENT_BINARY_DIR}"

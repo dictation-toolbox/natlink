@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.14)
+﻿cmake_minimum_required (VERSION 3.20)
 
 project (Natlink)
 set(NATLINK_VERSION 6.0)
@@ -18,7 +18,7 @@ elseif(${PYTHON_VERSION} STREQUAL 3.8)
     set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.8.10/python-3.8.10.exe") 
 endif()
 
-# fish for the suffix in PYTHON_INSTALL_EXE after the last "/", something like
+# Fish for the suffix in PYTHON_INSTALL_EXE after the last "/", something like
 # "python-3.10.0.exe"
 string(REGEX MATCH "[^/]*$" PYTHON_INSTALL_EXE ${PYTHON_INSTALL_URL})
 
@@ -30,7 +30,12 @@ if (NOT(Python3_FOUND))
 endif()  
 message(STATUS "Using Python installation found at: ${Python3_EXECUTABLE}")
 
-# Now configure the project
-add_subdirectory ("NatlinkSource")
-add_subdirectory ("NatlinkModule")
+# Build C++ code, including two versions of _natlink.pyd, the COM server running Python
+add_subdirectory ("NatlinkSource") 
+#  Build the NatlinkModule, that is, depend on the previous step and 
+#  make sure that the Python sources and such are fresh. Mark this
+#  situation as a file NatlinkModule/NatlinkModule.STAMP. Similarly, mark
+#  mark the up-to-dateness of the tests as NatlinkModule/InstallTest.STAMP
+add_subdirectory ("NatlinkModule") # build two
+# Now, using dependcy on the stamps, start the inno installation generator
 add_subdirectory ("InstallerSource")
