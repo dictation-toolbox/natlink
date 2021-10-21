@@ -17,9 +17,6 @@
 #include <winreg.h>
 #include "../extern/WinReg/WinReg.hpp"
 
-#define WQUOTE_(x)    L#x
-#define WQUOTE(x)     WQUOTE_(x)
-
 // #include <plog/Log.h>
 // from PythWrap.cpp
 CDragonCode * initModule();
@@ -147,13 +144,6 @@ std::string DoPyConfig(void) {
     PyStatus status;
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
-
-    /* Set the program name. Implicitly preinitialize Python. */
-    status = PyConfig_SetString(&config, &config.program_name,  WQUOTE(PYTHON_DLL));
-    if (PyStatus_Exception(status)) {
-		init_error = "Natlink: failed set program name\n";
-        goto fail;
-    }
 
 	init_error = AddOurDirToConfig(&config);
 	if (!init_error.empty()) {

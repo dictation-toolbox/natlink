@@ -32,7 +32,6 @@ include_directories(${Python3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories("extern")
 
 add_compile_definitions(NATLINK_VERSION="${NATLINK_VERSION}"
-        PYTHON_DLL="$<TARGET_FILE:python_dll>" # for appsupp to configure program_name
         PYTHON_VERSION="${PYTHON_VERSION}" # strict discipline every
         MYAPP_NAME="${MYAPP_NAME}") # that'll likely be Natlink
                         
