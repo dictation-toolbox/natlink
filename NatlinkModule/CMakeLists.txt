@@ -1,43 +1,16 @@
-cmake_minimum_required(VERSION 3.12)
-set(PROJECT_NAME NatlinkModule)
-project(${PROJECT_NAME})
+# There are two kinds of files in this directory as expressed by two targets.
+# The first target NatlinkModule expresses natlink and its Python and pyd contents.
+# The second target InstallTest just records the files that the installer needs to
+# slurp up so that an InstallTest directory can be included on the instalee machine.
+# The use of these files is explicated in the inno-setup-natlink.iss: every file there
+# must be mentioned here!
+add_custom_target(NatlinkModule ALL DEPENDS 
+  __init__.py config.py gramparser.py
+  loader.py redirect_output.py _natlink_core.pyi py.typed)
+add_dependencies(NatlinkModule natlink13_pyd natlink15_pyd)
 
-set(PY_SRCS
-    __init__.py
-    config.py
-    gramparser.py
-    loader.py
-    redirect_output.py
-    _natlink_core.pyi
-    py.typed
-    )
+add_custom_target(InstallTest ALL DEPENDS
+  InstallTest/__init_.py InstallTest/natlink.ini InstallTest/_meet_natlink.py
+  InstallTest/zebra.py)
 
-# TODO
-foreach(pyfile ${PY_SRCS})
-  add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/natlink/${pyfile}"
-    COMMAND cmake -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}"
-    "${CMAKE_CURRENT_BINARY_DIR}/natlink/${pyfile}"
-    DEPENDS
-     "${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}"
-    )
-   list(APPEND pyfile_dest "${CMAKE_CURRENT_BINARY_DIR}/natlink/${pyfile}")
-endforeach(pyfile)
-
-set(pyfile setup.py)
-add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/natlink/${pyfile}"
-
-# TODO: why copying to ${CMAKE_CURRENT_BINARY_DIR}/natlink/? 
-# when inno reads directly from source tree??
-COMMAND cmake -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}"
-"${CMAKE_CURRENT_BINARY_DIR}/${pyfile}"
-DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}"
-)
-list(APPEND pyfile_dest "${CMAKE_CURRENT_BINARY_DIR}/${pyfile}")
-
-add_custom_target(${PROJECT_NAME} ALL DEPENDS ${pyfile_dest})
-add_dependencies(${PROJECT_NAME} natlink15_pyd)
-
-# TODO: why copy?
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:natlink15_pyd> "${CMAKE_CURRENT_BINARY_DIR}/natlink"
-)
+# NOTE: setup.py is not currently useable

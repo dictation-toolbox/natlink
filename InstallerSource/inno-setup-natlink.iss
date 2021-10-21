@@ -36,6 +36,7 @@ WelcomeLabel2=Welcome to {#MyAppName} {#MyAppVersion} for%n%nDragon/NaturallySpe
 ; The Python sources
 Source: "{#SourceRoot}\NatlinkModule\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 Source: "{#SourceRoot}\NatlinkModule\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+Source: "{#SourceRoot}\NatlinkModule\py.typed"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 
 ; The _natlinkXX.pyd --- and programmatically choose the correct one for _natlink.pyd
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core15.pyd"; DestDir: "{#CoreDir}"; \

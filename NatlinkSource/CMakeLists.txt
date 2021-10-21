@@ -1,84 +1,60 @@
-cmake_minimum_required(VERSION 3.12)
-set(PROJECT_NAME NatlinkPyds)
-
 set(CMAKE_CXX_STANDARD 20)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-set(BUILD_SHARED_LIBS  ON)
+set(BUILD_SHARED_LIBS ON)
 
 configure_file(natlink.rc.in natlink.rc)
 
 set(SRC_FILES
-        COM/appsupp.cpp
-        DictationObject.cpp
-        DragonCode.cpp
-        Exceptions.cpp
-        GrammarObject.cpp
-        natlink.cpp
-        pythwrap.cpp
-        ResultObject.cpp
-        MessageWindow.cpp
-        StdAfx.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/natlink.rc
-        )
-source_group("Sources" FILES ${SRC_FILES})
+        COM/appsupp.cpp DictationObject.cpp DragonCode.cpp
+        Exceptions.cpp GrammarObject.cpp natlink.cpp
+        pythwrap.cpp ResultObject.cpp MessageWindow.cpp
+        StdAfx.cpp ${CMAKE_CURRENT_BINARY_DIR}/natlink.rc)
 
 set(HEADERS_FILES
-        COM/appsupp.h
-        COM/comsupp.h
-        DictationObject.h
-        DragonCode.h
-        COM/dspeech.h
-        Exceptions.h
-        GrammarObject.h
-        ResultObject.h
-        Resource.h
-        MessageWindow.h
-        COM/speech.h
-        StdAfx.h
-        )
-source_group("Headers" FILES ${HEADERS_FILES})
+        COM/appsupp.h COM/comsupp.h DictationObject.h
+        DragonCode.h COM/dspeech.h Exceptions.h GrammarObject.h
+        ResultObject.h Resource.h MessageWindow.h
+        COM/speech.h StdAfx.h)
 
-# include CMAKE_CURRENT_SOURCE_DIR for the benefit of natlink.rc (in current_binary_dir)
-include_directories(${Python3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories("extern")
+# for Visual Studio convenience
+source_group("Headers" FILES ${HEADERS_FILES}) 
+source_group("Sources" FILES ${SRC_FILES})
 
-add_compile_definitions(NATLINK_VERSION="${NATLINK_VERSION}"
-                        PYTHON_DLL="$<TARGET_FILE:python_dll>"
-                        PYTHON_VERSION="${PYTHON_VERSION}"
-                        MYAPP_NAME="${MYAPP_NAME}")
-
-
-                        
-add_compile_options("/std:c++17")
-
-# Asserts that Py_ssize_t is used in argument parsing,
-# see note at top of https://docs.python.org/3/c-api/arg.html
-add_compile_definitions(PY_SSIZE_T_CLEAN)
-
+# TODO: this is wrong. We don't need the python interpreter, only it's name (if at all)
 add_executable(python_dll IMPORTED)
 set_target_properties(python_dll  
         PROPERTIES
         IMPORTED_LOCATION ${_Python3_RUNTIME_LIBRARY_RELEASE})
 
+# Include CMAKE_CURRENT_SOURCE_DIR for the benefit of natlink.rc (in current_binary_dir)
+include_directories(${Python3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories("extern")
 
-# Ensures a Stable Application Binary Interface forpython 3.2+
-#add_compile_definitions(Py_LIMITED_API)
+add_compile_definitions(NATLINK_VERSION="${NATLINK_VERSION}"
+        PYTHON_DLL="$<TARGET_FILE:python_dll>" # for appsupp to configure program_name
+        PYTHON_VERSION="${PYTHON_VERSION}" # strict discipline every
+        MYAPP_NAME="${MYAPP_NAME}") # that'll likely be Natlink
+                        
+add_compile_options("/std:c++17") # because of extern/WinReg
 
-# ensures that both the stdlib and vc runtime are statically linked into
-# the DLL -> fewer dependencies for the user
+# Asserts that Py_ssize_t is used in argument parsing,
+# see note at top of https://docs.python.org/3/c-api/arg.html
+add_compile_definitions(PY_SSIZE_T_CLEAN)
+
+# add_compile_definitions(Py_LIMITED_API) (need?) Stable Application Binary Interface
+
+# Make stdlib and vc runtime be statically linked into the DLL -> fewer dependencies for user
 foreach(flag_var
         CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
         CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-
     message(STATUS "${flag_var} ${${flag_var}}")
     if(${flag_var} MATCHES "/MD")
         string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
     endif(${flag_var} MATCHES "/MD")
 endforeach(flag_var)
 
-# Add DLL libraries to build, one for 15 and one for 13, 14.
+# Add two DLL libraries to build, one for 15 and one for 13 (which also works for 14).
 add_library(natlink15_pyd SHARED ${SRC_FILES})
 add_library(natlink13_pyd SHARED ${SRC_FILES})
 # They share some properties
