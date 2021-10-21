@@ -94,4 +94,5 @@ class NatlinkConfig:
         for fn in files:
             if config.read(fn):
                 return cls.from_config_parser(config)
-        raise NoGoodConfigFoundException('No good config found, did you define your ~/.natlink?')
+        # should not happen, because of InstallTest
+        raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')

@@ -223,12 +223,12 @@ def get_natlink_system_config_filename() -> str:
         return core_path
 
 def config_locations() -> Iterable[str]:
-    yield os.path.expanduser(f'~/{NATLINK_INI}')
-    try:
-        yield os.path.join(get_natlink_system_config_filename(), "InstallTest", NATLINK_INI)
-    except OSError:
-        pass
-
+    join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv
+    possible_dirs = ['~/', '~/Documents', '~/.natlink',
+                     join(get_natlink_system_config_filename(), "InstallTest")]
+    return ((getenv("NATLINK_INI") and [getenv("NATLINK_INI")]) or
+            [expanduser(join(loc, NATLINK_INI)) for loc in possible_dirs])
+  
 def run() -> None:
     logger = logging.getLogger('natlink')
 
