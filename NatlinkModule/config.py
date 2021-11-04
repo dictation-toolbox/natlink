@@ -5,11 +5,9 @@ from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
 
-import natlink
-
 NATLINK_INI = "natlink.ini"
-class NoGoodConfigFoundException(natlink.NatError):
-    pass
+class NoGoodConfigFoundException(Exception):
+    """No good config file found"""
 
 
 class LogLevel(IntEnum):
@@ -96,3 +94,4 @@ class NatlinkConfig:
                 return cls.from_config_parser(config)
         # should not happen, because of InstallTest
         raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
+    

@@ -1,10 +1,10 @@
-#pylint:disable=C0114, C0115, C0116, R1705, R0902, W0703
+#pylint:disable=C0114, C0115, C0116, R1705, R0902, W0703, E1101
 import importlib
 import importlib.machinery
 import importlib.util
 import logging
 import os
-import subprocess
+# import subprocess
 import sys
 import sysconfig
 import time
@@ -229,6 +229,67 @@ def config_locations() -> Iterable[str]:
     return ((getenv("NATLINK_INI") and [getenv("NATLINK_INI")]) or
             [expanduser(join(loc, NATLINK_INI)) for loc in possible_dirs])
   
+# def config_locations() -> Iterable[str]:
+#     r"""find possible config locations for NATLINK_INI
+#     
+#     1. name of config_file is defined as NATLINK_INI in config.py, but could be overridden by
+#     setting NATLINK_INI as environment variable.
+#         - if this variable is a valid filepath, take this
+#         - if this variable is a valid directory, take this directory / NATLINK_INI
+#     
+#     2.  the location of NATLINK_INI can also be configured by the
+#         env variable DICTATIONTOOLBOXHOME
+#         
+#         If so, below this (valid directory) there should be a directory ".natlink", and
+#         inside this directory there should be the file NATLINK_INI ("natlink.ini")
+#         
+#     3.  Otherwise, several directories are searched:
+#         "~" ("C:\Users\Username")
+#         "~/Documents"
+#         "~/.natlink"
+#         
+#     4.  As a last resort, the default directory for testing "C:\Program Files (x86)\Natlink\InstallTest" is taken.
+#         When you start Dragon with this default directory, it gives some useful information, but no grammars are loaded yet.
+#     
+#     """
+#     join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv
+#     
+#     # env variable NATLINK_INI can be a file or a directory:
+#     natlink_ini = getenv("NATLINK_INI")
+#     if natlink_ini and os.path.isfile(natlink_ini):
+#         # logger.info(f'take config_file from env variable NATLINK_INI: "{natlink_ini}"')
+#         return [natlink_ini]
+#     if natlink_ini and os.path.isdir(natlink_ini):
+#         natlink_ini_file = join(natlink_ini, NATLINK_INI)
+#         if os.path.isfile(natlink_ini_file):
+#             # logger.info(f'take config_file from directory of env variable NATLINK_INI: "{natlink_ini}"'
+#             #                  '\n\tSo config file is: "{natlink_ini_file}"')
+#             return [natlink_ini_file]
+#         # logger.warning(f'env variable NATLINK_INI points to directory: "{natlink_ini}", but does not have a valid file "natlink.ini"')
+#     # if natlink_ini:
+#     #     logger.warning(f'you defined env variable NATLINK_INI to "{natlink_ini}", but it'
+#     #                    '\n\tdoes not point to a valid directory with file "{NATLINK_INI}" or to a valid file')
+# 
+#     documents_dir = getenv('PERSONAL')
+#     possible_dirs = ['~/.natlink', join(documents_dir, ".natlink"),
+#                      '~/', documents_dir,
+#                      join(get_natlink_system_config_filename(), "InstallTest")]
+#     dictationtoolboxhome = getenv("DICTATIONTOOLBOXHOME")
+#     if dictationtoolboxhome and os.path.isdir(dictationtoolboxhome):
+#         natlink_config_dir = join(dictationtoolboxhome, '.natlink')
+#         if os.path.isdir(natlink_config_dir):
+#             # logger.info('add sub directory ".natlink" from env variable DICTATIONTOOLBOXHOME to'
+#                             # f'\n\tsearch for a valid config location: "%s"'% natlink_config_dir)
+#             possible_dirs.insert(0, natlink_config_dir)
+#         # else:
+#         #     logger.warning(f'env variable DICTATIONTOOLBOXHOME is set to "{dictationtoolboxhome}", but'
+#         #                         '\n\tno valid directory ".natlink" for the natlink config file is found')
+#     # elif dictationtoolboxhome:
+#     #     logger.warning(f'env variable DICTATIONTOOLBOXHOME is defined, but does not point to a '
+#     #                         f'\n\tvalid directory: "{dictationtoolboxhome}')
+# 
+#     return [expanduser(join(loc, NATLINK_INI)) for loc in possible_dirs]
+
 def run() -> None:
     logger = logging.getLogger('natlink')
 
