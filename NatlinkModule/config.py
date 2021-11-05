@@ -5,9 +5,11 @@ from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
 
+import natlink
+
 NATLINK_INI = "natlink.ini"
-class NoGoodConfigFoundException(Exception):
-    """No good config file found"""
+class NoGoodConfigFoundException(natlink.NatError):
+    pass
 
 
 class LogLevel(IntEnum):
