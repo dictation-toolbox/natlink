@@ -86,3 +86,4 @@ MacroSystem/*_vcl.py
 
 # Visual Studio
 .vs
+/NatlinkModule/config_in_loader_proposal_qh.py
