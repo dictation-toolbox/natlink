@@ -31,6 +31,7 @@ class NatlinkConfig:
         self.load_on_begin_utterance = load_on_begin_utterance
         self.load_on_startup = load_on_startup
         self.load_on_user_changed = load_on_user_changed
+        self.config_path = ''  # to be defined in from_first_found_file
 
     def __repr__(self) -> str:
         return f'NatlinkConfig(directories_by_user={self.directories_by_user}, log_level={self.log_level}, ' \
@@ -93,7 +94,9 @@ class NatlinkConfig:
         config = configparser.ConfigParser()
         for fn in files:
             if config.read(fn):
-                return cls.from_config_parser(config)
+                newcls = cls.from_config_parser(config)
+                newcls.config_path = fn
+                return newcls
         # should not happen, because of InstallTest
         raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
     

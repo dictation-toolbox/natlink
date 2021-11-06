@@ -197,7 +197,7 @@ class NatlinkMain:
             self.trigger_load()
 
     def start(self) -> None:
-        self.logger.info('starting natlink loader')
+        self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')
         natlink.active_loader = self
         self._add_dirs_to_path(self.config.directories)
         if self.config.load_on_startup:
