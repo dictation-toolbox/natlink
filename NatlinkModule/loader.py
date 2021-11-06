@@ -199,7 +199,7 @@ class NatlinkMain:
     def start(self) -> None:
         self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')
         natlink.active_loader = self
-        self._add_dirs_to_path(self.config.directories)
+        self._add_dirs_to_path(self.config.directories)  
         if self.config.load_on_startup:
             self.trigger_load()
         natlink.setBeginCallback(self.on_begin_callback)
@@ -223,10 +223,12 @@ def get_natlink_system_config_filename() -> str:
 
 def config_locations() -> Iterable[str]:
     join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv
-    possible_dirs = ['~/.natlink', '~/Documents/.natlink', '~/Documents','~/',
+    home = expanduser('~')
+    possible_dirs = [join(home, '.natlink'), join(home, 'Documents', '.natlink'),
+                     join(home, 'Documents'), home,
                      join(get_natlink_system_config_filename(), "InstallTest")]
     return ([getenv("NATLINK_INI")] if getenv('NATLINK_INI') else
-                [expanduser(join(loc, NATLINK_INI)) for loc in possible_dirs])
+                [join(loc, NATLINK_INI) for loc in possible_dirs])
 
 def run() -> None:
     logger = logging.getLogger('natlink')
@@ -238,6 +240,7 @@ def run() -> None:
         os.add_dll_directory(pywin32_dir)
     
     config = NatlinkConfig.from_first_found_file(config_locations())
+    print(f'now start NatlinkMain, with config file "{config.config_path}"')
     main = NatlinkMain(logger, config)
     main.setup_logger()
     main.start()
