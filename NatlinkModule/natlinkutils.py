@@ -1,117 +1,66 @@
-#
-# Python Macro Language for Dragon NaturallySpeaking
-#   (c) Copyright 1999 by Joel Gould
-#   Portions (c) Copyright 1999 by Dragon Systems, Inc.
-#
-# natlinkutils.py
-#   This file contains utility classes and functions for grammar files.
-#
-#
-# February 2021 (QH) skip import of natlinkmain
-#     only the function getCurrentApplicationName copied from natlinkmain...
-#
-# November 2018 (QH)
-#   Accept unicode input, convert to python 2.6 string
-#
-# September 2016 (QH)
-# - rulenumbers are one lower than before in Dragon 15, fix in resultsCallback.
-#
-# Februari 2016 (QH):
-# - added modifier keys for buttonClick (shift, ctrl, alt)
-# - add a {shift} in front of every "normal" playString call, thus preventing the double/dropping character bug.
-#   (the {shift} key is language specific, natlinkmain hold the correct string)
-# September 2013 (QH):
-# use import natlink instead of from natlink import *, forcing qualifying all calls to natlink functions from this module.
-# March 2010 (QH):
-#   - added deactivateSet() function in GrammarBase
-#   - added exceptlist optional variable to activateAll method of GrammarBase
-#   - added callRuleResultsFunctions in resultsCallback, so the calling of
-#         the rule result functions can be overloaded (for DocstringGrammar)
-# Dec 2009:
-#   - added the variable self.doOnlyGotResultsObject, which can be set inside a user gotResultsObject
-#     routine, in order to NOT further process the recognition
-#     (for kaiser_dictation.py, dictation to target application, QH)
-# August 17, 2009
-#   - added throughWords in SelectGramBase, in order to make more
-#     throughWords possible, like "through" and "until".
-# April 1, 2000
-#   - reformated this file to move documentation to the beginning of
-#     the classes
-#   - added DictGramBase and SelectGramBase and split common functions
-#     into shared internal GramClassBase
-#
-# Documentation
-#
-# This file contains three base classes and some useful constants and
-# utility functions.
-#
-#   GrammarBase - base class for all command and control grammars.
-#       See documentation below just before the class definition.
-#
-#   DictGramBase - base class for all pure dictation grammars.
-#       See documentation below just before the class definition.
-#
-#   SelectGramBase - base class for all selection grammars.
-#       See documentation below just before the class definition.
-#
-#   buttonClick( btnName='left',count=1 )
-#       This function simulates a button click or button double click.  Pass
-#       in the button name ('left','right' or 'middle') and the count (1 or
-#       2)
-#
-#   matchWindow( moduleInfo, modName, wndText )
-#       A utility function which determines whether moduleInfo matches a
-#       specified module name and window title.  Returns window handle on
-#       match and None on mismatch. Note that moduleInfo may be ("","",0)
-#       which we should handle cleanly.
-#
-#   See also the constants at the top of this file.
+"""natlinkutils.py
 
-############################################################################
-# experiment Mark (Vocola Extension)
-# making this experiment final:
-useMarkSendInput = 0
-if useMarkSendInput:
-    from natlinkcore import ExtendedSendDragonKeys
-    from natlinkcore import SendInput
+Python Macro Language for Dragon NaturallySpeaking
+  (c) Copyright 1999 by Joel Gould
+  Portions (c) Copyright 1999 by Dragon Systems, Inc.
 
-    # from natlinkcore.ExtendedSendDragonKeys import senddragonkeys_to_events
-    # from natlinkcore.SendInput import send_input
-    # print "======\nSendInput, a Vocola extension written by Mark Lillibridge,  is "
-    # print "used for all normal playString calls!  If you do not want this,"
-    # print "change the variable useMarkSendInput to 0 in line 65 of"
-    # print "natlinkutils.py.  This file is located in the directory "
-    # print "Natlink\MacroSystem\Core.  Then restart Dragon...\n======"
+  This file contains utility classes and functions for grammar files.
 
-useDtactionsSendkeys = 1   ## via dtactions to dragonfly
-if useDtactionsSendkeys:
-    from dtactions.sendkeys import sendkeys
+  Documentation
 
-# 
+  This file contains three base classes and some useful constants and
+    utility functions:
+
+  GrammarBase - base class for all command and control grammars.
+      See documentation below just before the class definition.
+
+  DictGramBase - base class for all pure dictation grammars.
+      See documentation below just before the class definition.
+
+  SelectGramBase - base class for all selection grammars.
+      See documentation below just before the class definition.
+
+  buttonClick( btnName='left',count=1 )
+      This function simulates a button click or button double click.  Pass
+      in the button name ('left','right' or 'middle') and the count (1 or
+      2)
+
+  matchWindow( moduleInfo, modName, wndText )
+      A utility function which determines whether moduleInfo matches a
+      specified module name and window title.  Returns window handle on
+      match and None on mismatch. Note that moduleInfo may be ("","",0)
+      which we should handle cleanly.
+
+  playString(string, hooks=None)
+      Send keystrokes to the foreground window.
+      
+      Due to problems with duplicating or dropping the first character of a string
+      when sending to the foreground window, this function is obsolete, and you should
+      use sendkeys from dragonfly via dtactions
+
+"""
+#pylint:disable=C0116, C0302, R0902, W0702, E1101
+
 import os
 import os.path
 import copy
-import types
 import struct
-import time
-
-from natlinkcore import natlink
-# import natlinkmain
-from natlinkcore import gramparser
-from natlinkcore import natlinkstatus
-from natlinkcore import utilsqh
 import sys
 import traceback
-import locale
 
-status = natlinkstatus.NatlinkStatus()
-debugLoad = status.getDebugLoad()
-DNSVersion = status.getDNSVersion()
-shiftkey = status.getShiftKey()
-del status
+import natlink
+from natlink import gramparser
 
-preferredencoding =  locale.getpreferredencoding()
-# print 'DNSVersion (natlinkutils) %s'% DNSVersion
+
+useDtactionsSendkeys = 1   ## via dtactions to dragonfly
+if useDtactionsSendkeys:
+    try:
+        from dtactions.sendkeys import sendkeys
+    except ImportError:
+        print('natlinkutils, cannot find sendkeys function')
+
+# was set in config program, and passed via natlinkstatus.py but now removed...
+debugLoad = 0
 
 # The following constants define the common windows message codes which
 # are passed to playEvents.
@@ -200,7 +149,7 @@ def getCurrentApplicationName(moduleInfo):
 
     normally: the application name from currentModule[0]
 
-    if this is applicationframhost, try from title in above dict, ApplicationFrameHostTitles
+    if this is applicationframehost, try from title in above dict, ApplicationFrameHostTitles
     """
             # return os.path.splitext(
         #     os.path.split(self.currentModule[0]) [1]) [0].lower()
@@ -209,9 +158,9 @@ def getCurrentApplicationName(moduleInfo):
         curModule = os.path.splitext(os.path.split(moduleInfo[0])[1])[0]
     except:
         print(f'getCurrentApplicationName: invalid modulename, skipping moduleInfo: {moduleInfo}')
-        return
+        return ''
     if not curModule:
-        return
+        return ''
 
     progname = curModule.lower()
     if curModule == 'ApplicationFrameHost':
@@ -224,9 +173,7 @@ def getCurrentApplicationName(moduleInfo):
                 break
         else:
             print(f'ApplicationFrameHost with title: {title} not found in titles, enter in configuration')
-            return
-        # print(f'getCurrentApplicationName,  from ApplicationFrameHost, return progName: {progname}')
-    # print(f'getCurrentApplicationName,  return progName: {progname}')
+            return ''
 
     return progname
 
@@ -240,26 +187,37 @@ def getCurrentApplicationName(moduleInfo):
 # Note that moduleInfo may be ("","",0) which we should handle cleanly.
 
 def matchWindow(moduleInfo, modName, wndText):
-    if len(moduleInfo)<3 or not moduleInfo[0]: return None
+    """A utility function which determines whether moduleInfo matches a specified
+       module name and window title.
+       
+       Returns window handle on match and None on mismatch.
+
+       Note that moduleInfo may be ("","",0) which we should handle cleanly.
+    """
+    if len(moduleInfo) < 3 or not moduleInfo[0]:
+        return None
     
     # copy of function from natlinkmain here (above)
     curName = getCurrentApplicationName(moduleInfo)
-    if curName != modName: return None
-    if moduleInfo[1].find(wndText) == -1: return None
+    if curName != modName:
+        return None
+    if moduleInfo[1].find(wndText) == -1:
+        return None
     return moduleInfo[2]
 
 #---------------------------------------------------------------------------
 # buttonClick
 #    
-# This function simulates a button click or button double click.  Pass in the
-# button name ('left','right' or 'middle') and the count (1 or 2)
 #
 
 
 def buttonClick(btnName='left', count=1, modifiers=None):
-    """performs a button (double) click of the mouse
+    """This function simulates a button click or button double click.
     
+    Pass in the button name ('left','right' or 'middle') and the count (1 or 2)
+   
     without parameters: a single left click
+
     accepted values:
      - btnName: 'left', 'right' or 'middle', or 1, 2, 3
      - count: 1 or 2 or 3 (3 not fully tested)
@@ -269,9 +227,9 @@ def buttonClick(btnName='left', count=1, modifiers=None):
     """
     x, y = natlink.getCursorPos()
     
-    unimacroButtons = {1:'left', 2:'right', 3:'middle'}
+    numberedButtons = {1:'left', 2:'right', 3:'middle'}
     if btnName in [1,2,3]:
-        btnName = unimacroButtons[btnName]
+        btnName = numberedButtons[btnName]
         
     singleLookup = { 
         'left':  [(wm_lbuttondown,x,y),(wm_lbuttonup,x,y)],
@@ -285,15 +243,15 @@ def buttonClick(btnName='left', count=1, modifiers=None):
     try:
         single = singleLookup[btnName]  # KeyError means invalid button name
         double = doubleLookup[btnName]
-    except KeyError:
-        raise ValueError('buttonClick, invalid "btnName": %s'% btnName)
+    except KeyError as exc:
+        raise ValueError(f'buttonClick, invalid "btnName": "{btnName}"') from exc
         
     events = [] # collect all events in a list
     if modifiers:
         try:
             keycodes = getModifierKeyCodes(modifiers)
-        except KeyError:
-            raise ValueError('buttonClick, invalid "modifiers": %s'% repr(modifiers))
+        except KeyError as exc:
+            raise ValueError(f'buttonClick, invalid "modifiers": {repr(modifiers)}') from exc
         for k in keycodes:
             events.append( (wm_keydown, k) )
         # print "modifiers keycodes: %s"% keycodes
@@ -325,6 +283,8 @@ def getModifierKeyCodes(modifiers):
     either in a sequence or as single string. If string contains the + symbol or a space,
     the string is split before searching the keycodes
     
+    if no modifiers are given, an empty list is returned
+    
     Invalid input raises a KeyError.
     Testing in unittestNatLink, see testNatlinkUtilsFunctions
     
@@ -333,67 +293,57 @@ def getModifierKeyCodes(modifiers):
                          shift=vk_shift,
                          menu=vk_menu,
                          alt=vk_menu)   # added alt  == menu
-    if not modifiers: return
+    if not modifiers:
+        return []
 
-    if type(modifiers) == str:
+    if isinstance(modifiers, str):
         modifiers = modifiers.replace("+", " ").split()
     return [modifier_dict[m] for m in modifiers]
 
-# temporary hopefully, QH, 4-9-2013  now 22-10-2013:
-# reverting to Marks solution, insert {shift}
-# use the language specific shift code, as given in natlinkstatus, and set in natlinkmain  (december 2015)
 def playString(keys, hooks=None):
     """do smarter and faster playString than natlink.playString
     
-    If useMarkSendInput is set to 1 (True) (top of this file):
-    the SendInput module of Mark Lillibridge is used.
+    If useDtactionsSendkeys is set to 1 (True) (top of this file)
     
-    Disadvantage: does not work in elevated windows.
+    TODO: Disadvantage: hooks only partially work, and probably not in elevated windows.
     
     This behaviour can be circumvented by adding a hook in the call,
     or by using SendDragonKeys, SendSystemKeys or SSK (Unimacro).
     
-    If useMarkSendInput is set to 0 (False), or a hook is added
+    If useDtactionsSendkeys is set to 0 (False), or a hook is added
     (0x100 for normal behaviour, 0x200 for systemkeys behaviour)
-    then natlink.playString is used, but a {shift} in front of the keystrokes is inserted,
-    in order to prevent doubling or losing keystrokes.
+    then natlink.playString is used. 
     
-    (if default behaviour is wanted, you can call natlink.playString directly)
+    (if original behaviour is wanted, you can call natlink.playString directly)
     """
     if not keys:
         return
-    # if type(keys) == str:
-    #     keys = utilsqh.convertToBinary(keys)
     if hooks is None:
-        if useMarkSendInput:
-            SendInput.send_input(
-                ExtendedSendDragonKeys.senddragonkeys_to_events(keys))
-        elif useDtactionsSendkeys:
-            sendkeys(keys)   # via dtactions to dragonfly
+        if useDtactionsSendkeys:
+            sendkeys(keys)
         else:
             natlink.playString(keys)
         return
     # with hooks:
-    if hooks != 0x100:
-        natlink.playString(keys, hooks)
-    else:
-        ## try with the shiftkey trick to prevent doubling of the keystrokes (obsolete)
-        ## better choose useDtactionsSendkeys, of useMarkSendInput if that one is repaired.
-        natlink.playString(shiftkey + keys)
-
-#---------------------------------------------------------------------------
-# (internal use) shared base class for all Grammar base classes.  Do not use
-# this class directly.  See GrammarBase, DictGramBase or SelectGramBase.
+    natlink.playString(keys, hooks)
+ 
+#Classes--------------------------------------------------------------------
 
 class GramClassBase:
+    """shared base class for all Grammar base classes.
+    
+    Do not use this class directly.  See GrammarBase, DictGramBase or SelectGramBase.
+    """
 
     def __init__(self):
         self.gramObj = natlink.GramObj()
+        self.grammarName = ''
 
     def __del__(self):
         self.gramObj.unload()
 
-    def load(self,grammar,allResults=0,hypothesis=0):
+    def load(self, gramSpec, allResults=0, hypothesis=0, grammarName=None):
+        self.grammarName = grammarName or self.grammarName
         try:
             self.gramObj.setBeginCallback(self.beginCallback)
             self.gramObj.setResultsCallback(self.resultsCallback)
@@ -403,7 +353,7 @@ class GramClassBase:
             traceback.print_exc()
             raise
         try:
-            self.gramObj.load(grammar,allResults,hypothesis)
+            self.gramObj.load(gramSpec, allResults, hypothesis)
         except:
             print("GramClassBase.load(), Error at loading the grammar ", sys.exc_info())
             traceback.print_exc()
@@ -417,7 +367,7 @@ class GramClassBase:
 
     def activate(self,window=0,exclusive=None):
         self.gramObj.activate('',window)
-        if exclusive != None:
+        if exclusive is not None:
             self.setExclusive(exclusive)
 
     def deactivate(self):
@@ -432,14 +382,20 @@ class GramClassBase:
     def hypothesisCallback(self, words):
         self.callIfExists( "gotHypothesis", (words,) )
 
+    def resultsCallback(self, wordsAndNums, resObj):
+        raise NotImplementedError
+
     # This is a utility function.  It calls a member function if and only
     # if that member function is defined.
 
     def callIfExists(self, funcName, argList):
-        try: func = getattr(self, funcName)
-        except AttributeError: pass
+        try:
+            func = getattr(self, funcName)
+        except AttributeError:
+            return None
         else:
             return func(*argList)
+        
 
 #---------------------------------------------------------------------------
 # GrammarBase
@@ -582,6 +538,143 @@ class GramClassBase:
 #
 
 class GrammarBase(GramClassBase):
+    """This is the basic grammar class.
+    
+  All user grammar classes should use this as the base class.
+
+  Here are the functions which derived classes can call:
+
+  load( gramSpec, allResults=0, hypothesis=0 )
+      This function will takes a textual representation of a grammar,
+      either as a single string or as a list of strings and load that
+      grammar into Dragon NaturallySpeaking.
+
+      allResults=1 will make it so this grammar see every recognition
+          result even if it is for another grammar,
+      hypothesis=1 means that the gotHypothesis callback will be made.
+          Otherwise, that callback is not made to avoid too much overhead.
+
+  unload()
+      Unload reset the state of the grammar.  Any SAPI objects will be
+      freed and all callbacks will be terminated.
+
+You need to activate rules before they will be recognized.  You activate
+rules by name.  Any rule which is "exported" in the grammar can be
+activated.  This base class offers a number of was to activate rules
+depending on what is convient.
+
+  activate( ruleName, window=0, exclusive=None, noError=0 )
+      Activate a single rule by name.
+
+      noError=1 will suppress the error message when you try to activate
+          a rule which is already active
+      window=N will activate this rule conditionally when the window
+          whose window handle is X is the foreground window.  This is
+          the normal case.  Use window=0 to activate a global rule.
+      exclusive=1 will make this grammar exclusive which means that no
+          other grammars will be included in recognition when this
+          grammar is active unless they are also exclusive
+
+  activateSet( ruleNames, window=0, exclusive=None )
+      This is the most efficient way to activate rules, it takes a list of
+      rules and makes sure that all those rules and only those rules are
+      active.  Do not use this function to change the window handle if you
+      have already activates some rules with a different window handle.
+
+  activateAll( window=0, exclusive=None, exceptlist=None )
+      This will activate every exported rule.
+      can optionally add a list of rules NOT to activate (QH, 2010)
+
+  deactivate( ruleName, noError=0 )
+      Deactivates a single rule by name.
+        noError=1 will suppress the error message when you try to deactivate
+            a rule which is not active
+
+  deactivateAll():
+      This will deactivate every currently active rule.
+
+  setExclusive( exclusive ):
+      Set or reset the exclusive flag for this grammar (see comments under
+      activate method).
+
+Lists are part of SAPI.  They are list subrules except that they can be
+changed while the grammar is loaded.  Also, the list a word comes from is
+not available in recognition results, you only see the innermost rule name
+in recognition results.
+
+  emptyList( listName )
+      This will remove all words currently in a names list.
+
+  appendList( listName, words )
+      This will add one word (phrase) or a list of words (phrases) to a
+      named list.
+
+  setList( listName, words )
+      This function is an efficient way to set the contents of a list in    
+      one operation to a list of words or phrases.
+
+Derived classes should defined callback functions if they want recognition
+results.  The following callback functions can be defined:
+
+  gotBegin( moduleInfo )
+      called when speech is detected before recognition begins.  The
+      parameter is the same value returned by getCurrentModule.
+
+  gotResultsObject( recogType, resObj )
+      called when results are available (before any of the other results
+      callbacks).  The first parameter is one of 'self','other' or 'reject'
+      where the second two types are only possible if the allResults flag
+      was set on the load call.  The second parameter is the results object.
+
+  gotResultsInit( words, fullResults )
+      called when results are available for this grammar before any calls
+      to gotResults_XXX.  Parameters are a list of the recognized words
+      and a list of word,ruleName pairs.
+
+  gotResults_XXX( words, fullResults )
+      called when results are available.  The XXX refers to the rule name
+      in the grammar.  This function is called once for each sequential
+      series of words in the results which come from the same rule in the
+      grammar.  The first parameter is the sequential series of words and
+      the second parameter is a list of word,ruleName pairs.
+
+  gotResults( words, fullResults )
+      called when results are available for this grammar before any calls
+      to gotResults_XXX.  Parameters are a list of the recognized words
+      and the same value a list of word,ruleName pairs.
+
+  gotHypothesis( words)
+      only called when the hypothesis flag is set on load, this callback
+      contains the partial recognition hypothesis during recognition.
+      
+Here is an example of how the callbacks work.  Assume the following grammar:
+
+  <start> exported = this <ruleOne> is {list}
+  <ruleOne> = big <ruleTwo> object
+  <ruleTwo> = red | blue
+  
+And assume that {list} contains the words "good" and "bad".
+
+Now if "this big red object is good" is recognized, the following callbacks
+will be made (in the order indicated).  
+
+(Note: The second parameter to gotResults_XXX and gotResults is the same as
+the second parameter to gotResultsInit.  The example has been abbreviated
+to save space.)
+
+  gotBegin( ??? )
+  gotResultsObject( 'self', resObj )
+  gotResultsInit( 
+      ['this','big','red','object','is','good'],
+      [('this','start'),('big','ruleOne'),('red','RuleTwo'),
+          ('object','ruleOne'),('is','start'),('good','start')] )
+  gotResults_start( ['this'], ... )
+  gotResults_ruleOne( ['big'], ... )
+  gotResults_ruleTwo( ['red'], ... )
+  gotResults_ruleOne( ['object'], ... )
+  gotResults_start( ['is','good'], ... )
+  gotResults( ['this','big','red','object','is','good'], ... )
+    """
 
     def __init__(self):
         GramClassBase.__init__(self)
@@ -589,10 +682,16 @@ class GrammarBase(GramClassBase):
         self.activeRules = {}
         self.validRules = []
         self.validLists = []
+        self.ruleMap = {}
+        self.fullResults = []    # handled in resultsCallback
+        self.seqsAndRules = []   #
+        self.wordsByRule = {}    #
         self.doOnlyGotResultsObject = None # can rarely be set (QH, dec 2009)
+        self.prevRule, self.prevWords = None, []    # callRuleResultsFunctions
+        self.nextRule, self.nextWords = None, []    # 
         # self.scanObj = None  # in case gramparser goes wrong and error messages fail to print
 
-    def load(self,gramSpec,allResults=0,hypothesis=0, grammarName=None):
+    def load(self, gramSpec, allResults=0, hypothesis=0, grammarName=None):
         try:
             # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
             # code upper ascii characters with latin1 if they were in the process entered as unicode
@@ -616,7 +715,6 @@ class GrammarBase(GramClassBase):
             self.validLists = list(parser.knownLists.keys())
             # we reverse the rule dictionary so we can convert rule numbers back
             # to rule names during recognition
-            self.ruleMap = {}
             for ruleNum, knownRule in parser.knownRules.items():
                 self.ruleMap[ knownRule ] = ruleNum
             return 1
@@ -639,82 +737,81 @@ class GrammarBase(GramClassBase):
         self.exclusiveState = 0
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
-        # print('ruleName: %s, validRules: %s'% (ruleName, self.validRules))
-        # if type(ruleName) == str:
-        #     ruleName = utilsqh.convertToBinary(ruleName)
+        #pylint:disable=W0221, W0613
+        # TODO: remove debugLoad (via logger)
+        # TODO: noError is not used
         if ruleName not in self.validRules:
             raise ValueError( "rule %s was not exported in the grammar" % ruleName)
-        # if type(ruleName) != bytes:
-        #     raise gramparser.GrammarError( 'GrammarBase, wrong type in activate, %s (%s)'% (ruleName, type(ruleName)), self.scanObj)
         if ruleName in self.activeRules:
             if window == self.activeRules[ruleName]:
-                if debugLoad: print('rule %s already active for window %s'% (ruleName, window))
+                if debugLoad:
+                    print('rule %s already active for window %s'% (ruleName, window))
                 return
-            else:
-                if debugLoad: print('change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window))
-                self.gramObj.deactivate(ruleName)
+            if debugLoad:
+                print('change rule %s from window %s to window %s'% (ruleName, self.activeRules[ruleName], window))
+            self.gramObj.deactivate(ruleName)
         # if debugLoad: print('activate rule %s (window: %s)'% (ruleName, window))
         self.gramObj.activate(ruleName,window)
         self.activeRules[ruleName] = window
         if not exclusive is None:
-            if debugLoad: print('set exclusive mode to %s for rule %s'% (exclusive, ruleName))
+            if debugLoad:
+                print(f'set exclusive mode to {exclusive} for rule "{ruleName}"')
             self.setExclusive(exclusive)
-        pass            
 
     def deactivate(self, ruleName, noError=0):
-        # if type(ruleName) == str:
-        #     ruleName = utilsqh.convertToBinary(ruleName)
+        #pylint:disable=W0221
         if ruleName not in self.validRules:
-            if noError: return
-            raise ValueError( "rule %s (%s) was not exported in the grammar" % (ruleName, type(ruleName)))
+            if noError:
+                return
+            raise ValueError(f'rule "{ruleName}" was not exported in the grammar')
         if ruleName not in self.activeRules:
-            if noError: return
+            if noError:
+                return
             raise ValueError( "rule %s is not active (activeRules: %s)"% (ruleName, self.activeRules))
-        if debugLoad: print('deactivate rule %s'% ruleName)
+        if debugLoad:
+            print('deactivate rule %s'% ruleName)
         self.gramObj.deactivate(ruleName)
         del self.activeRules[ruleName]
 
     def activateSet(self, ruleNames, window=0, exclusive=None):
         """activate a set of rules.
 
-        Try new strategy, based on the trick of Vocola. Natlink does not work completely correct here.        
         """
-        if type(ruleNames) == list:
+        #pylint:disable=R0912
+        if isinstance(ruleNames, list):
             rulenames = copy.copy(ruleNames) # so we can pop items
-        elif type(ruleNames) == tuple:
+        elif isinstance(ruleNames, tuple):
             rulenames = list(ruleNames) # so we can pop items
         else:
             raise TypeError("activateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
                             (repr(ruleNames), type(ruleNames)))
         activeKeys = list(self.activeRules.keys())
         for x in activeKeys:
-            # if type(x) != str:
-            #     raise TypeError('activateSet, rulename "%s" should be of str type, not: %s'% (x, type(x)))
 
             curWindow = self.activeRules[x]
             if x in rulenames:
                 if curWindow == window:
                     rulenames.remove(x)
-                    # if debugLoad: print('activateSet, rule %s already active for %s'% (x, window))
                 else:
-                    # if debugLoad: print('activateSet, rule %s, change from window %s to window %s'% (x, curWindow, window))
                     self.deactivate(x)
-                    # self.activate(x, window)
-                    # rulenames.remove(x)
             else:
                 # if same window, deactivate, otherwise just leave...
                 # deactivate direct to gramObj here:
                 if window == curWindow:
-                    if debugLoad: print('activateSet, do not want %s, so deactivate, same window: %s'% (x, curWindow))
+                    if debugLoad:
+                        print('activateSet, do not want %s, so deactivate, same window: %s'% (x, curWindow))
                     self.deactivate(x)
                 elif window == 0:
-                    if debugLoad: print('activateSet, deactivate rule %s (global), previous window: %s'% (x, curWindow))
+                    if debugLoad:
+                        print('activateSet, deactivate rule %s (global), previous window: %s'% (x, curWindow))
                     self.deactivate(x)
                 elif curWindow == 0:
-                    if debugLoad: print('activateSet, deactivate global rule %s, new window window: %s'% (x, window))
+                    if debugLoad:
+                        print('activateSet, deactivate global rule %s, new window window: %s'% (x, window))
                     self.deactivate(x)
                 else:
-                    if debugLoad: print('activateSet, deactivate not needed, different window: rule %s, previous window: %s new window: %s'% (x, curWindow, window))             
+                    if debugLoad:
+                        print('activateSet, deactivate not needed, different window: rule %s, previous window: %s new window: %s'% (x, curWindow, window))             
         for x in rulenames:
             self.activate(x, window)
         if not exclusive is None:
@@ -725,8 +822,6 @@ class GrammarBase(GramClassBase):
             raise TypeError("deactivateSet, ruleNames (%s) must be a list or a tuple, not: %s"%
                             (repr(ruleNames), type(ruleNames)))
         for x in ruleNames:
-            if type(x) != bytes:
-                print('GrammarBase, deactivateSet, wrong type in rule to deactivate, %s (%s)'% (x, type(x)))
             self.deactivate(x, noError=noError)
 
     def activateAll(self, window=0, exclusive=None, exceptlist=None):
@@ -750,7 +845,6 @@ class GrammarBase(GramClassBase):
         activeRules = list(self.activeRules.keys())
         
         for x in activeRules:
-            # print("deactivate rule %s (%s)"% (x, type(x)))
             self.deactivate(x)
 
     def deactivateAll(self):
@@ -763,7 +857,8 @@ class GrammarBase(GramClassBase):
         """call into gramObj directly
         maintain self.exclusiveState
         """
-        if exclusive is None: return
+        if exclusive is None:
+            return
         if exclusive:
             value = 1
         else:
@@ -799,36 +894,33 @@ class GrammarBase(GramClassBase):
         #     listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise ValueError( 'list "%s" was not defined in the grammar, validLists: %s' % (listName, self.validLists))
-        # bListName = listName.encode()   # no accented characters anyway preferredencoding)
         self.gramObj.emptyList(listName)
 
     def appendList(self, listName, words):
         # listName = utilsqh.convertToBinary(listName)
         if listName not in self.validLists:
             raise ValueError( "list %s was not defined in the grammar" % listName)
-        if type(words) == str:
-            # words = utilsqh.convertToBinary(words)
-            # bListName = listName.encode()    # no accented characters anyway  (preferredencoding)
+        if isinstance(words, str):
             self.gramObj.appendList(listName, words)
         else:
             for x in words:
-                # if type(x) == str:
-                #     x = utilsqh.convertToBinary(x)
                 self.gramObj.appendList(listName,x)
     
     def setList(self, listName, words):
-        # if type(listName) == str:
-        #     listName = utilsqh.convertToBinary(listName)
         self.emptyList(listName)
         self.appendList(listName, words) # other way around?
 
-    # when a recognition for this grammar occurs, this function gets called
-    # by GramObj (it is set as the callback in GrammarBase.load.
     def resultsCallback(self, wordsAndNums, resObj):
-        # if the allResults flag is set it is possible that the first
-        # parameter will be a string instead of a data structure. We 
-        # compute the recognition type from this parameter
-        if type(wordsAndNums) == str:
+        """when a recognition for this grammar occurs, this function gets called
+    
+        by GramObj (it is set as the callback in GrammarBase.load).
+
+        if the allResults flag is set it is possible that the first
+        parameter will be a string instead of a data structure. We 
+        compute the recognition type from this parameter
+        """
+        #pylint:disable=R0912   
+        if isinstance(wordsAndNums, str):
             recogType = wordsAndNums
         else:
             recogType = 'self'
@@ -838,8 +930,8 @@ class GrammarBase(GramClassBase):
         self.callIfExists( 'gotResultsObject', (recogType,resObj) )
 
         # do nothing more if the recog results were not for this grammar
-        if type(wordsAndNums) != type([]):
-            return None
+        if not isinstance(wordsAndNums, list):
+            return 
 
         # we first convert the passed array of word/ruleNumbers into an
         # array of word/ruleNames and an array of only words
@@ -851,13 +943,10 @@ class GrammarBase(GramClassBase):
             # grammar kaiser_dictation, (voicedictation with exclusive mode catching)
             # QH (dec, 2009)
             #print 'skip rest of resultsCallback'
-            return
+            return 
         for x in wordsAndNums:
             word, ruleNumber = x
             words.append( word )
-            # the numbering of some rules appears to be different in NatSpeak10, catch with try:
-            # if DNSVersion >= 15:
-            #     ruleNumber += 1
             try:
                 ruleName = self.ruleMap[ruleNumber]
             except KeyError:
@@ -947,76 +1036,78 @@ class GrammarBase(GramClassBase):
 #---------------------------------------------------------------------------
 # DictGramBase
 #        
-# This base class is similar to GrammarBase except that it is used for real
-# dictation grammars.  A real dictation grammar allows a client application
-# to get raw dictation results from the recognizer.  It is very similat to
-# creating a command and control grammar with the <dgndictation> rule except
-# that you have the added ability to set the dictation context (words to
-# consider as having been spoken juct before the current recognition).
-#
-# Here are the functions which derived classes can call:
-#
-#   load( allResults=0, hypothesis=0 )
-#       Creates the dictation grammar.  See GrammarBase class for definition
-#       of flags.
-#
-#   unload()
-#       Unload reset the state of the grammar.  Any SAPI objects will be
-#       freed and all callbacks will be terminated.
-#
-# You need to activate the grammar before it can be recognized.  Activation
-# of a dictation grammar is simplier than a command grammar because there
-# are no named rules.
-#
-#   activate( window=0, exclusive=None )
-#       noError=1 will suppress the error message when you try to activate
-#           a rule which is already active
-#       window=N will activate this rule conditionally when the window
-#           whose window handle is X is the foreground window.  This is
-#           the normal case.  Use window=0 to activate a global rule.
-#
-#   deactivate()
-#       Deactivates the grammar.
-#
-#   setExclusive( exclusive ):
-#       Set or reset the exclusive flag for this grammar (see comments under
-#       activate method of GrammarBase).
-#
-# Dictation gramars have a special method which allows you to indicate what
-# text should be considered to been recognized just before this dictation
-# result, and after this dictation result.
-#
-#   setContext( beforeText='', afterText='' )
-#       Note current version of Dragon NaturallySpeaking ignore the
-#       afterText but the before text is critical to increasing recognition
-#       accuracy.
-#
-# Derived classes should defined callback functions if they want recognition
-# results.  The following callback functions can be defined:
-#
-#   gotBegin( moduleInfo )
-#       called when speech is detected before recognition begins.  The
-#       parameter is the same value returned by getCurrentModule.
-#
-#   gotResultsObject( recogType, resObj )
-#       called when results are available (before any of the other results
-#       callbacks).  The first parameter is one of 'self','other' or 'reject'
-#       where the second two types are only possible if the allResults flag
-#       was set on the load call.  The second parameter is the results object.
-#
-#   gotResults( words )
-#       called when results are available for this grammar.
-#
-#       words = list of recognized words
-#
-#   gotHypothesis( words )
-#       only called when the hypothesis flag is set on load, this callback
-#       contains the partial recognition hypothesis during recognition.
-#
 
 class DictGramBase(GramClassBase):
+    """This base class is similar to GrammarBase except that it is used for real
+dictation grammars.  A real dictation grammar allows a client application
+to get raw dictation results from the recognizer.  It is very similat to
+creating a command and control grammar with the <dgndictation> rule except
+that you have the added ability to set the dictation context (words to
+consider as having been spoken juct before the current recognition).
+
+Here are the functions which derived classes can call:
+
+  load( allResults=0, hypothesis=0 )
+      Creates the dictation grammar.  See GrammarBase class for definition
+      of flags.
+
+  unload()
+      Unload reset the state of the grammar.  Any SAPI objects will be
+      freed and all callbacks will be terminated.
+
+You need to activate the grammar before it can be recognized.  Activation
+of a dictation grammar is simplier than a command grammar because there
+are no named rules.
+
+  activate( window=0, exclusive=None )
+      noError=1 will suppress the error message when you try to activate
+          a rule which is already active
+      window=N will activate this rule conditionally when the window
+          whose window handle is X is the foreground window.  This is
+          the normal case.  Use window=0 to activate a global rule.
+
+  deactivate()
+      Deactivates the grammar.
+
+  setExclusive( exclusive ):
+      Set or reset the exclusive flag for this grammar (see comments under
+      activate method of GrammarBase).
+
+Dictation gramars have a special method which allows you to indicate what
+text should be considered to been recognized just before this dictation
+result, and after this dictation result.
+
+  setContext( beforeText='', afterText='' )
+      Note current version of Dragon NaturallySpeaking ignore the
+      afterText but the before text is critical to increasing recognition
+      accuracy.
+
+Derived classes should defined callback functions if they want recognition
+results.  The following callback functions can be defined:
+
+  gotBegin( moduleInfo )
+      called when speech is detected before recognition begins.  The
+      parameter is the same value returned by getCurrentModule.
+
+  gotResultsObject( recogType, resObj )
+      called when results are available (before any of the other results
+      callbacks).  The first parameter is one of 'self','other' or 'reject'
+      where the second two types are only possible if the allResults flag
+      was set on the load call.  The second parameter is the results object.
+
+  gotResults( words )
+      called when results are available for this grammar.
+
+      words = list of recognized words
+
+  gotHypothesis( words )
+      only called when the hypothesis flag is set on load, this callback
+      contains the partial recognition hypothesis during recognition.
+
+    """
 
     def load(self,allResults=0,hypothesis=0):
+        #pylint:disable=W0221
         gramBin=self.makeGrammar()
         GramClassBase.load(self,gramBin,allResults,hypothesis)
 
@@ -1025,17 +1116,17 @@ class DictGramBase(GramClassBase):
 
     # This code is very similar to the corresponding code in GrammarBase
     def resultsCallback(self, wordsAndNums, resObj):
-        if type(wordsAndNums) == type(''): 
+        if isinstance(wordsAndNums, str): 
             recogType = wordsAndNums
         else:
             recogType = 'self'
         self.callIfExists( 'gotResultsObject', (recogType,resObj) )
-        if type(wordsAndNums) != type([]):
-            return None
+        if not isinstance(wordsAndNums, list):
+            return
 
         # convert the wordsAndNums array into simply words (ignore nums)
         words = []
-        for word,num in wordsAndNums:
+        for word, _num in wordsAndNums:
             words.append( word )
 
         # Now make the callback                
@@ -1044,103 +1135,106 @@ class DictGramBase(GramClassBase):
     # This makes a raw dictation grammar.  The grammar is in SAPI binary
     # format as defined by Microsoft.
     def makeGrammar(self):
+        #pylint:disable=R0201
         output = []
         output.append(struct.pack("LL", 2, 0))
         return b"".join(output)
 
 #---------------------------------------------------------------------------
 # SelectGramBase
-#
-# This base class is similar to GrammarBase except that it is used for
-# select XYZ grammars.  A select XYZ grammar is a special grammar which
-# recognizes an utterance of the form "<verb> <text> [ through <text> ]"
-# where <verb> is specified and <text> is an arbitrary sequence of words in
-# a specified text buffer.
-#
-# Here are the functions which derived classes can call:
-#
-# make default select and through words "select" and "though" (lower case)
-# Quintijn december 2010
-# adapt to throughWords as well, for future enhancement VoiceCode
-# Quintijn August, 2009
-#   load( selectWords=['Select'], throughWord='Through', throughWords=None, allResults=0, hypothesis=0 )
-#       selectWords is a list of words or phrases which can introduce a
-#           comand of this type.  For example, you can pass in a list like
-#           ['Select','Correct','Insert Before','Insert After'] to simulate
-#           some of NatSpeak's behavior.
-#       throughWord is a single word which is used between the two parts of
-#           the command as in "Select <text> Through <text>".  Pass in None
-#           or an empty string to disable two part commands.
-#       allResults=1 will make it so this grammar see every recognition
-#           result even if it is for another grammar,
-#       hypothesis=1 means that the gotHypothesis callback will be made.
-#           Otherwise, that callback is not made to avoid too much overhead.
-#
-#   unload()
-#       Unload reset the state of the grammar.  Any SAPI objects will be
-#       freed and all callbacks will be terminated.
-#
-# You need to activate the grammar before it can be recognized.  Activation
-# of a dictation grammar is simplier than a command grammar because there
-# are no named rules.
-#
-#   activate( window=0, exclusive=None )
-#       noError=1 will suppress the error message when you try to activate
-#           a rule which is already active
-#       window=N will activate this rule conditionally when the window
-#           whose window handle is X is the foreground window.  This is
-#           the normal case.  Use window=0 to activate a global rule.
-#
-#   deactivate()
-#       Deactivates the grammar.
-#
-#   setExclusive( exclusive ):
-#       Set or reset the exclusive flag for this grammar (see comments under
-#       activate method of GrammarBase).
-#
-# Selection gramars work on a text buffer which you pass to the grammar.
-# The speech recognition engine maintains a copy of this text and performs
-# all selection on its copy.  Then when the grammar is recognized, you can
-# find out the range of text which is effected.
-#
-#   setSelectText(text)
-#       Pass in a block of text (string).
-#
-#   getSelectText()
-#       Returns the text buffer contents currently stored in the speech
-#       recognition engine.
-#
-# Derived classes should defined callback functions if they want recognition
-# results.  The following callback functions can be defined:
-#
-#   gotBegin( moduleInfo )
-#       called when speech is detected before recognition begins.  The
-#       parameter is the same value returned by getCurrentModule.
-#
-#   gotResultsObject( recogType, resObj )
-#       called when results are available (before any of the other results
-#       callbacks).  The first parameter is one of 'self','other' or 'reject'
-#       where the second two types are only possible if the allResults flag
-#       was set on the load call.  The second parameter is the results object.
-#
-#   gotResults( words, start, end )
-#       called when results are available for this grammar.
-#
-#       words = list of recognized words; the first word will be one of
-#           the words or phrases in selectWords (passed in when the grammar
-#           was created).
-#       start = index into getSelectText of the start of the selection
-#       end = index into getSelectText of the end of the selection
-#
-#   gotHypothesis( words )
-#       only called when the hypothesis flag is set on load, this callback
-#       contains the partial recognition hypothesis during recognition.
-#
 
 class SelectGramBase(GramClassBase):
+    """This base class is used for select XYZ grammars.
+    
+This base class is similar to GrammarBase except that it is used for A select XYZ grammar is a special grammar which
+recognizes an utterance of the form "<verb> <text> [ through <text> ]"
+where <verb> is specified and <text> is an arbitrary sequence of words in
+a specified text buffer.
 
+Here are the functions which derived classes can call:
+
+make default select and through words "select" and "through" (lower case)
+Quintijn december 2010
+adapt to throughWords as well, for future enhancement VoiceCode
+Quintijn August, 2009
+  load( selectWords=['Select'], throughWord='Through', throughWords=None, allResults=0, hypothesis=0 )
+      selectWords is a list of words or phrases which can introduce a
+          comand of this type.  For example, you can pass in a list like
+          ['Select','Correct','Insert Before','Insert After'] to simulate
+          some of NatSpeak's behavior.
+      throughWord is a single word which is used between the two parts of
+          the command as in "Select <text> Through <text>".  Pass in None
+          or an empty string to disable two part commands.
+      allResults=1 will make it so this grammar see every recognition
+          result even if it is for another grammar,
+      hypothesis=1 means that the gotHypothesis callback will be made.
+          Otherwise, that callback is not made to avoid too much overhead.
+
+  unload()
+      Unload reset the state of the grammar.  Any SAPI objects will be
+      freed and all callbacks will be terminated.
+
+You need to activate the grammar before it can be recognized.  Activation
+of a dictation grammar is simplier than a command grammar because there
+are no named rules.
+
+  activate( window=0, exclusive=None )
+      noError=1 will suppress the error message when you try to activate
+          a rule which is already active
+      window=N will activate this rule conditionally when the window
+          whose window handle is X is the foreground window.  This is
+          the normal case.  Use window=0 to activate a global rule.
+
+  deactivate()
+      Deactivates the grammar.
+
+  setExclusive( exclusive ):
+      Set or reset the exclusive flag for this grammar (see comments under
+      activate method of GrammarBase).
+
+Selection gramars work on a text buffer which you pass to the grammar.
+The speech recognition engine maintains a copy of this text and performs
+all selection on its copy.  Then when the grammar is recognized, you can
+find out the range of text which is effected.
+
+  setSelectText(text)
+      Pass in a block of text (string).
+
+  getSelectText()
+      Returns the text buffer contents currently stored in the speech
+      recognition engine.
+
+Derived classes should defined callback functions if they want recognition
+results.  The following callback functions can be defined:
+
+  gotBegin( moduleInfo )
+      called when speech is detected before recognition begins.  The
+      parameter is the same value returned by getCurrentModule.
+
+  gotResultsObject( recogType, resObj )
+      called when results are available (before any of the other results
+      callbacks).  The first parameter is one of 'self','other' or 'reject'
+      where the second two types are only possible if the allResults flag
+      was set on the load call.  The second parameter is the results object.
+
+  gotResults( words, start, end )
+      called when results are available for this grammar.
+
+      words = list of recognized words; the first word will be one of
+          the words or phrases in selectWords (passed in when the grammar
+          was created).
+      start = index into getSelectText of the start of the selection
+      end = index into getSelectText of the end of the selection
+
+  gotHypothesis( words )
+      only called when the hypothesis flag is set on load, this callback
+      contains the partial recognition hypothesis during recognition.
+
+
+    """
     def load( self, selectWords=None, throughWord='through',
               throughWords=None,allResults=0, hypothesis=0 ):
+        #pylint:disable=W0221, R0913
         if selectWords is None:
             selectWords = ['select']
         if throughWords is None:
@@ -1158,17 +1252,17 @@ class SelectGramBase(GramClassBase):
         
     # This code is very similar to the corresponding code in GrammarBase
     def resultsCallback(self, wordsAndNums, resObj):
-        if type(wordsAndNums) == type(''): 
+        if isinstance(wordsAndNums, str): 
             recogType = wordsAndNums
         else:
             recogType = 'self'
         self.callIfExists( 'gotResultsObject', (recogType,resObj) )
-        if type(wordsAndNums) != type([]):
-            return None
+        if not isinstance(wordsAndNums, list):
+            return 
 
         # convert the wordsAndNums array into simply words (ignore nums)
         words = []
-        for word,num in wordsAndNums:
+        for word, _num in wordsAndNums:
             words.append( word )
 
         # query the text range which corresponds to this result
@@ -1190,13 +1284,17 @@ class SelectGramBase(GramClassBase):
     #       dwChunkID = DGNSRCKSELECT_THRUWORD(0x1018)
     #       dwChunkSize = size of SRWORD
     #       data = single SRWORD for throughWord
-    # Use the routines in gramparser.py to build the grammar just like with
-    # command grammars.
-    # throughWords is a list of words:
-    def makeGrammar(self,selectWords,throughWords):
+    def makeGrammar(self, selectWords, throughWords):
+        """make a selection grammar, which is similar to a Microsoft SAPI grammar.
+        
+    Use the routines in gramparser.py to build the grammar just like with
+    command grammars.
+    selectWords and throughWords are lists or words
+        """
+        #pylint:disable=R0201
         output = []
         output.append(struct.pack("LL", 10, 0))
-        if type(selectWords) == str:
+        if isinstance(selectWords, str):
             selectWords = [selectWords]
         if selectWords:
             wordDict = {}
@@ -1220,24 +1318,19 @@ class SelectGramBase(GramClassBase):
 def getBaseName(name):
     return os.path.splitext(os.path.split(name)[1])[0]
 
-# This utility routine converts a fullResults parameter into a dictionary
-#   [ ('red','color'), ('flower','object'), ('and','conj'), ('green','color') ]
-# Becomes:
-#   { 'color':['red','green'], 'object':['flower'], 'conj':['and'] }
 
 def convertResults(fullResults):
-    dict = {}
+    """This utility routine converts a fullResults parameter into a dictionary
+
+   [ ('red','color'), ('flower','object'), ('and','conj'), ('green','color') ]
+   Becomes:
+   { 'color':['red','green'], 'object':['flower'], 'conj':['and'] }
+    """
+    _dict = {}
     for x in fullResults:
-        if x[1] in dict: dict[x[1]].append(x[0])
-        else: dict[x[1]] = [x[0]]
-    return dict
+        if x[1] in _dict:
+            _dict[x[1]].append(x[0])
+        else:
+            _dict[x[1]] = [x[0]]
+    return _dict
 
-def testSendInput(keys):
-    if useMarkSendInput == 0:
-        print('warning cannot test SendInput, first set useMarkSendInput to 1')
-    playString(keys)
-
-if __name__ == "__main__":
-    # testSendInput('abc#(){}zz')
-    # testSendInput('\xe9\xe9n example')
-    pass
