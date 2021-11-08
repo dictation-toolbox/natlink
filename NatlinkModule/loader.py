@@ -81,7 +81,7 @@ class NatlinkMain:
     def unload_module(self, module: ModuleType) -> None:
         unload = getattr(module, 'unload', None)
         if unload is not None:
-            self.logger.info(f'unloading module: {module.__name__}')
+            self.logger.debug(f'unloading module: {module.__name__}')
             self._call_and_catch_all_exceptions(unload)
 
     @staticmethod
@@ -240,7 +240,6 @@ def run() -> None:
         os.add_dll_directory(pywin32_dir)
     
     config = NatlinkConfig.from_first_found_file(config_locations())
-    print(f'now start NatlinkMain, with config file "{config.config_path}"')
     main = NatlinkMain(logger, config)
     main.setup_logger()
     main.start()
