@@ -22,6 +22,7 @@ class NatlinkMain:
         self.logger = logger
         self.config = config
         self.loaded_modules: Dict[Path, ModuleType] = {}
+        self.prog_names_visited: Set[str] = set()    # to enable loading program specific grammars
         self.bad_modules: Set[Path] = set()
         self.load_attempt_times: Dict[Path, float] = {}
         self._user: str = ''
@@ -46,11 +47,20 @@ class NatlinkMain:
     def module_paths_for_user(self) -> List[Path]:
         return self._module_paths_in_dirs(self.config.directories_for_user(self._user))
 
-    @staticmethod
-    def _module_paths_in_dirs(directories: Iterable[str]) -> List[Path]:
+    def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
         def is_script(f: Path) -> bool:
-            return f.is_file() and f.name.startswith('_') and f.name.endswith('.py')
+            if not f.is_file():
+                return False
+            if not f.suffix == '.py':
+                return False
+            
+            if f.stem.startswith('_'):
+                return True
+            for prog_name in self.prog_names_visited:
+                if f.stem == prog_name or f.stem.startswith( prog_name + '_'):
+                    return True
+            return False
 
         init = '__init__.py'
 
@@ -81,7 +91,7 @@ class NatlinkMain:
     def unload_module(self, module: ModuleType) -> None:
         unload = getattr(module, 'unload', None)
         if unload is not None:
-            self.logger.info(f'unloading module: {module.__name__}')
+            self.logger.debug(f'unloading module: {module.__name__}')
             self._call_and_catch_all_exceptions(unload)
 
     @staticmethod
@@ -193,7 +203,11 @@ class NatlinkMain:
 
     def on_begin_callback(self, module_info: Tuple[str, str, int]) -> None:
         self.logger.debug(f'on_begin_callback called with: moduleInfo: {module_info}')
-        if self.config.load_on_begin_utterance:
+        prog_name = Path(module_info[0]).stem
+        if prog_name not in self.prog_names_visited:
+            self.prog_names_visited.add(prog_name)
+            self.trigger_load()
+        elif self.config.load_on_begin_utterance:
             self.trigger_load()
 
     def start(self) -> None:
