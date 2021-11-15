@@ -740,6 +740,8 @@ to save space.)
         #pylint:disable=W0221, W0613
         # TODO: remove debugLoad (via logger)
         # TODO: noError is not used
+		if debugLoad:
+        	print(f'GrammarBase, activate ruleName "{ruleName}" in window {window}, exclusive: {exclusive}')
         if ruleName not in self.validRules:
             raise ValueError( "rule %s was not exported in the grammar" % ruleName)
         if ruleName in self.activeRules:
