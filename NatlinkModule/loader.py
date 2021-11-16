@@ -246,15 +246,20 @@ def config_locations() -> Iterable[str]:
 
 def run() -> None:
     logger = logging.getLogger('natlink')
-
-    # TODO: remove this hack. As of October 2021, win32api does not load properly, except if
-    # the package pywin32_system32 is explictly put on new dll_directory white-list
-    pywin32_dir = os.path.join(sysconfig.get_path('platlib'), "pywin32_system32")
-    if os.path.isdir(pywin32_dir):
-        os.add_dll_directory(pywin32_dir)
+    try:
+        # TODO: remove this hack. As of October 2021, win32api does not load properly, except if
+        # the package pywin32_system32 is explictly put on new dll_directory white-list
+        pywin32_dir = os.path.join(sysconfig.get_path('platlib'), "pywin32_system32")
+        if os.path.isdir(pywin32_dir):
+            os.add_dll_directory(pywin32_dir)
+        
+        config = NatlinkConfig.from_first_found_file(config_locations())
+        print(f'now start NatlinkMain, with config file "{config.config_path}"', file=sys.stderr)
+        main = NatlinkMain(logger, config)
+        main.setup_logger()
+        main.start()
+    except Exception as exc:
+        print(f'Exception: "{exc}" in loader.run')
+        print(traceback.format_exc())
+        raise Exception from exc
     
-    config = NatlinkConfig.from_first_found_file(config_locations())
-    print(f'now start NatlinkMain, with config file "{config.config_path}"')
-    main = NatlinkMain(logger, config)
-    main.setup_logger()
-    main.start()

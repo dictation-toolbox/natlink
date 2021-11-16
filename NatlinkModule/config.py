@@ -71,7 +71,14 @@ class NatlinkConfig:
                 user = section[:-len('-directories')]
                 ret.directories_by_user[user] = list(config[section].values())
             elif section == 'directories':
-                ret.directories_by_user[''] = list(config[section].values())
+                directories = []
+                for name, directory in config[section].items():
+                    if not os.path.isdir(directory):
+                        print(f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory')
+                        continue
+                    directories.append(directory)
+
+                ret.directories_by_user[''] = directories
         if config.has_section('settings'):
             settings = config['settings']
             level = settings.get('log_level')
