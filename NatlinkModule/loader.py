@@ -268,7 +268,6 @@ def run() -> None:
             os.add_dll_directory(pywin32_dir)
         
         config = NatlinkConfig.from_first_found_file(config_locations())
-        print(f'now start NatlinkMain, with config file "{config.config_path}"')
         main = NatlinkMain(logger, config)
         main.setup_logger()
         main.start()
