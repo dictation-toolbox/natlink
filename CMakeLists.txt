@@ -34,8 +34,7 @@ message(STATUS "Using Python installation found at: ${Python3_EXECUTABLE}")
 add_subdirectory ("NatlinkSource") 
 #  Build the NatlinkModule, that is, depend on the previous step and 
 #  make sure that the Python sources and such are fresh. Mark this
-#  situation as a file NatlinkModule/NatlinkModule.STAMP. Similarly, mark
-#  mark the up-to-dateness of the tests as NatlinkModule/InstallTest.STAMP
+#  situation as a file NatlinkModule/NatlinkModule.STAMP.
 add_subdirectory ("NatlinkModule") # build two
 # Now, using dependcy on the stamps, start the inno installation generator
 add_subdirectory ("InstallerSource")

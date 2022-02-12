@@ -253,8 +253,7 @@ def config_locations() -> Iterable[str]:
     join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv
     home = expanduser('~')
     possible_dirs = [join(home, '.natlink'), join(home, 'Documents', '.natlink'),
-                     join(home, 'Documents'), home,
-                     join(get_natlink_system_config_filename(), "InstallTest")]
+                     join(home, 'Documents'), home]
     return ([getenv("NATLINK_INI")] if getenv('NATLINK_INI') else
                 [join(loc, NATLINK_INI) for loc in possible_dirs])
 
