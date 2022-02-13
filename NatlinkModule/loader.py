@@ -252,11 +252,36 @@ def get_natlink_system_config_filename() -> str:
 def config_locations() -> Iterable[str]:
     join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv
     home = expanduser('~')
-    possible_dirs = [join(home, '.natlink'), join(home, 'Documents', '.natlink'),
-                     join(home, 'Documents'), home,
+    config_sub_dir = '.natlink'
+    # config_filename == NATLINK_INI (in config.py)
+        
+    possible_dirs = [join(home, config_sub_dir), join(home, 'Documents', config_sub_dir),
                      join(get_natlink_system_config_filename(), "InstallTest")]
-    return ([getenv("NATLINK_INI")] if getenv('NATLINK_INI') else
+
+    dictation_toolbox_home = get_extended_env('DICTATIONTOOLBOXHOME')
+    if dictation_toolbox_home:
+        possible_dirs.insert(0, dictation_toolbox_home)
+
+    return ([get_extended_env("NATLINK_INI")] if getenv('NATLINK_INI') else
                 [join(loc, NATLINK_INI) for loc in possible_dirs])
+
+def get_extended_env(envvar: str) -> str:
+    """get environment variable and expand "~" or %XXXX%
+    """
+    expanduser, getenv = os.path.expanduser, os.getenv
+    if envvar.startswith('~'):
+        home = expanduser('~')
+        return home + envvar[1:]
+    elif envvar.startswith('%'):
+        envList = envvar.split('%')
+        if len(envList) == 3:
+            _, envvar_to_expand, rest = envList
+            env_expanded = getenv(envvar_to_expand)
+            result = env_expanded + rest
+            return result
+        else:
+            print(f'environment variable in {envvar} cannot be expanded (list: {envList})')
+    return envvar
 
 def run() -> None:
     logger = logging.getLogger('natlink')
