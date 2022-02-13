@@ -259,6 +259,8 @@ def config_locations() -> Iterable[str]:
                      join(get_natlink_system_config_filename(), "InstallTest")]
 
     dictation_toolbox_home = get_extended_env('DICTATIONTOOLBOXHOME')
+    print(f'dictation_toolbox_home literal: {getenv("DICTATIONTOOLBOXHOME")}')
+    print(f'dictation_toolbox_home: {dictation_toolbox_home}')
     if dictation_toolbox_home:
         possible_dirs.insert(0, dictation_toolbox_home)
 
@@ -269,11 +271,16 @@ def get_extended_env(envvar: str) -> str:
     """get environment variable and expand "~" or %XXXX%
     """
     expanduser, getenv = os.path.expanduser, os.getenv
-    if envvar.startswith('~'):
+    env_expanded = getenv(envvar)
+    if not env_expanded:
+        return env_expanded
+    
+    if env_expanded.startswith('~'):
         home = expanduser('~')
-        return home + envvar[1:]
-    elif envvar.startswith('%'):
-        envList = envvar.split('%')
+        return home + env_expanded[1:]
+    elif env_expanded.startswith('%'):
+        envList = env_expanded.split('%')
+        print(f'expand % {envList}')
         if len(envList) == 3:
             _, envvar_to_expand, rest = envList
             env_expanded = getenv(envvar_to_expand)
