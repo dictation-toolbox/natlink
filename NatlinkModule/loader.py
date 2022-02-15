@@ -111,7 +111,7 @@ class NatlinkMain:
         module = importlib.util.module_from_spec(spec)
         ## try (manuals about importlib, example) QH:
         sys.modules[mod_name] = module
-        
+        ## comment
         loader.exec_module(module)
         return module
 
@@ -265,10 +265,13 @@ def config_locations() -> Iterable[str]:
     dictation_toolbox_home = get_extended_env('DICTATIONTOOLBOXHOME')
     if dictation_toolbox_home:
         subdir = join(dictation_toolbox_home, '.natlink')
+        config_file_path = join(dictation_toolbox_home, '.natlink', "natlink.ini")
         if not os.path.isdir(dictation_toolbox_home):
-            print(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut it does not point to a valid directory: "{dictation_toolbox_home}",\n\tPlease create this directory, or fix/remove this environment variable')
+            print(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut it does not point to a valid directory: "{dictation_toolbox_home}".\n\tPlease create this directory and subdirectory ".natlink"\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
         elif not os.path.isdir(subdir):
-            print(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home}" should contain a subdirectory ".natlink"\n\tPlease create this directory!')
+            print(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home}" should contain a subdirectory ".natlink".\n\tPlease create this directory\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
+        elif not os.path.isfile(config_file_path):
+            print(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home}" should contain a subdirectory ".natlink" containing config file "natlink.ini".\n\tPlease create this directory\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
         else:            
             possible_dirs.insert(0, dictation_toolbox_home)
 
