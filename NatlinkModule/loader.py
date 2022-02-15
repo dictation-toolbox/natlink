@@ -14,7 +14,7 @@ from types import ModuleType
 from typing import List, Dict, Set, Iterable, Any, Tuple, Callable, Optional
 
 import natlink
-from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI
+from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, get_extended_env
 
 
 class NatlinkMain:
@@ -81,8 +81,9 @@ class NatlinkMain:
     @staticmethod
     def _add_dirs_to_path(directories: Iterable[str]) -> None:
         for d in directories:
-            if d not in sys.path:
-                sys.path.insert(0, d)
+            d_expanded = get_extended_env(d)
+            if d_expanded not in sys.path:
+                sys.path.insert(0, d_expanded)
 
     def _call_and_catch_all_exceptions(self, fn: Callable[[], None]) -> None:
         try:
@@ -108,6 +109,9 @@ class NatlinkMain:
         if not isinstance(loader, importlib.machinery.SourceFileLoader):
             raise ValueError(f'module {mod_name} does not have a SourceFileLoader loader')
         module = importlib.util.module_from_spec(spec)
+        ## try (manuals about importlib, example) QH:
+        sys.modules[mod_name] = module
+        
         loader.exec_module(module)
         return module
 
@@ -259,36 +263,17 @@ def config_locations() -> Iterable[str]:
                      join(get_natlink_system_config_filename(), "InstallTest")]
 
     dictation_toolbox_home = get_extended_env('DICTATIONTOOLBOXHOME')
-    print(f'dictation_toolbox_home literal: {getenv("DICTATIONTOOLBOXHOME")}')
-    print(f'dictation_toolbox_home: {dictation_toolbox_home}')
     if dictation_toolbox_home:
-        possible_dirs.insert(0, dictation_toolbox_home)
+        subdir = join(dictation_toolbox_home, '.natlink')
+        if not os.path.isdir(dictation_toolbox_home):
+            print(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut it does not point to a valid directory: "{dictation_toolbox_home}",\n\tPlease create this directory, or fix/remove this environment variable')
+        elif not os.path.isdir(subdir):
+            print(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home}" should contain a subdirectory ".natlink"\n\tPlease create this directory!')
+        else:            
+            possible_dirs.insert(0, dictation_toolbox_home)
 
     return ([get_extended_env("NATLINK_INI")] if getenv('NATLINK_INI') else
                 [join(loc, NATLINK_INI) for loc in possible_dirs])
-
-def get_extended_env(envvar: str) -> str:
-    """get environment variable and expand "~" or %XXXX%
-    """
-    expanduser, getenv = os.path.expanduser, os.getenv
-    env_expanded = getenv(envvar)
-    if not env_expanded:
-        return env_expanded
-    
-    if env_expanded.startswith('~'):
-        home = expanduser('~')
-        return home + env_expanded[1:]
-    elif env_expanded.startswith('%'):
-        envList = env_expanded.split('%')
-        print(f'expand % {envList}')
-        if len(envList) == 3:
-            _, envvar_to_expand, rest = envList
-            env_expanded = getenv(envvar_to_expand)
-            result = env_expanded + rest
-            return result
-        else:
-            print(f'environment variable in {envvar} cannot be expanded (list: {envList})')
-    return envvar
 
 def run() -> None:
     logger = logging.getLogger('natlink')
@@ -308,3 +293,5 @@ def run() -> None:
         print(traceback.format_exc())
         raise Exception from exc
     
+if __name__ == "__main__":
+    run()

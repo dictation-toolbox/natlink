@@ -1,4 +1,4 @@
-#pylint:disable=C0114, C0115, C0116, R0913
+#pylint:disable=C0114, C0115, C0116, R0913, E1101
 import configparser
 import logging
 import os
@@ -73,8 +73,14 @@ class NatlinkConfig:
             elif section == 'directories':
                 directories = []
                 for name, directory in config[section].items():
-                    if not os.path.isdir(directory):
-                        print(f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory')
+                    ## allow environment variables (or ~) in directory
+                    directory_expanded = get_extended_env(directory)
+                    
+                    if not os.path.isdir(directory_expanded):
+                        if directory_expanded == directory:
+                            print(f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory')
+                        else:
+                            print(f'from_config_parser: skip "{directory}" ("{name}"):\n\texpanded directory "{directory_expanded}" is not a valid directory')
                         continue
                     directories.append(directory)
 
@@ -104,4 +110,33 @@ class NatlinkConfig:
                 return cls.from_config_parser(config, config_path=fn)
         # should not happen, because of InstallTest
         raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
+
+def get_extended_env(envvar: str) -> str:
+    """get environment variable and expand "~" or %XXXX%
     
+    Also C:%HOMEPATH% is allowed, although %PERSONALHOME% or ~ is preferrable...
+    
+    When nothing to expand, return input variable "envvar"
+    """
+    expanduser, getenv = os.path.expanduser, os.getenv
+    env_expanded = getenv(envvar)
+    if not env_expanded:
+        return envvar
+    
+    if env_expanded.startswith('~'):
+        home = expanduser('~')
+        env_expanded = home + env_expanded[1:]
+        print(f'get_extended_env: "{envvar}" include "~": expanded: "{env_expanded}"')
+        return env_expanded
+    if env_expanded.find('%') >= 0:
+        envList = env_expanded.split('%')
+        print(f'expand % {envList}')
+        if len(envList) == 3:
+            drive, envvar_to_expand, rest = envList
+            env_expanded = getenv(envvar_to_expand)
+            if env_expanded:
+                env_expanded = drive + env_expanded + rest
+                print(f'get_extended_env: "{envvar}" expanded: "{env_expanded}"')
+                return env_expanded
+        print(f'environment variable in {envvar} cannot be expanded (list: {envList})')
+    return env_expanded
