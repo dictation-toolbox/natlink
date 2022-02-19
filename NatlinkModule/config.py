@@ -74,15 +74,14 @@ class NatlinkConfig:
                 directories = []
                 for name, directory in config[section].items():
                     ## allow environment variables (or ~) in directory
-                    directory_expanded = get_extended_env(directory)
-                    
+                    directory_expanded = expand_path(directory)
                     if not os.path.isdir(directory_expanded):
                         if directory_expanded == directory:
                             print(f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory')
                         else:
-                            print(f'from_config_parser: skip "{directory}" ("{name}"):\n\texpanded directory "{directory_expanded}" is not a valid directory')
+                            print(f'from_config_parser: skip "{directory}" ("{name}"):\n\texpanded to directory "{directory_expanded}" is not a valid directory')
                         continue
-                    directories.append(directory)
+                    directories.append(directory_expanded)
 
                 ret.directories_by_user[''] = directories
         if config.has_section('settings'):
@@ -111,32 +110,23 @@ class NatlinkConfig:
         # should not happen, because of InstallTest
         raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
 
-def get_extended_env(envvar: str) -> str:
-    """get environment variable and expand "~" or %XXXX%
+def expand_path(input_path: str) -> str:
+    r"""expand path if it starts with "~" or has environment variables (%XXXX%)
     
-    Also C:%HOMEPATH% is allowed, although %PERSONALHOME% or ~ is preferrable...
+    Home ("~") can also be given by: %HOMEDRIVE%%HOMEPATH% or %PERSONALHOME%
     
-    When nothing to expand, return input variable "envvar"
+    The Documents directory can be found by "~\Documents" 
+    
+    When nothing to expand, return input
     """
-    expanduser, getenv = os.path.expanduser, os.getenv
-    env_expanded = getenv(envvar)
-    if not env_expanded:
-        return envvar
+    expanduser, expandvars = os.path.expanduser, os.path.expandvars
     
-    if env_expanded.startswith('~'):
+    if input_path.startswith('~'):
         home = expanduser('~')
-        env_expanded = home + env_expanded[1:]
-        print(f'get_extended_env: "{envvar}" include "~": expanded: "{env_expanded}"')
+        env_expanded = home + input_path[1:]
+        # print(f'expand_path: "{input_path}" include "~": expanded: "{env_expanded}"')
         return env_expanded
-    if env_expanded.find('%') >= 0:
-        envList = env_expanded.split('%')
-        print(f'expand % {envList}')
-        if len(envList) == 3:
-            drive, envvar_to_expand, rest = envList
-            env_expanded = getenv(envvar_to_expand)
-            if env_expanded:
-                env_expanded = drive + env_expanded + rest
-                print(f'get_extended_env: "{envvar}" expanded: "{env_expanded}"')
-                return env_expanded
-        print(f'environment variable in {envvar} cannot be expanded (list: {envList})')
+    env_expanded = expandvars(input_path)
+    # print(f'env_expanded: "{env_expanded}", from envvar: "{input_path}"')
     return env_expanded
+    
