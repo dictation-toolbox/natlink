@@ -228,6 +228,9 @@ class NatlinkMain:
     def start(self) -> None:
         self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')
         natlink.active_loader = self
+        if not self.config.directories:
+            self.logger.warning(f'Starting Natlink, but no directories to load are specified.\n\tPlease add one or more directories\n\tin config file: "{self.config.config_path}".')
+            return
         self._add_dirs_to_path(self.config.directories)  
         if self.config.load_on_startup:
             self.trigger_load()
