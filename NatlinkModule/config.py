@@ -110,6 +110,14 @@ class NatlinkConfig:
         # should not happen, because of DefaultConfig (was InstallTest)
         raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
 
+def getconfigsetting(filepath: str, section: str, key: str) -> str:
+    """get a setting from an inifile other than natlink.ini
+    """
+    Config = configparser.ConfigParser()
+    Config.read(filepath)
+    value = Config.get(section, key)
+    return value
+
 def expand_path(input_path: str) -> str:
     r"""expand path if it starts with "~" or has environment variables (%XXXX%)
     

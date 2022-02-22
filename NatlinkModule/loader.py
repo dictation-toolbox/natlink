@@ -14,7 +14,7 @@ from types import ModuleType
 from typing import List, Dict, Set, Iterable, Any, Tuple, Callable, Optional
 
 import natlink
-from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path
+from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path, getconfigsetting
 
 
 class NatlinkMain:
@@ -26,6 +26,7 @@ class NatlinkMain:
         self.bad_modules: Set[Path] = set()
         self.load_attempt_times: Dict[Path, float] = {}
         self._user: str = ''
+        self._profile: str = ''    # at on_change_callback user
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
         self.seen: Set[Path] = set()     # start empty in trigger_load
@@ -204,17 +205,28 @@ class NatlinkMain:
             self.load_or_reload_module(mod_path)
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
-        self.logger.debug(f'on_change_callback called with: change: {change_type}, args: {args}')
+        """on_change_callback, when another user profile is chosen, or when the mic state changes
+        """
+
         if change_type == 'user':
-            user, _profile = args
+            user, profile = args
             if not isinstance(user, str):
                 raise TypeError(f'unexpected args given to change callback: {args}')
             self._user = user
+            self._profile = profile
+            self.logger.debug(f'on_change_callback, user "{self._user}", profile: "{self._profile}"')
+            value = getLastUsedAcoustics(self._profile)
+            self.logger.debug(f'value from getLastUsedAcoustics: "{value}"')
+
             if self.config.load_on_user_changed:
                 self.trigger_load()
         elif change_type == 'mic' and args == 'on':
+            self.logger.debug('on_change_callback called with: "mic", "on"')
             if self.config.load_on_mic_on:
                 self.trigger_load()
+        else:
+            self.logger.debug(f'on_change_callback unhandled: change_type: "{change_type}", args: "{args}"')
+            
 
     def on_begin_callback(self, module_info: Tuple[str, str, int]) -> None:
         self.logger.debug(f'on_begin_callback called with: moduleInfo: {module_info}')
@@ -247,11 +259,35 @@ class NatlinkMain:
             self.logger.setLevel(log_level.value)
             self.logger.debug(f'set log level to: {log_level.name}')
 
+def getLastUsedAcoustics(DNSuserDirectory):
+    """get name of last used acoustics, must have DNSuserDirectory passed
+    
+    called when on_change_callback, the user changes. used by getLanguage
+    """
+    isfile, isdir = os.path.isfile, os.path.isdir
+    if not (DNSuserDirectory and isdir(DNSuserDirectory)):
+        print('getLastUsedAcoustics, no DNSuserDirectory passed, probably Dragon is not running')
+        return ''
+    optionsini = os.path.join(DNSuserDirectory, 'options.ini')
+    if not (optionsini and isfile(optionsini)):
+        raise OSError(f'getLastUsedAcoustics, not a valid options inifile is found: "{optionsini}"')
+
+    section = "Options"
+    keyname = "Last Used Acoustics"
+    value = getconfigsetting(optionsini, section, keyname)
+
+    return value
+
+
+
 def get_natlink_system_config_filename() -> str:
+    return get_config_info_from_registry('installPath')
+
+def get_config_info_from_registry(key_name: str) -> str:
     hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, r'Software\Natlink', winreg.KEY_WOW64_32KEY)
     with winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags) as natlink_key:
-        core_path, _ = winreg.QueryValueEx(natlink_key, "installPath")
-        return core_path
+        result, _ = winreg.QueryValueEx(natlink_key, key_name)
+        return result
 
 def config_locations() -> Iterable[str]:
     join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv
