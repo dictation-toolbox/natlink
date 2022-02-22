@@ -16,6 +16,19 @@ from typing import List, Dict, Set, Iterable, Any, Tuple, Callable, Optional
 import natlink
 from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path, getconfigsetting
 
+# the possible languages (for getUserLanguage) (runs at start and on_change_callback, user)
+# default is "enx", some of the English dialects...
+UserLanguages = {  # from config files (if not given by args in setUserInfo)
+             "Nederlands": "nld",
+             "Fran\xe7ais": "fra",
+             "Deutsch": "deu",
+             "Italiano": "ita",
+             "Espa\xf1ol": "esp",
+             "Dutch": "nld",
+             "French": "fra",
+             "German": "deu",
+             "Italian": "ita",
+             "Spanish": "esp",}
 
 class NatlinkMain:
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
@@ -277,6 +290,25 @@ def getLastUsedAcoustics(DNSuserDirectory):
     value = getconfigsetting(optionsini, section, keyname)
 
     return value
+
+def getUserLanguage(DNSuserDirectory):
+    """return the user language (default "enx") from Dragon inifiles
+        
+    like "nld" for Dutch, etc.
+    """
+    isfile = os.path.isfile
+    keyToModel = getLastUsedAcoustics(DNSuserDirectory)
+    acoustic_init_path = os.path.join(DNSuserDirectory, 'acoustic.ini')
+    section = "Base Acoustic"
+    if not (acoustic_init_path and isfile(acoustic_init_path)):
+        print(f'getUserLanguag: warning: user language cannot be found from Dragon Inifile: "{acoustic_init_path}",\n\tprobably Dragon is not running, return "enx"')
+        return 'enx'
+
+    value = getconfigsetting(acoustic_init_path, section, keyToModel)
+    print(' bingo: language: "{value}"')
+    if value in UserLanguages:
+        return UserLanguages[value]
+    return "enx"
 
 
 
