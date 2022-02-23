@@ -228,8 +228,8 @@ class NatlinkMain:
             self._user = user
             self._profile = profile
             self.logger.debug(f'on_change_callback, user "{self._user}", profile: "{self._profile}"')
-            value = getLastUsedAcoustics(self._profile)
-            self.logger.debug(f'value from getLastUsedAcoustics: "{value}"')
+            value = getUserLanguage(self._profile)
+            self.logger.debug(f'value from getUserLanguage: "{value}"')
 
             if self.config.load_on_user_changed:
                 self.trigger_load()
@@ -272,7 +272,7 @@ class NatlinkMain:
             self.logger.setLevel(log_level.value)
             self.logger.debug(f'set log level to: {log_level.name}')
 
-def getLastUsedAcoustics(DNSuserDirectory):
+def _getLastUsedAcoustics(DNSuserDirectory):
     """get name of last used acoustics, must have DNSuserDirectory passed
     
     called when on_change_callback, the user changes. used by getLanguage
@@ -297,7 +297,7 @@ def getUserLanguage(DNSuserDirectory):
     like "nld" for Dutch, etc.
     """
     isfile = os.path.isfile
-    keyToModel = getLastUsedAcoustics(DNSuserDirectory)
+    keyToModel = _getLastUsedAcoustics(DNSuserDirectory)
     acoustic_init_path = os.path.join(DNSuserDirectory, 'acoustic.ini')
     section = "Base Acoustic"
     if not (acoustic_init_path and isfile(acoustic_init_path)):
