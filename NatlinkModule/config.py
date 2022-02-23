@@ -114,7 +114,7 @@ def getconfigsetting(filepath: str, section: str, key: str) -> str:
     """get a setting from an inifile other than natlink.ini
     """
     Config = configparser.ConfigParser()
-    Config.read(filepath)
+    Config.read(filepath, encoding="UTF-8")
     value = Config.get(section, key)
     return value
 

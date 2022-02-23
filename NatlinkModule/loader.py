@@ -16,7 +16,7 @@ from typing import List, Dict, Set, Iterable, Any, Tuple, Callable, Optional
 import natlink
 from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path, getconfigsetting
 
-# the possible languages (for getUserLanguage) (runs at start and on_change_callback, user)
+# the possible languages (for get_user_language) (runs at start and on_change_callback, user)
 # default is "enx", some of the English dialects...
 UserLanguages = {  # from config files (if not given by args in setUserInfo)
              "Nederlands": "nld",
@@ -228,8 +228,8 @@ class NatlinkMain:
             self._user = user
             self._profile = profile
             self.logger.debug(f'on_change_callback, user "{self._user}", profile: "{self._profile}"')
-            value = getUserLanguage(self._profile)
-            self.logger.debug(f'value from getUserLanguage: "{value}"')
+            value = self.get_user_language(self._profile)
+            self.logger.debug(f'value from get_user_language: "{value}"')
 
             if self.config.load_on_user_changed:
                 self.trigger_load()
@@ -250,6 +250,46 @@ class NatlinkMain:
         elif self.config.load_on_begin_utterance:
             self.trigger_load()
 
+    def get_user_language(self, DNSuserDirectory):
+        """return the user language (default "enx") from Dragon inifiles
+            
+        like "nld" for Dutch, etc.
+        """
+        isfile, isdir, join = os.path.isfile, os.path.isdir, os.path.join
+    
+        if not (DNSuserDirectory and isdir(DNSuserDirectory)):
+            self.logger.debug('get_user_language, no DNSuserDirectory passed, probably Dragon is not running, return "enx"')
+            return 'enx'
+    
+        ns_options_ini = join(DNSuserDirectory, 'options.ini')
+        if not (ns_options_ini and isfile(ns_options_ini)):
+            self.logger.debug(f'get_user_language, warning no valid ini file: "{ns_options_ini}" found, return "enx"')
+    
+        section = "Options"
+        keyname = "Last Used Acoustics"
+        # keyToModel = win32api.GetProfileVal(section, keyname, "", ns_options_ini)
+        keyToModel = getconfigsetting(ns_options_ini, section, keyname)
+
+        ns_acoustic_ini = join(DNSuserDirectory, 'acoustic.ini')
+        section = "Base Acoustic"
+        if not (ns_acoustic_ini and isfile(ns_acoustic_ini)):
+            self.logger.debug(f'get_user_language: warning: user language cannot be found from Dragon Inifile: "{ns_acoustic_ini}", return "enx"')
+            return 'enx'
+        # user_language_long = win32api.GetProfileVal(section, keyToModel, "", ns_acoustic_ini)
+        user_language_long = getconfigsetting(ns_acoustic_ini, section, keyToModel)
+
+        self.logger.debug(f'get_user_language:  bingo, user_language_long: "{user_language_long}"')
+        if user_language_long in UserLanguages:
+            language = UserLanguages[user_language_long]
+            self.logger.debug(f'gettUserLanguage, return userLanguage: "{language}", (long language: "{user_language_long}")')
+        else:
+            language = 'enx'
+            self.logger.debug(f'gettUserLanguage, return userLanguage: "{language}", (long language: "{user_language_long}")')
+            
+        return language
+
+
+
     def start(self) -> None:
         self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')
         natlink.active_loader = self
@@ -258,7 +298,8 @@ class NatlinkMain:
             return
         self._add_dirs_to_path(self.config.directories)  
         if self.config.load_on_startup:
-            self.trigger_load()
+            self.on_change_callback('user', natlink.getCurrentUser())
+            # self.trigger_load()
         natlink.setBeginCallback(self.on_begin_callback)
         natlink.setChangeCallback(self.on_change_callback)
 
@@ -271,46 +312,6 @@ class NatlinkMain:
         if log_level is not LogLevel.NOTSET:
             self.logger.setLevel(log_level.value)
             self.logger.debug(f'set log level to: {log_level.name}')
-
-def _getLastUsedAcoustics(DNSuserDirectory):
-    """get name of last used acoustics, must have DNSuserDirectory passed
-    
-    called when on_change_callback, the user changes. used by getLanguage
-    """
-    isfile, isdir = os.path.isfile, os.path.isdir
-    if not (DNSuserDirectory and isdir(DNSuserDirectory)):
-        print('getLastUsedAcoustics, no DNSuserDirectory passed, probably Dragon is not running')
-        return ''
-    optionsini = os.path.join(DNSuserDirectory, 'options.ini')
-    if not (optionsini and isfile(optionsini)):
-        raise OSError(f'getLastUsedAcoustics, not a valid options inifile is found: "{optionsini}"')
-
-    section = "Options"
-    keyname = "Last Used Acoustics"
-    value = getconfigsetting(optionsini, section, keyname)
-
-    return value
-
-def getUserLanguage(DNSuserDirectory):
-    """return the user language (default "enx") from Dragon inifiles
-        
-    like "nld" for Dutch, etc.
-    """
-    isfile = os.path.isfile
-    keyToModel = _getLastUsedAcoustics(DNSuserDirectory)
-    acoustic_init_path = os.path.join(DNSuserDirectory, 'acoustic.ini')
-    section = "Base Acoustic"
-    if not (acoustic_init_path and isfile(acoustic_init_path)):
-        print(f'getUserLanguag: warning: user language cannot be found from Dragon Inifile: "{acoustic_init_path}",\n\tprobably Dragon is not running, return "enx"')
-        return 'enx'
-
-    value = getconfigsetting(acoustic_init_path, section, keyToModel)
-    print(' bingo: language: "{value}"')
-    if value in UserLanguages:
-        return UserLanguages[value]
-    return "enx"
-
-
 
 def get_natlink_system_config_filename() -> str:
     return get_config_info_from_registry('installPath')
@@ -378,5 +379,7 @@ def run() -> None:
         raise Exception from exc
     
 if __name__ == "__main__":
+    natlink.natConnect()
     run()
+    natlink.natDisconnect()
     
