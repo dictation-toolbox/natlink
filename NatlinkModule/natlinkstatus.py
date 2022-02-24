@@ -705,27 +705,8 @@ class NatlinkStatus:
             return value
         return ''
 
-
     @classmethod
     def getLanguage(cls):
-        """get language from userArgsDict
-
-        '' if not set, probably no speech profile on then
-
-        """
-        try:
-            lang = cls.userArgsDict['language']
-            return lang
-        except KeyError:
-            print('Serious error, natlinkstatus.getLanguage: no language found in userArgsDict return ""')
-            return ''
-        else:
-            print('natlinkstatus.getLanguage: no speech profile loaded, no userArgsDict available, used for testing only, return language "tst"')
-            return 'tst'
-
-
-    @classmethod
-    def getUserLanguage(cls):
         """get language, userLanguage info from acoustics ini file
         """
         value = loader.languageList[0]
@@ -961,7 +942,7 @@ def main():
     status = NatlinkStatus()
 
     # next things only testable when changing the dir in the functions above
-    print(status.getUserLanguage())
+    print(status.getLanguage())
 
 
     print(status.getNatlinkStatusString())
