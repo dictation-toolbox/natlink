@@ -279,6 +279,7 @@ class NatlinkMain:
         user_language_long = getconfigsetting(ns_acoustic_ini, section, keyToModel)
 
         self.logger.debug(f'get_user_language:  bingo, user_language_long: "{user_language_long}"')
+        user_language_long = user_language_long.split("|")[0].strip()
         if user_language_long in UserLanguages:
             language = UserLanguages[user_language_long]
             self.logger.debug(f'gettUserLanguage, return userLanguage: "{language}", (long language: "{user_language_long}")')

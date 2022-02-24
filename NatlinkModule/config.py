@@ -7,7 +7,7 @@ from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
 import natlink
-from natlink.readwritefile import readAnything
+from readwritefile import readAnything
 
 
 NATLINK_INI = "natlink.ini"
@@ -125,10 +125,11 @@ def getconfigsetting(filepath: str, section: str, key: str) -> str:
         _encoding, _bom, text = result
     else:
         raise OSError(f'Could not readAnything from "{filepath}"')
-    buf = io.StringIO(text)
+    # buf = io.StringIO(text)
     # config.read_file(buf)    
     Config = configparser.ConfigParser()
-    Config.read(buf)
+    # Config.read(buf)
+    Config.read_string(text)
     value = Config.get(section, key)
     return value
 
