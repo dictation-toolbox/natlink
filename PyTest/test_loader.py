@@ -1,3 +1,6 @@
+
+#pylint:disable= C0114, C0116, W0401, W0614, W0621, W0108. W0212
+
 import pytest
 
 from natlink.loader import *
@@ -42,7 +45,7 @@ def logger():
 
 
 def del_loaded_modules(natlink_main: NatlinkMain):
-    for name, mod in natlink_main.loaded_modules.items():
+    for _name, mod in natlink_main.loaded_modules.items():
         if mod:
             del mod
 
