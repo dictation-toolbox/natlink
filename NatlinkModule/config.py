@@ -7,7 +7,7 @@ from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
 import natlink
-from readwritefile import readAnything
+from natlink.readwritefile import readAnything
 
 
 NATLINK_INI = "natlink.ini"

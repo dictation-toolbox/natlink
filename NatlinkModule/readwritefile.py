@@ -1,16 +1,17 @@
-"""reading and writing files with unicode strings, handles encodings.
+"""reading and writing files handling different possible encodings.
 
-when reading a file, a 3 tuple (encoding, bom, content) is returned.
+When reading a file, a 3 tuple (encoding, bom, content) is returned.
 With utf-8, the bom mark could be present, a 3 byte raw string.
 This especially is the case with the ini files of the Dragon program
 
 
-readAnything(inputfile, filetype=None, tryAlternatives=True)
-    (works best if filetype is NOT given. c
-     Common alternatives for tryAlternatives are given by default, but utf-8 should be first)
+readAnything(inputfile, filetype=None)
+    (works best if filetype is NOT given,
+     in that case, the list of "common encodings" is followed,
+     until a probable hit is found. )
 
 ### example:
-    from readwritefile import readAnything
+    from natlink.readwritefile import readAnything
     result = readAnything(testfile)
     if result:
         encoding, bom, text = result
@@ -23,11 +24,11 @@ readAnything(inputfile, filetype=None, tryAlternatives=True)
 when writing a file, these three parameters should be passed again,
     bom: None if no bom mark is present or wanted
 
-from readwritefile import writeAnything    
+from natlink.readwritefile import writeAnything    
 writeAnything(filepath, encoding, bom, content # if encoding is None take 'ASCII'
                                                # if bom is None use no bom 
 
-Quintijn Hoogenboom, 2018, January
+Quintijn Hoogenboom, 2018, January/ February 2022
 
 """
 import os
@@ -63,7 +64,7 @@ def readAnything(inputfile, filetype=None):
     if os.path.isfile(inputfile):
         with open(inputfile, mode='rb') as file: # b is important -> binary
             tRaw = file.read()
-        ## TODOQH handle utf-16le (wiht null characters...)
+        ## TODOQH handle utf-16le (with null characters...)
         tRaw = fixCrLf(tRaw)
 
         if filetype:
@@ -79,7 +80,7 @@ def readAnything(inputfile, filetype=None):
         for codingscheme in codingschemes:
             result = DecodeEncode(tRaw, codingscheme)
             if not result is False:
-                if codingscheme in ('latin-1', 'cp1252'):
+                if codingscheme in ('cp1252', 'latin-1'):
                     pass
                 if result and ord(result[0]) == 65279:  # BOM, remove
                     result = result[1:]
@@ -103,7 +104,7 @@ def writeAnything(filepath, encoding, bom, content):
     take "ASCII" if encoding is None
     take "" if bom is None
     """
-    if type(content) in (list, tuple):
+    if isinstance(content, (list, tuple)):
         content = '\n'.join(content)
 
     if not isinstance(content, str):
@@ -127,8 +128,9 @@ def writeAnything(filepath, encoding, bom, content):
             #     print 'did encoding %s (%s)'% (encoding, filepath)
             break
     else:
-        print('fail to encode file %s with encoding(s): %s. Use xmlcharrefreplace'% (filepath, encodings))
-        tRaw = content.encode(encoding=encoding, errors='xmlcharrefreplace')
+        enc = encodings[0]
+        print(f'writeAnything: fail to encode file "{filepath}" with encoding(s): {encodings}.\n\tUse xmlcharrefreplace, and encoding: "{enc}"')
+        tRaw = content.encode(encoding=enc, errors='xmlcharrefreplace')
         
     if sys.platform == 'win32':
         tRaw = tRaw.replace(b'\n', b'\r\n')
