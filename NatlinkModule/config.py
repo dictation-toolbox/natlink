@@ -2,10 +2,13 @@
 import configparser
 import logging
 import os
+import io
 from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
 import natlink
+from readwritefile import readAnything
+
 
 NATLINK_INI = "natlink.ini"
 class NoGoodConfigFoundException(natlink.NatError):
@@ -112,9 +115,20 @@ class NatlinkConfig:
 
 def getconfigsetting(filepath: str, section: str, key: str) -> str:
     """get a setting from an inifile other than natlink.ini
+    
+    Take a string as input, which is obtained from readwritefile.py, handling
+    different encodings and possible BOM marks. 
+    
     """
+    result = readAnything(filepath)
+    if result:
+        _encoding, _bom, text = result
+    else:
+        raise OSError(f'Could not readAnything from "{filepath}"')
+    buf = io.StringIO(text)
+    # config.read_file(buf)    
     Config = configparser.ConfigParser()
-    Config.read(filepath, encoding="UTF-8")
+    Config.read(buf)
     value = Config.get(section, key)
     return value
 
