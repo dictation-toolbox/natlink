@@ -17,18 +17,18 @@ import natlink
 from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path, getconfigsetting
 
 # the possible languages (for get_user_language) (runs at start and on_change_callback, user)
-# default is "enx", some of the English dialects...
-UserLanguages = {  # from config files (if not given by args in setUserInfo)
-             "Nederlands": "nld",
-             "Fran\xe7ais": "fra",
-             "Deutsch": "deu",
-             "Italiano": "ita",
-             "Espa\xf1ol": "esp",
-             "Dutch": "nld",
-             "French": "fra",
-             "German": "deu",
-             "Italian": "ita",
-             "Spanish": "esp",}
+# default is "enx", being one of the English dialects...
+UserLanguages = { 
+    "Nederlands": "nld",
+    "Fran\xe7ais": "fra",
+    "Deutsch": "deu",
+    "Italiano": "ita",
+    "Espa\xf1ol": "esp",
+    "Dutch": "nld",
+    "French": "fra",
+    "German": "deu",
+    "Italian": "ita",
+    "Spanish": "esp",}
 
 class NatlinkMain:
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
@@ -62,6 +62,19 @@ class NatlinkMain:
     @property
     def module_paths_for_user(self) -> List[Path]:
         return self._module_paths_in_dirs(self.config.directories_for_user(self._user))
+
+    @property
+    def language(self) -> str:
+        """holds the language of the current profile (default 'enx')
+        """
+        return self.__language
+    
+    @language.setter
+    def language(self, value: str):
+        if value and len(value) == 3:
+            self.__language = value
+        else:
+            self.__language = 'enx'
 
     def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
@@ -229,8 +242,8 @@ class NatlinkMain:
             self._profile = profile
             self.logger.debug(f'on_change_callback, user "{self._user}", profile: "{self._profile}"')
             value = self.get_user_language(self._profile)
-            self.logger.debug(f'value from get_user_language: "{value}"')
-
+            self.logger.debug(f'on_change_callback, get_user_language: "{value}"')
+            self.language = value
             if self.config.load_on_user_changed:
                 self.trigger_load()
         elif change_type == 'mic' and args == 'on':
@@ -264,10 +277,10 @@ class NatlinkMain:
         ns_options_ini = join(DNSuserDirectory, 'options.ini')
         if not (ns_options_ini and isfile(ns_options_ini)):
             self.logger.debug(f'get_user_language, warning no valid ini file: "{ns_options_ini}" found, return "enx"')
+            return "enx"
     
         section = "Options"
         keyname = "Last Used Acoustics"
-        # keyToModel = win32api.GetProfileVal(section, keyname, "", ns_options_ini)
         keyToModel = getconfigsetting(ns_options_ini, section, keyname)
 
         ns_acoustic_ini = join(DNSuserDirectory, 'acoustic.ini')
@@ -277,19 +290,16 @@ class NatlinkMain:
             return 'enx'
         # user_language_long = win32api.GetProfileVal(section, keyToModel, "", ns_acoustic_ini)
         user_language_long = getconfigsetting(ns_acoustic_ini, section, keyToModel)
-
-        self.logger.debug(f'get_user_language:  bingo, user_language_long: "{user_language_long}"')
         user_language_long = user_language_long.split("|")[0].strip()
+
         if user_language_long in UserLanguages:
             language = UserLanguages[user_language_long]
-            self.logger.debug(f'gettUserLanguage, return userLanguage: "{language}", (long language: "{user_language_long}")')
+            self.logger.debug(f'get_user_language, return "{language}", (long language: "{user_language_long}")')
         else:
             language = 'enx'
-            self.logger.debug(f'gettUserLanguage, return userLanguage: "{language}", (long language: "{user_language_long}")')
+            self.logger.debug(f'get_user_language, return userLanguage: "{language}", (long language: "{user_language_long}")')
             
         return language
-
-
 
     def start(self) -> None:
         self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')
@@ -299,8 +309,19 @@ class NatlinkMain:
             return
         self._add_dirs_to_path(self.config.directories)  
         if self.config.load_on_startup:
-            self.on_change_callback('user', natlink.getCurrentUser())
-            # self.trigger_load()
+            # set language property:
+            args = natlink.getCurrentUser()
+            if args:
+                self._user, self._profile = args
+                self.logger.debug(f'at start, get_user_language for :user "{self._user}", profile: "{self._profile}"')
+                value = self.get_user_language(self._profile)
+                self.logger.debug(f'at start, get_user_language: "{value}"')
+                self.language = value
+            else:
+                self.logger.warning('at start, cannot get input for get_user_language, assume "enx",\n\tprobably Dragon is not running')
+                self.language = 'enx'
+
+            self.trigger_load()
         natlink.setBeginCallback(self.on_begin_callback)
         natlink.setChangeCallback(self.on_change_callback)
 
