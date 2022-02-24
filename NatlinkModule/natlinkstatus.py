@@ -728,9 +728,10 @@ class NatlinkStatus:
     def getUserLanguage(cls):
         """get language, userLanguage info from acoustics ini file
         """
-        value = loader.main.language
+        value = loader.languageList[0]
         return value
 
+    @classmethod
     def getShiftKey(cls):
         """return the shiftkey, for setting in natlinkmain when user language changes.
 
