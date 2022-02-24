@@ -30,6 +30,10 @@ if (NOT(Python3_FOUND))
 endif()  
 message(STATUS "Using Python installation found at: ${Python3_EXECUTABLE}")
 
+# Use static linking of MSVC runtime libraries, both in debug and release
+# See https://cmake.org/cmake/help/git-stage/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html#variable:CMAKE_MSVC_RUNTIME_LIBRARY
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # Build C++ code, including two versions of _natlink.pyd, the COM server running Python
 add_subdirectory ("NatlinkSource") 
 #  Build the NatlinkModule, that is, depend on the previous step and 
