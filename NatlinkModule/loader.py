@@ -30,6 +30,8 @@ UserLanguages = {
     "Italian": "ita",
     "Spanish": "esp",}
 
+languageList = ['enx']     # user language... 
+
 class NatlinkMain:
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
         self.logger = logger
@@ -75,6 +77,7 @@ class NatlinkMain:
             self.__language = value
         else:
             self.__language = 'enx'
+        languageList[0] = self.__language 
 
     def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
@@ -313,7 +316,7 @@ class NatlinkMain:
             args = natlink.getCurrentUser()
             if args:
                 self._user, self._profile = args
-                self.logger.debug(f'at start, get_user_language for :user "{self._user}", profile: "{self._profile}"')
+                self.logger.debug(f'at start, get_user_language for user: "{self._user}", profile: "{self._profile}"')
                 value = self.get_user_language(self._profile)
                 self.logger.debug(f'at start, get_user_language: "{value}"')
                 self.language = value

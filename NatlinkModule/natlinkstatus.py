@@ -728,31 +728,8 @@ class NatlinkStatus:
     def getUserLanguage(cls):
         """get language, userLanguage info from acoustics ini file
         """
-        Dir = cls.getDNSuserDirectory()
-
-        if not (Dir and os.path.isdir(Dir)):
-            Dir = 'C:\argusscans' # fake
-            # return ''
-        keyToModel = cls._getLastUsedAcoustics(Dir)
-        acoustic_init_path = os.path.join(Dir, 'acoustic.ini')
-        section = "Base Acoustic"
-        if not os.path.isfile(acousticini):
-            print('getLanguage: Warning, language of the user cannot be found, acoustic.ini not a file in directory %s'% dir)
-            return 'yyy'
-        acousticIni = configparser.ConfigParser(acoustic_init_path)
-        
-        lang = acousticIni.get(section, keyToModel)
-        if not lang:
-            print('getLanguage: Warning, no model specification string for key %s found in "Base Acoustic" of inifile: %s'% (keyToModel, acousticini))
-            print('You probably got the wrong encoding of the file, probably utf-8-BOM.')
-            print('Please try to change the encoding to utf-8.')
-            return 'zzz'
-        lang =  lang.split("|")[0].strip()
-        lang = lang.split("(")[0].strip()
-        if not lang:
-            print('getLanguage: Warning, no valid specification of language string (key: %s) found in "Base Acoustic" of inifile: %s'% (lang, acousticini))
-            return 'www'
-        return lang
+        value = loader.main.language
+        return value
 
     def getShiftKey(cls):
         """return the shiftkey, for setting in natlinkmain when user language changes.
