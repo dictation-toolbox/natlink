@@ -30,8 +30,6 @@ UserLanguages = {
     "Italian": "ita",
     "Spanish": "esp",}
 
-languageList = ['enx']     # user language... 
-
 class NatlinkMain:
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
         self.logger = logger
@@ -45,7 +43,7 @@ class NatlinkMain:
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
         self.seen: Set[Path] = set()     # start empty in trigger_load
-        self.language = 'enx'            # set default value
+        self.__language: str = ''            # set default value
 
     def set_pre_load_callback(self, pre_load: Optional[Callable[[], None]]) -> None:
         if pre_load is None:
@@ -65,19 +63,20 @@ class NatlinkMain:
     def module_paths_for_user(self) -> List[Path]:
         return self._module_paths_in_dirs(self.config.directories_for_user(self._user))
 
-    @property
-    def language(self) -> str:
+    @classmethod
+    def get_language(cls) -> str:
         """holds the language of the current profile (default 'enx')
         """
-        return self.__language
+        return cls.__language or 'enx'
     
-    @language.setter
-    def language(self, value: str):
+    @classmethod
+    def set_language(cls, value: str):
         if value and len(value) == 3:
-            self.__language = value
+            cls.__language = value
         else:
-            self.__language = 'enx'
-        languageList[0] = self.__language 
+            cls.__language = 'enx'
+
+    language = property(get_language, set_language)
 
     def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
