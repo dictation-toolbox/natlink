@@ -31,9 +31,22 @@ UserLanguages = {
     "Spanish": "esp",}
 
 class NatlinkMain:
+    """main class of Natlink, make it a "singleton"
+    """
+    # __instance = None
+    # 
+    # @classmethod
+    # def __new__(cls, *args):
+    #     if cls.__instance is None:
+    #         cls.__instance = object.__new__(cls)
+    #         cls.__instance.__init__(*args[1:])
+    #     return cls.__instance    
+    
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
         self.logger = logger
         self.config = config
+        self.__language: str = ''            # set default value
+
         self.loaded_modules: Dict[Path, ModuleType] = {}
         self.prog_names_visited: Set[str] = set()    # to enable loading program specific grammars
         self.bad_modules: Set[Path] = set()
@@ -43,7 +56,6 @@ class NatlinkMain:
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
         self.seen: Set[Path] = set()     # start empty in trigger_load
-        self.__language: str = ''            # set default value
 
     def set_pre_load_callback(self, pre_load: Optional[Callable[[], None]]) -> None:
         if pre_load is None:
@@ -63,18 +75,16 @@ class NatlinkMain:
     def module_paths_for_user(self) -> List[Path]:
         return self._module_paths_in_dirs(self.config.directories_for_user(self._user))
 
-    @classmethod
-    def get_language(cls) -> str:
+    def get_language(self) -> str:
         """holds the language of the current profile (default 'enx')
         """
-        return cls.__language or 'enx'
+        return self.__language or 'enx'
     
-    @classmethod
-    def set_language(cls, value: str):
+    def set_language(self, value: str):
         if value and len(value) == 3:
-            cls.__language = value
+            self.__language = value
         else:
-            cls.__language = 'enx'
+            self.__language = 'enx'
 
     language = property(get_language, set_language)
 
