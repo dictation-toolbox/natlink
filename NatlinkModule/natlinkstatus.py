@@ -118,14 +118,15 @@ import stat
 import platform
 import configparser
 import logging
-import loader
-import config
+from natlink import loader
+from natlink import config
 
 ## setup a natlinkmain instance, for getting properties from the loader:
 Logger = logging.getLogger('natlink')
 Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
 natlinkmain = loader.NatlinkMain(Logger, Config)
 natlinkmain.setup_logger()
+lang = natlinkmain.language
 
 print(f'language from NatlinkMain: "{natlinkmain.language}"')
 
