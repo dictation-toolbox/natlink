@@ -117,11 +117,22 @@ import sys
 import stat
 import platform
 import configparser
+import logging
 import loader
 import config
 
+## setup a natlinkmain instance, for getting properties from the loader:
+Logger = logging.getLogger('natlink')
+Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
+natlinkmain = loader.NatlinkMain(Logger, Config)
+natlinkmain.setup_logger()
+
+print(f'language from NatlinkMain: "{natlinkmain.language}"')
+
 # adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
+
+
 
 lowestSupportedPythonVersion = 38
 
@@ -709,7 +720,7 @@ class NatlinkStatus:
     def getLanguage(cls):
         """get language, userLanguage info from acoustics ini file
         """
-        value = loader.languageList[0]
+        value = natlinkmain.language
         return value
 
     @classmethod
