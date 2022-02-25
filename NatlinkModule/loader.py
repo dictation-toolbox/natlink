@@ -35,11 +35,10 @@ class NatlinkMain:
     """
     __instance = None
     
-    @classmethod
     def __new__(cls, *args):
         if cls.__instance is None:
             cls.__instance = object.__new__(cls)
-            cls.__instance.__init__(*args[1:])
+            cls.__instance.__init__(*args)
         return cls.__instance    
     
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
