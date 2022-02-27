@@ -35,17 +35,19 @@ getDNSVersion:
 getWindowsVersion:
     see source below
 
-getLanguage:
+property language: 
     returns the 3 letter code of the language of the speech profile that
     is open: 'enx', 'nld', "fra", "deu", "ita", "esp"
 
     get it from loader, is updated when user profile changes (on_change_callback)
     returns 'enx' when Dragon is not running.
     
-getUserTopic
-    removed
-    returns the topic of the current speech profile, via changeCallback (>= 15) or config files
+property profile:
+    returns the directory of the current user profile information
 
+property user:
+    returns the name of the currenct user
+    
 getPythonVersion:
     return two character version, so without the dot! eg '38',
     
@@ -411,6 +413,11 @@ class NatlinkStatus:
         if value and isdir(value):
             self.UserDirectory = value
             return self.UserDirectory
+        expanded = config.expand_path(value)
+        if expanded and isdir(expanded):
+            self.UserDirectory = expanded
+            return self.UserDirectory
+            
         print('invalid path for UserDirectory: "%s"'% value)
         self.UserDirectory = ''
         return ''
