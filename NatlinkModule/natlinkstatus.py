@@ -197,12 +197,16 @@ thisDir, thisFile = os.path.split(__file__)
 class NatlinkStatus:
     """this class holds the Natlink status functions
 
-    so, can be called from natlinkmain.
+    It retrieves information from the loader, main instance.
+    
+    This class is also implemented as a "singleton", so no classmethods needed.
 
     in the natlinkconfigfunctions it is subclassed for installation things
     in the PyTest folder there are/come test functions in TestNatlinkStatus
 
     """
+    __instance = None
+    
     config = configparser.ConfigParser()
 
     ### from previous modules, needed or not...
@@ -243,13 +247,19 @@ class NatlinkStatus:
     AhkExeDir = None
     hadWarning = []
 
-    @classmethod
-    def __init__(cls, skipSpecialWarning=None):
+    def __new__(cls, *args):
+        if cls.__instance is None:
+            cls.__instance = object.__new__(cls)
+            cls.__instance.__init__(*args)
+        return cls.__instance    
 
-        cls.skipSpecialWarning = skipSpecialWarning
+    
+    def __init__(self, skipSpecialWarning=None):
 
-        if cls.CoreDirectory is None:
-            cls.CoreDirectory = thisDir
+        self.skipSpecialWarning = skipSpecialWarning
+
+        if self.CoreDirectory is None:
+            self.CoreDirectory = thisDir
 
     def getWarningText(self):
         """return a printable text if there were warnings
@@ -266,67 +276,6 @@ class NatlinkStatus:
         while self.hadWarning:
             self.hadWarning.pop()   
 
-    @classmethod
-    def setUserInfo(cls, args):
-        """set username and userdirectory at change callback user
-        
-        args[0] = username
-        args[1] = Current directory for user profile (in programdata/nuance etc)
-                  extract for example userLanguage ('Nederlands') from acoustics.ini and options.ini
-
-        if the three letter "language" ('enx', 'nld' etc) is not found there is an error in this module: 'languages' dict.
-        English dialects are detected if the userLanguage is '.... English'.
-        
-        if there is no connection with natlink (no speech profile on, when debugging) language 'tst' is returned in getLanguage
-        
-        """
-        # print("setUserInfo, args: %s"% repr(args))
-        if len(args) < 2:
-            print('UNEXPECTED ERROR: natlinkstatus, setUserInfo: length of args to small, should be at least 2: %s (%s)'% (len(args), repr(args)))
-            return ''
-
-        userName = args[0]
-        cls.userArgsDict['userName'] = userName
-        DNSuserDirectory = args[1]
-        cls.userArgsDict['DNSuserDirectory'] = DNSuserDirectory
-        try:
-            return cls.userArgsDict['userLanguage']
-        except KeyError:
-            return ''
-        userLanguage = cls.getUserLanguage()
-        try:
-            language = languages[userLanguage]
-        except KeyError:
-            englishDialect = userLanguage.split()[-1]
-            if englishDialect == 'English':
-                language = 'enx'
-            else:
-                print('natlinkstatus, setUserInfo: no language found for userLanguage: %s'% userLanguage)
-                print('=== please report to q.hoogenboom@antenna.nl ===')
-                language = ''
-        cls.userArgsDict['language'] = language
-        cls.userArgsDict['userLanguage'] = userLanguage
-        # cls.userArgsDict['userTopic'] = cls.getUserTopic() # will be the basetopic...
-        print(f'setUserInfo: language: "{language}", userLanguage: "{userLanguage}"')
-
-    @classmethod
-    def clearUserInfo(cls):
-        cls.userArgsDict.clear()
-
-    @classmethod
-    def getUserName(cls):
-        try:
-            return cls.userArgsDict['userName']
-        except KeyError:
-            return ''
-
-    @classmethod
-    def getDNSuserDirectory(cls):
-        try:
-            return cls.userArgsDict['DNSuserDirectory']
-        except KeyError:
-            return ''
-        
     @staticmethod    
     def getWindowsVersion():
         """extract the windows version
@@ -340,8 +289,8 @@ class NatlinkStatus:
         print('Warning, probably cannot find correct Windows Version... (%s)'% wVersion)
         return wVersion
 
-    @classmethod
-    def getPythonVersion(cls):
+    
+    def getPythonVersion(self):
         """get the version of python
 
         Check if the version is supported on the "lower" side.
@@ -357,28 +306,28 @@ class NatlinkStatus:
             raise ValueError('getPythonVersion, current version is: "%s".\nPython versions before "%s" are not any more supported by Natlink.\nIf you want to run NatLink on Python2.7, please use the older version of NatLink at SourceForge (https://sourceforge.net/projects/natlink/)'% (versionReadable, lspvReadable))
         return version
 
-    @classmethod
-    def getDNSIniDir(cls):
+    
+    def getDNSIniDir(self):
         """get the path (one above the users profile paths) where the INI files
         should be located
 
         """
         # first try if set (by configure dialog/natlinkinstallfunctions.py) if regkey is set:
-        if cls.DNSIniDir is not None:
-            return cls.DNSIniDir
+        if self.DNSIniDir is not None:
+            return self.DNSIniDir
 
-        cls.DNSIniDir = loader.get_config_info_from_registry("dragonIniDir")
-        return cls.DNSIniDir
+        self.DNSIniDir = loader.get_config_info_from_registry("dragonIniDir")
+        return self.DNSIniDir
 
-    @classmethod
-    def getDNSVersion(cls):
+    
+    def getDNSVersion(self):
         """find the correct DNS version number (as an integer)
 
         2022: extract from the dragonIniDir setting in the registry, via loader function
 
         """
-        if cls.DNSVersion is not None:
-            return cls.DNSVersion
+        if self.DNSVersion is not None:
+            return self.DNSVersion
         dragonIniDir = loader.get_config_info_from_registry("dragonIniDir")
         if dragonIniDir:
             try:
@@ -389,51 +338,51 @@ class NatlinkStatus:
         else:
             print(f'Error, cannot get dragonIniDir from registry, unknown DNSVersion "{dragonIniDir}", return 0')
             version = 0
-        cls.DNSVersion = version
-        return cls.DNSVersion
+        self.DNSVersion = version
+        return self.DNSVersion
 
-    @classmethod
-    def getNSSYSTEMIni(cls):
-        inidir = cls.getDNSIniDir()
+    
+    def getNSSYSTEMIni(self):
+        inidir = self.getDNSIniDir()
         if inidir:
-            nssystemini = os.path.join(inidir, cls.NSSystemIni)
+            nssystemini = os.path.join(inidir, self.NSSystemIni)
             if os.path.isfile(nssystemini):
                 return os.path.normpath(nssystemini)
         print("Cannot find proper NSSystemIni file")
         print('Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)')
         return ''
 
-    @classmethod
-    def getNSAPPSIni(cls):
-        inidir = cls.getDNSIniDir()
+    
+    def getNSAPPSIni(self):
+        inidir = self.getDNSIniDir()
         if inidir:
-            nsappsini = os.path.join(inidir, cls.NSAppsIni)
+            nsappsini = os.path.join(inidir, self.NSAppsIni)
             if os.path.isfile(nsappsini):
                 return os.path.normpath(nsappsini)
         print("Cannot find proper NSAppsIni file")
         print('Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)')
         return ''
 
-    @classmethod
-    def NatlinkIsEnabled(cls):
+    
+    def NatlinkIsEnabled(self):
         """check if the coreDir of Natlink install is there
         
         If so (starting from release 5.0.0.), we assume Natlink is enabled.
         
         When you want to disable, remove your Natlink install from Program in Windows.
         """
-        if cls.NatlinkIsEnabled is not None:
-            return cls.NatlinkIsEnabled
+        if self.NatlinkIsEnabled is not None:
+            return self.NatlinkIsEnabled
 
         had_reg_key = loader.get_config_info_from_registry("coreDir")
         if had_reg_key:
-            cls.NatlinkIsEnabled = True
+            self.NatlinkIsEnabled = True
         else:
-            cls.NatlinkIsEnabled = True
-        return cls.NatlinkIsEnabled            
+            self.NatlinkIsEnabled = True
+        return self.NatlinkIsEnabled            
 
-    @classmethod
-    def VocolaIsEnabled(cls):
+    
+    def VocolaIsEnabled(self):
         """Return True if Vocola is enables
         
         To be so,
@@ -443,30 +392,30 @@ class NatlinkStatus:
         
         """
         isdir = os.path.isdir
-        if not cls.NatlinkIsEnabled():
-            cls.VocolaIsEnabled = False
+        if not self.NatlinkIsEnabled():
+            self.VocolaIsEnabled = False
             return False
-        vocUserDir = cls.getVocolaUserDirectory()
+        vocUserDir = self.getVocolaUserDirectory()
         if vocUserDir and isdir(vocUserDir):
-            vocDir = cls.getVocolaDirectory()
-            vocGrammarsDir = cls.getVocolaGrammarsDirectory()
+            vocDir = self.getVocolaDirectory()
+            vocGrammarsDir = self.getVocolaGrammarsDirectory()
             if vocDir and isdir(vocDir) and vocGrammarsDir and isdir(vocGrammarsDir):
                 return True
         return False
 
-    @classmethod
-    def UnimacroIsEnabled(cls):
+    
+    def UnimacroIsEnabled(self):
         """UnimacroIsEnabled: see if UserDirectory is there and
 
         _control.py is in this directory
         """
         isdir = os.path.isdir
-        if not cls.NatlinkIsEnabled():
+        if not self.NatlinkIsEnabled():
             return False
-        uuDir = cls.getUnimacroUserDirectory()
+        uuDir = self.getUnimacroUserDirectory()
         if not uuDir:
             return False
-        uDir = cls.getUnimacroDirectory()
+        uDir = self.getUnimacroDirectory()
         if not uDir:
             # print('no valid UnimacroDirectory, Unimacro is disabled')
             return False
@@ -474,36 +423,36 @@ class NatlinkStatus:
             files = os.listdir(uDir)
             if not '_control.py' in files:
                 return  False # _control.py should be in Unimacro directory
-        ugDir = cls.getUnimacroGrammarsDirectory()
+        ugDir = self.getUnimacroGrammarsDirectory()
         if ugDir and isdir(ugDir):
             return True  # Unimacro is enabled...            
         return False                
 
-    @classmethod
-    def UserIsEnabled(cls):
-        if not cls.NatlinkIsEnabled():
+    
+    def UserIsEnabled(self):
+        if not self.NatlinkIsEnabled():
             return False
-        userDir = cls.getUserDirectory()
+        userDir = self.getUserDirectory()
         if userDir:
             return True
         return False
 
-    @classmethod
-    def getUnimacroUserDirectory(cls):
+    
+    def getUnimacroUserDirectory(self):
         isdir = os.path.isdir
-        if cls.UnimacroUserDirectory is not None:
-            return cls.UnimacroUserDirectory
+        if self.UnimacroUserDirectory is not None:
+            return self.UnimacroUserDirectory
         key = 'UnimacroUserDirectory'
-        value = cls.getconfigsetting(key)
+        value = self.getconfigsetting(key)
         if value and isdir(value):
-            cls.UnimacroUserDirectory = value
+            self.UnimacroUserDirectory = value
             return value
         print(f'invalid directory for "{key}": "{value}%s"')
-        cls.UnimacroUserDirectory = ''
+        self.UnimacroUserDirectory = ''
         return ''
     
-    @classmethod
-    def getUnimacroDirectory(cls):
+    
+    def getUnimacroDirectory(self):
         """return the path to the Unimacro Directory
         
         This is the directory where the _control.py grammar is.
@@ -518,23 +467,23 @@ class NatlinkStatus:
 
         """
         join, isdir, isfile, normpath = os.path.join, os.path.isdir, os.path.isfile, os.path.normpath
-        if cls.UnimacroDirectory is not None:
-            return cls.UnimacroDirectory
+        if self.UnimacroDirectory is not None:
+            return self.UnimacroDirectory
         uDir = join(sys.prefix, "lib", "site-packages", "unimacro")
         if isdir(uDir):
             uFile = "_control.py"
             controlGrammar = join(uDir, uFile)
             if isfile(controlGrammar):
-                cls.UnimacroDirectory = normpath(uDir)
-                return cls.UnimacroDirectory
+                self.UnimacroDirectory = normpath(uDir)
+                return self.UnimacroDirectory
             print(f'UnimacroDirectory found: "{uDir}", but no valid file: "{uFile}", return ""')
             return ""
         print('UnimacroDirectory not found in "lib/site-packages/unimacro", return ""')
-        cls.UnimacroDirectory = ""
+        self.UnimacroDirectory = ""
         return ""
         
-    @classmethod
-    def getUnimacroGrammarsDirectory(cls):
+    
+    def getUnimacroGrammarsDirectory(self):
         """return the path to the directory where the ActiveGrammars of Unimacro are located.
         
         Expected in "ActiveGrammars" of the UnimacroUserDirectory
@@ -542,10 +491,10 @@ class NatlinkStatus:
 
         """
         isdir, join, normpath = os.path.isdir, os.path.join, os.path.normpath
-        if cls.UnimacroGrammarsDirectory is not None:
-            return cls.UnimacroGrammarsDirectory
+        if self.UnimacroGrammarsDirectory is not None:
+            return self.UnimacroGrammarsDirectory
         
-        uuDir = cls.getUnimacroUserDirectory()
+        uuDir = self.getUnimacroUserDirectory()
         if uuDir and isdir(uuDir):
             ugDir = join(uuDir, "ActiveGrammars")
             if not isdir(ugDir):
@@ -556,33 +505,33 @@ class NatlinkStatus:
                     print(f"UnimacroGrammarsDirectory: {ugDir} has no python grammar files (yet), please populate this directory with the Unimacro grammars you wish to use, and then toggle your microphone")
                 
                 try:
-                    del cls.UnimacroGrammarsDirectory
+                    del self.UnimacroGrammarsDirectory
                 except AttributeError:
                     pass
-                cls.UnimacroGrammarsDirectory= normpath(ugDir)
-                return cls.UnimacroGrammarsDirectory
+                self.UnimacroGrammarsDirectory= normpath(ugDir)
+                return self.UnimacroGrammarsDirectory
 
         try:
-            del cls.UnimacroGrammarsDirectory
+            del self.UnimacroGrammarsDirectory
         except AttributeError:
             pass
-        cls.UnimacroGrammarsDirectory= ""   # meaning is not set, for future calls.
-        return cls.UnimacroGrammarsDirectory
+        self.UnimacroGrammarsDirectory= ""   # meaning is not set, for future calls.
+        return self.UnimacroGrammarsDirectory
 
-    @classmethod
-    def getCoreDirectory(cls):
+    
+    def getCoreDirectory(self):
         """return the path of the coreDirectory, MacroSystem/core
         """
-        return cls.CoreDirectory
+        return self.CoreDirectory
 
-    @classmethod
-    def getNatlinkDirectory(cls):
+    
+    def getNatlinkDirectory(self):
         """return the path of the NatlinkDirectory, two above the coreDirectory
         """
-        return cls.NatlinkDirectory
+        return self.NatlinkDirectory
 
-    @classmethod
-    def getUserDirectory(cls):
+    
+    def getUserDirectory(self):
         """return the path to the Natlink User directory
 
         this one is not any more for Unimacro, but for User specified grammars, also Dragonfly
@@ -590,58 +539,58 @@ class NatlinkStatus:
         should be set in configurenatlink, otherwise ignore...
         """
         isdir = os.path.isdir
-        if not cls.NatlinkIsEnabled:
+        if not self.NatlinkIsEnabled:
             return ""
-        if not cls.UserDirectory is None:
-            return cls.UserDirectory
+        if not self.UserDirectory is None:
+            return self.UserDirectory
         key = 'UserDirectory'
-        value = cls.getconfigsetting(key)
+        value = self.getconfigsetting(key)
         if value and isdir(value):
-            cls.UserDirectory = value
-            return cls.UserDirectory
+            self.UserDirectory = value
+            return self.UserDirectory
         print('invalid path for UserDirectory: "%s"'% value)
-        cls.UserDirectory = ''
+        self.UserDirectory = ''
         return ''
 
-    @classmethod
-    def getVocolaUserDirectory(cls):
+    
+    def getVocolaUserDirectory(self):
         isdir = os.path.isdir
-        if cls.VocolaUserDirectory is not None:
-            return cls.VocolaUserDirectory
+        if self.VocolaUserDirectory is not None:
+            return self.VocolaUserDirectory
         key = 'VocolaUserDirectory'
 
-        value = cls.getconfigsetting(key)
+        value = self.getconfigsetting(key)
         if value and isdir(value):
-            cls.VocolaUserDirectory = value
+            self.VocolaUserDirectory = value
             return value
         print(f'invalid path for VocolaUserDirectory: "{value}"')
-        cls.VocolaUserDirectory = ''
+        self.VocolaUserDirectory = ''
         return ''
 
-    @classmethod
-    def getVocolaDirectory(cls):
+    
+    def getVocolaDirectory(self):
         isdir, isfile, join, normpath = os.path.isdir, os.path.isfile, os.path.join, os.path.normpath
-        if cls.VocolaDirectory is not None:
-            return cls.VocolaDirectory
+        if self.VocolaDirectory is not None:
+            return self.VocolaDirectory
 
         ## try in site-packages:
         vocDir = join(sys.prefix, "lib", "site-packages", "vocola2")
         if not isdir(vocDir):
             print('VocolaDirectory not found in "lib/site-packages/vocola2", return ""')
-            cls.VocolaDirectory = ''
+            self.VocolaDirectory = ''
             return ''
         vocFile = "_vocola_main.py"
         checkGrammar = join(vocDir, vocFile)
         if not isfile(checkGrammar):
             print(f'VocolaDirectory found in "{vocDir}", but no file "{vocFile}" found, return ""')
-            cls.VocolaDirectory = ''
+            self.VocolaDirectory = ''
             return ''
 
-        cls.VocolaDirectory = normpath(vocDir)
-        return cls.VocolaDirectory
+        self.VocolaDirectory = normpath(vocDir)
+        return self.VocolaDirectory
 
-    @classmethod
-    def getVocolaGrammarsDirectory(cls):
+    
+    def getVocolaGrammarsDirectory(self):
         """return the VocolaGrammarsDirectory, but only if Vocola is enabled
         
         If so, the subdirectory CompiledGrammars is created if not there yet.
@@ -652,86 +601,86 @@ class NatlinkStatus:
         
         """
         isdir, normpath = os.path.isdir, os.path.normpath
-        if cls.VocolaGrammarsDirectory is not None:
-            return cls.VocolaGrammarsDirectory
+        if self.VocolaGrammarsDirectory is not None:
+            return self.VocolaGrammarsDirectory
 
-        vUserDir = cls.getVocolaUserDirectory()
+        vUserDir = self.getVocolaUserDirectory()
         if not vUserDir:
-            cls.VocolaGrammarsDirectory = ''
+            self.VocolaGrammarsDirectory = ''
             return ''
         vgDir = isdir(vUserDir, "CompiledGrammars")
         if not isdir(vgDir):
             os.mkdir(vgDir)
         if not isdir(vgDir):
             print('getVocolaGrammarsDirectory, could not create directory "{vgdir}"')
-            cls.VocolaGrammarsDirectory = ''
+            self.VocolaGrammarsDirectory = ''
             return ''
         
-        cls.VocolaGrammarsDirectory = normpath(vgDir)
-        return cls.VocolaGrammarsDirectory
+        self.VocolaGrammarsDirectory = normpath(vgDir)
+        return self.VocolaGrammarsDirectory
 
-    @classmethod
-    def getAhkUserDir(cls):
-        if not cls.AhkUserDir is None:
-            return cls.AhkUserDir
-        return cls.getAhkUserDirFromIni()
+    
+    def getAhkUserDir(self):
+        if not self.AhkUserDir is None:
+            return self.AhkUserDir
+        return self.getAhkUserDirFromIni()
 
-    @classmethod
-    def getAhkUserDirFromIni(cls):
+    
+    def getAhkUserDirFromIni(self):
         isdir = os.path.isdir
         key = 'AhkUserDir'
 
-        value = cls.getconfigsetting(key)
+        value = self.getconfigsetting(key)
         if value and isdir(value):
-            cls.AhkUserDir = value
+            self.AhkUserDir = value
             return value
         print('invalid path for AhkUserDir: "{value}"')
-        cls.AhkUserDir = ''
+        self.AhkUserDir = ''
         return ''
     
-    @classmethod
-    def getAhkExeDir(cls):
-        if not cls.AhkExeDir is None:
-            return cls.AhkExeDir
-        return cls.getAhkExeDirFromIni()
+    
+    def getAhkExeDir(self):
+        if not self.AhkExeDir is None:
+            return self.AhkExeDir
+        return self.getAhkExeDirFromIni()
 
-    @classmethod
-    def getAhkExeDirFromIni(cls):
+    
+    def getAhkExeDirFromIni(self):
         isdir = os.path.isdir
         key = 'AhkExeDir'
-        value = cls.getconfigsetting(key)
+        value = self.getconfigsetting(key)
         if value and isdir(value):
-            cls.AhkExeDir = value
+            self.AhkExeDir = value
             return value
         print(f'invalid path for AhkExeDir: "{value}"')
-        cls.AhkExeDir = ''
+        self.AhkExeDir = ''
         return ''
 
-    @classmethod
-    def getUnimacroIniFilesEditor(cls):
+    
+    def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
-        value = cls.getconfigsetting(key)
+        value = self.getconfigsetting(key)
         if not value:
             value = 'notepad'
-        if cls.UnimacroIsEnabled():
+        if self.UnimacroIsEnabled():
             return value
         return ''
 
-    @classmethod
-    def getLanguage(cls):
+    
+    def getLanguage(self):
         """get language, userLanguage info from acoustics ini file
         """
         value = natlinkmain.language
         return value
 
-    @classmethod
-    def getShiftKey(cls):
+    
+    def getShiftKey(self):
         """return the shiftkey, for setting in natlinkmain when user language changes.
 
-        used for cls.playString in natlinkutils, for the dropping character bug. (dec 2015, QH).
+        used for self.playString in natlinkutils, for the dropping character bug. (dec 2015, QH).
         """
         ## TODO: must be windows language...
-        language = cls.getLanguage()
+        language = self.getLanguage()
         try:
             return "{%s}"% shiftKeyDict[language]
         except KeyError:
@@ -739,30 +688,30 @@ class NatlinkStatus:
             return ""
 
     # get additional options Vocola
-    @classmethod
-    def getVocolaTakesLanguages(cls):
+    
+    def getVocolaTakesLanguages(self):
         """gets and value for distinction of different languages in Vocola
         If Vocola is not enabled, this option will also return False
         """
         key = 'VocolaTakesLanguages'
-        if cls.VocolaIsEnabled():
-            value = cls.getconfigsetting(key, None)
+        if self.VocolaIsEnabled():
+            value = self.getconfigsetting(key, None)
             return value
         return False
 
-    @classmethod
-    def getVocolaTakesUnimacroActions(cls):
+    
+    def getVocolaTakesUnimacroActions(self):
         """gets and value for optional Vocola takes Unimacro actions
         If Vocola is not enabled, this option will also return False
         """
         key = 'VocolaTakesUnimacroActions'
-        if cls.VocolaIsEnabled():
-            value = cls.getconfigsetting(key, None)
+        if self.VocolaIsEnabled():
+            value = self.getconfigsetting(key, None)
             return value
         return False
 
-    @classmethod
-    def getInstallVersion(cls):
+    
+    def getInstallVersion(self):
         version = loader.get_config_info_from_registry("version")
         return version
     
@@ -772,8 +721,8 @@ class NatlinkStatus:
         """
         return "Dragon"
 
-    @classmethod
-    def getNatlinkStatusDict(cls, force=None):
+    
+    def getNatlinkStatusDict(self, force=None):
         """return actual status in a dict
         
         force can be passed as True, when called from the config GUI program
@@ -794,53 +743,53 @@ class NatlinkStatus:
                     'AhkExeDir', 'AhkUserDir']:
 ##                    'BaseTopic', 'BaseModel']:
             if force:
-                setattr(cls, key, None)
+                setattr(self, key, None)
             keyCap = key[0].upper() + key[1:]
             funcName = f'get{keyCap}'
-            func = getattr(cls, funcName)
+            func = getattr(self, funcName)
             D[key] = func()
-            # execstring = "D['%s'] = cls.get%s()"% (key, keyCap)
+            # execstring = "D['%s'] = self.get%s()"% (key, keyCap)
             # exec(execstring)
-        D['CoreDirectory'] = cls.CoreDirectory
-        D['UserDirectory'] = cls.getUserDirectory()
-        D['natlinkIsEnabled'] = cls.NatlinkIsEnabled()
-        D['vocolaIsEnabled'] = cls.VocolaIsEnabled()
+        D['CoreDirectory'] = self.CoreDirectory
+        D['UserDirectory'] = self.getUserDirectory()
+        D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
+        D['vocolaIsEnabled'] = self.VocolaIsEnabled()
 
-        D['unimacroIsEnabled'] = cls.UnimacroIsEnabled()
-        D['userIsEnabled'] = cls.UserIsEnabled()
+        D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
+        D['userIsEnabled'] = self.UserIsEnabled()
         # extra for information purposes:
-        D['NatlinkDirectory'] = cls.NatlinkDirectory
+        D['NatlinkDirectory'] = self.NatlinkDirectory
         return D
 
-    @classmethod
-    def getNatlinkStatusString(cls):
+    
+    def getNatlinkStatusString(self):
         L = []
-        D = cls.getNatlinkStatusDict()
+        D = self.getNatlinkStatusDict()
         if D['userName']:
             L.append('user speech profile:')
-            cls.appendAndRemove(L, D, 'userName')
-            cls.appendAndRemove(L, D, 'DNSuserDirectory')
+            self.appendAndRemove(L, D, 'userName')
+            self.appendAndRemove(L, D, 'DNSuserDirectory')
         else:
             del D['userName']
             del D['DNSuserDirectory']
         # Natlink::
 
         if D['natlinkIsEnabled']:
-            cls.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is enabled")
+            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is enabled")
             key = 'CoreDirectory'
-            cls.appendAndRemove(L, D, key)
+            self.appendAndRemove(L, D, key)
             key = 'InstallVersion'
-            cls.appendAndRemove(L, D, key)
+            self.appendAndRemove(L, D, key)
 
             ## Vocola::
             if D['vocolaIsEnabled']:
-                cls.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
+                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
                 for key in ('BaseDirectory', 'VocolaUserDirectory', 'VocolaDirectory',
                             'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
                             'VocolaTakesUnimacroActions'):
-                    cls.appendAndRemove(L, D, key)
+                    self.appendAndRemove(L, D, key)
             else:
-                cls.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
+                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
                 for key in ('VocolaUserDirectory', 'VocolaDirectory',
                             'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
                             'VocolaTakesUnimacroActions'):
@@ -848,23 +797,23 @@ class NatlinkStatus:
 
             ## Unimacro:
             if D['unimacroIsEnabled']:
-                cls.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is enabled")
+                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is enabled")
                 for key in ('UnimacroUserDirectory', 'UnimacroDirectory', 'UnimacroGrammarsDirectory'):
-                    cls.appendAndRemove(L, D, key)
+                    self.appendAndRemove(L, D, key)
                 for key in ('UnimacroIniFilesEditor',):
-                    cls.appendAndRemove(L, D, key)
+                    self.appendAndRemove(L, D, key)
             else:
-                cls.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is disabled")
+                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is disabled")
                 for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor',
                             'UnimacroDirectory', 'UnimacroGrammarsDirectory'):
                     del D[key]
             ##  UserDirectory:
             if D['userIsEnabled']:
-                cls.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are enabled")
+                self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are enabled")
                 for key in ('UserDirectory',):
-                    cls.appendAndRemove(L, D, key)
+                    self.appendAndRemove(L, D, key)
             else:
-                cls.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are disabled")
+                self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are disabled")
                 del D['UserDirectory']
 
             ## remaining Natlink options:
@@ -873,11 +822,11 @@ class NatlinkStatus:
         else:
             # Natlink disabled:
             if D['natlinkIsEnabled'] == 0:
-                cls.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled")
+                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled")
             else:
-                cls.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
+                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
             key = 'CoreDirectory'
-            cls.appendAndRemove(L, D, key)
+            self.appendAndRemove(L, D, key)
             for key in ['DebugLoad', 'DebugCallback',
                     'VocolaTakesLanguages',
                     'vocolaIsEnabled']:
@@ -886,18 +835,18 @@ class NatlinkStatus:
         L.append('system information:')
         for key in ['DNSIniDir', 'DNSVersion', 'DNSName',
                     'WindowsVersion', 'PythonVersion']:
-            cls.appendAndRemove(L, D, key)
+            self.appendAndRemove(L, D, key)
 
         # forgotten???
         if D:
             L.append('remaining information:')
             for key in list(D.keys()):
-                cls.appendAndRemove(L, D, key)
+                self.appendAndRemove(L, D, key)
 
         return '\n'.join(L)
 
-    @classmethod
-    def appendAndRemove(cls, List, Dict, Key, text=None):
+    
+    def appendAndRemove(self, List, Dict, Key, text=None):
         if text:
             List.append(text)
         else:
@@ -920,8 +869,8 @@ class NatlinkStatus:
     #         print(f"natlinkstatus, addToPath: {Dir3}")
     #         sys.path.append(Dir3)
 
-    @classmethod
-    def getconfigsetting(cls, key, inifilepath=None, section=None):
+    
+    def getconfigsetting(self, key, inifilepath=None, section=None):
         """get from natlink.ini file
         
         default section = "directories"
