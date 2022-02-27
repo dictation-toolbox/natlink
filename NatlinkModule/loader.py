@@ -50,8 +50,9 @@ class NatlinkMain:
         self.prog_names_visited: Set[str] = set()    # to enable loading program specific grammars
         self.bad_modules: Set[Path] = set()
         self.load_attempt_times: Dict[Path, float] = {}
-        self._user: str = ''
-        self._profile: str = ''    # at on_change_callback user
+        self.user: str = ''       #
+        self.profile: str = ''    # at on_change_callback user
+        self.language: str = ''   #
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
         self.seen: Set[Path] = set()     # start empty in trigger_load
@@ -72,21 +73,32 @@ class NatlinkMain:
 
     @property
     def module_paths_for_user(self) -> List[Path]:
-        return self._module_paths_in_dirs(self.config.directories_for_user(self._user))
+        return self._module_paths_in_dirs(self.config.directories_for_user(self.user))
 
-    def get_language(self) -> str:
+    # three properties, which are set at start or at on_change_callback:
+    @property
+    def language(self) -> str:
         """holds the language of the current profile (default 'enx')
         """
         return self.__language or 'enx'
-    
-    def set_language(self, value: str):
+
+    @language.setter
+    def language(self, value: str):
         if value and len(value) == 3:
             self.__language = value
         else:
             self.__language = 'enx'
 
-    language = property(get_language, set_language)
+    @property
+    def profile(self) -> str:
+        """holds the profile of current profile
+        """
+        return self.__username or ''
 
+    @profile.setter
+    def profile(self, value: str):
+        self.__username = value or ''
+        
     def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
         def is_script(f: Path) -> bool:
@@ -249,10 +261,10 @@ class NatlinkMain:
             user, profile = args
             if not isinstance(user, str):
                 raise TypeError(f'unexpected args given to change callback: {args}')
-            self._user = user
-            self._profile = profile
-            self.logger.debug(f'on_change_callback, user "{self._user}", profile: "{self._profile}"')
-            value = self.get_user_language(self._profile)
+            self.user = user
+            self.profile = profile
+            self.logger.debug(f'on_change_callback, user "{self.user}", profile: "{self.profile}"')
+            value = self.get_user_language(self.profile)
             self.logger.debug(f'on_change_callback, get_user_language: "{value}"')
             self.language = value
             if self.config.load_on_user_changed:
@@ -323,9 +335,9 @@ class NatlinkMain:
             # set language property:
             args = natlink.getCurrentUser()
             if args:
-                self._user, self._profile = args
-                self.logger.debug(f'at start, get_user_language for user: "{self._user}", profile: "{self._profile}"')
-                value = self.get_user_language(self._profile)
+                self.user, self.profile = args
+                self.logger.debug(f'at start, get_user_language for user: "{self.user}", profile: "{self.profile}"')
+                value = self.get_user_language(self.profile)
                 self.logger.debug(f'at start, get_user_language: "{value}"')
                 self.language = value
             else:
