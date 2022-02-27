@@ -97,7 +97,17 @@ class NatlinkMain:
 
     @profile.setter
     def profile(self, value: str):
-        self.__username = value or ''
+        self.__profile = value or ''
+
+    @property
+    def user(self) -> str:
+        """holds the name of the current user profile
+        """
+        return self.__profile or ''
+
+    @user.setter
+    def user(self, value: str):
+        self.__user = value or ''
         
     def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
@@ -341,6 +351,7 @@ class NatlinkMain:
                 self.logger.debug(f'at start, get_user_language: "{value}"')
                 self.language = value
             else:
+                self.user, self.profile = '', ''
                 self.logger.warning('at start, cannot get input for get_user_language, assume "enx",\n\tprobably Dragon is not running')
                 self.language = 'enx'
 

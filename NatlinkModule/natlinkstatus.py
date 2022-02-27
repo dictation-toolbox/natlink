@@ -103,6 +103,8 @@ except ModuleNotFoundError:
     print('Natlink is not enabled, module natlink and/or natlink.loader cannot be found\n\texit natlinkstatus.py...')
     sys.exit()
 
+from natlink import config
+
 ## setup a natlinkmain instance, for getting properties from the loader:
 ## note, when loading the natlink module via Dragon, you can call simply:
 # # # natlinkmain = loader.NatlinkMain()
@@ -188,8 +190,6 @@ class NatlinkStatus:
     def __init__(self):
         """initialise all instance variables, in this singleton class, instance
         """
-        self.__natlinkIsEnabled = None
-        self.NatlinkIsEnabled = self.getNatlinkIsEnabled()
         self.DNSVersion = None
         self.DNSIniDir = None
         self.CoreDirectory = None
@@ -240,6 +240,11 @@ class NatlinkStatus:
             raise ValueError('getPythonVersion, current version is: "%s".\nPython versions before "%s" are not any more supported by Natlink.\nIf you want to run NatLink on Python2.7, please use the older version of NatLink at SourceForge (https://sourceforge.net/projects/natlink/)'% (versionReadable, lspvReadable))
         return version
 
+    @property
+    def user() -> str:
+        return loader.user
+    
+    
     
     def getDNSIniDir(self):
         """get the path (one above the users profile paths) where the INI files
@@ -275,32 +280,6 @@ class NatlinkStatus:
         self.DNSVersion = version
         return self.DNSVersion
     
-    @property
-    def NatlinkIsEnabled(self):
-        if self.__natlinkIsEnabled is None:
-            self.NatlinkIsEnabled = self.getNatlinkIsEnabled()
-        return self.__natlinkIsEnabled
-    
-    @NatlinkIsEnabled.setter
-    def NatlinkIsEnabled(self, value):
-        if value is None:
-            value = self.getNatlinkIsEnabled()
-        self.__natlinkIsEnabled = value
-        
-    
-    
-    def getNatlinkIsEnabled(self):
-        """check if the coreDir of Natlink install is there
-        
-        If so (starting from release 5.0.0.), we assume Natlink is enabled.
-        
-        When you want to disable, remove your Natlink install from Program in Windows.
-        """
-        had_reg_key = loader.get_config_info_from_registry("coreDir")
-        if had_reg_key:
-            return True
-        return False
-    
     def VocolaIsEnabled(self):
         """Return True if Vocola is enables
         
@@ -311,9 +290,6 @@ class NatlinkStatus:
         
         """
         isdir = os.path.isdir
-        if not self.NatlinkIsEnabled:
-            self.VocolaIsEnabled = False
-            return False
         vocUserDir = self.getVocolaUserDirectory()
         if vocUserDir and isdir(vocUserDir):
             vocDir = self.getVocolaDirectory()
@@ -329,8 +305,6 @@ class NatlinkStatus:
         _control.py is in this directory
         """
         isdir = os.path.isdir
-        if not self.NatlinkIsEnabled():
-            return False
         uuDir = self.getUnimacroUserDirectory()
         if not uuDir:
             return False
@@ -349,8 +323,6 @@ class NatlinkStatus:
 
     
     def UserIsEnabled(self):
-        if not self.NatlinkIsEnabled():
-            return False
         userDir = self.getUserDirectory()
         if userDir:
             return True
@@ -641,16 +613,18 @@ class NatlinkStatus:
         return "Dragon"
 
     
-    def getNatlinkStatusDict(self, force=None):
+    def getNatlinkStatusDict(self):
         """return actual status in a dict
         
-        force can be passed as True, when called from the config GUI program
+        Most values come via properties...
         
         """
         D = {}
+        D['user'] = self.user
+        D['profile'] = self.profile
+        
 
-        for key in ['userName', 'DNSuserDirectory', 
-                    'DNSIniDir', 'WindowsVersion', 'DNSVersion',
+        for key in ['DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion',
                     'DNSName',
                     'UnimacroDirectory', 'UnimacroUserDirectory', 'UnimacroGrammarsDirectory',
@@ -661,14 +635,12 @@ class NatlinkStatus:
                     # 'IncludeUnimacroInPythonPath',
                     'AhkExeDir', 'AhkUserDir']:
 ##                    'BaseTopic', 'BaseModel']:
-            if force:
-                setattr(self, key, None)
-            keyCap = key[0].upper() + key[1:]
-            funcName = f'get{keyCap}'
-            func = getattr(self, funcName)
-            D[key] = func()
-            # execstring = "D['%s'] = self.get%s()"% (key, keyCap)
-            # exec(execstring)
+            D[key] = getattr(self, key, None)
+
+
+
+
+
         D['CoreDirectory'] = self.CoreDirectory
         D['UserDirectory'] = self.getUserDirectory()
         D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
