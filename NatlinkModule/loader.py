@@ -91,9 +91,9 @@ class NatlinkMain:
 
     @property
     def profile(self) -> str:
-        """holds the profile of current profile
+        """holds the directory profile of current user profile
         """
-        return self.__username or ''
+        return self.__profile or ''
 
     @profile.setter
     def profile(self, value: str):
@@ -103,7 +103,7 @@ class NatlinkMain:
     def user(self) -> str:
         """holds the name of the current user profile
         """
-        return self.__profile or ''
+        return self.__user or ''
 
     @user.setter
     def user(self, value: str):

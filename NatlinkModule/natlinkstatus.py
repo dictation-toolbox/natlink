@@ -114,30 +114,9 @@ Logger = logging.getLogger('natlink')
 Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
 natlinkmain = loader.NatlinkMain(Logger, Config)
 natlinkmain.setup_logger()
-lang = natlinkmain.language
-
-print(f'language from NatlinkMain: "{natlinkmain.language}"')
 
 # adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
-
-
-
-lowestSupportedPythonVersion = 38
-
-# utility functions:
-## report function:
-def fatal_error(message, new_raise=None):
-    """prints a fatal error when running this module"""
-    print()
-    print('natlinkconfigfunctions fails because of fatal error:')
-    print()
-    print(message)
-    print()
-    print('This can (hopefully) be solved by closing Dragon and then running the Natlink/Unimacro/Vocola Config program with administrator rights.')
-    print()
-    if new_raise:
-        raise ValueError("fatal error in natlinkstatus.py")
 
 # Nearly obsolete table, for extracting older windows versions:
 # newer versions go via platform.platform()
@@ -174,12 +153,6 @@ class NatlinkStatus:
     """
     __instance = None
     
-    config = configparser.ConfigParser()
-
-    ### from previous modules, needed or not...
-    NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
-
-
     def __new__(cls, *args):
         if cls.__instance is None:
             cls.__instance = object.__new__(cls)
@@ -233,18 +206,19 @@ class NatlinkStatus:
         """
         version = sys.version[:3]
         version = version.replace(".", "")
-        if int(version) < lowestSupportedPythonVersion:
-            versionReadable = version[0] + "." + version[1]
-            lspv = str(lowestSupportedPythonVersion)
-            lspvReadable = lspv[0] + "." + lspv[1]
-            raise ValueError('getPythonVersion, current version is: "%s".\nPython versions before "%s" are not any more supported by Natlink.\nIf you want to run NatLink on Python2.7, please use the older version of NatLink at SourceForge (https://sourceforge.net/projects/natlink/)'% (versionReadable, lspvReadable))
         return version
 
     @property
-    def user() -> str:
-        return loader.user
-    
-    
+    def user(self) -> str:
+        return natlinkmain.user
+    @property
+    def profile(self) -> str:
+        return natlinkmain.profile
+    @property
+    def language(self) -> str:
+        return natlinkmain.language
+
+
     
     def getDNSIniDir(self):
         """get the path (one above the users profile paths) where the INI files
@@ -430,8 +404,6 @@ class NatlinkStatus:
         should be set in configurenatlink, otherwise ignore...
         """
         isdir = os.path.isdir
-        if not self.NatlinkIsEnabled:
-            return ""
         if not self.UserDirectory is None:
             return self.UserDirectory
         key = 'UserDirectory'
@@ -556,14 +528,6 @@ class NatlinkStatus:
         if self.UnimacroIsEnabled():
             return value
         return ''
-
-    
-    def getLanguage(self):
-        """get language, userLanguage info from acoustics ini file
-        """
-        value = natlinkmain.language
-        return value
-
     
     def getShiftKey(self):
         """return the shiftkey, for setting in natlinkmain when user language changes.
@@ -571,11 +535,11 @@ class NatlinkStatus:
         used for self.playString in natlinkutils, for the dropping character bug. (dec 2015, QH).
         """
         ## TODO: must be windows language...
-        language = self.getLanguage()
+        windowsLanguage = 'enx'  ### ??? TODO QH
         try:
-            return "{%s}"% shiftKeyDict[language]
+            return "{%s}"% shiftKeyDict[windowsLanguage]
         except KeyError:
-            print('no shiftKey code provided for language: %s, take empty string.'% language)
+            print(f'no shiftKey code provided for language: "{windowsLanguage}", take empty string.')
             return ""
 
     # get additional options Vocola
@@ -643,7 +607,6 @@ class NatlinkStatus:
 
         D['CoreDirectory'] = self.CoreDirectory
         D['UserDirectory'] = self.getUserDirectory()
-        D['natlinkIsEnabled'] = self.NatlinkIsEnabled()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
 
         D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
@@ -656,72 +619,58 @@ class NatlinkStatus:
     def getNatlinkStatusString(self):
         L = []
         D = self.getNatlinkStatusDict()
-        if D['userName']:
+        if D['user']:
             L.append('user speech profile:')
-            self.appendAndRemove(L, D, 'userName')
-            self.appendAndRemove(L, D, 'DNSuserDirectory')
+            self.appendAndRemove(L, D, 'user')
+            self.appendAndRemove(L, D, 'profile')
         else:
-            del D['userName']
-            del D['DNSuserDirectory']
+            del D['user']
+            del D['profile']
         # Natlink::
 
-        if D['natlinkIsEnabled']:
-            self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is enabled")
-            key = 'CoreDirectory'
-            self.appendAndRemove(L, D, key)
-            key = 'InstallVersion'
-            self.appendAndRemove(L, D, key)
+        key = 'CoreDirectory'
+        self.appendAndRemove(L, D, key)
+        key = 'InstallVersion'
+        self.appendAndRemove(L, D, key)
 
-            ## Vocola::
-            if D['vocolaIsEnabled']:
-                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
-                for key in ('BaseDirectory', 'VocolaUserDirectory', 'VocolaDirectory',
-                            'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
-                            'VocolaTakesUnimacroActions'):
-                    self.appendAndRemove(L, D, key)
-            else:
-                self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
-                for key in ('VocolaUserDirectory', 'VocolaDirectory',
-                            'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
-                            'VocolaTakesUnimacroActions'):
-                    del D[key]
-
-            ## Unimacro:
-            if D['unimacroIsEnabled']:
-                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is enabled")
-                for key in ('UnimacroUserDirectory', 'UnimacroDirectory', 'UnimacroGrammarsDirectory'):
-                    self.appendAndRemove(L, D, key)
-                for key in ('UnimacroIniFilesEditor',):
-                    self.appendAndRemove(L, D, key)
-            else:
-                self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is disabled")
-                for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor',
-                            'UnimacroDirectory', 'UnimacroGrammarsDirectory'):
-                    del D[key]
-            ##  UserDirectory:
-            if D['userIsEnabled']:
-                self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are enabled")
-                for key in ('UserDirectory',):
-                    self.appendAndRemove(L, D, key)
-            else:
-                self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are disabled")
-                del D['UserDirectory']
-
-            ## remaining Natlink options:
-            L.append('other Natlink info:')
-
+        ## Vocola::
+        if D['vocolaIsEnabled']:
+            self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
+            for key in ('BaseDirectory', 'VocolaUserDirectory', 'VocolaDirectory',
+                        'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
+                        'VocolaTakesUnimacroActions'):
+                self.appendAndRemove(L, D, key)
         else:
-            # Natlink disabled:
-            if D['natlinkIsEnabled'] == 0:
-                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled")
-            else:
-                self.appendAndRemove(L, D, 'natlinkIsEnabled', "---Natlink is disabled (strange value: %s)"% D['natlinkIsEnabled'])
-            key = 'CoreDirectory'
-            self.appendAndRemove(L, D, key)
-            for key in ['DebugLoad', 'DebugCallback',
-                    'VocolaTakesLanguages',
-                    'vocolaIsEnabled']:
+            self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is disabled")
+            for key in ('VocolaUserDirectory', 'VocolaDirectory',
+                        'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
+                        'VocolaTakesUnimacroActions'):
                 del D[key]
+
+        ## Unimacro:
+        if D['unimacroIsEnabled']:
+            self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is enabled")
+            for key in ('UnimacroUserDirectory', 'UnimacroDirectory', 'UnimacroGrammarsDirectory'):
+                self.appendAndRemove(L, D, key)
+            for key in ('UnimacroIniFilesEditor',):
+                self.appendAndRemove(L, D, key)
+        else:
+            self.appendAndRemove(L, D, 'unimacroIsEnabled', "---Unimacro is disabled")
+            for key in ('UnimacroUserDirectory', 'UnimacroIniFilesEditor',
+                        'UnimacroDirectory', 'UnimacroGrammarsDirectory'):
+                del D[key]
+        ##  UserDirectory:
+        if D['userIsEnabled']:
+            self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are enabled")
+            for key in ('UserDirectory',):
+                self.appendAndRemove(L, D, key)
+        else:
+            self.appendAndRemove(L, D, 'userIsEnabled', "---User defined grammars are disabled")
+            del D['UserDirectory']
+
+        ## remaining Natlink options:
+        L.append('other Natlink info:')
+
         # system:
         L.append('system information:')
         for key in ['DNSIniDir', 'DNSVersion', 'DNSName',
@@ -794,14 +743,11 @@ def main():
     status = NatlinkStatus()
 
     # next things only testable when changing the dir in the functions above
-    print(status.getLanguage())
-
-
+    Lang = status.language
+    print(f'language: "{Lang}"')
     print(status.getNatlinkStatusString())
-    Lang = status.getLanguage()
-    print('language: %s'% Lang)
 
-    # exapmles, for more tests in ...
+    # examples, for more tests in ...
     # print('\n====\nexamples of expanding ~ and %...% variables:')
     # short = path("~/Quintijn")
     # AddExtendedEnvVariables()
