@@ -15,9 +15,8 @@ The following  functions manage information that changes at changeCallback time
 (when a new user opens)
 
 setUserInfo(args) put username and directory of speech profiles of the last opened user in this class.
-getUsername: get active username (only if NatSpeak/Natlink is running)
-getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/Natlink is running)
-
+getUser  (previous: getUsername): get active username (only if NatSpeak/Natlink is running)
+getProfile (previous: getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/Natlink is running)
 
 The functions below should not change anything in settings, only  get information.
 
@@ -26,35 +25,31 @@ getDNSInstallDir:
 
 getDNSIniDir:
     returns the directory where the NatSpeak INI files are located,
-    notably nssystem.ini and nsapps.ini.
-    Can be set in natlinkstatus.ini, but mostly is got from
-    %ALLUSERSPROFILE% (C:/ProgramData)
+    notably nssystem.ini and nsapps.ini. Got from loader.
 
 getDNSVersion:
-    returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, ... (???)
-    note distinction is made here between different subversions.
-(getDNSFullVersion: get longer version string) (obsolete, 2017, QH)
-.
+    returns the in the version number of NatSpeak, as an integer. So ..., 13, 15, ...
+    no distinction is made here between different subversions.
+    got indirectly from loader
+
 getWindowsVersion:
     see source below
 
 getLanguage:
     returns the 3 letter code of the language of the speech profile that
-    is open (only possible when NatSpeak/Natlink is running)
+    is open: 'enx', 'nld', "fra", "deu", "ita", "esp"
 
-getUserLanguage:
-    returns the language from changeCallback (>= 15) or config files
-
+    get it from loader, is updated when user profile changes (on_change_callback)
+    returns 'enx' when Dragon is not running.
+    
 getUserTopic
+    removed
     returns the topic of the current speech profile, via changeCallback (>= 15) or config files
 
 getPythonVersion:
-    changed jan 2013, return two character version, so without the dot! eg '26'
-
-    new nov 2009: return first three characters of python full version ('2.5')
-#    returns, as a string, the python version. Eg. "2.3"
-#    If it cannot find it in the registry it returns an empty string
-#(getFullPythonVersion: get string of complete version info).
+    return two character version, so without the dot! eg '38',
+    
+    Note, no indication of 32 bit version, so no '38-32'
 
 
 getUserDirectory: get the Natlink user directory, 
@@ -87,29 +82,13 @@ NatlinkIsEnabled:
     returns None when strange values are found
     (checked with the INI file settings of NSSystemIni and NSAppsIni)
 
-getNSSYSTEMIni(): get the path of nssystem.ini
-getNSAPPSIni(): get the path of nsapps.ini
-
-getBaseModelBaseTopic:
-    return these as strings, not ready yet, only possible when
-    NatSpeak/Natlink is running. Obsolete 2018, use
-getBaseModel
-    get the acoustic model from config files (for DPI15, obsolescent)
-getBaseTopic
-    get the baseTopic, from ini files. Better use getUserTopic in DPI15
-getDebugLoad:
-    get value from registry, if set do extra output of natlinkmain at (re)load time
-getDebugCallback:
-    get value from registry, if set do extra output of natlinkmain at callbacks is given
-getDebugOutput:
-    get value from registry, output in log file of DNS, should be kept at 0
-
 getVocolaTakesLanguages: additional settings for Vocola
 
-new 2014:
-getDNSName: return "NatSpeak" for versions <= 11 and "Dragon" for 12 (on)
+new 2014/2022
+getDNSName: return "NatSpeak" for versions <= 11 and "Dragon" for 12 (on) (obsolete in 2022)
 getAhkExeDir: return the directory where AutoHotkey is found (only needed when not in default)
 getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.
+getLanguage: see above
 
 """
 import os
@@ -118,10 +97,17 @@ import stat
 import platform
 import configparser
 import logging
-from natlink import loader
-from natlink import config
+try:
+    from natlink import loader
+except ModuleNotFoundError:
+    print('Natlink is not enabled, module natlink and/or natlink.loader cannot be found\n\texit natlinkstatus.py...')
+    sys.exit()
 
 ## setup a natlinkmain instance, for getting properties from the loader:
+## note, when loading the natlink module via Dragon, you can call simply:
+# # # natlinkmain = loader.NatlinkMain()
+
+## setting up Logger and Config is needed, when running this for test:
 Logger = logging.getLogger('natlink')
 Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
 natlinkmain = loader.NatlinkMain(Logger, Config)
@@ -161,28 +147,7 @@ Wversions = {'1/4/10': '98',
              '2/6/0':  'Vista'
              }
 
-# the possible languages (for getLanguage)
-languages = {  # from config files (if not given by args in setUserInfo)
-             "Nederlands": "nld",
-             "Fran\xe7ais": "fra",
-             "Deutsch": "deu",
-             # English is detected as second word of userLanguage
-             # "UK English": "enx",
-             # "US English": "enx",
-             # "Australian English": "enx",
-             # # "Canadian English": "enx",
-             # "Indian English": "enx",
-             # "SEAsian English": "enx",
-             "Italiano": "ita",
-             "Espa\xf1ol": "esp",
-             # as passed by args in changeCallback, DPI15:
-             "Dutch": "nld",
-             "French": "fra",
-             "German": "deu",
-             # "CAN English": "enx",
-             # "AUS English": "enx",
-             "Italian": "ita",
-             "Spanish": "esp",}
+# the possible languages (for getLanguage, now in loader:
 
 shiftKeyDict = {"nld": "Shift",
                 "enx": 'shift',
@@ -212,40 +177,6 @@ class NatlinkStatus:
     ### from previous modules, needed or not...
     NATLINK_CLSID  = "{dd990001-bb89-11d2-b031-0060088dc929}"
 
-    NSSystemIni  = "nssystem.ini"
-    NSAppsIni  = "nsapps.ini"
-    ## setting of nssystem.ini if Natlink is enabled...
-    ## this first setting is decisive for NatSpeak if it loads Natlink or not
-    section1 = "Global Clients"
-    key1 = ".Natlink"
-    value1 = 'Python Macro System'
-
-    ## setting of nsapps.ini if Natlink is enabled...
-    ## this setting is ignored if above setting is not there...
-    section2 = ".Natlink"
-    key2 = "App Support GUID"
-    value2 = NATLINK_CLSID
-
-    userArgsDict = {}
-
-
-    DNSVersion = None
-    DNSIniDir = None
-    CoreDirectory = None
-    NatlinkDirectory = None
-    UserDirectory = None
-    ## Unimacro:
-    UnimacroDirectory = None
-    UnimacroUserDirectory = None
-    UnimacroGrammarsDirectory = None
-    ## Vocola:
-    VocolaUserDirectory = None
-    VocolaDirectory = None
-    VocolaGrammarsDirectory = None
-    ## AutoHotkey:
-    AhkUserDir = None
-    AhkExeDir = None
-    hadWarning = []
 
     def __new__(cls, *args):
         if cls.__instance is None:
@@ -254,27 +185,30 @@ class NatlinkStatus:
         return cls.__instance    
 
     
-    def __init__(self, skipSpecialWarning=None):
-
-        self.skipSpecialWarning = skipSpecialWarning
+    def __init__(self):
+        """initialise all instance variables, in this singleton class, instance
+        """
+        self.__natlinkIsEnabled = None
+        self.NatlinkIsEnabled = self.getNatlinkIsEnabled()
+        self.DNSVersion = None
+        self.DNSIniDir = None
+        self.CoreDirectory = None
+        self.NatlinkDirectory = None
+        self.UserDirectory = None
+        ## Unimacro:
+        self.UnimacroDirectory = None
+        self.UnimacroUserDirectory = None
+        self.UnimacroGrammarsDirectory = None
+        ## Vocola:
+        self.VocolaUserDirectory = None
+        self.VocolaDirectory = None
+        self.VocolaGrammarsDirectory = None
+        ## AutoHotkey:
+        self.AhkUserDir = None
+        self.AhkExeDir = None
 
         if self.CoreDirectory is None:
             self.CoreDirectory = thisDir
-
-    def getWarningText(self):
-        """return a printable text if there were warnings
-        """
-        if self.hadWarning:
-            t = 'natlinkstatus reported the following warnings:\n\n'
-            t += '\n\n'.join(self.hadWarning)
-            return t
-        return ""
-
-    def emptyWarning(self):
-        """clear the list of warning messages
-        """
-        while self.hadWarning:
-            self.hadWarning.pop()   
 
     @staticmethod    
     def getWindowsVersion():
@@ -340,47 +274,32 @@ class NatlinkStatus:
             version = 0
         self.DNSVersion = version
         return self.DNSVersion
-
     
-    def getNSSYSTEMIni(self):
-        inidir = self.getDNSIniDir()
-        if inidir:
-            nssystemini = os.path.join(inidir, self.NSSystemIni)
-            if os.path.isfile(nssystemini):
-                return os.path.normpath(nssystemini)
-        print("Cannot find proper NSSystemIni file")
-        print('Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)')
-        return ''
-
-    
-    def getNSAPPSIni(self):
-        inidir = self.getDNSIniDir()
-        if inidir:
-            nsappsini = os.path.join(inidir, self.NSAppsIni)
-            if os.path.isfile(nsappsini):
-                return os.path.normpath(nsappsini)
-        print("Cannot find proper NSAppsIni file")
-        print('Try to correct your DNS INI files Dir, in natlinkconfigfunctions (option "c") or in natlinkconfig  GUI (info panel)')
-        return ''
-
-    
+    @property
     def NatlinkIsEnabled(self):
+        if self.__natlinkIsEnabled is None:
+            self.NatlinkIsEnabled = self.getNatlinkIsEnabled()
+        return self.__natlinkIsEnabled
+    
+    @NatlinkIsEnabled.setter
+    def NatlinkIsEnabled(self, value):
+        if value is None:
+            value = self.getNatlinkIsEnabled()
+        self.__natlinkIsEnabled = value
+        
+    
+    
+    def getNatlinkIsEnabled(self):
         """check if the coreDir of Natlink install is there
         
         If so (starting from release 5.0.0.), we assume Natlink is enabled.
         
         When you want to disable, remove your Natlink install from Program in Windows.
         """
-        if self.NatlinkIsEnabled is not None:
-            return self.NatlinkIsEnabled
-
         had_reg_key = loader.get_config_info_from_registry("coreDir")
         if had_reg_key:
-            self.NatlinkIsEnabled = True
-        else:
-            self.NatlinkIsEnabled = True
-        return self.NatlinkIsEnabled            
-
+            return True
+        return False
     
     def VocolaIsEnabled(self):
         """Return True if Vocola is enables
@@ -392,7 +311,7 @@ class NatlinkStatus:
         
         """
         isdir = os.path.isdir
-        if not self.NatlinkIsEnabled():
+        if not self.NatlinkIsEnabled:
             self.VocolaIsEnabled = False
             return False
         vocUserDir = self.getVocolaUserDirectory()
@@ -907,8 +826,8 @@ def main():
 
 
     print(status.getNatlinkStatusString())
-    lang = status.getLanguage()
-    print('language: %s'% lang)
+    Lang = status.getLanguage()
+    print('language: %s'% Lang)
 
     # exapmles, for more tests in ...
     # print('\n====\nexamples of expanding ~ and %...% variables:')
