@@ -104,8 +104,8 @@ try:
 except ModuleNotFoundError:
     print('Natlink is not enabled, module natlink and/or natlink.loader cannot be found\n\texit natlinkstatus.py...')
     sys.exit()
-
 from natlink import config
+import natlink
 
 ## setup a natlinkmain instance, for getting properties from the loader:
 ## note, when loading the natlink module via Dragon, you can call simply:
@@ -165,6 +165,7 @@ class NatlinkStatus:
     def __init__(self):
         """initialise all instance variables, in this singleton class, instance
         """
+        natlinkmain.set_user_language()
         self.DNSVersion = None
         self.DNSIniDir = None
         self.CoreDirectory = None
@@ -197,7 +198,6 @@ class NatlinkStatus:
             return wVersion.split('-')[1]
         print('Warning, probably cannot find correct Windows Version... (%s)'% wVersion)
         return wVersion
-
     
     def getPythonVersion(self):
         """get the version of python
@@ -219,8 +219,6 @@ class NatlinkStatus:
     @property
     def language(self) -> str:
         return natlinkmain.language
-
-
     
     def getDNSIniDir(self):
         """get the path (one above the users profile paths) where the INI files
@@ -303,18 +301,17 @@ class NatlinkStatus:
         if userDir:
             return True
         return False
-
     
     def getUnimacroUserDirectory(self):
         isdir = os.path.isdir
         if self.UnimacroUserDirectory is not None:
             return self.UnimacroUserDirectory
-        key = 'UnimacroUserDirectory'
-        value = self.getconfigsetting(key)
+        key = 'unimacro_user_directory'
+        value = self.getconfigsetting(key, section="unimacro")
         if value and isdir(value):
             self.UnimacroUserDirectory = value
             return value
-        print(f'invalid directory for "{key}": "{value}%s"')
+        print(f'invalid directory for "{key}": "{value}"')
         self.UnimacroUserDirectory = ''
         return ''
     
@@ -357,7 +354,7 @@ class NatlinkStatus:
         (August 2020)
 
         """
-        isdir, join, normpath = os.path.isdir, os.path.join, os.path.normpath
+        isdir, join, normpath, listdir = os.path.isdir, os.path.join, os.path.normpath, os.listdir
         if self.UnimacroGrammarsDirectory is not None:
             return self.UnimacroGrammarsDirectory
         
@@ -367,7 +364,7 @@ class NatlinkStatus:
             if not isdir(ugDir):
                 os.mkdir(ugDir)
             if isdir(ugDir):
-                ugFiles = [f for f in ugDir.listdir() if f.endswith(".py")]
+                ugFiles = [f for f in listdir(ugDir) if f.endswith(".py")]
                 if not ugFiles:
                     print(f"UnimacroGrammarsDirectory: {ugDir} has no python grammar files (yet), please populate this directory with the Unimacro grammars you wish to use, and then toggle your microphone")
                 
@@ -427,9 +424,9 @@ class NatlinkStatus:
         isdir = os.path.isdir
         if self.VocolaUserDirectory is not None:
             return self.VocolaUserDirectory
-        key = 'VocolaUserDirectory'
-
-        value = self.getconfigsetting(key)
+        key = 'vocola_user_directory'
+        section = 'vocola'
+        value = self.getconfigsetting(key, section=section)
         if value and isdir(value):
             self.VocolaUserDirectory = value
             return value
@@ -470,7 +467,7 @@ class NatlinkStatus:
         If Vocola is not enabled, or anything goes wrong, return ""
         
         """
-        isdir, normpath = os.path.isdir, os.path.normpath
+        isdir, join, normpath = os.path.isdir, os.path.join, os.path.normpath
         if self.VocolaGrammarsDirectory is not None:
             return self.VocolaGrammarsDirectory
 
@@ -478,7 +475,7 @@ class NatlinkStatus:
         if not vUserDir:
             self.VocolaGrammarsDirectory = ''
             return ''
-        vgDir = isdir(vUserDir, "CompiledGrammars")
+        vgDir = join(vUserDir, '..', 'VocolaGrammars')
         if not isdir(vgDir):
             os.mkdir(vgDir)
         if not isdir(vgDir):
@@ -593,6 +590,7 @@ class NatlinkStatus:
         D = {}
         D['user'] = self.user
         D['profile'] = self.profile
+        D['language'] = self.language
         
 
         for key in ['DNSIniDir', 'WindowsVersion', 'DNSVersion',
@@ -630,9 +628,11 @@ class NatlinkStatus:
             L.append('user speech profile:')
             self.appendAndRemove(L, D, 'user')
             self.appendAndRemove(L, D, 'profile')
+            self.appendAndRemove(L, D, 'language')
         else:
             del D['user']
             del D['profile']
+            del D['language']
         # Natlink::
 
         key = 'CoreDirectory'
@@ -643,7 +643,7 @@ class NatlinkStatus:
         ## Vocola::
         if D['vocolaIsEnabled']:
             self.appendAndRemove(L, D, 'vocolaIsEnabled', "---Vocola is enabled")
-            for key in ('BaseDirectory', 'VocolaUserDirectory', 'VocolaDirectory',
+            for key in ('VocolaUserDirectory', 'VocolaDirectory',
                         'VocolaGrammarsDirectory', 'VocolaTakesLanguages',
                         'VocolaTakesUnimacroActions'):
                 self.appendAndRemove(L, D, key)
@@ -722,6 +722,7 @@ class NatlinkStatus:
         
         default section = "directories"
         """
+        isdir, normpath = os.path.isdir, os.path.normpath
         if inifilepath is None:
             # take default natlink.ini from  natlink config module:
             Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
@@ -734,11 +735,15 @@ class NatlinkStatus:
             ini.read(inifilepath)
         section = section or "directories"
         value = ini.get(section, key, fallback=None)
-        
         if value is None:
             print(f'warning, no value returned from ini file "{inifilepath}", section "{section}", key: "{key}"...')
-        
-        return value
+        if value and not isdir(value):
+            expanded = config.expand_path(value)
+            if expanded and not isdir(expanded):
+                print(f'warning, no valid directory "{value}" or expanded: "{expanded}"\n\tfor ini file "{inifilepath}", section "{section}", key: "{key}"...')
+                return None
+            return normpath(expanded)
+        return normpath(value)
 
 def getFileDate(modName):
     #pylint:disable=C0321
@@ -766,5 +771,6 @@ def main():
 
  
 if __name__ == "__main__":
+    natlink.natConnect()
     main()
-    pass
+    natlink.natDisconnect()

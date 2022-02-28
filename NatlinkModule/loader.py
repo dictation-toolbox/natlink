@@ -44,18 +44,18 @@ class NatlinkMain:
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
         self.logger = logger
         self.config = config
-        self.__language: str = ''            # set default value
-
         self.loaded_modules: Dict[Path, ModuleType] = {}
         self.prog_names_visited: Set[str] = set()    # to enable loading program specific grammars
         self.bad_modules: Set[Path] = set()
         self.load_attempt_times: Dict[Path, float] = {}
-        self.user: str = ''       #
-        self.profile: str = ''    # at on_change_callback user
-        self.language: str = ''   #
+        self.__user: str = ''       #
+        self.__profile: str = ''    # at start and on_change_callback user
+        self.__language: str = ''   #
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
         self.seen: Set[Path] = set()     # start empty in trigger_load
+        # self.user, self.profile = natlink.getCurrentUser()
+        # self.language = self.get_user_language(self.profile)
 
     def set_pre_load_callback(self, pre_load: Optional[Callable[[], None]]) -> None:
         if pre_load is None:
@@ -85,9 +85,11 @@ class NatlinkMain:
     @language.setter
     def language(self, value: str):
         if value and len(value) == 3:
+            self.logger.debug(f'set language property: "{value}"')
             self.__language = value
         else:
-            self.__language = 'enx'
+            raise ValueError(f'language property: invalid value ("{value}"), take "enx"')
+            # self.__language = 'enx'
 
     @property
     def profile(self) -> str:
@@ -194,7 +196,7 @@ class NatlinkMain:
                     return
             else:
                 maybe_module = self.loaded_modules.get(mod_path)
-                if maybe_module is None:
+                if force_load or maybe_module is None:
                     self.logger.info(f'loading module: {mod_name}')
                     module = self._import_module_from_path(mod_path)
                     self.loaded_modules[mod_path] = module
@@ -203,7 +205,7 @@ class NatlinkMain:
                     module = maybe_module
                     last_modified_time = mod_path.stat().st_mtime
                     if force_load or last_attempt_time < last_modified_time:
-                        self.logger.info(f'reloading module: {mod_name}')
+                        self.logger.info(f'reloading module: {mod_name}, force_load: {force_load}')
                         self.unload_module(module)
                         del module
                         module = self._import_module_from_path(mod_path)
@@ -221,9 +223,9 @@ class NatlinkMain:
                 del old_module
                 importlib.invalidate_caches()
 
-    def load_or_reload_modules(self, mod_paths: Iterable[Path]) -> None:
+    def load_or_reload_modules(self, mod_paths: Iterable[Path], force_load: bool = None) -> None:
         for mod_path in mod_paths:
-            self.load_or_reload_module(mod_path)
+            self.load_or_reload_module(mod_path, force_load=force_load)
             self.seen.add(mod_path)
 
     def remove_modules_that_no_longer_exist(self) -> None:
@@ -242,16 +244,17 @@ class NatlinkMain:
 
         importlib.invalidate_caches()
 
-    def trigger_load(self) -> None:
+    def trigger_load(self, force_load: bool = None) -> None:
         self.seen.clear()
-        self.logger.debug('triggering load/reload process')
+        self.logger.debug(f'triggering load/reload process (force_load: {force_load})')
+        self.logger.debug(f'user language: "{self.language}"')
         self.remove_modules_that_no_longer_exist()
 
         mod_paths = self.module_paths_for_user
         if self._pre_load_callback is not None:
             self.logger.debug('calling pre-load callback')
             self._call_and_catch_all_exceptions(self._pre_load_callback)
-        self.load_or_reload_modules(mod_paths)
+        self.load_or_reload_modules(mod_paths, force_load=force_load)
         if self._post_load_callback is not None:
             self.logger.debug('calling post-load callback')
             self._call_and_catch_all_exceptions(self._post_load_callback)
@@ -266,19 +269,11 @@ class NatlinkMain:
     def on_change_callback(self, change_type: str, args: Any) -> None:
         """on_change_callback, when another user profile is chosen, or when the mic state changes
         """
-
         if change_type == 'user':
-            user, profile = args
-            if not isinstance(user, str):
-                raise TypeError(f'unexpected args given to change callback: {args}')
-            self.user = user
-            self.profile = profile
-            self.logger.debug(f'on_change_callback, user "{self.user}", profile: "{self.profile}"')
-            value = self.get_user_language(self.profile)
-            self.logger.debug(f'on_change_callback, get_user_language: "{value}"')
-            self.language = value
+            self.set_user_language(args)
+            self.logger.debug(f'on_change_callback, user "{self.user}", profile: "{self.profile}", language: "{self.language}"')
             if self.config.load_on_user_changed:
-                self.trigger_load()
+                self.trigger_load(force_load=True)
         elif change_type == 'mic' and args == 'on':
             self.logger.debug('on_change_callback called with: "mic", "on"')
             if self.config.load_on_mic_on:
@@ -334,6 +329,20 @@ class NatlinkMain:
             
         return language
 
+    def set_user_language(self, args: Any = None) -> str:
+        """can be called from other module to explicitly set the user language to 'enx', 'nld', etc
+        """
+        if not (args and len(args) == 2):
+            args = natlink.getCurrentUser()
+        if args:
+            self.user, self.profile = args
+            self.language = self.get_user_language(self.profile)
+            self.logger.debug(f'set_user_language, user: "{self.user}", profile: "{self.profile}", language: "{self.language}"')
+        else:
+            self.user, self.profile = '', ''
+            self.logger.warning('set_user_language, cannot get input for get_user_language, set to "enx",\n\tprobably Dragon is not running')
+            self.language = 'enx'
+
     def start(self) -> None:
         self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')
         natlink.active_loader = self
@@ -343,18 +352,7 @@ class NatlinkMain:
         self._add_dirs_to_path(self.config.directories)  
         if self.config.load_on_startup:
             # set language property:
-            args = natlink.getCurrentUser()
-            if args:
-                self.user, self.profile = args
-                self.logger.debug(f'at start, get_user_language for user: "{self.user}", profile: "{self.profile}"')
-                value = self.get_user_language(self.profile)
-                self.logger.debug(f'at start, get_user_language: "{value}"')
-                self.language = value
-            else:
-                self.user, self.profile = '', ''
-                self.logger.warning('at start, cannot get input for get_user_language, assume "enx",\n\tprobably Dragon is not running')
-                self.language = 'enx'
-
+            self.set_user_language()
             self.trigger_load()
         natlink.setBeginCallback(self.on_begin_callback)
         natlink.setChangeCallback(self.on_change_callback)
