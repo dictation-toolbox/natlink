@@ -9,12 +9,14 @@ import sysconfig
 import time
 import traceback
 import winreg
+import configparser
 from pathlib import Path
 from types import ModuleType
 from typing import List, Dict, Set, Iterable, Any, Tuple, Callable, Optional
 
 import natlink
-from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path, getconfigsetting
+from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path
+from natlink.readwritefile import ReadWriteFile
 
 # the possible languages (for get_user_language) (runs at start and on_change_callback, user)
 # default is "enx", being one of the English dialects...
@@ -54,6 +56,7 @@ class NatlinkMain:
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
         self.seen: Set[Path] = set()     # start empty in trigger_load
+        self.bom = self.encoding = self.config_text = ''   # getconfigsetting and writeconfigsetting
         # self.user, self.profile = natlink.getCurrentUser()
         # self.language = self.get_user_language(self.profile)
 
@@ -85,11 +88,10 @@ class NatlinkMain:
     @language.setter
     def language(self, value: str):
         if value and len(value) == 3:
-            self.logger.debug(f'set language property: "{value}"')
             self.__language = value
         else:
-            raise ValueError(f'language property: invalid value ("{value}"), take "enx"')
-            # self.__language = 'enx'
+            self.__language = 'enx'
+            self.logger.warning(f'set language property: invalid value ("{value}"), set "enx"')
 
     @property
     def profile(self) -> str:
@@ -247,7 +249,6 @@ class NatlinkMain:
     def trigger_load(self, force_load: bool = None) -> None:
         self.seen.clear()
         self.logger.debug(f'triggering load/reload process (force_load: {force_load})')
-        self.logger.debug(f'user language: "{self.language}"')
         self.remove_modules_that_no_longer_exist()
 
         mod_paths = self.module_paths_for_user
@@ -309,7 +310,7 @@ class NatlinkMain:
     
         section = "Options"
         keyname = "Last Used Acoustics"
-        keyToModel = getconfigsetting(ns_options_ini, section, keyname)
+        keyToModel = self.getconfigsetting(option=keyname, section=section, filepath=ns_options_ini)
 
         ns_acoustic_ini = join(DNSuserDirectory, 'acoustic.ini')
         section = "Base Acoustic"
@@ -317,7 +318,7 @@ class NatlinkMain:
             self.logger.debug(f'get_user_language: warning: user language cannot be found from Dragon Inifile: "{ns_acoustic_ini}", return "enx"')
             return 'enx'
         # user_language_long = win32api.GetProfileVal(section, keyToModel, "", ns_acoustic_ini)
-        user_language_long = getconfigsetting(ns_acoustic_ini, section, keyToModel)
+        user_language_long = self.getconfigsetting(option=keyToModel, section=section, filepath=ns_acoustic_ini)
         user_language_long = user_language_long.split("|")[0].strip()
 
         if user_language_long in UserLanguages:
@@ -367,6 +368,32 @@ class NatlinkMain:
             self.logger.setLevel(log_level.value)
             self.logger.debug(f'set log level to: {log_level.name}')
 
+    def getconfigsetting(self, option: str, section: Any = None, filepath: Any = None, func: Any = None) -> str:
+        """get a setting from possibly an inifile other than natlink.ini
+        
+        Take a string as input, which is obtained from readwritefile.py, handling
+        different encodings and possible BOM marks.
+        
+        func can be configparser.getint or configparser.getbool if needed, otherwise configparser.get (str) is taken.
+        
+        Tip: work with named variables, to prevent confusion.
+        """
+        if filepath:
+            rwfile = ReadWriteFile()
+            self.config_text = rwfile.readAnything(filepath)
+            Config = configparser.ConfigParser()
+            Config.read_string(self.config_text)
+        else:
+            natlinkini = config_locations()[0]
+            Config = configparser.ConfigParser()
+            # Config.read(buf)
+            Config.read(natlinkini)
+            
+            Config = NatlinkConfig.from_first_found_file(config_locations())
+        
+        func = func or Config.get
+        return func(section=section, option=option)
+
 def get_natlink_system_config_filename() -> str:
     return get_config_info_from_registry('installPath')
 
@@ -375,6 +402,8 @@ def get_config_info_from_registry(key_name: str) -> str:
     with winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags) as natlink_key:
         result, _ = winreg.QueryValueEx(natlink_key, key_name)
         return result
+
+
 
 def config_locations() -> Iterable[str]:
     join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv

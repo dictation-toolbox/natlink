@@ -4,7 +4,7 @@
 #
 #  (C) Copyright Quintijn Hoogenboom, February 2008/January 2018/extended for python3, Natlink5.0.1 Febr 2022
 #
-#pylint:disable=C0302, C0116, R0201, R0902, R0904, R0912, W0107
+#pylint:disable=C0302, C0116, R0201, R0902, R0904, R0912, W0107, E1101
 """The following functions are provided in this module:
 
 The functions below are put into the class NatlinkStatus.
@@ -97,7 +97,6 @@ import os
 import sys
 import stat
 import platform
-import configparser
 import logging
 try:
     from natlink import loader
@@ -307,7 +306,7 @@ class NatlinkStatus:
         if self.UnimacroUserDirectory is not None:
             return self.UnimacroUserDirectory
         key = 'unimacro_user_directory'
-        value = self.getconfigsetting(key, section="unimacro")
+        value = natlinkmain.getconfigsetting(key, section="unimacro")
         if value and isdir(value):
             self.UnimacroUserDirectory = value
             return value
@@ -406,7 +405,7 @@ class NatlinkStatus:
         if not self.UserDirectory is None:
             return self.UserDirectory
         key = 'UserDirectory'
-        value = self.getconfigsetting(key)
+        value = natlinkmain.getconfigsetting(option=key)
         if value and isdir(value):
             self.UserDirectory = value
             return self.UserDirectory
@@ -426,7 +425,7 @@ class NatlinkStatus:
             return self.VocolaUserDirectory
         key = 'vocola_user_directory'
         section = 'vocola'
-        value = self.getconfigsetting(key, section=section)
+        value = natlinkmain.getconfigsetting(option=key, section=section)
         if value and isdir(value):
             self.VocolaUserDirectory = value
             return value
@@ -497,11 +496,11 @@ class NatlinkStatus:
         isdir = os.path.isdir
         key = 'AhkUserDir'
 
-        value = self.getconfigsetting(key)
+        value = natlinkmain.getconfigsetting(option=key, section='autohotkey')
         if value and isdir(value):
             self.AhkUserDir = value
             return value
-        print('invalid path for AhkUserDir: "{value}"')
+        print(f'invalid path for AhkUserDir: "{value}"')
         self.AhkUserDir = ''
         return ''
     
@@ -515,7 +514,7 @@ class NatlinkStatus:
     def getAhkExeDirFromIni(self):
         isdir = os.path.isdir
         key = 'AhkExeDir'
-        value = self.getconfigsetting(key)
+        value = natlinkmain.getconfigsetting(option=key, section='autohotkey')
         if value and isdir(value):
             self.AhkExeDir = value
             return value
@@ -526,7 +525,7 @@ class NatlinkStatus:
     
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
-        value = self.getconfigsetting(key)
+        value = natlinkmain.getconfigsetting(option=key)
         if not value:
             value = 'notepad'
         if self.UnimacroIsEnabled():
@@ -554,7 +553,7 @@ class NatlinkStatus:
         """
         key = 'VocolaTakesLanguages'
         if self.VocolaIsEnabled():
-            value = self.getconfigsetting(key, None)
+            value = natlinkmain.getconfigsetting(option=key, section="vocola")
             return value
         return False
 
@@ -565,7 +564,7 @@ class NatlinkStatus:
         """
         key = 'VocolaTakesUnimacroActions'
         if self.VocolaIsEnabled():
-            value = self.getconfigsetting(key, None)
+            value = natlinkmain.getconfigsetting(option=key, section="vocola")
             return value
         return False
 
@@ -604,11 +603,12 @@ class NatlinkStatus:
                     # 'IncludeUnimacroInPythonPath',
                     'AhkExeDir', 'AhkUserDir']:
 ##                    'BaseTopic', 'BaseModel']:
-            D[key] = getattr(self, key, None)
-
-
-
-
+            func_name = f'get{key[0].upper() + key[1:]}'
+            func = getattr(self, func_name, None)
+            if func:
+                D[key] = func()
+            else:
+                print(f'no valid function for getting key: "{key}" ("{func_name}")')
 
         D['CoreDirectory'] = self.CoreDirectory
         D['UserDirectory'] = self.getUserDirectory()
@@ -700,7 +700,12 @@ class NatlinkStatus:
             value = Dict[Key]
             if value is None or value == '':
                 value = '-'
-            List.append("\t%s\t%s"% (Key,value))
+            if len(Key) <= 8:
+                List.append(f'\t{Key}\t\t\t{value}')
+            elif len(Key) <= 12:
+                List.append(f'\t{Key}\t\t{value}')
+            else:
+                List.append(f'\t{Key}\t{value}')
         del Dict[Key]
         
     # def addToPath(self, directory):
@@ -716,34 +721,40 @@ class NatlinkStatus:
     #         print(f"natlinkstatus, addToPath: {Dir3}")
     #         sys.path.append(Dir3)
 
-    
-    def getconfigsetting(self, key, inifilepath=None, section=None):
-        """get from natlink.ini file
-        
-        default section = "directories"
-        """
-        isdir, normpath = os.path.isdir, os.path.normpath
-        if inifilepath is None:
-            # take default natlink.ini from  natlink config module:
-            Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
-            inifilepath = Config.config_path
-            ini = configparser.ConfigParser()
-            ini.read(inifilepath)
-        else:
-            # take ini file from filename:
-            ini = configparser.ConfigParser()
-            ini.read(inifilepath)
-        section = section or "directories"
-        value = ini.get(section, key, fallback=None)
-        if value is None:
-            print(f'warning, no value returned from ini file "{inifilepath}", section "{section}", key: "{key}"...')
-        if value and not isdir(value):
-            expanded = config.expand_path(value)
-            if expanded and not isdir(expanded):
-                print(f'warning, no valid directory "{value}" or expanded: "{expanded}"\n\tfor ini file "{inifilepath}", section "{section}", key: "{key}"...')
-                return None
-            return normpath(expanded)
-        return normpath(value)
+    # 
+    # def natlinkmain.getconfigsetting(self, option: str, section: Any=None, inifilepath: Any=None, func: Any=None):
+    #     """get from natlink.ini file
+    #     
+    #     note: key is called option in configparser!!
+    #     
+    #     default section = "directories"
+    #     """
+    #     isdir, normpath = os.path.isdir, os.path.normpath
+    #     if inifilepath is None:
+    #         # take default natlink.ini from  natlink config module:
+    #         CONFIG = config.NatlinkConfig.from_first_found_file(loader.config_locations())
+    #         inifilepath = CONFIG.config_path
+    #         ini = configparser.ConfigParser()
+    #         ini.read(inifilepath)
+    #     else:
+    #         # take ini file from filename:
+    #         ini = configparser.ConfigParser()
+    #         ini.read(inifilepath)
+    #     section = section or "directories"
+    #     value = ini.get(section, key, fallback=None)
+    #     if value is None:
+    #         print(f'warning, no value returned from ini file "{inifilepath}", section "{section}", key: "{key}"...')
+    #         return False
+    #     if value and isinstance(value, str):
+    #         if isdir(value):
+    #             return normpath(value) 
+    #         expanded = config.expand_path(value)
+    #         if expanded and not isdir(expanded):
+    #             print(f'warning, no valid directory "{value}" or expanded: "{expanded}"\n\tfor ini file "{inifilepath}", section "{section}", key: "{key}"...')
+    #             return None
+    #         return normpath(expanded)
+    #     # other values:
+    #     return value or False
 
 def getFileDate(modName):
     #pylint:disable=C0321

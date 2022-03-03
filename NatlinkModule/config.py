@@ -2,18 +2,14 @@
 import configparser
 import logging
 import os
-import io
 from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
 import natlink
-from natlink.readwritefile import readAnything
-
 
 NATLINK_INI = "natlink.ini"
 class NoGoodConfigFoundException(natlink.NatError):
     pass
-
 
 class LogLevel(IntEnum):
     CRITICAL = logging.CRITICAL
@@ -113,26 +109,6 @@ class NatlinkConfig:
         # should not happen, because of DefaultConfig (was InstallTest)
         raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
 
-def getconfigsetting(filepath: str, section: str, key: str) -> str:
-    """get a setting from an inifile other than natlink.ini
-    
-    Take a string as input, which is obtained from readwritefile.py, handling
-    different encodings and possible BOM marks. 
-    
-    """
-    result = readAnything(filepath)
-    if result:
-        _encoding, _bom, text = result
-    else:
-        raise OSError(f'Could not readAnything from "{filepath}"')
-    # buf = io.StringIO(text)
-    # config.read_file(buf)    
-    Config = configparser.ConfigParser()
-    # Config.read(buf)
-    Config.read_string(text)
-    value = Config.get(section, key)
-    return value
-
 def expand_path(input_path: str) -> str:
     r"""expand path if it starts with "~" or has environment variables (%XXXX%)
     
@@ -152,4 +128,6 @@ def expand_path(input_path: str) -> str:
     env_expanded = expandvars(input_path)
     # print(f'env_expanded: "{env_expanded}", from envvar: "{input_path}"')
     return env_expanded
+
+
     
