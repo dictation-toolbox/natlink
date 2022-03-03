@@ -30,6 +30,7 @@ class ReadWriteFile:
         self.encoding = ''
         self.bom = ''
         self.text = ''
+        self.rawText = b''
         self.codingschemes = codingschemes or ['ascii', 'utf-8', 'cp1252',  'latin-1']
     
     def readAnything(self, input_path, encoding=None):
@@ -53,9 +54,9 @@ class ReadWriteFile:
             
         if os.path.isfile(self.input_path):
             with open(self.input_path, mode='rb') as file: # b is important -> binary
-                tRaw = file.read()
+                self.rawText = file.read()
             ## TODOQH handle utf-16le (with null characters...)
-            tRaw = fixCrLf(tRaw)
+            tRaw = fixCrLf(self.rawText)
 
             # utf16le for nssystem.ini of Dragon15 cannot get this working: 'utf_16le', 'utf_16be', 'utf_16',
             # chardetResult = chardet.detect(tRaw)
