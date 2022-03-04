@@ -2,7 +2,6 @@
 import configparser
 import logging
 import os
-from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
 import natlink
@@ -27,6 +26,7 @@ class NatlinkConfig:
         self.directories_by_user = directories_by_user  # maps user profile names to directories, '' for global
         self.log_level = log_level
         self.load_on_mic_on = load_on_mic_on
+        ## turn this one into a property:
         self.load_on_begin_utterance = load_on_begin_utterance
         self.load_on_startup = load_on_startup
         self.load_on_user_changed = load_on_user_changed
@@ -39,7 +39,7 @@ class NatlinkConfig:
 
     @staticmethod
     def get_default_config() -> 'NatlinkConfig':
-        return NatlinkConfig(directories_by_user=OrderedDict(),
+        return NatlinkConfig(directories_by_user=dict(),
                              log_level=LogLevel.NOTSET,
                              load_on_mic_on=True,
                              load_on_begin_utterance=False,

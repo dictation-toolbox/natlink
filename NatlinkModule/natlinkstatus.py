@@ -302,14 +302,19 @@ class NatlinkStatus:
         return False
     
     def getUnimacroUserDirectory(self):
-        isdir = os.path.isdir
+        isdir, normpath = os.path.isdir, os.path.normpath
         if self.UnimacroUserDirectory is not None:
             return self.UnimacroUserDirectory
         key = 'unimacro_user_directory'
-        value = natlinkmain.getconfigsetting(key, section="unimacro")
+        value = natlinkmain.getconfigsetting(section="unimacro", option=key)
         if value and isdir(value):
             self.UnimacroUserDirectory = value
-            return value
+            return normpath(value)
+        if value:
+            expanded = loader.expand_path(value)
+            if expanded and isdir(expanded):
+                self.UnimacroUserDirectory = expanded
+                return normpath(expanded)
         print(f'invalid directory for "{key}": "{value}"')
         self.UnimacroUserDirectory = ''
         return ''
@@ -401,17 +406,17 @@ class NatlinkStatus:
 
         should be set in configurenatlink, otherwise ignore...
         """
-        isdir = os.path.isdir
+        isdir, normpath = os.path.isdir, os.path.normpath
         if not self.UserDirectory is None:
             return self.UserDirectory
         key = 'UserDirectory'
-        value = natlinkmain.getconfigsetting(option=key)
+        value = natlinkmain.getconfigsetting(section='directories', option=key)
         if value and isdir(value):
-            self.UserDirectory = value
+            self.UserDirectory = normpath(value)
             return self.UserDirectory
         expanded = config.expand_path(value)
         if expanded and isdir(expanded):
-            self.UserDirectory = expanded
+            self.UserDirectory = normpath(expanded)
             return self.UserDirectory
             
         print('invalid path for UserDirectory: "%s"'% value)
@@ -420,15 +425,21 @@ class NatlinkStatus:
 
     
     def getVocolaUserDirectory(self):
-        isdir = os.path.isdir
+
+        isdir, normpath = os.path.isdir, os.path.normpath
         if self.VocolaUserDirectory is not None:
             return self.VocolaUserDirectory
         key = 'vocola_user_directory'
         section = 'vocola'
-        value = natlinkmain.getconfigsetting(option=key, section=section)
+        value = natlinkmain.getconfigsetting(section=section, option=key)
         if value and isdir(value):
-            self.VocolaUserDirectory = value
+            self.VocolaUserDirectory = normpath(value)
             return value
+        expanded = config.expand_path(value)
+        if expanded and isdir(expanded):
+            self.VocolaUserDirectory = normpath(expanded)
+            return self.VocolaUserDirectory
+
         print(f'invalid path for VocolaUserDirectory: "{value}"')
         self.VocolaUserDirectory = ''
         return ''
@@ -474,7 +485,11 @@ class NatlinkStatus:
         if not vUserDir:
             self.VocolaGrammarsDirectory = ''
             return ''
+
         vgDir = join(vUserDir, '..', 'VocolaGrammars')
+        if self.getVocolaTakesLanguages() and self.language != 'enx':
+            ## go 2 up:
+            vgDir = join(vUserDir, '..', '..', 'VocolaGrammars')
         if not isdir(vgDir):
             os.mkdir(vgDir)
         if not isdir(vgDir):
@@ -493,14 +508,18 @@ class NatlinkStatus:
 
     
     def getAhkUserDirFromIni(self):
-        isdir = os.path.isdir
+        isdir, normpath = os.path.isdir, os.path.normpath
         key = 'AhkUserDir'
-
-        value = natlinkmain.getconfigsetting(option=key, section='autohotkey')
+        value = natlinkmain.getconfigsetting(section='autohotkey', option=key)
         if value and isdir(value):
-            self.AhkUserDir = value
+            self.AhkUserDir = normpath(value)
             return value
-        print(f'invalid path for AhkUserDir: "{value}"')
+        expanded = config.expand_path(value)
+        if expanded and isdir(expanded):
+            self.AhkUserDir= normpath(expanded)
+            return self.AhkUserDir
+
+        print(f'invalid path for AhkUserDir: "{value}", return ""')
         self.AhkUserDir = ''
         return ''
     
@@ -512,20 +531,25 @@ class NatlinkStatus:
 
     
     def getAhkExeDirFromIni(self):
-        isdir = os.path.isdir
+        isdir, normpath = os.path.isdir, os.path.normpath
         key = 'AhkExeDir'
-        value = natlinkmain.getconfigsetting(option=key, section='autohotkey')
+        value = natlinkmain.getconfigsetting(section='autohotkey', option=key)
         if value and isdir(value):
-            self.AhkExeDir = value
+            self.AhkExeDir = normpath(value)
             return value
-        print(f'invalid path for AhkExeDir: "{value}"')
+        expanded = config.expand_path(value)
+        if expanded and isdir(expanded):
+            self.AhkExeDir = normpath(expanded)
+            return self.AhkExeDir
+
+        print(f'invalid path for AhkExeDir: "{value}", return ""')
         self.AhkExeDir = ''
         return ''
 
     
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
-        value = natlinkmain.getconfigsetting(option=key)
+        value = natlinkmain.getconfigsetting(section='unimacro', option=key)
         if not value:
             value = 'notepad'
         if self.UnimacroIsEnabled():
@@ -551,23 +575,23 @@ class NatlinkStatus:
         """gets and value for distinction of different languages in Vocola
         If Vocola is not enabled, this option will also return False
         """
-        key = 'VocolaTakesLanguages'
-        if self.VocolaIsEnabled():
-            value = natlinkmain.getconfigsetting(option=key, section="vocola")
-            return value
-        return False
-
+        key = 'vocola_takes_languages'
+        return natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
     
     def getVocolaTakesUnimacroActions(self):
         """gets and value for optional Vocola takes Unimacro actions
         If Vocola is not enabled, this option will also return False
         """
         key = 'VocolaTakesUnimacroActions'
-        if self.VocolaIsEnabled():
-            value = natlinkmain.getconfigsetting(option=key, section="vocola")
-            return value
-        return False
+        return natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
 
+    def set_load_on_begin_utterance(self, value):
+        """can be called with value positive int to load grammars (1 or more times) at begin utterance
+        
+        Used now by Vocola when a vocola command file changes by the user.
+        """
+        print(f'natlinkstatus, set_load_on_begin_utterance to {value}')
+        natlinkmain.set_load_on_begin_utterance(value)
     
     def getInstallVersion(self):
         version = loader.get_config_info_from_registry("version")
@@ -700,7 +724,7 @@ class NatlinkStatus:
             value = Dict[Key]
             if value is None or value == '':
                 value = '-'
-            if len(Key) <= 8:
+            if len(Key) <= 7:
                 List.append(f'\t{Key}\t\t\t{value}')
             elif len(Key) <= 12:
                 List.append(f'\t{Key}\t\t{value}')

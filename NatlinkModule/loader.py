@@ -53,12 +53,12 @@ class NatlinkMain:
         self.__user: str = ''       #
         self.__profile: str = ''    # at start and on_change_callback user
         self.__language: str = ''   #
+        # load_on_begin_utterance property:
+        self.load_on_begin_utterance = self.config.load_on_begin_utterance
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
         self.seen: Set[Path] = set()     # start empty in trigger_load
         self.bom = self.encoding = self.config_text = ''   # getconfigsetting and writeconfigsetting
-        # self.user, self.profile = natlink.getCurrentUser()
-        # self.language = self.get_user_language(self.profile)
 
     def set_pre_load_callback(self, pre_load: Optional[Callable[[], None]]) -> None:
         if pre_load is None:
@@ -112,6 +112,20 @@ class NatlinkMain:
     @user.setter
     def user(self, value: str):
         self.__user = value or ''
+
+
+    @property
+    def load_on_begin_utterance(self) -> bool:
+        """can be True or False
+        """
+        return self.__load_on_begin_utterance
+
+    @load_on_begin_utterance.setter
+    def load_on_begin_utterance(self, value: bool):
+        """
+        """
+        self.logger.debug(f'set load_on_begin_utterance to {value}')
+        self.__load_on_begin_utterance = value
         
     def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
@@ -289,9 +303,13 @@ class NatlinkMain:
         if prog_name not in self.prog_names_visited:
             self.prog_names_visited.add(prog_name)
             self.trigger_load()
-        elif self.config.load_on_begin_utterance:
+        elif self.load_on_begin_utterance:
             self.trigger_load()
-
+            value = self.load_on_begin_utterance
+            if isinstance(value, int):
+                value -= 1
+                self.load_on_begin_utterance = value
+                
     def get_user_language(self, DNSuserDirectory):
         """return the user language (default "enx") from Dragon inifiles
             
@@ -344,6 +362,15 @@ class NatlinkMain:
             self.logger.warning('set_user_language, cannot get input for get_user_language, set to "enx",\n\tprobably Dragon is not running')
             self.language = 'enx'
 
+    def set_load_on_begin_utterance(self, value: bool):
+        """set the value for loading at each utterance to bool
+        
+        Setting to 1 (or another small positive int) for Vocola, did not prove to be useful
+        After all, toggling the microphone when you want to reload grammar files remains probably
+        the better way to do so...
+        """
+        self.load_on_begin_utterance = value
+
     def start(self) -> None:
         self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')
         natlink.active_loader = self
@@ -368,31 +395,42 @@ class NatlinkMain:
             self.logger.setLevel(log_level.value)
             self.logger.debug(f'set log level to: {log_level.name}')
 
-    def getconfigsetting(self, option: str, section: Any = None, filepath: Any = None, func: Any = None) -> str:
+    def getconfigsetting(self, section: str, option: str, filepath: Any = None, func: Any = None) -> str:
         """get a setting from possibly an inifile other than natlink.ini
         
         Take a string as input, which is obtained from readwritefile.py, handling
         different encodings and possible BOM marks.
         
-        func can be configparser.getint or configparser.getbool if needed, otherwise configparser.get (str) is taken.
+        func can be configparser.getint or configparser.getboolean if needed, otherwise configparser.get (str) is taken.
+        pass: func='getboolean' or func='getint'.
         
         Tip: work with named variables, to prevent confusion.
         """
-        if filepath:
-            rwfile = ReadWriteFile()
-            self.config_text = rwfile.readAnything(filepath)
-            Config = configparser.ConfigParser()
-            Config.read_string(self.config_text)
+        isfile = os.path.isfile
+        filepath = filepath or config_locations()[0]
+        if not isfile(filepath):
+            raise OSError(f'getconfigsetting, no valid filepath: "{filepath}"')
+        rwfile = ReadWriteFile()
+        self.config_text = rwfile.readAnything(filepath)
+        Config = configparser.ConfigParser()
+        Config.read_string(self.config_text)
+
+        if isinstance(func, str):
+            func = getattr(Config, func)
         else:
-            natlinkini = config_locations()[0]
-            Config = configparser.ConfigParser()
-            # Config.read(buf)
-            Config.read(natlinkini)
-            
-            Config = NatlinkConfig.from_first_found_file(config_locations())
-        
+            func = func or Config.get
+
+        if func.__name__ == 'get':
+            fallback = ''
+        elif func.__name__ == 'getint':
+            fallback = 0
+        elif func.__name__ == 'getboolean':
+            fallback = False
+        else:
+            raise TypeError(f'getconfigsetting, no fallback for "{func.__name__}"')
+       
         func = func or Config.get
-        return func(section=section, option=option)
+        return func(section=section, option=option, fallback=fallback)
 
 def get_natlink_system_config_filename() -> str:
     return get_config_info_from_registry('installPath')
