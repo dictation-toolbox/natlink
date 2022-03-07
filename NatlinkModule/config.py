@@ -118,16 +118,16 @@ def expand_path(input_path: str) -> str:
     
     When nothing to expand, return input
     """
-    expanduser, expandvars = os.path.expanduser, os.path.expandvars
+    expanduser, expandvars, normpath = os.path.expanduser, os.path.expandvars, os.path.normpath
     
     if input_path.startswith('~'):
         home = expanduser('~')
         env_expanded = home + input_path[1:]
         # print(f'expand_path: "{input_path}" include "~": expanded: "{env_expanded}"')
-        return env_expanded
+        return normpath(env_expanded)
     env_expanded = expandvars(input_path)
     # print(f'env_expanded: "{env_expanded}", from envvar: "{input_path}"')
-    return env_expanded
+    return normpath(env_expanded)
 
 
     

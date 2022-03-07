@@ -78,6 +78,10 @@ class NatlinkMain:
     def module_paths_for_user(self) -> List[Path]:
         return self._module_paths_in_dirs(self.config.directories_for_user(self.user))
 
+    # @property
+    # def module_paths_for_directory(self) -> List[Path]:
+    #     return self._module_paths_in_dir(self.config.directories_for_user(self.user))
+
     # three properties, which are set at start or at on_change_callback:
     @property
     def language(self) -> str:
@@ -113,20 +117,36 @@ class NatlinkMain:
     def user(self, value: str):
         self.__user = value or ''
 
+    def _module_paths_in_dir(self, directory: str) -> List[Path]:
+        """give modules in directory
+        """
 
-    @property
-    def load_on_begin_utterance(self) -> bool:
-        """can be True or False
-        """
-        return self.__load_on_begin_utterance
+        def is_script(f: Path) -> bool:
+            if not f.is_file():
+                return False
+            if not f.suffix == '.py':
+                return False
+            
+            if f.stem.startswith('_'):
+                return True
+            for prog_name in self.prog_names_visited:
+                if f.stem == prog_name or f.stem.startswith( prog_name + '_'):
+                    return True
+            return False
 
-    @load_on_begin_utterance.setter
-    def load_on_begin_utterance(self, value: bool):
-        """
-        """
-        self.logger.debug(f'set load_on_begin_utterance to {value}')
-        self.__load_on_begin_utterance = value
-        
+        init = '__init__.py'
+
+        mod_paths: List[Path] = []
+        dir_path = Path(directory)
+        scripts = sorted(filter(is_script, dir_path.iterdir()))
+        init_path = dir_path.joinpath(init)
+        if init_path in scripts:
+            scripts.remove(init_path)
+            scripts.insert(0, init_path)
+        mod_paths.extend(scripts)
+
+        return mod_paths
+
     def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
         def is_script(f: Path) -> bool:
@@ -262,24 +282,34 @@ class NatlinkMain:
 
     def trigger_load(self, force_load: bool = None) -> None:
         self.seen.clear()
-        self.logger.debug(f'triggering load/reload process (force_load: {force_load})')
+        if force_load:
+            self.logger.debug(f'triggering load/reload process (force_load: {force_load})')
+        else:
+            self.logger.debug('triggering load/reload process')
+            
         self.remove_modules_that_no_longer_exist()
 
-        mod_paths = self.module_paths_for_user
+        # mod_paths = self.module_paths_for_user
         if self._pre_load_callback is not None:
             self.logger.debug('calling pre-load callback')
             self._call_and_catch_all_exceptions(self._pre_load_callback)
-        self.load_or_reload_modules(mod_paths, force_load=force_load)
+        for directory in self.config.directories:
+            self.logger.info(f'--- load/reload: {directory}')
+            mod_paths_directory = self._module_paths_in_dir(directory)
+            self.load_or_reload_modules(mod_paths_directory, force_load=force_load)
+            self.logger.debug(f'--- end of loading directory: {directory}')
         if self._post_load_callback is not None:
             self.logger.debug('calling post-load callback')
             self._call_and_catch_all_exceptions(self._post_load_callback)
-        loaded_diff = set(self.module_paths_for_user).difference(self.loaded_modules.keys())
-        if loaded_diff:
-            self.logger.debug(f'second round, load new grammar files: {loaded_diff}')
-        
-        for mod_path in loaded_diff:
-            self.logger.debug(f'new module in second round: {mod_path}')
-            self.load_or_reload_module(mod_path)
+
+        # this one is not sufficient for Vocola and Unimacro.
+        # loaded_diff = set(self.module_paths_for_user).difference(self.loaded_modules.keys())
+        # if loaded_diff:
+        #     self.logger.debug(f'second round, load new grammar files: {loaded_diff}')
+        # 
+        # for mod_path in loaded_diff:
+        #     self.logger.debug(f'new module in second round: {mod_path}')
+        #     self.load_or_reload_module(mod_path)
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
         """on_change_callback, when another user profile is chosen, or when the mic state changes
@@ -348,11 +378,16 @@ class NatlinkMain:
             
         return language
 
-    def set_user_language(self, args: Any = None) -> str:
+    def set_user_language(self, args: Any = None):
         """can be called from other module to explicitly set the user language to 'enx', 'nld', etc
         """
         if not (args and len(args) == 2):
-            args = natlink.getCurrentUser()
+            try:
+                args = natlink.getCurrentUser()
+            except natlink.NatError:
+                # when Dragon not running, for testing:
+                args = ()
+
         if args:
             self.user, self.profile = args
             self.language = self.get_user_language(self.profile)
@@ -361,6 +396,16 @@ class NatlinkMain:
             self.user, self.profile = '', ''
             self.logger.warning('set_user_language, cannot get input for get_user_language, set to "enx",\n\tprobably Dragon is not running')
             self.language = 'enx'
+
+    # not a property, but an instance variable
+    def get_load_on_begin_utterance(self) -> bool:
+        """set the value for loading at each utterance to bool
+        
+        Setting to 1 (or another small positive int) for Vocola, did not prove to be useful
+        After all, toggling the microphone when you want to reload grammar files remains probably
+        the better way to do so...
+        """
+        return self.load_on_begin_utterance
 
     def set_load_on_begin_utterance(self, value: bool):
         """set the value for loading at each utterance to bool
@@ -377,6 +422,7 @@ class NatlinkMain:
         if not self.config.directories:
             self.logger.warning(f'Starting Natlink, but no directories to load are specified.\n\tPlease add one or more directories\n\tin config file: "{self.config.config_path}".')
             return
+        # self.logger.debug(f'directories: {self.config.directories}')
         self._add_dirs_to_path(self.config.directories)  
         if self.config.load_on_startup:
             # set language property:

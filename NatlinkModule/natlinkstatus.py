@@ -443,7 +443,6 @@ class NatlinkStatus:
         print(f'invalid path for VocolaUserDirectory: "{value}"')
         self.VocolaUserDirectory = ''
         return ''
-
     
     def getVocolaDirectory(self):
         isdir, isfile, join, normpath = os.path.isdir, os.path.isfile, os.path.join, os.path.normpath
@@ -477,7 +476,7 @@ class NatlinkStatus:
         If Vocola is not enabled, or anything goes wrong, return ""
         
         """
-        isdir, join, normpath = os.path.isdir, os.path.join, os.path.normpath
+        join, normpath = os.path.join, os.path.normpath
         if self.VocolaGrammarsDirectory is not None:
             return self.VocolaGrammarsDirectory
 
@@ -487,16 +486,6 @@ class NatlinkStatus:
             return ''
 
         vgDir = join(vUserDir, '..', 'VocolaGrammars')
-        if self.getVocolaTakesLanguages() and self.language != 'enx':
-            ## go 2 up:
-            vgDir = join(vUserDir, '..', '..', 'VocolaGrammars')
-        if not isdir(vgDir):
-            os.mkdir(vgDir)
-        if not isdir(vgDir):
-            print('getVocolaGrammarsDirectory, could not create directory "{vgdir}"')
-            self.VocolaGrammarsDirectory = ''
-            return ''
-        
         self.VocolaGrammarsDirectory = normpath(vgDir)
         return self.VocolaGrammarsDirectory
 
@@ -585,6 +574,11 @@ class NatlinkStatus:
         key = 'VocolaTakesUnimacroActions'
         return natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
 
+    def get_load_on_begin_utterance(self):
+        """inspect current value of loader setting
+        """
+        return natlinkmain.get_load_on_begin_utterance()
+    
     def set_load_on_begin_utterance(self, value):
         """can be called with value positive int to load grammars (1 or more times) at begin utterance
         
@@ -793,7 +787,8 @@ def main():
     Lang = status.language
     print(f'language: "{Lang}"')
     print(status.getNatlinkStatusString())
-
+    status.set_load_on_begin_utterance(True)
+    print('result of setting load_on_begin_utterance: {status.get_load_on_begin_utterance()}')
     # examples, for more tests in ...
     # print('\n====\nexamples of expanding ~ and %...% variables:')
     # short = path("~/Quintijn")
