@@ -130,7 +130,7 @@ static void CallPyFunctionOrDisplayError(CDragonCode* pDragCode, PyObject* pMod,
 	PyObject* result = PyObject_CallMethod(pMod, szName, NULL);
 	if (result == NULL)
 	{
-		std::string err = std::string("NatLink: an exception occurred in '") + std::string(szModName) + std::string(".") + std::string(szName) + std::string("'.\r\n");
+		std::string err = std::string("Natlink: an exception occurred in '") + std::string(szModName) + std::string(".") + std::string(szName) + std::string("'.\r\n");
 		pDragCode->displayText(err.c_str(), TRUE);
 		DisplayPythonException(pDragCode);
 		}
@@ -214,7 +214,7 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	m_pDragCode->setDuringInit( TRUE );
     m_pNatlinkModule = PyImport_ImportModule( "natlink" );
 	if ( m_pNatlinkModule == NULL ) {
-		OutputDebugString( TEXT( "NatLink: an exception occurred loading 'natlink' module" ) );
+		OutputDebugString( TEXT( "Natlink: an exception occurred loading 'natlink' module" ) );
 		DisplaySysPath(m_pDragCode);
 		DisplayPythonException(m_pDragCode);
 		return S_OK;
