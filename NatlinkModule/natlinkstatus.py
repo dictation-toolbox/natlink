@@ -47,6 +47,10 @@ property profile:
 
 property user:
     returns the name of the currenct user
+
+property load_on_begin_utterance:
+    returns value of this property of the natlinkmain (loader) instance.
+    True or False, or a (small) positive int, decreasing each utterance.
     
 getPythonVersion:
     return two character version, so without the dot! eg '38',
@@ -98,6 +102,7 @@ import sys
 import stat
 import platform
 import logging
+from typing import Any
 try:
     from natlink import loader
 except ModuleNotFoundError:
@@ -164,7 +169,9 @@ class NatlinkStatus:
     def __init__(self):
         """initialise all instance variables, in this singleton class, instance
         """
-        natlinkmain.set_user_language()
+        self.language = self.get_language()
+        self.user = self.get_us
+        
         self.DNSVersion = None
         self.DNSIniDir = None
         self.CoreDirectory = None
@@ -218,6 +225,11 @@ class NatlinkStatus:
     @property
     def language(self) -> str:
         return natlinkmain.language
+    @property
+    def load_on_begin_utterance(self) -> Any:
+        """True or False, or a positive int (decreasing each utterance)
+        """
+        return natlinkmain.load_on_begin_utterance
     
     def getDNSIniDir(self):
         """get the path (one above the users profile paths) where the INI files
@@ -608,7 +620,7 @@ class NatlinkStatus:
         D['user'] = self.user
         D['profile'] = self.profile
         D['language'] = self.language
-        
+        D['load_on_begin_utterance'] = self.get_load_on_begin_utterance()
 
         for key in ['DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion',
@@ -644,16 +656,19 @@ class NatlinkStatus:
         D = self.getNatlinkStatusDict()
         if D['user']:
             L.append('user speech profile:')
+            L.append('\tproperties:')
             self.appendAndRemove(L, D, 'user')
             self.appendAndRemove(L, D, 'profile')
             self.appendAndRemove(L, D, 'language')
-        else:
+            self.appendAndRemove(L, D, 'load_on_begin_utterance')
+        else:   
             del D['user']
             del D['profile']
             del D['language']
+            del D['load_on_begin_utterance']
         # Natlink::
-
-        key = 'CoreDirectory'
+        L.append('')
+        key = 'CoreDirectory'   
         self.appendAndRemove(L, D, key)
         key = 'InstallVersion'
         self.appendAndRemove(L, D, key)
@@ -718,7 +733,7 @@ class NatlinkStatus:
             value = Dict[Key]
             if value is None or value == '':
                 value = '-'
-            if len(Key) <= 7:
+            if len(Key) <= 6:
                 List.append(f'\t{Key}\t\t\t{value}')
             elif len(Key) <= 12:
                 List.append(f'\t{Key}\t\t{value}')
@@ -780,7 +795,6 @@ def getFileDate(modName):
     except OSError: return 0        # file not found
 
 def main():
-    print(f"{sys.argv[0]}  __name__ :  {__name__}")
     status = NatlinkStatus()
 
     # next things only testable when changing the dir in the functions above
@@ -788,17 +802,11 @@ def main():
     print(f'language: "{Lang}"')
     print(status.getNatlinkStatusString())
     status.set_load_on_begin_utterance(True)
-    print('result of setting load_on_begin_utterance: {status.get_load_on_begin_utterance()}')
-    # examples, for more tests in ...
-    # print('\n====\nexamples of expanding ~ and %...% variables:')
-    # short = path("~/Quintijn")
-    # AddExtendedEnvVariables()
-    # addedListNatlinkVariables = AddNatlinkEnvironmentVariables()
-    # print('All "NATLINK" extended variables:')
-    # print('\n'.join(addedListNatlinkVariables))
-
-
-
+    print(f'result of setting load_on_begin_utterance: {status.get_load_on_begin_utterance()}')
+    print(status.getNatlinkStatusString())
+    status.set_load_on_begin_utterance(False)
+    print(f'result of setting load_on_begin_utterance: {status.get_load_on_begin_utterance()}')
+    print(status.getNatlinkStatusString())
  
 if __name__ == "__main__":
     natlink.natConnect()

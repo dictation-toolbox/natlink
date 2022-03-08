@@ -1,4 +1,4 @@
-#pylint:disable=C0114, C0115, C0116, R1705, R0902, W0703, E1101
+#pylint:disable=C0114, C0115, C0116, R1705, R0902, R0904, W0703, E1101
 import importlib
 import importlib.machinery
 import importlib.util
@@ -53,8 +53,7 @@ class NatlinkMain:
         self.__user: str = ''       #
         self.__profile: str = ''    # at start and on_change_callback user
         self.__language: str = ''   #
-        # load_on_begin_utterance property:
-        self.load_on_begin_utterance = self.config.load_on_begin_utterance
+        self.load_on_begin_utterance = self.config.load_on_begin_utterance # set the property load_on_begin_utterance
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
         self.seen: Set[Path] = set()     # start empty in trigger_load
@@ -116,6 +115,16 @@ class NatlinkMain:
     @user.setter
     def user(self, value: str):
         self.__user = value or ''
+
+    @property
+    def load_on_begin_utterance(self) -> Any:
+        """holds the value for load_on_begin_utterance
+        """
+        return self.__load_on_begin_utterance or False
+
+    @load_on_begin_utterance.setter
+    def load_on_begin_utterance(self, value: Any):
+        self.__load_on_begin_utterance = value or ''
 
     def _module_paths_in_dir(self, directory: str) -> List[Path]:
         """give modules in directory
@@ -218,13 +227,19 @@ class NatlinkMain:
         
         last_attempt_time = self.load_attempt_times.get(mod_path, 0.0)
         self.load_attempt_times[mod_path] = time.time()
+        self.logger.debug(f'load_or_reload_module, bad_modules: {self.bad_modules}')
         try:
             if mod_path in self.bad_modules:
+                self.logger.debug(f'mod_path: {mod_path}, in self.bad_modules...')
                 last_modified_time = mod_path.stat().st_mtime
                 if force_load or last_attempt_time < last_modified_time:
                     self.logger.info(f'loading previously bad module: {mod_name}')
                     module = self._import_module_from_path(mod_path)
-                    self.bad_modules.remove(mod_path)
+                    try:
+                        self.bad_modules.remove(mod_path)
+                    except KeyError:
+                        # added QH, I think it should not come here:
+                        self.logger.warning(f'load_or_reload_module, unexpected, cannot remove key {mod_path} from self.bad_modules:\n\t{self.bad_modules}\n\t====\n')
                     self.loaded_modules[mod_path] = module
                     return
                 else:
@@ -252,7 +267,9 @@ class NatlinkMain:
                         return
         except Exception:
             self.logger.exception(traceback.format_exc())
+            self.logger.debug(f'load_or_reload_module, exception, add to self.bad_modules {mod_path}')
             self.bad_modules.add(mod_path)
+            self.logger.debug(f'load_or_reload_module, self.bad_modules {self.bad_modules}')
             if mod_path in self.loaded_modules:
                 old_module = self.loaded_modules.pop(mod_path)
                 self.unload_module(old_module)
@@ -397,8 +414,8 @@ class NatlinkMain:
             self.logger.warning('set_user_language, cannot get input for get_user_language, set to "enx",\n\tprobably Dragon is not running')
             self.language = 'enx'
 
-    # not a property, but an instance variable
-    def get_load_on_begin_utterance(self) -> bool:
+    # load_on_begin_utterance is a property...
+    def get_load_on_begin_utterance(self) -> Any:
         """set the value for loading at each utterance to bool
         
         Setting to 1 (or another small positive int) for Vocola, did not prove to be useful
@@ -407,7 +424,7 @@ class NatlinkMain:
         """
         return self.load_on_begin_utterance
 
-    def set_load_on_begin_utterance(self, value: bool):
+    def set_load_on_begin_utterance(self, value: Any):
         """set the value for loading at each utterance to bool
         
         Setting to 1 (or another small positive int) for Vocola, did not prove to be useful

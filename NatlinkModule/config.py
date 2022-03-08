@@ -26,7 +26,6 @@ class NatlinkConfig:
         self.directories_by_user = directories_by_user  # maps user profile names to directories, '' for global
         self.log_level = log_level
         self.load_on_mic_on = load_on_mic_on
-        ## turn this one into a property:
         self.load_on_begin_utterance = load_on_begin_utterance
         self.load_on_startup = load_on_startup
         self.load_on_user_changed = load_on_user_changed
