@@ -1,4 +1,4 @@
-#pylint:disable=C0114, C0115, C0116, R1705, R0902, R0904, W0703, E1101
+#pylint:disable=C0114, C0115, C0116, R1705, R0902, R0904, R0912, R0915, W0703, E1101
 import importlib
 import importlib.machinery
 import importlib.util
@@ -44,6 +44,7 @@ class NatlinkMain:
         return cls.__instance    
     
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
+        print('===== __init__ of loader class....')
         self.logger = logger
         self.config = config
         self.loaded_modules: Dict[Path, ModuleType] = {}
@@ -53,6 +54,7 @@ class NatlinkMain:
         self.__user: str = ''       #
         self.__profile: str = ''    # at start and on_change_callback user
         self.__language: str = ''   #
+        self.__load_on_begin_utterance = None
         self.load_on_begin_utterance = self.config.load_on_begin_utterance # set the property load_on_begin_utterance
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
@@ -86,6 +88,9 @@ class NatlinkMain:
     def language(self) -> str:
         """holds the language of the current profile (default 'enx')
         """
+        if self.__language == '':
+            self.set_user_language()
+            
         return self.__language or 'enx'
 
     @language.setter
@@ -116,15 +121,43 @@ class NatlinkMain:
     def user(self, value: str):
         self.__user = value or ''
 
-    @property
-    def load_on_begin_utterance(self) -> Any:
-        """holds the value for load_on_begin_utterance
+    # load_on_begin_utterance is a property...
+    def get_load_on_begin_utterance(self) -> Any:
+        """this value is most often True or False, taken from the config file
+        
+        It can also be (set to) a positive int, with which it does
+        the load_on_begin_utterance so many times. After these utterances,
+        the value falls back to False.
+        
+        With Vocola, there is one utterance delay in the updating of the changed vocola command files.
         """
-        return self.__load_on_begin_utterance or False
+        value = self.__load_on_begin_utterance
+        if isinstance(value, int):
+            value -= 1
+            if value > 0:
+                self.set_load_on_begin_utterance(value)
+            else:
+                self.set_load_on_begin_utterance(False)
+        return self.__load_on_begin_utterance
 
-    @load_on_begin_utterance.setter
-    def load_on_begin_utterance(self, value: Any):
-        self.__load_on_begin_utterance = value or ''
+    def set_load_on_begin_utterance(self, value: Any):
+        """set the value for loading at each utterance to True, False or positive int
+        
+        For Vocola, setting this value to 1 did not work, setting to 2 does, so
+        you need one extra utterance for a new vocola command to come through.
+        """
+        if isinstance(value, int):
+            if value > 0:
+                self.__load_on_begin_utterance = value
+            else:
+                self.__load_on_begin_utterance = value or False
+        elif value in [True, False]:
+            self.__load_on_begin_utterance = value or False
+        else:
+            raise TypeError(f'set_load_on_begin_utterance, invalid type for value: {value} (type: {type(value)})')
+        
+
+    load_on_begin_utterance = property(get_load_on_begin_utterance, set_load_on_begin_utterance)
 
     def _module_paths_in_dir(self, directory: str) -> List[Path]:
         """give modules in directory
@@ -225,13 +258,21 @@ class NatlinkMain:
             self.logger.warning(f'Attempting to load duplicate module: {mod_path})')
             return
         
+        self.logger.debug(f'=== load_attempt_times: {self.load_attempt_times}')
+        
         last_attempt_time = self.load_attempt_times.get(mod_path, 0.0)
+
+        self.logger.debug(f'=== mod_path: {mod_path} ({type(mod_path)}), last_attempt_time: {last_attempt_time}')
+
         self.load_attempt_times[mod_path] = time.time()
-        self.logger.debug(f'load_or_reload_module, bad_modules: {self.bad_modules}')
+        
+        self.logger.debug(f'=== after set to {time.time()}: load_attempt_times: {self.load_attempt_times}')
+        
         try:
             if mod_path in self.bad_modules:
                 self.logger.debug(f'mod_path: {mod_path}, in self.bad_modules...')
                 last_modified_time = mod_path.stat().st_mtime
+                self.logger.debug(f'last_modified_time: {last_modified_time}, last_attempt_time: {last_attempt_time}')
                 if force_load or last_attempt_time < last_modified_time:
                     self.logger.info(f'loading previously bad module: {mod_name}')
                     module = self._import_module_from_path(mod_path)
@@ -255,12 +296,19 @@ class NatlinkMain:
                 else:
                     module = maybe_module
                     last_modified_time = mod_path.stat().st_mtime
-                    if force_load or last_attempt_time < last_modified_time:
-                        self.logger.info(f'reloading module: {mod_name}, force_load: {force_load}')
+                    diff = last_modified_time - last_attempt_time  # check for -1 instead of 0
+                    self.logger.debug(f'{mod_path}: diff: {diff} (last_modified_time: {last_modified_time}, last_attempt_time: {last_attempt_time})')
+                    if force_load or diff > -1:
+                        if force_load:
+                            self.logger.info(f'reloading module: {mod_name}, force_load: {force_load}')
+                        else:
+                            self.logger.info(f'reloading module: {mod_name}, modified diff: {diff}')
+                            
                         self.unload_module(module)
                         del module
                         module = self._import_module_from_path(mod_path)
                         self.loaded_modules[mod_path] = module
+                        self.logger.debug(f'loaded module: {module.__name__}')
                         return
                     else:
                         self.logger.debug(f'skipping unchanged loaded module: {mod_name}')
@@ -269,7 +317,6 @@ class NatlinkMain:
             self.logger.exception(traceback.format_exc())
             self.logger.debug(f'load_or_reload_module, exception, add to self.bad_modules {mod_path}')
             self.bad_modules.add(mod_path)
-            self.logger.debug(f'load_or_reload_module, self.bad_modules {self.bad_modules}')
             if mod_path in self.loaded_modules:
                 old_module = self.loaded_modules.pop(mod_path)
                 self.unload_module(old_module)
@@ -355,6 +402,7 @@ class NatlinkMain:
             value = self.load_on_begin_utterance
             if isinstance(value, int):
                 value -= 1
+                value = value or False
                 self.load_on_begin_utterance = value
                 
     def get_user_language(self, DNSuserDirectory):
@@ -414,24 +462,6 @@ class NatlinkMain:
             self.logger.warning('set_user_language, cannot get input for get_user_language, set to "enx",\n\tprobably Dragon is not running')
             self.language = 'enx'
 
-    # load_on_begin_utterance is a property...
-    def get_load_on_begin_utterance(self) -> Any:
-        """set the value for loading at each utterance to bool
-        
-        Setting to 1 (or another small positive int) for Vocola, did not prove to be useful
-        After all, toggling the microphone when you want to reload grammar files remains probably
-        the better way to do so...
-        """
-        return self.load_on_begin_utterance
-
-    def set_load_on_begin_utterance(self, value: Any):
-        """set the value for loading at each utterance to bool
-        
-        Setting to 1 (or another small positive int) for Vocola, did not prove to be useful
-        After all, toggling the microphone when you want to reload grammar files remains probably
-        the better way to do so...
-        """
-        self.load_on_begin_utterance = value
 
     def start(self) -> None:
         self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')

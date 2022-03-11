@@ -35,22 +35,25 @@ getDNSVersion:
 getWindowsVersion:
     see source below
 
-property language: 
+get_language: 
     returns the 3 letter code of the language of the speech profile that
     is open: 'enx', 'nld', "fra", "deu", "ita", "esp"
 
-    get it from loader, is updated when user profile changes (on_change_callback)
+    get it from loader (property), is updated when user profile changes (on_change_callback)
     returns 'enx' when Dragon is not running.
     
-property profile:
-    returns the directory of the current user profile information
-
-property user:
+get_profile, get_user:
+    returns the directory of the current user profile information and
     returns the name of the currenct user
+    This information is collected from natlink.getCurrentUser(), or from
+    the args in on_change_callback, with type == 'user'
 
-property load_on_begin_utterance:
+get_load_on_begin_utterance and set_load_on_begin_utterance:
     returns value of this property of the natlinkmain (loader) instance.
     True or False, or a (small) positive int, decreasing each utterance.
+    
+    or
+    explicitly set this property.
     
 getPythonVersion:
     return two character version, so without the dot! eg '38',
@@ -94,7 +97,7 @@ new 2014/2022
 getDNSName: return "NatSpeak" for versions <= 11 and "Dragon" for 12 (on) (obsolete in 2022)
 getAhkExeDir: return the directory where AutoHotkey is found (only needed when not in default)
 getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.
-getLanguage: see above
+get_language and other properties, see above.
 
 """
 import os
@@ -167,11 +170,8 @@ class NatlinkStatus:
 
     
     def __init__(self):
-        """initialise all instance variables, in this singleton class, instance
+        """initialise all instance variables, in this singleton class, hoeinstance
         """
-        self.language = self.get_language()
-        self.user = self.get_us
-        
         self.DNSVersion = None
         self.DNSIniDir = None
         self.CoreDirectory = None
@@ -225,11 +225,31 @@ class NatlinkStatus:
     @property
     def language(self) -> str:
         return natlinkmain.language
-    @property
-    def load_on_begin_utterance(self) -> Any:
-        """True or False, or a positive int (decreasing each utterance)
+
+    def get_load_on_begin_utterance(self) -> Any:
+        """inspect current value of loader setting
         """
-        return natlinkmain.load_on_begin_utterance
+        return natlinkmain.get_load_on_begin_utterance()
+    
+    def set_load_on_begin_utterance(self, value: Any):
+        """can be called with value positive int to load grammars (1 or more times) at begin utterance
+        
+        Used now by Vocola when a vocola command file changes by the user.
+        """
+        print(f'natlinkstatus, set_load_on_begin_utterance to {value}')
+        natlinkmain.set_load_on_begin_utterance(value)
+ 
+    load_on_begin_utterance = property(get_load_on_begin_utterance, set_load_on_begin_utterance)
+
+    def get_user(self):
+        return natlinkmain.user
+
+    def get_profile(self):
+        return natlinkmain.profile
+
+    def get_language(self):
+        return natlinkmain.language
+    
     
     def getDNSIniDir(self):
         """get the path (one above the users profile paths) where the INI files
@@ -547,7 +567,6 @@ class NatlinkStatus:
         self.AhkExeDir = ''
         return ''
 
-    
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
         value = natlinkmain.getconfigsetting(section='unimacro', option=key)
@@ -586,18 +605,6 @@ class NatlinkStatus:
         key = 'VocolaTakesUnimacroActions'
         return natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
 
-    def get_load_on_begin_utterance(self):
-        """inspect current value of loader setting
-        """
-        return natlinkmain.get_load_on_begin_utterance()
-    
-    def set_load_on_begin_utterance(self, value):
-        """can be called with value positive int to load grammars (1 or more times) at begin utterance
-        
-        Used now by Vocola when a vocola command file changes by the user.
-        """
-        print(f'natlinkstatus, set_load_on_begin_utterance to {value}')
-        natlinkmain.set_load_on_begin_utterance(value)
     
     def getInstallVersion(self):
         version = loader.get_config_info_from_registry("version")
@@ -617,9 +624,10 @@ class NatlinkStatus:
         
         """
         D = {}
-        D['user'] = self.user
-        D['profile'] = self.profile
-        D['language'] = self.language
+        # properties:
+        D['user'] = self.get_user()
+        D['profile'] = self.get_profile()
+        D['language'] = self.get_language()
         D['load_on_begin_utterance'] = self.get_load_on_begin_utterance()
 
         for key in ['DNSIniDir', 'WindowsVersion', 'DNSVersion',
@@ -654,18 +662,12 @@ class NatlinkStatus:
     def getNatlinkStatusString(self):
         L = []
         D = self.getNatlinkStatusDict()
-        if D['user']:
-            L.append('user speech profile:')
-            L.append('\tproperties:')
-            self.appendAndRemove(L, D, 'user')
-            self.appendAndRemove(L, D, 'profile')
-            self.appendAndRemove(L, D, 'language')
-            self.appendAndRemove(L, D, 'load_on_begin_utterance')
-        else:   
-            del D['user']
-            del D['profile']
-            del D['language']
-            del D['load_on_begin_utterance']
+        L.append('--- properties:')
+        self.appendAndRemove(L, D, 'user')
+        self.appendAndRemove(L, D, 'profile')
+        self.appendAndRemove(L, D, 'language')
+        self.appendAndRemove(L, D, 'load_on_begin_utterance')
+
         # Natlink::
         L.append('')
         key = 'CoreDirectory'   
@@ -797,8 +799,7 @@ def getFileDate(modName):
 def main():
     status = NatlinkStatus()
 
-    # next things only testable when changing the dir in the functions above
-    Lang = status.language
+    Lang = status.get_language()
     print(f'language: "{Lang}"')
     print(status.getNatlinkStatusString())
     status.set_load_on_begin_utterance(True)

@@ -89,6 +89,9 @@ def test_trigger_load_calls_pre_and_post_load(empty_config, logger, monkeypatch)
     main.set_post_load_callback(post)
     monkeypatch.setattr(main, 'load_or_reload_modules', load)
 
+    ## this one fails, because now per directory grammars are loaded,
+    ## line 347 is now commented in favour of lin 351 loader.py (QH)
+
     main.trigger_load()
 
     expected = [1, 2, 3]
@@ -114,6 +117,8 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
     assert '_a' not in sys.modules
     assert main.bad_modules == set()
     assert set(main.load_attempt_times.keys()) == {a_path}
+    print('mtime: {mtime}')
+    print('main.load_attempt_times[a_path]: {main.load_attempt_times[a_path]}')
     assert main.load_attempt_times[a_path] == mtime
     assert main.loaded_modules[a_path].x == 0
 
@@ -226,7 +231,7 @@ def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, l
     # make sure it still has the old value, not the new one
     assert main.loaded_modules[a_path].x == 0
 
-    msg = f'skipping unchanged loaded module: _a'
+    msg = 'skipping unchanged loaded module: _a'
     assert msg in logger.messages['debug']
 
     del_loaded_modules(main)
@@ -332,7 +337,7 @@ def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, lo
     assert set(main.load_attempt_times.keys()) == {a_path}
     assert main.load_attempt_times[a_path] == mtime
 
-    msg = f'skipping unchanged bad module: _a'
+    msg = 'skipping unchanged bad module: _a'
     assert msg in logger.messages['info']
 
     del_loaded_modules(main)
@@ -391,3 +396,6 @@ def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, l
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
+
+if __name__ == "__main__":
+    pytest.main(['test_loader.py'])
