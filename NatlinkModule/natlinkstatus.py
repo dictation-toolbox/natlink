@@ -119,10 +119,10 @@ import natlink
 # # # natlinkmain = loader.NatlinkMain()
 
 ## setting up Logger and Config is needed, when running this for test:
-Logger = logging.getLogger('natlink')
-Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
-natlinkmain = loader.NatlinkMain(Logger, Config)
-natlinkmain.setup_logger()
+# Logger = logging.getLogger('natlink')
+# Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
+# natlinkmain = loader.NatlinkMain(Logger, Config)
+#  self.natlinkmain.setup_logger()
 
 # adapt here
 VocIniFile  = r"Vocola\Exec\vocola.ini"
@@ -162,16 +162,21 @@ class NatlinkStatus:
     """
     __instance = None
     
-    def __new__(cls, *args):
+    def __new__(cls):
         if cls.__instance is None:
             cls.__instance = object.__new__(cls)
-            cls.__instance.__init__(*args)
+            Logger = logging.getLogger('natlink')
+            Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
+            natlinkmain = loader.NatlinkMain(Logger, Config)
+            natlinkmain.setup_logger()
+            cls.__instance.__init__(natlinkmain)
         return cls.__instance    
 
     
-    def __init__(self):
+    def __init__(self, natlinkmain):
         """initialise all instance variables, in this singleton class, hoeinstance
         """
+        self.natlinkmain = natlinkmain
         self.DNSVersion = None
         self.DNSIniDir = None
         self.CoreDirectory = None
@@ -218,18 +223,18 @@ class NatlinkStatus:
 
     @property
     def user(self) -> str:
-        return natlinkmain.user
+        return  self.natlinkmain.user
     @property
     def profile(self) -> str:
-        return natlinkmain.profile
+        return  self.natlinkmain.profile
     @property
     def language(self) -> str:
-        return natlinkmain.language
+        return  self.natlinkmain.language
 
     def get_load_on_begin_utterance(self) -> Any:
         """inspect current value of loader setting
         """
-        return natlinkmain.get_load_on_begin_utterance()
+        return  self.natlinkmain.get_load_on_begin_utterance()
     
     def set_load_on_begin_utterance(self, value: Any):
         """can be called with value positive int to load grammars (1 or more times) at begin utterance
@@ -237,18 +242,18 @@ class NatlinkStatus:
         Used now by Vocola when a vocola command file changes by the user.
         """
         print(f'natlinkstatus, set_load_on_begin_utterance to {value}')
-        natlinkmain.set_load_on_begin_utterance(value)
+        self.natlinkmain.set_load_on_begin_utterance(value)
  
     load_on_begin_utterance = property(get_load_on_begin_utterance, set_load_on_begin_utterance)
 
     def get_user(self):
-        return natlinkmain.user
+        return  self.natlinkmain.user
 
     def get_profile(self):
-        return natlinkmain.profile
+        return  self.natlinkmain.profile
 
     def get_language(self):
-        return natlinkmain.language
+        return  self.natlinkmain.language
     
     
     def getDNSIniDir(self):
@@ -338,7 +343,7 @@ class NatlinkStatus:
         if self.UnimacroUserDirectory is not None:
             return self.UnimacroUserDirectory
         key = 'unimacro_user_directory'
-        value = natlinkmain.getconfigsetting(section="unimacro", option=key)
+        value =  self.natlinkmain.getconfigsetting(section="unimacro", option=key)
         if value and isdir(value):
             self.UnimacroUserDirectory = value
             return normpath(value)
@@ -442,7 +447,7 @@ class NatlinkStatus:
         if not self.UserDirectory is None:
             return self.UserDirectory
         key = 'UserDirectory'
-        value = natlinkmain.getconfigsetting(section='directories', option=key)
+        value =  self.natlinkmain.getconfigsetting(section='directories', option=key)
         if value and isdir(value):
             self.UserDirectory = normpath(value)
             return self.UserDirectory
@@ -463,7 +468,7 @@ class NatlinkStatus:
             return self.VocolaUserDirectory
         key = 'vocola_user_directory'
         section = 'vocola'
-        value = natlinkmain.getconfigsetting(section=section, option=key)
+        value =  self.natlinkmain.getconfigsetting(section=section, option=key)
         if value and isdir(value):
             self.VocolaUserDirectory = normpath(value)
             return value
@@ -531,7 +536,7 @@ class NatlinkStatus:
     def getAhkUserDirFromIni(self):
         isdir, normpath = os.path.isdir, os.path.normpath
         key = 'AhkUserDir'
-        value = natlinkmain.getconfigsetting(section='autohotkey', option=key)
+        value =  self.natlinkmain.getconfigsetting(section='autohotkey', option=key)
         if value and isdir(value):
             self.AhkUserDir = normpath(value)
             return value
@@ -554,7 +559,7 @@ class NatlinkStatus:
     def getAhkExeDirFromIni(self):
         isdir, normpath = os.path.isdir, os.path.normpath
         key = 'AhkExeDir'
-        value = natlinkmain.getconfigsetting(section='autohotkey', option=key)
+        value =  self.natlinkmain.getconfigsetting(section='autohotkey', option=key)
         if value and isdir(value):
             self.AhkExeDir = normpath(value)
             return value
@@ -569,7 +574,7 @@ class NatlinkStatus:
 
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
-        value = natlinkmain.getconfigsetting(section='unimacro', option=key)
+        value =  self.natlinkmain.getconfigsetting(section='unimacro', option=key)
         if not value:
             value = 'notepad'
         if self.UnimacroIsEnabled():
@@ -596,14 +601,14 @@ class NatlinkStatus:
         If Vocola is not enabled, this option will also return False
         """
         key = 'vocola_takes_languages'
-        return natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
+        return  self.natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
     
     def getVocolaTakesUnimacroActions(self):
         """gets and value for optional Vocola takes Unimacro actions
         If Vocola is not enabled, this option will also return False
         """
         key = 'VocolaTakesUnimacroActions'
-        return natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
+        return  self.natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
 
     
     def getInstallVersion(self):
@@ -737,7 +742,7 @@ class NatlinkStatus:
                 value = '-'
             if len(Key) <= 6:
                 List.append(f'\t{Key}\t\t\t{value}')
-            elif len(Key) <= 12:
+            elif len(Key) <= 13:
                 List.append(f'\t{Key}\t\t{value}')
             else:
                 List.append(f'\t{Key}\t{value}')
@@ -757,7 +762,7 @@ class NatlinkStatus:
     #         sys.path.append(Dir3)
 
     # 
-    # def natlinkmain.getconfigsetting(self, option: str, section: Any=None, inifilepath: Any=None, func: Any=None):
+    # def  self.natlinkmain.getconfigsetting(self, option: str, section: Any=None, inifilepath: Any=None, func: Any=None):
     #     """get from natlink.ini file
     #     
     #     note: key is called option in configparser!!
