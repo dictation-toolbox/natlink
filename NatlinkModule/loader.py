@@ -36,15 +36,20 @@ class NatlinkMain:
     """main class of Natlink, make it a "singleton"
     """
     __instance = None
+    had_init = False
     
     def __new__(cls, *args):
         if cls.__instance is None:
             cls.__instance = object.__new__(cls)
             cls.__instance.__init__(*args)
+            cls.had_init = True
         return cls.__instance    
     
     def __init__(self, logger: logging.Logger, config: NatlinkConfig):
-        print('===== __init__ of loader class....')
+        if self.__class__.had_init:
+            print('==== NatlinkMain is already intialised, return from __init__')
+            return
+        print('==== __init__ of loader class')
         self.logger = logger
         self.config = config
         self.loaded_modules: Dict[Path, ModuleType] = {}
@@ -258,21 +263,16 @@ class NatlinkMain:
             self.logger.warning(f'Attempting to load duplicate module: {mod_path})')
             return
         
-        self.logger.debug(f'=== load_attempt_times: {self.load_attempt_times}')
+        if not self.load_attempt_times:
+            self.logger.warning(f'======== load_attempt_times is empty: {self.load_attempt_times}')
         
         last_attempt_time = self.load_attempt_times.get(mod_path, 0.0)
-
-        self.logger.debug(f'=== mod_path: {mod_path} ({type(mod_path)}), last_attempt_time: {last_attempt_time}')
-
         self.load_attempt_times[mod_path] = time.time()
-        
-        self.logger.debug(f'=== after set to {time.time()}: load_attempt_times: {self.load_attempt_times}')
         
         try:
             if mod_path in self.bad_modules:
                 self.logger.debug(f'mod_path: {mod_path}, in self.bad_modules...')
                 last_modified_time = mod_path.stat().st_mtime
-                self.logger.debug(f'last_modified_time: {last_modified_time}, last_attempt_time: {last_attempt_time}')
                 if force_load or last_attempt_time < last_modified_time:
                     self.logger.info(f'loading previously bad module: {mod_name}')
                     module = self._import_module_from_path(mod_path)
@@ -297,12 +297,11 @@ class NatlinkMain:
                     module = maybe_module
                     last_modified_time = mod_path.stat().st_mtime
                     diff = last_modified_time - last_attempt_time  # check for -1 instead of 0
-                    self.logger.debug(f'{mod_path}: diff: {diff} (last_modified_time: {last_modified_time}, last_attempt_time: {last_attempt_time})')
                     if force_load or diff > -1:
                         if force_load:
                             self.logger.info(f'reloading module: {mod_name}, force_load: {force_load}')
                         else:
-                            self.logger.info(f'reloading module: {mod_name}, modified diff: {diff}')
+                            self.logger.info(f'reloading module: {mod_name}, modified, diff: {diff}')
                             
                         self.unload_module(module)
                         del module

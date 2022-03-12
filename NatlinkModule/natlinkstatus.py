@@ -161,6 +161,7 @@ class NatlinkStatus:
 
     """
     __instance = None
+    had_init = False
     
     def __new__(cls):
         if cls.__instance is None:
@@ -170,12 +171,19 @@ class NatlinkStatus:
             natlinkmain = loader.NatlinkMain(Logger, Config)
             natlinkmain.setup_logger()
             cls.__instance.__init__(natlinkmain)
+            cls.had_init = True
         return cls.__instance    
 
     
-    def __init__(self, natlinkmain):
+    def __init__(self, natlinkmain=None):
         """initialise all instance variables, in this singleton class, hoeinstance
         """
+        if self.__class__.had_init:
+            print('==== NatlinkStatus is already intialised, return from __init__')
+            return
+        if natlinkmain is None:
+            raise ValueError('trying to initialise NatlinkStatus without a natlinkmain instance')
+        print(f'==== __init__ of NatlinkStatus, with argument natlinkmain: {natlinkmain}')
         self.natlinkmain = natlinkmain
         self.DNSVersion = None
         self.DNSIniDir = None
