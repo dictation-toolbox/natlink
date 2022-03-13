@@ -8,15 +8,6 @@
 """The following functions are provided in this module:
 
 The functions below are put into the class NatlinkStatus.
-The natlinkconfigfunctions can subclass this class, and
-the configurenatlink.py (GUI) again sub-subclasses this one.
-
-The following  functions manage information that changes at changeCallback time
-(when a new user opens)
-
-setUserInfo(args) put username and directory of speech profiles of the last opened user in this class.
-getUser  (previous: getUsername): get active username (only if NatSpeak/Natlink is running)
-getProfile (previous: getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/Natlink is running)
 
 The functions below should not change anything in settings, only  get information.
 
@@ -150,18 +141,18 @@ thisDir, thisFile = os.path.split(__file__)
 
 
 class NatlinkStatus:
-    """this class holds the Natlink status functions
-
-    It retrieves information from the loader, main instance.
+    """this class holds the Natlink status functions.
     
-    This class is also implemented as a "singleton", so no classmethods needed.
+    This class is a Singleton, which means that all instances are the same object.
 
-    in the natlinkconfigfunctions it is subclassed for installation things
+    Some information is retrieved from the loader, the natlinkmain (Singleton) instance.
+    
+    In natlinkconfigfunctions.py, NatlinkStatus is subclassed for configuration purposes.
     in the PyTest folder there are/come test functions in TestNatlinkStatus
 
     """
     __instance = None
-    had_init = False
+    _had_init = False
     
     def __new__(cls):
         if cls.__instance is None:
@@ -171,19 +162,19 @@ class NatlinkStatus:
             natlinkmain = loader.NatlinkMain(Logger, Config)
             natlinkmain.setup_logger()
             cls.__instance.__init__(natlinkmain)
-            cls.had_init = True
+            cls._had_init = True
         return cls.__instance    
 
     
     def __init__(self, natlinkmain=None):
         """initialise all instance variables, in this singleton class, hoeinstance
         """
-        if self.__class__.had_init:
-            print('==== NatlinkStatus is already intialised, return from __init__')
+        if self.__class__._had_init:
+            # print('==== NatlinkStatus is already intialised, return from __init__')
             return
         if natlinkmain is None:
-            raise ValueError('trying to initialise NatlinkStatus without a natlinkmain instance')
-        print(f'==== __init__ of NatlinkStatus, with argument natlinkmain: {natlinkmain}')
+            raise ValueError(f'NatlinkStatus, first instance should be called with a loader.NatlinkMain instance, not {natlinkmain}')
+        # print(f'==== __init__ of NatlinkStatus, with argument natlinkmain: {natlinkmain}')
         self.natlinkmain = natlinkmain
         self.DNSVersion = None
         self.DNSIniDir = None
@@ -239,30 +230,23 @@ class NatlinkStatus:
     def language(self) -> str:
         return  self.natlinkmain.language
 
-    def get_load_on_begin_utterance(self) -> Any:
-        """inspect current value of loader setting
+    @property
+    def load_on_begin_utterance(self) -> Any:
+        """inspect current value of this loader setting
         """
-        return  self.natlinkmain.get_load_on_begin_utterance()
+        return  self.natlinkmain.load_on_begin_utterance
     
-    def set_load_on_begin_utterance(self, value: Any):
-        """can be called with value positive int to load grammars (1 or more times) at begin utterance
-        
-        Used now by Vocola when a vocola command file changes by the user.
-        """
-        print(f'natlinkstatus, set_load_on_begin_utterance to {value}')
-        self.natlinkmain.set_load_on_begin_utterance(value)
- 
-    load_on_begin_utterance = property(get_load_on_begin_utterance, set_load_on_begin_utterance)
-
     def get_user(self):
-        return  self.natlinkmain.user
+        return  self.user
 
     def get_profile(self):
-        return  self.natlinkmain.profile
+        return  self.profile
 
     def get_language(self):
-        return  self.natlinkmain.language
+        return  self.language
     
+    def get_load_on_begin_utterance(self):
+        return self.load_on_begin_utterance
     
     def getDNSIniDir(self):
         """get the path (one above the users profile paths) where the INI files
@@ -815,12 +799,7 @@ def main():
     Lang = status.get_language()
     print(f'language: "{Lang}"')
     print(status.getNatlinkStatusString())
-    status.set_load_on_begin_utterance(True)
-    print(f'result of setting load_on_begin_utterance: {status.get_load_on_begin_utterance()}')
-    print(status.getNatlinkStatusString())
-    status.set_load_on_begin_utterance(False)
-    print(f'result of setting load_on_begin_utterance: {status.get_load_on_begin_utterance()}')
-    print(status.getNatlinkStatusString())
+    print(f'load_on_begin_utterance: {status.get_load_on_begin_utterance()}')
  
 if __name__ == "__main__":
     natlink.natConnect()

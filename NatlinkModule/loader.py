@@ -12,11 +12,12 @@ import winreg
 import configparser
 from pathlib import Path
 from types import ModuleType
-from typing import List, Dict, Set, Iterable, Any, Tuple, Callable, Optional
+from typing import List, Dict, Set, Iterable, Any, Tuple, Callable
 
 import natlink
 from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path
 from natlink.readwritefile import ReadWriteFile
+from natlink.callbackhandler import CallbackHandler
 
 # the possible languages (for get_user_language) (runs at start and on_change_callback, user)
 # default is "enx", being one of the English dialects...
@@ -45,11 +46,15 @@ class NatlinkMain:
             cls.had_init = True
         return cls.__instance    
     
-    def __init__(self, logger: logging.Logger, config: NatlinkConfig):
+    def __init__(self, logger: Any=None, config: Any = None):
         if self.__class__.had_init:
-            print('==== NatlinkMain is already intialised, return from __init__')
+            # print('==== NatlinkMain is already intialised, return from __init__')
             return
-        print('==== __init__ of loader class')
+        # print('==== __init__ of loader class')
+        if logger is None:
+            raise ValueError(f'loader.NatlinkMain, first instance should be called with a logging.Logger instance, not {logger}')
+        if config is None:
+            raise ValueError(f'loader.NatlinkMain, first instance should be called with a NatlinkConfig instance, not {config}')
         self.logger = logger
         self.config = config
         self.loaded_modules: Dict[Path, ModuleType] = {}
@@ -61,24 +66,21 @@ class NatlinkMain:
         self.__language: str = ''   #
         self.__load_on_begin_utterance = None
         self.load_on_begin_utterance = self.config.load_on_begin_utterance # set the property load_on_begin_utterance
-        self._pre_load_callback: Optional[Callable[[], None]] = None
-        self._post_load_callback: Optional[Callable[[], None]] = None
+        self._pre_load_callback =  CallbackHandler('pre_load_callback')
+        self._post_load_callback =  CallbackHandler('post_load_callback')
+        self._on_mic_on_callback = CallbackHandler('on_mic_on_callback')
+
         self.seen: Set[Path] = set()     # start empty in trigger_load
         self.bom = self.encoding = self.config_text = ''   # getconfigsetting and writeconfigsetting
 
-    def set_pre_load_callback(self, pre_load: Optional[Callable[[], None]]) -> None:
-        if pre_load is None:
-            self._pre_load_callback = None
-        elif not callable(pre_load):
-            raise TypeError(f'pre-load callback must be callable, got type: {type(pre_load)}')
-        self._pre_load_callback = pre_load
+    def set_on_mic_on_callback(self, func: Callable[[], None]) -> None:
+        self._on_mic_on_callback.set(func)
+    
+    def set_pre_load_callback(self, func: Callable[[], None]) -> None:
+        self._pre_load_callback.set(func)
 
-    def set_post_load_callback(self, post_load: Optional[Callable[[], None]]) -> None:
-        if post_load is None:
-            self._post_load_callback = None
-        elif not callable(post_load):
-            raise TypeError(f'post-load callback must be callable, got type: {type(post_load)}')
-        self._post_load_callback = post_load
+    def set_post_load_callback(self, func: Callable[[], None]) -> None:
+        self._post_load_callback.set(func)
 
     @property
     def module_paths_for_user(self) -> List[Path]:
@@ -136,13 +138,6 @@ class NatlinkMain:
         
         With Vocola, there is one utterance delay in the updating of the changed vocola command files.
         """
-        value = self.__load_on_begin_utterance
-        if isinstance(value, int):
-            value -= 1
-            if value > 0:
-                self.set_load_on_begin_utterance(value)
-            else:
-                self.set_load_on_begin_utterance(False)
         return self.__load_on_begin_utterance
 
     def set_load_on_begin_utterance(self, value: Any):
@@ -153,11 +148,13 @@ class NatlinkMain:
         """
         if isinstance(value, int):
             if value > 0:
+                self.logger.info(f'set_load_on_begin_utterance to {value}')
                 self.__load_on_begin_utterance = value
             else:
-                self.__load_on_begin_utterance = value or False
+                self.logger.info('set_load_on_begin_utterance to False')
+                self.__load_on_begin_utterance = False
         elif value in [True, False]:
-            self.__load_on_begin_utterance = value or False
+            self.__load_on_begin_utterance = value
         else:
             raise TypeError(f'set_load_on_begin_utterance, invalid type for value: {value} (type: {type(value)})')
         
@@ -296,8 +293,9 @@ class NatlinkMain:
                 else:
                     module = maybe_module
                     last_modified_time = mod_path.stat().st_mtime
-                    diff = last_modified_time - last_attempt_time  # check for -1 instead of 0
-                    if force_load or diff > -1:
+                    diff = last_modified_time - last_attempt_time  # check for -0.1 instead of 0, a
+                                                                   # _pre_load_callback may need this..
+                    if force_load or diff > -0.1:
                         if force_load:
                             self.logger.info(f'reloading module: {mod_name}, force_load: {force_load}')
                         else:
@@ -354,25 +352,18 @@ class NatlinkMain:
 
         # mod_paths = self.module_paths_for_user
         if self._pre_load_callback is not None:
-            self.logger.debug('calling pre-load callback')
-            self._call_and_catch_all_exceptions(self._pre_load_callback)
+            self.logger.debug(f'calling pre-load callback: {self._pre_load_callback}')
+            for func in self._pre_load_callback:
+                self._call_and_catch_all_exceptions(func)
         for directory in self.config.directories:
-            self.logger.info(f'--- load/reload: {directory}')
+            self.logger.debug(f'--- load/reload: {directory}')
             mod_paths_directory = self._module_paths_in_dir(directory)
             self.load_or_reload_modules(mod_paths_directory, force_load=force_load)
             self.logger.debug(f'--- end of loading directory: {directory}')
         if self._post_load_callback is not None:
-            self.logger.debug('calling post-load callback')
-            self._call_and_catch_all_exceptions(self._post_load_callback)
-
-        # this one is not sufficient for Vocola and Unimacro.
-        # loaded_diff = set(self.module_paths_for_user).difference(self.loaded_modules.keys())
-        # if loaded_diff:
-        #     self.logger.debug(f'second round, load new grammar files: {loaded_diff}')
-        # 
-        # for mod_path in loaded_diff:
-        #     self.logger.debug(f'new module in second round: {mod_path}')
-        #     self.load_or_reload_module(mod_path)
+            self.logger.debug('calling post-load callback {self._post_load_callback}')
+            for func in self._post_load_callback:
+                self._call_and_catch_all_exceptions(func)
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
         """on_change_callback, when another user profile is chosen, or when the mic state changes
@@ -384,6 +375,12 @@ class NatlinkMain:
                 self.trigger_load(force_load=True)
         elif change_type == 'mic' and args == 'on':
             self.logger.debug('on_change_callback called with: "mic", "on"')
+            if self._on_mic_on_callback is not None:
+                self.logger.debug(f'calling on_change_callback: {self._on_mic_on_callback}')
+                for func in self._on_mic_on_callback:
+                    self.logger.debug(f'call _on_mic_on_callback: {func}')
+                    self._call_and_catch_all_exceptions(func)
+                    
             if self.config.load_on_mic_on:
                 self.trigger_load()
         else:
@@ -397,12 +394,13 @@ class NatlinkMain:
             self.prog_names_visited.add(prog_name)
             self.trigger_load()
         elif self.load_on_begin_utterance:
-            self.trigger_load()
+            # manipulate this setting:
             value = self.load_on_begin_utterance
             if isinstance(value, int):
                 value -= 1
                 value = value or False
                 self.load_on_begin_utterance = value
+            self.trigger_load()
                 
     def get_user_language(self, DNSuserDirectory):
         """return the user language (default "enx") from Dragon inifiles
