@@ -351,19 +351,13 @@ class NatlinkMain:
         self.remove_modules_that_no_longer_exist()
 
         # mod_paths = self.module_paths_for_user
-        if self._pre_load_callback is not None:
-            self.logger.debug(f'calling pre-load callback: {self._pre_load_callback}')
-            for func in self._pre_load_callback:
-                self._call_and_catch_all_exceptions(func)
+        self._pre_load_callback.run()
         for directory in self.config.directories:
             self.logger.debug(f'--- load/reload: {directory}')
             mod_paths_directory = self._module_paths_in_dir(directory)
             self.load_or_reload_modules(mod_paths_directory, force_load=force_load)
             self.logger.debug(f'--- end of loading directory: {directory}')
-        if self._post_load_callback is not None:
-            self.logger.debug('calling post-load callback {self._post_load_callback}')
-            for func in self._post_load_callback:
-                self._call_and_catch_all_exceptions(func)
+        self._post_load_callback.run()
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
         """on_change_callback, when another user profile is chosen, or when the mic state changes
@@ -375,11 +369,7 @@ class NatlinkMain:
                 self.trigger_load(force_load=True)
         elif change_type == 'mic' and args == 'on':
             self.logger.debug('on_change_callback called with: "mic", "on"')
-            if self._on_mic_on_callback is not None:
-                self.logger.debug(f'calling on_change_callback: {self._on_mic_on_callback}')
-                for func in self._on_mic_on_callback:
-                    self.logger.debug(f'call _on_mic_on_callback: {func}')
-                    self._call_and_catch_all_exceptions(func)
+            self._on_mic_on_callback.run()
                     
             if self.config.load_on_mic_on:
                 self.trigger_load()
