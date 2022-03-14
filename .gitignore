@@ -86,6 +86,5 @@ MacroSystem/*_vcl.py
 
 # Visual Studio
 .vs
-/SampleMacros/
 /PyTest/readwritefiletest/*.txt
 /PyTest/readwritefiletest/*out.ini
