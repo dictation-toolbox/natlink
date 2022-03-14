@@ -66,12 +66,16 @@ class NatlinkMain:
         self.__language: str = ''   #
         self.__load_on_begin_utterance = None
         self.load_on_begin_utterance = self.config.load_on_begin_utterance # set the property load_on_begin_utterance
-        self._pre_load_callback =  CallbackHandler('pre_load_callback')
-        self._post_load_callback =  CallbackHandler('post_load_callback')
-        self._on_mic_on_callback = CallbackHandler('on_mic_on_callback')
-
+        # callback instances:
+        self._pre_load_callback =  CallbackHandler('pre_load')
+        self._post_load_callback =  CallbackHandler('post_load')
+        self._on_mic_on_callback = CallbackHandler('on_mic_on')
+        self._on_begin_utterance_callback = CallbackHandler('on_begin_utterance')
         self.seen: Set[Path] = set()     # start empty in trigger_load
         self.bom = self.encoding = self.config_text = ''   # getconfigsetting and writeconfigsetting
+
+    def set_on_begin_utterance_callback(self, func: Callable[[], None]) -> None:
+        self._on_begin_utterance_callback.set(func)
 
     def set_on_mic_on_callback(self, func: Callable[[], None]) -> None:
         self._on_mic_on_callback.set(func)
@@ -81,6 +85,18 @@ class NatlinkMain:
 
     def set_post_load_callback(self, func: Callable[[], None]) -> None:
         self._post_load_callback.set(func)
+
+    def delete_on_begin_utterance_callback(self, func: Callable[[], None]) -> None:
+        self._on_begin_utterance_callback.delete(func)
+
+    def delete_on_mic_on_callback(self, func: Callable[[], None]) -> None:
+        self._on_mic_on_callback.delete(func)
+    
+    def delete_pre_load_callback(self, func: Callable[[], None]) -> None:
+        self._pre_load_callback.delete(func)
+
+    def delete_post_load_callback(self, func: Callable[[], None]) -> None:
+        self._post_load_callback.delete(func)
 
     @property
     def module_paths_for_user(self) -> List[Path]:
@@ -260,8 +276,8 @@ class NatlinkMain:
             self.logger.warning(f'Attempting to load duplicate module: {mod_path})')
             return
         
-        if not self.load_attempt_times:
-            self.logger.warning(f'======== load_attempt_times is empty: {self.load_attempt_times}')
+        # if not self.load_attempt_times:
+        #     self.logger.warning(f'======== load_attempt_times is empty: {self.load_attempt_times}')
         
         last_attempt_time = self.load_attempt_times.get(mod_path, 0.0)
         self.load_attempt_times[mod_path] = time.time()
@@ -293,9 +309,9 @@ class NatlinkMain:
                 else:
                     module = maybe_module
                     last_modified_time = mod_path.stat().st_mtime
-                    diff = last_modified_time - last_attempt_time  # check for -0.1 instead of 0, a
+                    diff = last_modified_time - last_attempt_time  # check for -0.1 instead of 0, a ???
                                                                    # _pre_load_callback may need this..
-                    if force_load or diff > -0.1:
+                    if force_load or diff > 0:
                         if force_load:
                             self.logger.info(f'reloading module: {mod_name}, force_load: {force_load}')
                         else:
@@ -379,6 +395,8 @@ class NatlinkMain:
 
     def on_begin_callback(self, module_info: Tuple[str, str, int]) -> None:
         self.logger.debug(f'on_begin_callback called with: moduleInfo: {module_info}')
+        self._on_begin_utterance_callback.run()
+       
         prog_name = Path(module_info[0]).stem
         if prog_name not in self.prog_names_visited:
             self.prog_names_visited.add(prog_name)
