@@ -14,6 +14,11 @@ class MakeFunctions:
         print(f'a3: {b}')
     
 def test_callbacks():
+    """try to make an invalid function,
+    by removing an instance that hold these functions.
+    the function in question still remains valid as it seems.
+    
+    """
     functions1 = MakeFunctions()
     functions2 = MakeFunctions()
     cbh = CallbackHandler('test handler')
@@ -28,7 +33,10 @@ def test_callbacks():
     cbh.run()
     print(cbh.info())
     assert len(cbh.callbacks) == 2
-    del functions1
+    
+    # remove from functions1
+    # only removint functions1 does not seem to have effect.
+    cbh.delete(functions1.a1)
     cbh.run()
     assert len(cbh.callbacks) == 1
     print(cbh.info())
