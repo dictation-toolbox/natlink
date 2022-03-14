@@ -315,7 +315,7 @@ class NatlinkMain:
                         if force_load:
                             self.logger.info(f'reloading module: {mod_name}, force_load: {force_load}')
                         else:
-                            self.logger.info(f'reloading module: {mod_name}, modified, diff: {diff}')
+                            self.logger.info(f'reloading module: {mod_name}')
                             
                         self.unload_module(module)
                         del module
