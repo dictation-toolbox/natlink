@@ -25,9 +25,9 @@ class ReadWriteFile:
     
     a file can read via this class, and write back another string, using the same encoding and bom mark
     """
-    def __init__(self, codingschemes=None):
+    def __init__(self, codingschemes=None, encoding=None):
         self.input_path = ''
-        self.encoding = ''
+        self.encoding = encoding or 'ascii'
         self.bom = ''
         self.text = ''
         self.rawText = b''
@@ -100,9 +100,15 @@ class ReadWriteFile:
         if not isinstance(content, str):
             raise TypeError("writeAnything, content should be str, not %s (%s)"% (type(content), filepath))
 
-        i = self.codingschemes.index(self.encoding)
+        if self.encoding == 'ascii':
+            i = self.codingschemes.index(self.encoding)
+            # take 'ascii' and next encoding (will be 'utf-8')
+            tryEncodings = self.codingschemes[i:i+2]
+        else:
+            tryEncodings = [self.encoding]
+            
     
-        for enc in self.codingschemes[i:]:
+        for enc in tryEncodings:
             try:
                 tRaw = content.encode(encoding=enc)
             except UnicodeEncodeError:

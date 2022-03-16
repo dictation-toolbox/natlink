@@ -23,6 +23,27 @@ def test_read_file():
                 print(f'{rwfile.bom}')
                 print(f'{rwfile.rawText}')
 
+def test_only_write_file():
+    join, isfile = os.path.join, os.path.isfile
+    newFile = join(testDir, 'newfile.txt')
+    if isfile(newFile):
+        os.unlink(newFile)
+    rwfile = ReadWriteFile()
+    text = ''
+    rwfile.writeAnything(newFile, text)
+    assert open(newFile, 'rb').read() == b''
+    
+def test_accented_characters_write_file():
+    join, isfile = os.path.join, os.path.isfile
+    newFile = join(testDir, 'accented.txt')
+    if isfile(newFile):
+        os.unlink(newFile)
+    text = 'caf\xe9'
+    rwfile = ReadWriteFile(encoding='ascii')  # optional encoding
+    rwfile.writeAnything(newFile, text)
+    testText = open(newFile, 'rb').read()
+    assert testText == b'caf\xc3\xa9'
+
 def test_read_write_file():
     listdir, join, splitext = os.listdir, os.path.join, os.path.splitext
     for F in listdir(testDir):
@@ -72,7 +93,8 @@ def test_read_config_file():
     
             
 if __name__ == "__main__":
-    test_read_file()
-    test_read_write_file()
-    test_read_config_file()
+    test_accented_characters_write_file()
+    # test_only_write_file()
+    # test_read_write_file()
+    # test_read_config_file()
     
