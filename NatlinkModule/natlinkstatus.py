@@ -115,20 +115,7 @@ import natlink
 # natlinkmain = loader.NatlinkMain(Logger, Config)
 #  self.natlinkmain.setup_logger()
 
-# adapt here
-VocIniFile  = r"Vocola\Exec\vocola.ini"
-
-# Nearly obsolete table, for extracting older windows versions:
-# newer versions go via platform.platform()
-Wversions = {'1/4/10': '98',
-             '2/3/51': 'NT351',
-             '2/4/0':  'NT4',
-             '2/5/0':  '2000',
-             '2/5/1':  'XP',
-             '2/6/0':  'Vista'
-             }
-
-# the possible languages (for getLanguage, now in loader:
+# the possible languages (for getLanguage), now in loader
 
 shiftKeyDict = {"nld": "Shift",
                 "enx": 'shift',
@@ -138,7 +125,6 @@ shiftKeyDict = {"nld": "Shift",
                 "esp": "may\xfas"}
 
 thisDir, thisFile = os.path.split(__file__)
-
 
 class NatlinkStatus:
     """this class holds the Natlink status functions.
@@ -302,26 +288,29 @@ class NatlinkStatus:
 
     
     def UnimacroIsEnabled(self):
-        """UnimacroIsEnabled: see if UserDirectory is there and
+        """UnimacroIsEnabled: see if UnimacroDirectory and UnimacroUserDirectory are there
 
-        _control.py is in this directory
+        _control.py should be in the UnimacroDirectory. 
         """
         isdir = os.path.isdir
-        uuDir = self.getUnimacroUserDirectory()
-        if not uuDir:
-            return False
         uDir = self.getUnimacroDirectory()
         if not uDir:
             # print('no valid UnimacroDirectory, Unimacro is disabled')
             return False
-        if uDir and isdir(uDir):
+        if isdir(uDir):
             files = os.listdir(uDir)
             if not '_control.py' in files:
+                print(f'UnimacroDirectory is present ({uDir}), but not "_control.py" grammar file')
                 return  False # _control.py should be in Unimacro directory
+
+        uuDir = self.getUnimacroUserDirectory()
+        if not uuDir:
+            return False
         ugDir = self.getUnimacroGrammarsDirectory()
-        if ugDir and isdir(ugDir):
-            return True  # Unimacro is enabled...            
-        return False                
+        if not (ugDir and isdir(ugDir)):
+            print(f'UnimacroGrammarsDirectory ({ugDir}) not present, please create')
+            return False
+        return True            
 
     
     def UserIsEnabled(self):
@@ -350,19 +339,13 @@ class NatlinkStatus:
     
     
     def getUnimacroDirectory(self):
-        """return the path to the Unimacro Directory
+        """return the path to the UnimacroDirectory
         
-        This is the directory where the _control.py grammar is.
-
-        When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped).
-        
-        This directory needs to be included in the load directories list of James' natlinkmain
-        (August 2020)
-
-        note that if using unimacro from a git clone area Unimacro will be in a /src subdirectory.
-        when installed as  a package, that will not be the case.
+        This is the directory where the _control.py grammar is, and
+        is normally got via `pip install unimacro`
 
         """
+        # When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped).
         join, isdir, isfile, normpath = os.path.join, os.path.isdir, os.path.isfile, os.path.normpath
         if self.UnimacroDirectory is not None:
             return self.UnimacroDirectory
@@ -373,9 +356,9 @@ class NatlinkStatus:
             if isfile(controlGrammar):
                 self.UnimacroDirectory = normpath(uDir)
                 return self.UnimacroDirectory
-            print(f'UnimacroDirectory found: "{uDir}", but no valid file: "{uFile}", return ""')
+            # print(f'UnimacroDirectory found: "{uDir}", but no valid file: "{uFile}", return ""')
             return ""
-        print('UnimacroDirectory not found in "lib/site-packages/unimacro", return ""')
+        # print('UnimacroDirectory not found in "lib/site-packages/unimacro", return ""')
         self.UnimacroDirectory = ""
         return ""
         
@@ -391,6 +374,11 @@ class NatlinkStatus:
         if self.UnimacroGrammarsDirectory is not None:
             return self.UnimacroGrammarsDirectory
         
+        uDir = self.getUnimacroDirectory()
+        if not uDir:
+            self.UnimacroGrammarsDirectory = ''
+            return ''
+        
         uuDir = self.getUnimacroUserDirectory()
         if uuDir and isdir(uuDir):
             ugDir = join(uuDir, "ActiveGrammars")
@@ -399,7 +387,7 @@ class NatlinkStatus:
             if isdir(ugDir):
                 ugFiles = [f for f in listdir(ugDir) if f.endswith(".py")]
                 if not ugFiles:
-                    print(f"UnimacroGrammarsDirectory: {ugDir} has no python grammar files (yet), please populate this directory with the Unimacro grammars you wish to use, and then toggle your microphone")
+                    print(f"UnimacroGrammarsDirectory: {ugDir} has no pythonthon grammar files (yet), please populate this directory with the Unimacro grammars you wish to use, and then toggle your microphone")
                 
                 try:
                     del self.UnimacroGrammarsDirectory
@@ -481,7 +469,7 @@ class NatlinkStatus:
         ## try in site-packages:
         vocDir = join(sys.prefix, "lib", "site-packages", "vocola2")
         if not isdir(vocDir):
-            print('VocolaDirectory not found in "lib/site-packages/vocola2", return ""')
+            # print('VocolaDirectory not found in "lib/site-packages/vocola2", return ""')
             self.VocolaDirectory = ''
             return ''
         vocFile = "_vocola_main.py"
