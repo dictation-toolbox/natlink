@@ -2,7 +2,7 @@
 
 project (Natlink)
 set(NATLINK_VERSION 6.0)
-set(PYTHON_VERSION 3.8 CACHE STRING "3.X for X >= 8")
+set(PYTHON_VERSION 3.10 CACHE STRING "3.X for X >= 8")
 set(MYAPP_NAME "Natlink")
 
 # Other supported version; use CMake cache editor

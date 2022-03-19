@@ -1,12 +1,12 @@
 ﻿{
   "configurations": [
     {
-      "name": "3.8-32",
+      "name": "3.10-32",
       "generator": "Visual Studio 16 2019",
       "configurationType": "Debug",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "cmakeCommandArgs": "-DPYTHON_VERSION:STRING=3.8",
+      "cmakeCommandArgs": "-DPYTHON_VERSION:STRING=3.10",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "msvc_x86" ]
