@@ -189,8 +189,8 @@ begin
   DragonVersion := 'XXX'; 
   if IsDragonRunning() then
   begin
-    MsgBox('Dragon is running, aborting. '
-    + 'Please close dragonbar.exe and/or natspeak.exe then try again.', mbError, MB_OK );
+    MsgBox('Dragon is running, this installer is aborting. '
+    + 'Please Exit Dragon (the DragonBar) and then try this installer again.', mbError, MB_OK );
     Result := False;
     exit;
   end;

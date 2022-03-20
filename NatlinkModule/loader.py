@@ -1,10 +1,9 @@
-#pylint:disable=C0114, C0115, C0116, R1705, R0902, W0703
+#pylint:disable=C0114, C0115, C0116, R1705, R0902, W0703, E1101
 import importlib
 import importlib.machinery
 import importlib.util
 import logging
 import os
-import subprocess
 import sys
 import sysconfig
 import time
@@ -23,11 +22,14 @@ class NatlinkMain:
         self.logger = logger
         self.config = config
         self.loaded_modules: Dict[Path, ModuleType] = {}
+        self.prog_names_visited: Set[str] = set()    # to enable loading program specific grammars
         self.bad_modules: Set[Path] = set()
         self.load_attempt_times: Dict[Path, float] = {}
         self._user: str = ''
         self._pre_load_callback: Optional[Callable[[], None]] = None
         self._post_load_callback: Optional[Callable[[], None]] = None
+        self.seen: Set[Path] = set()     # start empty in trigger_load
+
 
     def set_pre_load_callback(self, pre_load: Optional[Callable[[], None]]) -> None:
         if pre_load is None:
@@ -47,11 +49,20 @@ class NatlinkMain:
     def module_paths_for_user(self) -> List[Path]:
         return self._module_paths_in_dirs(self.config.directories_for_user(self._user))
 
-    @staticmethod
-    def _module_paths_in_dirs(directories: Iterable[str]) -> List[Path]:
+    def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
         def is_script(f: Path) -> bool:
-            return f.is_file() and f.name.startswith('_') and f.name.endswith('.py')
+            if not f.is_file():
+                return False
+            if not f.suffix == '.py':
+                return False
+            
+            if f.stem.startswith('_'):
+                return True
+            for prog_name in self.prog_names_visited:
+                if f.stem == prog_name or f.stem.startswith( prog_name + '_'):
+                    return True
+            return False
 
         init = '__init__.py'
 
@@ -82,7 +93,7 @@ class NatlinkMain:
     def unload_module(self, module: ModuleType) -> None:
         unload = getattr(module, 'unload', None)
         if unload is not None:
-            self.logger.info(f'unloading module: {module.__name__}')
+            self.logger.debug(f'unloading module: {module.__name__}')
             self._call_and_catch_all_exceptions(unload)
 
     @staticmethod
@@ -102,6 +113,10 @@ class NatlinkMain:
 
     def load_or_reload_module(self, mod_path: Path, force_load: bool = False) -> None:
         mod_name = mod_path.stem
+        if mod_path in self.seen:
+            self.logger.warning(f'Attempting to load duplicate module: {mod_path})')
+            return
+        
         last_attempt_time = self.load_attempt_times.get(mod_path, 0.0)
         self.load_attempt_times[mod_path] = time.time()
         try:
@@ -146,15 +161,13 @@ class NatlinkMain:
                 importlib.invalidate_caches()
 
     def load_or_reload_modules(self, mod_paths: Iterable[Path]) -> None:
-        seen: Set[Path] = set()
         for mod_path in mod_paths:
-            if mod_path in seen:
-                self.logger.warning(f'Attempting to load duplicate module: {mod_path})')
             self.load_or_reload_module(mod_path)
-            seen.add(mod_path)
+            self.seen.add(mod_path)
 
     def remove_modules_that_no_longer_exist(self) -> None:
         mod_paths = self.module_paths_for_user
+       
         for mod_path in set(self.loaded_modules).difference(mod_paths):
             self.logger.info(f'unloading removed or not-for-this-user module {mod_path.stem}')
             old_module = self.loaded_modules.pop(mod_path)
@@ -169,15 +182,25 @@ class NatlinkMain:
         importlib.invalidate_caches()
 
     def trigger_load(self) -> None:
+        self.seen.clear()
         self.logger.debug('triggering load/reload process')
         self.remove_modules_that_no_longer_exist()
+
+        mod_paths = self.module_paths_for_user
         if self._pre_load_callback is not None:
             self.logger.debug('calling pre-load callback')
             self._call_and_catch_all_exceptions(self._pre_load_callback)
-        self.load_or_reload_modules(self.module_paths_for_user)
+        self.load_or_reload_modules(mod_paths)
         if self._post_load_callback is not None:
             self.logger.debug('calling post-load callback')
             self._call_and_catch_all_exceptions(self._post_load_callback)
+        loaded_diff = set(self.module_paths_for_user).difference(self.loaded_modules.keys())
+        if loaded_diff:
+            self.logger.debug(f'second round, load new grammar files: {loaded_diff}')
+        
+        for mod_path in loaded_diff:
+            self.logger.debug(f'new module in second round: {mod_path}')
+            self.load_or_reload_module(mod_path)
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
         self.logger.debug(f'on_change_callback called with: change: {change_type}, args: {args}')
@@ -194,13 +217,17 @@ class NatlinkMain:
 
     def on_begin_callback(self, module_info: Tuple[str, str, int]) -> None:
         self.logger.debug(f'on_begin_callback called with: moduleInfo: {module_info}')
-        if self.config.load_on_begin_utterance:
+        prog_name = Path(module_info[0]).stem
+        if prog_name not in self.prog_names_visited:
+            self.prog_names_visited.add(prog_name)
+            self.trigger_load()
+        elif self.config.load_on_begin_utterance:
             self.trigger_load()
 
     def start(self) -> None:
-        self.logger.info('starting natlink loader')
+        self.logger.info(f'starting natlink loader from config file:\n\t"{self.config.config_path}"')
         natlink.active_loader = self
-        self._add_dirs_to_path(self.config.directories)
+        self._add_dirs_to_path(self.config.directories)  
         if self.config.load_on_startup:
             self.trigger_load()
         natlink.setBeginCallback(self.on_begin_callback)
@@ -224,21 +251,28 @@ def get_natlink_system_config_filename() -> str:
 
 def config_locations() -> Iterable[str]:
     join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv
-    possible_dirs = ['~/', '~/Documents', '~/.natlink',
+    home = expanduser('~')
+    possible_dirs = [join(home, '.natlink'), join(home, 'Documents', '.natlink'),
+                     join(home, 'Documents'), home,
                      join(get_natlink_system_config_filename(), "InstallTest")]
-    return ((getenv("NATLINK_INI") and [getenv("NATLINK_INI")]) or
-            [expanduser(join(loc, NATLINK_INI)) for loc in possible_dirs])
-  
+    return ([getenv("NATLINK_INI")] if getenv('NATLINK_INI') else
+                [join(loc, NATLINK_INI) for loc in possible_dirs])
+
 def run() -> None:
     logger = logging.getLogger('natlink')
-
-    # TODO: remove this hack. As of October 2021, win32api does not load properly, except if
-    # the package pywin32_system32 is explictly put on new dll_directory white-list
-    pywin32_dir = os.path.join(sysconfig.get_path('platlib'), "pywin32_system32")
-    if os.path.isdir(pywin32_dir):
-        os.add_dll_directory(pywin32_dir)
+    try:
+        # TODO: remove this hack. As of October 2021, win32api does not load properly, except if
+        # the package pywin32_system32 is explictly put on new dll_directory white-list
+        pywin32_dir = os.path.join(sysconfig.get_path('platlib'), "pywin32_system32")
+        if os.path.isdir(pywin32_dir):
+            os.add_dll_directory(pywin32_dir)
+        
+        config = NatlinkConfig.from_first_found_file(config_locations())
+        main = NatlinkMain(logger, config)
+        main.setup_logger()
+        main.start()
+    except Exception as exc:
+        print(f'Exception: "{exc}" in loader.run', file=sys.stderr)
+        print(traceback.format_exc())
+        raise Exception from exc
     
-    config = NatlinkConfig.from_first_found_file(config_locations())
-    main = NatlinkMain(logger, config)
-    main.setup_logger()
-    main.start()

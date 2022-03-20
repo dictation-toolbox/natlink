@@ -1,10 +1,10 @@
 #pylint:disable=C0114, C0115, C0116, R0913
 import configparser
 import logging
+import os
 from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
-
 import natlink
 
 NATLINK_INI = "natlink.ini"
@@ -31,6 +31,7 @@ class NatlinkConfig:
         self.load_on_begin_utterance = load_on_begin_utterance
         self.load_on_startup = load_on_startup
         self.load_on_user_changed = load_on_user_changed
+        self.config_path = ''  # to be defined in from_config_parser
 
     def __repr__(self) -> str:
         return f'NatlinkConfig(directories_by_user={self.directories_by_user}, log_level={self.log_level}, ' \
@@ -61,16 +62,23 @@ class NatlinkConfig:
         return dirs
 
     @staticmethod
-    def from_config_parser(config: configparser.ConfigParser) -> 'NatlinkConfig':
+    def from_config_parser(config: configparser.ConfigParser, config_path: str) -> 'NatlinkConfig':
         ret = NatlinkConfig.get_default_config()
-
+        ret.config_path = config_path
         sections = config.sections()
         for section in sections:
             if section.endswith('-directories'):
                 user = section[:-len('-directories')]
                 ret.directories_by_user[user] = list(config[section].values())
             elif section == 'directories':
-                ret.directories_by_user[''] = list(config[section].values())
+                directories = []
+                for name, directory in config[section].items():
+                    if not os.path.isdir(directory):
+                        print(f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory')
+                        continue
+                    directories.append(directory)
+
+                ret.directories_by_user[''] = directories
         if config.has_section('settings'):
             settings = config['settings']
             level = settings.get('log_level')
@@ -93,6 +101,7 @@ class NatlinkConfig:
         config = configparser.ConfigParser()
         for fn in files:
             if config.read(fn):
-                return cls.from_config_parser(config)
+                return cls.from_config_parser(config, config_path=fn)
         # should not happen, because of InstallTest
         raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
+    
