@@ -12,13 +12,15 @@ class CallbackHandler:
     def __init__(self, name):
         self.callbacks = []
         self.name = name
-       
+        
     def info(self):
         if self.callbacks:
             return f'{self.name}: {self.callbacks}'
         return f'{self.name}: empty'
         
     def set(self, func):
+        if not callable(func):
+            raise TypeError(f'callbackhandler "{self.name}", set: not a callable: {func}, (type: {type(func)})')
         if func not in self.callbacks:
             self.callbacks.insert(0, func)
 
