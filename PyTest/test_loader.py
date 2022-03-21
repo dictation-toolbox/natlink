@@ -61,8 +61,10 @@ def test_empty_config_loader(empty_config, logger):
 
 def test_pre_and_post_load_setter(empty_config, logger):
     main = NatlinkMain(logger, empty_config)
-    main.set_pre_load_callback(None)
-    main.set_post_load_callback(None)
+    with pytest.raises(TypeError):
+        main.set_pre_load_callback(None)
+    with pytest.raises(TypeError):
+        main.set_post_load_callback(None)
     with pytest.raises(TypeError):
         main.set_pre_load_callback("not callable")
     with pytest.raises(TypeError):

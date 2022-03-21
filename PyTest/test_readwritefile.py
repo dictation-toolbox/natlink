@@ -39,10 +39,44 @@ def test_accented_characters_write_file():
     if isfile(newFile):
         os.unlink(newFile)
     text = 'caf\xe9'
-    rwfile = ReadWriteFile(encoding='ascii')  # optional encoding
+    rwfile = ReadWriteFile(encodings=['ascii'])  # optional encoding
+    # this is with default errors='xmlcharrefreplace':
     rwfile.writeAnything(newFile, text)
-    testText = open(newFile, 'rb').read()
-    assert testText == b'caf\xc3\xa9'
+    testTextBinary = open(newFile, 'rb').read()
+    wanted = b'caf&#233;'
+    assert testTextBinary == wanted
+    # same, default is 'xmlcharrefreplace':
+    rwfile.writeAnything(newFile, text, errors='xmlcharrefreplace')
+    testTextBinary = open(newFile, 'rb').read()
+    assert testTextBinary == b'caf&#233;'
+    assert len(testTextBinary) == 9
+    rwfile.writeAnything(newFile, text, errors='replace')
+    testTextBinary = open(newFile, 'rb').read()
+    assert testTextBinary == b'caf?'
+    assert len(testTextBinary) == 4
+    rwfile.writeAnything(newFile, text, errors='ignore')
+    testTextBinary = open(newFile, 'rb').read()
+    assert testTextBinary == b'caf'
+    assert len(testTextBinary) == 3
+
+def test_other_encodings_write_file():
+    join = os.path.join
+    oldFile = join(testDir, 'latin1 accented.txt')
+    rwfile = ReadWriteFile(encodings=['latin1'])  # optional encoding
+    text = rwfile.readAnything(oldFile)
+    assert text == 'latin1 café'
+    
+    
+    
+
+
+def test_latin1_cp1252_write_file():
+    join = os.path.join
+    _newFile = join(testDir, 'latin1.txt')
+    _newFile = join(testDir, 'cp1252.txt')
+    # TODO (QH) to be done, these encodings do not take all characters,
+    # and need special attention.
+    # (as long as the "fallback" is utf-8, all write files should go well!)
 
 def test_read_write_file():
     listdir, join, splitext = os.listdir, os.path.join, os.path.splitext
@@ -93,7 +127,7 @@ def test_read_config_file():
     
             
 if __name__ == "__main__":
-    test_accented_characters_write_file()
+    test_other_encodings_write_file()
     # test_only_write_file()
     # test_read_write_file()
     # test_read_config_file()
