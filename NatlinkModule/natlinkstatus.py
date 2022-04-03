@@ -115,7 +115,7 @@ import natlink
 # natlinkmain = loader.NatlinkMain(Logger, Config)
 #  self.natlinkmain.setup_logger()
 
-# the possible languages (for getLanguage), now in loader
+# the possible languages (for get_language), now in loader
 
 shiftKeyDict = {"nld": "Shift",
                 "enx": 'shift',
@@ -788,6 +788,8 @@ def main():
     print(f'language: "{Lang}"')
     print(status.getNatlinkStatusString())
     print(f'load_on_begin_utterance: {status.get_load_on_begin_utterance()}')
+    dns_version = status.getDNSVersion()
+    print(f'DNSVersion: {dns_version} (type: {type(dns_version)})')
  
 if __name__ == "__main__":
     natlink.natConnect()

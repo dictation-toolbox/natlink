@@ -39,7 +39,7 @@ Python Macro Language for Dragon NaturallySpeaking
       use sendkeys from dragonfly via dtactions
 
 """
-#pylint:disable=C0116, C0302, R0902, W0702, E1101
+#pylint:disable=C0116, C0302, R0902, W0702, E1101, W0703
 
 import os
 import os.path
@@ -348,17 +348,16 @@ class GramClassBase:
             self.gramObj.setBeginCallback(self.beginCallback)
             self.gramObj.setResultsCallback(self.resultsCallback)
             self.gramObj.setHypothesisCallback(self.hypothesisCallback)
-        except:
-            print("GramClassBase.load(), Error at setting Callback functions ", sys.exc_info())
-            traceback.print_exc()
-            raise
+        except Exception as exc:
+            print("GramClassBase.load, Error at setting Callback functions")
+            raise Exception from exc
         try:
             self.gramObj.load(gramSpec, allResults, hypothesis)
-        except:
-            print("GramClassBase.load(), Error at loading the grammar ", sys.exc_info())
-            traceback.print_exc()
-            raise
-
+        except natlink.NatError as exc:
+            print(f'GramClassBase.load, Error at loading the grammar: {exc}')
+            raise natlink.BadGrammar from exc
+        
+        
     def unload(self):        
         self.gramObj.unload()
         self.gramObj.setBeginCallback(None)
@@ -678,6 +677,7 @@ to save space.)
 
     def __init__(self):
         GramClassBase.__init__(self)
+        self.is_loaded = False
         self.exclusiveState = 0
         self.activeRules = {}
         self.validRules = []
@@ -695,7 +695,7 @@ to save space.)
         try:
             # print 'loading grammar %s, gramspec type: %s'% (grammarName, type(gramSpec))
             # code upper ascii characters with latin1 if they were in the process entered as unicode
-            if not type(gramSpec) in (str, list):
+            if not isinstance(gramSpec, (str, list)):
                 raise TypeError( "grammar definition of %s must be a string or a list of strings, not %s"% (grammarName, type(gramSpec)))
 
             parser = gramparser.GramParser(gramSpec, grammarName=grammarName)
@@ -707,8 +707,8 @@ to save space.)
             try:
                 GramClassBase.load(self,gramBin,allResults,hypothesis)
             except natlink.BadGrammar:
-                print('GrammarBase, cannot load grammar, BadGrammar:\n%s\n'% gramSpec)
-                raise
+                self.is_loaded = False
+                return self.is_loaded
             # we want to keep a list of the rules which can be activated and the
             # known lists so we can catch errors earlier
             self.validRules = list(parser.exportRules.keys())
@@ -717,17 +717,21 @@ to save space.)
             # to rule names during recognition
             for ruleNum, knownRule in parser.knownRules.items():
                 self.ruleMap[ knownRule ] = ruleNum
-            return 1
+            self.is_loaded = True
 
         except:
-            print("Unexpected error load GramClassBase:", sys.exc_info())
+            print("Unexpected error loading grammar:", sys.exc_info())
             print(traceback.print_exc())
+            self.is_loaded = False
+        return self.is_loaded
 
     # these are wrappers for the GramObj base methods.  We also keep track of
     # legal rules, lists and active rules so we can do some first level error
     # checking
 
     def unload(self):
+        if not self.is_loaded:
+            return
         GramClassBase.unload(self)
         self.activeRules.clear()
         while self.validRules:
@@ -735,6 +739,7 @@ to save space.)
         while self.validLists:
             self.validLists.pop()
         self.exclusiveState = 0
+        self.is_loaded = False
 
     def activate(self, ruleName, window=0, exclusive=None, noError=0):
         #pylint:disable=W0221, W0613

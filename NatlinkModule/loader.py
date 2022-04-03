@@ -366,13 +366,9 @@ class NatlinkMain:
             
         self.remove_modules_that_no_longer_exist()
 
-        # mod_paths = self.module_paths_for_user
+        mod_paths = self.module_paths_for_user
         self._pre_load_callback.run()
-        for directory in self.config.directories:
-            self.logger.debug(f'--- load/reload: {directory}')
-            mod_paths_directory = self._module_paths_in_dir(directory)
-            self.load_or_reload_modules(mod_paths_directory, force_load=force_load)
-            self.logger.debug(f'--- end of loading directory: {directory}')
+        self.load_or_reload_modules(mod_paths, force_load=force_load)
         self._post_load_callback.run()
 
     def on_change_callback(self, change_type: str, args: Any) -> None:
