@@ -497,8 +497,6 @@ class NatlinkMain:
         
         func can be configparser.getint or configparser.getboolean if needed, otherwise configparser.get (str) is taken.
         pass: func='getboolean' or func='getint'.
-        
-        Tip: work with named variables, to prevent confusion.
         """
         isfile = os.path.isfile
         filepath = filepath or config_locations()[0]
