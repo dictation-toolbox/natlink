@@ -533,45 +533,44 @@ def get_config_info_from_registry(key_name: str) -> str:
         result, _ = winreg.QueryValueEx(natlink_key, key_name)
         return result
 
-
+def valid_config_locations() -> Iterable[str]:
+    """get list of valid config locations
+    """
+    isfile = os.path.isfile
+    return [f for f in config_locations if isfile(f)]
 
 def config_locations() -> Iterable[str]:
     join, expanduser, getenv = os.path.join, os.path.expanduser, os.getenv
     home = expanduser('~')
     config_sub_dir = '.natlink'
     # config_filename == NATLINK_INI (in config.py)
-
+    fallback_directory = join(get_natlink_system_config_filename(), "DefaultConfig")
     # try NATLINK_INI setting:
     natlink_ini_from_env = getenv("NATLINK_INI")
     if natlink_ini_from_env:
         natlink_ini_from_env_path = expand_path(natlink_ini_from_env)
-        if os.path.isfile(natlink_ini_from_env_path):
-            return [natlink_ini_from_env_path]
-        else:
-            if natlink_ini_from_env_path == natlink_ini_from_env:
-                raise OSError(f'You defined environment variable "NATLINK_INI" to "{natlink_ini_from_env}", but this is not a valid file.\n\tPlease remove or correct this environment variable')
-            raise OSError(f'You defined environment variable "NATLINK_INI" to "{natlink_ini_from_env}",\n\texpanded to "{natlink_ini_from_env_path}"\n\tBut this is not a valid file.\n\tPlease remove or correct this environment variable')
+        return [natlink_ini_from_env_path, fallback_directory]
+            # if natlink_ini_from_env_path == natlink_ini_from_env:
+            #     raise OSError(f'You defined environment variable "NATLINK_INI" to "{natlink_ini_from_env}", but this is not a valid file.\n\tPlease remove or correct this environment variable')
+            # raise OSError(f'You defined environment variable "NATLINK_INI" to "{natlink_ini_from_env}",\n\texpanded to "{natlink_ini_from_env_path}"\n\tBut this is not a valid file.\n\tPlease remove or correct this environment variable')
 
     # try DICTATIONTOOLBOXHOME    
     dictation_toolbox_home = getenv('DICTATIONTOOLBOXHOME')
     
     if dictation_toolbox_home:
-        dictation_toolbox_home_path = expand_path(dictation_toolbox_home)
-        subdir = join(dictation_toolbox_home_path, '.natlink')
-        config_file_path = join(dictation_toolbox_home_path, '.natlink', "natlink.ini")
-        if not os.path.isdir(dictation_toolbox_home_path):
-            raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut it does not point to a valid directory: "{dictation_toolbox_home_path}".\n\tPlease create this directory and subdirectory ".natlink"\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
-        if not os.path.isdir(subdir):
-            raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home_path}" should contain a subdirectory ".natlink".\n\tPlease create this directory\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
-        if not os.path.isfile(config_file_path):
-            raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home_path}" should contain a subdirectory ".natlink" containing config file "natlink.ini".\n\tPlease create this directory\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
-        return [join(dictation_toolbox_home, '.natlink', NATLINK_INI)]
-                         
-    # choose between home and FallbackConfigDir
-    possible_dirs = [join(home, config_sub_dir),    ### join(home, 'Documents', config_sub_dir),
-                     join(get_natlink_system_config_filename(), "DefaultConfig")]
-
-    return [join(loc, NATLINK_INI) for loc in possible_dirs]
+        # dictation_toolbox_home_path = expand_path(dictation_toolbox_home)
+        # subdir = join(dictation_toolbox_home_path, '.natlink')
+        # config_file_path = join(dictation_toolbox_home_path, '.natlink', "natlink.ini")
+        # if not os.path.isdir(dictation_toolbox_home_path):
+        #     raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut it does not point to a valid directory: "{dictation_toolbox_home_path}".\n\tPlease create this directory and subdirectory ".natlink"\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
+        # if not os.path.isdir(subdir):
+        #     raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home_path}" should contain a subdirectory ".natlink".\n\tPlease create this directory\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
+        # if not os.path.isfile(config_file_path):
+        #     raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home_path}" should contain a subdirectory ".natlink" containing config file "natlink.ini".\n\tPlease create this directory\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
+        return [join(dictation_toolbox_home, '.natlink', NATLINK_INI), fallback_directory]
+                
+    # choose between .natlink/natlink.ini in home or the fallback_directory:         
+    return [join(home, config_sub_dir), fallback_directory]
 
 def run() -> None:
     logger = logging.getLogger('natlink')
@@ -582,7 +581,7 @@ def run() -> None:
         if os.path.isdir(pywin32_dir):
             os.add_dll_directory(pywin32_dir)
         
-        config = NatlinkConfig.from_first_found_file(config_locations())
+        config = NatlinkConfig.from_first_found_file(valid_config_locations())
         main = NatlinkMain(logger, config)
         main.setup_logger()
         main.start()

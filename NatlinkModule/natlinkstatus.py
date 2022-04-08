@@ -111,7 +111,7 @@ import natlink
 
 ## setting up Logger and Config is needed, when running this for test:
 # Logger = logging.getLogger('natlink')
-# Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
+# Config = config.NatlinkConfig.from_first_found_valid_file(loader.config_locations())
 # natlinkmain = loader.NatlinkMain(Logger, Config)
 #  self.natlinkmain.setup_logger()
 
@@ -144,7 +144,7 @@ class NatlinkStatus:
         if cls.__instance is None:
             cls.__instance = object.__new__(cls)
             Logger = logging.getLogger('natlink')
-            Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
+            Config = config.NatlinkConfig.from_first_found_valid_file(loader.config_locations())
             natlinkmain = loader.NatlinkMain(Logger, Config)
             natlinkmain.setup_logger()
             cls.__instance.__init__(natlinkmain)
@@ -323,7 +323,7 @@ class NatlinkStatus:
         isdir, normpath = os.path.isdir, os.path.normpath
         if self.UnimacroUserDirectory is not None:
             return self.UnimacroUserDirectory
-        key = 'unimacro_user_directory'
+        key = 'unimacrouserdirectory'
         value =  self.natlinkmain.getconfigsetting(section="unimacro", option=key)
         if value and isdir(value):
             self.UnimacroUserDirectory = value
@@ -446,7 +446,7 @@ class NatlinkStatus:
         isdir, normpath = os.path.isdir, os.path.normpath
         if self.VocolaUserDirectory is not None:
             return self.VocolaUserDirectory
-        key = 'vocola_user_directory'
+        key = 'vocolauserdirectory'
         section = 'vocola'
         value =  self.natlinkmain.getconfigsetting(section=section, option=key)
         if value and isdir(value):
@@ -752,7 +752,7 @@ class NatlinkStatus:
     #     isdir, normpath = os.path.isdir, os.path.normpath
     #     if inifilepath is None:
     #         # take default natlink.ini from  natlink config module:
-    #         CONFIG = config.NatlinkConfig.from_first_found_file(loader.config_locations())
+    #         CONFIG = config.NatlinkConfig.from_first_found_file(loader.valid_config_locations())
     #         inifilepath = CONFIG.config_path
     #         ini = configparser.ConfigParser()
     #         ini.read(inifilepath)
