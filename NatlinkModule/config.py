@@ -101,8 +101,11 @@ class NatlinkConfig:
 
     @classmethod
     def from_first_found_file(cls, files: Iterable[str]) -> 'NatlinkConfig':
+        isfile = os.path.isfile
         config = configparser.ConfigParser()
         for fn in files:
+            if not isfile(fn):
+                continue
             if config.read(fn):
                 return cls.from_config_parser(config, config_path=fn)
         # should not happen, because of DefaultConfig (was InstallTest)
