@@ -144,7 +144,7 @@ class NatlinkStatus:
         if cls.__instance is None:
             cls.__instance = object.__new__(cls)
             Logger = logging.getLogger('natlink')
-            Config = config.NatlinkConfig.from_first_found_valid_file(loader.config_locations())
+            Config = config.NatlinkConfig.from_first_found_file(loader.valid_config_locations())
             natlinkmain = loader.NatlinkMain(Logger, Config)
             natlinkmain.setup_logger()
             cls.__instance.__init__(natlinkmain)
@@ -728,54 +728,6 @@ class NatlinkStatus:
                 List.append(f'\t{Key}\t{value}')
         del Dict[Key]
         
-    # def addToPath(self, directory):
-    #     """add to the python path if not there yet
-    #     """
-    #     isdir = os.path.isdir
-    #     Dir2 = isdir(directory)
-    #     if not Dir2.isdir():
-    #         print(f"natlinkstatus, addToPath, not an existing directory: {directory}")
-    #         return
-    #     Dir3 = Dir2.normpath()
-    #     if Dir3 not in sys.path:
-    #         print(f"natlinkstatus, addToPath: {Dir3}")
-    #         sys.path.append(Dir3)
-
-    # 
-    # def  self.natlinkmain.getconfigsetting(self, option: str, section: Any=None, inifilepath: Any=None, func: Any=None):
-    #     """get from natlink.ini file
-    #     
-    #     note: key is called option in configparser!!
-    #     
-    #     default section = "directories"
-    #     """
-    #     isdir, normpath = os.path.isdir, os.path.normpath
-    #     if inifilepath is None:
-    #         # take default natlink.ini from  natlink config module:
-    #         CONFIG = config.NatlinkConfig.from_first_found_file(loader.valid_config_locations())
-    #         inifilepath = CONFIG.config_path
-    #         ini = configparser.ConfigParser()
-    #         ini.read(inifilepath)
-    #     else:
-    #         # take ini file from filename:
-    #         ini = configparser.ConfigParser()
-    #         ini.read(inifilepath)
-    #     section = section or "directories"
-    #     value = ini.get(section, key, fallback=None)
-    #     if value is None:
-    #         print(f'warning, no value returned from ini file "{inifilepath}", section "{section}", key: "{key}"...')
-    #         return False
-    #     if value and isinstance(value, str):
-    #         if isdir(value):
-    #             return normpath(value) 
-    #         expanded = config.expand_path(value)
-    #         if expanded and not isdir(expanded):
-    #             print(f'warning, no valid directory "{value}" or expanded: "{expanded}"\n\tfor ini file "{inifilepath}", section "{section}", key: "{key}"...')
-    #             return None
-    #         return normpath(expanded)
-    #     # other values:
-    #     return value or False
-
 def getFileDate(modName):
     #pylint:disable=C0321
     try: return os.stat(modName)[stat.ST_MTIME]
