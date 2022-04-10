@@ -15,10 +15,10 @@ from types import ModuleType
 from typing import List, Dict, Set, Iterable, Any, Tuple, Callable
 
 import natlink
-from natlink.config import LogLevel, NatlinkConfig, NATLINK_INI, expand_path
+from natlink.config import LogLevel, NatlinkConfig, expand_path
 from natlink.readwritefile import ReadWriteFile
 from natlink.callbackhandler import CallbackHandler
-
+from natlink.singleton import Singleton
 # the possible languages (for get_user_language) (runs at start and on_change_callback, user)
 # default is "enx", being one of the English dialects...
 UserLanguages = { 
@@ -33,24 +33,12 @@ UserLanguages = {
     "Italian": "ita",
     "Spanish": "esp",}
 
-class NatlinkMain:
+class NatlinkMain(metaclass=Singleton):
     """main class of Natlink, make it a "singleton"
     """
-    __instance = None
-    had_init = False
-    
-    def __new__(cls, *args):
-        if cls.__instance is None:
-            cls.__instance = object.__new__(cls)
-            cls.__instance.__init__(*args)
-            cls.had_init = True
-        return cls.__instance    
     
     def __init__(self, logger: Any=None, config: Any = None):
-        if self.__class__.had_init:
-            # print('==== NatlinkMain is already intialised, return from __init__')
-            return
-        # print('==== __init__ of loader class')
+        print('==== __init__ of loader class')
         if logger is None:
             raise ValueError(f'loader.NatlinkMain, first instance should be called with a logging.Logger instance, not {logger}')
         if config is None:
@@ -73,6 +61,12 @@ class NatlinkMain:
         self._on_begin_utterance_callback = CallbackHandler('on_begin_utterance')
         self.seen: Set[Path] = set()     # start empty in trigger_load
         self.bom = self.encoding = self.config_text = ''   # getconfigsetting and writeconfigsetting
+
+    def __del__(self):
+        """for testing only needed, reset the class attributes
+        """
+        self.__class__.__instance = None
+        self.__class__.had_init = False
 
     def set_on_begin_utterance_callback(self, func: Callable[[], None]) -> None:
         self._on_begin_utterance_callback.set(func)
@@ -177,35 +171,35 @@ class NatlinkMain:
 
     load_on_begin_utterance = property(get_load_on_begin_utterance, set_load_on_begin_utterance)
 
-    def _module_paths_in_dir(self, directory: str) -> List[Path]:
-        """give modules in directory
-        """
-
-        def is_script(f: Path) -> bool:
-            if not f.is_file():
-                return False
-            if not f.suffix == '.py':
-                return False
-            
-            if f.stem.startswith('_'):
-                return True
-            for prog_name in self.prog_names_visited:
-                if f.stem == prog_name or f.stem.startswith( prog_name + '_'):
-                    return True
-            return False
-
-        init = '__init__.py'
-
-        mod_paths: List[Path] = []
-        dir_path = Path(directory)
-        scripts = sorted(filter(is_script, dir_path.iterdir()))
-        init_path = dir_path.joinpath(init)
-        if init_path in scripts:
-            scripts.remove(init_path)
-            scripts.insert(0, init_path)
-        mod_paths.extend(scripts)
-
-        return mod_paths
+    # def _module_paths_in_dir(self, directory: str) -> List[Path]:
+    #     """give modules in directory
+    #     """
+    # 
+    #     def is_script(f: Path) -> bool:
+    #         if not f.is_file():
+    #             return False
+    #         if not f.suffix == '.py':
+    #             return False
+    #         
+    #         if f.stem.startswith('_'):
+    #             return True
+    #         for prog_name in self.prog_names_visited:
+    #             if f.stem == prog_name or f.stem.startswith( prog_name + '_'):
+    #                 return True
+    #         return False
+    # 
+    #     init = '__init__.py'
+    # 
+    #     mod_paths: List[Path] = []
+    #     dir_path = Path(directory)
+    #     scripts = sorted(filter(is_script, dir_path.iterdir()))
+    #     init_path = dir_path.joinpath(init)
+    #     if init_path in scripts:
+    #         scripts.remove(init_path)
+    #         scripts.insert(0, init_path)
+    #     mod_paths.extend(scripts)
+    # 
+    #     return mod_paths
 
     def _module_paths_in_dirs(self, directories: Iterable[str]) -> List[Path]:
 
@@ -540,39 +534,31 @@ def valid_config_locations() -> Iterable[str]:
     return [f for f in config_locations() if isfile(f)]
 
 def config_locations() -> Iterable[str]:
+    """give two possible locations, the wanted and the "fallback" location
+    
+    wanted: in the '.natlink' subdirectory of `home` or in "NATLINK_USERDIR".
+    name is always 'natlink.ini'
+    
+    the fallback location is in the installed files, and provides the frame for the config file.
+    with the configurenatlink (natlinkconfigfunction.py or configfurenatlink.pyw) the fallback version
+    of the config file is copied into the wanted location.
+    """
     join, expanduser, getenv, isfile = os.path.join, os.path.expanduser, os.getenv, os.path.isfile
     home = expanduser('~')
     config_sub_dir = '.natlink'
-    # config_filename == NATLINK_INI (in config.py)
-    fallback_config_file = join(get_natlink_system_config_filename(), "DefaultConfig", 'natlink.ini')
+    natlink_inifile = 'natlink.ini'
+    fallback_config_file = join(get_natlink_system_config_filename(), "DefaultConfig", natlink_inifile)
     if not isfile(fallback_config_file):
         raise OSError(f'fallback_config_file does not exist: "{fallback_config_file}"')
-    # try NATLINK_INI setting:
-    natlink_ini_from_env = getenv("NATLINK_INI")
-    if natlink_ini_from_env:
-        natlink_ini_from_env_path = expand_path(natlink_ini_from_env)
-        return [natlink_ini_from_env_path, fallback_config_file]
-            # if natlink_ini_from_env_path == natlink_ini_from_env:
-            #     raise OSError(f'You defined environment variable "NATLINK_INI" to "{natlink_ini_from_env}", but this is not a valid file.\n\tPlease remove or correct this environment variable')
-            # raise OSError(f'You defined environment variable "NATLINK_INI" to "{natlink_ini_from_env}",\n\texpanded to "{natlink_ini_from_env_path}"\n\tBut this is not a valid file.\n\tPlease remove or correct this environment variable')
+    # try NATLINKUSERDIR setting:
+    natlink_userdir_from_env = getenv("NATLINK_USERDIR")
+    if natlink_userdir_from_env:
+        nl_user_dir = expand_path(natlink_userdir_from_env)
+        nl_user_file = join(nl_user_dir, natlink_inifile)
+        return [nl_user_file, fallback_config_file]
 
-    # try DICTATIONTOOLBOXHOME    
-    dictation_toolbox_home = getenv('DICTATIONTOOLBOXHOME')
-    
-    if dictation_toolbox_home:
-        # dictation_toolbox_home_path = expand_path(dictation_toolbox_home)
-        # subdir = join(dictation_toolbox_home_path, '.natlink')
-        # config_file_path = join(dictation_toolbox_home_path, '.natlink', "natlink.ini")
-        # if not os.path.isdir(dictation_toolbox_home_path):
-        #     raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut it does not point to a valid directory: "{dictation_toolbox_home_path}".\n\tPlease create this directory and subdirectory ".natlink"\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
-        # if not os.path.isdir(subdir):
-        #     raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home_path}" should contain a subdirectory ".natlink".\n\tPlease create this directory\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
-        # if not os.path.isfile(config_file_path):
-        #     raise OSError(f'You set environment variable: "DICTATIONTOOLBOXHOME",\n\tBut this directory "{dictation_toolbox_home_path}" should contain a subdirectory ".natlink" containing config file "natlink.ini".\n\tPlease create this directory\n\tand copy a valid version of "natlink.ini" into this directory,\n\t\tor fix/remove this environment variable.')
-        return [join(dictation_toolbox_home, '.natlink', NATLINK_INI), fallback_config_file]
-                
     # choose between .natlink/natlink.ini in home or the fallback_directory:         
-    return [join(home, config_sub_dir), fallback_config_file]
+    return [join(home, config_sub_dir, natlink_inifile), fallback_config_file]
 
 def run() -> None:
     logger = logging.getLogger('natlink')

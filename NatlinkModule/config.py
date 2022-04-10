@@ -6,7 +6,6 @@ from enum import IntEnum
 from typing import List, Iterable, Dict
 import natlink
 
-NATLINK_INI = "natlink.ini"
 class NoGoodConfigFoundException(natlink.NatError):
     pass
 
@@ -109,12 +108,12 @@ class NatlinkConfig:
             if config.read(fn):
                 return cls.from_config_parser(config, config_path=fn)
         # should not happen, because of DefaultConfig (was InstallTest)
-        raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
+        raise NoGoodConfigFoundException('No natlink config file found, please run configure natlink program\n\t(configurenatlink.pyw or natlinkconfigfunctions.py)')
 
 def expand_path(input_path: str) -> str:
     r"""expand path if it starts with "~" or has environment variables (%XXXX%)
     
-    Home ("~") can also be given by: %HOMEDRIVE%%HOMEPATH% or %PERSONALHOME%
+    Use home ("~") or "%natlink_userdir%"
     
     The Documents directory can be found by "~\Documents" 
     

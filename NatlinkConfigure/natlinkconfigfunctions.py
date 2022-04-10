@@ -55,12 +55,14 @@ import getopt
 import cmd
 from pathlib import Path
 import configparser
-import subprocess
 # from win32com.shell import shell
 from natlink import natlinkstatus
 from natlink import config
 from natlink import loader
 from natlink import readwritefile
+from natlink import wxdialogs
+
+isfile, isdir, join = os.path.isfile, os.path.isdir, os.path.join
 
 class NatlinkConfig:
     """performs the configuration tasks of Natlink
@@ -72,9 +74,24 @@ class NatlinkConfig:
     """
     def __init__(self):
         self.DNSName = 'Dragon'
+        self.config_path = self.get_check_config_locations()
+        self.config_dir = str(Path(self.config_path).parent)
         self.status = natlinkstatus.NatlinkStatus()
-        self.config_path = loader.config_locations()[0]
         self.getConfig()  # gets self.config and self.config_encoding
+
+    def get_check_config_locations(self):
+        """check the location/locations as given by the loader
+        """
+        config_path, fallback_path = loader.config_locations()
+        
+        if not isdir(config_path):
+            config_dir = Path(config_path).parent
+            if not config_dir.is_dir():
+                config_dir.mkdir(parents=True)
+            shutil.copyfile(fallback_path, config_path)
+        return config_path
+
+
         
     def warning(self,text):
         """is currently overloaded in GUI"""
@@ -109,7 +126,16 @@ class NatlinkConfig:
         self.config.read_string(config_text)
         self.config_encoding = rwfile.encoding
 
-    def setconfigsetting(self, section, option, value):
+    def config_get(self, section, option):
+        """set a setting into the natlink ini file
+
+        """
+        try:
+            return self.config.get(section, option)
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            return None
+ 
+    def config_set(self, section, option, value):
         """set a setting into an inifile (possibly other than natlink.ini)
     
         Set the setting in self.config.
@@ -119,7 +145,18 @@ class NatlinkConfig:
         the file is written as 'utf-8'.
 
         """
+        if not value:
+            return self.config_remove(section, option)
+        
+        if not self.config.has_section(section):
+            self.config.add_section(section)
         self.config.set(section, option, str(value))
+        self.config_write()
+        return True
+    
+    def config_write(self):
+        """write the (changed) content to the ini (config) file
+        """
         try:
             with open(self.config_path, 'w', encoding=self.config_encoding) as fp:
                 self.config.write(fp)   
@@ -130,59 +167,106 @@ class NatlinkConfig:
             with open(self.config_path, 'w', encoding='utf-8') as fp:
                 self.config.write(fp)   
 
-    def setUserDirectory(self, v):  
-        key = 'UserDirectory'
-        if v and self.isValidPath(v):
-            print("Setting the UserDirectory of Natlink to %s"% v)
-            self.setconfigsetting('directories', key, v)
-            # self.config.remove_option('directories', "Old"+key)
-        else:
-            print('Setting the UserDirectory of Natlink failed, not a valid directory: %s'% v)
-            
+    def config_remove(self, section, key):
+        """removes from config file
         
-    def clearUserDirectory(self):
-        key = 'UserDirectory'
-        old_value = self.config.get('directories', key)
-        if not old_value:
-            print('The UserDirectory of Natlink was not set, nothing changed...')
-            return
-        if self.isValidPath(old_value):
-            self.config.set('previous directories', key, old_value)
-        self.config.remove_option('directories', key)
-        print('clearing UserDirectory of Natlink')
-            
-    def isValidPath(self, path, wantDirectory=None, wantFile=None):
-        """return the path, as str, if valid
-        
-        otherwise return ''
+        same effect as setting an empty value
         """
-        if not path:
-            return ''
-        path = Path(path)
-        if wantDirectory:
-            if path.is_dir():
-                return str(path)
-        if wantFile:
-            if path.is_file():
-                return str(path)
-        if path.exists():
-            return str(path)
-        return ''
+        if not self.config.has_section(section):
+            return
+        self.config.remove_option(section, key)
+        if not self.config.options(section):
+            if section not in ['directories', 'settings', 'userenglish-directories', 'userspanish-directories']:
+                self.config.remove_section(section)
+        self.config_write()
+
+    # def setUserDirectory(self, arg):
+    #     self.setDirectory('UserDirectory', arg)
+    # def clearUserDirectory(self, arg):
+    #     self.clearDirectory('UserDirectory')
+        
+    def setDirectory(self, key, dir_path, section=None):
+        """set the directory, specified with "key", to dir_path
+        
+        If dir_path None or invalid, go via 
+        """
+        section = section or 'directories'
+        if not dir_path:
+            prev_path = self.config_get('previous directories', key) or self.config_dir
+            dir_path = wxdialogs.GetDirFromDialog(f'Please choose a "{key}"', prev_path)
+            if not dir_path:
+                print('No valid directory specified')
+                return
+        dir_path = dir_path.strip()
+        directory = createIfNotThere(dir_path, level_up=1)
+        if not (directory and Path(directory).is_dir()):
+            if directory is False:
+                directory = config.expand_path(dir_path)
+            if dir_path == directory:
+                print(f'Cannot set "{key}", the given path is invalid: "{directory}"')
+            else:
+                print(f'Cannot set "{key}", the given path is invalid: "{directory}" ("{dir_path}")')
+            return
+        self.config_set(section, key, dir_path)
+        self.config_remove('previous directories', key)
+        if section == 'directories':
+            print(f'Set key "{key}" to "{dir_path}"')
+        else:
+            print(f'Set in section "{section}", key "{key}" to "{dir_path}"')
+        return
+        
+    def clearDirectory(self, key, section=None):
+        """clear the setting of the directory designated by key
+        """
+        section = section or 'directories'
+        old_value = self.config_get(section, key)
+        if not old_value:
+            print(f'The "{key}" was not set, nothing changed...')
+            return
+        if isValidDir(old_value):
+            self.config_set('previous directories', key, old_value)
+        else:
+            self.config_remove('previous directories', key)
+            
+        self.config_remove(section, key)
+        print(f'cleared "{key}"')
+   
+    def setDragonflyUserDirectory(self, v):  
+        key = 'DragonflyUserDirectory'
+        if v and isValidDir(v):
+            print(f'Setting the "{key}" to "{v}"')
+            self.config_set('directories', key, v)
+            self.config.remove_option('previous directories', key)
+        else:
+            print(f'Setting the DragonflyUserDirectory failed, not a valid directory: "{v}"')
+            return False
+        return True
+            
+    def clearDragonflyUserDirectory(self):
+        key = 'DragonflyUserDirectory'
+        old_value = self.config_get('directories', key)
+        if not old_value:
+            print('The "{key}" was not set, so nothing changed...')
+        if isValidDir(old_value):
+            self.config_set('previous directories', key, old_value)
+        self.config_remove('directories', key)
+        print('cleared "{DragonflyUserDirectory}"')
+            
         
     def getVocolaUserDir(self):
         key = 'VocolaUserDirectory'
-        value = self.config.get(key, None)
+        value = self.config_get(key, None)
         return value
 
     def setVocolaUserDir(self, v):
         key = 'VocolaUserDirectory'
-        if self.isValidPath(v, wantDirectory=1):
+        if isValidDir(v, wantDirectory=1):
             print("Setting VocolaUserDirectory %s and enable Vocola"% v)
-            self.config.set(key, v)
+            self.config_set('vocola', key, v)
             self.config.remove_option('previous directories', key)
             return True
-        oldvocdir = self.config.get('previous directories', key)
-        if oldvocdir and self.isValidPath(oldvocdir, wantDirectory=1):
+        oldvocdir = self.config_get('previous directories', key)
+        if oldvocdir and isValidDir(oldvocdir, wantDirectory=1):
             mess = 'not a valid directory: %s, Vocola remains enabled with VocolaUserDirectory: %s'% (v, oldvocdir)
         else:
             mess = 'not a valid directory: %s, Vocola remains disabled'% v
@@ -190,10 +274,10 @@ class NatlinkConfig:
 
     def clearVocolaUserDir(self):
         key = 'VocolaUserDirectory'
-        old_value = self.config.get('directories', key)
-        if old_value and self.isValidPath(old_value):
-            self.config.set('previous directories', key, old_value)
-        if self.config.get('directories', key):
+        old_value = self.config_get('directories', key)
+        if old_value and isValidDir(old_value):
+            self.config_set('previous directories', key, old_value)
+        if self.config_get('directories', key):
             self.config.remove_option('directories', key)
             print('clearing the VocolaUserDirectory and disable Vocola')
         else:
@@ -204,12 +288,12 @@ class NatlinkConfig:
     ## autohotkey (January 2014)
     def getAhkExeDir(self):
         key = 'AhkExeDir'
-        value = self.config.get('directories', key)
+        value = self.config_get('directories', key)
         return value
 
     def setAhkExeDir(self, v):
         key = 'AhkExeDir'
-        ahkexedir = self.isValidPath(v, wantDirectory=1)
+        ahkexedir = isValidDir(v, wantDirectory=1)
 
         if not ahkexedir:
             mess = f'not a valid directory: "{v}"'
@@ -219,16 +303,16 @@ class NatlinkConfig:
             mess = f'path does not contain "autohotkey.exe": "{v}"'
 
         print('Set AutoHotkey Exe Directory (AhkExeDir) to %s'% v)
-        self.config.set(key, v)
-        self.config.remove_option('directories', 'Old'+key)
+        self.config_set('autohotkey', key, v)
+        self.config.remove_option('previous directories', key)
         return True
 
     def clearAhkUserDir(self):
         key = 'AhkUserDir'
-        old_value = self.config.get('autohotkey', key)
+        old_value = self.config_get('autohotkey', key)
         if old_value:
-            if self.isValidPath(old_value):
-                self.config.set('previous directories', key, old_value)
+            if isValidDir(old_value):
+                self.config_set('previous directories', key, old_value)
             self.config.remove_option('autohotkey', key)
             print('Clear AutoHotkey User Directory (AhkUserDir)')
             return True 
@@ -237,26 +321,26 @@ class NatlinkConfig:
                 
     def getAhkUserDir(self):
         key = 'AhkUserDir'
-        value = self.config.get('autohotkey', key)
+        value = self.config_get('autohotkey', key)
         return value
 
     def setAhkUserDir(self, v):
         key = 'AhkUserDir'
-        ahkuserdir = self.isValidPath(v, wantDirectory=1)
+        ahkuserdir = isValidDir(v, wantDirectory=1)
         if not ahkuserdir:
             mess = f'not a valid directory: "{v}"'
             return mess
         print(f'Set AutoHotkey User Directory (AhkUserDir) to "{v}"')
-        self.config.set('autohotkey', key, v)
+        self.config_set('autohotkey', key, v)
         self.config.remove_option('previous directories', key)
         return True
 
     def clearAhkExeDir(self):
         key = 'AhkExeDir'
-        old_value = self.config.get('directories', key)
-        if old_value and self.isValidPath(old_value):
-            self.config.set('previous directories', key, old_value)
-        if self.config.get('directories', key):
+        old_value = self.config_get('directories', key)
+        if old_value and isValidDir(old_value):
+            self.config_set('previous directories', key, old_value)
+        if self.config_get('directories', key):
             self.config.remove_option('directories', key)
             print('Clear AutoHotkey Exe Directory (AhkExeDir)')
         else:
@@ -266,17 +350,17 @@ class NatlinkConfig:
 
     def getUnimacroUserDir(self):
         key = 'UnimacroUserDirectory'
-        return self.config.get(key, None)
+        return self.config_get('directories', key)
 
     def setUnimacroUserDir(self, v):
         key = 'UnimacroUserDirectory'
         oldDir = self.getUnimacroUserDir()
-        unimacrouserdir = self.isValidPath(v, wantDirectory=1)
+        unimacrouserdir = isValidDir(v, wantDirectory=1)
         if not unimacrouserdir:
             mess = f'not a valid directory: {v}'
             return mess
 
-        oldDir = self.isValidPath(oldDir, wantDirectory=1)
+        oldDir = isValidDir(oldDir, wantDirectory=1)
         if oldDir == unimacrouserdir:
             print('UnimacroUserDirectory is already set to "%s", Unimacro is enabled'% v)
             return True
@@ -284,7 +368,7 @@ class NatlinkConfig:
             print('\n-----------\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
                   'from old UnimacroUserDirectory (%s) to \n' \
                   'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, unimacrouserdir))
-        self.config.set('directories', key, v)
+        self.config_set('directories', key, v)
         self.config.remove_option('previous directories', key)
         return True
 
@@ -292,19 +376,19 @@ class NatlinkConfig:
     def clearUnimacroUserDir(self):
         """clear but keep previous value"""
         key = 'UnimacroUserDirectory'
-        oldValue = self.config.get('directories', key)
+        oldValue = self.config_get('directories', key)
         self.config.remove_option('directories', key)
-        oldDirectory = self.isValidPath(oldValue)
+        oldDirectory = isValidDir(oldValue)
         if oldDirectory:
-            self.config.set('previous directories', key, oldValue)
+            self.config_set('previous directories', key, oldValue)
         else:
             print('UnimacroUserDirectory was already cleared, Unimacro remains disabled')
 
     def setUnimacroIniFilesEditor(self, v):
         key = "UnimacroIniFilesEditor"
-        exefile = self.isValidPath(v, wantFile=1)
+        exefile = isValidDir(v, wantFile=1)
         if exefile and v.endswith(".exe"):
-            self.config.set('unimacro', key, v)
+            self.config_set('unimacro', key, v)
             self.config.remove_option('previous directories', key)
             print(f'Set {key} to "{v}"')
             return True
@@ -313,10 +397,10 @@ class NatlinkConfig:
             
     def clearUnimacroIniFilesEditor(self):
         key = "UnimacroIniFilesEditor"
-        old_value = self.config.get('unimacro', key)
-        oldexefile = self.isValidPath(old_value, wantFile=1)
+        old_value = self.config_get('unimacro', key)
+        oldexefile = isValidDir(old_value, wantFile=1)
         if oldexefile:
-            self.config.set('previous directories', key, old_value)
+            self.config_set('previous directories', key, old_value)
         self.config.remove_option('unimacro', key)
         print('UnimacroIniFilesEditor cleared')
         return True
@@ -325,29 +409,32 @@ class NatlinkConfig:
         """setting registry key so debug output of loading of natlinkmain is given
 
         """
-        key = "NatlinkmainDebug"
-        old_value = self.config.get('options', 'log_level')
+        key = "log_level"
+        settings = 'settings'
+        old_value = self.config_get(settings, key)
         if old_value:
             if old_value == 'DEBUG':
-                print(f'enableDebugOutput, setting already "{old_value}"')
+                print(f'enableDebugOutput, setting is already "{old_value}"')
                 return True
-            self.config.set('previous settings', key, old_value)
-        self.config.set('options', 'log_level', 'DEBUG')
+            if old_value is not None:
+                self.config_set('previous settings', key, old_value)
+        self.config_set(settings, key, 'DEBUG')
         return True
 
-    def disableDebugLoadOutput(self):
-        """disables the Natlink debug output of loading of natlinkmain is given
+    def disableDebugOutput(self):
+        """disables the Natlink debug output
         """
         key = 'log_level'
-        section = 'options'
-        old_value = self.config.get('previous settings', key)
+        section = 'settings'
+        old_value = self.config_get('previous settings', key)
         if old_value:
             self.config.remove_option('previous settings', key)
+            if old_value == 'DEBUG':
+                old_value = 'INFO'
         else:
             old_value = 'INFO'
-        self.config.set(section, key, old_value)
+        self.config_set(section, key, old_value)
         return True
-
 
     def copyUnimacroIncludeFile(self):
         """copy Unimacro include file into Vocola user directory
@@ -503,38 +590,40 @@ class NatlinkConfig:
 
         """
         key = "VocolaTakesLanguages"
-        self.config.set('vocola', key, 'True')
+        self.config_set('vocola', key, 'True')
         
 
     def disableVocolaTakesLanguages(self):
         """disables so Vocola cannot take different languages
         """
         key = "VocolaTakesLanguages"
-        self.config.set('vocola', key, 'False')
+        self.config_set('vocola', key, 'False')
 
     def enableVocolaTakesUnimacroActions(self):
         """setting registry  so Vocola can divide different languages
 
         """
         key = "VocolaTakesUnimacroActions"
-        self.config.set('vocola', key, 'True')
+        self.config_set('vocola', key, 'True')
         
 
     def disableVocolaTakesUnimacroActions(self):
         """disables so Vocola does not take Unimacro Actions
         """
         key = "VocolaTakesUnimacroActions"
-        self.config.set('vocola', key, 'False')
+        self.config_set('vocola', key, 'False')
 
     def openConfigFile(self):
         """open the natlink.ini config file
         """
-        try:
-            subprocess.run(self.config_path, check=True)
-            print(f'opened the config file: "{self.config_path}"')
-        except subprocess.CalledProcessError:
-            mess = 'Could not open the config file "{self.config_path}"'
-            return mess
+        os.startfile(self.config_path)
+        # try:
+        #     subprocess.call(['notepad.exe', self.config_path])
+        #     print(f'opened the config file: "{self.config_path}"')
+        # except:
+        #     mess = 'Could not open the config file "{self.config_path}"'
+        #     return mess
+        print(f'opened "{self.config_path}" in a separate window')
         return True
 
     def printPythonPath(self):
@@ -597,7 +686,7 @@ class CLI(cmd.Cmd):
         self.Config = None
         self.message = ''
         if __name__ == "__main__":
-            print("Type 'u' for a usage message")
+            print("Type 'u' for usage ")
 
     def stripCheckDirectory(self, dirName):
         """allow quotes in input, and strip them.
@@ -630,7 +719,7 @@ or in an interactive session using the CLI (command line interface).
 [Status]
 
 i       - info, print information about the Natlink status
-I       - settings, print information about the config file of Natlink
+I       - show the natlink.ini file (in Notepad), you can manually edit.
 j       - print PythonPath variable
 
 [Natlink]
@@ -639,8 +728,9 @@ x/X     - enable/disable debug output of Natlink
 
 [Vocola]
 
-v/V     - enable/disable Vocola by setting/clearing VocolaUserDir, the user
-          directory for Vocola user files (~ or %HOME% allowed).
+v/V     - enable/disable Vocola by setting/clearing VocolaUserDirectory,
+          where the Vocola Command Files (.vcl) will be located.
+          (~ or %HOME% are allowed, for example "~/.natlink/VocolaUser")
 
 b/B     - enable/disable distinction between languages for Vocola user files
 a/A     - enable/disable the possibility to use Unimacro actions in Vocola
@@ -701,62 +791,59 @@ After you change settings, restart Dragon.
         print('='*60)
     help_j = help_I = help_i
     
-    # User Directories -------------------------------------------------
+    # User Directory, Dragonfly directory -------------------------------------------------
     # for easier remembering, change n to d (DragonFly)
     def do_d(self, arg):
-        if not arg:
-            print('also enter a valid folder')
-            return
-        arg = arg.strip()
-        directory = createIfNotThere(arg)
-        if not directory:
-            return
-        self.Config.setUserDirectory(directory)
+        self.Config.setDirectory('DragonflyUserDirectory', arg)
     
     def do_D(self, arg):
-        self.message = "Clears Natlink User Directory"
-        self.Config.clearUserDirectory()
-    
-    do_n = do_d
-    do_N = do_D
+        self.Config.clearDirectory('DragonflyUserDirectory')
 
+    def do_n(self, arg):
+        self.Config.setDirectory('UserDirectory', arg)
+    
+    def do_N(self, arg):
+        self.Config.clearDirectory('UserDirectory')
+    
     def help_n(self):
         print('-'*60)
-        print("""Sets (n <path>) or clears (N) the UserDirectory of Natlink.
+        print('''Sets (n [<path>]) or clears (N) the "UserDirectory" of Natlink.
 This is the folder where your own python grammar files are/will be located.
-
-Note this should NOT be the BaseDirectory (Vocola is there) of the Unimacro directory.
-""")
-        print('='*60)
+''')
+    def help_d(self):
+        print('-'*60)
+        print('''Sets (d [<path>]) or clears (D) the "DragonflyUserDirectory".
+This is the folder where your own Dragonfly python grammar files are/will be located.
+''')
         
     help_N = help_n
+    help_D = help_d
     
     # Unimacro User directory and Editor or Unimacro INI files-----------------------------------
     def do_o(self, arg):
-        arg = self.stripCheckDirectory(arg)  # also quotes
-        if not arg:
-            return
-        self.Config.setUnimacroUserDir(arg)
+        self.Config.setDirectory('UnimacroDirectory', self.Config.status.getUnimacroDirectory())
+        self.Config.setDirectory('UnimacroUserDirectory', arg, section='unimacro')
+        uniUserDir = self.Config.config_get('unimacro', 'UnimacroUserDirectory')
+        uniGrammarsDir = str(Path(config.expand_path(uniUserDir))/'ActiveGrammars')
+        createIfNotThere(uniGrammarsDir)
+        self.Config.config_set('directories', 'UnimacroGrammarsDirectory', uniGrammarsDir)
             
     def do_O(self, arg):
-        self.message = "Clearing Unimacro user directory, and disable Unimacro"
-        print('do action: %s'% self.message)
-        self.Config.clearUnimacroUserDir()
+        self.Config.clearDirectory('UnimacroUserDirectory', section='unimacro')
+        self.Config.config_remove('directories', 'UnimacroGrammarsDirectory')
+        self.Config.config_remove('directories', self.Config.status.getVocolaDirectory())
 
     def help_o(self):
         print('-'*60)
-        userDir = self.Config.getUserDirectory()
         print(r"""set/clear UnimacroUserDirectory (o <path>/O)
 
-And enable/disable Unimacro.
+Setting this directory also enables Unimacro. Clearing it disables Unimacro
 
 In this directory, your user INI files (and possibly other user
 dependent files) will be put.
 
 You can use (if entered through the CLI) "~" (or %%HOME%%) for user home directory, or
-another environment variable (%%...%%). (example: "o ~\Natlink\\Unimacro")
-
-Setting this directory also enables Unimacro. Clearing it disables Unimacro
+another environment variable (%%...%%). (example: "o ~\.natlink\\UnimacroUser")
 """)
         print('='*60)
 
@@ -821,78 +908,34 @@ Vocola command.
         print('do action: %s'% self.message)
         self.Config.removeUnimacroVchLineInVocolaFiles()
     help_m = help_M = help_l
-
-        
-    # enable/disable Natlink------------------------------------------------
-    def do_e(self, arg):
-        self.message = "Enabling Natlink:"
-        print('do action: %s'% self.message)
-        self.Config.enableNatlink()
-    def do_E(self, arg):
-        self.message = "Disabling Natlink:"
-        self.Config.disableNatlink()
-
-    def help_e(self):
-        print('-'*60)
-        print("""Enable Natlink (e) or disable Natlink (E):
-
-When you enable Natlink, the necessary settings in nssystem.ini and nsapps.ini
-are done.
-
-These options require elevated mode and probably Dragon be closed.
-
-After you restart %s, Natlink should start, opening a window titled
-'Messages from Natlink - ...'.
-
-When you enable Natlink, the file natlink.pyd is (re)registered silently.  Use
-the commands r/R to register/unregister natlink.pyd explicitly.
-(see help r, but most often not needed)
-
-When you disable Natlink, the necessary settings in nssystem.ini and nsapps.ini
-are cleared. 
-
-After you restart %s, Natlink should NOT START ANY MORE
-so the window 'Messages from Natlink' is NOT OPENED.
-
-Note: when you disable Natlink, the natlink.pyd file is NOT unregistered.
-It is not called any more by %s, as its declaration is removed from
-the Global Clients section of nssystem.ini.
-"""% (self.DNSName, self.DNSName, self.DNSName))
-        print("="*60)
-        
-        
-    help_E = help_e
-  
     
     # Vocola and Vocola User directory------------------------------------------------
     def do_v(self, arg):
-        if not arg:
-            self.message = "do_v should have an argument"
-            return
-        tryPath = self.Config.isValidPath(arg)
-        if not tryPath:
-            self.message = "do_v, not a valid path: %s"% arg
-            return
-        self.message =  'Set VocolaUserDirectory to "%s" and enable Vocola'% arg
-        print('do action: %s'% self.message)
-        self.Config.setVocolaUserDir(arg)
+        """specify the VocolaUserDirectory,
+        
+        but the config needs also the VocolaDirectory and the VocolaGrammarsDirectory
+        """
+        self.Config.setDirectory('VocolaDirectory', self.Config.status.getVocolaDirectory())
+        self.Config.setDirectory('VocolaUserDirectory', arg, section='vocola')
+        vocUserDir = self.Config.config_get('vocola', 'VocolaUserDirectory')
+        vocGrammarsDir = str(Path(config.expand_path(vocUserDir))/'VocolaGrammars')
+        createIfNotThere(vocGrammarsDir)
+        self.Config.config_set('directories', 'VocolaGrammarsDirectory', vocGrammarsDir)
+        
             
     def do_V(self, arg):
-        self.message = "Clear VocolaUserDirectory and (therefore) disable Vocola"
-        print('do action: %s'% self.message)
-        self.Config.clearVocolaUserDir()
+        self.Config.clearDirectory('VocolaUserDirectory', section='vocola')
+        self.Config.config_remove('directories', 'VocolaGrammarsDirectory')
+        self.Config.config_remove('directories', self.Config.status.getVocolaDirectory())
 
     def help_v(self):
         print('-'*60)
-        print("""Enable/disable Vocola by setting/clearing the VocolaUserDirectory
+        print(r"""Enable/disable Vocola by setting/clearing the VocolaUserDirectory
 (v <path>/V).
 
 In this VocolaUserDirectory your Vocola Command File are/will be located.
 
-<path> must be an existing folder; Natlink\Vocola in My Documents is a
-popular choice.
-
-You may have to manually create this folder first.
+if <path> does not exist, but "one up" does, the sub directory is created.
 """)
         print('='*60)
 
@@ -901,31 +944,24 @@ You may have to manually create this folder first.
 
     # enable/disable Natlink debug output...
     def do_x(self, arg):
-        self.message = 'Enable natlinkmain giving debug output to "Messages from Natlink" window'
+        self.message = 'Print debug output to "Messages from Natlink" window'
         print('do action: %s'% self.message)
-        self.Config.enableDebugLoadOutput()
+        self.Config.enableDebugOutput()
     def do_X(self, arg):
-        self.message = 'Disable natlinkmain from giving debug output to "Messages from Natlink" window'
+        self.message = 'Disable printing debug output to "Messages from Natlink" window'
         print('do action: %s'% self.message)
-        self.Config.disableDebugLoadOutput()
+        self.Config.disableDebugOutput()
 
     def help_x(self):
         print('-'*60)
         print("""Enable (x)/disable (X) Natlink debug output
 
-Nearly obsolete options.
-
-This sends sometimes lengthy debugging messages to the
+This sends (sometimes lengthy) debug messages to the
 "Messages from Natlink" window.
-
-Mainly used when you suspect problems with the working 
-of Natlink, so keep off (X and Y) most of the time.
 """)
         print('='*60)
 
-    help_y = help_x
     help_X = help_x
-    help_Y = help_x
     
     # register natlink.pyd
     def do_r(self, arg):
@@ -934,14 +970,6 @@ of Natlink, so keep off (X and Y) most of the time.
     def do_R(self, arg):
         self.message = 'Unregister natlink.pyd and disable Natlink is done from the installer program,\nyou can uninstall Natlink via "Add or remove Programs" in Windows'
         
-    def do_z(self, arg):
-        """register silent and enable Natlink"""
-        self.message('this function is obsolete')
-        
-    def do_Z(self, arg):
-        """(SILENT) Unregister natlink.pyd and disable Natlink"""
-        self.message('this function is obsolete')
-
     # different Vocola options
     def do_b(self, arg):
         self.message = "Enable Vocola different user directories for different languages"
@@ -1056,26 +1084,63 @@ Informational commands: i and I
 """)
     help_usage = help_u
 
-def createIfNotThere(path_name):
+def isValidDir(path):
+    """return the path, as str, if valid directory
+    
+    otherwise return ''
+    """
+    result = isValidPath(path, wantDirectory=True)
+    return result        
+
+def isValidPath(path, wantDirectory=None, wantFile=None):
+    """return the path, as str, if valid
+    
+    otherwise return ''
+    """
+    if not path:
+        return ''
+    path_expanded = Path(config.expand_path(path))
+    path = Path(path)
+    if wantDirectory:
+        if path_expanded.is_dir():
+            return str(path_expanded)
+    if wantFile:
+        if path_expanded.is_file():
+            return str(path_expanded)
+    if path.exists():
+        return str(path_expanded)
+    return ''
+
+
+def createIfNotThere(path_name, level_up=None):
     """if path_name does not exist, but one up does, create.
     
     return the valid path (str) or
     False, if not a valid path
     """
-    path = Path(config.expand_path(path_name))
-    if path.is_dir():
-        return str(path)
-    if path.exists():
-        print(f'path exists, but is not a directory: "{str(path)}"')
-        return False
-    one_up = path.parent
-    if one_up.is_dir():
-        path.mkdir()
-        if path.is_dir():
-            return str(path)
-    print(f'could not create directory: "{str(path)}"')
-    return False              
+    dir_path = isValidDir(path_name)
+    if dir_path:
+        return dir_path
+    start_path = config.expand_path(path_name)
+    up_path = Path(start_path)
+
+    level = level_up
+    while level:
+        up_path = up_path.parent
+        if up_path.is_dir():
+            break
+        level -= 1
+    else:
+        print(f'cannot create directory, {level_up} level above should exist: "{str(up_path)}"')
+        return False              
+    Path(start_path).mkdir(parents=True)
+    if path_name == start_path:
+        print(f'created directory: "{start_path}"')
+    else:
+        print(f'created directory "{path_name}": "{start_path}"')
         
+    return start_path
+
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         Cli = CLI()
@@ -1083,7 +1148,7 @@ if __name__ == "__main__":
         Cli.Config = natlinkConfig
         Cli.info = "type u for usage"
         try:
-            li.cmdloop()
+            Cli.cmdloop()
         except (KeyboardInterrupt, SystemExit):
             pass
     else:

@@ -50,6 +50,7 @@ def del_loaded_modules(natlink_main: NatlinkMain):
             del mod
 
 
+
 def test_empty_config_loader(empty_config, logger):
     main = NatlinkMain(logger, empty_config)
     assert main.module_paths_for_user == []
@@ -57,7 +58,7 @@ def test_empty_config_loader(empty_config, logger):
     assert main.loaded_modules == {}
     assert main.bad_modules == set()
     assert main.load_attempt_times == {}
-
+    del main
 
 def test_pre_and_post_load_setter(empty_config, logger):
     main = NatlinkMain(logger, empty_config)
@@ -72,6 +73,7 @@ def test_pre_and_post_load_setter(empty_config, logger):
     cb = lambda: None
     main.set_pre_load_callback(cb)
     main.set_post_load_callback(cb)
+    del main
 
 
 def test_trigger_load_calls_pre_and_post_load(empty_config, logger, monkeypatch):
@@ -98,6 +100,7 @@ def test_trigger_load_calls_pre_and_post_load(empty_config, logger, monkeypatch)
 
     expected = [1, 2, 3]
     assert actual == expected
+    del main
 
 
 def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
@@ -111,7 +114,6 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
-
     assert main.module_paths_for_user == [a_path]
 
     main.load_or_reload_modules(main.module_paths_for_user)
@@ -125,6 +127,7 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
     assert main.loaded_modules[a_path].x == 0
 
     del_loaded_modules(main)
+    del main
 
 
 def test_load_single_good_script_from_user_dir(tmpdir, empty_config, logger, monkeypatch):
@@ -152,6 +155,7 @@ def test_load_single_good_script_from_user_dir(tmpdir, empty_config, logger, mon
     assert main.loaded_modules[a_path].x == 0
 
     del_loaded_modules(main)
+    del main
 
 
 def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeypatch):
@@ -180,6 +184,7 @@ def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeyp
     assert main.loaded_modules[a_path].x == 1
 
     del_loaded_modules(main)
+    del main
 
 
 def test_remove_single_deleted_good_script(tmpdir, empty_config, logger, monkeypatch):
@@ -203,6 +208,7 @@ def test_remove_single_deleted_good_script(tmpdir, empty_config, logger, monkeyp
     assert main.load_attempt_times == {}
 
     del_loaded_modules(main)
+    del main
 
 
 def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, logger, monkeypatch):
@@ -237,6 +243,7 @@ def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, l
     assert msg in logger.messages['debug']
 
     del_loaded_modules(main)
+    del main
 
 
 def test_load_single_bad_script(tmpdir, empty_config, logger, monkeypatch):
@@ -260,6 +267,7 @@ def test_load_single_bad_script(tmpdir, empty_config, logger, monkeypatch):
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
+    del main
 
 
 def test_remove_single_deleted_bad_script(tmpdir, empty_config, logger, monkeypatch):
@@ -283,6 +291,7 @@ def test_remove_single_deleted_bad_script(tmpdir, empty_config, logger, monkeypa
     assert main.load_attempt_times == {}
 
     del_loaded_modules(main)
+    del main
 
 
 def test_reload_single_changed_bad_script(tmpdir, empty_config, logger, monkeypatch):
@@ -311,6 +320,7 @@ def test_reload_single_changed_bad_script(tmpdir, empty_config, logger, monkeypa
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
+    del main
 
 
 def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, logger, monkeypatch):
@@ -343,6 +353,7 @@ def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, lo
     assert msg in logger.messages['info']
 
     del_loaded_modules(main)
+    del main
 
 
 def test_load_single_good_script_that_was_previously_bad(tmpdir, empty_config, logger, monkeypatch):
@@ -370,6 +381,7 @@ def test_load_single_good_script_that_was_previously_bad(tmpdir, empty_config, l
     assert main.loaded_modules[a_path].x == 1
 
     del_loaded_modules(main)
+    del main
 
 
 def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, logger, monkeypatch):
@@ -398,6 +410,7 @@ def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, l
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
+    del main
 
 if __name__ == "__main__":
     pytest.main(['test_loader.py'])
