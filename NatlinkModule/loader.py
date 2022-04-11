@@ -38,7 +38,6 @@ class NatlinkMain(metaclass=Singleton):
     """
     
     def __init__(self, logger: Any=None, config: Any = None):
-        print('==== __init__ of loader class')
         if logger is None:
             raise ValueError(f'loader.NatlinkMain, first instance should be called with a logging.Logger instance, not {logger}')
         if config is None:
@@ -527,12 +526,6 @@ def get_config_info_from_registry(key_name: str) -> str:
         result, _ = winreg.QueryValueEx(natlink_key, key_name)
         return result
 
-def valid_config_locations() -> Iterable[str]:
-    """get list of valid config locations
-    """
-    isfile = os.path.isfile
-    return [f for f in config_locations() if isfile(f)]
-
 def config_locations() -> Iterable[str]:
     """give two possible locations, the wanted and the "fallback" location
     
@@ -569,7 +562,7 @@ def run() -> None:
         if os.path.isdir(pywin32_dir):
             os.add_dll_directory(pywin32_dir)
         
-        config = NatlinkConfig.from_first_found_file(valid_config_locations())
+        config = NatlinkConfig.from_first_found_file(config_locations())
         main = NatlinkMain(logger, config)
         main.setup_logger()
         main.start()

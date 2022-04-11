@@ -103,6 +103,7 @@ except ModuleNotFoundError:
     print('Natlink is not enabled, module natlink and/or natlink.loader cannot be found\n\texit natlinkstatus.py...')
     sys.exit()
 from natlink import config
+from natlink import singleton
 import natlink
 
 ## setup a natlinkmain instance, for getting properties from the loader:
@@ -110,10 +111,9 @@ import natlink
 # # # natlinkmain = loader.NatlinkMain()
 
 ## setting up Logger and Config is needed, when running this for test:
-# Logger = logging.getLogger('natlink')
-# Config = config.NatlinkConfig.from_first_found_valid_file(loader.config_locations())
-# natlinkmain = loader.NatlinkMain(Logger, Config)
-#  self.natlinkmain.setup_logger()
+Logger = logging.getLogger('natlink')
+Config = config.NatlinkConfig.from_first_found_file(loader.config_locations())
+natlinkmain = loader.NatlinkMain(Logger, Config)
 
 # the possible languages (for get_language), now in loader
 
@@ -126,7 +126,7 @@ shiftKeyDict = {"nld": "Shift",
 
 thisDir, thisFile = os.path.split(__file__)
 
-class NatlinkStatus:
+class NatlinkStatus(metaclass=singleton.Singleton):
     """this class holds the Natlink status functions.
     
     This class is a Singleton, which means that all instances are the same object.
@@ -137,31 +137,10 @@ class NatlinkStatus:
     in the PyTest folder there are/come test functions in TestNatlinkStatus
 
     """
-    __instance = None
-    _had_init = False
-    
-    def __new__(cls):
-        if cls.__instance is None:
-            cls.__instance = object.__new__(cls)
-            Logger = logging.getLogger('natlink')
-            Config = config.NatlinkConfig.from_first_found_file(loader.valid_config_locations())
-            natlinkmain = loader.NatlinkMain(Logger, Config)
-            natlinkmain.setup_logger()
-            cls.__instance.__init__(natlinkmain)
-            cls._had_init = True
-        return cls.__instance    
-
-    
-    def __init__(self, natlinkmain=None):
+    def __init__(self):
         """initialise all instance variables, in this singleton class, hoeinstance
         """
-        if self.__class__._had_init:
-            # print('==== NatlinkStatus is already intialised, return from __init__')
-            return
-        if natlinkmain is None:
-            raise ValueError(f'NatlinkStatus, first instance should be called with a loader.NatlinkMain instance, not {natlinkmain}')
-        # print(f'==== __init__ of NatlinkStatus, with argument natlinkmain: {natlinkmain}')
-        self.natlinkmain = natlinkmain
+        self.natlinkmain = natlinkmain  # global
         self.DNSVersion = None
         self.DNSIniDir = None
         self.CoreDirectory = None
