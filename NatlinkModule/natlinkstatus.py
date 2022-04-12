@@ -137,6 +137,10 @@ class NatlinkStatus(metaclass=singleton.Singleton):
     in the PyTest folder there are/come test functions in TestNatlinkStatus
 
     """
+    known_directory_options = ['userdirectory', 'dragonflyuserdirectory',
+                               'unimacrodirectory', 'unimacrogrammarsdirectory',
+                               'vocoladirectory', 'vocolagrammarsdirectory']
+
     def __init__(self):
         """initialise all instance variables, in this singleton class, hoeinstance
         """
@@ -531,6 +535,14 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         self.AhkExeDir = ''
         return ''
 
+    def getExtraGrammarDirectories(self):
+        """record grammar directories that are unknown to natlinkstatus and natlinkconfigfunctions
+        
+        These directories can be entered "manually" in the `natlink.ini` file
+        """
+        result = self.natlinkmain.getconfigsetting(section='directories')
+        return [s for s in result if s not in self.known_directory_options]
+
     def getUnimacroIniFilesEditor(self):
         key = 'UnimacroIniFilesEditor'
         value =  self.natlinkmain.getconfigsetting(section='unimacro', option=key)
@@ -601,6 +613,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
                     'VocolaDirectory', 'VocolaUserDirectory', 'VocolaGrammarsDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
                     'UnimacroIniFilesEditor',
+                    'ExtraGrammarDirectories',
                     'InstallVersion',
                     # 'IncludeUnimacroInPythonPath',
                     'AhkExeDir', 'AhkUserDir']:

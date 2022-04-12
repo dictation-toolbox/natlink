@@ -482,11 +482,13 @@ class NatlinkMain(metaclass=Singleton):
             self.logger.setLevel(log_level.value)
             self.logger.debug(f'set log level to: {log_level.name}')
 
-    def getconfigsetting(self, section: str, option: str, filepath: Any = None, func: Any = None) -> str:
+    def getconfigsetting(self, section: str, option: Any = None, filepath: Any = None, func: Any = None) -> str:
         """get a setting from possibly an inifile other than natlink.ini
         
         Take a string as input, which is obtained from readwritefile.py, handling
         different encodings and possible BOM marks.
+        
+        When no "option" is passed, the contents of the section are returned (a list of options)
         
         func can be configparser.getint or configparser.getboolean if needed, otherwise configparser.get (str) is taken.
         pass: func='getboolean' or func='getint'.
@@ -499,6 +501,9 @@ class NatlinkMain(metaclass=Singleton):
         self.config_text = rwfile.readAnything(filepath)
         Config = configparser.ConfigParser()
         Config.read_string(self.config_text)
+        
+        if option is None:
+            return Config.options(section)
 
         if isinstance(func, str):
             func = getattr(Config, func)
