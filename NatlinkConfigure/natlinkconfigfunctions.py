@@ -78,6 +78,7 @@ class NatlinkConfig:
         self.config_dir = str(Path(self.config_path).parent)
         self.status = natlinkstatus.NatlinkStatus()
         self.getConfig()  # gets self.config and self.config_encoding
+        self.check_config()
 
     def get_check_config_locations(self):
         """check the location/locations as given by the loader
@@ -91,31 +92,10 @@ class NatlinkConfig:
             shutil.copyfile(fallback_path, config_path)
         return config_path
 
-
-        
-    def warning(self,text):
-        """is currently overloaded in GUI"""
-        if type(text) in (bytes, str):
-            T = text
-        else:
-            # list probably:
-            T = '\n'.join(text)
-        print('-'*60)
-        print(T)
-        print('='*60)
-        return T
-    
-    def error(self,text):
-        """is currently overloaded in GUI"""
-        if type(text) in (bytes, str):
-            T = text
-        else:
-            # list probably:
-            T = '\n'.join(text)
-        print('-'*60)
-        print(T)
-        print('='*60)
-        return T
+    def check_config(self):
+        """check config_file for unwanted settings
+        """
+        self.config_remove(section='directories', option='default_config')
 
     def getConfig(self):
         """return the config instance
@@ -167,14 +147,14 @@ class NatlinkConfig:
             with open(self.config_path, 'w', encoding='utf-8') as fp:
                 self.config.write(fp)   
 
-    def config_remove(self, section, key):
+    def config_remove(self, section, option):
         """removes from config file
         
         same effect as setting an empty value
         """
         if not self.config.has_section(section):
             return
-        self.config.remove_option(section, key)
+        self.config.remove_option(section, option)
         if not self.config.options(section):
             if section not in ['directories', 'settings', 'userenglish-directories', 'userspanish-directories']:
                 self.config.remove_section(section)
@@ -185,15 +165,15 @@ class NatlinkConfig:
     # def clearUserDirectory(self, arg):
     #     self.clearDirectory('UserDirectory')
         
-    def setDirectory(self, key, dir_path, section=None):
+    def setDirectory(self, option, dir_path, section=None):
         """set the directory, specified with "key", to dir_path
         
         If dir_path None or invalid, go via 
         """
         section = section or 'directories'
         if not dir_path:
-            prev_path = self.config_get('previous directories', key) or self.config_dir
-            dir_path = wxdialogs.GetDirFromDialog(f'Please choose a "{key}"', prev_path)
+            prev_path = self.config_get('previous directories', option) or self.config_dir
+            dir_path = wxdialogs.GetDirFromDialog(f'Please choose a "{option}"', prev_path)
             if not dir_path:
                 print('No valid directory specified')
                 return
@@ -203,33 +183,33 @@ class NatlinkConfig:
             if directory is False:
                 directory = config.expand_path(dir_path)
             if dir_path == directory:
-                print(f'Cannot set "{key}", the given path is invalid: "{directory}"')
+                print(f'Cannot set "{option}", the given path is invalid: "{directory}"')
             else:
-                print(f'Cannot set "{key}", the given path is invalid: "{directory}" ("{dir_path}")')
+                print(f'Cannot set "{option}", the given path is invalid: "{directory}" ("{dir_path}")')
             return
-        self.config_set(section, key, dir_path)
-        self.config_remove('previous directories', key)
+        self.config_set(section, option, dir_path)
+        self.config_remove('previous directories', option)
         if section == 'directories':
-            print(f'Set key "{key}" to "{dir_path}"')
+            print(f'Set option "{option}" to "{dir_path}"')
         else:
-            print(f'Set in section "{section}", key "{key}" to "{dir_path}"')
+            print(f'Set in section "{section}", option "{option}" to "{dir_path}"')
         return
         
-    def clearDirectory(self, key, section=None):
-        """clear the setting of the directory designated by key
+    def clearDirectory(self, option, section=None):
+        """clear the setting of the directory designated by option
         """
         section = section or 'directories'
-        old_value = self.config_get(section, key)
+        old_value = self.config_get(section, option)
         if not old_value:
-            print(f'The "{key}" was not set, nothing changed...')
+            print(f'The "{option}" was not set, nothing changed...')
             return
         if isValidDir(old_value):
-            self.config_set('previous directories', key, old_value)
+            self.config_set('previous directories', option, old_value)
         else:
-            self.config_remove('previous directories', key)
+            self.config_remove('previous directories', option)
             
-        self.config_remove(section, key)
-        print(f'cleared "{key}"')
+        self.config_remove(section, option)
+        print(f'cleared "{option}"')
    
     def setDragonflyUserDirectory(self, v):  
         key = 'DragonflyUserDirectory'
@@ -251,142 +231,10 @@ class NatlinkConfig:
             self.config_set('previous directories', key, old_value)
         self.config_remove('directories', key)
         print('cleared "{DragonflyUserDirectory}"')
-            
-        
-    def getVocolaUserDir(self):
-        key = 'VocolaUserDirectory'
-        value = self.config_get(key, None)
-        return value
-
-    def setVocolaUserDir(self, v):
-        key = 'VocolaUserDirectory'
-        if isValidDir(v, wantDirectory=1):
-            print("Setting VocolaUserDirectory %s and enable Vocola"% v)
-            self.config_set('vocola', key, v)
-            self.config.remove_option('previous directories', key)
-            return True
-        oldvocdir = self.config_get('previous directories', key)
-        if oldvocdir and isValidDir(oldvocdir, wantDirectory=1):
-            mess = 'not a valid directory: %s, Vocola remains enabled with VocolaUserDirectory: %s'% (v, oldvocdir)
-        else:
-            mess = 'not a valid directory: %s, Vocola remains disabled'% v
-        return mess
-
-    def clearVocolaUserDir(self):
-        key = 'VocolaUserDirectory'
-        old_value = self.config_get('directories', key)
-        if old_value and isValidDir(old_value):
-            self.config_set('previous directories', key, old_value)
-        if self.config_get('directories', key):
-            self.config.remove_option('directories', key)
-            print('clearing the VocolaUserDirectory and disable Vocola')
-        else:
-            mess = 'no valid VocolaUserDirectory, so Vocola was already disabled'
-            return mess
-        return True
-
-    ## autohotkey (January 2014)
-    def getAhkExeDir(self):
-        key = 'AhkExeDir'
-        value = self.config_get('directories', key)
-        return value
-
-    def setAhkExeDir(self, v):
-        key = 'AhkExeDir'
-        ahkexedir = isValidDir(v, wantDirectory=1)
-
-        if not ahkexedir:
-            mess = f'not a valid directory: "{v}"'
-            return mess
-        exepath = os.path.join(ahkexedir, 'autohotkey.exe')
-        if not os.path.isfile(exepath):
-            mess = f'path does not contain "autohotkey.exe": "{v}"'
-
-        print('Set AutoHotkey Exe Directory (AhkExeDir) to %s'% v)
-        self.config_set('autohotkey', key, v)
-        self.config.remove_option('previous directories', key)
-        return True
-
-    def clearAhkUserDir(self):
-        key = 'AhkUserDir'
-        old_value = self.config_get('autohotkey', key)
-        if old_value:
-            if isValidDir(old_value):
-                self.config_set('previous directories', key, old_value)
-            self.config.remove_option('autohotkey', key)
-            print('Clear AutoHotkey User Directory (AhkUserDir)')
-            return True 
-        print('AutoHotkey User Directory (AhkUserDir) was not set, do nothing')
-        return True
-                
-    def getAhkUserDir(self):
-        key = 'AhkUserDir'
-        value = self.config_get('autohotkey', key)
-        return value
-
-    def setAhkUserDir(self, v):
-        key = 'AhkUserDir'
-        ahkuserdir = isValidDir(v, wantDirectory=1)
-        if not ahkuserdir:
-            mess = f'not a valid directory: "{v}"'
-            return mess
-        print(f'Set AutoHotkey User Directory (AhkUserDir) to "{v}"')
-        self.config_set('autohotkey', key, v)
-        self.config.remove_option('previous directories', key)
-        return True
-
-    def clearAhkExeDir(self):
-        key = 'AhkExeDir'
-        old_value = self.config_get('directories', key)
-        if old_value and isValidDir(old_value):
-            self.config_set('previous directories', key, old_value)
-        if self.config_get('directories', key):
-            self.config.remove_option('directories', key)
-            print('Clear AutoHotkey Exe Directory (AhkExeDir)')
-        else:
-            mess = 'AutoHotkey Exe Directory (AhkExeDir) was not set, do nothing'
-            return mess
-        return True
-
-    def getUnimacroUserDir(self):
-        key = 'UnimacroUserDirectory'
-        return self.config_get('directories', key)
-
-    def setUnimacroUserDir(self, v):
-        key = 'UnimacroUserDirectory'
-        oldDir = self.getUnimacroUserDir()
-        unimacrouserdir = isValidDir(v, wantDirectory=1)
-        if not unimacrouserdir:
-            mess = f'not a valid directory: {v}'
-            return mess
-
-        oldDir = isValidDir(oldDir, wantDirectory=1)
-        if oldDir == unimacrouserdir:
-            print('UnimacroUserDirectory is already set to "%s", Unimacro is enabled'% v)
-            return True
-        if oldDir:
-            print('\n-----------\nConsider copying inifile subdirectories (enx_inifiles or nld_inifiles)\n' \
-                  'from old UnimacroUserDirectory (%s) to \n' \
-                  'new UnimacroUserDirectory (%s)\n--------\n'% (oldDir, unimacrouserdir))
-        self.config_set('directories', key, v)
-        self.config.remove_option('previous directories', key)
-        return True
-
-            
-    def clearUnimacroUserDir(self):
-        """clear but keep previous value"""
-        key = 'UnimacroUserDirectory'
-        oldValue = self.config_get('directories', key)
-        self.config.remove_option('directories', key)
-        oldDirectory = isValidDir(oldValue)
-        if oldDirectory:
-            self.config_set('previous directories', key, oldValue)
-        else:
-            print('UnimacroUserDirectory was already cleared, Unimacro remains disabled')
 
     def setUnimacroIniFilesEditor(self, v):
         key = "UnimacroIniFilesEditor"
-        exefile = isValidDir(v, wantFile=1)
+        exefile = isValidDir(v)
         if exefile and v.endswith(".exe"):
             self.config_set('unimacro', key, v)
             self.config.remove_option('previous directories', key)
@@ -821,21 +669,35 @@ This is the folder where your own Dragonfly python grammar files are/will be loc
     
     # Unimacro User directory and Editor or Unimacro INI files-----------------------------------
     def do_o(self, arg):
-        self.Config.setDirectory('UnimacroDirectory', self.Config.status.getUnimacroDirectory())
+        unimacro_dir = self.Config.status.getUnimacroDirectory()
+        if not unimacro_dir:
+            print('Unimacro is not enabled, please do a "pip install unimacro"')
+            return
+        uniUserDir = self.Config.config_get('unimacro', 'UnimacroUserDirectory')
+        if uniUserDir and isdir(uniUserDir):
+            print(f'UnimacroUserDirectory is already defined: "{uniUserDir}"\n\tto change, first clear (option "O") and then set again')
+            return
         self.Config.setDirectory('UnimacroUserDirectory', arg, section='unimacro')
         uniUserDir = self.Config.config_get('unimacro', 'UnimacroUserDirectory')
+        if not uniUserDir:
+            return
+        self.Config.setDirectory('UnimacroDirectory', unimacro_dir)
         uniGrammarsDir = str(Path(config.expand_path(uniUserDir))/'ActiveGrammars')
-        createIfNotThere(uniGrammarsDir)
-        self.Config.config_set('directories', 'UnimacroGrammarsDirectory', uniGrammarsDir)
+        if not isdir(uniGrammarsDir):
+            createIfNotThere(uniGrammarsDir)
+            ## copy start files...
+        self.Config.setDirectory('UnimacroGrammarsDirectory', uniGrammarsDir)
+        
             
     def do_O(self, arg):
         self.Config.clearDirectory('UnimacroUserDirectory', section='unimacro')
-        self.Config.config_remove('directories', 'UnimacroGrammarsDirectory')
-        self.Config.config_remove('directories', self.Config.status.getVocolaDirectory())
+        self.Config.config_remove('directories', 'unimacrogrammarsdirectory')
+        self.Config.config_remove('directories', 'unimacrodirectory')
 
     def help_o(self):
         print('-'*60)
         print(r"""set/clear UnimacroUserDirectory (o <path>/O)
+
 
 Setting this directory also enables Unimacro. Clearing it disables Unimacro
 
@@ -915,18 +777,29 @@ Vocola command.
         
         but the config needs also the VocolaDirectory and the VocolaGrammarsDirectory
         """
-        self.Config.setDirectory('VocolaDirectory', self.Config.status.getVocolaDirectory())
+        voc_dir = self.Config.status.getVocolaDirectory()
+        if not voc_dir:
+            print('Vocola is not enabled, please do a "pip install vocola2"')
+            return
+
+        vocola_user_dir = self.Config.config_get('vocola', 'VocolaUserDirectory')
+        if vocola_user_dir and isdir(vocola_user_dir):
+            print(f'VocolaUserDirectory is already defined: "{vocola_user_dir}"\n\tto change, first clear (option "V") and then set again')
+            return
         self.Config.setDirectory('VocolaUserDirectory', arg, section='vocola')
-        vocUserDir = self.Config.config_get('vocola', 'VocolaUserDirectory')
-        vocGrammarsDir = str(Path(config.expand_path(vocUserDir))/'VocolaGrammars')
+        vocola_user_dir = self.Config.config_get('vocola', 'VocolaUserDirectory')
+        if not vocola_user_dir:
+            return
+        vocGrammarsDir = str(Path(config.expand_path(vocola_user_dir))/'VocolaGrammars')
         createIfNotThere(vocGrammarsDir)
-        self.Config.config_set('directories', 'VocolaGrammarsDirectory', vocGrammarsDir)
-        
+        self.Config.setDirectory('VocolaDirectory', voc_dir)
+        self.Config.setDirectory('VocolaGrammarsDirectory', vocGrammarsDir)
+
             
     def do_V(self, arg):
         self.Config.clearDirectory('VocolaUserDirectory', section='vocola')
-        self.Config.config_remove('directories', 'VocolaGrammarsDirectory')
-        self.Config.config_remove('directories', self.Config.status.getVocolaDirectory())
+        self.Config.config_remove('directories', 'vocolagrammarsdirectory')
+        self.Config.config_remove('directories', 'vocoladirectory')
 
     def help_v(self):
         print('-'*60)
@@ -1117,7 +990,9 @@ def createIfNotThere(path_name, level_up=None):
     
     return the valid path (str) or
     False, if not a valid path
+    if level_up, can create more step upward ( specify > 1)
     """
+    level_up = level_up or 1
     dir_path = isValidDir(path_name)
     if dir_path:
         return dir_path
