@@ -1,0 +1,641 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>monitorfunctions &mdash; natlink 1.1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="messagefunctions" href="messagefunctions.html" />
+    <link rel="prev" title="sendkeys" href="sendkeys.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> natlink
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="natlinkclipboard.html">natlinkclipboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sendkeys.html">sendkeys</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">monitorfunctions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="messagefunctions.html">messagefunctions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">natlink</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">Modules</a> &raquo;</li>
+        
+      <li>monitorfunctions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/monitorfunctions.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="monitorfunctions">
+<span id="refmonitorfunctions"></span><h1>monitorfunctions<a class="headerlink" href="#monitorfunctions" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="code docutils literal notranslate"><span class="pre">monitorfunctions</span></code> module provides various functions related to
+monitors and windows. Windows can be positioned and resized on a monitor, or be moved
+to another monitor.</p>
+<p>Windows only.</p>
+<span class="target" id="module-natlink.monitorfunctions"></span><p>gives the monitor information of all the monitors</p>
+<p>and provide functions for moving a (top level) window to a position on
+the current or on a different monitor.</p>
+<p>The start of this module was taken from O’Reilly, and has been enhanced for use
+with NatLink speech recognition commands, see <a class="reference external" href="http://qh.antenna.nl/unimacro">Unimacro</a></p>
+<p>Quintijn Hoogenboom, february 2010/May 2021</p>
+<p><strong>The basic information</strong> is collected in:</p>
+<ul>
+<li><p><code class="code docutils literal notranslate"><span class="pre">MONITOR_INFO</span></code>, a <cite>dict</cite> with keys the handles of the monitor.
+These keys are converted to <cite>int</cite>, and for 2 monitors probably 65537 and
+65539, and put in global variable <code class="code docutils literal notranslate"><span class="pre">MONITOR_HNDLES</span></code> (a <cite>list</cite>)</p></li>
+<li><p>Each item of <cite>MONITOR_INFO</cite> is again a dictionary with for example my second monitor info:
+|  {‘Device’: ‘\.DISPLAY2’,
+|  ‘Flags’: 0,
+|  ‘Monitor’: (1680, 0, 2704, 768),
+|  ‘Work’: (1787, 0, 2704, 768),
+|  ‘offsetx’: 107,
+|  ‘offsety’: 0}</p>
+<p>Thus holding the Monitor info and the Work info. The <cite>Work</cite> info gives the space for normal windows,
+so exclusive of the Windows Taskbar and the Dragon Bar (the old fashioned one).</p>
+<p>As an extra <cite>offsetx</cite> and <cite>offsety</cite> are calculated,
+which give the width/height of task bar and possibly other “bars”. In this example I have the task bar
+vertically placed at the left side of this second monitor, and it has a width of 107 pixels.``</p>
+</li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">MONITOR_HNDLES</span></code>: a list of the available monitors (the handles are int, see above)</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">VIRTUAL_SCREEN</span></code>: a 4 tuple giving the (left, top, right, bottom) of the complete (virtual) screen</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">BORDERX</span></code>, <code class="code docutils literal notranslate"><span class="pre">BORDERY</span></code>: the border width of windows. With this a window can be sized a little bit.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">MA</span></code>, <code class="code docutils literal notranslate"><span class="pre">WA</span></code>, <code class="code docutils literal notranslate"><span class="pre">RA</span></code></p>
+<p>Each area (<cite>MA</cite>: Monitor, <cite>WA</cite>: Work, <cite>RA</cite>: restore area of a window) is a 4 length tuple
+giving (left, top, right, bottom).</p>
+</li>
+</ul>
+<p>Biggest puzzle of the calculations is changing the restore_area (from GetWindowPlacement) to the Work area of
+a new monitor. Important is the <cite>offsetx</cite> and <cite>offsety</cite> (difference between Monitor coordinates and Work area
+coordinates). The <cite>RA</cite> (restore_area) is relative to the Work area of the monitor it is on,
+so the <cite>offsetx</cite> and <cite>offsety</cite>
+must be subtracted from the calculated coordinates. (something like that)</p>
+<p><strong>This module provides functions for getting:</strong></p>
+<dl>
+<dt>all the info:</dt><dd><p><code class="code docutils literal notranslate"><span class="pre">monitor_info(force=None)</span></code>:       giving the above mentioned data</p>
+</dd>
+<dt>which is the nearest monitor, using API functions:</dt><dd><p><code class="code docutils literal notranslate"><span class="pre">get_nearest_monitor_window(winHndle)</span></code></p>
+<p><code class="code docutils literal notranslate"><span class="pre">get_nearest_monitor_point(point)</span></code></p>
+<p>(you could also use <code class="code docutils literal notranslate"><span class="pre">get_nearest_monitor_rect</span></code>, but this was not needed here)</p>
+</dd>
+<dt>further info:</dt><dd><p><code class="code docutils literal notranslate"><span class="pre">get_other_monitors(mon)</span></code>:     give a list of the other monitor hndles (after collecting the current monitor)</p>
+</dd>
+<dt>for individual points:</dt><dd><p>(used by natlinkutilsqh.py in Unimacro (NatLink, speech recognition)</p>
+<p><code class="code docutils literal notranslate"><span class="pre">is_inside_monitor(point)</span></code>:             returns True if the point is inside one of the monitors (monitor area)
+<code class="code docutils literal notranslate"><span class="pre">get_closest_position(point)</span></code>:          returns a point that is closest to an outside point on one of the monitors</p>
+</dd>
+<dt>for user calls:</dt><dd><p><code class="code docutils literal notranslate"><span class="pre">maximize_window(winHndle)</span></code>:            just maximize
+<code class="code docutils literal notranslate"><span class="pre">minimize_window(winHndle)</span></code>:            just minimize</p>
+<p><code class="code docutils literal notranslate"><span class="pre">move_to_monitor(winHndle,</span> <span class="pre">newMonitor,</span> <span class="pre">oldMonitor,</span> <span class="pre">resize)</span></code>: move to another monitor
+preserving position of restore_area as much as possible.
+resize: 0 if window is (assumed to be) fixed in size.
+This can be found with: <code class="code docutils literal notranslate"><span class="pre">window_can_be_resized(winHndle)</span></code></p>
+<p><code class="code docutils literal notranslate"><span class="pre">restore_window(winHndle,</span> <span class="pre">monitor,</span> <span class="pre">...)</span></code>: placing in various spots and widths/heights
+see at definition for parameters</p>
+</dd>
+</dl>
+<p>Several test functions demonstrate the result of different monitor functions.
+Switch them on or of at the bottom of the file</p>
+<div class="section" id="functions">
+<h2>Functions:<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="natlink.monitorfunctions.correct_restore_area">
+<code class="sig-name descname"><span class="pre">correct_restore_area</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">RA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_info_new</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_info_old</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepinside</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#correct_restore_area"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.correct_restore_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>place RA inside the newWA, preserving relative position as much as possible (other monitor)</p>
+<dl class="simple">
+<dt>input: restore_area (RA) in ‘Work’ coordinates</dt><dd><p>info of monitor_info_new and monitor_info_old
+resize: resize relative to previous if true, keep size if false.
+keepinside: keep the window inside the work area of the monitor (normally when resize = true)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.fake_monitor_info_for_testing">
+<code class="sig-name descname"><span class="pre">fake_monitor_info_for_testing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nmon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">virtual_screen</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#fake_monitor_info_for_testing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.fake_monitor_info_for_testing" title="Permalink to this definition">¶</a></dt>
+<dd><p>test if changed monitor data come through in calling program</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.getScreenRectData">
+<code class="sig-name descname"><span class="pre">getScreenRectData</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#getScreenRectData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.getScreenRectData" title="Permalink to this definition">¶</a></dt>
+<dd><p>return width, height, xmin, ymin, xmax, ymax for complete screen</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_closest_position">
+<code class="sig-name descname"><span class="pre">get_closest_position</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_closest_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_closest_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the closest valid mouse position on any monitor</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_current_monitor_rect">
+<code class="sig-name descname"><span class="pre">get_current_monitor_rect</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_current_monitor_rect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_current_monitor_rect" title="Permalink to this definition">¶</a></dt>
+<dd><p>get rectangle positions of the foreground monitor,
+pass (xpos, ypos) of current mouse position</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_current_monitor_rect_work">
+<code class="sig-name descname"><span class="pre">get_current_monitor_rect_work</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_current_monitor_rect_work"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_current_monitor_rect_work" title="Permalink to this definition">¶</a></dt>
+<dd><p>get rectangle positions of the foreground monitor,
+pass (xpos, ypos) of current mouse position</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_monitor_rect">
+<code class="sig-name descname"><span class="pre">get_monitor_rect</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monitorIndex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_monitor_rect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_monitor_rect" title="Permalink to this definition">¶</a></dt>
+<dd><p>get rectangle positions of indexed monitor</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_monitor_rect_work">
+<code class="sig-name descname"><span class="pre">get_monitor_rect_work</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monitorIndex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_monitor_rect_work"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_monitor_rect_work" title="Permalink to this definition">¶</a></dt>
+<dd><p>get rectangle positions of indexed monitor, the Work area</p>
+<p>so ignoring Dragon bar or taskbar.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_nearest_monitor_point">
+<code class="sig-name descname"><span class="pre">get_nearest_monitor_point</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_nearest_monitor_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_nearest_monitor_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>give monitor number of the monitor which is nearest to the point
+point is a tuple (x, y) of coordinates</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_nearest_monitor_window">
+<code class="sig-name descname"><span class="pre">get_nearest_monitor_window</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winHndle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_nearest_monitor_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_nearest_monitor_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>give monitor number of the monitor which is nearest to the window</p>
+<dl class="simple">
+<dt>input:</dt><dd><p>the handle of the window, most often got by:
+winHndle = win32gui.GetForegroundWindow()</p>
+</dd>
+<dt>output:</dt><dd><p>the monitor handle as an integer (65537, 65539 often on a 2 monitor configuration)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_other_monitors">
+<code class="sig-name descname"><span class="pre">get_other_monitors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mon</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_other_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_other_monitors" title="Permalink to this definition">¶</a></dt>
+<dd><p>give list of other monitors</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.get_taskbar_position">
+<code class="sig-name descname"><span class="pre">get_taskbar_position</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#get_taskbar_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.get_taskbar_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>return left, top, right or bottom</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.is_inside_monitor">
+<code class="sig-name descname"><span class="pre">is_inside_monitor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#is_inside_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.is_inside_monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>give the number of the monitor in which the position lies (starting with 1)</p>
+<p>if outside, return None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.keepinside_all_screens">
+<code class="sig-name descname"><span class="pre">keepinside_all_screens</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">virtL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">virtR</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#keepinside_all_screens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.keepinside_all_screens" title="Permalink to this definition">¶</a></dt>
+<dd><p>keep inside the virtual screen, allow for border</p>
+<p>(horizontal and vertical called separate</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.keepinside_restore_area">
+<code class="sig-name descname"><span class="pre">keepinside_restore_area</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#keepinside_restore_area"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.keepinside_restore_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>adjust (restore)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.maximize_window">
+<code class="sig-name descname"><span class="pre">maximize_window</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winHndle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#maximize_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.maximize_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>maximize to the monitor (it is on at the moment)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.minimize_window">
+<code class="sig-name descname"><span class="pre">minimize_window</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winHndle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#minimize_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.minimize_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>minimize the window</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.monitor_info">
+<code class="sig-name descname"><span class="pre">monitor_info</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#monitor_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.monitor_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>collecting all the essential information</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.move_to_monitor">
+<code class="sig-name descname"><span class="pre">move_to_monitor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hndle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">currentMon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#move_to_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.move_to_monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>move window with hndle to monitor with hndle monitor</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.move_window">
+<code class="sig-name descname"><span class="pre">move_window</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winHndle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pixels'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepinside</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepinsideall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#move_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.move_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>moves a window, can go across monitor borders and out of the total area</p>
+<dl class="field-list simple">
+<dt class="field-odd">WinHndle</dt>
+<dd class="field-odd"><p>hndle of the program</p>
+</dd>
+<dt class="field-even">Monitor</dt>
+<dd class="field-even"><p>hndle of the monitor (is collected if not passed)</p>
+</dd>
+<dt class="field-odd">Direction</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p>a string, left, right, up, down or</p></li>
+<li><p>a direction in degrees (0 = up, 90 = right, 180 = down, 270 = left)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Amount</dt>
+<dd class="field-even"><p>number of pixels (for moving to left edge, use restore_window)</p>
+</dd>
+<dt class="field-odd">Keepinside</dt>
+<dd class="field-odd"><p>keep inside the work area of the monitor</p>
+</dd>
+<dt class="field-even">Keepinsideall</dt>
+<dd class="field-even"><p>keep inside the virtual area of all monitors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.restore_window">
+<code class="sig-name descname"><span class="pre">restore_window</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winHndle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xwidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ywidth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ypos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepinside</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#restore_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.restore_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>move window inside same monitor, restore format</p>
+<dl class="simple">
+<dt>(for moving an amount of pixels or across the monitor border use move_window</dt><dd><p>for resizing an amount of pixels, to an edge or across the monitor border use</p>
+</dd>
+</dl>
+<p>stretch_window or shrink_window)</p>
+<p>if no parameters are passed, the window is restored, but inside its
+working area if it fits. If it does not fit, the left top is shown.</p>
+<p>winHndle: hndle of the program
+monitor: hndle of the monitor (from which the monitor_info is got)
+xwidth, ywidth: passed to width in _get_new_coordinates_same_monitor, see there
+xpos, ypos: passed to position in _get_new_coordinates_same_monitor, see there
+keepinside: should normally be the same as the window_can_be_resized value,</p>
+<blockquote>
+<div><p>default taken from this function</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.shrink_window">
+<code class="sig-name descname"><span class="pre">shrink_window</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winHndle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pixels'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepinside</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepinsideall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#shrink_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.shrink_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>resize a window, making it smaller, can go across monitor borders and out of the total area</p>
+<p>winHndle: hndle of the program
+monitor: hdnle of the monitor (is collected if not passed)
+direction: a string, left, right, up, down or</p>
+<blockquote>
+<div><p>a direction in degrees (0 = up, 90 = right, 180 = down, 270 = left)</p>
+</div></blockquote>
+<p>amount: number of pixels (for moving to left edge, use restore_window)
+when shrink relative, take size of the window rather than distance to edge or corner</p>
+<p>keepinside: keep inside the work area of the monitor
+keepinsideall: keep inside the virtual area of all monitors.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.stretch_window">
+<code class="sig-name descname"><span class="pre">stretch_window</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">winHndle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pixels'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepinside</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepinsideall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#stretch_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.stretch_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>resize a window, making it larger, can go across monitor borders and out of the total area</p>
+<p>winHndle: hndle of the program
+monitor: hdnle of the monitor (is collected if not passed)
+direction: a string, left, right, up, down or</p>
+<blockquote>
+<div><p>a direction in degrees (0 = up, 90 = right, 180 = down, 270 = left)</p>
+</div></blockquote>
+<p>amount: number of pixels (for moving to left edge, use restore_window)
+keepinside: keep inside the work area of the monitor
+keepinsideall: keep inside the virtual area of all monitors.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_basic_values">
+<code class="sig-name descname"><span class="pre">test_basic_values</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_basic_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_basic_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>testing the system metrics and monitor info of multiple monitors</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_center_different_sizes">
+<code class="sig-name descname"><span class="pre">test_center_different_sizes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_center_different_sizes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_center_different_sizes" title="Permalink to this definition">¶</a></dt>
+<dd><p>test different parameters of xwidth and ywidth for different sizes of window</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_default_restore">
+<code class="sig-name descname"><span class="pre">test_default_restore</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_default_restore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_default_restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>test restore after having set the RA to ridiculous values</p>
+<p>mon can be left away.
+keepinside makes the window fit to the monitor always.
+note the window is kept on the same monitor, though the _set_restore_area could
+suspect different.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_get_nearest_monitors">
+<code class="sig-name descname"><span class="pre">test_get_nearest_monitors</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_get_nearest_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_get_nearest_monitors" title="Permalink to this definition">¶</a></dt>
+<dd><p>test getting the nearest monitor, wrappers around API functions</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_individual_points">
+<code class="sig-name descname"><span class="pre">test_individual_points</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_individual_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_individual_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>testing of points being inside or near some monitor</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_minimize_maximize_restore">
+<code class="sig-name descname"><span class="pre">test_minimize_maximize_restore</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_minimize_maximize_restore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_minimize_maximize_restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>testing minimize/maximize actions of window on one screen</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_mouse_to_other_monitor">
+<code class="sig-name descname"><span class="pre">test_mouse_to_other_monitor</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_mouse_to_other_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_mouse_to_other_monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>try to position the mouse in another monitor</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_move_around_monitor_fixed_size">
+<code class="sig-name descname"><span class="pre">test_move_around_monitor_fixed_size</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_move_around_monitor_fixed_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_move_around_monitor_fixed_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>test different parameters of xwidth and ywidth for positioning a window</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_move_far_away">
+<code class="sig-name descname"><span class="pre">test_move_far_away</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_move_far_away"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_move_far_away" title="Permalink to this definition">¶</a></dt>
+<dd><p>test moving across borders of monitor, testing keepinside_all</p>
+<p>going to corners can give unexpected results, jumping to another monitor…</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_move_relative_degrees">
+<code class="sig-name descname"><span class="pre">test_move_relative_degrees</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_move_relative_degrees"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_move_relative_degrees" title="Permalink to this definition">¶</a></dt>
+<dd><p>test moving around the monitor with an  angle relative to the current distance of the nearest corner</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_move_same_window_degrees">
+<code class="sig-name descname"><span class="pre">test_move_same_window_degrees</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_move_same_window_degrees"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_move_same_window_degrees" title="Permalink to this definition">¶</a></dt>
+<dd><p>test moving around the monitor with an  angle</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_move_same_window_sides_corners">
+<code class="sig-name descname"><span class="pre">test_move_same_window_sides_corners</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_move_same_window_sides_corners"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_move_same_window_sides_corners" title="Permalink to this definition">¶</a></dt>
+<dd><p>test moving around the monitor</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_move_to_other_monitor">
+<code class="sig-name descname"><span class="pre">test_move_to_other_monitor</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_move_to_other_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_move_to_other_monitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>try moving to other monitor, keeping position as close as possible</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_restore_window_half_width">
+<code class="sig-name descname"><span class="pre">test_restore_window_half_width</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_restore_window_half_width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_restore_window_half_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>test moving around edges, corners, half width, height</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_restore_window_third_width">
+<code class="sig-name descname"><span class="pre">test_restore_window_third_width</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_restore_window_third_width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_restore_window_third_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>test moving around edges, corners, half width, height</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_shrink_same_window_sides_corners">
+<code class="sig-name descname"><span class="pre">test_shrink_same_window_sides_corners</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_shrink_same_window_sides_corners"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_shrink_same_window_sides_corners" title="Permalink to this definition">¶</a></dt>
+<dd><p>test moving around the monitor</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_stretch_far_away">
+<code class="sig-name descname"><span class="pre">test_stretch_far_away</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_stretch_far_away"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_stretch_far_away" title="Permalink to this definition">¶</a></dt>
+<dd><p>test stretching across borders of monitor, testing keepinside_all</p>
+<p>stretching to corners can give unexpected results, jumping to another monitor…</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_stretch_same_window_sides_corners">
+<code class="sig-name descname"><span class="pre">test_stretch_same_window_sides_corners</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_stretch_same_window_sides_corners"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_stretch_same_window_sides_corners" title="Permalink to this definition">¶</a></dt>
+<dd><p>test moving around the monitor</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.test_taskbar_position">
+<code class="sig-name descname"><span class="pre">test_taskbar_position</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#test_taskbar_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.test_taskbar_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>prints if the taskbar is located</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.wait">
+<code class="sig-name descname"><span class="pre">wait</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mult</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#wait"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>wait multiple of default wait time</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="natlink.monitorfunctions.window_can_be_resized">
+<code class="sig-name descname"><span class="pre">window_can_be_resized</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">windowHndle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/monitorfunctions.html#window_can_be_resized"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.monitorfunctions.window_can_be_resized" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns 1 if the window can be resized (has a maximize button)</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="messagefunctions.html" class="btn btn-neutral float-right" title="messagefunctions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sendkeys.html" class="btn btn-neutral float-left" title="sendkeys" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Quintijn Hoogenboom.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

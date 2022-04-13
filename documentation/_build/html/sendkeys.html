@@ -1,0 +1,257 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>sendkeys &mdash; natlink 1.1.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="monitorfunctions" href="monitorfunctions.html" />
+    <link rel="prev" title="natlinkclipboard" href="natlinkclipboard.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> natlink
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="natlinkclipboard.html">natlinkclipboard</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">sendkeys</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-natlink.sendkeys">sendkeys module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="monitorfunctions.html">monitorfunctions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="messagefunctions.html">messagefunctions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">natlink</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">Modules</a> &raquo;</li>
+        
+      <li>sendkeys</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/sendkeys.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="sendkeys">
+<span id="refsendkeys"></span><h1>sendkeys<a class="headerlink" href="#sendkeys" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="code docutils literal notranslate"><span class="pre">sendkeys</span></code> function sends keystrokes to the foreground window.</p>
+<p>The format that is used in Unimacro and Vocola is translated into Dragonfly
+format, and the <code class="code docutils literal notranslate"><span class="pre">dragonfly.actions.action_key.Key</span></code> class performs the
+actions.</p>
+<p>This replaces the <code class="code docutils literal notranslate"><span class="pre">natlink.playString</span></code> function of Natlink
+and the <code class="code docutils literal notranslate"><span class="pre">SendInput</span></code> of Vocola.</p>
+<div class="section" id="module-natlink.sendkeys">
+<span id="sendkeys-module"></span><h2>sendkeys module<a class="headerlink" href="#module-natlink.sendkeys" title="Permalink to this headline">¶</a></h2>
+<p>Sending keystrokes to the foreground window.</p>
+<p>Usage:  <code class="code docutils literal notranslate"><span class="pre">from</span> <span class="pre">natlink.sendkeys</span> <span class="pre">import</span> <span class="pre">sendkeys</span></code></p>
+<p>and then: <code class="code docutils literal notranslate"><span class="pre">sendkeys&quot;(&quot;keystrokes&quot;)</span></code></p>
+<p>This module now adopts the Dragonfly <code class="code docutils literal notranslate"><span class="pre">action_key</span></code> module,
+so <cite>“{alt+w}”</cite> is (in the function) converted to <cite>“a-w”</cite> etc.</p>
+<p>(Quintijn Hoogenboom, 2021-04-04)</p>
+<dl class="py function">
+<dt id="natlink.sendkeys.sendkeys">
+<code class="sig-name descname"><span class="pre">sendkeys</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/sendkeys.html#sendkeys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.sendkeys.sendkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>sends keystrokes via dragonfly class <code class="code docutils literal notranslate"><span class="pre">action_key.Keys</span></code></p>
+<p>Keystrokes following Unimacro/Vocola convention are translated into Dragonfly notation:</p>
+<p><code class="code docutils literal notranslate"><span class="pre">&quot;{shift+right</span> <span class="pre">4}&quot;</span></code> is translated to <code class="code docutils literal notranslate"><span class="pre">&quot;s-right:4&quot;</span></code>.</p>
+<p>Multiple keystrokes, pauses before the individual keys and a pause after all the keys can be given in Dragonfly notation:</p>
+<p><code class="code docutils literal notranslate"><span class="pre">&quot;{down/25:12/100}&quot;</span></code> presses the <cite>down</cite> key 12 times,
+with a pause before each key of 25/100 seconds
+and a pause of 1 second (100/100 seconds) after the 12 down presses</p>
+<p>Extra notation (Quintijn):</p>
+<p><code class="code docutils literal notranslate"><span class="pre">&quot;!&quot;</span></code> at the end of a chord (the keystrokes definition between the braced, <code class="code docutils literal notranslate"><span class="pre">{</span></code> and <code class="code docutils literal notranslate"><span class="pre">}</span></code>,
+triggers the <cite>use_hardware=True</cite> event,
+comparable with the SendSystemKeys mechanism of Dragon.</p>
+<p>Tested at bottom of this file interactively…</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="monitorfunctions.html" class="btn btn-neutral float-right" title="monitorfunctions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="natlinkclipboard.html" class="btn btn-neutral float-left" title="natlinkclipboard" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Quintijn Hoogenboom.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

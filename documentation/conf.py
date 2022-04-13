@@ -14,18 +14,16 @@
 #
 import os
 import sys
-print(f'python version: {sys.version},\n\tprefix: {sys.prefix}')
+
 src_directory = os.path.join(os.path.abspath('..'), "src")
 sys.path.insert(0, src_directory)
-natlinkmodule_directory = os.path.join(src_directory, "NatlinkModule")
-sys.path.insert(0, natlinkmodule_directory)
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'natlink'
-copyright = '1999, Joel Gould'
-author = 'Joel Gould, Quintijn Hoogenboom'
+copyright = '2021, Joel Gould, Quintijn Hoogenboom'
+author = 'Joel Gould'
 
 # The short X.Y version
 version = '1.1'
@@ -47,13 +45,19 @@ class Mock(MagicMock):
 
 mock_modules = {
     'ctypes',
+    'dtactions',  # DF: uncertain about this one.
+    'pywintypes',
     'win32api',
     'win32clipboard',
+    'win32com',
+    'win32com.client',
+    'win32com.shell',
     'win32con',
+    'win32file',
     'win32gui',
     'win32process',
+    'winreg',
     'winxpgui',
-    'natlink'
 }
 
 for module_name in mock_modules:
@@ -176,7 +180,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'natlink', 'Natlink Documentation',
+    (master_doc, 'natlink', 'natlink Documentation',
      [author], 1)
 ]
 
@@ -189,7 +193,7 @@ man_pages = [
 texinfo_documents = [
     (master_doc, 'natlink', 'Natlink Documentation',
      author, 'natlink',
-     'Common OS action and related code from dictation-toolbox projects.',
+     'Core of the Natlink project, connecting Dragon with python.',
      'Miscellaneous'),
 ]
 
