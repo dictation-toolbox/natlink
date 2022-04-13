@@ -85,7 +85,7 @@ class NatlinkConfig:
         """
         config_path, fallback_path = loader.config_locations()
         
-        if not isdir(config_path):
+        if not isfile(config_path):
             config_dir = Path(config_path).parent
             if not config_dir.is_dir():
                 config_dir.mkdir(parents=True)
