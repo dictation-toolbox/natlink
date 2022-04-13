@@ -95,34 +95,37 @@ getUsername: get active username (only if NatSpeak/Natlink is running)
 getDNSuserDirectory: get directory of user speech profile (only if NatSpeak/Natlink is running)</p>
 <p>The functions below should not change anything in settings, only  get information.</p>
 <dl class="simple">
-<dt>getDNSInstallDir</dt><dd><p>returns the directory where NatSpeak is installed.
+<dt>getDNSInstallDir:</dt><dd><p>returns the directory where NatSpeak is installed.
 if the registry key NatspeakInstallDir exists(CURRENT_USER/Software/Natlink),
 this path is taken (if it points to a valid folder)
 Otherwise one of the default paths is taken,
-<cite>%PROGRAMFILES%/Nuance/…</cite> or <cite>%PROGRAMFILES%/ScanSoft/…</cite>
+%PROGRAMFILES%/Nuance/… or %PROGRAMFILES%/ScanSoft/…
 It must contain at least a Program subdirectory or App/Program subdirectory</p>
 </dd>
-<dt>getDNSIniDir</dt><dd><p>returns the directory where the NatSpeak INI files are located,
+<dt>getDNSIniDir:</dt><dd><p>returns the directory where the NatSpeak INI files are located,
 notably nssystem.ini and nsapps.ini.
 Can be set in natlinkstatus.ini, but mostly is got from
 %ALLUSERSPROFILE% (C:/ProgramData)</p>
 </dd>
-<dt>getDNSVersion</dt><dd><p>returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, … (???)
+<dt>getDNSVersion:</dt><dd><p>returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, … (???)
 note distinction is made here between different subversions.</p>
 </dd>
 </dl>
-<p>(getDNSFullVersion: get longer version string) (obsolete, 2017, QH)</p>
+<p>(getDNSFullVersion: get longer version string) (obsolete, 2017, QH)
+.
+getWindowsVersion:</p>
+<blockquote>
+<div><p>see source below</p>
+</div></blockquote>
 <dl>
-<dt>getWindowsVersion</dt><dd><p>see source below</p>
-</dd>
-<dt>getLanguage</dt><dd><p>returns the 3 letter code of the language of the speech profile that
+<dt>getLanguage:</dt><dd><p>returns the 3 letter code of the language of the speech profile that
 is open (only possible when NatSpeak/Natlink is running)</p>
 </dd>
-<dt>getUserLanguage</dt><dd><p>returns the language from changeCallback (&gt;= 15) or config files</p>
+<dt>getUserLanguage:</dt><dd><p>returns the language from changeCallback (&gt;= 15) or config files</p>
 </dd>
 <dt>getUserTopic</dt><dd><p>returns the topic of the current speech profile, via changeCallback (&gt;= 15) or config files</p>
 </dd>
-<dt>getPythonVersion</dt><dd><p>changed jan 2013, return two character version, so without the dot! eg ‘26’</p>
+<dt>getPythonVersion:</dt><dd><p>changed jan 2013, return two character version, so without the dot! eg ‘26’</p>
 <p>new nov 2009: return first three characters of python full version (‘2.5’)</p>
 </dd>
 </dl>
@@ -130,61 +133,53 @@ is open (only possible when NatSpeak/Natlink is running)</p>
 #    If it cannot find it in the registry it returns an empty string
 #(getFullPythonVersion: get string of complete version info).</p>
 <dl class="simple">
-<dt>getUserDirectory</dt><dd><p>get the Natlink user directory, 
-Especially Dragonfly users will use this directory for putting their grammar files in.
+<dt>getUserDirectory: get the Natlink user directory, </dt><dd><p>Especially Dragonfly users will use this directory for putting their grammar files in.
 Also users that have their own custom grammar files can use this user directory</p>
 </dd>
-<dt>getUnimacroDirectory</dt><dd><p>get the directory where the Unimacro system is.
-When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped). This grammar will (and should) hold the _control.py grammar
+<dt>getUnimacroDirectory: get the directory where the Unimacro system is.</dt><dd><p>When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped). This grammar will (and should) hold the _control.py grammar
 and needs to be included in the load directories list of James’ natlinkmain</p>
 </dd>
-<dt>getUnimacroGrammarsDirectory</dt><dd><p>get the directory, where the user can put his Unimacro grammars. By default
-this will be the ActiveGrammars subdirectory of the UnimacroUserDirectory.</p>
+<dt>getUnimacroGrammarsDirectory: get the directory, where the user can put his Unimacro grammars. By default</dt><dd><p>this will be the ActiveGrammars subdirectory of the UnimacroUserDirectory.</p>
 </dd>
-<dt>getUnimacroUserDirectory</dt><dd><p>get the directory of Unimacro INI files, if not return ‘’ or
-the Unimacro user directory</p>
+<dt>getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return ‘’ or</dt><dd><p>the Unimacro user directory</p>
 </dd>
-<dt>getVocolaDirectory</dt><dd><p>get the directory where the Vocola system is. When cloned from git, in Vocola, relative to
-the Core directory. Otherwise (when pipped) in some site-packages directory. It holds (and should hold) the
+<dt>getVocolaDirectory: get the directory where the Vocola system is. When cloned from git, in Vocola, relative to</dt><dd><p>the Core directory. Otherwise (when pipped) in some site-packages directory. It holds (and should hold) the
 grammar _vocola_main.py.</p>
 </dd>
-<dt>getVocolaUserDirectory</dt><dd><p>get the directory of Vocola User files, if not return ‘’
-(if run from natlinkconfigfunctions use getVocolaDirectoryFromIni, which checks inifile
-at each call…)</p>
+<dt>getVocolaUserDirectory: get the directory of Vocola User files, if not return ‘’</dt><dd><dl class="simple">
+<dt>(if run from natlinkconfigfunctions use getVocolaDirectoryFromIni, which checks inifile</dt><dd><p>at each call…)</p>
 </dd>
-<dt>getVocolaGrammarsDirectory</dt><dd><p>get the directory, where the compiled Vocola grammars are/will be.
-This will normally be the “CompiledGrammars” subdirectory of the VocolaUserDirectory.</p>
+</dl>
 </dd>
-<dt>NatlinkIsEnabled</dt><dd><p>return 1 or 0 whether Natlink is enabled or not
+<dt>getVocolaGrammarsDirectory: get the directory, where the compiled Vocola grammars are/will be.</dt><dd><p>This will normally be the “CompiledGrammars” subdirectory of the VocolaUserDirectory.</p>
+</dd>
+<dt>NatlinkIsEnabled:</dt><dd><p>return 1 or 0 whether Natlink is enabled or not
 returns None when strange values are found
 (checked with the INI file settings of NSSystemIni and NSAppsIni)</p>
 </dd>
-<dt>getNSSYSTEMIni()</dt><dd><p>get the path of nssystem.ini</p>
-</dd>
-<dt>getNSAPPSIni()</dt><dd><p>get the path of nsapps.ini</p>
-</dd>
-<dt>getBaseModelBaseTopic</dt><dd><p>return these as strings, not ready yet, only possible when
+</dl>
+<p>getNSSYSTEMIni(): get the path of nssystem.ini
+getNSAPPSIni(): get the path of nsapps.ini</p>
+<dl class="simple">
+<dt>getBaseModelBaseTopic:</dt><dd><p>return these as strings, not ready yet, only possible when
 NatSpeak/Natlink is running. Obsolete 2018, use</p>
 </dd>
 <dt>getBaseModel</dt><dd><p>get the acoustic model from config files (for DPI15, obsolescent)</p>
 </dd>
 <dt>getBaseTopic</dt><dd><p>get the baseTopic, from ini files. Better use getUserTopic in DPI15</p>
 </dd>
-<dt>getDebugLoad</dt><dd><p>get value from registry, if set do extra output of natlinkmain at (re)load time</p>
+<dt>getDebugLoad:</dt><dd><p>get value from registry, if set do extra output of natlinkmain at (re)load time</p>
 </dd>
-<dt>getDebugCallback</dt><dd><p>get value from registry, if set do extra output of natlinkmain at callbacks is given</p>
+<dt>getDebugCallback:</dt><dd><p>get value from registry, if set do extra output of natlinkmain at callbacks is given</p>
 </dd>
-<dt>getDebugOutput</dt><dd><p>get value from registry, output in log file of DNS, should be kept at 0</p>
-</dd>
-<dt>getVocolaTakesLanguages</dt><dd><p>additional settings for Vocola</p>
-</dd>
-<dt>getDNSName</dt><dd><p>return “NatSpeak” for versions &lt;= 11 and “Dragon” for 12 (on)</p>
-</dd>
-<dt>getAhkExeDir</dt><dd><p>return the directory where AutoHotkey is found (only needed when not in default)</p>
-</dd>
-<dt>getAhkUserDir</dt><dd><p>return User Directory of AutoHotkey, not needed when it is in default.</p>
+<dt>getDebugOutput:</dt><dd><p>get value from registry, output in log file of DNS, should be kept at 0</p>
 </dd>
 </dl>
+<p>getVocolaTakesLanguages: additional settings for Vocola</p>
+<p>new 2014:
+getDNSName: return “NatSpeak” for versions &lt;= 11 and “Dragon” for 12 (on)
+getAhkExeDir: return the directory where AutoHotkey is found (only needed when not in default)
+getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="natlinkcore.natlinkstatus.AddExtendedEnvVariables">
 <span class="sig-name descname"><span class="pre">AddExtendedEnvVariables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlinkcore/natlinkstatus.html#AddExtendedEnvVariables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlinkcore.natlinkstatus.AddExtendedEnvVariables" title="Permalink to this definition"></a></dt>
@@ -565,7 +560,7 @@ LOCAL_MACHINE (python installed for all users)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="natlinkcore.natlinkstatus.NatlinkStatus.getRegistryPythonPathNatlink">
-<span class="sig-name descname"><span class="pre">getRegistryPythonPathNatlink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flags=&lt;MagicMock</span> <span class="pre">id='88991848'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent=True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlinkcore/natlinkstatus.html#NatlinkStatus.getRegistryPythonPathNatlink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlinkcore.natlinkstatus.NatlinkStatus.getRegistryPythonPathNatlink" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">getRegistryPythonPathNatlink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flags=&lt;MagicMock</span> <span class="pre">id='85408976'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent=True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlinkcore/natlinkstatus.html#NatlinkStatus.getRegistryPythonPathNatlink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlinkcore.natlinkstatus.NatlinkStatus.getRegistryPythonPathNatlink" title="Permalink to this definition"></a></dt>
 <dd><p>returns the path-to-core of Natlink and the PythonPath key in the registry</p>
 <p>returns a tuple (key-to-pythonpath-setting, directory_from_registry)
 (Note: order changed, December, 2020)</p>
@@ -712,16 +707,6 @@ directory and registered.</p>
 <dd><p>extract the windows version</p>
 <p>return 1 of the predefined values above, or just return what the system
 call returns</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="natlinkcore.natlinkstatus.NatlinkStatus.isTesting">
-<span class="sig-name descname"><span class="pre">isTesting</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlinkcore/natlinkstatus.html#NatlinkStatus.isTesting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlinkcore.natlinkstatus.NatlinkStatus.isTesting" title="Permalink to this definition"></a></dt>
-<dd><p>return True if Natlink is in TEST status</p>
-<p>This is set (manually) by setting in .natlinkstatus.ini (in .natlink):
-[testsettings]
-TEST = True</p>
-<p>Testsettings are got via self.usertestsection (setting via self.__class__.usertestsection)</p>
 </dd></dl>
 
 <dl class="py method">
