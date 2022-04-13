@@ -485,7 +485,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             self.VocolaGrammarsDirectory = ''
             return ''
 
-        vgDir = join(vUserDir, '..', 'VocolaGrammars')
+        vgDir = join(vUserDir, 'VocolaGrammars')
         self.VocolaGrammarsDirectory = normpath(vgDir)
         return self.VocolaGrammarsDirectory
 
