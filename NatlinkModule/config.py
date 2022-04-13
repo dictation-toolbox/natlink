@@ -1,16 +1,13 @@
-#pylint:disable=C0114, C0115, C0116, R0913
+#pylint:disable=C0114, C0115, C0116, R0913, E1101
 import configparser
 import logging
 import os
-from collections import OrderedDict
 from enum import IntEnum
 from typing import List, Iterable, Dict
 import natlink
 
-NATLINK_INI = "natlink.ini"
 class NoGoodConfigFoundException(natlink.NatError):
     pass
-
 
 class LogLevel(IntEnum):
     CRITICAL = logging.CRITICAL
@@ -40,7 +37,7 @@ class NatlinkConfig:
 
     @staticmethod
     def get_default_config() -> 'NatlinkConfig':
-        return NatlinkConfig(directories_by_user=OrderedDict(),
+        return NatlinkConfig(directories_by_user=dict(),
                              log_level=LogLevel.NOTSET,
                              load_on_mic_on=True,
                              load_on_begin_utterance=False,
@@ -73,10 +70,15 @@ class NatlinkConfig:
             elif section == 'directories':
                 directories = []
                 for name, directory in config[section].items():
-                    if not os.path.isdir(directory):
-                        print(f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory')
+                    ## allow environment variables (or ~) in directory
+                    directory_expanded = expand_path(directory)
+                    if not os.path.isdir(directory_expanded):
+                        if directory_expanded == directory:
+                            print(f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory')
+                        else:
+                            print(f'from_config_parser: skip "{directory}" ("{name}"):\n\texpanded to directory "{directory_expanded}" is not a valid directory')
                         continue
-                    directories.append(directory)
+                    directories.append(directory_expanded)
 
                 ret.directories_by_user[''] = directories
         if config.has_section('settings'):
@@ -98,10 +100,35 @@ class NatlinkConfig:
 
     @classmethod
     def from_first_found_file(cls, files: Iterable[str]) -> 'NatlinkConfig':
+        isfile = os.path.isfile
         config = configparser.ConfigParser()
         for fn in files:
+            if not isfile(fn):
+                continue
             if config.read(fn):
                 return cls.from_config_parser(config, config_path=fn)
-        # should not happen, because of InstallTest
-        raise NoGoodConfigFoundException(f'No config file found, did you define your {NATLINK_INI}?')
+        # should not happen, because of DefaultConfig (was InstallTest)
+        raise NoGoodConfigFoundException('No natlink config file found, please run configure natlink program\n\t(configurenatlink.pyw or natlinkconfigfunctions.py)')
+
+def expand_path(input_path: str) -> str:
+    r"""expand path if it starts with "~" or has environment variables (%XXXX%)
+    
+    Use home ("~") or "%natlink_userdir%"
+    
+    The Documents directory can be found by "~\Documents" 
+    
+    When nothing to expand, return input
+    """
+    expanduser, expandvars, normpath = os.path.expanduser, os.path.expandvars, os.path.normpath
+    
+    if input_path.startswith('~'):
+        home = expanduser('~')
+        env_expanded = home + input_path[1:]
+        # print(f'expand_path: "{input_path}" include "~": expanded: "{env_expanded}"')
+        return normpath(env_expanded)
+    env_expanded = expandvars(input_path)
+    # print(f'env_expanded: "{env_expanded}", from envvar: "{input_path}"')
+    return normpath(env_expanded)
+
+
     
