@@ -58,7 +58,7 @@ mouseRateChange = 3.0
 import string       # for atoi
 import time         # for clock
 import natlink
-from natlinkutils import *
+from natlink.natlinkutils import *
 
 class ThisGrammar(GrammarBase):
 

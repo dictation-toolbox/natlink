@@ -10,7 +10,7 @@
 # See also the variant winword_styles_unimacro.py in the folder DisabledGrammars of Unimacro
 
 import natlink
-from natlinkutils import *
+from natlink.natlinkutils import *
 
 import win32api
 import win32com.client

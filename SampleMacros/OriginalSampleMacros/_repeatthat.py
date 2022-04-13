@@ -8,7 +8,7 @@
 # 
 
 import natlink
-from natlinkutils import *
+from natlink.natlinkutils import *
 
 lastResult = None
 

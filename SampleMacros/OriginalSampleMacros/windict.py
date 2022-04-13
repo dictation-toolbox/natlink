@@ -56,7 +56,7 @@ import win32gui
 
 # Speech imports
 import natlink
-from natlinkutils import *
+from natlink.natlinkutils import *
 
 #---------------------------------------------------------------------------
 # This code describes the dialog box.  I cheated when I created the dialog.

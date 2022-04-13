@@ -14,7 +14,7 @@ import win32con
 
 # Speech imports
 import natlink
-from natlinkutils import *
+from natlink.natlinkutils import *
 
 #---------------------------------------------------------------------------
 #

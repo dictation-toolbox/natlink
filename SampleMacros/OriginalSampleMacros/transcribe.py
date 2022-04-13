@@ -22,7 +22,7 @@ import tempfile
 import calendar
 import natlink
 import mobiletools
-from natlinkutils import *
+from natlink.natlinkutils import *
 
 TranscribeError = 'TranscribeError'
 
