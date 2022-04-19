@@ -35,7 +35,7 @@ get_language:
     
 get_profile, get_user:
     returns the directory of the current user profile information and
-    returns the name of the currenct user
+    returns the name of the current user
     This information is collected from natlink.getCurrentUser(), or from
     the args in on_change_callback, with type == 'user'
 
@@ -255,7 +255,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         """Return True if Vocola is enables
         
         To be so,
-        1. the VocolaUserDirectory (where the vocola command files (*.vcl) are located)
+        1. the VocolaUserDirectory (where the vocola command files (.vcl) are located)
         should be defined in the user config file
         2. the VocolaDirectory should be found, and hold '_vocola_main.py'
         
