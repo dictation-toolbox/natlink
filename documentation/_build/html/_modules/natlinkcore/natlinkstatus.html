@@ -98,39 +98,39 @@
 
 <span class="sd">The functions below should not change anything in settings, only  get information.</span>
 
-<span class="sd">getDNSInstallDir</span>
+<span class="sd">getDNSInstallDir:</span>
 <span class="sd">    returns the directory where NatSpeak is installed.</span>
 <span class="sd">    if the registry key NatspeakInstallDir exists(CURRENT_USER/Software/Natlink),</span>
 <span class="sd">    this path is taken (if it points to a valid folder)</span>
 <span class="sd">    Otherwise one of the default paths is taken,</span>
-<span class="sd">    `%PROGRAMFILES%/Nuance/...` or `%PROGRAMFILES%/ScanSoft/...`</span>
+<span class="sd">    %PROGRAMFILES%/Nuance/... or %PROGRAMFILES%/ScanSoft/...</span>
 <span class="sd">    It must contain at least a Program subdirectory or App/Program subdirectory</span>
 
-<span class="sd">getDNSIniDir</span>
+<span class="sd">getDNSIniDir:</span>
 <span class="sd">    returns the directory where the NatSpeak INI files are located,</span>
 <span class="sd">    notably nssystem.ini and nsapps.ini.</span>
 <span class="sd">    Can be set in natlinkstatus.ini, but mostly is got from</span>
 <span class="sd">    %ALLUSERSPROFILE% (C:/ProgramData)</span>
 
-<span class="sd">getDNSVersion</span>
+<span class="sd">getDNSVersion:</span>
 <span class="sd">    returns the in the version number of NatSpeak, as an integer. So 9, 8, 7, ... (???)</span>
 <span class="sd">    note distinction is made here between different subversions.</span>
 <span class="sd">(getDNSFullVersion: get longer version string) (obsolete, 2017, QH)</span>
-
-<span class="sd">getWindowsVersion</span>
+<span class="sd">.</span>
+<span class="sd">getWindowsVersion:</span>
 <span class="sd">    see source below</span>
 
-<span class="sd">getLanguage</span>
+<span class="sd">getLanguage:</span>
 <span class="sd">    returns the 3 letter code of the language of the speech profile that</span>
 <span class="sd">    is open (only possible when NatSpeak/Natlink is running)</span>
 
-<span class="sd">getUserLanguage</span>
+<span class="sd">getUserLanguage:</span>
 <span class="sd">    returns the language from changeCallback (&gt;= 15) or config files</span>
 
 <span class="sd">getUserTopic</span>
 <span class="sd">    returns the topic of the current speech profile, via changeCallback (&gt;= 15) or config files</span>
 
-<span class="sd">getPythonVersion</span>
+<span class="sd">getPythonVersion:</span>
 <span class="sd">    changed jan 2013, return two character version, so without the dot! eg &#39;26&#39;</span>
 
 <span class="sd">    new nov 2009: return first three characters of python full version (&#39;2.5&#39;)</span>
@@ -139,71 +139,59 @@
 <span class="sd">#(getFullPythonVersion: get string of complete version info).</span>
 
 
-<span class="sd">getUserDirectory</span>
-<span class="sd">    get the Natlink user directory, </span>
+<span class="sd">getUserDirectory: get the Natlink user directory, </span>
 <span class="sd">    Especially Dragonfly users will use this directory for putting their grammar files in.</span>
 <span class="sd">    Also users that have their own custom grammar files can use this user directory</span>
 
-<span class="sd">getUnimacroDirectory</span>
-<span class="sd">    get the directory where the Unimacro system is.</span>
+<span class="sd">getUnimacroDirectory: get the directory where the Unimacro system is.</span>
 <span class="sd">    When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped). This grammar will (and should) hold the _control.py grammar</span>
 <span class="sd">    and needs to be included in the load directories list of James&#39; natlinkmain</span>
 
-<span class="sd">getUnimacroGrammarsDirectory</span>
-<span class="sd">    get the directory, where the user can put his Unimacro grammars. By default</span>
+<span class="sd">getUnimacroGrammarsDirectory: get the directory, where the user can put his Unimacro grammars. By default</span>
 <span class="sd">    this will be the ActiveGrammars subdirectory of the UnimacroUserDirectory.</span>
 
-<span class="sd">getUnimacroUserDirectory</span>
-<span class="sd">    get the directory of Unimacro INI files, if not return &#39;&#39; or</span>
-<span class="sd">    the Unimacro user directory</span>
+<span class="sd">getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return &#39;&#39; or</span>
+<span class="sd">      the Unimacro user directory</span>
 
-<span class="sd">getVocolaDirectory</span>
-<span class="sd">    get the directory where the Vocola system is. When cloned from git, in Vocola, relative to</span>
-<span class="sd">    the Core directory. Otherwise (when pipped) in some site-packages directory. It holds (and should hold) the</span>
-<span class="sd">    grammar _vocola_main.py.</span>
+<span class="sd">getVocolaDirectory: get the directory where the Vocola system is. When cloned from git, in Vocola, relative to</span>
+<span class="sd">      the Core directory. Otherwise (when pipped) in some site-packages directory. It holds (and should hold) the</span>
+<span class="sd">      grammar _vocola_main.py.</span>
 
-<span class="sd">getVocolaUserDirectory</span>
-<span class="sd">    get the directory of Vocola User files, if not return &#39;&#39;</span>
+<span class="sd">getVocolaUserDirectory: get the directory of Vocola User files, if not return &#39;&#39;</span>
 <span class="sd">    (if run from natlinkconfigfunctions use getVocolaDirectoryFromIni, which checks inifile</span>
-<span class="sd">    at each call...)</span>
+<span class="sd">     at each call...)</span>
 
-<span class="sd">getVocolaGrammarsDirectory</span>
-<span class="sd">    get the directory, where the compiled Vocola grammars are/will be.</span>
+<span class="sd">getVocolaGrammarsDirectory: get the directory, where the compiled Vocola grammars are/will be.</span>
 <span class="sd">    This will normally be the &quot;CompiledGrammars&quot; subdirectory of the VocolaUserDirectory.</span>
 
-<span class="sd">NatlinkIsEnabled</span>
+<span class="sd">NatlinkIsEnabled:</span>
 <span class="sd">    return 1 or 0 whether Natlink is enabled or not</span>
 <span class="sd">    returns None when strange values are found</span>
 <span class="sd">    (checked with the INI file settings of NSSystemIni and NSAppsIni)</span>
 
-<span class="sd">getNSSYSTEMIni()</span>
-<span class="sd">    get the path of nssystem.ini</span>
-<span class="sd">getNSAPPSIni()</span>
-<span class="sd">    get the path of nsapps.ini</span>
+<span class="sd">getNSSYSTEMIni(): get the path of nssystem.ini</span>
+<span class="sd">getNSAPPSIni(): get the path of nsapps.ini</span>
 
-<span class="sd">getBaseModelBaseTopic</span>
+<span class="sd">getBaseModelBaseTopic:</span>
 <span class="sd">    return these as strings, not ready yet, only possible when</span>
 <span class="sd">    NatSpeak/Natlink is running. Obsolete 2018, use</span>
 <span class="sd">getBaseModel</span>
 <span class="sd">    get the acoustic model from config files (for DPI15, obsolescent)</span>
 <span class="sd">getBaseTopic</span>
 <span class="sd">    get the baseTopic, from ini files. Better use getUserTopic in DPI15</span>
-<span class="sd">getDebugLoad</span>
+<span class="sd">getDebugLoad:</span>
 <span class="sd">    get value from registry, if set do extra output of natlinkmain at (re)load time</span>
-<span class="sd">getDebugCallback</span>
+<span class="sd">getDebugCallback:</span>
 <span class="sd">    get value from registry, if set do extra output of natlinkmain at callbacks is given</span>
-<span class="sd">getDebugOutput</span>
+<span class="sd">getDebugOutput:</span>
 <span class="sd">    get value from registry, output in log file of DNS, should be kept at 0</span>
 
-<span class="sd">getVocolaTakesLanguages</span>
-<span class="sd">    additional settings for Vocola</span>
+<span class="sd">getVocolaTakesLanguages: additional settings for Vocola</span>
 
-<span class="sd">getDNSName</span>
-<span class="sd">    return &quot;NatSpeak&quot; for versions &lt;= 11 and &quot;Dragon&quot; for 12 (on)</span>
-<span class="sd">getAhkExeDir</span>
-<span class="sd">    return the directory where AutoHotkey is found (only needed when not in default)</span>
-<span class="sd">getAhkUserDir</span>
-<span class="sd">    return User Directory of AutoHotkey, not needed when it is in default.</span>
+<span class="sd">new 2014:</span>
+<span class="sd">getDNSName: return &quot;NatSpeak&quot; for versions &lt;= 11 and &quot;Dragon&quot; for 12 (on)</span>
+<span class="sd">getAhkExeDir: return the directory where AutoHotkey is found (only needed when not in default)</span>
+<span class="sd">getAhkUserDir: return User Directory of AutoHotkey, not needed when it is in default.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -232,7 +220,7 @@
 <span class="n">lowestSupportedPythonVersion</span> <span class="o">=</span> <span class="mi">38</span>
 
 <span class="n">DNSPaths</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">DNSVersions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">19</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">DNSVersions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">19</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">_v</span> <span class="ow">in</span> <span class="n">DNSVersions</span><span class="p">:</span>
     <span class="n">varname</span> <span class="o">=</span> <span class="s2">&quot;NSExt</span><span class="si">%s</span><span class="s2">Path&quot;</span><span class="o">%</span><span class="n">_v</span>
     <span class="k">if</span> <span class="s2">&quot;NSExt</span><span class="si">%s</span><span class="s2">Path&quot;</span><span class="o">%</span> <span class="n">_v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
@@ -361,11 +349,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">userinisection</span> <span class="o">=</span> <span class="n">natlinkcorefunctions</span><span class="o">.</span><span class="n">NatlinkstatusInifileSection</span><span class="p">()</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">usertestsection</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">usertestsection</span> <span class="o">=</span> <span class="n">natlinkcorefunctions</span><span class="o">.</span><span class="n">NatlinkstatusInifileSection</span><span class="p">(</span><span class="n">section</span><span class="o">=</span><span class="s1">&#39;testsettings&#39;</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">UserArgsDict</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">UserArgsDict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -412,7 +395,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">DNSIniDir</span> <span class="o">=</span> <span class="n">result</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span>  <span class="c1"># serious problem.</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">checkNatlinkPydFile</span><span class="p">()</span>
 
 <div class="viewcode-block" id="NatlinkStatus.getWarningText"><a class="viewcode-back" href="../../natlinkstatus.html#natlinkcore.natlinkstatus.NatlinkStatus.getWarningText">[docs]</a>    <span class="k">def</span> <span class="nf">getWarningText</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -805,18 +788,6 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">UserArgsDict</span><span class="p">[</span><span class="s1">&#39;DNSuserDirectory&#39;</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;&#39;</span></div>
-
-<div class="viewcode-block" id="NatlinkStatus.isTesting"><a class="viewcode-back" href="../../natlinkstatus.html#natlinkcore.natlinkstatus.NatlinkStatus.isTesting">[docs]</a>    <span class="k">def</span> <span class="nf">isTesting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;return True if Natlink is in TEST status</span>
-<span class="sd">        </span>
-<span class="sd">        This is set (manually) by setting in .natlinkstatus.ini (in .natlink):</span>
-<span class="sd">        [testsettings]</span>
-<span class="sd">        TEST = True</span>
-<span class="sd">        </span>
-<span class="sd">        Testsettings are got via self.usertestsection (setting via self.__class__.usertestsection)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">testing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">usertestsection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TEST&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">testing</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;True&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="NatlinkStatus.getNatlinkPydOrigin"><a class="viewcode-back" href="../../natlinkstatus.html#natlinkcore.natlinkstatus.NatlinkStatus.getNatlinkPydOrigin">[docs]</a>    <span class="k">def</span> <span class="nf">getNatlinkPydOrigin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the path of the original dll/pyd file</span>
@@ -1586,7 +1557,7 @@
             <span class="k">return</span> <span class="s2">&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">VocolaDirectory</span> <span class="o">=</span> <span class="n">vocola2</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="c1"># print(f&#39;VocolaDirectory: {self.VocolaDirectory}&#39;)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;VocolaDirectory: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VocolaDirectory</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">controlGrammarFile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">VocolaDirectory</span><span class="p">,</span> <span class="s1">&#39;_vocola_main.py&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">controlGrammarFile</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot find &quot;_vocola_main.py&quot; in VocolaDirectory (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VocolaDirectory</span><span class="si">}</span><span class="s1">), return &quot;&quot;&#39;</span><span class="p">)</span>
@@ -2002,10 +1973,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1">#pylint:disable=R0912, R0915</span>
         <span class="n">L</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isTesting</span><span class="p">():</span>
-            <span class="n">mess</span> <span class="o">=</span> <span class="s1">&#39;Natlink is in TEST phase&#39;</span>
-            <span class="n">stars</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">mess</span><span class="p">)</span>
-            <span class="n">L</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">{</span><span class="n">stars</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">mess</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">stars</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">D</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getNatlinkStatusDict</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">D</span><span class="p">[</span><span class="s1">&#39;userName&#39;</span><span class="p">]:</span>
             <span class="n">L</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;user speech profile:&#39;</span><span class="p">)</span>
