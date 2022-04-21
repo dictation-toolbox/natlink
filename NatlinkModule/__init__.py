@@ -1,3 +1,4 @@
+#pylint:disable=C0114, W0401
 from typing import Optional
 
 from ._natlink_core import *

@@ -55,7 +55,12 @@ So in both cases, it seems to be safe to let for example vocola write its compil
 it is place after the VocolaDirectory
 
 ------
+## import lines change:
+`natlinkmain.py` is now called `loader.py`
 
+The core modules are found by qualified import `from natlink import ...`, so:
+from natlink import natlinkutils
+from natlink import loader
 
 
 

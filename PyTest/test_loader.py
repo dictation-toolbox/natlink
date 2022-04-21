@@ -1,7 +1,9 @@
+
+#pylint:disable= C0114, C0116, W0401, W0614, W0621, W0108. W0212
+
 import pytest
 
 from natlink.loader import *
-
 
 class MockLoggingHandler(logging.Handler):
     """Mock logging handler to check for expected logs."""
@@ -40,11 +42,11 @@ def logger():
     logger.reset = lambda: log_handler.reset()
     return logger
 
-
 def del_loaded_modules(natlink_main: NatlinkMain):
-    for name, mod in natlink_main.loaded_modules.items():
+    for _name, mod in natlink_main.loaded_modules.items():
         if mod:
             del mod
+
 
 
 def test_empty_config_loader(empty_config, logger):
@@ -55,11 +57,13 @@ def test_empty_config_loader(empty_config, logger):
     assert main.bad_modules == set()
     assert main.load_attempt_times == {}
 
-
 def test_pre_and_post_load_setter(empty_config, logger):
     main = NatlinkMain(logger, empty_config)
-    main.set_pre_load_callback(None)
-    main.set_post_load_callback(None)
+    main.config = empty_config
+    with pytest.raises(TypeError):
+        main.set_pre_load_callback(None)
+    with pytest.raises(TypeError):
+        main.set_post_load_callback(None)
     with pytest.raises(TypeError):
         main.set_pre_load_callback("not callable")
     with pytest.raises(TypeError):
@@ -67,10 +71,11 @@ def test_pre_and_post_load_setter(empty_config, logger):
     cb = lambda: None
     main.set_pre_load_callback(cb)
     main.set_post_load_callback(cb)
-
+    
 
 def test_trigger_load_calls_pre_and_post_load(empty_config, logger, monkeypatch):
     main = NatlinkMain(logger, empty_config)
+    main.config = empty_config
     actual = []
 
     def pre():
@@ -85,6 +90,9 @@ def test_trigger_load_calls_pre_and_post_load(empty_config, logger, monkeypatch)
     main.set_pre_load_callback(pre)
     main.set_post_load_callback(post)
     monkeypatch.setattr(main, 'load_or_reload_modules', load)
+
+    # this one fails, because now per directory grammars are loaded,
+    # line 347 is now commented in favour of lin 351 loader.py (QH)
 
     main.trigger_load()
 
@@ -101,9 +109,9 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
     a_script.write("""x=0""")
     a_script.setmtime(mtime)
     monkeypatch.setattr(time, 'time', lambda: mtime)
-
+    
     main = NatlinkMain(logger, config)
-
+    main.config = config
     assert main.module_paths_for_user == [a_path]
 
     main.load_or_reload_modules(main.module_paths_for_user)
@@ -111,11 +119,13 @@ def test_load_single_good_script(tmpdir, empty_config, logger, monkeypatch):
     assert '_a' not in sys.modules
     assert main.bad_modules == set()
     assert set(main.load_attempt_times.keys()) == {a_path}
+    print('mtime: {mtime}')
+    print('main.load_attempt_times[a_path]: {main.load_attempt_times[a_path]}')
     assert main.load_attempt_times[a_path] == mtime
     assert main.loaded_modules[a_path].x == 0
 
     del_loaded_modules(main)
-
+    
 
 def test_load_single_good_script_from_user_dir(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -128,12 +138,17 @@ def test_load_single_good_script_from_user_dir(tmpdir, empty_config, logger, mon
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
+    main.config = config
+    main.__init__(logger=logger, config=config)
 
+    _modules = main.module_paths_for_user
     assert main.module_paths_for_user == []
-    main._user = 'user'
+    main.user = 'user'   # this way, because now user is a property
+    _modules = main.module_paths_for_user
     assert main.module_paths_for_user == [a_path]
 
     main.load_or_reload_modules(main.module_paths_for_user)
+    _mainkeys = set(main.loaded_modules.keys())
     assert set(main.loaded_modules.keys()) == {a_path}
     assert '_a' not in sys.modules
     assert main.bad_modules == set()
@@ -142,7 +157,7 @@ def test_load_single_good_script_from_user_dir(tmpdir, empty_config, logger, mon
     assert main.loaded_modules[a_path].x == 0
 
     del_loaded_modules(main)
-
+    
 
 def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -154,14 +169,15 @@ def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeyp
     a_script.setmtime(mtime)
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
-    main = NatlinkMain(logger, config)
-
+    main = NatlinkMain(logger, empty_config)
+    main.__init__(logger=logger, config=empty_config)
+    
     main.load_or_reload_modules(main.module_paths_for_user)
 
     mtime += 1.0
     a_script.write("""x=1""")
     a_script.setmtime(mtime)
-
+    main.seen.clear()   # is done at start of trigger_load
     main.load_or_reload_modules(main.module_paths_for_user)
     assert set(main.loaded_modules.keys()) == {a_path}
     assert main.bad_modules == set()
@@ -170,7 +186,7 @@ def test_reload_single_changed_good_script(tmpdir, empty_config, logger, monkeyp
     assert main.loaded_modules[a_path].x == 1
 
     del_loaded_modules(main)
-
+    
 
 def test_remove_single_deleted_good_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -182,6 +198,7 @@ def test_remove_single_deleted_good_script(tmpdir, empty_config, logger, monkeyp
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
+    main.config = config
 
     main.load_or_reload_modules(main.module_paths_for_user)
 
@@ -193,10 +210,12 @@ def test_remove_single_deleted_good_script(tmpdir, empty_config, logger, monkeyp
     assert main.load_attempt_times == {}
 
     del_loaded_modules(main)
-
+    
 
 def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
+    main = NatlinkMain(logger, empty_config)
+    main.__init__(logger=logger, config=config) 
     config.directories_by_user[''] = [tmpdir.strpath]
     a_script = tmpdir.join('_a.py')
     a_path = Path(a_script.strpath)
@@ -205,15 +224,13 @@ def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, l
     a_script.setmtime(mtime)
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
-    main = NatlinkMain(logger, config)
-
     main.load_or_reload_modules(main.module_paths_for_user)
 
     a_script.write("""x=1""")
     # set the mtime to the old mtime, so natlink should NOT reload
     a_script.setmtime(mtime)
     mtime += 1.0
-
+    main.seen.clear()   # is done in trigger_load
     main.load_or_reload_modules(main.module_paths_for_user)
     assert set(main.loaded_modules.keys()) == {a_path}
     assert main.bad_modules == set()
@@ -223,11 +240,12 @@ def test_reload_should_skip_single_good_unchanged_script(tmpdir, empty_config, l
     # make sure it still has the old value, not the new one
     assert main.loaded_modules[a_path].x == 0
 
-    msg = f'skipping unchanged loaded module: _a'
+    ## TODO how solve this (QH)
+    msg = 'skipping unchanged loaded module: _a'
     assert msg in logger.messages['debug']
 
     del_loaded_modules(main)
-
+    
 
 def test_load_single_bad_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -240,7 +258,7 @@ def test_load_single_bad_script(tmpdir, empty_config, logger, monkeypatch):
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
-
+    main.__init__(logger=logger, config=config)
     main.load_or_reload_modules(main.module_paths_for_user)
     assert main.loaded_modules == {}
     assert '_a' not in sys.modules
@@ -250,7 +268,7 @@ def test_load_single_bad_script(tmpdir, empty_config, logger, monkeypatch):
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
-
+    
 
 def test_remove_single_deleted_bad_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -262,7 +280,8 @@ def test_remove_single_deleted_bad_script(tmpdir, empty_config, logger, monkeypa
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
-
+    main.__init__(logger=logger, config=config)
+    
     main.load_or_reload_modules(main.module_paths_for_user)
 
     a_script.remove()
@@ -273,7 +292,7 @@ def test_remove_single_deleted_bad_script(tmpdir, empty_config, logger, monkeypa
     assert main.load_attempt_times == {}
 
     del_loaded_modules(main)
-
+    
 
 def test_reload_single_changed_bad_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -286,12 +305,14 @@ def test_reload_single_changed_bad_script(tmpdir, empty_config, logger, monkeypa
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
+    main.__init__(logger=logger, config=config)
 
     main.load_or_reload_modules(main.module_paths_for_user)
     mtime += 1.0
     a_script.setmtime(mtime)
 
     logger.reset()
+    main.seen.clear() 
     main.load_or_reload_modules(main.module_paths_for_user)
     assert main.loaded_modules == {}
     assert '_a' not in sys.modules
@@ -301,7 +322,7 @@ def test_reload_single_changed_bad_script(tmpdir, empty_config, logger, monkeypa
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
-
+    
 
 def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -314,6 +335,7 @@ def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, lo
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
+    main.__init__(logger=logger, config=config)
 
     main.load_or_reload_modules(main.module_paths_for_user)
 
@@ -322,6 +344,7 @@ def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, lo
     a_script.setmtime(mtime)
     mtime += 1.0
 
+    main.seen.clear()
     main.load_or_reload_modules(main.module_paths_for_user)
     assert main.loaded_modules == {}
     assert '_a' not in sys.modules
@@ -329,11 +352,11 @@ def test_reload_should_skip_single_bad_unchanged_script(tmpdir, empty_config, lo
     assert set(main.load_attempt_times.keys()) == {a_path}
     assert main.load_attempt_times[a_path] == mtime
 
-    msg = f'skipping unchanged bad module: _a'
+    msg = 'skipping unchanged bad module: _a'
     assert msg in logger.messages['info']
 
     del_loaded_modules(main)
-
+    
 
 def test_load_single_good_script_that_was_previously_bad(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -346,12 +369,13 @@ def test_load_single_good_script_that_was_previously_bad(tmpdir, empty_config, l
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
-
+    main.__init__(logger=logger, config=config)
     main.load_or_reload_modules(main.module_paths_for_user)
     mtime += 1.0
     a_script.write("""x=1""")
     a_script.setmtime(mtime)
 
+    main.seen.clear()
     main.load_or_reload_modules(main.module_paths_for_user)
     assert set(main.loaded_modules.keys()) == {a_path}
     assert main.bad_modules == set()
@@ -360,7 +384,7 @@ def test_load_single_good_script_that_was_previously_bad(tmpdir, empty_config, l
     assert main.loaded_modules[a_path].x == 1
 
     del_loaded_modules(main)
-
+    
 
 def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, logger, monkeypatch):
     config = empty_config
@@ -373,12 +397,15 @@ def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, l
     monkeypatch.setattr(time, 'time', lambda: mtime)
 
     main = NatlinkMain(logger, config)
+    main.__init__(logger=logger, config=config)
+    main.__init__(logger=logger, config=config)
 
     main.load_or_reload_modules(main.module_paths_for_user)
     mtime += 1.0
     a_script.write("""x=; #a syntax error.""")
     a_script.setmtime(mtime)
 
+    main.seen.clear() 
     main.load_or_reload_modules(main.module_paths_for_user)
     assert main.loaded_modules == {}
     assert '_a' not in sys.modules
@@ -388,3 +415,6 @@ def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, l
     assert len(logger.messages['error']) == 1
 
     del_loaded_modules(main)
+#     
+if __name__ == "__main__":
+    pytest.main(['test_loader.py'])

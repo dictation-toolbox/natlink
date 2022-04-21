@@ -51,8 +51,8 @@ Source: "{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd"; DestDir: "{#CoreD
 Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: "{#CoreDir}"; \
   Flags: external ignoreversion; 
 
-; InstallTest
-Source: "{#SourceRoot}\NatlinkModule\InstallTest\*"; DestDir: "{app}\InstallTest"; Flags: ignoreversion
+; DefaultConfig
+Source: "{#SourceRoot}\NatlinkModule\DefaultConfig\*"; DestDir: "{app}\DefaultConfig"; Flags: ignoreversion
 
 
 [Icons]
