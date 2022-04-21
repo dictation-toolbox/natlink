@@ -80,7 +80,7 @@ begin
           exit;
       end;
       command := ExpandConstant(
-          '/C start /wait {tmp}\{#PythonInstallExe} /install /passive InstallAllUsers=1 Shortcuts=0');
+          '/C start /wait {tmp}\{#PythonInstallExe} /install /passive InstallAllUsers=1 Include_launcher=1 Include_tcltk=1 Shortcuts=0');
       Result := Exec(ExpandConstant('{cmd}'), command, '', SW_SHOW, ewWaitUntilTerminated, ResultCode); 
       if not Result then
         MsgBox(ExpandConstant('{cmd} ') + command + 'resulted in: ' + 
