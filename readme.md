@@ -10,7 +10,8 @@ The currently supported versions of Python are: 3.8-32
 
 ## Installation
 
-Easy installation/uninstallation is one of the primary goals of this repository.
+
+EEEEasy installation/uninstallation is one of the primary goals of this repository.
 If you had to install any extra dependencies first in order to get it working,
 please file a bug report.
 
