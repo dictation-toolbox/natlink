@@ -22,7 +22,7 @@ To install:
  - Install Dragon NaturallySpeaking
  - Install Python (32 bit required) for your user and do not add to path.
  - Download and run the [Natlink installer](https://github.com/dictation-toolbox/natlink/releases): in this page, choose the last release, scroll down and choose the file `natlink?.?.?-py3.8-32-setup.exe`.
- - Pip install your desired extra packages (e.g. `pip install dragonfly`, `pip install unimacro vocola2 dtactions`, in a 'Run as administrator' 'Windows Powershell' or 'Command prompt').
+ - Pip install your desired extra packages (e.g. `pip install dragonfly`, `pip install unimacro vocola2 dtactions`). Do this in a 'Windows Powershell' or 'Command prompt', which you need to 'Run as administrator'
  - Put a .natlink file in your home directory (see example below)
  - Add your scripts
  - Start Dragon
