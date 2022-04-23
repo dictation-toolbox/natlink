@@ -2,9 +2,12 @@
 
 Natlink is a compatibility module for Dragon NaturallySpeaking (DNS/DPI) v13-v15 on Windows
 that allows the user to run Python scripts that interact with DNS.
+
 This fork does not include
  [Dragonfly](https://github.com/dictation-toolbox/dragonfly),
- [Unimacro, or Vocolo](https://qh.antenna.nl/unimacro/aboutunimacro/index.html).
+ [Unimacro](https://qh.antenna.nl/unimacro/aboutunimacro/index.html) and
+ [Vocola](http://vocola.net/v2/default.asp).
+ 
 These should be installed separately and included in the Natlink config as necessary.
 The currently supported versions of Python are: 3.8-32
 
@@ -18,22 +21,21 @@ please file a bug report.
 To install:
  - Install Dragon NaturallySpeaking
  - Install Python (32 bit required) for your user and do not add to path.
- - Pip install your desired extra packages (e.g. dragonfly)
- - Download and run the Natlink installer
+ - Download and run the [Natlink installer](https://github.com/dictation-toolbox/natlink/releases): in this page, choose the last release, scroll down and choose the file `natlink?.?.?-py3.8-32-setup.exe`.
+ - Pip install your desired extra packages (e.g. `pip install dragonfly`, `pip install unimacro vocola2 dtactions`, in a 'Run as administrator' 'Windows Powershell' or 'Command prompt').
  - Put a .natlink file in your home directory (see example below)
  - Add your scripts
  - Start Dragon
   
 To uninstall:
- - Run the uninstaller, 
-    which will be found in the Natlink start menu entry or the installation directory.
+ - Run the uninstaller, via `Add or remove programs`.
   
 ## Configuration
 
 Configuration is done in .natlink ini-style files.
-Upon starting, Natlink will first look in the user's home directory for .natlink.
+Upon starting, Natlink will first look in the user's home directory for `natlink.ini`.
 If no config is found there,
-it will then look for .natlink in INSTALL_DIRECTORY\\natlink.
+it will then look for `natlink.ini` in `C:\Program Files (x86)\Natlink\DefaultConfig`
 Here is an example config.
 
 ````ini
