@@ -18,8 +18,6 @@
 # Put in MacroSystem folder and toggle the microphone.
 # Write "d\xe9mo" to force command recognition.
 #
-import sys
-import os
 import natlink
 from natlink.natlinkutils import *
 
@@ -40,6 +38,8 @@ thisGrammar = ThisGrammar()
 thisGrammar.initialize()
 
 def unload():
+    #pylint:disable=W0603
     global thisGrammar
-    if thisGrammar: thisGrammar.unload()
+    if thisGrammar:
+        thisGrammar.unload()
     thisGrammar = None

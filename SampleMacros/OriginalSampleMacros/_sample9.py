@@ -19,6 +19,7 @@ import natlink
 
 natlink.setMicState('sleeping')
 
+
 def unload():
     # must be defined, we do not need to do anything here
     pass
