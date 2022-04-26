@@ -370,7 +370,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             if isdir(ugDir):
                 ugFiles = [f for f in listdir(ugDir) if f.endswith(".py")]
                 if not ugFiles:
-                    print(f"UnimacroGrammarsDirectory: {ugDir} has no pythonthon grammar files (yet), please populate this directory with the Unimacro grammars you wish to use, and then toggle your microphone")
+                    print(f"UnimacroGrammarsDirectory: {ugDir} has no python grammar files (yet), please populate this directory with the Unimacro grammars you wish to use, and then toggle your microphone")
                 
                 try:
                     del self.UnimacroGrammarsDirectory

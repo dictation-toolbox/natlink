@@ -61,12 +61,6 @@ class NatlinkMain(metaclass=Singleton):
         self.seen: Set[Path] = set()     # start empty in trigger_load
         self.bom = self.encoding = self.config_text = ''   # getconfigsetting and writeconfigsetting
 
-    def __del__(self):
-        """for testing only needed, reset the class attributes
-        """
-        self.__class__.__instance = None
-        self.__class__.had_init = False
-
     def set_on_begin_utterance_callback(self, func: Callable[[], None]) -> None:
         self._on_begin_utterance_callback.set(func)
 

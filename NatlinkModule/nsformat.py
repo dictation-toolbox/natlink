@@ -102,6 +102,7 @@ propDict['new-paragraph'] = (flag_no_formatting, flag_no_space_next, flag_passiv
 # spelling props:
 propDict['spelling-cap'] = propDict['cap']
 propDict['letter'] = (flag_no_space_next,)   # lowercase is hardcoded in below.
+propDict['spelling-letter'] = (flag_no_space_next,)   # lowercase is hardcoded in below.
 propDict['uppercase-letter'] = (flag_no_space_next,)
 
 #---------------------------------------------------------------------------
@@ -113,18 +114,20 @@ propDict['uppercase-letter'] = (flag_no_space_next,)
 # tuples of (wordName,wordInfo) instead of just the list of words.
 
 def formatWords(wordList,state=None):
+    """return the formatted words and the state at end.
+    
+    when passing this state in the next call, the spacing and capitalization
+    will be maintained.
+    """
     #pylint:disable=W0603
     global flags_like_period
     language = 'enx'
     if language != 'enx':
         flags_like_period = (4, 21, 17) # one space after period.
         
-    # get the getWordsInfo function, now returning a tuple of properties
-    # DNSVersion = status.getDNSVersion()
     gwi = getWordInfo
 
     output = ''
-    emptySet = set( () )
     for entry in wordList:
         if entry == 'space':
             entry = r'\space-bar\space-bar'
@@ -150,9 +153,9 @@ def formatWords(wordList,state=None):
             state = set([flag_no_space_next])
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
-        elif type(state) in (list, tuple):
+        elif isinstance(state, (list, tuple)):
             state = set(state)
-        elif type(state) != type(emptySet):
+        elif not isinstance(state, set):
             state = wordInfoToFlags(state)
             #print 'formatWords starting with: %s'% state
 
@@ -186,12 +189,10 @@ def formatPassword(wordList):
     return ''.join(outList)
         
 def formatLetters(wordList):
-    """this is more tricks, formats dngletters input
-
+    """just return the letters, in practice the first letter of each word
+    
         do as input the flag_no_space_all!
         return only the resulting string!!
-        
-        obsolete with Dragon 11...
     """
     inputState = (flag_no_space_all,)
     res, _state = formatWords(wordList, inputState)
@@ -205,20 +206,16 @@ def formatLetters(wordList):
 # This code was adapted from shared\resobj.cpp
 def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
     ##adapted: wordInfo and stateFlags are now sets of state flags
-    emptySet = set()
     if gwi is None:
         gwi = getWordInfo
     #-----
     # Preparation
     # assume wordInfo is a set already
-    if type(wordInfo) == type(emptySet):
+    if isinstance(wordInfo, set):
         wordFlags = wordInfo
     else:
         # should not come here:
         wordFlags = gwi(wordName)
-
-    if wordFlags == set(flags_like_open_quote):
-        pass
 
     # for faster lookup in Python, we convert the bit arrays am array of
     # bits that are set:
@@ -236,7 +233,7 @@ def formatWord(wordName,wordInfo=None,stateFlags=None, gwi=None):
             state = set(flag_no_space_next)
         elif state is None:
             state = set([flag_no_space_next, flag_active_cap_next])
-        elif type(state) in (list, tuple):
+        elif isinstance(state, (list, tuple)):
             state = set(state)
         else:
             raise ValueError("formatWord, invalid stateFlags: %s"% repr(stateFlags))
@@ -420,14 +417,14 @@ def wordInfoToFlags(wordInfo):
     if wordInfo == 0:
         return emptySet
     wordFlags = set()
-    if type(wordInfo) == int:
+    if isinstance(wordInfo, int):
         if  wordInfo:
             for i in range(32):
                 if wordInfo & (1<<i):
                     wordFlags.add(i)
-    elif type(wordInfo) in (tuple, list):
+    elif isinstance(wordInfo, (tuple, list)):
         wordFlags = set(wordInfo)
-    elif type(wordInfo) == type(emptySet):
+    elif isinstance(wordInfo, set):
         wordFlags = copy.copy(wordInfo)
     return wordFlags
 
