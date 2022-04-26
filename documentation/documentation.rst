@@ -2,7 +2,7 @@
 Documentation
 ==============================================================================
 
-The documentation for DT Actions is written in `reStructuredText format`_.
+The documentation for Natlink is written in `reStructuredText format`_.
 ReStructuredText is similar to the Markdown format. If you are unfamiliar
 with the format, the `reStructuredText primer`_ might be a good starting
 point.

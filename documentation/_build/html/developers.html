@@ -47,6 +47,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Developers instructions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#setup-visual-studio-environment">Setup Visual Studio environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#further-instructions">Further instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#invalid-options-visual-studio">Invalid options Visual Studio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fix">Fix</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
@@ -85,6 +87,62 @@
 </section>
 <section id="further-instructions">
 <h2>Further instructions<a class="headerlink" href="#further-instructions" title="Permalink to this headline"></a></h2>
+</section>
+<section id="invalid-options-visual-studio">
+<h2>Invalid options Visual Studio<a class="headerlink" href="#invalid-options-visual-studio" title="Permalink to this headline"></a></h2>
+<p>When the C++ compile redistributale is wrongly configured, the program <cite>dumpbinx.exe</cite> reports a dependency, which is not wanted:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PS</span> <span class="n">C</span><span class="p">:</span>\<span class="n">dt</span>\<span class="n">NatlinkDoc</span>\<span class="n">natlink</span>\<span class="n">documentation</span><span class="o">&gt;</span> <span class="o">.</span><span class="s2">&quot;C:\Program Files (x86)\Microsoft Visual Studio</span><span class="se">\201</span><span class="s2">9\Community\VC\Tools\MSVC</span><span class="se">\14</span><span class="s2">.29.30133</span><span class="se">\b</span><span class="s2">in\Hostx86</span><span class="se">\x86</span><span class="s2">\dumpbin.exe&quot;</span> <span class="o">/</span><span class="n">DEPENDENTS</span> <span class="s2">&quot;C:\Program Files (x86)\Natlink\site-packages</span><span class="se">\n</span><span class="s2">atlink\_natlink_core.pyd&quot;</span>
+<span class="n">Microsoft</span> <span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">COFF</span><span class="o">/</span><span class="n">PE</span> <span class="n">Dumper</span> <span class="n">Version</span> <span class="mf">14.29.30136.0</span>
+<span class="n">Copyright</span> <span class="p">(</span><span class="n">C</span><span class="p">)</span> <span class="n">Microsoft</span> <span class="n">Corporation</span><span class="o">.</span>  <span class="n">All</span> <span class="n">rights</span> <span class="n">reserved</span><span class="o">.</span>
+
+
+<span class="n">Dump</span> <span class="n">of</span> <span class="n">file</span> <span class="n">C</span><span class="p">:</span>\<span class="n">Program</span> <span class="n">Files</span> <span class="p">(</span><span class="n">x86</span><span class="p">)</span>\<span class="n">Natlink</span>\<span class="n">site</span><span class="o">-</span><span class="n">packages</span>\<span class="n">natlink</span>\<span class="n">_natlink_core</span><span class="o">.</span><span class="n">pyd</span>
+
+<span class="n">File</span> <span class="n">Type</span><span class="p">:</span> <span class="n">DLL</span>
+
+  <span class="n">Image</span> <span class="n">has</span> <span class="n">the</span> <span class="n">following</span> <span class="n">dependencies</span><span class="p">:</span>
+
+    <span class="n">python38</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">KERNEL32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">USER32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">SHELL32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">ole32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">OLEAUT32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">ADVAPI32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">MSVCP140D</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">VCRUNTIME140D</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">ucrtbased</span><span class="o">.</span><span class="n">dll</span>
+
+<span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <cite>VCRUNTIME140D.dll</cite> should not be there.</p>
+</section>
+<section id="fix">
+<h2>Fix<a class="headerlink" href="#fix" title="Permalink to this headline"></a></h2>
+<p>Static linking is established by installing:
+<a class="reference external" href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170&amp;viewFallbackFrom=vs-2019">https://docs.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170&amp;viewFallbackFrom=vs-2019</a></p>
+<p>Also see “Bundling vc redistributables”:
+<a class="reference external" href="https://stackoverflow.com/questions/24574035/how-to-install-microsoft-vc-redistributables-silently-in-inno-setup">https://stackoverflow.com/questions/24574035/how-to-install-microsoft-vc-redistributables-silently-in-inno-setup</a></p>
+<p>With install version 5.1.1  (with python 3.8), now the following output is given:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">Powershell</span><span class="p">)</span> <span class="o">.</span><span class="s2">&quot;C:\Program Files (x86)\Microsoft Visual Studio</span><span class="se">\201</span><span class="s2">9\Community\VC\Tools\MSVC</span><span class="se">\14</span><span class="s2">.29.30133</span><span class="se">\b</span><span class="s2">in\Hostx86</span><span class="se">\x86</span><span class="s2">\dumpbin.exe&quot;</span> <span class="o">/</span><span class="n">DEPENDENTS</span> <span class="s2">&quot;C:\Program Files (x86)\Natlink\site-packages</span><span class="se">\n</span><span class="s2">atlink\_natlink_core.pyd&quot;</span>
+<span class="n">Dump</span> <span class="n">of</span> <span class="n">file</span> <span class="n">C</span><span class="p">:</span>\<span class="n">Program</span> <span class="n">Files</span> <span class="p">(</span><span class="n">x86</span><span class="p">)</span>\<span class="n">Natlink</span>\<span class="n">site</span><span class="o">-</span><span class="n">packages</span>\<span class="n">natlink</span>\<span class="n">_natlink_core</span><span class="o">.</span><span class="n">pyd</span>
+
+<span class="n">File</span> <span class="n">Type</span><span class="p">:</span> <span class="n">DLL</span>
+
+  <span class="n">Image</span> <span class="n">has</span> <span class="n">the</span> <span class="n">following</span> <span class="n">dependencies</span><span class="p">:</span>
+
+    <span class="n">python38</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">KERNEL32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">USER32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">SHELL32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">ole32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">OLEAUT32</span><span class="o">.</span><span class="n">dll</span>
+    <span class="n">ADVAPI32</span><span class="o">.</span><span class="n">dll</span>
+<span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>So issue#86_ is solved and explained with this all.</p>
 </section>
 </section>
 
