@@ -24,7 +24,7 @@ print()
 print('Specify the environment variable "NATLINK_USERDIR", which should point to an existing directory.')
 print()
 print(f'When this directory does not hold the file "natlink.ini",\nyou can copy it from "{this_dir}",')
-print('or (easier) run the configure program of Natlink ("configurenatlink.pyw" or "natlinkconfigfunctions.py").')
+print('or (easier) run the configure program of Natlink ("configurenatlink.pyw" or "natlinkconfigfunctions.py"). (not yet available)')
 print('\tThe default version of "natlink.ini" will be copied into')
 print('\tthe correct place, and you can proceed with configuring')
 print('\tthe additional options in order to get started with using Natlink.')
@@ -37,7 +37,7 @@ if natlink_userdir:
         print(f'You specified "NATLINK_USERDIR" to "{natlink_userdir}".')
         print('So Natlink should not startup with these messages. ')
         print('Probably you do not have a proper "natlink.ini" file into this path.')
-        print('Please run the configure program of Natlink ("configurenatlink.pyw" or "natlinkconfigfunctions.py")')
+        print('Please run the configure program of Natlink ("configurenatlink.pyw" or "natlinkconfigfunctions.py") (not yet available)')
     else:
         print(f'You specified "NATLINK_USERDIR" to "{natlink_userdir}", but this is not a valid directory path')
 else:

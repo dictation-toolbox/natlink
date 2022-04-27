@@ -43,7 +43,12 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install instructions for Natlink</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Configure Natlink</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configure Natlink</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#location-of-natlink-ini">Location of ‘natlink.ini’</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-directories-to-the-configuration">Adding directories to the configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#set-the-log-level">Set the log_level</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="developers.html">Developers instructions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
@@ -75,8 +80,59 @@
              
   <section id="configure-natlink">
 <h1>Configure Natlink<a class="headerlink" href="#configure-natlink" title="Permalink to this headline"></a></h1>
-<p>The configuration file is <cite>natlink.ini</cite>, which is by default in the users home directory.</p>
-<p>You can edit this file, or run the program <cite>natlinkconfigfunctions.py</cite>, which will be included in the Natlink inno setup ASAP.</p>
+<section id="location-of-natlink-ini">
+<h2>Location of ‘natlink.ini’<a class="headerlink" href="#location-of-natlink-ini" title="Permalink to this headline"></a></h2>
+<p>The config file <cite>natlink.ini</cite> will by default be in <cite>~\.natlink</cite>, so a subdirectory of your home directory, typically <cite>C:\Users\Name</cite>.</p>
+<p>When running the <cite>natlinkconfigfunctions.py</cite> (soon to be released), next step is automatically performed:</p>
+<ul class="simple">
+<li><p>copy the file <cite>natlink.ini</cite> from the ‘fallback’ location  into your home directory, subdirectory <cite>.natlink</cite>. So copy “C:\Program Files (x86)\Natlink\DefaultConfig\natlink.ini” to “C:\Users\Name\.natlink\natlink.ini”.</p></li>
+<li><p>When you want another directory for your file <cite>natlink.ini</cite> to be in, you can set this in the environment variable ‘NATLINK_USERDIR’.</p></li>
+</ul>
+</section>
+<section id="adding-directories-to-the-configuration">
+<h2>Adding directories to the configuration<a class="headerlink" href="#adding-directories-to-the-configuration" title="Permalink to this headline"></a></h2>
+<p>This will be done with the config program, (<cite>configurenatlink.pyw</cite>, not in the release yet) and <cite>natlinkconfigfunctions.py</cite> (not in the release yet)</p>
+<p>For manually adding directories, see examples below, but beware of the paths. As these examples show, you can use a shared (eg Dropbox, OneDrive) folder for directories.  The different <cite>‘User’</cite> directories are subdirectories of ‘<cite>C:\Users\Name\Dropbox\NatlinkUser</cite>’.</p>
+<p>Note: the file <cite>natlink.ini</cite> should not be in a shared folder.</p>
+<ul class="simple">
+<li><p>Add Dragonfly:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">directories</span><span class="p">]</span>
+<span class="n">dragonflyuserdirectory</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">Users</span>\<span class="n">Name</span>\<span class="n">Dropbox</span>\<span class="n">NatlinkUser</span>\<span class="n">DragonflyUser</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Add UserDirectory (Dragonfly users can choose between ‘Add Dragonfly’ or this option):</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">directories</span><span class="p">]</span>
+<span class="n">userdirectory</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">Users</span>\<span class="n">Name</span>\<span class="n">Dropbox</span>\<span class="n">NatlinkUser</span>\<span class="n">UserDir</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Add vocola:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">directories</span><span class="p">]</span>
+<span class="n">vocoladirectory</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">Python38</span><span class="o">-</span><span class="mi">32</span>\<span class="n">lib</span>\<span class="n">site</span><span class="o">-</span><span class="n">packages</span>\<span class="n">vocola2</span>
+<span class="n">vocolagrammarsdirectory</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">Users</span>\<span class="n">Name</span>\<span class="n">Dropbox</span>\<span class="n">NatlinkUser</span>\<span class="n">VocolaUserDir</span>\<span class="n">VocolaGrammars</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Add Unimacro:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">directories</span><span class="p">]</span>
+<span class="n">unimacrodirectory</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">Python38</span><span class="o">-</span><span class="mi">32</span>\<span class="n">lib</span>\<span class="n">site</span><span class="o">-</span><span class="n">packages</span>\<span class="n">unimacro</span>
+<span class="n">unimacrogrammarsdirectory</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">Users</span>\<span class="n">Name</span>\<span class="n">Dropbox</span>\<span class="n">NatlinkUser</span>\<span class="n">UnimacroUser</span>\<span class="n">ActiveGrammars</span>
+</pre></div>
+</div>
+</section>
+<section id="set-the-log-level">
+<h2>Set the log_level<a class="headerlink" href="#set-the-log-level" title="Permalink to this headline"></a></h2>
+<p>You can set the log_level, controlling the abundance of information messages in the “Messages from Natlink” window with the following option (choices are DEBUG, INFO, WARNING).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">settings</span><span class="p">]</span>
+<span class="n">log_level</span> <span class="o">=</span> <span class="n">INFO</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
