@@ -114,7 +114,7 @@ With install version 5.1.1  (with python 3.8), now the following output is given
   (...)
 
 
-So issue#86_ is solved and explained with this all.
+So issue#86(https://github.com/dictation-toolbox/natlink/issues/86) is hopefully solved and explained with this all.
 
 
 .. _issue#86: https://github.com/dictation-toolbox/natlink/issues/86
