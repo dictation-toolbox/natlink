@@ -81,9 +81,52 @@
              
   <section id="developers-instructions">
 <h1>Developers instructions<a class="headerlink" href="#developers-instructions" title="Permalink to this headline"></a></h1>
-<p>Here come the instructions for developers</p>
+<p>When you want to contribute to the Natlink development, you will need to compile the C++ code and compile the inno setup program. Try the instructions below.</p>
 <section id="setup-visual-studio-environment">
 <h2>Setup Visual Studio environment<a class="headerlink" href="#setup-visual-studio-environment" title="Permalink to this headline"></a></h2>
+<p>Note: these instructions are also in <a class="reference external" href="https://github.com/dictation-toolbox/natlink/issues/96">https://github.com/dictation-toolbox/natlink/issues/96</a>.</p>
+<p>Setting up Development Environment for Visual Studio Code.</p>
+<ol class="arabic simple">
+<li><p>Install Visual Studio (Community Edition 2019 or above) with C++ Desktop Development and Microsoft Visual C++ Redistributable.</p></li>
+</ol>
+<ul class="simple">
+<li><p>C++ Desktop Development(<a class="reference external" href="https://docs.microsoft.com/en-us/cpp/ide/using-the-visual-studio-ide-for-cpp-desktop-development">https://docs.microsoft.com/en-us/cpp/ide/using-the-visual-studio-ide-for-cpp-desktop-development</a>). This contains the necessary compilers for (Visual Studio and Visual Studio Code)</p></li>
+<li><p>Microsoft Visual C++ Redistributable 2015, 2017, 2019, and 2022(<a class="reference external" href="https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170">https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170</a>) (32-bit/X86 required)</p></li>
+</ul>
+<ol class="arabic simple" start="2">
+<li><p>Install Visual Studio Code(<a class="reference external" href="https://visualstudio.microsoft.com/">https://visualstudio.microsoft.com/</a>) with the following Extensions</p></li>
+</ol>
+<ul class="simple">
+<li><p>C/C++ (<a class="reference external" href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools">https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools</a>)</p></li>
+<li><p>CMake (<a class="reference external" href="https://marketplace.visualstudio.com/items?itemName=twxs.cmake">https://marketplace.visualstudio.com/items?itemName=twxs.cmake</a>)</p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>Install Inno version 6.x(<a class="reference external" href="https://jrsoftware.org/isdl.php">https://jrsoftware.org/isdl.php</a>).</p></li>
+<li><p>Install Python(<a class="reference external" href="https://www.python.org/downloads/">https://www.python.org/downloads/</a>) version 3.8.x, 3.9.x, or 3.10.x 32-bit/X86 (Does not need to be on path)</p></li>
+<li><p>After cloning Natlink open the project up in Visual Studio Code</p></li>
+</ol>
+<ul class="simple">
+<li><p>Set the Python Version PYTHON_VERSION 3.10 in CMakeLists.txt (The CMakeLists.txt in top directory of the project)</p></li>
+</ul>
+<ul class="simple">
+<li><p>example for Python 3.8.x <cite>set(PYTHON_VERSION 3.8 CACHE STRING “3.X for X &gt;= 8”)</cite></p></li>
+</ul>
+<ul class="simple">
+<li><p>Select equivalent to <em>Visual Studio Community 2022 Release - x86</em> (32-bit/X86 required) to configure the compiler.</p></li>
+</ul>
+<ol class="arabic simple" start="6">
+<li><p>The build directory will generate containing the configuration selected and build artifacts (compiled code and installer)</p></li>
+</ol>
+<ul class="simple">
+<li><p>The build directory can be safely deleted if you need to reconfigure the project as it will just regenerate.</p></li>
+</ul>
+<ol class="arabic simple" start="7">
+<li><p>Click the “build” button at the bottom of the editor to to build the project and create the installer.</p></li>
+</ol>
+<ul class="simple">
+<li><p>(image)</p></li>
+<li><p>build directory Installer location {project source directory}buildInstallerSourcenatlink5.1-py3.10-32-setup.exe</p></li>
+</ul>
 </section>
 <section id="further-instructions">
 <h2>Further instructions<a class="headerlink" href="#further-instructions" title="Permalink to this headline"></a></h2>
