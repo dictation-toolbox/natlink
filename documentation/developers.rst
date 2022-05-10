@@ -4,7 +4,7 @@ Developers instructions
 When you want to contribute to the Natlink development, you will need to compile the C++ code and compile the inno setup program. Try the instructions below.
 
 Setup Visual Studio Code environment
------------------------------------
+------------------------------------
 
 1. Install `Visual Studio <https://visualstudio.microsoft.com/>`__
    (Community Edition 2019 or above) with ``C++ Desktop Development``
