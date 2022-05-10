@@ -246,7 +246,7 @@ class NatlinkConfig:
     def clearUnimacroIniFilesEditor(self):
         key = "UnimacroIniFilesEditor"
         old_value = self.config_get('unimacro', key)
-        oldexefile = isValidDir(old_value, wantFile=1)
+        oldexefile = isValidDir(old_value)
         if oldexefile:
             self.config_set('previous directories', key, old_value)
         self.config.remove_option('unimacro', key)
@@ -392,7 +392,7 @@ class NatlinkConfig:
             # for recursive call language subfolders:
             toFolder = subDirectory
         else:
-            toFolder = self.getVocolaUserDir()
+            toFolder = self.status.getVocolaUserDirectory()
             
         oldIncludeLines = ['include %s;'% oldUscFile,
                            'include ..\\%s;'% oldUscFile,
@@ -437,28 +437,28 @@ class NatlinkConfig:
         """setting registry  so Vocola can divide different languages
 
         """
-        key = "VocolaTakesLanguages"
+        key = "vocolatakeslanguages"
         self.config_set('vocola', key, 'True')
         
 
     def disableVocolaTakesLanguages(self):
         """disables so Vocola cannot take different languages
         """
-        key = "VocolaTakesLanguages"
+        key = "vocolatakeslanguages"
         self.config_set('vocola', key, 'False')
 
     def enableVocolaTakesUnimacroActions(self):
         """setting registry  so Vocola can divide different languages
 
         """
-        key = "VocolaTakesUnimacroActions"
+        key = "vocolatakesunimacroactions"
         self.config_set('vocola', key, 'True')
         
 
     def disableVocolaTakesUnimacroActions(self):
         """disables so Vocola does not take Unimacro Actions
         """
-        key = "VocolaTakesUnimacroActions"
+        key = "vocolatakesunimacroactions"
         self.config_set('vocola', key, 'False')
 
     def openConfigFile(self):
@@ -681,11 +681,9 @@ This is the folder where your own Dragonfly python grammar files are/will be loc
         uniUserDir = self.Config.config_get('unimacro', 'UnimacroUserDirectory')
         if not uniUserDir:
             return
+
         self.Config.setDirectory('UnimacroDirectory', unimacro_dir)
-        uniGrammarsDir = str(Path(config.expand_path(uniUserDir))/'ActiveGrammars')
-        if not isdir(uniGrammarsDir):
-            createIfNotThere(uniGrammarsDir)
-            ## copy start files...
+        uniGrammarsDir = self.Config.status.getUnimacroGrammarsDirectory()
         self.Config.setDirectory('UnimacroGrammarsDirectory', uniGrammarsDir)
         
             
@@ -790,8 +788,7 @@ Vocola command.
         vocola_user_dir = self.Config.config_get('vocola', 'VocolaUserDirectory')
         if not vocola_user_dir:
             return
-        vocGrammarsDir = str(Path(config.expand_path(vocola_user_dir))/'VocolaGrammars')
-        createIfNotThere(vocGrammarsDir)
+        vocGrammarsDir = self.Config.status.getVocolaGrammarsDirectory()
         self.Config.setDirectory('VocolaDirectory', voc_dir)
         self.Config.setDirectory('VocolaGrammarsDirectory', vocGrammarsDir)
 
@@ -972,15 +969,15 @@ def isValidPath(path, wantDirectory=None, wantFile=None):
     """
     if not path:
         return ''
-    path_expanded = Path(config.expand_path(path))
     path = Path(path)
+    path_expanded = Path(config.expand_path(str(path)))
     if wantDirectory:
         if path_expanded.is_dir():
             return str(path_expanded)
-    if wantFile:
+    elif wantFile:
         if path_expanded.is_file():
             return str(path_expanded)
-    if path.exists():
+    elif path.exists():
         return str(path_expanded)
     return ''
 
