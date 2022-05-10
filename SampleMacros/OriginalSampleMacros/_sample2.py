@@ -50,6 +50,8 @@ thisGrammar = ThisGrammar()
 thisGrammar.initialize()
 
 def unload():
+    #pylint:disable=W0603
     global thisGrammar
-    if thisGrammar: thisGrammar.unload()
+    if thisGrammar:
+        thisGrammar.unload()
     thisGrammar = None

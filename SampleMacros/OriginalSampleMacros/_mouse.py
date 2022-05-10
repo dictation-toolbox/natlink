@@ -12,6 +12,10 @@
 #   - cancel arrow movement when the active window changes
 #   - add support for tray icon during arrow movement
 #
+# April 2022, adapting a little for python3
+import time     
+import natlink
+from natlink.natlinkutils import *
 
 # In the grammar we map some keywords into pixel counts according to the
 # following dictionary.  These numbers can be safely changed within reason.
@@ -55,10 +59,6 @@ mouseRateChange = 3.0
 #   self.curDirection   direction of movement as string
 #
 
-import string       # for atoi
-import time         # for clock
-import natlink
-from natlink.natlinkutils import *
 
 class ThisGrammar(GrammarBase):
 
@@ -124,7 +124,7 @@ class ThisGrammar(GrammarBase):
     
     def initialize(self):
         self.load(self.gramDefn)
-        for listName in self.listDefn.keys():
+        for listName in self.listDefn:
             self.setList(listName,self.listDefn[listName])
         self.activateSet(['start'],exclusive=0)
 
@@ -133,15 +133,23 @@ class ThisGrammar(GrammarBase):
 
     def moveMouse(self,direction,count):
         xPos,yPos = natlink.getCursorPos()
-        if direction == 'up': yPos = yPos - count
-        elif direction == 'down': yPos = yPos + count
-        elif direction == 'left': xPos = xPos - count
-        elif direction == 'right': xPos = xPos + count
+        if direction == 'up':
+            yPos = yPos - count
+        elif direction == 'down':
+            yPos = yPos + count
+        elif direction == 'left':
+            xPos = xPos - count
+        elif direction == 'right':
+            xPos = xPos + count
         xSize,ySize = natlink.getScreenSize()
-        if xPos < 0: xPos = 0
-        if xPos >= xSize: xPos = xSize - 1
-        if yPos < 0: yPos = 0
-        if yPos >= ySize: yPos = ySize - 1
+        if xPos < 0:
+            xPos = 0
+        if xPos >= xSize:
+            xPos = xSize - 1
+        if yPos < 0:
+            yPos = 0
+        if yPos >= ySize:
+            yPos = ySize - 1
         natlink.playEvents([(wm_mousemove,xPos,yPos)])
 
     # This subroutine cancels any active movement mode
@@ -163,8 +171,8 @@ class ThisGrammar(GrammarBase):
 
     def onTimer(self):
         if self.lastClock:
-            diff = int( (time.clock() - self.lastClock) * 1000 )
-            self.lastClock = time.clock()
+            diff = int( (time.time() - self.lastClock) * 1000 )
+            self.lastClock = time.time()
         if self.curMode == 1:
             moduleInfo = natlink.getCurrentModule()
             if natlink.getMicState() == 'on' and moduleInfo == self.moduleInfo:
@@ -186,7 +194,7 @@ class ThisGrammar(GrammarBase):
         count = findKeyWord(words,self.listDefn['count'])
         amount = findKeyWord(words,amountDict.keys())
         if count: 
-            count = string.atoi(count)
+            count = int(count)
         elif amount: 
             count = amountDict[amount]
         self.moveMouse(direction,count)
@@ -197,9 +205,12 @@ class ThisGrammar(GrammarBase):
     def gotResults_mouseButton(self,words,fullResults):
         self.cancelMode()
         which = findKeyWord(words,['left','right','middle'])
-        if not which: which = 'left'
-        if 'double' in words: count = 2
-        else: count = 1
+        if not which:
+            which = 'left'
+        if 'double' in words:
+            count = 2
+        else:
+            count = 1
         buttonClick(which,count)
 
     # This handles the startMoving rule.  We only need to extract the
@@ -235,14 +246,16 @@ class ThisGrammar(GrammarBase):
             speed = int(self.curSpeed / moveRateChange)
             if 'much' in words:
                 speed = int(speed / (moveRateChange*moveRateChange))
-            if speed < 50: speed = 50
+            if speed < 50:
+                speed = 50
             self.curSpeed = speed
             natlink.setTimerCallback(self.onTimer,speed)
         elif 'slower' in words:
             speed = int(self.curSpeed * moveRateChange)
             if 'much' in words:
                 speed = int(speed * (moveRateChange*moveRateChange))
-            if speed > 4000: speed = 4000
+            if speed > 4000:
+                speed = 4000
             self.curSpeed = speed
             natlink.setTimerCallback(self.onTimer,speed)
 
@@ -259,7 +272,7 @@ class ThisGrammar(GrammarBase):
         self.curDirection = direction
         self.curSpeed = defaultMouseSpeed
         self.curPixels = defaultMousePixels
-        self.lastClock = time.clock()
+        self.lastClock = time.time()
         natlink.setTimerCallback(self.onTimer,defaultMouseSpeed)
         self.haveCallback = 1
         self.activateSet(['nowMousing'],exclusive=1)
@@ -279,7 +292,8 @@ class ThisGrammar(GrammarBase):
             while speed < 50: 
                 speed = speed * 2
                 pixels = pixels * 2
-            if pixels > 10: pixels = 10
+            if pixels > 10:
+                pixels = 10
             self.curSpeed = speed
             self.curPixels = pixels
             natlink.setTimerCallback(self.onTimer,speed)
@@ -289,7 +303,8 @@ class ThisGrammar(GrammarBase):
             while pixels > defaultMousePixels and speed >= 2*50:
                 speed = speed / 2
                 pixels = pixels / 2
-            if speed > 2000: speed = 2000
+            if speed > 2000:
+                speed = 2000
             self.curSpeed = speed
             self.curPixels = pixels
             natlink.setTimerCallback(self.onTimer,speed)
@@ -330,7 +345,9 @@ thisGrammar = ThisGrammar()
 thisGrammar.initialize()
 
 def unload():
+    #pylint:disable=W0603
     global thisGrammar
-    if thisGrammar: thisGrammar.unload()
+    if thisGrammar:
+        thisGrammar.unload()
     thisGrammar = None
 
