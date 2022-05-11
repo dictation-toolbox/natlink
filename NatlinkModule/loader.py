@@ -1,4 +1,4 @@
-#pylint:disable=C0114, C0115, C0116, R1705, R0902, R0904, R0912, R0915, W0703, E1101
+#pylint:disable=C0114, C0115, C0116, R1705, R0902, R0904, R0911, R0912, R0915, W0703, E1101
 import importlib
 import importlib.machinery
 import importlib.util
@@ -60,12 +60,6 @@ class NatlinkMain(metaclass=Singleton):
         self._on_begin_utterance_callback = CallbackHandler('on_begin_utterance')
         self.seen: Set[Path] = set()     # start empty in trigger_load
         self.bom = self.encoding = self.config_text = ''   # getconfigsetting and writeconfigsetting
-
-    def __del__(self):
-        """for testing only needed, reset the class attributes
-        """
-        self.__class__.__instance = None
-        self.__class__.had_init = False
 
     def set_on_begin_utterance_callback(self, func: Callable[[], None]) -> None:
         self._on_begin_utterance_callback.set(func)
@@ -269,6 +263,14 @@ class NatlinkMain(metaclass=Singleton):
             self.logger.warning(f'Attempting to load duplicate module: {mod_path})')
             return
         
+        if not mod_path.is_file():
+            # this can only happen if a file (_vocola_vcl.py for example) is present when scanning all files
+            # but is removed when loading _vocola_main in between (compiling the new state of all .vcl files)
+            self.logger.debug(f'load_or_reload_module: not a file, so cannot load:\n\t"{mod_path}')
+            if mod_path in self.bad_modules:
+                self.bad_modules.remove(mod_path)
+            return                
+
         # if not self.load_attempt_times:
         #     self.logger.warning(f'======== load_attempt_times is empty: {self.load_attempt_times}')
         
