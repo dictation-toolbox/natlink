@@ -144,8 +144,8 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         self.natlinkmain = natlinkmain  # global
         self.DNSVersion = None
         self.DNSIniDir = None
+        self.NatlinkDirectory = None    # CoreDirectory and NatlinkDirectory same...
         self.CoreDirectory = None
-        self.NatlinkDirectory = None
         self.UserDirectory = None
         ## Unimacro:
         self.UnimacroDirectory = None
@@ -159,8 +159,9 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         self.AhkUserDir = None
         self.AhkExeDir = None
 
-        if self.CoreDirectory is None:
-            self.CoreDirectory = thisDir
+        if self.NatlinkDirectory is None:
+            self.NatlinkDirectory = thisDir
+            self.CoreDirectory = thisDir   # maybe becoming obsolete
 
     @staticmethod    
     def getWindowsVersion():
@@ -335,7 +336,6 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             if expanded and isdir(expanded):
                 self.UnimacroUserDirectory = expanded
                 return abspath(expanded)
-        print(f'invalid directory for "{key}": "{value}"')
         self.UnimacroUserDirectory = ''
         return ''
     
@@ -385,17 +385,15 @@ class NatlinkStatus(metaclass=singleton.Singleton):
 
         return um_grammars_dir
     
-    def getCoreDirectory(self):
-        """return the path of the coreDirectory, MacroSystem/core
-        """
-        return self.CoreDirectory
-
-    
     def getNatlinkDirectory(self):
-        """return the path of the NatlinkDirectory, two above the coreDirectory
+        """return the path of the NatlinkDirectory
         """
         return self.NatlinkDirectory
 
+    def getCoreDirectory(self):
+        """return the path of the coreDirectory, same as NatlinkDirectory, obsolete
+        """
+        return self.CoreDirectory
     
     def getUserDirectory(self):
         """return the path to the Natlink User directory
@@ -489,8 +487,6 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         return voc_grammars_dir
     
     def getAhkUserDir(self):
-        if not self.AhkUserDir is None:
-            return self.AhkUserDir
         return self.getAhkUserDirFromIni()
 
     
@@ -498,14 +494,18 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         isdir, abspath = os.path.isdir, os.path.abspath
         key = 'AhkUserDir'
         value =  self.natlinkmain.getconfigsetting(section='autohotkey', option=key)
-        if value and isdir(value):
+        if not value:
+            self.AhkUserDir = ''
+            return value
+            
+        if isdir(value):
             self.AhkUserDir = abspath(value)
             return value
         expanded = config.expand_path(value)
         if expanded and isdir(expanded):
             self.AhkUserDir= abspath(expanded)
             return self.AhkUserDir
-
+  
         print(f'invalid path for AhkUserDir: "{value}", return ""')
         self.AhkUserDir = ''
         return ''
@@ -521,7 +521,10 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         isdir, abspath = os.path.isdir, os.path.abspath
         key = 'AhkExeDir'
         value =  self.natlinkmain.getconfigsetting(section='autohotkey', option=key)
-        if value and isdir(value):
+        if not value:
+            self.AhkExeDir = ''
+            return ''
+        if isdir(value):
             self.AhkExeDir = abspath(value)
             return value
         expanded = config.expand_path(value)
@@ -569,7 +572,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         """gets and value for distinction of different languages in Vocola
         If Vocola is not enabled, this option will also return False
         """
-        key = 'vocola_takes_languages'
+        key = 'vocolatakeslanguages'
         return  self.natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
     
     def getVocolaTakesUnimacroActions(self):
@@ -623,14 +626,12 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             else:
                 print(f'no valid function for getting key: "{key}" ("{func_name}")')
 
-        D['CoreDirectory'] = self.CoreDirectory
+        D['NatlinkDirectory'] = self.getNatlinkDirectory()
         D['UserDirectory'] = self.getUserDirectory()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
 
         D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
         D['userIsEnabled'] = self.UserIsEnabled()
-        # extra for information purposes:
-        D['NatlinkDirectory'] = self.NatlinkDirectory
         return D
 
     
@@ -645,7 +646,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
 
         # Natlink::
         L.append('')
-        for key in ['CoreDirectory', 'InstallVersion', 'NatlinkIni', 'NatlinkUserDirectory']:
+        for key in ['NatlinkDirectory', 'InstallVersion', 'NatlinkIni', 'NatlinkUserDirectory']:
             self.appendAndRemove(L, D, key)
 
         ## Vocola::
