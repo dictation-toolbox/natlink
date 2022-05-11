@@ -464,12 +464,6 @@ class NatlinkConfig:
         """open the natlink.ini config file
         """
         os.startfile(self.config_path)
-        # try:
-        #     subprocess.call(['notepad.exe', self.config_path])
-        #     print(f'opened the config file: "{self.config_path}"')
-        # except:
-        #     mess = 'Could not open the config file "{self.config_path}"'
-        #     return mess
         print(f'opened "{self.config_path}" in a separate window')
         return True
 
