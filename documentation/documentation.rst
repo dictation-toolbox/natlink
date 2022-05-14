@@ -22,9 +22,17 @@ requirements:
 
 Then run the following command on Windows to build the documentation:
 
+With `cmd`:
+
 .. code:: shell
 
-   $ make.bat html
+   (path)>make html
+
+Or with `powershell` (note the ".\"):
+
+.. code:: powershell
+
+   PS (path)> .\make html
 
 Or use the Makefile on other systems:
 
@@ -35,6 +43,14 @@ Or use the Makefile on other systems:
 If there were no errors during the build process, open the
 *_build/html/index.html* file in a web browser. Make changes, rebuild the
 documentation and reload the doc page(s) in your browser as you go.
+
+Uploading
+=========
+
+When the documentation functions local, commit and push the documentation to `git`.
+
+When online problems arise (eg the docstring documentation from modules is not recognised), inspect https://readthedocs.org/projects/natlink/builds, and in the page of the latest build, click on `View raw`. You will probably find messages there.
+
 
 
 .. Links.
