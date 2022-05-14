@@ -14,9 +14,11 @@
 #
 import os
 import sys
-
+print(f'python version: {sys.version}, prefix: {sys.prefix}')
 src_directory = os.path.join(os.path.abspath('..'), "src")
 sys.path.insert(0, src_directory)
+natlinkmodule_directory = os.path.join(src_directory, "NatlinkModule")
+sys.path.insert(0, natlinkmodule_directory)
 
 
 # -- Project information -----------------------------------------------------
