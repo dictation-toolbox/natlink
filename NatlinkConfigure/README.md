@@ -1,9 +1,12 @@
-The natlinkconfigfunctions.py is now a very much simplified version of the python2 version.
+The natlinkconfigfunctions.py is now a very much simplified compared with the python2 version.
 
 This is because the natlink installer program handles the enabling of Natlink itself. Elevated mode is
 no longer needed.
 
+The GUI program is NOT running yet, please ignore configurenatlink.pyw for the time being
 
+============
+so... below is not active now:
 
 With the GUI (configurenatlink.pyw) you can configure NatLink, Vocola and Unimacro, but also DragonFly, via the UserDirectory.
 
@@ -23,6 +26,7 @@ the command line interface, which is contained in
 natlinkconfigfunctions.py.  Just start this program from the start
 menu or the folder that you are in now, preferably in elevated mode too with start_natlinkconfigfunctions.py
 
+=======================================
 Quintijn Hoogenboom, February 18, 2008, (...)April 2022 (python3)
 
 

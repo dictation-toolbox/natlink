@@ -60,8 +60,8 @@ getUnimacroDirectory: get the directory where the Unimacro system is.
     When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped). This grammar will (and should) hold the _control.py grammar
     and needs to be included in the load directories list of James' natlinkmain
 
-getUnimacroGrammarsDirectory: get the directory, where the user can put his Unimacro grammars. By default
-    this will be the ActiveGrammars subdirectory of the UnimacroUserDirectory.
+getUnimacroGrammarsDirectory: get the directory, where the user can put his Unimacro grammars. This directory will be
+    located in the `ActiveGrammars` subdirectory of the `~/.unimacro' or `%NATLINK_USERDIR%/.unimacro`).
 
 getUnimacroUserDirectory: get the directory of Unimacro INI files, if not return '' or
       the Unimacro user directory
@@ -75,12 +75,8 @@ getVocolaUserDirectory: get the directory of Vocola User files, if not return ''
      at each call...)
 
 getVocolaGrammarsDirectory: get the directory, where the compiled Vocola grammars are/will be.
-    This will normally be the "CompiledGrammars" subdirectory of the VocolaUserDirectory.
-
-NatlinkIsEnabled:
-    return 1 or 0 whether Natlink is enabled or not
-    returns None when strange values are found
-    (checked with the INI file settings of NSSystemIni and NSAppsIni)
+    This will be the `CompiledGrammars` subdirectory of `~/.vocolaGrammars` or
+    `%NATLINK_USERDIR%/.vocola`.
 
 getVocolaTakesLanguages: additional settings for Vocola
 
@@ -97,6 +93,7 @@ import stat
 import platform
 import logging
 from typing import Any
+from pathlib import Path
 try:
     from natlink import loader
 except ModuleNotFoundError:
@@ -147,8 +144,8 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         self.natlinkmain = natlinkmain  # global
         self.DNSVersion = None
         self.DNSIniDir = None
+        self.NatlinkDirectory = None    # CoreDirectory and NatlinkDirectory same...
         self.CoreDirectory = None
-        self.NatlinkDirectory = None
         self.UserDirectory = None
         ## Unimacro:
         self.UnimacroDirectory = None
@@ -162,8 +159,16 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         self.AhkUserDir = None
         self.AhkExeDir = None
 
-        if self.CoreDirectory is None:
-            self.CoreDirectory = thisDir
+        if self.NatlinkDirectory is None:
+            self.NatlinkDirectory = thisDir
+            self.CoreDirectory = thisDir   # maybe becoming obsolete
+
+    def refresh(self):
+        """rerun the __init__, refreshing all variables
+        
+        This should be done only from the natlinkconfigfunctions.py, in the configure phase of Natlink
+        """
+        self.__init__()
 
     @staticmethod    
     def getWindowsVersion():
@@ -301,22 +306,49 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         if userDir:
             return True
         return False
+
+    def getNatlinkIni(self):
+        """return the path of the natlink.ini file
+        """
+        path = loader.config_locations()[0]
+        if not os.path.isfile(path):
+            raise OSError(f'getNatlinkIni: not a valid file: "{path}"')
+        return path
+    
+    def getNatlinkUserDirectory(self):
+        """get the directory where "natlink.ini" should be stored
+        
+        This must be a local directory, default `~`, but can be changed by
+        setting `NATLINK_USERDIR` to for example `~/Documents`.
+        
+        Other directories that are created and checked by packages, and should be local, can be
+        stored here, for example `VocolaGrammarsDirectory` (VocolaGrammars) and
+        `UnimacroGrammarsDirectory` (UnimacroGrammars).
+        """
+        natlink_ini_path = Path(self.getNatlinkIni())
+        natlink_user_dir = natlink_ini_path.parent
+        return str(natlink_user_dir)
     
     def getUnimacroUserDirectory(self):
-        isdir, normpath = os.path.isdir, os.path.normpath
+        isdir, abspath = os.path.isdir, os.path.abspath
         if self.UnimacroUserDirectory is not None:
             return self.UnimacroUserDirectory
         key = 'unimacrouserdirectory'
         value =  self.natlinkmain.getconfigsetting(section="unimacro", option=key)
-        if value and isdir(value):
+        if not value:
+            self.UnimacroUserDirectory = ''
+            return ''
+        if isdir(value):
             self.UnimacroUserDirectory = value
-            return normpath(value)
-        if value:
-            expanded = loader.expand_path(value)
-            if expanded and isdir(expanded):
-                self.UnimacroUserDirectory = expanded
-                return normpath(expanded)
-        print(f'invalid directory for "{key}": "{value}"')
+            return abspath(value)
+        # for future use:
+        expanded = loader.expand_path(value)
+        if expanded and isdir(expanded):
+            self.UnimacroUserDirectory = expanded
+            return abspath(expanded)
+        # nothing or wrong directory:
+        print(f'invalid path for UnimacroUserDirectory: "{value}", return ""')
+
         self.UnimacroUserDirectory = ''
         return ''
     
@@ -329,7 +361,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
 
         """
         # When git cloned, relative to the Core directory, otherwise somewhere or in the site-packages (if pipped).
-        join, isdir, isfile, normpath = os.path.join, os.path.isdir, os.path.isfile, os.path.normpath
+        join, isdir, isfile, abspath = os.path.join, os.path.isdir, os.path.isfile, os.path.abspath
         if self.UnimacroDirectory is not None:
             return self.UnimacroDirectory
         uDir = join(sys.prefix, "lib", "site-packages", "unimacro")
@@ -337,7 +369,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             uFile = "_control.py"
             controlGrammar = join(uDir, uFile)
             if isfile(controlGrammar):
-                self.UnimacroDirectory = normpath(uDir)
+                self.UnimacroDirectory = abspath(uDir)
                 return self.UnimacroDirectory
             # print(f'UnimacroDirectory found: "{uDir}", but no valid file: "{uFile}", return ""')
             return ""
@@ -349,55 +381,32 @@ class NatlinkStatus(metaclass=singleton.Singleton):
     def getUnimacroGrammarsDirectory(self):
         """return the path to the directory where the ActiveGrammars of Unimacro are located.
         
-        Expected in "ActiveGrammars" of the UnimacroUserDirectory
-        (August 2020)
+        Expected in "UnimacroGrammars" of the natlink user directory
+        (May 2022)
 
         """
-        isdir, join, normpath, listdir = os.path.isdir, os.path.join, os.path.normpath, os.listdir
         if self.UnimacroGrammarsDirectory is not None:
             return self.UnimacroGrammarsDirectory
         
-        uDir = self.getUnimacroDirectory()
-        if not uDir:
-            self.UnimacroGrammarsDirectory = ''
-            return ''
+        natlink_user_dir = self.getNatlinkUserDirectory()
         
-        uuDir = self.getUnimacroUserDirectory()
-        if uuDir and isdir(uuDir):
-            ugDir = join(uuDir, "ActiveGrammars")
-            if not isdir(ugDir):
-                os.mkdir(ugDir)
-            if isdir(ugDir):
-                ugFiles = [f for f in listdir(ugDir) if f.endswith(".py")]
-                if not ugFiles:
-                    print(f"UnimacroGrammarsDirectory: {ugDir} has no python grammar files (yet), please populate this directory with the Unimacro grammars you wish to use, and then toggle your microphone")
-                
-                try:
-                    del self.UnimacroGrammarsDirectory
-                except AttributeError:
-                    pass
-                self.UnimacroGrammarsDirectory= normpath(ugDir)
-                return self.UnimacroGrammarsDirectory
+        um_grammars_dir = Path(natlink_user_dir)/'UnimacroGrammars'
+        if not um_grammars_dir.is_dir():
+            um_grammars_dir.mkdir()
+        um_grammars_dir = str(um_grammars_dir)
+        self.UnimacroGrammarsDirectory = um_grammars_dir
 
-        try:
-            del self.UnimacroGrammarsDirectory
-        except AttributeError:
-            pass
-        self.UnimacroGrammarsDirectory= ""   # meaning is not set, for future calls.
-        return self.UnimacroGrammarsDirectory
-
-    
-    def getCoreDirectory(self):
-        """return the path of the coreDirectory, MacroSystem/core
-        """
-        return self.CoreDirectory
-
+        return um_grammars_dir
     
     def getNatlinkDirectory(self):
-        """return the path of the NatlinkDirectory, two above the coreDirectory
+        """return the path of the NatlinkDirectory
         """
         return self.NatlinkDirectory
 
+    def getCoreDirectory(self):
+        """return the path of the coreDirectory, same as NatlinkDirectory, obsolete
+        """
+        return self.CoreDirectory
     
     def getUserDirectory(self):
         """return the path to the Natlink User directory
@@ -406,17 +415,17 @@ class NatlinkStatus(metaclass=singleton.Singleton):
 
         should be set in configurenatlink, otherwise ignore...
         """
-        isdir, normpath = os.path.isdir, os.path.normpath
+        isdir, abspath = os.path.isdir, os.path.abspath
         if not self.UserDirectory is None:
             return self.UserDirectory
         key = 'UserDirectory'
         value =  self.natlinkmain.getconfigsetting(section='directories', option=key)
         if value and isdir(value):
-            self.UserDirectory = normpath(value)
+            self.UserDirectory = abspath(value)
             return self.UserDirectory
         expanded = config.expand_path(value)
         if expanded and isdir(expanded):
-            self.UserDirectory = normpath(expanded)
+            self.UserDirectory = abspath(expanded)
             return self.UserDirectory
             
         print('invalid path for UserDirectory: "%s"'% value)
@@ -424,20 +433,26 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         return ''
 
     
+    
     def getVocolaUserDirectory(self):
 
-        isdir, normpath = os.path.isdir, os.path.normpath
+        isdir, abspath = os.path.isdir, os.path.abspath
         if self.VocolaUserDirectory is not None:
             return self.VocolaUserDirectory
         key = 'vocolauserdirectory'
         section = 'vocola'
         value =  self.natlinkmain.getconfigsetting(section=section, option=key)
-        if value and isdir(value):
-            self.VocolaUserDirectory = normpath(value)
+        if not value:
+            self.VocolaUserDirectory = ''
+            return ''
+
+        if isdir(value):
+            self.VocolaUserDirectory = abspath(value)
             return value
+        # for future use:
         expanded = config.expand_path(value)
         if expanded and isdir(expanded):
-            self.VocolaUserDirectory = normpath(expanded)
+            self.VocolaUserDirectory = abspath(expanded)
             return self.VocolaUserDirectory
 
         print(f'invalid path for VocolaUserDirectory: "{value}"')
@@ -445,7 +460,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         return ''
     
     def getVocolaDirectory(self):
-        isdir, isfile, join, normpath = os.path.isdir, os.path.isfile, os.path.join, os.path.normpath
+        isdir, isfile, join, abspath = os.path.isdir, os.path.isfile, os.path.join, os.path.abspath
         if self.VocolaDirectory is not None:
             return self.VocolaDirectory
 
@@ -462,52 +477,53 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             self.VocolaDirectory = ''
             return ''
 
-        self.VocolaDirectory = normpath(vocDir)
+        self.VocolaDirectory = abspath(vocDir)
         return self.VocolaDirectory
 
     
     def getVocolaGrammarsDirectory(self):
         """return the VocolaGrammarsDirectory, but only if Vocola is enabled
         
-        If so, the subdirectory CompiledGrammars is created if not there yet.
+        If so, the subdirectory VocolaGrammars is created if not there yet.
         
-        The path of this "CompiledGrammars" directory is returned.
+        The path of this "VocolaGrammars" directory is returned.
         
         If Vocola is not enabled, or anything goes wrong, return ""
         
         """
-        join, normpath = os.path.join, os.path.normpath
         if self.VocolaGrammarsDirectory is not None:
             return self.VocolaGrammarsDirectory
+        
+        natlink_user_dir = self.getNatlinkUserDirectory()
+        
+        voc_grammars_dir = Path(natlink_user_dir)/'VocolaGrammars'
+        if not voc_grammars_dir.is_dir():
+            voc_grammars_dir.mkdir()
+        voc_grammars_dir = str(voc_grammars_dir)
+        self.VocolaGrammarsDirectory = voc_grammars_dir
 
-        vUserDir = self.getVocolaUserDirectory()
-        if not vUserDir:
-            self.VocolaGrammarsDirectory = ''
-            return ''
-
-        vgDir = join(vUserDir, 'VocolaGrammars')
-        self.VocolaGrammarsDirectory = normpath(vgDir)
-        return self.VocolaGrammarsDirectory
-
+        return voc_grammars_dir
     
     def getAhkUserDir(self):
-        if not self.AhkUserDir is None:
-            return self.AhkUserDir
         return self.getAhkUserDirFromIni()
 
     
     def getAhkUserDirFromIni(self):
-        isdir, normpath = os.path.isdir, os.path.normpath
+        isdir, abspath = os.path.isdir, os.path.abspath
         key = 'AhkUserDir'
         value =  self.natlinkmain.getconfigsetting(section='autohotkey', option=key)
-        if value and isdir(value):
-            self.AhkUserDir = normpath(value)
+        if not value:
+            self.AhkUserDir = ''
+            return value
+            
+        if isdir(value):
+            self.AhkUserDir = abspath(value)
             return value
         expanded = config.expand_path(value)
         if expanded and isdir(expanded):
-            self.AhkUserDir= normpath(expanded)
+            self.AhkUserDir= abspath(expanded)
             return self.AhkUserDir
-
+  
         print(f'invalid path for AhkUserDir: "{value}", return ""')
         self.AhkUserDir = ''
         return ''
@@ -520,15 +536,18 @@ class NatlinkStatus(metaclass=singleton.Singleton):
 
     
     def getAhkExeDirFromIni(self):
-        isdir, normpath = os.path.isdir, os.path.normpath
+        isdir, abspath = os.path.isdir, os.path.abspath
         key = 'AhkExeDir'
         value =  self.natlinkmain.getconfigsetting(section='autohotkey', option=key)
-        if value and isdir(value):
-            self.AhkExeDir = normpath(value)
+        if not value:
+            self.AhkExeDir = ''
+            return ''
+        if isdir(value):
+            self.AhkExeDir = abspath(value)
             return value
         expanded = config.expand_path(value)
         if expanded and isdir(expanded):
-            self.AhkExeDir = normpath(expanded)
+            self.AhkExeDir = abspath(expanded)
             return self.AhkExeDir
 
         print(f'invalid path for AhkExeDir: "{value}", return ""')
@@ -571,7 +590,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         """gets and value for distinction of different languages in Vocola
         If Vocola is not enabled, this option will also return False
         """
-        key = 'vocola_takes_languages'
+        key = 'vocolatakeslanguages'
         return  self.natlinkmain.getconfigsetting(section="vocola", option=key, func='getboolean')
     
     def getVocolaTakesUnimacroActions(self):
@@ -608,7 +627,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
 
         for key in ['DNSIniDir', 'WindowsVersion', 'DNSVersion',
                     'PythonVersion',
-                    'DNSName',
+                    'DNSName', 'NatlinkIni', 'NatlinkUserDirectory',
                     'UnimacroDirectory', 'UnimacroUserDirectory', 'UnimacroGrammarsDirectory',
                     'VocolaDirectory', 'VocolaUserDirectory', 'VocolaGrammarsDirectory',
                     'VocolaTakesLanguages', 'VocolaTakesUnimacroActions',
@@ -625,14 +644,12 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             else:
                 print(f'no valid function for getting key: "{key}" ("{func_name}")')
 
-        D['CoreDirectory'] = self.CoreDirectory
+        D['NatlinkDirectory'] = self.getNatlinkDirectory()
         D['UserDirectory'] = self.getUserDirectory()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
 
         D['unimacroIsEnabled'] = self.UnimacroIsEnabled()
         D['userIsEnabled'] = self.UserIsEnabled()
-        # extra for information purposes:
-        D['NatlinkDirectory'] = self.NatlinkDirectory
         return D
 
     
@@ -647,10 +664,8 @@ class NatlinkStatus(metaclass=singleton.Singleton):
 
         # Natlink::
         L.append('')
-        key = 'CoreDirectory'   
-        self.appendAndRemove(L, D, key)
-        key = 'InstallVersion'
-        self.appendAndRemove(L, D, key)
+        for key in ['NatlinkDirectory', 'InstallVersion', 'NatlinkIni', 'NatlinkUserDirectory']:
+            self.appendAndRemove(L, D, key)
 
         ## Vocola::
         if D['vocolaIsEnabled']:
