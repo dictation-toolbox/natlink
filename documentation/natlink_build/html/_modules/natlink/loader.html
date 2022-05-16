@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>natlink.loader &mdash; natlink 5.1.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> natlink
+          </a>
+              <div class="version">
+                5.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Install instructions for Natlink</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configure.html">Configure Natlink</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developers.html">Developers instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../project.html">Project</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">natlink</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>natlink.loader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for natlink.loader</h1><div class="highlight"><pre>
+<span></span><span class="c1">#pylint:disable=C0114, C0115, C0116, R1705, R0902, R0904, R0911, R0912, R0915, W0703, E1101</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">importlib.machinery</span>
+<span class="kn">import</span> <span class="nn">importlib.util</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">sysconfig</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">winreg</span>
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">ModuleType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span> <span class="nn">natlink</span>
+<span class="kn">from</span> <span class="nn">natlink.config</span> <span class="kn">import</span> <span class="n">LogLevel</span><span class="p">,</span> <span class="n">NatlinkConfig</span><span class="p">,</span> <span class="n">expand_path</span>
+<span class="kn">from</span> <span class="nn">natlink.readwritefile</span> <span class="kn">import</span> <span class="n">ReadWriteFile</span>
+<span class="kn">from</span> <span class="nn">natlink.callbackhandler</span> <span class="kn">import</span> <span class="n">CallbackHandler</span>
+<span class="kn">from</span> <span class="nn">natlink.singleton</span> <span class="kn">import</span> <span class="n">Singleton</span>
+<span class="c1"># the possible languages (for get_user_language) (runs at start and on_change_callback, user)</span>
+<span class="c1"># default is &quot;enx&quot;, being one of the English dialects...</span>
+<span class="n">UserLanguages</span> <span class="o">=</span> <span class="p">{</span> 
+    <span class="s2">&quot;Nederlands&quot;</span><span class="p">:</span> <span class="s2">&quot;nld&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Fran</span><span class="se">\xe7</span><span class="s2">ais&quot;</span><span class="p">:</span> <span class="s2">&quot;fra&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Deutsch&quot;</span><span class="p">:</span> <span class="s2">&quot;deu&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Italiano&quot;</span><span class="p">:</span> <span class="s2">&quot;ita&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Espa</span><span class="se">\xf1</span><span class="s2">ol&quot;</span><span class="p">:</span> <span class="s2">&quot;esp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Dutch&quot;</span><span class="p">:</span> <span class="s2">&quot;nld&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;French&quot;</span><span class="p">:</span> <span class="s2">&quot;fra&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;German&quot;</span><span class="p">:</span> <span class="s2">&quot;deu&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Italian&quot;</span><span class="p">:</span> <span class="s2">&quot;ita&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Spanish&quot;</span><span class="p">:</span> <span class="s2">&quot;esp&quot;</span><span class="p">,}</span>
+
+<div class="viewcode-block" id="NatlinkMain"><a class="viewcode-back" href="../../loader.html#natlink.loader.NatlinkMain">[docs]</a><span class="k">class</span> <span class="nc">NatlinkMain</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">Singleton</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;main class of Natlink, make it a &quot;singleton&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">Any</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loader.NatlinkMain, first instance should be called with a logging.Logger instance, not </span><span class="si">{</span><span class="n">logger</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loader.NatlinkMain, first instance should be called with a NatlinkConfig instance, not </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prog_names_visited</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>    <span class="c1"># to enable loading program specific grammars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_attempt_times</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__user</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>       <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__profile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>    <span class="c1"># at start and on_change_callback user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__language</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>   <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__load_on_begin_utterance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_on_begin_utterance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">load_on_begin_utterance</span> <span class="c1"># set the property load_on_begin_utterance</span>
+        <span class="c1"># callback instances:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_load_callback</span> <span class="o">=</span>  <span class="n">CallbackHandler</span><span class="p">(</span><span class="s1">&#39;pre_load&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post_load_callback</span> <span class="o">=</span>  <span class="n">CallbackHandler</span><span class="p">(</span><span class="s1">&#39;post_load&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_mic_on_callback</span> <span class="o">=</span> <span class="n">CallbackHandler</span><span class="p">(</span><span class="s1">&#39;on_mic_on&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_begin_utterance_callback</span> <span class="o">=</span> <span class="n">CallbackHandler</span><span class="p">(</span><span class="s1">&#39;on_begin_utterance&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seen</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>     <span class="c1"># start empty in trigger_load</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>   <span class="c1"># getconfigsetting and writeconfigsetting</span>
+
+    <span class="k">def</span> <span class="nf">set_on_begin_utterance_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_begin_utterance_callback</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_on_mic_on_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_mic_on_callback</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">set_pre_load_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_load_callback</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_post_load_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post_load_callback</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete_on_begin_utterance_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_begin_utterance_callback</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete_on_mic_on_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_mic_on_callback</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">delete_pre_load_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_load_callback</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete_post_load_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post_load_callback</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">module_paths_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_module_paths_in_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">directories_for_user</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">))</span>
+
+    <span class="c1"># @property</span>
+    <span class="c1"># def module_paths_for_directory(self) -&gt; List[Path]:</span>
+    <span class="c1">#     return self._module_paths_in_dir(self.config.directories_for_user(self.user))</span>
+
+    <span class="c1"># three properties, which are set at start or at on_change_callback:</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">language</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;holds the language of the current profile (default &#39;enx&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__language</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_user_language</span><span class="p">()</span>
+            
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__language</span> <span class="ow">or</span> <span class="s1">&#39;enx&#39;</span>
+
+    <span class="nd">@language</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">language</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__language</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__language</span> <span class="o">=</span> <span class="s1">&#39;enx&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;set language property: invalid value (&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&quot;), set &quot;enx&quot;&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">profile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;holds the directory profile of current user profile</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__profile</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="nd">@profile</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__profile</span> <span class="o">=</span> <span class="n">value</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;holds the name of the current user profile</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__user</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="nd">@user</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__user</span> <span class="o">=</span> <span class="n">value</span> <span class="ow">or</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="c1"># load_on_begin_utterance is a property...</span>
+<div class="viewcode-block" id="NatlinkMain.get_load_on_begin_utterance"><a class="viewcode-back" href="../../loader.html#natlink.loader.NatlinkMain.get_load_on_begin_utterance">[docs]</a>    <span class="k">def</span> <span class="nf">get_load_on_begin_utterance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;this value is most often True or False, taken from the config file</span>
+<span class="sd">        </span>
+<span class="sd">        It can also be (set to) a positive int, with which it does</span>
+<span class="sd">        the load_on_begin_utterance so many times. After these utterances,</span>
+<span class="sd">        the value falls back to False.</span>
+<span class="sd">        </span>
+<span class="sd">        With Vocola, there is one utterance delay in the updating of the changed vocola command files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__load_on_begin_utterance</span></div>
+
+<div class="viewcode-block" id="NatlinkMain.set_load_on_begin_utterance"><a class="viewcode-back" href="../../loader.html#natlink.loader.NatlinkMain.set_load_on_begin_utterance">[docs]</a>    <span class="k">def</span> <span class="nf">set_load_on_begin_utterance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;set the value for loading at each utterance to True, False or positive int</span>
+<span class="sd">        </span>
+<span class="sd">        For Vocola, setting this value to 1 did not work, setting to 2 does, so</span>
+<span class="sd">        you need one extra utterance for a new vocola command to come through.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;set_load_on_begin_utterance to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__load_on_begin_utterance</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;set_load_on_begin_utterance to False&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__load_on_begin_utterance</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__load_on_begin_utterance</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;set_load_on_begin_utterance, invalid type for value: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1"> (type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span></div>
+        
+
+    <span class="n">load_on_begin_utterance</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_load_on_begin_utterance</span><span class="p">,</span> <span class="n">set_load_on_begin_utterance</span><span class="p">)</span>
+
+    <span class="c1"># def _module_paths_in_dir(self, directory: str) -&gt; List[Path]:</span>
+    <span class="c1">#     &quot;&quot;&quot;give modules in directory</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1"># </span>
+    <span class="c1">#     def is_script(f: Path) -&gt; bool:</span>
+    <span class="c1">#         if not f.is_file():</span>
+    <span class="c1">#             return False</span>
+    <span class="c1">#         if not f.suffix == &#39;.py&#39;:</span>
+    <span class="c1">#             return False</span>
+    <span class="c1">#         </span>
+    <span class="c1">#         if f.stem.startswith(&#39;_&#39;):</span>
+    <span class="c1">#             return True</span>
+    <span class="c1">#         for prog_name in self.prog_names_visited:</span>
+    <span class="c1">#             if f.stem == prog_name or f.stem.startswith( prog_name + &#39;_&#39;):</span>
+    <span class="c1">#                 return True</span>
+    <span class="c1">#         return False</span>
+    <span class="c1"># </span>
+    <span class="c1">#     init = &#39;__init__.py&#39;</span>
+    <span class="c1"># </span>
+    <span class="c1">#     mod_paths: List[Path] = []</span>
+    <span class="c1">#     dir_path = Path(directory)</span>
+    <span class="c1">#     scripts = sorted(filter(is_script, dir_path.iterdir()))</span>
+    <span class="c1">#     init_path = dir_path.joinpath(init)</span>
+    <span class="c1">#     if init_path in scripts:</span>
+    <span class="c1">#         scripts.remove(init_path)</span>
+    <span class="c1">#         scripts.insert(0, init_path)</span>
+    <span class="c1">#     mod_paths.extend(scripts)</span>
+    <span class="c1"># </span>
+    <span class="c1">#     return mod_paths</span>
+
+    <span class="k">def</span> <span class="nf">_module_paths_in_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directories</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+
+        <span class="k">def</span> <span class="nf">is_script</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.py&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">prog_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prog_names_visited</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">stem</span> <span class="o">==</span> <span class="n">prog_name</span> <span class="ow">or</span> <span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span> <span class="n">prog_name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">init</span> <span class="o">=</span> <span class="s1">&#39;__init__.py&#39;</span>
+
+        <span class="n">mod_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">directories</span><span class="p">:</span>
+            <span class="n">dir_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="n">scripts</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">is_script</span><span class="p">,</span> <span class="n">dir_path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()))</span>
+            <span class="n">init_path</span> <span class="o">=</span> <span class="n">dir_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">init</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">init_path</span> <span class="ow">in</span> <span class="n">scripts</span><span class="p">:</span>
+                <span class="n">scripts</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">init_path</span><span class="p">)</span>
+                <span class="n">scripts</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">init_path</span><span class="p">)</span>
+            <span class="n">mod_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">scripts</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">mod_paths</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_add_dirs_to_path</span><span class="p">(</span><span class="n">directories</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">directories</span><span class="p">:</span>
+            <span class="n">d_expanded</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">d_expanded</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_expanded</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_call_and_catch_all_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fn</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">unload_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">ModuleType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">unload</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s1">&#39;unload&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unload</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;unloading module: </span><span class="si">{</span><span class="n">module</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_call_and_catch_all_exceptions</span><span class="p">(</span><span class="n">unload</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_import_module_from_path</span><span class="p">(</span><span class="n">mod_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModuleType</span><span class="p">:</span>
+        <span class="n">mod_name</span> <span class="o">=</span> <span class="n">mod_path</span><span class="o">.</span><span class="n">stem</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span> <span class="n">mod_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not find spec for: </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">loader</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">loader</span>
+        <span class="k">if</span> <span class="n">loader</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not find loader for: </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">importlib</span><span class="o">.</span><span class="n">machinery</span><span class="o">.</span><span class="n">SourceFileLoader</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;module </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1"> does not have a SourceFileLoader loader&#39;</span><span class="p">)</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">module</span>
+
+    <span class="k">def</span> <span class="nf">load_or_reload_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">force_load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mod_name</span> <span class="o">=</span> <span class="n">mod_path</span><span class="o">.</span><span class="n">stem</span>
+        <span class="k">if</span> <span class="n">mod_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">seen</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Attempting to load duplicate module: </span><span class="si">{</span><span class="n">mod_path</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mod_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="c1"># this can only happen if a file (_vocola_vcl.py for example) is present when scanning all files</span>
+            <span class="c1"># but is removed when loading _vocola_main in between (compiling the new state of all .vcl files)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;load_or_reload_module: not a file, so cannot load:</span><span class="se">\n\t</span><span class="s1">&quot;</span><span class="si">{</span><span class="n">mod_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mod_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+            <span class="k">return</span>                
+
+        <span class="c1"># if not self.load_attempt_times:</span>
+        <span class="c1">#     self.logger.warning(f&#39;======== load_attempt_times is empty: {self.load_attempt_times}&#39;)</span>
+        
+        <span class="n">last_attempt_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_attempt_times</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mod_path</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_attempt_times</span><span class="p">[</span><span class="n">mod_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mod_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;mod_path: </span><span class="si">{</span><span class="n">mod_path</span><span class="si">}</span><span class="s1">, in self.bad_modules...&#39;</span><span class="p">)</span>
+                <span class="n">last_modified_time</span> <span class="o">=</span> <span class="n">mod_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+                <span class="k">if</span> <span class="n">force_load</span> <span class="ow">or</span> <span class="n">last_attempt_time</span> <span class="o">&lt;</span> <span class="n">last_modified_time</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loading previously bad module: </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_module_from_path</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="c1"># added QH, I think it should not come here:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;load_or_reload_module, unexpected, cannot remove key </span><span class="si">{</span><span class="n">mod_path</span><span class="si">}</span><span class="s1"> from self.bad_modules:</span><span class="se">\n\t</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="si">}</span><span class="se">\n\t</span><span class="s1">====</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="p">[</span><span class="n">mod_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
+                    <span class="k">return</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;skipping unchanged bad module: </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="k">return</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">maybe_module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">force_load</span> <span class="ow">or</span> <span class="n">maybe_module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loading module: </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_module_from_path</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="p">[</span><span class="n">mod_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
+                    <span class="k">return</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">module</span> <span class="o">=</span> <span class="n">maybe_module</span>
+                    <span class="n">last_modified_time</span> <span class="o">=</span> <span class="n">mod_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+                    <span class="n">diff</span> <span class="o">=</span> <span class="n">last_modified_time</span> <span class="o">-</span> <span class="n">last_attempt_time</span>  <span class="c1"># check for -0.1 instead of 0, a ???</span>
+                                                                   <span class="c1"># _pre_load_callback may need this..</span>
+                    <span class="k">if</span> <span class="n">force_load</span> <span class="ow">or</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">force_load</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;reloading module: </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1">, force_load: </span><span class="si">{</span><span class="n">force_load</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;reloading module: </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                            
+                        <span class="bp">self</span><span class="o">.</span><span class="n">unload_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+                        <span class="k">del</span> <span class="n">module</span>
+                        <span class="n">module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_import_module_from_path</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="p">[</span><span class="n">mod_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;loaded module: </span><span class="si">{</span><span class="n">module</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="k">return</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;skipping unchanged loaded module: </span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;load_or_reload_module, exception, add to self.bad_modules </span><span class="si">{</span><span class="n">mod_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mod_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="p">:</span>
+                <span class="n">old_module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unload_module</span><span class="p">(</span><span class="n">old_module</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">old_module</span>
+                <span class="n">importlib</span><span class="o">.</span><span class="n">invalidate_caches</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">load_or_reload_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_paths</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">force_load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">mod_path</span> <span class="ow">in</span> <span class="n">mod_paths</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_or_reload_module</span><span class="p">(</span><span class="n">mod_path</span><span class="p">,</span> <span class="n">force_load</span><span class="o">=</span><span class="n">force_load</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remove_modules_that_no_longer_exist</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mod_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_paths_for_user</span>
+       
+        <span class="k">for</span> <span class="n">mod_path</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">mod_paths</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;unloading removed or not-for-this-user module </span><span class="si">{</span><span class="n">mod_path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">old_module</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded_modules</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_attempt_times</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unload_module</span><span class="p">(</span><span class="n">old_module</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">old_module</span>
+        <span class="k">for</span> <span class="n">mod_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">mod_paths</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;bad module was removed: </span><span class="si">{</span><span class="n">mod_path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bad_modules</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_attempt_times</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">mod_path</span><span class="p">)</span>
+
+        <span class="n">importlib</span><span class="o">.</span><span class="n">invalidate_caches</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">trigger_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_load</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seen</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">force_load</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;triggering load/reload process (force_load: </span><span class="si">{</span><span class="n">force_load</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;triggering load/reload process&#39;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_modules_that_no_longer_exist</span><span class="p">()</span>
+
+        <span class="n">mod_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_paths_for_user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_load_callback</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_or_reload_modules</span><span class="p">(</span><span class="n">mod_paths</span><span class="p">,</span> <span class="n">force_load</span><span class="o">=</span><span class="n">force_load</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post_load_callback</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<div class="viewcode-block" id="NatlinkMain.on_change_callback"><a class="viewcode-back" href="../../loader.html#natlink.loader.NatlinkMain.on_change_callback">[docs]</a>    <span class="k">def</span> <span class="nf">on_change_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;on_change_callback, when another user profile is chosen, or when the mic state changes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">change_type</span> <span class="o">==</span> <span class="s1">&#39;user&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_user_language</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;on_change_callback, user &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s1">&quot;, profile: &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="si">}</span><span class="s1">&quot;, language: &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">language</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">load_on_user_changed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trigger_load</span><span class="p">(</span><span class="n">force_load</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">change_type</span> <span class="o">==</span> <span class="s1">&#39;mic&#39;</span> <span class="ow">and</span> <span class="n">args</span> <span class="o">==</span> <span class="s1">&#39;on&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;on_change_callback called with: &quot;mic&quot;, &quot;on&quot;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_on_mic_on_callback</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+                    
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">load_on_mic_on</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trigger_load</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;on_change_callback unhandled: change_type: &quot;</span><span class="si">{</span><span class="n">change_type</span><span class="si">}</span><span class="s1">&quot;, args: &quot;</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span></div>
+            
+
+    <span class="k">def</span> <span class="nf">on_begin_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module_info</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;on_begin_callback called with: moduleInfo: </span><span class="si">{</span><span class="n">module_info</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_begin_utterance_callback</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+       
+        <span class="n">prog_name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">module_info</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stem</span>
+        <span class="k">if</span> <span class="n">prog_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prog_names_visited</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prog_names_visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">prog_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trigger_load</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_on_begin_utterance</span><span class="p">:</span>
+            <span class="c1"># manipulate this setting:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_on_begin_utterance</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="ow">or</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_on_begin_utterance</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trigger_load</span><span class="p">()</span>
+                
+<div class="viewcode-block" id="NatlinkMain.get_user_language"><a class="viewcode-back" href="../../loader.html#natlink.loader.NatlinkMain.get_user_language">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_language</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">DNSuserDirectory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the user language (default &quot;enx&quot;) from Dragon inifiles</span>
+<span class="sd">            </span>
+<span class="sd">        like &quot;nld&quot; for Dutch, etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">isfile</span><span class="p">,</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">join</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span>
+    
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">DNSuserDirectory</span> <span class="ow">and</span> <span class="n">isdir</span><span class="p">(</span><span class="n">DNSuserDirectory</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;get_user_language, no DNSuserDirectory passed, probably Dragon is not running, return &quot;enx&quot;&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;enx&#39;</span>
+    
+        <span class="n">ns_options_ini</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">DNSuserDirectory</span><span class="p">,</span> <span class="s1">&#39;options.ini&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ns_options_ini</span> <span class="ow">and</span> <span class="n">isfile</span><span class="p">(</span><span class="n">ns_options_ini</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;get_user_language, warning no valid ini file: &quot;</span><span class="si">{</span><span class="n">ns_options_ini</span><span class="si">}</span><span class="s1">&quot; found, return &quot;enx&quot;&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;enx&quot;</span>
+    
+        <span class="n">section</span> <span class="o">=</span> <span class="s2">&quot;Options&quot;</span>
+        <span class="n">keyname</span> <span class="o">=</span> <span class="s2">&quot;Last Used Acoustics&quot;</span>
+        <span class="n">keyToModel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getconfigsetting</span><span class="p">(</span><span class="n">option</span><span class="o">=</span><span class="n">keyname</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="n">section</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="n">ns_options_ini</span><span class="p">)</span>
+
+        <span class="n">ns_acoustic_ini</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">DNSuserDirectory</span><span class="p">,</span> <span class="s1">&#39;acoustic.ini&#39;</span><span class="p">)</span>
+        <span class="n">section</span> <span class="o">=</span> <span class="s2">&quot;Base Acoustic&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ns_acoustic_ini</span> <span class="ow">and</span> <span class="n">isfile</span><span class="p">(</span><span class="n">ns_acoustic_ini</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;get_user_language: warning: user language cannot be found from Dragon Inifile: &quot;</span><span class="si">{</span><span class="n">ns_acoustic_ini</span><span class="si">}</span><span class="s1">&quot;, return &quot;enx&quot;&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;enx&#39;</span>
+        <span class="c1"># user_language_long = win32api.GetProfileVal(section, keyToModel, &quot;&quot;, ns_acoustic_ini)</span>
+        <span class="n">user_language_long</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getconfigsetting</span><span class="p">(</span><span class="n">option</span><span class="o">=</span><span class="n">keyToModel</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="n">section</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="n">ns_acoustic_ini</span><span class="p">)</span>
+        <span class="n">user_language_long</span> <span class="o">=</span> <span class="n">user_language_long</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">user_language_long</span> <span class="ow">in</span> <span class="n">UserLanguages</span><span class="p">:</span>
+            <span class="n">language</span> <span class="o">=</span> <span class="n">UserLanguages</span><span class="p">[</span><span class="n">user_language_long</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;get_user_language, return &quot;</span><span class="si">{</span><span class="n">language</span><span class="si">}</span><span class="s1">&quot;, (long language: &quot;</span><span class="si">{</span><span class="n">user_language_long</span><span class="si">}</span><span class="s1">&quot;)&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">language</span> <span class="o">=</span> <span class="s1">&#39;enx&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;get_user_language, return userLanguage: &quot;</span><span class="si">{</span><span class="n">language</span><span class="si">}</span><span class="s1">&quot;, (long language: &quot;</span><span class="si">{</span><span class="n">user_language_long</span><span class="si">}</span><span class="s1">&quot;)&#39;</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">language</span></div>
+
+<div class="viewcode-block" id="NatlinkMain.set_user_language"><a class="viewcode-back" href="../../loader.html#natlink.loader.NatlinkMain.set_user_language">[docs]</a>    <span class="k">def</span> <span class="nf">set_user_language</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;can be called from other module to explicitly set the user language to &#39;enx&#39;, &#39;nld&#39;, etc</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">args</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="n">natlink</span><span class="o">.</span><span class="n">getCurrentUser</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">natlink</span><span class="o">.</span><span class="n">NatError</span><span class="p">:</span>
+                <span class="c1"># when Dragon not running, for testing:</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="n">args</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">language</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_user_language</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;set_user_language, user: &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s1">&quot;, profile: &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="si">}</span><span class="s1">&quot;, language: &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">language</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;set_user_language, cannot get input for get_user_language, set to &quot;enx&quot;,</span><span class="se">\n\t</span><span class="s1">probably Dragon is not running&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">language</span> <span class="o">=</span> <span class="s1">&#39;enx&#39;</span></div>
+
+
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;starting natlink loader from config file:</span><span class="se">\n\t</span><span class="s1">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_path</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+        <span class="n">natlink</span><span class="o">.</span><span class="n">active_loader</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">directories</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting Natlink, but no directories to load are specified.</span><span class="se">\n\t</span><span class="s1">Please add one or more directories</span><span class="se">\n\t</span><span class="s1">in config file: &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_path</span><span class="si">}</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># self.logger.debug(f&#39;directories: {self.config.directories}&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_dirs_to_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">directories</span><span class="p">)</span>  
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">load_on_startup</span><span class="p">:</span>
+            <span class="c1"># set language property:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_user_language</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trigger_load</span><span class="p">()</span>
+        <span class="n">natlink</span><span class="o">.</span><span class="n">setBeginCallback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_begin_callback</span><span class="p">)</span>
+        <span class="n">natlink</span><span class="o">.</span><span class="n">setChangeCallback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_change_callback</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">log_level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">log_level</span>
+        <span class="k">if</span> <span class="n">log_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">LogLevel</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">log_level</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;set log level to: </span><span class="si">{</span><span class="n">log_level</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NatlinkMain.getconfigsetting"><a class="viewcode-back" href="../../loader.html#natlink.loader.NatlinkMain.getconfigsetting">[docs]</a>    <span class="k">def</span> <span class="nf">getconfigsetting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">option</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;get a setting from possibly an inifile other than natlink.ini</span>
+<span class="sd">        </span>
+<span class="sd">        Take a string as input, which is obtained from readwritefile.py, handling</span>
+<span class="sd">        different encodings and possible BOM marks.</span>
+<span class="sd">        </span>
+<span class="sd">        When no &quot;option&quot; is passed, the contents of the section are returned (a list of options)</span>
+<span class="sd">        </span>
+<span class="sd">        func can be configparser.getint or configparser.getboolean if needed, otherwise configparser.get (str) is taken.</span>
+<span class="sd">        pass: func=&#39;getboolean&#39; or func=&#39;getint&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">isfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span> <span class="ow">or</span> <span class="n">config_locations</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">isfile</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;getconfigsetting, no valid filepath: &quot;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+        <span class="n">rwfile</span> <span class="o">=</span> <span class="n">ReadWriteFile</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_text</span> <span class="o">=</span> <span class="n">rwfile</span><span class="o">.</span><span class="n">readAnything</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="n">Config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="n">Config</span><span class="o">.</span><span class="n">read_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_text</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">option</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Config</span><span class="o">.</span><span class="n">options</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">Config</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">func</span> <span class="ow">or</span> <span class="n">Config</span><span class="o">.</span><span class="n">get</span>
+
+        <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;get&#39;</span><span class="p">:</span>
+            <span class="n">fallback</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">elif</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;getint&#39;</span><span class="p">:</span>
+            <span class="n">fallback</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;getboolean&#39;</span><span class="p">:</span>
+            <span class="n">fallback</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;getconfigsetting, no fallback for &quot;</span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+       
+        <span class="n">func</span> <span class="o">=</span> <span class="n">func</span> <span class="ow">or</span> <span class="n">Config</span><span class="o">.</span><span class="n">get</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">section</span><span class="o">=</span><span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="n">option</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="n">fallback</span><span class="p">)</span></div></div>
+
+<span class="k">def</span> <span class="nf">get_natlink_system_config_filename</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">get_config_info_from_registry</span><span class="p">(</span><span class="s1">&#39;installPath&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_config_info_from_registry</span><span class="p">(</span><span class="n">key_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">hive</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">flags</span> <span class="o">=</span> <span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_LOCAL_MACHINE</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;Software\Natlink&#39;</span><span class="p">,</span> <span class="n">winreg</span><span class="o">.</span><span class="n">KEY_WOW64_32KEY</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKeyEx</span><span class="p">(</span><span class="n">hive</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="n">winreg</span><span class="o">.</span><span class="n">KEY_READ</span> <span class="o">|</span> <span class="n">flags</span><span class="p">)</span> <span class="k">as</span> <span class="n">natlink_key</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryValueEx</span><span class="p">(</span><span class="n">natlink_key</span><span class="p">,</span> <span class="n">key_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="config_locations"><a class="viewcode-back" href="../../loader.html#natlink.loader.config_locations">[docs]</a><span class="k">def</span> <span class="nf">config_locations</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;give two possible locations, the wanted and the &quot;fallback&quot; location</span>
+<span class="sd">    </span>
+<span class="sd">    wanted: in the &#39;.natlink&#39; subdirectory of `home` or in &quot;NATLINK_USERDIR&quot;.</span>
+<span class="sd">    name is always &#39;natlink.ini&#39;</span>
+<span class="sd">    </span>
+<span class="sd">    the fallback location is in the installed files, and provides the frame for the config file.</span>
+<span class="sd">    with the configurenatlink (natlinkconfigfunction.py or configfurenatlink.pyw) the fallback version</span>
+<span class="sd">    of the config file is copied into the wanted location.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">join</span><span class="p">,</span> <span class="n">expanduser</span><span class="p">,</span> <span class="n">getenv</span><span class="p">,</span> <span class="n">isfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span>
+    <span class="n">home</span> <span class="o">=</span> <span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)</span>
+    <span class="n">config_sub_dir</span> <span class="o">=</span> <span class="s1">&#39;.natlink&#39;</span>
+    <span class="n">natlink_inifile</span> <span class="o">=</span> <span class="s1">&#39;natlink.ini&#39;</span>
+    <span class="n">fallback_config_file</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">get_natlink_system_config_filename</span><span class="p">(),</span> <span class="s2">&quot;DefaultConfig&quot;</span><span class="p">,</span> <span class="n">natlink_inifile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">isfile</span><span class="p">(</span><span class="n">fallback_config_file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;fallback_config_file does not exist: &quot;</span><span class="si">{</span><span class="n">fallback_config_file</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+    <span class="c1"># try NATLINKUSERDIR setting:</span>
+    <span class="n">natlink_userdir_from_env</span> <span class="o">=</span> <span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;NATLINK_USERDIR&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">natlink_userdir_from_env</span><span class="p">:</span>
+        <span class="n">nl_user_dir</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">natlink_userdir_from_env</span><span class="p">)</span>
+        <span class="n">nl_user_file</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">nl_user_dir</span><span class="p">,</span> <span class="n">natlink_inifile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">nl_user_file</span><span class="p">,</span> <span class="n">fallback_config_file</span><span class="p">]</span>
+
+    <span class="c1"># choose between .natlink/natlink.ini in home or the fallback_directory:         </span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">join</span><span class="p">(</span><span class="n">home</span><span class="p">,</span> <span class="n">config_sub_dir</span><span class="p">,</span> <span class="n">natlink_inifile</span><span class="p">),</span> <span class="n">fallback_config_file</span><span class="p">]</span></div>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;natlink&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># TODO: remove this hack. As of October 2021, win32api does not load properly, except if</span>
+        <span class="c1"># the package pywin32_system32 is explictly put on new dll_directory white-list</span>
+        <span class="n">pywin32_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sysconfig</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s1">&#39;platlib&#39;</span><span class="p">),</span> <span class="s2">&quot;pywin32_system32&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">pywin32_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">add_dll_directory</span><span class="p">(</span><span class="n">pywin32_dir</span><span class="p">)</span>
+        
+        <span class="n">config</span> <span class="o">=</span> <span class="n">NatlinkConfig</span><span class="o">.</span><span class="n">from_first_found_file</span><span class="p">(</span><span class="n">config_locations</span><span class="p">())</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">NatlinkMain</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+        <span class="n">main</span><span class="o">.</span><span class="n">setup_logger</span><span class="p">()</span>
+        <span class="n">main</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Exception: &quot;</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s1">&quot; in loader.run&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">raise</span> <span class="ne">Exception</span> <span class="kn">from</span> <span class="nn">exc</span>
+    
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">natlink</span><span class="o">.</span><span class="n">natConnect</span><span class="p">()</span>
+    <span class="n">run</span><span class="p">()</span>
+    <span class="n">natlink</span><span class="o">.</span><span class="n">natDisconnect</span><span class="p">()</span>
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 1999, Joel Gould.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

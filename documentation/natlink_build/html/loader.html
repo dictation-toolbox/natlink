@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>loader &mdash; natlink 5.1.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="config" href="config.html" />
+    <link rel="prev" title="Modules" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> natlink
+          </a>
+              <div class="version">
+                5.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install instructions for Natlink</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configure.html">Configure Natlink</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developers.html">Developers instructions</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="natlinkstatus.html">natlinkstatus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">natlink</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">Modules</a> &raquo;</li>
+      <li>loader</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/loader.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="loader">
+<span id="refloader"></span><h1>loader<a class="headerlink" href="#loader" title="Permalink to this headline"></a></h1>
+<p>The <code class="code docutils literal notranslate"><span class="pre">loader</span></code> is what was <code class="code docutils literal notranslate"><span class="pre">natlinkmain</span></code>: it loads the various
+modules according to the config file <cite>natlink.ini</cite>.</p>
+<p>Moreover, it also handles callbacks from Dragon/Natlink.</p>
+<span class="target" id="module-natlink.loader"></span><dl class="py class">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NatlinkMain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/loader.html#NatlinkMain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.loader.NatlinkMain" title="Permalink to this definition"></a></dt>
+<dd><p>main class of Natlink, make it a “singleton”</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.get_load_on_begin_utterance">
+<span class="sig-name descname"><span class="pre">get_load_on_begin_utterance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/natlink/loader.html#NatlinkMain.get_load_on_begin_utterance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.loader.NatlinkMain.get_load_on_begin_utterance" title="Permalink to this definition"></a></dt>
+<dd><p>this value is most often True or False, taken from the config file</p>
+<p>It can also be (set to) a positive int, with which it does
+the load_on_begin_utterance so many times. After these utterances,
+the value falls back to False.</p>
+<p>With Vocola, there is one utterance delay in the updating of the changed vocola command files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.get_user_language">
+<span class="sig-name descname"><span class="pre">get_user_language</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DNSuserDirectory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/loader.html#NatlinkMain.get_user_language"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.loader.NatlinkMain.get_user_language" title="Permalink to this definition"></a></dt>
+<dd><p>return the user language (default “enx”) from Dragon inifiles</p>
+<p>like “nld” for Dutch, etc.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.getconfigsetting">
+<span class="sig-name descname"><span class="pre">getconfigsetting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/natlink/loader.html#NatlinkMain.getconfigsetting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.loader.NatlinkMain.getconfigsetting" title="Permalink to this definition"></a></dt>
+<dd><p>get a setting from possibly an inifile other than natlink.ini</p>
+<p>Take a string as input, which is obtained from readwritefile.py, handling
+different encodings and possible BOM marks.</p>
+<p>When no “option” is passed, the contents of the section are returned (a list of options)</p>
+<p>func can be configparser.getint or configparser.getboolean if needed, otherwise configparser.get (str) is taken.
+pass: func=’getboolean’ or func=’getint’.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.language">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">language</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#natlink.loader.NatlinkMain.language" title="Permalink to this definition"></a></dt>
+<dd><p>holds the language of the current profile (default ‘enx’)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.load_on_begin_utterance">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_on_begin_utterance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#natlink.loader.NatlinkMain.load_on_begin_utterance" title="Permalink to this definition"></a></dt>
+<dd><p>this value is most often True or False, taken from the config file</p>
+<p>It can also be (set to) a positive int, with which it does
+the load_on_begin_utterance so many times. After these utterances,
+the value falls back to False.</p>
+<p>With Vocola, there is one utterance delay in the updating of the changed vocola command files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.on_change_callback">
+<span class="sig-name descname"><span class="pre">on_change_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/natlink/loader.html#NatlinkMain.on_change_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.loader.NatlinkMain.on_change_callback" title="Permalink to this definition"></a></dt>
+<dd><p>on_change_callback, when another user profile is chosen, or when the mic state changes</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.profile">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">profile</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#natlink.loader.NatlinkMain.profile" title="Permalink to this definition"></a></dt>
+<dd><p>holds the directory profile of current user profile</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.set_load_on_begin_utterance">
+<span class="sig-name descname"><span class="pre">set_load_on_begin_utterance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/loader.html#NatlinkMain.set_load_on_begin_utterance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.loader.NatlinkMain.set_load_on_begin_utterance" title="Permalink to this definition"></a></dt>
+<dd><p>set the value for loading at each utterance to True, False or positive int</p>
+<p>For Vocola, setting this value to 1 did not work, setting to 2 does, so
+you need one extra utterance for a new vocola command to come through.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.set_user_language">
+<span class="sig-name descname"><span class="pre">set_user_language</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/natlink/loader.html#NatlinkMain.set_user_language"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.loader.NatlinkMain.set_user_language" title="Permalink to this definition"></a></dt>
+<dd><p>can be called from other module to explicitly set the user language to ‘enx’, ‘nld’, etc</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="natlink.loader.NatlinkMain.user">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">user</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#natlink.loader.NatlinkMain.user" title="Permalink to this definition"></a></dt>
+<dd><p>holds the name of the current user profile</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="natlink.loader.config_locations">
+<span class="sig-name descname"><span class="pre">config_locations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/natlink/loader.html#config_locations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#natlink.loader.config_locations" title="Permalink to this definition"></a></dt>
+<dd><p>give two possible locations, the wanted and the “fallback” location</p>
+<p>wanted: in the ‘.natlink’ subdirectory of <cite>home</cite> or in “NATLINK_USERDIR”.
+name is always ‘natlink.ini’</p>
+<p>the fallback location is in the installed files, and provides the frame for the config file.
+with the configurenatlink (natlinkconfigfunction.py or configfurenatlink.pyw) the fallback version
+of the config file is copied into the wanted location.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="Modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-right" title="config" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 1999, Joel Gould.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
