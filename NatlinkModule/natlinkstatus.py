@@ -163,6 +163,13 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             self.NatlinkDirectory = thisDir
             self.CoreDirectory = thisDir   # maybe becoming obsolete
 
+    def refresh(self):
+        """rerun the __init__, refreshing all variables
+        
+        This should be done only from the natlinkconfigfunctions.py, in the configure phase of Natlink
+        """
+        self.__init__()
+
     @staticmethod    
     def getWindowsVersion():
         """extract the windows version
@@ -328,14 +335,20 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             return self.UnimacroUserDirectory
         key = 'unimacrouserdirectory'
         value =  self.natlinkmain.getconfigsetting(section="unimacro", option=key)
-        if value and isdir(value):
+        if not value:
+            self.UnimacroUserDirectory = ''
+            return ''
+        if isdir(value):
             self.UnimacroUserDirectory = value
             return abspath(value)
-        if value:
-            expanded = loader.expand_path(value)
-            if expanded and isdir(expanded):
-                self.UnimacroUserDirectory = expanded
-                return abspath(expanded)
+        # for future use:
+        expanded = loader.expand_path(value)
+        if expanded and isdir(expanded):
+            self.UnimacroUserDirectory = expanded
+            return abspath(expanded)
+        # nothing or wrong directory:
+        print(f'invalid path for UnimacroUserDirectory: "{value}", return ""')
+
         self.UnimacroUserDirectory = ''
         return ''
     
@@ -429,9 +442,14 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         key = 'vocolauserdirectory'
         section = 'vocola'
         value =  self.natlinkmain.getconfigsetting(section=section, option=key)
-        if value and isdir(value):
+        if not value:
+            self.VocolaUserDirectory = ''
+            return ''
+
+        if isdir(value):
             self.VocolaUserDirectory = abspath(value)
             return value
+        # for future use:
         expanded = config.expand_path(value)
         if expanded and isdir(expanded):
             self.VocolaUserDirectory = abspath(expanded)
