@@ -41,18 +41,6 @@ add_compile_options("/std:c++17") # because of extern/WinReg
 # see note at top of https://docs.python.org/3/c-api/arg.html
 add_compile_definitions(PY_SSIZE_T_CLEAN)
 
-# add_compile_definitions(Py_LIMITED_API) (need?) Stable Application Binary Interface
-
-# Make stdlib and vc runtime be statically linked into the DLL -> fewer dependencies for user
-foreach(flag_var
-        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-    message(STATUS "${flag_var} ${${flag_var}}")
-    if(${flag_var} MATCHES "/MD")
-        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-    endif(${flag_var} MATCHES "/MD")
-endforeach(flag_var)
-
 # Add two DLL libraries to build, one for 15 and one for 13 (which also works for 14).
 add_library(natlink15_pyd SHARED ${SRC_FILES})
 add_library(natlink13_pyd SHARED ${SRC_FILES})

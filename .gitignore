@@ -88,3 +88,6 @@ MacroSystem/*_vcl.py
 .vs
 /PyTest/readwritefiletest/*.txt
 /PyTest/readwritefiletest/*out.ini
+
+# documentation (sphinx)
+_build
