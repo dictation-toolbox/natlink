@@ -1,12 +1,12 @@
 ﻿cmake_minimum_required (VERSION 3.20)
 
 project (Natlink)
-set(NATLINK_VERSION 5.1.1)
-set(PYTHON_VERSION 3.9 CACHE STRING "3.X for X >= 8")
+set(NATLINK_VERSION 5.1.2)
+set(PYTHON_VERSION 3.9 CACHE STRING "3.X for X >= 9")
 set(MYAPP_NAME "Natlink")
 
 # Other supported version; use CMake cache editor
-set(PYTHON_VERSIONS 3.8 3.9 3.10)
+set(PYTHON_VERSIONS 3.9 3.10)
 set_property(CACHE PYTHON_VERSION PROPERTY STRINGS ${PYTHON_VERSIONS})
 
 #### where to find the 32-bit installer for $(PYTHON_VERSION)
