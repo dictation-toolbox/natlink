@@ -5,14 +5,13 @@ that allows the user to run Python scripts that interact with DNS.
 
 This fork does not include
  [Dragonfly](https://github.com/dictation-toolbox/dragonfly),
- [Unimacro](https://qh.antenna.nl/unimacro/aboutunimacro/index.html) and
+ [Unimacro, or Vocolo](https://qh.antenna.nl/unimacro/aboutunimacro/index.html).
  [Vocola](http://vocola.net/v2/default.asp).
  
 These should be installed separately and included in the Natlink config as necessary.
 The currently supported versions of Python are: 3.8-32
 
 ## Installation
-
 
 Easy installation/uninstallation is one of the primary goals of this repository.
 If you had to install any extra dependencies first in order to get it working,

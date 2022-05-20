@@ -89,5 +89,6 @@ MacroSystem/*_vcl.py
 /PyTest/readwritefiletest/*.txt
 /PyTest/readwritefiletest/*out.ini
 
-# documentation (sphinx)
-_build
+# documentation
+/documentation/_build
+/documentation/natlink_build
