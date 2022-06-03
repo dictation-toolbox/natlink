@@ -40,7 +40,7 @@ Setup Visual Studio Code environment
       ``Visual Studio Community 2022 Release - x86`` (32-bit/X86
       required) to configure the compiler.
 
-      -  |image|
+      -  |image1|
 
 6. The ``build`` directory will generate containing the configuration
    selected and build artifacts (compiled code and installer)
@@ -51,12 +51,12 @@ Setup Visual Studio Code environment
 7. Click the "build" button at the bottom of the editor to to build the
    project and create the installer.
 
-   -  |image|
+   -  |image2|
    -  ``build`` directory Installer location
       ``{project source directory}\build\InstallerSource\natlink5.1-py3.10-32-setup.exe``
 
-.. |image| image:: https://user-images.githubusercontent.com/24551569/164927468-68f101a5-9eed-4568-b251-0d09fde0394c.png
-.. |image| image:: https://user-images.githubusercontent.com/24551569/164919729-bd4b2096-6af3-4307-ba3c-ef6ff3b98c41.png
+.. |image1| image:: https://user-images.githubusercontent.com/24551569/164927468-68f101a5-9eed-4568-b251-0d09fde0394c.png
+.. |image2| image:: https://user-images.githubusercontent.com/24551569/164919729-bd4b2096-6af3-4307-ba3c-ef6ff3b98c41.png
 
 
 Further instructions
