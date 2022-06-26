@@ -1,5 +1,5 @@
 '''Python portion of Natlink, a compatibility module for Dragon Naturally Speaking'''
-__version__="0.01"
+__version__="0.1"
 #pylint:disable=C0114, W0401
 from typing import Optional
 
