@@ -14,5 +14,7 @@ requires= [
     "pydebugstring",
 
 ]
+[project.scripts]
+natlinkconfig = "natlinkcore.configure.natlinkconfigfunctions:main"
 [project.urls]
 Home = "https://github.com/dictation-toolbox/natlink/"
