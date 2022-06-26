@@ -11,28 +11,68 @@ home = expanduser('~')
 thisFile = __file__
 this_dir, this_filename = __file__.rsplit('\\', 1)
 
-print()
-print()
-print(f'This is the file "{this_filename}" from directory "{this_dir}"')
-print('This directory holds the default "natlink.ini" file, when it is not found the default or configured directory.')
-print()
-print(rf'The default directory is: "~\.natlink", with "~" being your HOME directory: "{home}".')
-print(f'\tSo: "{home}\\.natlink"')
-print()
-print('There is also a custom way to configure the directory of your "natlink.ini" file:')
-print()
-print('Specify the environment variable "NATLINK_USERDIR", which should point to an existing directory.')
-print('Note: this directory may NOT be a shared directory, like Dropbox or OneDrive.')
-print('several directories to be configured may be shared however, but others must be local, which is hopefully ')
-print('ensured well enough in the config program.')
-print()
-print(f'When this directory does not hold the file "natlink.ini",\nyou can copy it from "{this_dir}",')
-print('or (easier) run the configure program of Natlink, see below.')
-print()
-print('\tWhen you run this program, the default version of "natlink.ini" will be copied into')
-print('\tthe correct place, and you can proceed with configuring')
-print('\tthe additional options in order to get started with using Natlink.')
-print()
+print(f'\n\n'
+    f'\nThis is the file "{this_filename}" from directory "{this_dir}"'
+    f'\nThis directory holds the default "natlink.ini" file, when it is not found the default or configured directory.'
+    f'\n\n'
+    rf'The default directory is: "~\.natlink", with "~" being your HOME directory: "{home}".'
+    f'\tSo: "{home}\\.natlink"'
+    f"\n"
+    f'\nThere is also a custom way to configure the directory of your "natlink.ini" file:'
+    f'\n'
+    f'\nSpecify the environment variable "NATLINK_USERDIR", which should point to an existing directory.'
+    f'\nNote: this directory may NOT be a shared directory, like Dropbox or OneDrive.'
+    f'\nseveral directories to be configured may be shared however, but others must be local, which is hopefully '
+    f'\nensured well enough in the config program.'
+    f'\n'
+    f'\nWhen this directory does not hold the file "natlink.ini",\nyou can copy it from "{this_dir}",'
+    f'\nor (easier) run the configure program of Natlink, see below.'
+    f'\n'
+    f'\tWhen you run this program, the default version of "natlink.ini" will be copied into'
+    f'\tthe correct place, and you can proceed with configuring'
+    f'\tthe additional options in order to get started with using Natlink.'
+    f'\n' )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if False:
+    print()
+    print()
+    print(f'This is the file "{this_filename}" from directory "{this_dir}"')
+    print('This directory holds the default "natlink.ini" file, when it is not found the default or configured directory.')
+    print()
+    print(rf'The default directory is: "~\.natlink", with "~" being your HOME directory: "{home}".')
+    print(f'\tSo: "{home}\\.natlink"')
+    print()
+    print('There is also a custom way to configure the directory of your "natlink.ini" file:')
+    print()
+    print('Specify the environment variable "NATLINK_USERDIR", which should point to an existing directory.')
+    print('Note: this directory may NOT be a shared directory, like Dropbox or OneDrive.')
+    print('several directories to be configured may be shared however, but others must be local, which is hopefully ')
+    print('ensured well enough in the config program.')
+    print()
+    print(f'When this directory does not hold the file "natlink.ini",\nyou can copy it from "{this_dir}",')
+    print('or (easier) run the configure program of Natlink, see below.')
+    print()
+    print('\tWhen you run this program, the default version of "natlink.ini" will be copied into')
+    print('\tthe correct place, and you can proceed with configuring')
+    print('\tthe additional options in order to get started with using Natlink.')
+    print()
+
 
 natlink_userdir = getenv("NATLINK_USERDIR")
 
