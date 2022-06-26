@@ -11,7 +11,8 @@ pip install natlinkcore
 
 ## Building the Python Package Locally
 
-The package is built with [Flit](https://flit.pypa.io/).
+The package is built with [Flit](https://flit.pypa.io/).  The package will be produced in
+dist/nalinkcore-x.y.tar.gz.  to install it `pip install dist/natlinkcore-x.y.tar.gz` replacing x.y with the version numbers.
 
 To build the package:
 
