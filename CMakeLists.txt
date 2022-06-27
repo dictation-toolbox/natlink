@@ -40,10 +40,10 @@ add_subdirectory ("NatlinkSource")
 #  make sure that the Python sources and such are fresh. Mark this
 #  situation as a file NatlinkModule/NatlinkModule.STAMP. Similarly, mark
 #  mark the up-to-dateness of the tests as NatlinkModule/DefaultConfig.STAMP
-add_subdirectory ("NatlinkModule") # build two
+####add_subdirectory ("NatlinkModule") # build two
 # Now, using dependcy on the stamps, start the inno installation generator
 add_subdirectory ("InstallerSource")
-# include sample macros
+#### include sample macros
 #add_subdirectory ("SampleMacros")
-# add config program
+##### add config program
 #add_subdirectory ("NatlinkConfigure")

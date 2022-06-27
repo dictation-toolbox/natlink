@@ -34,11 +34,11 @@ WelcomeLabel2=Welcome to {#MyAppName} {#MyAppVersion} for%n%nDragon/NaturallySpe
 
 [Files]
 ; The Python sources
-Source: "{#SourceRoot}\NatlinkConfigure\natlinkconfigfunctions.py"; DestDir: "{app}\NatlinkConfigure"; Flags: ignoreversion
-Source: "{#SourceRoot}\SampleMacros\*"; DestDir: "{app}\SampleMacros"; Flags: ignoreversion
-Source: "{#SourceRoot}\NatlinkModule\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
-Source: "{#SourceRoot}\NatlinkModule\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
-Source: "{#SourceRoot}\NatlinkModule\py.typed"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+;Source: "{#SourceRoot}\NatlinkConfigure\natlinkconfigfunctions.py"; DestDir: "{app}\NatlinkConfigure"; Flags: ignoreversion
+;Source: "{#SourceRoot}\SampleMacros\*"; DestDir: "{app}\SampleMacros"; Flags: ignoreversion
+;Source: "{#SourceRoot}\NatlinkModule\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+;Source: "{#SourceRoot}\NatlinkModule\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
+;Source: "{#SourceRoot}\NatlinkModule\py.typed"; DestDir: "{#CoreDir}"; Flags: ignoreversion
 
 ; The _natlinkXX.pyd --- and programmatically choose the correct one for _natlink.pyd
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core15.pyd"; DestDir: "{#CoreDir}"; \
@@ -99,4 +99,4 @@ Root: HKCU; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "
 [Run]
 Filename: "{code:GetPythonInstallPath}\\python.exe"; Parameters: "-m pip install --upgrade pip"; StatusMsg: "Upgrade pip..."
 Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "install wxPython"; StatusMsg: "Installing wxPython..."
-Filename: "{code:GetPythonInstallPath}\\python.exe"; Parameters: "{#SourceRoot}\NatlinkConfigure\natlinkconfigfunctions.py"; StatusMsg: "Configure Natlink..."
+;Filename: "{code:GetPythonInstallPath}\\python.exe"; Parameters: "{#SourceRoot}\NatlinkConfigure\natlinkconfigfunctions.py"; StatusMsg: "Configure Natlink..."

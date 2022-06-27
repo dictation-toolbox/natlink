@@ -3,7 +3,6 @@ __version__="0.1"
 #pylint:disable=C0114, W0401
 from typing import Optional
 
-from ._natlink_core import *
 from .config import NoGoodConfigFoundException
 from .loader import NatlinkMain
 from .loader import run as run_loader
