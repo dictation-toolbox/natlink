@@ -124,7 +124,7 @@ class ReadWriteFile:
             content = '\n'.join(content)
     
         if not isinstance(content, str):
-            raise TypeError("writeAnything, content should be str, not %s (%s)"% (type(content), filepath))
+            raise TypeError(f'writeAnything, content should be str, not {type(content)} ("{filepath}"')
 
         if self.encoding != 'ascii':
             i = self.encodings.index(self.encoding)
@@ -155,10 +155,9 @@ class ReadWriteFile:
         if self.bom:
             # print('add bom for tRaw')
             tRaw = self.bom + tRaw 
-        outfile = open(filepath, 'wb')
+        with open(filepath, 'wb') as fp:
         # what difference does a bytearray make? (QH)
-        outfile.write(bytearray(tRaw))
-        outfile.close()
+            fp.write(bytearray(tRaw))
     
 def fixCrLf(tRaw):
     """replace crlf into lf

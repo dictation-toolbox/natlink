@@ -4,7 +4,7 @@
 import os
 import sys
 import wx
-from natlink import config
+from natlinkcore import config
 
 def GetDirFromDialog(promptText, startdir=None):
     """call the directory dialog via wxPython
