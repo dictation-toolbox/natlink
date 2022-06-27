@@ -92,3 +92,6 @@ MacroSystem/*_vcl.py
 # documentation
 /documentation/_build
 /documentation/natlink_build
+
+#python packaging
+src/dist/

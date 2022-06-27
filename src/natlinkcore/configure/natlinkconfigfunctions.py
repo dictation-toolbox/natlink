@@ -1076,7 +1076,7 @@ def createIfNotThere(path_name, level_up=None):
         
     return start_path
 
-if __name__ == "__main__":
+def main_cli():
     if len(sys.argv) == 1:
         Cli = CLI()
         Cli.Config = NatlinkConfig()
@@ -1085,5 +1085,5 @@ if __name__ == "__main__":
             Cli.cmdloop()
         except (KeyboardInterrupt, SystemExit):
             pass
-    else:
-        _main()
+
+main_cli() if __name__ == __name__ == "__main__" else _main()
