@@ -54,7 +54,7 @@ Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: 
   Flags: external ignoreversion; 
 
 ; DefaultConfig
-Source: "{#SourceRoot}\NatlinkModule\DefaultConfig\*"; DestDir: "{app}\DefaultConfig"; Flags: ignoreversion
+Source: "{#SourceRoot}\src\natlinkcore\DefaultConfig\*"; DestDir: "{app}\DefaultConfig"; Flags: ignoreversion
 
 
 [Icons]
