@@ -13,10 +13,10 @@ Written by Doug Ransom, 2021
 #pylint:disable=C0116, W0703
 import os
 import debugpy
-import natlinkstatus
+from natlinkcore import natlinkstatus
 
 __status = natlinkstatus.NatlinkStatus()
-__natLinkPythonDebugPortEnviornmentVar= "NatlinkPyDebugPort"
+__natLinkPythonDebugPortEnvironmentVar= "NatlinkPyDebugPort"
 __natLinkPythonDebugOnStartupVar="NatlinkPyDebugStartup"
 
 __pyDefaultPythonExecutor = "python.exe"
@@ -44,8 +44,8 @@ def start_dap():
         return
     try:
 
-        if __natLinkPythonDebugPortEnviornmentVar in os.environ:
-            natLinkPythonPortStringVal = os.environ[__natLinkPythonDebugPortEnviornmentVar]
+        if __natLinkPythonDebugPortEnvironmentVar in os.environ:
+            natLinkPythonPortStringVal = os.environ[__natLinkPythonDebugPortEnvironmentVar]
             __debugpy_debug_port = int(natLinkPythonPortStringVal)
         print(f"Starting debugpy on port {natLinkPythonPortStringVal}")
 
@@ -74,9 +74,9 @@ def start_dap():
 def debug_check_on_startup():
     #pylint:disable=W0603
     global  __debug_started,__debugpy_debug_port,__debugger
-    debug_instructions = f"{__status.getCoreDirectory()}\\debugging python instructions.docx"
+    debug_instructions = f"{__status.getNatlinkcoreDirectory()}\\debugging python instructions.docx"
     print(f"Instructions for attaching a python debugger are in {debug_instructions} ")
-    if __natLinkPythonDebugPortEnviornmentVar in os.environ:
+    if __natLinkPythonDebugPortEnvironmentVar in os.environ:
         start_dap()
 
 
