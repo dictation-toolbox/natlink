@@ -39,7 +39,7 @@ Python Macro Language for Dragon NaturallySpeaking
       use sendkeys from dragonfly via dtactions
 
 """
-#pylint:disable=C0116, C0302, R0902, W0702, E1101, W0703
+#pylint:disable=C0116, C0302, R0902, W0702, E1101, W0703, C0209, W0237
 
 import os
 import os.path
@@ -49,7 +49,7 @@ import sys
 import traceback
 
 import natlink
-from natlink import gramparser
+from natlinkcore import gramparser
 
 
 useDtactionsSendkeys = 1   ## via dtactions to dragonfly

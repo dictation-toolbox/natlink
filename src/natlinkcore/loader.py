@@ -15,10 +15,11 @@ from types import ModuleType
 from typing import List, Dict, Set, Iterable, Any, Tuple, Callable
 
 import natlink
-from natlink.config import LogLevel, NatlinkConfig, expand_path
-from natlink.readwritefile import ReadWriteFile
-from natlink.callbackhandler import CallbackHandler
-from natlink.singleton import Singleton
+from natlinkcore.config import LogLevel, NatlinkConfig, expand_path
+from natlinkcore.readwritefile import ReadWriteFile
+from natlinkcore.callbackhandler import CallbackHandler
+from natlinkcore.singleton import Singleton
+
 # the possible languages (for get_user_language) (runs at start and on_change_callback, user)
 # default is "enx", being one of the English dialects...
 UserLanguages = { 

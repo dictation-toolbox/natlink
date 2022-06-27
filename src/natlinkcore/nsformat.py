@@ -9,7 +9,7 @@
  removed pre 11 things,
  now for python3 version, with (normally) DNSVersion 15 (QH, June 2020)/Febr 2022
 """
-#pylint:disable=C0116, C0123, R0911, R0912, R0915, R0916
+#pylint:disable=C0116, C0123, C0209, R0911, R0912, R0915, R0916
 import copy
 import natlink
     

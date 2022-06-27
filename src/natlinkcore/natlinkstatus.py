@@ -94,14 +94,12 @@ import platform
 import logging
 from typing import Any
 from pathlib import Path
-try:
-    from natlink import loader
-except ModuleNotFoundError:
-    print('Natlink is not enabled, module natlink and/or natlink.loader cannot be found\n\texit natlinkstatus.py...')
-    sys.exit()
-from natlink import config
-from natlink import singleton
 import natlink
+from natlinkcore import loader
+from natlinkcore import config
+from natlinkcore import singleton
+from natlinkcore.__init__ import getThisDir
+
 
 ## setup a natlinkmain instance, for getting properties from the loader:
 ## note, when loading the natlink module via Dragon, you can call simply:
@@ -121,7 +119,7 @@ shiftKeyDict = {"nld": "Shift",
                 "ita": "maiusc",
                 "esp": "may\xfas"}
 
-thisDir, thisFile = os.path.split(__file__)
+thisDir = getThisDir(__file__)
 
 class NatlinkStatus(metaclass=singleton.Singleton):
     """this class holds the Natlink status functions.
@@ -139,13 +137,16 @@ class NatlinkStatus(metaclass=singleton.Singleton):
                                'vocoladirectory', 'vocolagrammarsdirectory']
 
     def __init__(self):
-        """initialise all instance variables, in this singleton class, hoeinstance
+        """initialise all instance variables, in this singleton class, only first instance comes here
         """
         self.natlinkmain = natlinkmain  # global
         self.DNSVersion = None
         self.DNSIniDir = None
-        self.NatlinkDirectory = None    # CoreDirectory and NatlinkDirectory same...
-        self.CoreDirectory = None
+        
+        # set NatlinkDirectory and NatlinkcoreDirectory:
+        self.NatlinkDirectory = natlink.__path__[0]
+        self.NatlinkcoreDirectory = thisDir
+        
         self.UserDirectory = None
         ## Unimacro:
         self.UnimacroDirectory = None
@@ -159,9 +160,6 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         self.AhkUserDir = None
         self.AhkExeDir = None
 
-        if self.NatlinkDirectory is None:
-            self.NatlinkDirectory = thisDir
-            self.CoreDirectory = thisDir   # maybe becoming obsolete
 
     def refresh(self):
         """rerun the __init__, refreshing all variables
@@ -180,7 +178,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         wVersion = platform.platform()
         if '-' in wVersion:
             return wVersion.split('-')[1]
-        print('Warning, probably cannot find correct Windows Version... (%s)'% wVersion)
+        print(f'Warning, probably cannot find correct Windows Version... {wVersion}')
         return wVersion
     
     def getPythonVersion(self):
@@ -399,14 +397,14 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         return um_grammars_dir
     
     def getNatlinkDirectory(self):
-        """return the path of the NatlinkDirectory
+        """return the path of the NatlinkDirectory, where the natlink.pyd file is.
         """
         return self.NatlinkDirectory
 
-    def getCoreDirectory(self):
-        """return the path of the coreDirectory, same as NatlinkDirectory, obsolete
+    def getNatlinkcoreDirectory(self):
+        """return the path of the coreDirectory, is thisDir.
         """
-        return self.CoreDirectory
+        return self.NatlinkcoreDirectory
     
     def getUserDirectory(self):
         """return the path to the Natlink User directory
@@ -428,7 +426,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
             self.UserDirectory = abspath(expanded)
             return self.UserDirectory
             
-        print('invalid path for UserDirectory: "%s"'% value)
+        print(f'invalid path for UserDirectory: "{value}"')
         self.UserDirectory = ''
         return ''
 
@@ -579,7 +577,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
         ## TODO: must be windows language...
         windowsLanguage = 'enx'  ### ??? TODO QH
         try:
-            return "{%s}"% shiftKeyDict[windowsLanguage]
+            return f'{shiftKeyDict[windowsLanguage]}'
         except KeyError:
             print(f'no shiftKey code provided for language: "{windowsLanguage}", take empty string.')
             return ""
@@ -645,6 +643,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
                 print(f'no valid function for getting key: "{key}" ("{func_name}")')
 
         D['NatlinkDirectory'] = self.getNatlinkDirectory()
+        D['NatlinkcoreDirectory'] = self.getNatlinkcoreDirectory()
         D['UserDirectory'] = self.getUserDirectory()
         D['vocolaIsEnabled'] = self.VocolaIsEnabled()
 
@@ -664,7 +663,7 @@ class NatlinkStatus(metaclass=singleton.Singleton):
 
         # Natlink::
         L.append('')
-        for key in ['NatlinkDirectory', 'InstallVersion', 'NatlinkIni', 'NatlinkUserDirectory']:
+        for key in ['NatlinkDirectory', 'NatlinkcoreDirectory', 'InstallVersion', 'NatlinkIni', 'NatlinkUserDirectory']:
             self.appendAndRemove(L, D, key)
 
         ## Vocola::
