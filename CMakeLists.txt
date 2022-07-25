@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.20)
 
 project (Natlink)
-set(NATLINK_VERSION 5.1.3)
+set(NATLINK_VERSION 5.2.0)
 set(PYTHON_VERSION 3.9 CACHE STRING "3.X for X >= 9")
 set(MYAPP_NAME "Natlink")
 
@@ -40,10 +40,5 @@ add_subdirectory ("NatlinkSource")
 #  make sure that the Python sources and such are fresh. Mark this
 #  situation as a file NatlinkModule/NatlinkModule.STAMP. Similarly, mark
 #  mark the up-to-dateness of the tests as NatlinkModule/DefaultConfig.STAMP
-add_subdirectory ("NatlinkModule") # build two
 # Now, using dependcy on the stamps, start the inno installation generator
 add_subdirectory ("InstallerSource")
-# include sample macros
-#add_subdirectory ("SampleMacros")
-# add config program
-#add_subdirectory ("NatlinkConfigure")

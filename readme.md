@@ -113,6 +113,18 @@ To compile, run the CMakeLists.txt file from Visual Studio after selecting the d
 The installer will appear as `\build\InstallerSource\natlinkX.X-pyY.Y-32-setup.exe`  
 The installer executable is self-contained and may be distributed.
 
+## Debugging and Diagnostics
+### OutputDebugString Diagnostics
+The C++ code uses OutputDebugString, OutputDebugStringA and the Python code uses
+OutputDebugString from 
+ `from  pydebugstring.output import outputDebugString` to write diagnostic output.  This diagnostic output doesn't require
+ the Natlink window to be active, and can be left in production code so that it is avaialble if there are issues to resolve.
+
+ To view the output of OutputDebugString, you can use 
+[DebugView](https://docs.microsoft.com/en-us/sysinternals/downloads/debugview).  The output will also be displayed in some debuggers
+if you have managed to attach one.
+
+
 
 ## Why 32-bit?
 Currently Dragon NaturallySpeaking (up to version 15) is itself a 32-bit application and it is therefore

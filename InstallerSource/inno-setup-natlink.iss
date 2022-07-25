@@ -33,13 +33,7 @@ WelcomeLabel2=Welcome to {#MyAppName} {#MyAppVersion} for%n%nDragon/NaturallySpe
 #include "inno-code.iss"
 
 [Files]
-; The Python sources
-Source: "{#SourceRoot}\NatlinkConfigure\natlinkconfigfunctions.py"; DestDir: "{app}\NatlinkConfigure"; Flags: ignoreversion
-Source: "{#SourceRoot}\SampleMacros\*"; DestDir: "{app}\SampleMacros"; Flags: ignoreversion
-Source: "{#SourceRoot}\NatlinkModule\*.py"; DestDir: "{#CoreDir}"; Flags: ignoreversion
-Source: "{#SourceRoot}\NatlinkModule\*.pyi"; DestDir: "{#CoreDir}"; Flags: ignoreversion
-Source: "{#SourceRoot}\NatlinkModule\py.typed"; DestDir: "{#CoreDir}"; Flags: ignoreversion
-
+; No Python sources
 ; The _natlinkXX.pyd --- and programmatically choose the correct one for _natlink.pyd
 Source: "{#BinaryRoot}\NatlinkSource\Debug\_natlink_core15.pyd"; DestDir: "{#CoreDir}"; \
   Flags: ignoreversion
@@ -52,9 +46,9 @@ Source: "{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd"; DestDir: "{#CoreD
 ; dynamically linked at _natlink.pyd launch
 Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: "{#CoreDir}"; \
   Flags: external ignoreversion; 
+; Python sources
+Source: "{#SourceRoot}\NatlinkSource\__init__.py"; DestDir: "{#CoreDir}"
 
-; DefaultConfig
-Source: "{#SourceRoot}\NatlinkModule\DefaultConfig\*"; DestDir: "{app}\DefaultConfig"; Flags: ignoreversion
 
 
 [Icons]

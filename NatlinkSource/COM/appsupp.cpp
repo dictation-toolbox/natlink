@@ -37,6 +37,43 @@ CDgnAppSupport::CDgnAppSupport()
 CDgnAppSupport::~CDgnAppSupport()
 {
 }
+//see https://gist.github.com/pwm1234/05280cf2e462853e183d
+static std::string get_this_module_path()
+{
+	void* address = (void*)get_this_module_path;
+	char path[FILENAME_MAX];
+	HMODULE hm = NULL;
+
+	if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		(LPCSTR)address,
+		&hm))
+	{
+		//if this fails, well just return nonsense.
+		return "";
+	}
+	GetModuleFileNameA(hm, path, sizeof(path));
+
+	std::string p = path;
+	return p;
+}
+static int pyrun_string(std::string python_cmd)
+{
+	std::string message = std::string("CDgnAppSupport Running python: ") + python_cmd;
+	char const* const msg_str = message.c_str();
+	OutputDebugStringA(msg_str);
+	int rc = PyRun_SimpleString(python_cmd.c_str());
+	std::string result_message=std::string("CDganAppSupport Ran ") + python_cmd  + std::string(" result: ") +
+		std::to_string(rc);
+
+
+	OutputDebugStringA(result_message.c_str());
+	return rc;
+}
+static int pyrun_string(const char python_cmd[])
+{
+	return pyrun_string(std::string(python_cmd));
+}
 
 static std::string AddOurDirToConfig(PyConfig *config) {
 	using winreg::RegKey, winreg::RegResult;
@@ -100,7 +137,10 @@ static void DisplayVersions(CDragonCode* pDragCode) {
 #ifdef NATLINK_VERSION
 	const std::string natlinkVersionMsg = std::string("Natlink Version: ") + std::string(NATLINK_VERSION) + 
 										  std::string("\r\n");
+
 	pDragCode->displayText(natlinkVersionMsg.c_str(), FALSE); // TODO: remove since version is showed in title of window
+	pDragCode->displayText((std::string("Natlink pyd path: ")+ get_this_module_path()).c_str(),FALSE);
+	pDragCode->displayText("\nUse DebugView to debug natlink problems.\n\thttps://docs.microsoft.com/en-us/sysinternals/downloads/debugview\n");
 #endif
 	const std::string pythonVersionMsg = std::string("Python Version: ") + std::string(Py_GetVersion()) + std::string("\r\n");
 	pDragCode->displayText(pythonVersionMsg.c_str(), FALSE);
@@ -212,19 +252,41 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 
 	// now load the Python code which sets all the callback functions
 	m_pDragCode->setDuringInit( TRUE );
-    m_pNatlinkModule = PyImport_ImportModule( "natlink" );
+    m_pNatlinkModule = PyImport_ImportModule( "natlinkcore" );
 	if ( m_pNatlinkModule == NULL ) {
-		OutputDebugString( TEXT( "Natlink: an exception occurred loading 'natlink' module" ) );
+		OutputDebugString( TEXT( "Natlink: an exception occurred loading 'natlinkcore' module" ) );
 		DisplaySysPath(m_pDragCode);
 		DisplayPythonException(m_pDragCode);
 		return S_OK;
 	} else {
 		m_pDragCode->displayText( "Natlink is loaded...\n\n", FALSE );
 	}
-	CallPyFunctionOrDisplayError(m_pDragCode, m_pNatlinkModule, "natlink", "redirect_all_output_to_natlink_window");
-	DisplayPythonException(m_pDragCode);
-	CallPyFunctionOrDisplayError(m_pDragCode, m_pNatlinkModule, "natlink", "run_loader");
-	DisplayPythonException(m_pDragCode);
+
+	//need to add the path of natlinkcore to the Python path.
+	//it could be in either platlib\natlinkcore (i.e. the python install diretory/site-packages)
+	//sysconfig.get_path('purelib')
+	//
+	//or in site.USER_SITE/site-package.  
+	//
+	pyrun_string("import sys,site,sysconfig");
+    pyrun_string("import pydebugstring.output as o");
+
+	//add natlinkcore to the import paths, because the is required for pyrun_string to load modules from natlinkcore
+	pyrun_string("d1=site.USER_SITE+'\\natlinkcore'");
+	pyrun_string("d2=sysconfig.get_path('purelib')+'\\natlinkcore'");
+
+	pyrun_string("sys.path.append(d1)"); 
+	pyrun_string("sys.path.append(d2)");
+
+	//we have to import natlinkcore this way as well, so we can use natlinkcore.* in pyrun_string
+	//pDragCode->displayText("import redirect\n");
+
+	pyrun_string("from natlinkcore import redirect_output");
+	pyrun_string("redirect_output.redirect()");
+
+	pyrun_string("from natlinkcore import loader");
+	pyrun_string("loader.run()");
+
 	m_pDragCode->setDuringInit( FALSE );
 	return S_OK;
 }
