@@ -91,6 +91,8 @@ Root: HKLM; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "
 Root: HKCU; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey noerror
 
 [Run]
-Filename: "{code:GetPythonInstallPath}\\python.exe"; Parameters: "-m pip install --upgrade pip"; StatusMsg: "Upgrade pip..."
+Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "-m pip install --upgrade pip"; StatusMsg: "Upgrade pip..."
+Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "Upgrade pip..."
+
 Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "install wxPython"; StatusMsg: "Installing wxPython..."
 Filename: "{code:GetPythonInstallPath}\\python.exe"; Parameters: "{#SourceRoot}\NatlinkConfigure\natlinkconfigfunctions.py"; StatusMsg: "Configure Natlink..."
