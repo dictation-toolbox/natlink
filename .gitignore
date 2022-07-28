@@ -97,3 +97,5 @@ MacroSystem/*_vcl.py
 src/dist/
 /src/natlinkcore/test/readwritefiletest/*.txt
 /src/natlinkcore/test/readwritefiletest/*.ini
+/src/natlinkcore/natlink.egg-info/
+/src/natlinkcore/requirements.txt

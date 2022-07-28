@@ -28,7 +28,10 @@ You can use flit to install the package locally into site-packages using symboli
 `flit install --symlink`
 
 
- 
+## Publishing checklist
+Before you bump the version number in __init__.py and publish:
+- Check the pyroject.toml file for package dependancies.  Do you need a specfic or newer version of
+a dependancy such as dtactions?  Then add or update the version # requirement in dtactions.  
 
 
 
