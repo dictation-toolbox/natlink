@@ -95,4 +95,4 @@ Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "-m pip in
 Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "Upgrade pip..."
 
 Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "install wxPython"; StatusMsg: "Installing wxPython..."
-Filename: "{code:GetPythonInstallPath}\\python.exe"; Parameters: "{#SourceRoot}\NatlinkConfigure\natlinkconfigfunctions.py"; StatusMsg: "Configure Natlink..."
+Filename: "{code:GetPythonInstallPath}\\Scripts\natlinkconfig.exe"; Parameters: ""; StatusMsg: "Configure Natlink..."
