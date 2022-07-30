@@ -14,13 +14,13 @@ dependencies= [
     "pydebugstring",
     "dtactions>=1.5.0",
 ]
-[pytest]
-testpaths="src/natlinkcore/test"
-[project.optional-dependencies]
-dev= [
-    "pytest",
-    "flit"
-]
+#[pytest]
+#testpaths="src/natlinkcore/test"
+#[project.optional-dependencies]
+#dev= [
+#    "pytest",
+#    "flit"
+#]
 
 [project.scripts]
 natlinkconfig = "natlinkcore.configure.natlinkconfigfunctions:main_cli"
