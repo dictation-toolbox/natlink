@@ -8,7 +8,7 @@ from natlinkcore import loader
 
 def test_config_files_samples():
         """Returns the folder of where the tests are located """
-        
+
 
 @pytest.fixture()
 def empty_config():
@@ -31,6 +31,6 @@ def test_config_locations():
     assert os.path.isfile(config_locations[0])
  
 
-
+print("Path {__file__}")
 if __name__ == "__main__":
     pytest.main(['test_config.py'])
