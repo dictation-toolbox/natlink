@@ -1,13 +1,12 @@
 
 #pylint:disable= C0114, C0116, W0401, W0614, W0621, W0108. W0212
 
+from random import sample
 import pytest
 
 from natlinkcore.config import *
 from natlinkcore import loader
-
-def test_config_files_samples():
-        """Returns the folder of where the tests are located """
+import pathlib as p
 
 
 @pytest.fixture()
@@ -21,8 +20,11 @@ def test_empty_config():
     """does not test really
     """
     print(f'empty_config: {empty_config}')
-    print(f"\nPath {__file__}\n")
-    assert(0)
+
+@pytest.fixture() 
+def sample_config(sample_name) -> 'NatlinkConfig':
+    return p.WindowsPath(os.path.dirname(__file__)) / sample_name
+    
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
