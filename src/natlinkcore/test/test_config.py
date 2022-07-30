@@ -36,7 +36,6 @@ few_settings = pytest.fixture( lambda : sample_config("few_settings.ini"))
 
 def test_load_an_ini_file(few_settings):
         test_ini = few_settings 
-        test_ini = test_load_an_ini_file
         #make sure we are actually getting a NatlinkConfig by checking a method
         assert(hasattr(test_ini,"directories_for_user"))
 
