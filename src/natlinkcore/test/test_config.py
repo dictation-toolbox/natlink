@@ -29,12 +29,13 @@ def sample_config(sample_name) -> 'NatlinkConfig':
     config = NatlinkConfig.from_file(sample_ini)
     return config
 
-def make_sample_config_fn(settings_filename):
-    return lambda : sample_config(settings_filename)
+#easier than using the decorator syntax
+def make_sample_config_fixture(settings_filename):
+    return pytest.fixture(lambda : sample_config(settings_filename))
 
-settings1 = pytest.fixture( make_sample_config_fn("settings_1.ini"))
-settings2 = pytest.fixture( make_sample_config_fn("settings_2.ini"))
-
+settings1 =  make_sample_config_fixture("settings_1.ini")
+settings2 = make_sample_config_fixture("settings_2.ini")
+module_samples = make_sample_config_fixture('module_samples.ini') 
 
 def test_settings_1(settings1):
         test_cfg = settings1 
@@ -51,13 +52,20 @@ def test_settings_2(settings2):
         test_cfg = settings2 
         #make sure we are actually getting a NatlinkConfig by checking a method
         assert hasattr(test_cfg,"directories_for_user")
+
+        #make sure these required modules lists exist
+        assert hasattr(test_cfg,"enabled_modules")
+        assert hasattr(test_cfg,"disabled_modules")
         
         assert test_cfg.log_level == LogLevel.WARNING 
         assert test_cfg.load_on_mic_on == True
         assert test_cfg.load_on_begin_utterance == True
         assert test_cfg.load_on_startup == False
         assert test_cfg.load_on_user_changed == False
- 
+
+def test_modules(module_samples):
+    test_cfg=module_samples
+
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
     """

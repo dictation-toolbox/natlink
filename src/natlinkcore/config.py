@@ -5,7 +5,7 @@ import os
 from enum import IntEnum
 from typing import List, Iterable, Dict
 from natlink import _natlink_core as natlink
-
+import importlib.util as u
 class NoGoodConfigFoundException(natlink.NatError):
     pass
 
@@ -63,6 +63,12 @@ class NatlinkConfig:
         ret = NatlinkConfig.get_default_config()
         ret.config_path = config_path
         sections = config.sections()
+        if config.has_section('packages'):
+            packages = config['packages']
+            if packages.has_option('enabled_modules'):
+                #enabled_modules = packages['enabl']
+                pass   
+
         for section in sections:
             if section.endswith('-directories'):
                 user = section[:-len('-directories')]
