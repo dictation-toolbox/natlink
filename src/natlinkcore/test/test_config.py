@@ -41,11 +41,11 @@ def test_settings_1(settings1):
         #make sure we are actually getting a NatlinkConfig by checking a method
         assert hasattr(test_cfg,"directories_for_user")
         
-        assert test_cfg.log_level == 0 
-        assert test_cfg.load_on_mic_on == 0
-        assert test_cfg.load_on_begin_utterance == 0
-        assert test_cfg.load_on_startup == 0
-        assert test_cfg.load_on_user_changed == 0
+        assert test_cfg.log_level == LogLevel.DEBUG 
+        assert test_cfg.load_on_mic_on == False
+        assert test_cfg.load_on_begin_utterance == False
+        assert test_cfg.load_on_startup == True
+        assert test_cfg.load_on_user_changed == True
  
 
 def test_config_locations():
