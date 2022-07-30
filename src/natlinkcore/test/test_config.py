@@ -29,9 +29,11 @@ def sample_config(sample_name) -> 'NatlinkConfig':
     config = NatlinkConfig.from_file(sample_ini)
     return config
 
-@pytest.fixture()
-def few_settings():
-    return sample_config("few_settings.ini")
+#@pytest.fixture()
+#def few_settings():
+#    return sample_config("few_settings.ini")
+
+few_settings = pytest.fixture( lambda : sample_config("few_settings.ini"))
 
 def test_load_an_ini_file(few_settings):
         test_ini = few_settings 
