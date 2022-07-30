@@ -6,6 +6,10 @@ import pytest
 from natlinkcore.config import *
 from natlinkcore import loader
 
+def test_config_files_samples():
+        """Returns the folder of where the tests are located """
+        
+
 @pytest.fixture()
 def empty_config():
     config = NatlinkConfig.get_default_config()
