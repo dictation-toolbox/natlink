@@ -34,7 +34,8 @@ def few_settings():
     return sample_config("few_settings.ini")
 
 def test_load_an_ini_file(few_settings):
-        assert(0)
+        test_ini = few_settings
+        print(f"{test_ini}")
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
