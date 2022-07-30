@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.20)
 
 project (Natlink)
-set(NATLINK_VERSION 5.2.0)
+set(NATLINK_VERSION 5.3.2)
 set(PYTHON_VERSION 3.9 CACHE STRING "3.X for X >= 9")
 set(MYAPP_NAME "Natlink")
 
@@ -36,9 +36,11 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 # Build C++ code, including two versions of _natlink.pyd, the COM server running Python
 add_subdirectory ("NatlinkSource") 
-#  Build the NatlinkModule, that is, depend on the previous step and 
-#  make sure that the Python sources and such are fresh. Mark this
-#  situation as a file NatlinkModule/NatlinkModule.STAMP. Similarly, mark
-#  mark the up-to-dateness of the tests as NatlinkModule/DefaultConfig.STAMP
-# Now, using dependcy on the stamps, start the inno installation generator
+
+# Outdated NatlinkModule is in src as nalinkcore as python package and no longer packaged by cmake in to the installer 
+# add_subdirectory ("NatlinkModule")
+    # The links demonstrate how timestamps with StampDriver can be used can propagate file dependencies of targets across directories and records the files for the installer. 
+    # https://github.com/dictation-toolbox/natlink/blob/00a56c64f964112f3956ebbc3b79d1e9fdc3dafd/CMakeLists.txt#L39
+    # https://github.com/dictation-toolbox/natlink/blob/00a56c64f964112f3956ebbc3b79d1e9fdc3dafd/src/natlinkcore/CMakeLists.txt#L1
+
 add_subdirectory ("InstallerSource")

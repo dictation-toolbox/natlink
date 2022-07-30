@@ -60,3 +60,9 @@ target_compile_definitions(natlink15_pyd PRIVATE DRAGON_VERSION=15)
 set_property(TARGET natlink13_pyd PROPERTY OUTPUT_NAME "_natlink_core13" )
 target_compile_definitions(natlink13_pyd PRIVATE DRAGON_VERSION=13)
 
+add_custom_target(StampDriver DEPENDS NatlinkSource.STAMP)
+
+add_custom_command(OUTPUT NatlinkSource.STAMP
+  COMMAND cmake -E touch NatlinkSource.STAMP
+  DEPENDS 
+  natlink13_pyd natlink15_pyd) # binary targets)
