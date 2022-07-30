@@ -25,6 +25,7 @@ def test_config_locations():
     config_locations = loader.config_locations()
     assert len(config_locations) > 0
     assert os.path.isfile(config_locations[0])
+ 
 
 
 if __name__ == "__main__":

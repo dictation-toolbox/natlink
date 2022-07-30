@@ -11,16 +11,21 @@ pip install natlinkcore
 
 ## Building the Python Package Locally
 
+The build happens through a powershell script.  You don't have to know much powershell.  
+
 The package is built with [Flit](https://flit.pypa.io/).  The package will be produced in
 dist/nalinkcore-x.y.tar.gz.  To install it `pip install dist/natlinkcore-x.y.tar.gz` replacing x.y with the version numbers.
 
+To start a powershell from the command prompt, type `powershell`.
+
 To build the package:
 
-`flit build --format sdist`
+`build_natlinkcore` from powershell, which will run the the tests in natlinkcore/test, then build the the package.
+
 
 To publish the package to [The Python Package Index (PyPI)](https://pypi.org/)
 
-`flit publish --format sdist`
+`publish_natlinkcore` from powershell.
 
 
 You can use flit to install the package locally into site-packages using symbolic links, so you can test changes without reinstalling:
@@ -32,7 +37,7 @@ You can use flit to install the package locally into site-packages using symboli
 Before you bump the version number in __init__.py and publish:
 - Check the pyroject.toml file for package dependancies.  Do you need a specfic or newer version of
 a dependancy such as dtactions?  Then add or update the version # requirement in dtactions.  
-
+- don't publish if the tests are failing.   The `publish_natlinkcore` will prevent this, please don't work around it.
 
 
 
