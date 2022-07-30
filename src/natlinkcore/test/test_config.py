@@ -29,11 +29,11 @@ def sample_config(sample_name) -> 'NatlinkConfig':
     config = NatlinkConfig.from_file(sample_ini)
     return config
 
+def make_sample_config_fn(settings_filename):
+    return lambda : sample_config(settings_filename)
 
-#use lambda instead of def and fixture decorators, since we have a bunch of fixtures that are similar
-
-settings1 = pytest.fixture( lambda : sample_config("settings_1.ini"))
-
+settings1 = pytest.fixture( make_sample_config_fn("settings_1.ini"))
+settings2 = pytest.fixture( make_sample_config_fn("settings_2.ini"))
 
 
 def test_settings_1(settings1):
@@ -47,7 +47,17 @@ def test_settings_1(settings1):
         assert test_cfg.load_on_startup == True
         assert test_cfg.load_on_user_changed == True
  
-
+def test_settings_2(settings2):
+        test_cfg = settings2 
+        #make sure we are actually getting a NatlinkConfig by checking a method
+        assert hasattr(test_cfg,"directories_for_user")
+        
+        assert test_cfg.log_level == LogLevel.WARNING 
+        assert test_cfg.load_on_mic_on == True
+        assert test_cfg.load_on_begin_utterance == True
+        assert test_cfg.load_on_startup == False
+        assert test_cfg.load_on_user_changed == False
+ 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
     """
