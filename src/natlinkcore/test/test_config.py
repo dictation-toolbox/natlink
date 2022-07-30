@@ -8,6 +8,12 @@ from natlinkcore.config import *
 from natlinkcore import loader
 import pathlib as p
 
+import sys
+import sysconfig
+from pprint import pprint
+
+
+
 
 @pytest.fixture()
 def empty_config():
@@ -35,7 +41,7 @@ def make_sample_config_fixture(settings_filename):
 
 settings1 =  make_sample_config_fixture("settings_1.ini")
 settings2 = make_sample_config_fixture("settings_2.ini")
-module_samples = make_sample_config_fixture('module_samples.ini') 
+packages_samples = make_sample_config_fixture('package_samples.ini') 
 
 def test_settings_1(settings1):
         test_cfg = settings1 
@@ -78,4 +84,9 @@ def test_config_locations():
  
 
 if __name__ == "__main__":
+    sysconfig._main()
+    print("This is your Python system path sys.path:")
+    print("-----------------------------------------")
+    pprint(sys.path)
+
     pytest.main(['test_config.py'])

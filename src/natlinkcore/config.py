@@ -21,8 +21,8 @@ class LogLevel(IntEnum):
 
 class NatlinkConfig:
     def __init__(self, directories_by_user: Dict[str, List[str]], 
-                enabled_packages : [str],
-                disabled_packages : [str], 
+                enabled_packages : List[str],
+                disabled_packages : List[str], 
                 log_level: LogLevel, load_on_mic_on: bool,
                 load_on_begin_utterance: bool, load_on_startup: bool, load_on_user_changed: bool):
         self.enabled_packages=enabled_packages
@@ -74,9 +74,10 @@ class NatlinkConfig:
         disabled_packages=[]
         if config.has_section('packages'):
             packages = config['packages']
-            if packages.has_option('enabled_packages'):
-                #enabled_modules = packages['enabl']
-                pass   
+            enabled_packages_string=packages.get("enabled_packages",fallback="")
+            disabled_packages_string=packages.get("disabled_packages",fallback="")
+            enabled_packages=enabled_packages_string.split(",")
+            disabled_packages=disabled_packages_string.split(",")
 
         for section in sections:
             if section.endswith('-directories'):
