@@ -21,10 +21,20 @@ def test_empty_config():
     """
     print(f'empty_config: {empty_config}')
 
-@pytest.fixture() 
 def sample_config(sample_name) -> 'NatlinkConfig':
-    return p.WindowsPath(os.path.dirname(__file__)) / sample_name
-    
+    """
+    load a config file from the config files subfolder
+    """
+    sample_ini=p.WindowsPath(os.path.dirname(__file__)) / "config_files" / sample_name
+    config = NatlinkConfig.from_file(sample_ini)
+    return config
+
+@pytest.fixture()
+def few_settings():
+    return sample_config("few_settings.ini")
+
+def test_load_an_ini_file(few_settings):
+        assert(0)
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
