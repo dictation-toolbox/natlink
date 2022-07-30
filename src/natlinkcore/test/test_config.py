@@ -15,10 +15,14 @@ def empty_config():
     config = NatlinkConfig.get_default_config()
     return config
 
+
+
 def test_empty_config():
     """does not test really
     """
     print(f'empty_config: {empty_config}')
+    print(f"\nPath {__file__}\n")
+    assert(0)
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
@@ -31,6 +35,5 @@ def test_config_locations():
     assert os.path.isfile(config_locations[0])
  
 
-print("Path {__file__}")
 if __name__ == "__main__":
     pytest.main(['test_config.py'])
