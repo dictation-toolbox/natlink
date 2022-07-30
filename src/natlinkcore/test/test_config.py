@@ -55,7 +55,7 @@ def test_settings_2(settings2):
 
         #make sure these required modules lists exist
         assert hasattr(test_cfg,"enabled_packages")
-        assert hasattr(test_cfg,"disabled_packages")
+        assert hasattr(test_cfg,"disabled_modules")
         
         assert test_cfg.log_level == LogLevel.WARNING 
         assert test_cfg.load_on_mic_on == True

@@ -20,8 +20,13 @@ class LogLevel(IntEnum):
 
 
 class NatlinkConfig:
-    def __init__(self, directories_by_user: Dict[str, List[str]], log_level: LogLevel, load_on_mic_on: bool,
-                 load_on_begin_utterance: bool, load_on_startup: bool, load_on_user_changed: bool):
+    def __init__(self, directories_by_user: Dict[str, List[str]], 
+                enabled_packages : [str],
+                disabled_packages : [str], 
+                log_level: LogLevel, load_on_mic_on: bool,
+                load_on_begin_utterance: bool, load_on_startup: bool, load_on_user_changed: bool):
+        self.enabled_packages=enabled_packages
+        self.disabled_packages=disabled_packages
         self.directories_by_user = directories_by_user  # maps user profile names to directories, '' for global
         self.log_level = log_level
         self.load_on_mic_on = load_on_mic_on
@@ -38,6 +43,8 @@ class NatlinkConfig:
     @staticmethod
     def get_default_config() -> 'NatlinkConfig':
         return NatlinkConfig(directories_by_user=dict(),
+                             enabled_packages=[],
+                             disabled_packages=[],
                              log_level=LogLevel.NOTSET,
                              load_on_mic_on=True,
                              load_on_begin_utterance=False,
@@ -63,9 +70,11 @@ class NatlinkConfig:
         ret = NatlinkConfig.get_default_config()
         ret.config_path = config_path
         sections = config.sections()
+        enabled_packages=[]
+        disabled_packages=[]
         if config.has_section('packages'):
             packages = config['packages']
-            if packages.has_option('enabled_modules'):
+            if packages.has_option('enabled_packages'):
                 #enabled_modules = packages['enabl']
                 pass   
 
