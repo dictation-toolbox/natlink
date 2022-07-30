@@ -15,8 +15,7 @@ string(REPLACE "." "" PYTHON_VERSION_NO_DOT ${PYTHON_VERSION})
 
 add_custom_command(OUTPUT "${INSTALLER_FILE_BASE}.exe"
     DEPENDS StampDriver # otherwise the stamps are not checked
-    ${PROJECT_BINARY_DIR}/NatlinkModule/NatlinkModule.STAMP 
-    ${PROJECT_BINARY_DIR}/NatlinkModule/DefaultConfig.STAMP
+    ${PROJECT_BINARY_DIR}/NatlinkSource/NatlinkSource.STAMP
     inno-setup-natlink.iss inno-code.iss
     COMMENT "Now Building Installer"
     COMMAND ${ISCC}
