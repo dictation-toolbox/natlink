@@ -36,13 +36,17 @@ settings1 = pytest.fixture( lambda : sample_config("settings_1.ini"))
 
 
 
-def test_load_an_ini_file(settings1):
-        test_ini = settings1 
+def test_settings_1(settings1):
+        test_cfg = settings1 
         #make sure we are actually getting a NatlinkConfig by checking a method
-        assert(hasattr(test_ini,"directories_for_user"))
-
-        print(f"{test_ini}")
-
+        assert hasattr(test_cfg,"directories_for_user")
+        
+        assert test_cfg.log_level == 0 
+        assert test_cfg.load_on_mic_on == 0
+        assert test_cfg.load_on_begin_utterance == 0
+        assert test_cfg.load_on_startup == 0
+        assert test_cfg.load_on_user_changed == 0
+ 
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
