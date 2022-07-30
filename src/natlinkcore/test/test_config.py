@@ -54,8 +54,8 @@ def test_settings_2(settings2):
         assert hasattr(test_cfg,"directories_for_user")
 
         #make sure these required modules lists exist
-        assert hasattr(test_cfg,"enabled_modules")
-        assert hasattr(test_cfg,"disabled_modules")
+        assert hasattr(test_cfg,"enabled_packages")
+        assert hasattr(test_cfg,"disabled_packages")
         
         assert test_cfg.log_level == LogLevel.WARNING 
         assert test_cfg.load_on_mic_on == True
@@ -63,8 +63,8 @@ def test_settings_2(settings2):
         assert test_cfg.load_on_startup == False
         assert test_cfg.load_on_user_changed == False
 
-def test_modules(module_samples):
-    test_cfg=module_samples
+def test_packages(packages_samples):
+    test_cfg=packages_samples
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
