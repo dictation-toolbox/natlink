@@ -1,6 +1,6 @@
-
 #pylint:disable= C0114, C0116, W0401, W0614, W0621, W0108. W0212
 
+from inspect import getattr_static
 from random import sample
 import pytest
 
@@ -34,8 +34,13 @@ def few_settings():
     return sample_config("few_settings.ini")
 
 def test_load_an_ini_file(few_settings):
-        test_ini = few_settings
+        test_ini = p.WindowsPath  #anything
+        #few_settings
+        #make sure we are actually getting a NatlinkConfig by checking a method
+        assert(hasattr(test_ini,"directories_for_user"))
+
         print(f"{test_ini}")
+
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
