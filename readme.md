@@ -52,6 +52,20 @@ only_loaded_if_profile_userspanish_active=C:\User\user\spanish-only-scripts
 [settings]
 log_level=INFO
 ````
+### Section: \[packages\] 
+These are python packages (typically installed with pip in `...\Python_xx-32\Lib\site-packages` or in `Appdata/.../site-packages`,  though they can exist anywhere your python interpreter finds them).
+
+ Natlink will look for scripts in the folder the package is located, the same way it looks for scripts in directories.
+For most users, they will not need to add a directory pointing into site-packages.  This makes the system somewhat more robust since
+packages can end up in different places depending on whether pip is launched with administrative privileges.
+
+The name of the package is followed by `= enabled` or `= disabled`, to make it easier to enable or disable a package.
+
+
+
+
+
+
 
 ### Section: \[directories\] 
 These are directories that Natlink will look for scripts to load in.
