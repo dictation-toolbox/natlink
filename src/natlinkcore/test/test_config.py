@@ -32,10 +32,12 @@ def sample_config(sample_name) -> 'NatlinkConfig':
 
 #use lambda instead of def and fixture decorators, since we have a bunch of fixtures that are similar
 
-few_settings = pytest.fixture( lambda : sample_config("few_settings.ini"))
+settings1 = pytest.fixture( lambda : sample_config("settings_1.ini"))
 
-def test_load_an_ini_file(few_settings):
-        test_ini = few_settings 
+
+
+def test_load_an_ini_file(settings1):
+        test_ini = settings1 
         #make sure we are actually getting a NatlinkConfig by checking a method
         assert(hasattr(test_ini,"directories_for_user"))
 
