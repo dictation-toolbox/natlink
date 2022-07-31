@@ -61,7 +61,7 @@ def test_settings_2(settings2):
 
         #make sure these required modules lists exist
         assert hasattr(test_cfg,"enabled_packages")
-        assert hasattr(test_cfg,"disabled_modules")
+        assert hasattr(test_cfg,"disabled_packages")
         
         assert test_cfg.log_level == LogLevel.WARNING 
         assert test_cfg.load_on_mic_on == True
@@ -69,8 +69,14 @@ def test_settings_2(settings2):
         assert test_cfg.load_on_startup == False
         assert test_cfg.load_on_user_changed == False
 
-def test_packages(packages_samples):
+def test_read_packages(packages_samples):
     test_cfg=packages_samples
+    e=test_cfg.enabled_packages
+    expected_e=["vocola2","fake_module"]
+    d=test_cfg.disabled_packages
+    expected_d=["unimacro","fake_module2","fake_module3"]
+    assert(e==expected_e)
+    assert(d==expected_d)
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations

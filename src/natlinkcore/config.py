@@ -73,11 +73,14 @@ class NatlinkConfig:
         enabled_packages=[]
         disabled_packages=[]
         if config.has_section('packages'):
+            def strip_ws(s): return s.strip()
             packages = config['packages']
             enabled_packages_string=packages.get("enabled_packages",fallback="")
             disabled_packages_string=packages.get("disabled_packages",fallback="")
-            enabled_packages=enabled_packages_string.split(",")
-            disabled_packages=disabled_packages_string.split(",")
+            enabled_packages=list(map(strip_ws,enabled_packages_string.split(",")))
+            disabled_packages=list(map(strip_ws,disabled_packages_string.split(",")))
+            ret.enabled_packages = enabled_packages
+            ret.disabled_packages = disabled_packages
 
         for section in sections:
             if section.endswith('-directories'):
