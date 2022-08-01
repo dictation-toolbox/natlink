@@ -3,7 +3,8 @@
 
 import pytest
 
-import pathlib as p
+from config_test_helpers import *
+
 from natlinkcore.loader import *
 
 class MockLoggingHandler(logging.Handler):
@@ -28,13 +29,6 @@ class MockLoggingHandler(logging.Handler):
 
 
 
-
-@pytest.fixture()
-def mock_syspath(monkeypatch):
-    """Add a tempory path to mock modules in sys.pythonpath"""
-    mock_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_packages"
-    print(f"Mock Folder {mock_folder}")
-    monkeypatch.syspath_prepend(str(mock_folder))
 
 
 @pytest.fixture()
@@ -428,8 +422,7 @@ def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, l
     del_loaded_modules(main)
 #     
 
-def test_load_module(mock_syspath):
-    assert False
+
 
 if __name__ == "__main__":
     pytest.main(['test_loader.py'])

@@ -6,15 +6,32 @@ import pytest
 
 from natlinkcore.config import *
 from natlinkcore import loader
+
 import pathlib as p
 
 import sys
 import sysconfig
 from pprint import pprint
-from config_test_helpers import *
+
+import importlib.util as u
+
+def sample_config(sample_name) -> 'NatlinkConfig':
+    """
+    load a config file from the config files subfolder
+    """
+    sample_ini=p.WindowsPath(os.path.dirname(__file__)) / "config_files" / sample_name
+    config = NatlinkConfig.from_file(sample_ini)
+    return config
+
+#easier than using the decorator syntax
+def make_sample_config_fixture(settings_filename):
+    return pytest.fixture(lambda : sample_config(settings_filename))
 
 
-
+@pytest.fixture()
+def empty_config():
+    config = NatlinkConfig.get_default_config()
+    return config
 
 
 def test_empty_config():
@@ -27,6 +44,14 @@ def test_empty_config():
 settings1 =  make_sample_config_fixture("settings_1.ini")
 settings2 = make_sample_config_fixture("settings_2.ini")
 packages_samples = make_sample_config_fixture('package_samples.ini') 
+package_load_test1 = make_sample_config_fixture('package_load_test1.ini')
+
+@pytest.fixture()
+def mock_syspath(monkeypatch):
+    """Add a tempory path to mock modules in sys.pythonpath"""
+    mock_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_packages"
+    print(f"Mock Folder {mock_folder}")
+    monkeypatch.syspath_prepend(str(mock_folder))
 
 def test_settings_1(settings1):
         test_cfg = settings1 
@@ -73,6 +98,28 @@ def test_config_locations():
     assert len(config_locations) > 0
     assert os.path.isfile(config_locations[0])
  
+
+def test_packages_added_to_paths(package_load_test1,mock_syspath):
+        mock_package_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_packages"
+        print("System Path {system.path}")
+        test_cfg=package_load_test1
+        print(f'test config {test_cfg}')       
+        #there should be exactly 4 directories for
+        #the '' key (all languages)
+        #two for the [packages\ and two for
+        #[directories]
+        dirs = test_cfg.directories_by_user['']
+        print(f"directories for '': {dirs}" )
+        assert len(dirs) == 4
+        for mp in ['fake_package2','fake_package1']:
+            ms=p.Path(u.find_spec(mp).origin).parent
+            assert ms in dirs
+
+
+
+
+
+
 
 if __name__ == "__main__":
     sysconfig._main()

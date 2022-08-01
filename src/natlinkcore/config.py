@@ -6,6 +6,7 @@ from enum import IntEnum
 from typing import List, Iterable, Dict
 from natlink import _natlink_core as natlink
 import importlib.util as u
+
 class NoGoodConfigFoundException(natlink.NatError):
     pass
 
@@ -85,6 +86,21 @@ class NatlinkConfig:
             ret.enabled_packages = enabled_packages
             ret.disabled_packages = disabled_packages
 
+        enabled_packages_directories = []
+        enabled_packages_specs = list(map(u.find_spec,enabled_packages))
+         
+        for ep,ep_spec in zip(enabled_packages,enabled_packages_specs):
+            if ep_spec is None:
+                print("from config_parser skip package {ep} as it is not an installed package")
+            else:
+                package_dir = str(p.Path(ep_spec.origin).parent)
+                enabled_packages_directories.append(package_dir)
+
+
+        #the folders for enabled packages are added to directories.
+
+
+ 
         for section in sections:
             if section.endswith('-directories'):
                 user = section[:-len('-directories')]
@@ -102,7 +118,8 @@ class NatlinkConfig:
                         continue
                     directories.append(directory_expanded)
 
-                ret.directories_by_user[''] = directories
+                #the directories of packages are simply prepended to directories
+                ret.directories_by_user[''] = enabled_packages_directories + directories 
         if config.has_section('settings'):
             settings = config['settings']
             level = settings.get('log_level')

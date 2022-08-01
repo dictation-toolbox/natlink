@@ -17,6 +17,7 @@ dependencies= [
 
 [tool.pytest.ini_options]
 minversion = "7.1.2"
+addopts = "--capture=tee-sys "
 # very important
 #the pythonpath lets pytest load code in your source area
 #in addition to that in site-packages etc.
@@ -26,7 +27,9 @@ pythonpath = [
     "src/natlinkcore",
     "src/natlinkcore/test",
 ]
-
+testpaths= [
+    "src/natlinkcore/test",
+]
 
 [project.scripts]
 natlinkconfig = "natlinkcore.configure.natlinkconfigfunctions:main_cli"
