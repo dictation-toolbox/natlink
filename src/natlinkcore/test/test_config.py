@@ -8,7 +8,6 @@ from natlinkcore.config import *
 from natlinkcore import loader
 
 import pathlib as p
-
 import sys
 import sysconfig
 from pprint import pprint
@@ -98,10 +97,14 @@ def test_config_locations():
     assert len(config_locations) > 0
     assert os.path.isfile(config_locations[0])
  
+def test_mocks_actually_work(mock_syspath):
+    spec = u.find_spec('fake_package1, sys.path is {sys.path}')
+    print(f'spec for fake_package1')
+    assert  not spec is None
 
 def test_packages_added_to_paths(package_load_test1,mock_syspath):
         mock_package_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_packages"
-        print("System Path {system.path}")
+        print(f"System Path {sys.path}")
         test_cfg=package_load_test1
         print(f'test config {test_cfg}')       
         #there should be exactly 4 directories for
