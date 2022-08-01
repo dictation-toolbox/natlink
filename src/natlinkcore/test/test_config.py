@@ -98,11 +98,12 @@ def test_config_locations():
     assert os.path.isfile(config_locations[0])
  
 def test_mocks_actually_work(mock_syspath):
-    spec = u.find_spec('fake_package1, sys.path is {sys.path}')
-    print(f'spec for fake_package1')
-    assert  not spec is None
+    pass
+    spec = u.find_spec('fake_package1')
+    assert not spec is None
+    print(f'\nspec for fake_package1 {spec}')
 
-def test_packages_added_to_paths(package_load_test1,mock_syspath):
+def test_packages_added_to_paths(mock_syspath,package_load_test1):
         mock_package_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_packages"
         print(f"System Path {sys.path}")
         test_cfg=package_load_test1
@@ -115,7 +116,7 @@ def test_packages_added_to_paths(package_load_test1,mock_syspath):
         print(f"directories for '': {dirs}" )
         assert len(dirs) == 4
         for mp in ['fake_package2','fake_package1']:
-            ms=p.Path(u.find_spec(mp).origin).parent
+            ms=str(p.Path(u.find_spec(mp).origin).parent)
             assert ms in dirs
 
 

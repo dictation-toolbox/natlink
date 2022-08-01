@@ -6,7 +6,8 @@ from enum import IntEnum
 from typing import List, Iterable, Dict
 from natlink import _natlink_core as natlink
 import importlib.util as u
-
+import pathlib as p
+import sys
 class NoGoodConfigFoundException(natlink.NatError):
     pass
 
@@ -76,6 +77,7 @@ class NatlinkConfig:
         sections = config.sections()
         enabled_packages=[]
         disabled_packages=[]
+        sp = sys.path   #handy, leave in for debugging
         if config.has_section('packages'):
             def strip_ws(s): return s.strip()
             packages = config['packages']
@@ -88,10 +90,13 @@ class NatlinkConfig:
 
         enabled_packages_directories = []
         enabled_packages_specs = list(map(u.find_spec,enabled_packages))
+        print(f"Sys.path {sp}")
+
+        ep=u.find_spec('fake_package1')
          
         for ep,ep_spec in zip(enabled_packages,enabled_packages_specs):
             if ep_spec is None:
-                print("from config_parser skip package {ep} as it is not an installed package")
+                print(f"from config_parser skip package {ep} as it is not an installed package")
             else:
                 package_dir = str(p.Path(ep_spec.origin).parent)
                 enabled_packages_directories.append(package_dir)

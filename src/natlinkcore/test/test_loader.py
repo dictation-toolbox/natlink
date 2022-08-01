@@ -3,8 +3,6 @@
 
 import pytest
 
-from config_test_helpers import *
-
 from natlinkcore.loader import *
 
 class MockLoggingHandler(logging.Handler):
