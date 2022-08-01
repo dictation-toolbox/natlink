@@ -16,9 +16,12 @@ dependencies= [
 ]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q"
-testpaths = [
+minversion = "7.1.2"
+# very important
+#the pythonpath lets pytest load code in your source area
+#in addition to that in site-packages etc.
+#you may want to run your tests without install natlinkcore with flit or pip
+pythonpath = [
     "src",
     "src/natlinkcore",
     "src/natlinkcore/test",

@@ -11,14 +11,9 @@ import pathlib as p
 import sys
 import sysconfig
 from pprint import pprint
+from config_test_helpers import *
 
 
-
-
-@pytest.fixture()
-def empty_config():
-    config = NatlinkConfig.get_default_config()
-    return config
 
 
 
@@ -27,17 +22,7 @@ def test_empty_config():
     """
     print(f'empty_config: {empty_config}')
 
-def sample_config(sample_name) -> 'NatlinkConfig':
-    """
-    load a config file from the config files subfolder
-    """
-    sample_ini=p.WindowsPath(os.path.dirname(__file__)) / "config_files" / sample_name
-    config = NatlinkConfig.from_file(sample_ini)
-    return config
 
-#easier than using the decorator syntax
-def make_sample_config_fixture(settings_filename):
-    return pytest.fixture(lambda : sample_config(settings_filename))
 
 settings1 =  make_sample_config_fixture("settings_1.ini")
 settings2 = make_sample_config_fixture("settings_2.ini")
