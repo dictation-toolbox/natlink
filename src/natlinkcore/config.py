@@ -36,9 +36,12 @@ class NatlinkConfig:
         self.config_path = ''  # to be defined in from_config_parser
 
     def __repr__(self) -> str:
-        return f'NatlinkConfig(directories_by_user={self.directories_by_user}, log_level={self.log_level}, ' \
-               f'load_on_mic_on={self.load_on_mic_on}, load_on_startup={self.load_on_startup}, ' \
-               f'load_on_user_changed={self.load_on_user_changed}'
+        return  f'NatlinkConfig(directories_by_user={self.directories_by_user}, '
+        f'enabled_packages={self.enabled_packages}, ',
+        f'disabled_packages={self.disabled_packages}, '
+        f'log_level={self.log_level}, ' 
+        f'load_on_mic_on={self.load_on_mic_on}, load_on_startup={self.load_on_startup}, ' 
+        f'load_on_user_changed={self.load_on_user_changed}'
 
     @staticmethod
     def get_default_config() -> 'NatlinkConfig':
