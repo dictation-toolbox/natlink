@@ -85,6 +85,12 @@ class NatlinkConfig:
             disabled_packages_string=packages.get("disabled_packages",fallback="")
             enabled_packages=list(map(strip_ws,enabled_packages_string.split(",")))
             disabled_packages=list(map(strip_ws,disabled_packages_string.split(",")))
+            #remove any empty packages due to a trailing ","
+            def non_empty(s):
+                return len(s) != 0
+            enabled_packages=list(filter(non_empty,enabled_packages))
+            disabled_packages=list(filter(non_empty,disabled_packages))
+
             ret.enabled_packages = enabled_packages
             ret.disabled_packages = disabled_packages
 
