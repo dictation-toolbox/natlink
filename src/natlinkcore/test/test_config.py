@@ -72,9 +72,9 @@ def test_settings_2(settings2):
 def test_read_packages(packages_samples):
     test_cfg=packages_samples
     e=test_cfg.enabled_packages
-    expected_e=["vocola2","fake_module"]
+    expected_e=["vocola2","fake_package1"]
     d=test_cfg.disabled_packages
-    expected_d=["unimacro","fake_module2","fake_module3"]
+    expected_d=["unimacro","fake_package2","fake_package3"]
     assert(e==expected_e)
     assert(d==expected_d)
 
