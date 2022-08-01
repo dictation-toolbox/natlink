@@ -90,10 +90,7 @@ class NatlinkConfig:
 
         enabled_packages_directories = []
         enabled_packages_specs = list(map(u.find_spec,enabled_packages))
-        print(f"Sys.path {sp}")
-
-        ep=u.find_spec('fake_package1')
-         
+  
         for ep,ep_spec in zip(enabled_packages,enabled_packages_specs):
             if ep_spec is None:
                 print(f"from config_parser skip package {ep} as it is not an installed package")
