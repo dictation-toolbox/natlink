@@ -56,6 +56,7 @@ import getopt
 import cmd
 from pathlib import Path
 import configparser
+from turtle import up
 # from win32com.shell import shell
 from natlinkcore import natlinkstatus
 from natlinkcore import config
@@ -158,7 +159,7 @@ class NatlinkConfig:
             return
         self.config.remove_option(section, option)
         if not self.config.options(section):
-            if section not in ['directories', 'settings', 'userenglish-directories', 'userspanish-directories']:
+            if section not in ['packages','directories', 'settings', 'userenglish-directories', 'userspanish-directories']:
                 self.config.remove_section(section)
         self.config_write()
         self.status.__init__()
@@ -167,6 +168,27 @@ class NatlinkConfig:
     # def clearUserDirectory(self, arg):
     #     self.clearDirectory('UserDirectory')
         
+    def addPackage(self,packagename):
+        """ set  a package in the packages area of ini file.  """
+        enabled_packages=self.config_get('packages','enabled_packages')
+        update_enabled_packages=[packagename]
+        if not enabled_packages is None:
+            update_enabled_packages.extend(enabled_packages.split(","))
+        update_enabled_packages_str=','.join(update_enabled_packages)
+        return self.config_set('packages','enabled_packages',update_enabled_packages_str)
+
+    def removePackage(self,packagename):
+        """ set  a package in the packages area of ini file.  """
+        enabled_packages_str=self.config_get('packages','enabled_packages')
+        if not enabled_packages_str is None:
+            #strip whitespace
+            enabled_packages=map(lambda s: s.strip(), enabled_packages_str.split(','))
+            def keep(s):
+                return s != packagename and len(s) !=0
+            update_enabled_packages = list(filter(keep,enabled_packages))
+            update_enabled_packages_str = ",".join(update_enabled_packages)
+            return self.config_set('packages','enabled_packages',update_enabled_packages_str)
+
     def setDirectory(self, option, dir_path, section=None):
         """set the directory, specified with "key", to dir_path
         
@@ -720,11 +742,12 @@ This is the folder where your own Dragonfly python grammar files are/will be loc
         if not unimacro_user_dir:
             return
         uniGrammarsDir = self.Config.status.getUnimacroGrammarsDirectory()
-        self.Config.setDirectory('UnimacroDirectory', uni_dir)
+        self.Config.addPackage('unimacro')
         self.Config.setDirectory('UnimacroGrammarsDirectory', uniGrammarsDir)
             
     def do_O(self, arg):
         self.Config.clearDirectory('UnimacroUserDirectory', section='unimacro')
+        self.Config.removePackage('unimacro')
         self.Config.config_remove('directories', 'unimacrogrammarsdirectory')
         self.Config.config_remove('directories', 'unimacrodirectory')
         self.Config.status.refresh()
@@ -845,7 +868,7 @@ Vocola command.
         if not vocola_user_dir:
             return
         vocGrammarsDir = self.Config.status.getVocolaGrammarsDirectory()
-        self.Config.setDirectory('VocolaDirectory', voc_dir)
+        self.Config.addPackage('vocola2')
         self.Config.setDirectory('VocolaGrammarsDirectory', vocGrammarsDir)
 
             
@@ -853,6 +876,7 @@ Vocola command.
         self.Config.clearDirectory('VocolaUserDirectory', section='vocola')
         self.Config.config_remove('directories', 'vocolagrammarsdirectory')
         self.Config.config_remove('directories', 'vocoladirectory')
+        self.Config.removePackage('vocola2')
         self.Config.status.refresh()
 
     def help_v(self):

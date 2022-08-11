@@ -7,11 +7,21 @@
 ## Installing from PyPi
 You can install from [The Python Package Index (PyPI)](https://pypi.org/) with 
 
-pip install natlinkcore
+`pip install natlinkcore`
+
+ 
+## Test Framework
+Tests use the [pytest](https://docs.pytest.org/) framework.  
+For developers, if you are developing on the project, please add tests for any new features or bug
+fixes.  
+
+Mandy Python IDEs such as [Visual Studio Code](https://code.visualstudio.com/) have build in support for test frameworks and make it easy to run and debug pytest.   see [Visual Studio Code for testing](https://code.visualstudio.com/docs/python/testing).
+
 
 ## Building the Python Package Locally
 
 The build happens through a powershell script.  You don't have to know much powershell.  
+The powershell script runs the tests using [pytest](https://docs.pytest.org/).  
 
 The package is built with [Flit](https://flit.pypa.io/).  The package will be produced in
 dist/nalinkcore-x.y.tar.gz.  To install it `pip install dist/natlinkcore-x.y.tar.gz` replacing x.y with the version numbers.

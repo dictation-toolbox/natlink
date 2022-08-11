@@ -26,6 +26,9 @@ class MockLoggingHandler(logging.Handler):
         }
 
 
+
+
+
 @pytest.fixture()
 def empty_config():
     config = NatlinkConfig.get_default_config()
@@ -416,5 +419,8 @@ def test_load_single_bad_script_that_was_previously_good(tmpdir, empty_config, l
 
     del_loaded_modules(main)
 #     
+
+
+
 if __name__ == "__main__":
     pytest.main(['test_loader.py'])
