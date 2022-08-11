@@ -74,12 +74,12 @@ def test_read_packages(packages_samples):
     assert e == expected_e
     assert d == expected_d
 
-def test_read_directories(directory_settings):
-    test_cfg = directory_settings
-    dirs = test_cfg.directories
-    expected_dirs = ["unimacro","fake_module2","fake_module3"]
-    
-    assert dirs  == expected_dirs
+# def test_read_directories(directory_settings):
+#     test_cfg = directory_settings
+#     dirs = test_cfg.directories
+#     expected_dirs = ["unimacro","fake_module2","fake_module3"]
+#     
+#     assert dirs  == expected_dirs
 
 def test_expand_path():
     """test the different expand_path possibilities, including getting from site-packages
