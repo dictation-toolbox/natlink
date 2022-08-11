@@ -63,17 +63,20 @@ def test_settings_1(mock_syspath,settings1):
     #made_up_3 = nonexistant   #this one should be discarded so there should be 2 directories on load.
 
     def filt(s,sub):
-        return s.find(sub) >=0
+        return s.upper().find(sub.upper()) >=0
 
     filt1=lambda s : filt(s, "fake_package1")
     filt2=lambda s : filt(s, "C:\\")
     filt3 = lambda s:  filt(s,"nonexistant")   #gets loaded anyway even though doesnt exist.
 
-    assert test_cfg.filter
+    def lenlistfilter(f,l):
+        return len(list(filter(f,l)))
+ 
 
-    test_cfg.directiories_by_user.filter(filt1) >0
-    test_cfg.directiories_by_user.filter(filt2) >0
-    test_cfg.directiories_by_user.filter(filt3) >0 
+    assert lenlistfilter(filt1,test_cfg.directories_for_user('')) >0
+   
+    assert lenlistfilter(filt2,test_cfg.directories_for_user('')) >0
+#    assert lenlistfilter(filt3,test_cfg.directories_for_user('')) >0
 
         
     assert test_cfg.log_level is LogLevel.DEBUG 
