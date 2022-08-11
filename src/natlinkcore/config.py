@@ -153,7 +153,7 @@ def expand_path(input_path: str) -> str:
         # print(f'expand_path: "{input_path}" include "~": expanded: "{env_expanded}"')
         return normpath(env_expanded)
 
-    if input_path.startswith('natlink_userdir/') or input_path.startswith('natlinkuser_dir\\'):
+    if input_path.startswith('natlink_userdir/') or input_path.startswith('natlink_userdir\\'):
         nud = os.getenv('natlink_userdir') or str(Path("~")/'.natlink')
         nud = normpath(expand_path(nud))
         if isdir(nud):
