@@ -25,12 +25,8 @@ class LogLevel(IntEnum):
 
 class NatlinkConfig:
     def __init__(self, directories_by_user: Dict[str, List[str]], 
-                enabled_packages : List[str],
-                disabled_packages : List[str], 
                 log_level: LogLevel, load_on_mic_on: bool,
                 load_on_begin_utterance: bool, load_on_startup: bool, load_on_user_changed: bool):
-        self.enabled_packages=enabled_packages
-        self.disabled_packages=disabled_packages
         self.directories_by_user = directories_by_user  # maps user profile names to directories, '' for global
         self.log_level = log_level
         self.load_on_mic_on = load_on_mic_on
@@ -41,8 +37,6 @@ class NatlinkConfig:
 
     def __repr__(self) -> str:
         return  f'NatlinkConfig(directories_by_user={self.directories_by_user}, '
-        f'enabled_packages={self.enabled_packages}, ',
-        f'disabled_packages={self.disabled_packages}, '
         f'log_level={self.log_level}, ' 
         f'load_on_mic_on={self.load_on_mic_on}, load_on_startup={self.load_on_startup}, ' 
         f'load_on_user_changed={self.load_on_user_changed}'
@@ -50,8 +44,6 @@ class NatlinkConfig:
     @staticmethod
     def get_default_config() -> 'NatlinkConfig':
         return NatlinkConfig(directories_by_user={},
-                             enabled_packages=[],
-                             disabled_packages=[],
                              log_level=LogLevel.NOTSET,
                              load_on_mic_on=True,
                              load_on_begin_utterance=False,
@@ -77,40 +69,7 @@ class NatlinkConfig:
         ret = NatlinkConfig.get_default_config()
         ret.config_path = config_path
         sections = config.sections()
-        enabled_packages=[]
-        disabled_packages=[]
         sp = sys.path   #handy, leave in for debugging
-        if config.has_section('packages'):
-            def strip_ws(s):
-                return s.strip()
-            
-            packages = config['packages']
-            enabled_packages_string=packages.get("enabled_packages",fallback="")
-            disabled_packages_string=packages.get("disabled_packages",fallback="")
-            enabled_packages=list(map(strip_ws,enabled_packages_string.split(",")))
-            disabled_packages=list(map(strip_ws,disabled_packages_string.split(",")))
-            #remove any empty packages due to a trailing ","
-            def non_empty(s):
-                return len(s) != 0
-            enabled_packages=list(filter(non_empty,enabled_packages))
-            disabled_packages=list(filter(non_empty,disabled_packages))
-
-            ret.enabled_packages = enabled_packages
-            ret.disabled_packages = disabled_packages
-
-        enabled_packages_directories = []
-        enabled_packages_specs = list(map(u.find_spec,enabled_packages))
-  
-        for ep,ep_spec in zip(enabled_packages,enabled_packages_specs):
-            if ep_spec is None:
-                print(f"from config_parser skip package {ep} as it is not an installed package")
-            else:
-                package_dir = str(p.Path(ep_spec.origin).parent)
-                enabled_packages_directories.append(package_dir)
-
-
-        #the folders for enabled packages are added to directories.
-
 
  
         for section in sections:
@@ -130,8 +89,7 @@ class NatlinkConfig:
                         continue
                     directories.append(directory_expanded)
 
-                #the directories of packages are simply prepended to directories
-                ret.directories_by_user[''] = enabled_packages_directories + directories 
+                ret.directories_by_user[''] =  directories 
         if config.has_section('settings'):
             settings = config['settings']
             level = settings.get('log_level')
@@ -179,7 +137,7 @@ def expand_path(input_path: str) -> str:
     
     try:
         package_spec=u.find_spec(input_path)
-        if package_spec is None:
+        if package_spec is not None:
             package_path=str(p.Path(package_spec.origin).parent)
             return normpath(package_path)
     except:

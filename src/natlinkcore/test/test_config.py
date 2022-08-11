@@ -53,10 +53,28 @@ def mock_userdir(monkeypatch):
     monkeypatch.setenv("natlink_userdir",str(mock_folder))
 
 
-def test_settings_1(settings1,mock_syspath):
+def test_settings_1(mock_syspath,settings1):
     test_cfg = settings1 
     #make sure we are actually getting a NatlinkConfig by checking a method
     assert hasattr(test_cfg,"directories_for_user")
+
+    #made_up=fake_package1
+    #made_up_2 = c:\
+    #made_up_3 = nonexistant   #this one should be discarded so there should be 2 directories on load.
+
+    def filt(s,sub):
+        return s.find(sub) >=0
+
+    filt1=lambda s : filt(s, "fake_package1")
+    filt2=lambda s : filt(s, "C:\\")
+    filt3 = lambda s:  filt(s,"nonexistant")   #gets loaded anyway even though doesnt exist.
+
+    assert test_cfg.filter
+
+    test_cfg.directiories_by_user.filter(filt1) >0
+    test_cfg.directiories_by_user.filter(filt2) >0
+    test_cfg.directiories_by_user.filter(filt3) >0 
+
         
     assert test_cfg.log_level is LogLevel.DEBUG 
     assert test_cfg.load_on_mic_on is False
@@ -64,7 +82,7 @@ def test_settings_1(settings1,mock_syspath):
     assert test_cfg.load_on_startup is True
     assert test_cfg.load_on_user_changed is True
  
-def test_settings_2(settings2,mock_syspath):
+def test_settings_2(mock_syspath,settings2):
     test_cfg = settings2 
     #make sure we are actually getting a NatlinkConfig by checking a method
     assert hasattr(test_cfg,"directories_for_user")
@@ -77,23 +95,7 @@ def test_settings_2(settings2,mock_syspath):
     assert test_cfg.load_on_user_changed is False
 
 
-def test_read_directories(packages_samples):
-    """
 
-    """
-    test_cfg=packages_samples
-    expected_e=["fake_package1"]
-    d=test_cfg.disabled_packages
-    expected_d=["unimacro","fake_package2","fake_package3"]
-    assert e == expected_e
-    assert d == expected_d
-
-# def test_read_directories(directory_settings):
-#     test_cfg = directory_settings
-#     dirs = test_cfg.directories
-#     expected_dirs = ["unimacro","fake_module2","fake_module3"]
-#     
-#     assert dirs  == expected_dirs
 
 def test_expand_path(mock_syspath,mock_userdir):
     """test the different expand_path possibilities, including finding a directory along   sys.path 
@@ -136,21 +138,7 @@ def test_mocks_actually_work(mock_syspath):
     assert not spec is None
     print(f'\nspec for fake_package1 {spec}')
 
-def test_packages_added_to_paths(mock_syspath,package_load_test1):
-        mock_package_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_packages"
-        print(f"System Path {sys.path}")
-        test_cfg=package_load_test1
-        print(f'test config {test_cfg}')       
-        #there should be exactly 4 directories for
-        #the '' key (all languages)
-        #two for the [packages\ and two for
-        #[directories]
-        dirs = test_cfg.directories_by_user['']
-        print(f"directories for '': {dirs}" )
-        assert len(dirs) == 4
-        for mp in ['fake_package2','fake_package1']:
-            ms=str(p.Path(u.find_spec(mp).origin).parent)
-            assert ms in dirs
+
 
 
 
