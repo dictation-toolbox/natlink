@@ -1,4 +1,5 @@
 #pylint:disable=C0114, C0115, C0116, R0913, E1101, R0914
+from cmath import e
 import configparser
 import logging
 import os
@@ -7,6 +8,7 @@ from typing import List, Iterable, Dict
 from pathlib import Path
 from natlink import _natlink_core as natlink
 import pathlib as p
+import importlib.util as u
 import sys
 class NoGoodConfigFoundException(natlink.NatError):
     pass
@@ -164,7 +166,7 @@ def expand_path(input_path: str) -> str:
     
     Paths can be prefixed by:
     
-    - not a path, but one word: get it from site_packages, the path is found by python
+    - the name of a python package, to be found along   sys.path
     - natlink_userdir: the directory where natlink.ini is is searched for, either %(NATLINK_USERDIR) or ~/.natlink
     - ~: the home directory
     - some environment variable: this environment variable is expanded.
@@ -174,6 +176,14 @@ def expand_path(input_path: str) -> str:
     When nothing to expand, return input
     """
     expanduser, expandvars, normpath, isdir = os.path.expanduser, os.path.expandvars, os.path.normpath, os.path.isdir
+    
+    try:
+        package_spec=u.find_spec(input_path)
+        if package_spec is None:
+            package_path=str(p.Path(package_spec.origin).parent)
+            return normpath(package_path)
+    except:
+        pass
     
     if input_path.startswith('~'):
         home = expanduser('~')

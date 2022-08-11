@@ -1,0 +1,1 @@
+print(f"\nMock package {__file__}")

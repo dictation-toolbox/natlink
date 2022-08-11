@@ -46,7 +46,14 @@ def mock_syspath(monkeypatch):
     print(f"Mock Folder {mock_folder}")
     monkeypatch.syspath_prepend(str(mock_folder))
 
-def test_settings_1(settings1):
+@pytest.fixture()
+def mock_userdir(monkeypatch):
+    mock_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_userdir"
+    print(f"Mock Userdir Folder {mock_folder}")
+    monkeypatch.setenv("natlink_userdir",str(mock_folder))
+
+
+def test_settings_1(settings1,mock_syspath):
     test_cfg = settings1 
     #make sure we are actually getting a NatlinkConfig by checking a method
     assert hasattr(test_cfg,"directories_for_user")
@@ -57,14 +64,11 @@ def test_settings_1(settings1):
     assert test_cfg.load_on_startup is True
     assert test_cfg.load_on_user_changed is True
  
-def test_settings_2(settings2):
+def test_settings_2(settings2,mock_syspath):
     test_cfg = settings2 
     #make sure we are actually getting a NatlinkConfig by checking a method
     assert hasattr(test_cfg,"directories_for_user")
 
-    #make sure these required modules lists exist
-    assert hasattr(test_cfg,"enabled_packages")
-    assert hasattr(test_cfg,"disabled_packages")
       
     assert test_cfg.log_level == LogLevel.WARNING 
     assert test_cfg.load_on_mic_on is True
@@ -73,10 +77,12 @@ def test_settings_2(settings2):
     assert test_cfg.load_on_user_changed is False
 
 
-def test_read_packages(packages_samples):
+def test_read_directories(packages_samples):
+    """
+
+    """
     test_cfg=packages_samples
-    e=test_cfg.enabled_packages
-    expected_e=["vocola2","fake_package1"]
+    expected_e=["fake_package1"]
     d=test_cfg.disabled_packages
     expected_d=["unimacro","fake_package2","fake_package3"]
     assert e == expected_e
@@ -89,15 +95,25 @@ def test_read_packages(packages_samples):
 #     
 #     assert dirs  == expected_dirs
 
-def test_expand_path():
-    """test the different expand_path possibilities, including getting from site-packages
-    """
-    result = expand_path('natlinkcore')
-    assert result.find('site-packages') > 0
+def test_expand_path(mock_syspath,mock_userdir):
+    """test the different expand_path possibilities, including finding a directory along   sys.path 
+    since we know users might pip a package to  a few different spots depending on whether they are in an elevated shell.
+    We specifically aren't testing unimacro and vocola2 since they might be in the sys.path or maybe not""" 
+
+
+    #use only directories that we know will be available when running the test.
+    #we put a few packages in mock_packages subfolder and we know pytest must  be installed to be running this test.
+
+
+    result=expand_path('fake_package1')
+    assert os.path.isdir(result)
+
+    result=expand_path('pytest')
     assert os.path.isdir(result)
     
+
     # assume UnimacroGrammars is a valid directory:
-    result = expand_path('natlink_userdir/UnimacroGrammars')
+    result = expand_path('natlink_userdir/FakeGrammars')
     assert os.path.isdir(result)
     
     # invalid directory
