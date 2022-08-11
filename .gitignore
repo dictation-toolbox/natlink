@@ -100,3 +100,4 @@ dist
 /src/natlinkcore/test/readwritefiletest/*.ini
 /src/natlinkcore/natlink.egg-info/
 /src/natlinkcore/requirements.txt
+/src/natlinkcore/test/config_files/directory_settings.ini
