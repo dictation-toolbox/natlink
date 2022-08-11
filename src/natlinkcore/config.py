@@ -1,11 +1,11 @@
-#pylint:disable=C0114, C0115, C0116, R0913, E1101
+#pylint:disable=C0114, C0115, C0116, R0913, E1101, R0914
 import configparser
 import logging
 import os
 from enum import IntEnum
 from typing import List, Iterable, Dict
+from pathlib import Path
 from natlink import _natlink_core as natlink
-import importlib.util as u
 class NoGoodConfigFoundException(natlink.NatError):
     pass
 
@@ -42,7 +42,7 @@ class NatlinkConfig:
 
     @staticmethod
     def get_default_config() -> 'NatlinkConfig':
-        return NatlinkConfig(directories_by_user=dict(),
+        return NatlinkConfig(directories_by_user={},
                              enabled_packages=[],
                              disabled_packages=[],
                              log_level=LogLevel.NOTSET,
@@ -73,7 +73,9 @@ class NatlinkConfig:
         enabled_packages=[]
         disabled_packages=[]
         if config.has_section('packages'):
-            def strip_ws(s): return s.strip()
+            def strip_ws(s):
+                return s.strip()
+            
             packages = config['packages']
             enabled_packages_string=packages.get("enabled_packages",fallback="")
             disabled_packages_string=packages.get("disabled_packages",fallback="")
@@ -132,19 +134,43 @@ class NatlinkConfig:
 def expand_path(input_path: str) -> str:
     r"""expand path if it starts with "~" or has environment variables (%XXXX%)
     
-    Use home ("~") or "%natlink_userdir%"
+    Paths can be prefixed by:
+    
+    - not a path, but one word: get it from site_packages, the path is found by python
+    - natlink_userdir: the directory where natlink.ini is is searched for, either %(NATLINK_USERDIR) or ~/.natlink
+    - ~: the home directory
+    - some environment variable: this environment variable is expanded.
     
     The Documents directory can be found by "~\Documents" 
     
     When nothing to expand, return input
     """
-    expanduser, expandvars, normpath = os.path.expanduser, os.path.expandvars, os.path.normpath
+    expanduser, expandvars, normpath, isdir = os.path.expanduser, os.path.expandvars, os.path.normpath, os.path.isdir
     
     if input_path.startswith('~'):
         home = expanduser('~')
         env_expanded = home + input_path[1:]
         # print(f'expand_path: "{input_path}" include "~": expanded: "{env_expanded}"')
         return normpath(env_expanded)
+
+    if input_path.startswith('natlink_userdir/') or input_path.startswith('natlinkuser_dir\\'):
+        nud = os.getenv('natlink_userdir') or str(Path("~")/'.natlink')
+        nud = normpath(expand_path(nud))
+        if isdir(nud):
+            dir_path = input_path.replace('natlink_userdir', nud)
+            dir_path = normpath(dir_path)
+            if isdir(dir_path):
+                return dir_path
+            print(f'no valid directory found with "natlink_userdir": "{dir_path}"')
+            return dir_path
+        print(f'natlink_userdir does not expand to a valid directory: "{nud}"')
+        return normpath(nud)
+    
+    if not (input_path.find('/') >= 0 or input_path.find('\\') >= 0):
+        
+        pack = __import__(input_path)
+        return pack.__path__[0]
+        
     env_expanded = expandvars(input_path)
     # print(f'env_expanded: "{env_expanded}", from envvar: "{input_path}"')
     return normpath(env_expanded)

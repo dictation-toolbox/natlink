@@ -1,19 +1,13 @@
 #pylint:disable= C0114, C0116, W0401, W0614, W0621, W0108. W0212
 
-from inspect import getattr_static
-from random import sample
+import pathlib as p
+import sys
+import sysconfig
+from pprint import pprint
 import pytest
 
 from natlinkcore.config import *
 from natlinkcore import loader
-import pathlib as p
-
-import sys
-import sysconfig
-from pprint import pprint
-
-
-
 
 @pytest.fixture()
 def empty_config():
@@ -42,32 +36,34 @@ def make_sample_config_fixture(settings_filename):
 settings1 =  make_sample_config_fixture("settings_1.ini")
 settings2 = make_sample_config_fixture("settings_2.ini")
 packages_samples = make_sample_config_fixture('package_samples.ini') 
+directory_settings = make_sample_config_fixture('directory_settings.ini')
 
 def test_settings_1(settings1):
-        test_cfg = settings1 
-        #make sure we are actually getting a NatlinkConfig by checking a method
-        assert hasattr(test_cfg,"directories_for_user")
+    test_cfg = settings1 
+    #make sure we are actually getting a NatlinkConfig by checking a method
+    assert hasattr(test_cfg,"directories_for_user")
         
-        assert test_cfg.log_level == LogLevel.DEBUG 
-        assert test_cfg.load_on_mic_on == False
-        assert test_cfg.load_on_begin_utterance == False
-        assert test_cfg.load_on_startup == True
-        assert test_cfg.load_on_user_changed == True
+    assert test_cfg.log_level is LogLevel.DEBUG 
+    assert test_cfg.load_on_mic_on is False
+    assert test_cfg.load_on_begin_utterance is False
+    assert test_cfg.load_on_startup is True
+    assert test_cfg.load_on_user_changed is True
  
 def test_settings_2(settings2):
-        test_cfg = settings2 
-        #make sure we are actually getting a NatlinkConfig by checking a method
-        assert hasattr(test_cfg,"directories_for_user")
+    test_cfg = settings2 
+    #make sure we are actually getting a NatlinkConfig by checking a method
+    assert hasattr(test_cfg,"directories_for_user")
 
-        #make sure these required modules lists exist
-        assert hasattr(test_cfg,"enabled_packages")
-        assert hasattr(test_cfg,"disabled_packages")
-        
-        assert test_cfg.log_level == LogLevel.WARNING 
-        assert test_cfg.load_on_mic_on == True
-        assert test_cfg.load_on_begin_utterance == True
-        assert test_cfg.load_on_startup == False
-        assert test_cfg.load_on_user_changed == False
+    #make sure these required modules lists exist
+    assert hasattr(test_cfg,"enabled_packages")
+    assert hasattr(test_cfg,"disabled_packages")
+      
+    assert test_cfg.log_level == LogLevel.WARNING 
+    assert test_cfg.load_on_mic_on is True
+    assert test_cfg.load_on_begin_utterance is True
+    assert test_cfg.load_on_startup is False
+    assert test_cfg.load_on_user_changed is False
+
 
 def test_read_packages(packages_samples):
     test_cfg=packages_samples
@@ -75,8 +71,30 @@ def test_read_packages(packages_samples):
     expected_e=["vocola2","fake_module"]
     d=test_cfg.disabled_packages
     expected_d=["unimacro","fake_module2","fake_module3"]
-    assert(e==expected_e)
-    assert(d==expected_d)
+    assert e == expected_e
+    assert d == expected_d
+
+def test_read_directories(directory_settings):
+    test_cfg = directory_settings
+    dirs = test_cfg.directories
+    expected_dirs = ["unimacro","fake_module2","fake_module3"]
+    
+    assert dirs  == expected_dirs
+
+def test_expand_path():
+    """test the different expand_path possibilities, including getting from site-packages
+    """
+    result = expand_path('natlinkcore')
+    assert result.find('site-packages') > 0
+    assert os.path.isdir(result)
+    
+    # assume UnimacroGrammars is a valid directory:
+    result = expand_path('natlink_userdir/UnimacroGrammars')
+    assert os.path.isdir(result)
+    
+    # invalid directory
+    result = expand_path('natlink_userdir/invalid_dir')
+    assert not os.path.isdir(result)
 
 def test_config_locations():
     """tests the lists of possible config_locations and of valid_locations
