@@ -15,6 +15,13 @@ dependencies= [
     "dtactions>=1.5.0",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest >=7.1.2",
+    "pytest-cov",
+]
+ 
+
 [tool.pytest.ini_options]
 minversion = "7.1.2"
 addopts = "--capture=tee-sys "
