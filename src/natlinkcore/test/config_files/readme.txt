@@ -1,1 +1,0 @@
-This folder contains natlink config .ini files for testing.

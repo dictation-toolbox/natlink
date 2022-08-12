@@ -1,1 +1,0 @@
-print(f"Fake module __{__file__}")
