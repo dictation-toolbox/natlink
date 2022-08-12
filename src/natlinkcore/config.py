@@ -77,10 +77,10 @@ class NatlinkConfig:
                     ## allow environment variables (or ~) in directory
                     directory_expanded = expand_path(directory)
                     if not os.path.isdir(directory_expanded):
-                        if directory_expanded == directory:
-                            print(f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory')
-                        else:
-                            print(f'from_config_parser: skip "{directory}" ("{name}"):\n\texpanded to directory "{directory_expanded}" is not a valid directory')
+                        print (f'from_config_parser: skip "{directory}" ("{name}"): is not a valid directory' if 
+                            directory_expanded == directory 
+                        else
+                            f'from_config_parser: skip "{directory}" ("{name}"):\n\texpanded to directory "{directory_expanded}" is not a valid directory')
                         continue
                     directories.append(directory_expanded)
 
@@ -159,7 +159,7 @@ def expand_path(input_path: str) -> str:
         return normpath(nud)
     
     if not (input_path.find('/') >= 0 or input_path.find('\\') >= 0):
-        # find path for package:
+        # find path for package.  not an alternative way without loading the package is to use importlib.util.findspec.
         try:
             pack = __import__(input_path)
         except ModuleNotFoundError:
