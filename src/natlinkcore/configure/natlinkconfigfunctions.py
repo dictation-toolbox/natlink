@@ -1090,4 +1090,4 @@ def main_cli():
         except (KeyboardInterrupt, SystemExit):
             pass
 
-main_cli() if __name__ == __name__ == "__main__" else _main()
+main_cli() if __name__ == "__main__" else _main()
