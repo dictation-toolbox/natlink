@@ -1,4 +1,4 @@
-#pylint:disable=C0114, C0115, C0116, R0913, E1101, R0914, W0702
+#pylint:disable=C0114, C0115, C0116, R0913, E1101, R0911, R0914, W0702
 import sys
 import configparser
 import logging
@@ -74,6 +74,10 @@ class NatlinkConfig:
             elif section == 'directories':
                 directories = []
                 for name, directory in config[section].items():
+                    if directory.find('site-packages') > 0:
+                        package_name = Path(directory).stem
+                        print(f'====Invalid input in configuration file "natlink.ini", section "directories":\n\tSkip name: {name}, directory: {directory}\n\tWhen you want to include a directory in site-packages, only specify the package name "{package_name}"')
+                        continue
                     ## allow environment variables (or ~) in directory
                     directory_expanded = expand_path(directory)
                     if not os.path.isdir(directory_expanded):
@@ -138,7 +142,6 @@ def expand_path(input_path: str) -> str:
     #         return normpath(package_path)
     # except:
     #     pass
-    
     if input_path.startswith('~'):
         home = expanduser('~')
         env_expanded = home + input_path[1:]
