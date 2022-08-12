@@ -4,9 +4,11 @@ import pathlib as p
 import sys
 import sysconfig
 from pprint import pprint
-import pytest
 
 import importlib.util as u
+
+import pytest
+
 
 from natlinkcore.config import *
 from natlinkcore import loader
@@ -115,9 +117,12 @@ def test_expand_path(mock_syspath,mock_userdir):
 
     result=expand_path('pytest')
     assert os.path.isdir(result)
-    
 
-    # assume UnimacroGrammars is a valid directory:
+    # testing nonexisting package (QH)
+    result=expand_path('nonexisting_package')
+    assert not os.path.isdir(result)
+
+    # assume FakeGrammars is a valid directory:
     result = expand_path('natlink_userdir/FakeGrammars')
     assert os.path.isdir(result)
     
@@ -136,7 +141,6 @@ def test_config_locations():
     assert os.path.isfile(config_locations[0])
  
 def test_mocks_actually_work(mock_syspath):
-    pass
     spec = u.find_spec('fake_package1')
     assert not spec is None
     print(f'\nspec for fake_package1 {spec}')

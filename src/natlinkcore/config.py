@@ -1,5 +1,5 @@
-#pylint:disable=C0114, C0115, C0116, R0913, E1101, R0914
-from cmath import e
+#pylint:disable=C0114, C0115, C0116, R0913, E1101, R0914, W0702
+import sys
 import configparser
 import logging
 import os
@@ -7,9 +7,7 @@ from enum import IntEnum
 from typing import List, Iterable, Dict
 from pathlib import Path
 from natlink import _natlink_core as natlink
-import pathlib as p
-import importlib.util as u
-import sys
+
 class NoGoodConfigFoundException(natlink.NatError):
     pass
 
@@ -37,9 +35,6 @@ class NatlinkConfig:
 
     def __repr__(self) -> str:
         return  f'NatlinkConfig(directories_by_user={self.directories_by_user}, '
-        f'log_level={self.log_level}, ' 
-        f'load_on_mic_on={self.load_on_mic_on}, load_on_startup={self.load_on_startup}, ' 
-        f'load_on_user_changed={self.load_on_user_changed}'
 
     @staticmethod
     def get_default_config() -> 'NatlinkConfig':
@@ -122,26 +117,27 @@ class NatlinkConfig:
 def expand_path(input_path: str) -> str:
     r"""expand path if it starts with "~" or has environment variables (%XXXX%)
     
-    Paths can be prefixed by:
+    Paths can be:
     
-    - the name of a python package, to be found along   sys.path
-    - natlink_userdir: the directory where natlink.ini is is searched for, either %(NATLINK_USERDIR) or ~/.natlink
-    - ~: the home directory
+    - the name of a python package, to be found along sys.path (typically in site-packages)
+    - natlink_userdir/...: the directory where natlink.ini is is searched for, either %(NATLINK_USERDIR) or ~/.natlink
+    - ~/...: the home directory
     - some environment variable: this environment variable is expanded.
     
-    The Documents directory can be found by "~\Documents" 
+    The Documents directory can be found by "~\Documents"...
     
     When nothing to expand, return input
     """
     expanduser, expandvars, normpath, isdir = os.path.expanduser, os.path.expandvars, os.path.normpath, os.path.isdir
     
-    try:
-        package_spec=u.find_spec(input_path)
-        if package_spec is not None:
-            package_path=str(p.Path(package_spec.origin).parent)
-            return normpath(package_path)
-    except:
-        pass
+    # I think, this is tackled below, input_path is one word, without slashes or ~ or %(...) (QH)
+    # try:
+    #     package_spec=u.find_spec(input_path)
+    #     if package_spec is not None:
+    #         package_path=str(p.Path(package_spec.origin).parent)
+    #         return normpath(package_path)
+    # except:
+    #     pass
     
     if input_path.startswith('~'):
         home = expanduser('~')
@@ -163,8 +159,12 @@ def expand_path(input_path: str) -> str:
         return normpath(nud)
     
     if not (input_path.find('/') >= 0 or input_path.find('\\') >= 0):
-        
-        pack = __import__(input_path)
+        # find path for package:
+        try:
+            pack = __import__(input_path)
+        except ModuleNotFoundError:
+            print(f'expand_path, package name "{input_path}" is not found')
+            return input_path
         return pack.__path__[0]
         
     env_expanded = expandvars(input_path)
