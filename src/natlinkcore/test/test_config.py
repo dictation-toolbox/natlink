@@ -115,8 +115,12 @@ def test_expand_path(mock_syspath,mock_userdir):
     result=expand_path('fake_package1')
     assert os.path.isdir(result)
 
-    result=expand_path('fake_package1/fake_subpackage1')
+    result=expand_path('fake_package1.fake_subpackage1')
     assert os.path.isdir(result)
+
+    result=expand_path('fake_package1.nonexistant_subpackage1')
+    assert  not os.path.isdir(result)
+
 
     result=expand_path('pytest')
     assert os.path.isdir(result)
