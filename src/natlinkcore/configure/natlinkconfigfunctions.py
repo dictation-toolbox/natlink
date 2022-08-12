@@ -56,6 +56,7 @@ import getopt
 import cmd
 from pathlib import Path
 import configparser
+from turtle import up
 # from win32com.shell import shell
 from natlinkcore import natlinkstatus
 from natlinkcore import config
@@ -167,6 +168,7 @@ class NatlinkConfig:
     # def clearUserDirectory(self, arg):
     #     self.clearDirectory('UserDirectory')
         
+
     def setDirectory(self, option, dir_path, section=None):
         """set the directory, specified with "key", to dir_path
         
@@ -720,13 +722,14 @@ This is the folder where your own Dragonfly python grammar files are/will be loc
         if not unimacro_user_dir:
             return
         uniGrammarsDir = self.Config.status.getUnimacroGrammarsDirectory()
-        self.Config.setDirectory('UnimacroDirectory', uni_dir)
+        self.Config.setDirectory('unimacro','unimacro')  #always unimacro
+
         self.Config.setDirectory('UnimacroGrammarsDirectory', uniGrammarsDir)
             
     def do_O(self, arg):
         self.Config.clearDirectory('UnimacroUserDirectory', section='unimacro')
         self.Config.config_remove('directories', 'unimacrogrammarsdirectory')
-        self.Config.config_remove('directories', 'unimacrodirectory')
+        self.Config.config_remove('directories', 'unimacro')
         self.Config.status.refresh()
 
     def help_o(self):
@@ -845,7 +848,7 @@ Vocola command.
         if not vocola_user_dir:
             return
         vocGrammarsDir = self.Config.status.getVocolaGrammarsDirectory()
-        self.Config.setDirectory('VocolaDirectory', voc_dir)
+        self.Config.setDirectory('vocola','vocola2')  #always vocola2
         self.Config.setDirectory('VocolaGrammarsDirectory', vocGrammarsDir)
 
             
@@ -853,6 +856,7 @@ Vocola command.
         self.Config.clearDirectory('VocolaUserDirectory', section='vocola')
         self.Config.config_remove('directories', 'vocolagrammarsdirectory')
         self.Config.config_remove('directories', 'vocoladirectory')
+        self.Config.config_remove('directories','vocola')
         self.Config.status.refresh()
 
     def help_v(self):
@@ -1086,4 +1090,4 @@ def main_cli():
         except (KeyboardInterrupt, SystemExit):
             pass
 
-main_cli() if __name__ == __name__ == "__main__" else _main()
+main_cli() if __name__ == "__main__" else _main()

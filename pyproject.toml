@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
+requires = ["flit_core >=3.2,<4,pytest>=7.1.2"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -14,6 +14,29 @@ dependencies= [
     "pydebugstring",
     "dtactions>=1.5.0",
 ]
+
+[project.optional-dependencies]
+test = [
+    "pytest >=7.1.2",
+]
+ 
+
+[tool.pytest.ini_options]
+minversion = "7.1.2"
+addopts = "--capture=tee-sys "
+# very important
+#the pythonpath lets pytest load code in your source area
+#in addition to that in site-packages etc.
+#you may want to run your tests without install natlinkcore with flit or pip
+pythonpath = [
+    "src",
+    "src/natlinkcore",
+    "src/natlinkcore/test",
+]
+testpaths= [
+    "src/natlinkcore/test",
+]
+
 [project.scripts]
 natlinkconfig = "natlinkcore.configure.natlinkconfigfunctions:main_cli"
 [project.urls]
