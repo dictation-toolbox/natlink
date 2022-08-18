@@ -167,6 +167,8 @@ class CDragonCode
 	ISRCentralPtr m_pISRCentral;
 	IDgnSREngineControlPtr m_pIDgnSREngineControl;
 	IDgnSSvcOutputEventPtr m_pIDgnSSvcOutputEvent;
+	IDgnSSvcOutputEventA * m_pIDgnSSvcOutputEventA;
+
 	IServiceProviderPtr m_pIServiceProvider;
 	IDgnExtModSupStringsPtr m_pIDgnExtModSupStrings;
 	IDgnSSvcInterpreterPtr m_pIDgnSSvcInterpreter;

@@ -127,6 +127,7 @@
 #include "MessageWindow.h"
 #include "Exceptions.h"
 #include <string>
+#include <memory>
 
 // defined in PythWrap.cpp
 CResultObject * resobj_new();
@@ -1719,6 +1720,11 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 		__uuidof(IDgnSSvcOutputEvent), (void**)&m_pIDgnSSvcOutputEvent);
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(DgnSSvcOutputEvent)" );
 
+	rc = pSpchSvc->QueryInterface(
+		__uuidof(IDgnSSvcOutputEventA), (void**)&m_pIDgnSSvcOutputEventA);
+	RETURNIFERROR( rc, "IDgnSSvcOutputEventA::QueryInterface(DgnSSvcOutputEventA)" );
+
+
 	rc = m_pIDgnSSvcOutputEvent->QueryInterface(
 		__uuidof(IDgnSSvcInterpreter), (void**)&m_pIDgnSSvcInterpreter );
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(IDgnSSvcInterpreter)" );
@@ -1853,6 +1859,7 @@ BOOL CDragonCode::natDisconnect()
 	// release all our intefaces
 	m_pIDgnSREngineControl = NULL;
 	m_pIDgnSSvcOutputEvent = NULL;
+	m_pIDgnSSvcOutputEventA = NULL;
 	m_pIDgnExtModSupStrings = NULL;
 	m_pIServiceProvider = NULL;
 	m_pIDgnSSvcInterpreter = NULL;
@@ -1950,11 +1957,28 @@ static std::string stringinfo(char const word[])
 	return by;
 }
 
+static std::string w_stringinfo(wchar_t const word[])
+{
+	std::string by;
+	for(int i=0; i<wcslen(word); i++)
+	{			
+		char buf[100];
+		unsigned char c = word[i];
+		unsigned int d=c;
+
+		snprintf(buf,sizeof buf,"%i:%u:%c ",i,d,c );
+ 
+		by.append(buf);
+	}
+	return by;
+}
+
+
 //---------------------------------------------------------------------------
 
 BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 {
-	HRESULT rc;
+	HRESULT rc=0;
 
 	NOTBEFORE_INIT( "playString" );
 	NOTDURING_INIT( "playString" );
@@ -1965,85 +1989,47 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 	static DWORD dwUnique = 1;
 	DWORD dwClientCode = ++dwUnique;
 
-	DWORD dwNumUndo;
+	DWORD dwNumUndo=0;
 		
-		#ifdef UNICODE_CRUF
-		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, NULL, 0 );
-		CPointerChar pszKeysW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, pszKeysW, size_needed );*/
-		CComBSTR bstrKeys( pszKeys );
-		rc = m_pIDgnSSvcOutputEvent->PlayString(
-			bstrKeys,	// string to send
-			dwFlags,		// flags
-			0xFFFFFFFF,		// delay (-1 for app specific delay)
-			dwClientCode,	// to identify which WM_PLAYBACK is ours
-			&dwNumUndo );	// not used (number of backspaces needed to undo)
-
-		#endif
 
 	#ifdef UNICODE
-	int codePage = 1252;
-	int size_needed = ::MultiByteToWideChar( codePage, 0, pszKeys, -1, NULL, 0 );
+
+//	OutputDebugStringA("ignoring input, just sending out `naïve'");
+
+	int const inputCodePage = CP_UTF8;
+	int const outputCodePage = 1252;
+
+
+	//get a wide unicode string from the unicode string.  Be better to change pytwrap to just give us
+	//unicode strings.
+	int size_needed = 10+ ::MultiByteToWideChar( inputCodePage, 0, pszKeys, -1, NULL, 0 );
 	BSTR pszKeysW = new TCHAR[ size_needed ];
-	::MultiByteToWideChar( codePage, MB_PRECOMPOSED, pszKeys, -1, pszKeysW, size_needed );
+	memset(pszKeysW,0,(sizeof pszKeysW[0]*size_needed));
 
-	OutputDebugStringA("Compile Time " __DATE__ __TIME__);
+	std::unique_ptr<TCHAR> pdzKesWMem(pszKeysW);   
 
- 	OutputDebugStringA("CdragonCode::playString word is");
-	static const char  word[] = "naïve";
-	static const wchar_t  w_word[] = L"naïve";
- 	OutputDebugStringA(word);
+	::MultiByteToWideChar( inputCodePage, MB_PRECOMPOSED, pszKeys, -1, pszKeysW, size_needed );
 
-	std::string msg("Bytes : ");
-	msg+= stringinfo(word);
-	OutputDebugStringA(msg.c_str());
+	//now convert to to single byte code page for windows
+	int mbSizeNeeded = 10+WideCharToMultiByte(outputCodePage,0,pszKeysW,-1,0,0,0,0);
+	char * mbString = new char[mbSizeNeeded];
+	memset(mbString,0,sizeof mbString[0]*mbSizeNeeded);
+	std::unique_ptr<char> mbPtr(mbString);  
+	WideCharToMultiByte(outputCodePage,0,pszKeysW,-1,mbString,mbSizeNeeded,0,0);
 
-	
-	OutputDebugStringA("CComBSTR Default Conversion");
-	CComBSTR w(word);
-	OutputDebugStringW(w);
-	OutputDebugStringA("Normalized");
-	int nbuf_len=NormalizeString(NormalizationC,w,w.Length(),0,0)+10;
+	std::string msg1("Windows String: ");
+	msg1.append(mbString);
+	OutputDebugStringA(msg1.c_str());
 
-	BSTR nbuf = new TCHAR[ nbuf_len ];
-	memset(nbuf,0,nbuf_len);
+	// use the interface that takes char strings, not wide strings.
 
-	NormalizeString(NormalizationC,w,w.Length(),nbuf,nbuf_len);
-	OutputDebugStringW(nbuf);
-	
-	OutputDebugStringA("playing normalized string");
-
-
-	rc = m_pIDgnSSvcOutputEvent->PlayString(
-		nbuf,	// string to send
+	rc = m_pIDgnSSvcOutputEventA->PlayString(
+		mbString,	// string to send
 		dwFlags,		// flags
 		0xFFFFFFFF,		// delay (-1 for app specific delay)
 		dwClientCode,	// to identify which WM_PLAYBACK is ours
-		&dwNumUndo );	// not used (number of backspaces needed to undo)
+		&dwNumUndo );
 
-
-
-	OutputDebugString(CComBSTR(pszKeys));
-	OutputDebugStringW(CComBSTR(pszKeysW));
-
-	CComBSTR bstrKeys(pszKeysW);
-    delete  pszKeysW;
-	memset(pszKeysW,0,size_needed);  //just wipe for safety
-
-	rc = m_pIDgnSSvcOutputEvent->PlayString(
-		bstrKeys,	// string to send
-		dwFlags,		// flags
-		0xFFFFFFFF,		// delay (-1 for app specific delay)
-		dwClientCode,	// to identify which WM_PLAYBACK is ours
-		&dwNumUndo );	// not used (number of backspaces needed to undo)
-
-
-	rc = m_pIDgnSSvcOutputEvent->PlayString(
-		w_word,	// string to send
-		dwFlags,		// flags
-		0xFFFFFFFF,		// delay (-1 for app specific delay)
-		dwClientCode,	// to identify which WM_PLAYBACK is ours
-		&dwNumUndo );	// not used (number of backspaces needed to undo)
 	#else
 		rc = m_pIDgnSSvcOutputEvent->PlayString(
 			pszKeys, 	  // string to send
@@ -2052,6 +2038,7 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 			dwClientCode, // to identify which WM_PLAYBACK is ours
 			&dwNumUndo ); // not used (number of backspaces needed to undo)
 	#endif
+
 
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::PlayString" );
 
