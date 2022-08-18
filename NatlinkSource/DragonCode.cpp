@@ -1729,6 +1729,12 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 		__uuidof(IDgnSSvcInterpreter), (void**)&m_pIDgnSSvcInterpreter );
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(IDgnSSvcInterpreter)" );
 
+
+	rc = m_pIDgnSSvcOutputEvent->QueryInterface(
+		__uuidof(IDgnSSvcInterpreterA), (void**)&m_pIDgnSSvcInterpreterA );
+	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(IDgnSSvcInterpreterA)" );
+
+
 	// we use this interface in getCurrentModule
 
 	rc = m_pIServiceProvider->QueryService(
@@ -1863,6 +1869,7 @@ BOOL CDragonCode::natDisconnect()
 	m_pIDgnExtModSupStrings = NULL;
 	m_pIServiceProvider = NULL;
 	m_pIDgnSSvcInterpreter = NULL;
+	m_pIDgnSSvcInterpreterA = NULL;
 	m_pIDgnSRTraining = NULL;
 	m_pISRCentral = NULL;
 
@@ -1973,7 +1980,7 @@ static std::string w_stringinfo(wchar_t const word[])
 	return by;
 }
 
-
+ 
 //---------------------------------------------------------------------------
 
 BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
