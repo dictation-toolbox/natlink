@@ -126,7 +126,7 @@
 #include "COM/appsupp.h"
 #include "MessageWindow.h"
 #include "Exceptions.h"
-#include <cstring>
+#include <string>
 
 // defined in PythWrap.cpp
 CResultObject * resobj_new();
@@ -1933,6 +1933,23 @@ PyObject * CDragonCode::getCallbackDepth()
 	return Py_BuildValue( "i", m_nCallbackDepth );
 }
 
+
+static std::string stringinfo(char const word[])
+{
+	std::string by;
+	for(int i=0; i<strlen(word); i++)
+	{			
+		char buf[100];
+		unsigned char c = word[i];
+		unsigned int d=c;
+
+		sprintf(buf,"%i:%u:%c ",i,d,c );
+ 
+		by.append(buf);
+	}
+	return by;
+}
+
 //---------------------------------------------------------------------------
 
 BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
@@ -1949,7 +1966,8 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 	DWORD dwClientCode = ++dwUnique;
 
 	DWORD dwNumUndo;
-	#ifdef UNICODE
+		
+		#ifdef UNICODE_CRUF
 		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, NULL, 0 );
 		CPointerChar pszKeysW = new TCHAR[ size_needed ];
 		::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, pszKeysW, size_needed );*/
@@ -1960,6 +1978,72 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 			0xFFFFFFFF,		// delay (-1 for app specific delay)
 			dwClientCode,	// to identify which WM_PLAYBACK is ours
 			&dwNumUndo );	// not used (number of backspaces needed to undo)
+
+		#endif
+
+	#ifdef UNICODE
+	int codePage = 1252;
+	int size_needed = ::MultiByteToWideChar( codePage, 0, pszKeys, -1, NULL, 0 );
+	BSTR pszKeysW = new TCHAR[ size_needed ];
+	::MultiByteToWideChar( codePage, MB_PRECOMPOSED, pszKeys, -1, pszKeysW, size_needed );
+
+	OutputDebugStringA("Compile Time " __DATE__ __TIME__);
+
+ 	OutputDebugStringA("CdragonCode::playString word is");
+	static const char  word[] = "naïve";
+	static const wchar_t  w_word[] = L"naïve";
+ 	OutputDebugStringA(word);
+
+	std::string msg("Bytes : ");
+	msg+= stringinfo(word);
+	OutputDebugStringA(msg.c_str());
+
+	
+	OutputDebugStringA("CComBSTR Default Conversion");
+	CComBSTR w(word);
+	OutputDebugStringW(w);
+	OutputDebugStringA("Normalized");
+	int nbuf_len=NormalizeString(NormalizationC,w,w.Length(),0,0)+10;
+
+	BSTR nbuf = new TCHAR[ nbuf_len ];
+	memset(nbuf,0,nbuf_len);
+
+	NormalizeString(NormalizationC,w,w.Length(),nbuf,nbuf_len);
+	OutputDebugStringW(nbuf);
+	
+	OutputDebugStringA("playing normalized string");
+
+
+	rc = m_pIDgnSSvcOutputEvent->PlayString(
+		nbuf,	// string to send
+		dwFlags,		// flags
+		0xFFFFFFFF,		// delay (-1 for app specific delay)
+		dwClientCode,	// to identify which WM_PLAYBACK is ours
+		&dwNumUndo );	// not used (number of backspaces needed to undo)
+
+
+
+	OutputDebugString(CComBSTR(pszKeys));
+	OutputDebugStringW(CComBSTR(pszKeysW));
+
+	CComBSTR bstrKeys(pszKeysW);
+    delete  pszKeysW;
+	memset(pszKeysW,0,size_needed);  //just wipe for safety
+
+	rc = m_pIDgnSSvcOutputEvent->PlayString(
+		bstrKeys,	// string to send
+		dwFlags,		// flags
+		0xFFFFFFFF,		// delay (-1 for app specific delay)
+		dwClientCode,	// to identify which WM_PLAYBACK is ours
+		&dwNumUndo );	// not used (number of backspaces needed to undo)
+
+
+	rc = m_pIDgnSSvcOutputEvent->PlayString(
+		w_word,	// string to send
+		dwFlags,		// flags
+		0xFFFFFFFF,		// delay (-1 for app specific delay)
+		dwClientCode,	// to identify which WM_PLAYBACK is ours
+		&dwNumUndo );	// not used (number of backspaces needed to undo)
 	#else
 		rc = m_pIDgnSSvcOutputEvent->PlayString(
 			pszKeys, 	  // string to send
