@@ -2399,6 +2399,9 @@ BOOL CDragonCode::execScript(
 	{
 		pszComment = "execScript";
 	}
+	std::string msg("execScript: ");
+	msg.append(pszScript);
+	OutputDebugStringA(msg.c_str());
 
 	// Although this is optional, if we check the script syntax first, we
 	// can report errors in a cleaner way.
