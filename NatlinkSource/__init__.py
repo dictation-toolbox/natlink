@@ -17,7 +17,7 @@ def execScript(script,*args):
     script_w=toWindowsEncoding(script)
     args_w=lmap(toWindowsEncoding,*args)
     print(f"Exec Scripts {script}  args {args} windows encodings script {script_w} {args_w}")
-    _execScript(script,*args)    
+    _execScript(script,args)    
     print(f"returned from exec ")
 
 def toWindowsEncoding(str_to_encode):
