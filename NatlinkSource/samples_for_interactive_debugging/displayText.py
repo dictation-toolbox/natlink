@@ -6,5 +6,6 @@ def bye():
     n.natDisconnect()
     quit()
 
-e=n.execScript
-e('SendKeys "naïve brachialis"')
+d=n.displayText
+  
+d("naïve brachialis",True,True)

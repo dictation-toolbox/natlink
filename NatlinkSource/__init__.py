@@ -10,18 +10,12 @@ def lmap(fn,iter):
     return list(map(fn,iter))
 
 def playString(a):
-    print(f"wrapped playString {a}")
-    _playString(a)
-    print("returned from playString")
+    return _playString(toWindowsEncoding(a))
 
 def execScript(script,args=[]):
     #only encode the script.  can't find a single case of anyone using the args 
-
     script_w=toWindowsEncoding(script)
-
-    print(f"Exec Scripts {script}  args {args} windows encodings script {script_w} ")
-    _execScript(script_w,args)    
-    print(f"returned from exec ")
+    return _execScript(script_w,args)    
 
 def toWindowsEncoding(str_to_encode):
     return str_to_encode.encode('Windows-1252')

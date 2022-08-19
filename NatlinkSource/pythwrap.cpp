@@ -382,9 +382,10 @@ natlink_waitForSpeech( PyObject *self, PyObject *args )
 extern "C" static PyObject *
 natlink_playString( PyObject *self, PyObject *args )
 {
-	char *pKeys;
+	char *pKeys=0;
+	int pkeysLen=0;
 	DWORD dwFlags = 0;
-	if( !PyArg_ParseTuple( args, "s|i:playString", &pKeys, &dwFlags ) )
+	if( !PyArg_ParseTuple( args, "s#|i:playString", &pKeys, &pkeysLen, &dwFlags ) )
 	{
 		return NULL;
 	}

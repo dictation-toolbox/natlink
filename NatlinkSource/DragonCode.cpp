@@ -2003,39 +2003,18 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 
 //	OutputDebugStringA("ignoring input, just sending out `naïve'");
 
-	int const inputCodePage = CP_UTF8;
-	int const outputCodePage = 1252;
-
-
-	//get a wide unicode string from the unicode string.  Be better to change pytwrap to just give us
-	//unicode strings.
-	int size_needed = 10+ ::MultiByteToWideChar( inputCodePage, 0, pszKeys, -1, NULL, 0 );
-	BSTR pszKeysW = new TCHAR[ size_needed ];
-	memset(pszKeysW,0,(sizeof pszKeysW[0]*size_needed));
-
-	std::unique_ptr<TCHAR> pdzKesWMem(pszKeysW);   
-
-	::MultiByteToWideChar( inputCodePage, MB_PRECOMPOSED, pszKeys, -1, pszKeysW, size_needed );
-
-	//now convert to to single byte code page for windows
-	int mbSizeNeeded = 10+WideCharToMultiByte(outputCodePage,0,pszKeysW,-1,0,0,0,0);
-	char * mbString = new char[mbSizeNeeded];
-	memset(mbString,0,sizeof mbString[0]*mbSizeNeeded);
-	std::unique_ptr<char> mbPtr(mbString);  
-	WideCharToMultiByte(outputCodePage,0,pszKeysW,-1,mbString,mbSizeNeeded,0,0);
-
-	std::string msg1("Windows String: ");
-	msg1.append(mbString);
-	OutputDebugStringA(msg1.c_str());
-
-	// use the interface that takes char strings, not wide strings.
-
 	rc = m_pIDgnSSvcOutputEventA->PlayString(
-		mbString,	// string to send
+		pszKeys,	// string to send
 		dwFlags,		// flags
 		0xFFFFFFFF,		// delay (-1 for app specific delay)
 		dwClientCode,	// to identify which WM_PLAYBACK is ours
 		&dwNumUndo );
+
+	int const inputCodePage = CP_UTF8;
+	int const outputCodePage = 1252;
+
+
+
 
 	#else
 		rc = m_pIDgnSSvcOutputEvent->PlayString(
