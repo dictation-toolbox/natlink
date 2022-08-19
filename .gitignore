@@ -89,6 +89,10 @@ MacroSystem/*_vcl.py
 /PyTest/readwritefiletest/*.txt
 /PyTest/readwritefiletest/*out.ini
 
+
+# updatating natlink
+update_natlink.ps1
+
 # documentation
 /documentation/_build
 /documentation/natlink_build

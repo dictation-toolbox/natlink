@@ -1,3 +1,15 @@
+
+$dest_folder = "C:\Program Files (x86)\Natlink\site-packages\natlink\"
+$dest_pyd = "_natlink_core.pyd"
+$dest_pyd_file = $dest_folder+$dest_pyd
 echo "hi"
-Copy-Item  -Destination "C:\Program Files (x86)\Natlink\site-packages\natlink\_natlink_core.pyd" build\NatlinkSource\Debug\_natlink_core15.pyd
-Copy-Item  -Destination "C:\Program Files (x86)\Natlink\site-packages\natlink\" natlinksource\__init__.py
+echo $dest_pyd_file
+
+$msg = "updates __init__.py and _natlinkcore.pyd  from _natlinkcore15.pyd to " + $dest_folder  + `
+"\nMust be run from a powershell with administrative privileges.   " ` +
+"\nIf you installed natlink to a folder other than C:\Program Files (x86)\Natlink\ copy this to another name and tweak $dest_folder, just don't check it in" + `
+"\nto git."
+
+echo $msg
+Copy-Item  -Destination $dest_pyd_file build\NatlinkSource\Debug\_natlink_core15.pyd
+Copy-Item  -Destination $dest_folder natlinksource\__init__.py

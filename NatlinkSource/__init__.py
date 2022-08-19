@@ -19,7 +19,7 @@ def execScript(a,b):
     a='SendKeys "hi"'
     b=[]
     print(f"Exec Scripts {a} {b} windows encodings {a1} {b1}")
-    _execScript(a1,b1)    
+    _execScript(a,b)    
     print(f"returned from exec ")
 
 def toWindowsEncoding(str_to_encode):

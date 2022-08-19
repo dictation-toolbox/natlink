@@ -114,6 +114,13 @@ The `natlink.pyd` can be used both as a COM server or just as a plain python pac
 *NOTE: Currently, a version tested for v13 and 14/15 is provided.*
 (A different version of `natlink.pyd` is compiled for each supported version of Python)
 
+## Python Code
+Very little Python is used in natlink (this package).  See the note on  [NatlinkCore](#NatlinkCore).  
+
+However, there is some python to provide a veneer over the functions exported in the natlink .pyd files and export them to as the "natlink" python package.  
+Presently the entire python for natlink is in NatlinkSource/__init__.py
+
+
 #### Compilation
 To compile, run the `CMakeLists.txt` file from Visual Studio 2019 after selecting the desired Python. Or, use Visual Studio Code CMake extension. First configure for a compiler version, known as a kit. It must be specified (by suffix) to force crosscompilation from amd64 to x86, that is from 64-bit to 32-bit. This is a CMAKE configuration setting.
 
@@ -123,7 +130,17 @@ CMake settings for different versions of Python are included in `CMakeSettings.j
 
 You must have the corresponding Python (and it must be 32 bit) already installed on your system.  
 
-## NatlinkCore (Python)
+#### Updating after Compilation or Python Edit
+
+If you have a natlink installed, and just wish to update the _natlinkcore.pyd from _natlinkcore15.pyd and __init__.py,
+run the powershell scripts local_publish_15.ps1 in and administrative powershell to update. 
+
+If you wish a different install location or pyd, pleasee copy local_publish_15.ps1 to a script update_natlink.ps1 and make edits.  update_natlink1.ps1 is in .gitignore so it won't be checked in to git.
+
+
+
+
+## NatlinkCore
 [NatlinkCore](https://pypi.org/project/natlinkcore/) the Python layer is found in MacroSystem\\core. The file natlinkmain.py is imported when Dragon starts, and its job is to load the configuration files and then load any user scripts.
 
 ## Installer (Inno Setup)
