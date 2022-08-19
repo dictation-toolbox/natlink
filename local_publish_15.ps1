@@ -1,10 +1,9 @@
 
 $dest_folder = "C:\Program Files (x86)\Natlink\site-packages\natlink\"
 $dest_pyd = "_natlink_core.pyd"
-$test_pdb = "_natlink_core.pdb"
+$dest_pdb = "_natlink_core.pdb"
 $dest_pyd_file = $dest_folder+$dest_pyd
-echo "hi"
-echo $dest_pyd_file
+$dest_pdb_file = $dest_folder+$dest_pdb
 
 $msg = "updates __init__.py and _natlinkcore.pyd  from _natlinkcore15.pyd to " + $dest_folder  + `
 "\nMust be run from a powershell with administrative privileges.   " ` +
