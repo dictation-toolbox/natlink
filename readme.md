@@ -132,13 +132,46 @@ You must have the corresponding Python (and it must be 32 bit) already installed
 
 #### Updating after Compilation or Python Edit
 
-If you have a natlink installed, and just wish to update the _natlinkcore.pyd from _natlinkcore15.pyd and __init__.py,
+If you have a natlink installed, and just wish to update the _natlinkcore.pyd and .pdb from _natlinkcore15.pyd and __init__.py,
 run the powershell scripts local_publish_15.ps1 in and administrative powershell to update. 
 
 If you wish a different install location or pyd, pleasee copy local_publish_15.ps1 to a script update_natlink.ps1 and make edits.  update_natlink1.ps1 is in .gitignore so it won't be checked in to git.
 
 
+## Debugging
+### Debugging and Diagnostics
+The C++ code uses OutputDebugString and the Python code uses OutputDebugString from  `from pydebugstring.output import outputDebugString` to write diagnostic output.  This diagnostic output doesn't require the Natlink window to be active, and can be left in production code so that it is avaialble if there are issues to resolve.
 
+ To view the output of OutputDebugString, you can use [DebugView](https://docs.microsoft.com/en-us/sysinternals/downloads/debugview).  The output will also be displayed in some debuggers if you have managed to attach one.
+### Debugging Without Dragon
+During developement you may wish to debug the C++ code with Visual Studio Code, without using dictation.  Use the script mentioned above to update 
+natlinkcore.pyd/dbb.
+
+Create a Debug Configuration that looks something like this:
+`
+ "configurations": [
+             {
+            "name": "Natlink (Windows) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "python.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+  `
+Launch it.  That will launch a python console somewhere.
+
+In that python console, import natlink or whatever python you want to run.
+`import natlink as n`
+
+Now, set breakpoints in your C++.  `pythwrap.cpp` is a good place to start.
+
+### Debugging Without Dragon
+
+If you know how to debug natlink when dragon is running, please update this section.
 
 ## NatlinkCore
 [NatlinkCore](https://pypi.org/project/natlinkcore/) the Python layer is found in MacroSystem\\core. The file natlinkmain.py is imported when Dragon starts, and its job is to load the configuration files and then load any user scripts.
@@ -149,10 +182,7 @@ The inno setup script is found under the InstallerSource directory.
 Make sure the Inno Setup compiler iscc.exe is in your PATH.
 To compile, run the CMakeLists.txt file from Visual Studio after selecting the desired Python. The installer will appear as `\build\InstallerSource\natlinkX.X-pyY.Y-32-setup.exe`  The installer executable is self-contained and may be distributed.
 
-## Debugging and Diagnostics
-The C++ code uses OutputDebugString and the Python code uses OutputDebugString from  `from pydebugstring.output import outputDebugString` to write diagnostic output.  This diagnostic output doesn't require the Natlink window to be active, and can be left in production code so that it is avaialble if there are issues to resolve.
 
- To view the output of OutputDebugString, you can use [DebugView](https://docs.microsoft.com/en-us/sysinternals/downloads/debugview).  The output will also be displayed in some debuggers if you have managed to attach one.
 
 ## Why 32-bit?
 Currently Dragon NaturallySpeaking (up to version 15) is itself a 32-bit application and it is therefore not possible for it to directly call a 64-bit .pyd.
