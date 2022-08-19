@@ -13,11 +13,14 @@ def playString(a):
     print(f"wrapped playString {a}")
     _playString(a)
     print("returned from playString")
-def execScript(script,*args):
+
+def execScript(script,args=[]):
+    #only encode the script.  can't find a single case of anyone using the args 
+
     script_w=toWindowsEncoding(script)
-    args_w=lmap(toWindowsEncoding,*args)
-    print(f"Exec Scripts {script}  args {args} windows encodings script {script_w} {args_w}")
-    _execScript(script,args)    
+
+    print(f"Exec Scripts {script}  args {args} windows encodings script {script_w} ")
+    _execScript(script_w,args)    
     print(f"returned from exec ")
 
 def toWindowsEncoding(str_to_encode):

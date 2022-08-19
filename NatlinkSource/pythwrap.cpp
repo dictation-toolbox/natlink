@@ -566,10 +566,12 @@ extern "C" static PyObject *
 natlink_execScript( PyObject *self, PyObject *args )
 {
 	OutputDebugStringA("natlink_execScript");
-	char * pScript;
+	char * pScript=0;
+	int pScriptLength=0;
 	PyObject * pList = NULL;
+
 	char * pComment = NULL;
-	if( !PyArg_ParseTuple( args, "s|Os:execScript", &pScript, &pList, &pComment ) )
+	if( !PyArg_ParseTuple( args, "s#|Os:execScript", &pScript, &pScriptLength, &pList, &pComment ) )
 	{
 		OutputDebugStringA("natlink_execScript FAIL ParseTuple");
 		return NULL;
