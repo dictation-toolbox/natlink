@@ -16,8 +16,6 @@ def playString(a):
 def execScript(a,b):
     a1=toWindowsEncoding(a)
     b1=lmap(toWindowsEncoding,b)
-    a='SendKeys "hi"'
-    b=[]
     print(f"Exec Scripts {a} {b} windows encodings {a1} {b1}")
     _execScript(a,b)    
     print(f"returned from exec ")

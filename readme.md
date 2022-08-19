@@ -144,6 +144,23 @@ The C++ code uses OutputDebugString and the Python code uses OutputDebugString f
 
  To view the output of OutputDebugString, you can use [DebugView](https://docs.microsoft.com/en-us/sysinternals/downloads/debugview).  The output will also be displayed in some debuggers if you have managed to attach one.
 ### Debugging Without Dragon
+
+Whether or not you use the debugger, you need a python console to drive natlink.
+You need some code to connect to natlink, run a command, and 
+if you won't want your shell to hang, disconnect from natlink when you are done.
+Type something like this in to a python console.
+
+`import natlink as n
+n.natConnect()
+ 
+n.playString("naïve brachialis")
+n.natDisconnect()
+`
+
+There are samples you can copy and paste into your python console in the samples_for_interactive_debugging folder.
+
+
+
 During developement you may wish to debug the C++ code with Visual Studio Code, without using dictation.  Use the script mentioned above to update 
 natlinkcore.pyd/dbb.
 

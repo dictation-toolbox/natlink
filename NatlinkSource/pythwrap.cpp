@@ -569,7 +569,7 @@ natlink_execScript( PyObject *self, PyObject *args )
 	char * pScript;
 	PyObject * pList = NULL;
 	char * pComment = NULL;
-	if( !PyArg_ParseTuple( args, "s#|Os:execScript", &pScript, &pList, &pComment ) )
+	if( !PyArg_ParseTuple( args, "s|Os:execScript", &pScript, &pList, &pComment ) )
 	{
 		OutputDebugStringA("natlink_execScript FAIL ParseTuple");
 		return NULL;
