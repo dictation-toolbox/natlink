@@ -49,6 +49,11 @@ class CDragonCode
 		m_bHasTrayIcon = FALSE;
 		m_pTrayIconCallback = NULL;
 		m_pMessageStack = NULL;
+		m_pIDgnSSvcOutputEventA=0;
+		m_pIDgnSSvcOutputEvent=0;
+		m_pIDgnSSvcInterpreter=0;
+		m_pIDgnSSvcInterpreterA=0;
+
 	}
 
 	~CDragonCode() {
@@ -167,9 +172,12 @@ class CDragonCode
 	ISRCentralPtr m_pISRCentral;
 	IDgnSREngineControlPtr m_pIDgnSREngineControl;
 	IDgnSSvcOutputEventPtr m_pIDgnSSvcOutputEvent;
+	IDgnSSvcOutputEventA * m_pIDgnSSvcOutputEventA;
+
 	IServiceProviderPtr m_pIServiceProvider;
 	IDgnExtModSupStringsPtr m_pIDgnExtModSupStrings;
 	IDgnSSvcInterpreterPtr m_pIDgnSSvcInterpreter;
+	IDgnSSvcInterpreterA * m_pIDgnSSvcInterpreterA;
 	IDgnSRTrainingPtr m_pIDgnSRTraining;
 
 	// the key for unregistering our engine sink (a SAPI thing)
