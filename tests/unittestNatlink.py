@@ -118,13 +118,6 @@ def getCoreDir(thisDir):
     return coreFolder
 
 thisDir = getBaseFolder(globals())
-coreDir = getCoreDir(thisDir)
-if thisDir == coreDir:
-    raise IOError('unittestNatlink cannot proceed, coreDir not found...')
-# appending to path if necessary:
-if not os.path.normpath(coreDir) in sys.path:
-    print('inserting %s to pythonpath...'% coreDir)
-    sys.path.insert(0, coreDir)
 
 natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
                      # at least some errors in testNatlinkMain seem to be raised when set to 0
@@ -378,7 +371,7 @@ class UnittestNatlink(unittest.TestCase):
             # not active:
             return
         i = 0
-        while i < 10:
+        while i < 2:
             try:
                 win32gui.SetForegroundWindow(wantHndle)
             except:
@@ -400,17 +393,8 @@ class UnittestNatlink(unittest.TestCase):
         """remove .py and .pyc files from the natlinkmain test
 
         """
-        baseDirectory = natlinkmain.baseDirectory
-        userDirectory = natlinkmain.userDirectory
-        unimacroDirectory = natlinkmain.unimacroDirectory
-        for dir in (baseDirectory, unimacroDirectory, userDirectory):
-            for trunk in ('__jMg1', '__jMg2', 'calc__jMg1',
-                          specialFilenameGlobal, specialFilenameCalc,
-                          spacesFilenameGlobal, spacesFilenameCalcValid, spacesFilenameCalcInvalid,
-                          "_", "calc_", "calculator"):
-                for ext in ('.py', '.pyc'):
-                    safeRemove(dir, trunk + ext)
-
+        pass
+    
     def isTopWindow(self, hndle):
         """return 1 if it is a top window, child otherwise
 
@@ -802,7 +786,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def tttestDictObj(self):
+    def testDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = natlink.DictObj()
@@ -947,129 +931,133 @@ class UnittestNatlink(unittest.TestCase):
         dictObj.setChangeCallback(callTest.onTextChange)
 
         # remember during these tests that the dictation results are formatted
-        natlink.recognitionMimic(['hello'])
+        naive = 'na\xefve'
+        cafe = 'caf\xe9'
+        natlink.recognitionMimic(["Hello", naive])
 ##        self.wait() #!!
-        testFuncReturn('Hello',"dictObj.getText(0)",locals())
+        exp = f'Hello {naive}'
+        testFuncReturn(exp, "dictObj.getText(0)", locals())
         # if this fails (9) probably setChangeCallback does not work (broken??QH)
-        callTest.doTestTextChange(moduleInfo,(0,0,'Hello',5,5))
-        natlink.recognitionMimic(['there'])
+        callTest.doTestTextChange(moduleInfo, (0,0, exp, len(exp), len(exp)))
+        natlink.recognitionMimic([cafe])
 ##        self.wait()
         ##              012345678901
-        testFuncReturn('Hello there',"dictObj.getText(0)",locals())
-        callTest.doTestTextChange(moduleInfo,(5,5,' there',11,11))
+        exp = f'Hello {naive} {cafe}'
+        testFuncReturn(exp, "dictObj.getText(0)", locals())
+        callTest.doTestTextChange(moduleInfo,(11, 11, f' {cafe}', 16, 16))
 
-        dictObj.setTextSel(0,5)
+        dictObj.setTextSel(0, 5)
         natlink.recognitionMimic(['and'])
-        testFuncReturn('And there',"dictObj.getText(0)",locals())
+        testFuncReturn(f'And {naive} {cafe}',"dictObj.getText(0)",locals())
         
-    #v5/9
-    # version 9 gived (???)) (0, 6, 'And ', 3, 3) here:
-    # version 10 gives (0, 6, 'And ', 4, 4) here:
-        if DNSVersion <= 9:
-            callTest.doTestTextChange(moduleInfo,(0,6,'And ',3, 3))
-        else:
-            callTest.doTestTextChange(moduleInfo,(0,6,'And ',4, 4))
-    #else
-##        callTest.doTestTextChange(moduleInfo,(0,5,'And',3,3))
-
-        dictObj.setTextSel(3,3)
-        if DNSVersion < 11:
-            natlink.recognitionMimic([r',\comma'])
-        else:
-            natlink.recognitionMimic([r',\comma\comma'])
-            
-##        self.wait()
-        testFuncReturn('And, there',"dictObj.getText(0)",locals())
-        callTest.doTestTextChange(moduleInfo,(3,3,',',4,4))
-
-
-        # lots of problems, must be sorted out, QH, august 2011
-        return
-
-
-        dictObj.setTextSel(5)
-        natlink.recognitionMimic(['another','phrase'])
-##        self.wait()
-        testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
-        # unimacro version stops here, no beginCallback:::
-        
-        
-        # versions 10 and 11 seem to have an intermediate result, just selecting with empty text
-        # this is also apparent in _kaiser_dictation, not tested very thorough...
-        #callTest.doTestTextChange(moduleInfo,(4,4,'', 4, 10))
-        
-        # from here problems, should be sorted out (QH, august 2011, working on Dragon 11)
-        return
-    
-    
-        callTest.doTestTextChange(moduleInfo,(4,10,' another phrase',19,19))
-    #else        callTest.doTestTextChange(moduleInfo,(5,10,'another phrase',19,19))
-
-        natlink.recognitionMimic(['more'])
-##        self.wait()
-        testFuncReturn('And, another phrase more',"dictObj.getText(0)",locals())
-        callTest.doTestTextChange(moduleInfo,(19,19,' more',24,24))
-
-        # the scratch that command undoes one recognition
-        natlink.recognitionMimic(['scratch','that'])
-##        self.wait()
-        testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
-        callTest.doTestTextChange(moduleInfo,(19,24,'',19,19))
-
-        # NatSpeak optimizes the changed block so we only change 'ther' not
-        # 'there' -- the last e did not change.
-        natlink.recognitionMimic(['scratch','that'])
-        self.wait()
-        
-        testFuncReturn('And, there',"dictObj.getText(0)",locals())
-        callTest.doTestTextChange(moduleInfo,(5,18,'ther',5,10))
-
-        # fill the buffer with a block of text
-        # char index:    0123456789 123456789 123456789 123456789 123456789 123456789 
-        dictObj.setText('This is a block of text.  Lets count one two three.  All done.',0)
-        dictObj.setTextSel(0,0)
-        dictObj.setVisibleText(0)
-
-        # ok, test selection command
-        natlink.recognitionMimic(['select','block','of','text'])
-##        self.wait()
-        
-        testFuncReturn((10,23),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,(10,10,'',10,23))
-        
-        natlink.recognitionMimic(['select','one','through','three'])
-##        self.wait()
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
-
-        # text selection of non-existant text
-        testForException(natlink.MimicFailed,"natlink.recognitionMimic(['select','helloxxx'])")
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,None)
-
-        # now we clamp down on the visible range and prove that we can select
-        # within the range but not outside the range
-        dictObj.setVisibleText(10,50)
-        dictObj.setTextSel(0,0)
-        
-        natlink.recognitionMimic(['select','one','through','three'])
-##        self.wait()
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
-
-        #This is a block of text.  Lets count one two three.  All done.
-        natlink.recognitionMimic(['select','this','is'])
-##        self.wait()
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,None)
-
-        natlink.recognitionMimic(['select','all','done'])
-##        self.wait()
-        testFuncReturn((37,50),"dictObj.getTextSel()",locals())
-        callTest.doTestTextChange(moduleInfo,None)
-            
-        # close the calc (now done in tearDown)
-##        natlink.playString('{Alt+F4}')
+#     #v5/9
+#     # version 9 gived (???)) (0, 6, 'And ', 3, 3) here:
+#     # version 10 gives (0, 6, 'And ', 4, 4) here:
+#         if DNSVersion <= 9:
+#             callTest.doTestTextChange(moduleInfo,(0,6,'And ',3, 3))
+#         else:
+#             callTest.doTestTextChange(moduleInfo,(0,6,'And ',4, 4))
+#     #else
+# ##        callTest.doTestTextChange(moduleInfo,(0,5,'And',3,3))
+# 
+#         dictObj.setTextSel(3,3)
+#         if DNSVersion < 11:
+#             natlink.recognitionMimic([r',\comma'])
+#         else:
+#             natlink.recognitionMimic([r',\comma\comma'])
+#             
+# ##        self.wait()
+#         testFuncReturn('And, there',"dictObj.getText(0)",locals())
+#         callTest.doTestTextChange(moduleInfo,(3,3,',',4,4))
+# 
+# 
+#         # lots of problems, must be sorted out, QH, august 2011
+#         return
+# 
+# 
+#         dictObj.setTextSel(5)
+#         natlink.recognitionMimic(['another','phrase'])
+# ##        self.wait()
+#         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
+#         # unimacro version stops here, no beginCallback:::
+#         
+#         
+#         # versions 10 and 11 seem to have an intermediate result, just selecting with empty text
+#         # this is also apparent in _kaiser_dictation, not tested very thorough...
+#         #callTest.doTestTextChange(moduleInfo,(4,4,'', 4, 10))
+#         
+#         # from here problems, should be sorted out (QH, august 2011, working on Dragon 11)
+#         return
+#     
+#     
+#         callTest.doTestTextChange(moduleInfo,(4,10,' another phrase',19,19))
+#     #else        callTest.doTestTextChange(moduleInfo,(5,10,'another phrase',19,19))
+# 
+#         natlink.recognitionMimic(['more'])
+# ##        self.wait()
+#         testFuncReturn('And, another phrase more',"dictObj.getText(0)",locals())
+#         callTest.doTestTextChange(moduleInfo,(19,19,' more',24,24))
+# 
+#         # the scratch that command undoes one recognition
+#         natlink.recognitionMimic(['scratch','that'])
+# ##        self.wait()
+#         testFuncReturn('And, another phrase',"dictObj.getText(0)",locals())
+#         callTest.doTestTextChange(moduleInfo,(19,24,'',19,19))
+# 
+#         # NatSpeak optimizes the changed block so we only change 'ther' not
+#         # 'there' -- the last e did not change.
+#         natlink.recognitionMimic(['scratch','that'])
+#         self.wait()
+#         
+#         testFuncReturn('And, there',"dictObj.getText(0)",locals())
+#         callTest.doTestTextChange(moduleInfo,(5,18,'ther',5,10))
+# 
+#         # fill the buffer with a block of text
+#         # char index:    0123456789 123456789 123456789 123456789 123456789 123456789 
+#         dictObj.setText('This is a block of text.  Lets count one two three.  All done.',0)
+#         dictObj.setTextSel(0,0)
+#         dictObj.setVisibleText(0)
+# 
+#         # ok, test selection command
+#         natlink.recognitionMimic(['select','block','of','text'])
+# ##        self.wait()
+#         
+#         testFuncReturn((10,23),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,(10,10,'',10,23))
+#         
+#         natlink.recognitionMimic(['select','one','through','three'])
+# ##        self.wait()
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
+# 
+#         # text selection of non-existant text
+#         testForException(natlink.MimicFailed,"natlink.recognitionMimic(['select','helloxxx'])")
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,None)
+# 
+#         # now we clamp down on the visible range and prove that we can select
+#         # within the range but not outside the range
+#         dictObj.setVisibleText(10,50)
+#         dictObj.setTextSel(0,0)
+#         
+#         natlink.recognitionMimic(['select','one','through','three'])
+# ##        self.wait()
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,(37,37,'',37,50))
+# 
+#         #This is a block of text.  Lets count one two three.  All done.
+#         natlink.recognitionMimic(['select','this','is'])
+# ##        self.wait()
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,None)
+# 
+#         natlink.recognitionMimic(['select','all','done'])
+# ##        self.wait()
+#         testFuncReturn((37,50),"dictObj.getTextSel()",locals())
+#         callTest.doTestTextChange(moduleInfo,None)
+#             
+#         # close the calc (now done in tearDown)
+# ##        natlink.playString('{Alt+F4}')
 
 
     def tttestRecognitionMimicCommands(self):
@@ -2287,7 +2275,7 @@ class UnittestNatlink(unittest.TestCase):
         otherGram.unload()
 ##        natlink.playString('{Alt+F4}')
 
-    def testGrammarRecognitions(self):
+    def tttestGrammarRecognitions(self):
         self.log("testGrammarRecognitions", 1)
 
         # Create a lot of grammars to test the actual recognition results
