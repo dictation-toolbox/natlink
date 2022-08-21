@@ -931,8 +931,9 @@ class UnittestNatlink(unittest.TestCase):
         dictObj.setChangeCallback(callTest.onTextChange)
 
         # remember during these tests that the dictation results are formatted
-        naive = 'na\xefve'
+        naive = 'naïve'
         cafe = 'caf\xe9'
+        print("testing Hello {naive}")
         natlink.recognitionMimic(["Hello", naive])
 ##        self.wait() #!!
         exp = f'Hello {naive}'
