@@ -648,7 +648,7 @@ class UnittestNatlink(unittest.TestCase):
     # Note 1: testWindowContents will clobber the clipboard.
     # Note 2: a copy/paste of the entire window adds an extra CRLF (\r\n)
 
-    def tttestPlayString(self):
+    def testPlayString(self):
         self.log("testPlayString", 0) # not to DragonPad!
         testForException =self.doTestForException
         testWindowContents = self.doTestWindowContents
@@ -659,121 +659,46 @@ class UnittestNatlink(unittest.TestCase):
         self.wait()
         natlink.playString('This is a test')
         testWindowContents('This is a test','playString')
-
-        natlink.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
-        testWindowContents('This is a testThis i','playString')
-
+        # 
+        # natlink.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}{backspace 9}')
+        # testWindowContents('This is a testThis i','playString')
+        # 
         natlink.playString('{ctrl+a}{del}')
-        natlink.playString('testing',hook_f_shift)
+        natlink.playString('testing', hook_f_shift)
         testWindowContents('Testing','playString')
 
-        natlink.playString(' again')
-        natlink.playString('a{ctrl+c}{del}',hook_f_ctrl)
-        # paste contents via menu command using alt:
-        natlink.playString('ep',hook_f_alt)
-        testWindowContents('Testing again\r\n','playString')
-
-        natlink.playString('a{ctrl+c}{del}',hook_f_rightctrl)
-        natlink.playString('ep',hook_f_rightalt)
-        natlink.playString('now',hook_f_rightshift)
-        testWindowContents('Testing again\r\n\r\nNow','playString')
-
-        natlink.playString('{ctrl+a}{del}')
-        natlink.playString('oneWORD ',genkeys_f_uppercase)
-        natlink.playString('twoWORDs ',genkeys_f_lowercase)
-        natlink.playString('threeWORDs',genkeys_f_capitalize)
-        testWindowContents('ONEWORD twowords ThreeWORDs','playString')
-
-        natlink.playString('{ctrl+a}{del}')
-        testWindowContents('','playString')
+        # natlink.playString(' again')
+        # natlink.playString('a{ctrl+c}{del}',hook_f_ctrl)
+        # # paste contents via menu command using alt:
+        # natlink.playString('ep',hook_f_alt)
+        # testWindowContents('Testing again\r\n','playString')
+        # 
+        # natlink.playString('a{ctrl+c}{del}',hook_f_rightctrl)
+        # natlink.playString('ep', hook_f_rightalt)
+        # natlink.playString('now', hook_f_rightshift)
+        # testWindowContents('Testing again\r\n\r\nNow','playString')
+        # 
+        # natlink.playString('{ctrl+a}{del}')
+        # natlink.playString('oneWORD ',genkeys_f_uppercase)
+        # natlink.playString('twoWORDs ',genkeys_f_lowercase)
+        # natlink.playString('threeWORDs',genkeys_f_capitalize)
+        # testWindowContents('ONEWORD twowords ThreeWORDs','playString')
+        # 
+        # natlink.playString('{ctrl+a}{del}')
+        # testWindowContents('','playString')
         
         # now try accented characters and unicode strings:
         natlink.playString('ge\xe9\xfatest{backspace}')
         testWindowContents('ge\xe9\xfates','playString')
         #
-        ## open and close a dialog
-        natlinkutils.playString("{ctrl+a}Testing dialog window")
-        testWindowContents('Testing dialog window')
-        natlinkutils.playString('{ctrl+o}{esc}')
-        testWindowContents('Testing dialog window')
+        # ## open and close a dialog
+        # natlinkutils.playString("{ctrl+a}Testing dialog window")
+        # testWindowContents('Testing dialog window')
+        # natlinkutils.playString('{ctrl+o}{esc}')
+        # testWindowContents('Testing dialog window')
 
         natlink.playString('{ctrl+a}{del}')
         testWindowContents('','playString empty')
-
-
-
-    def tttestNatlinkutilsPlayString(self):
-        """this version captions accented and unicode characters (possibly)
-        
-        Can also work around the double or drop first character by using the shift key trick
-        
-        Works with SendInput (mdl), if option has been chosen in natlinkutils
-                
-        """
-        self.log("testNatlinkutilsPlayString", 0) # not to DragonPad!
-        testForException =self.doTestForException
-        testWindowContents = self.doTestWindowContents
-
-        natlinkutils.playString('This is a test')
-        testWindowContents('This is a test','playString')
-        # here play with the sleeps necessary:
-        natlinkutils.playString('{ctrl+a}{ctrl+c}{end}{ctrl+v}')
-        if doSleep: time.sleep(doSleep)
-        natlinkutils.playString('{backspace 9}')
-        testWindowContents('This is a testThis i','playString')
-
-        natlinkutils.playString('{ctrl+a}{del}')
-        natlinkutils.playString('testing',hook_f_shift)
-        testWindowContents('Testing','playString')
-
-        natlinkutils.playString(' again')
-        testWindowContents('Testing again','playString')
-        natlinkutils.playString('a{ctrl+c}{del}',hook_f_ctrl)
-        # paste contents via menu command using alt:
-        # this one is sent through to natlink.playString:
-        natlinkutils.playString('ep',hook_f_alt)
-        if doSleep: self.wait()
-        testWindowContents('Testing again\r\n','playString')
-
-        natlinkutils.playString('a{ctrl+c}{del}',hook_f_rightctrl)
-        natlinkutils.playString('ep',hook_f_rightalt)
-        if doSleep: self.wait()
-        natlinkutils.playString('now hook rightctrl',hook_f_rightshift)
-        testWindowContents('Testing again\r\n\r\nNow hook rightctrl','playString')
-
-        # this one should be handled by the SendKeys of Mark:
-        natlinkutils.playString('{backspace 26} with only SendKeys')
-        testWindowContents('Testing with only SendKeys','playString')
-        natlinkutils.playString('{ctrl+a}{ctrl+c}{del}')
-        # paste contents via menu command using alt:
-        natlinkutils.playString('{alt+e}p')
-        testWindowContents('Testing with only SendKeys\r\n','playString')
-
-        # now try accented characters and unicode strings:
-        natlinkutils.playString('{ctrl+a}{del}ge\xe9\xfatest{backspace}')
-        testWindowContents('ge\xe9\xfates','playString')
-        natlinkutils.playString('{ctrl+a}{del}')
-        testWindowContents('','playString empty')
-
-        natlinkutils.playString('simple string')
-        testWindowContents('simple string','natlinkutils.playString')        
-
-        natlinkutils.playString('{ctrl+a}{del}')
-        testWindowContents('','empty window playString')        
-
-
-        natlinkutils.playString('\u0041-xyz-\u00e9-abc-')
-        testWindowContents('A-xyz-\xe9-abc-','natlinkutils.playString')
-
-
-        #
-        ## open and close a dialog
-        natlinkutils.playString("{ctrl+a}Testing dialog window")
-        testWindowContents('Testing dialog window')
-        natlinkutils.playString('{ctrl+o}{esc}')
-        testWindowContents('Testing dialog window')
-        
-
     #---------------------------------------------------------------------------
 
     def tttestExecScript(self):
@@ -786,7 +711,7 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
 
-    def testDictObj(self):
+    def tttestDictObj(self):
         testForException = self.doTestForException
         testFuncReturn = self.doTestFuncReturn
         dictObj = natlink.DictObj()
@@ -933,11 +858,11 @@ class UnittestNatlink(unittest.TestCase):
         # remember during these tests that the dictation results are formatted
         naive = 'na\xefve'
         cafe = 'caf\xe9'
-        natlink.recognitionMimic(["Hello", naive])
+        natlink.recognitionMimic(["hello", naive])
 ##        self.wait() #!!
         exp = f'Hello {naive}'
         testFuncReturn(exp, "dictObj.getText(0)", locals())
-        # if this fails (9) probably setChangeCallback does not work (broken??QH)
+
         callTest.doTestTextChange(moduleInfo, (0,0, exp, len(exp), len(exp)))
         natlink.recognitionMimic([cafe])
 ##        self.wait()
