@@ -53,7 +53,7 @@
 
 # April 1, 2000
 #   - added testParser, testGramimar, testDictGram, testSelectGram
-#pylint:disable=C0209, R0904, W0612, C0321, W0702
+#pylint:disable=C0209, R0904, R0915, W0612, C0321, W0702
 import sys
 import unittest
 import os
