@@ -24,7 +24,7 @@ PyMem_DEL.  Changing these calls to PyObject_Del below eliminated the crashes.
 #include "ResultObject.h"
 #include "DictationObject.h"
 #include "Exceptions.h"
-
+#include <string>
 
 
 /*
@@ -51,11 +51,16 @@ CDragonCode cDragon;
 PCCHAR * parseStringArray( const char * funcName, PyObject * args )
 {
 	PCCHAR * ppWords = NULL;
+	std::string output_message(std::string("parseStringArray function ") + funcName);
+	std::string space(" ");
+
+
 
 	// make sure that we have at least one parameter
 	int len = PyTuple_Size( args );
 	if( len == 0 )
 	{
+		OutputDebugStringA((std::string(funcName)+" requires at least 1 argument").c_str());
 		PyErr_Format( PyExc_TypeError, "%s requires at least 1 argument", funcName );
 		return NULL;
 	}
@@ -90,6 +95,7 @@ PCCHAR * parseStringArray( const char * funcName, PyObject * args )
 			return 0;
 		}
 
+	
 		PyObject *encoded = PyUnicode_AsEncodedString(pyWord, "windows-1252", NULL);
 		if (encoded == NULL) {
 			PyErr_SetString(PyExc_UnicodeEncodeError, "Failed to encode input string using windows-1252 codec.");
@@ -99,8 +105,14 @@ PCCHAR * parseStringArray( const char * funcName, PyObject * args )
 		}
 		// TODO: Should be calling DECREF here, but PyBytes_AsString
 		// returns a pointer to internal data
-		ppWords[i] = PyBytes_AsString(encoded);
+
+		char *converted = PyBytes_AsString(encoded);
+		output_message.append(space);
+		output_message.append(converted);
+		ppWords[i] = converted;
 	}
+	OutputDebugStringA(output_message.c_str());
+
 
 	return ppWords;
 }

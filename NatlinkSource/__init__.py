@@ -20,10 +20,10 @@ def execScript(script,args=None):
     script_w=toWindowsEncoding(script)
     return _execScript(script_w,args)    
 
-def recognitionMimic(words):
-    words_w = lmap(toWindowsEncoding, words)
-    print(f'recognitionMimic, words: {words}, words_w: {words_w}')
-    return _recognitionMimic(words_w)
+#def recognitionMimic(words):
+#    words_w = lmap(toWindowsEncoding, words)
+#    print(f'recognitionMimic, words: {words}, words_w: {words_w}')
+#    return _recognitionMimic(words_w)
 
 def toWindowsEncoding(str_to_encode):
     return str_to_encode.encode('Windows-1252')

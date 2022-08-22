@@ -13,6 +13,7 @@
 #include "DictationObject.h"
 #include "ResultObject.h"
 #include "Exceptions.h"
+#include <string>
 
 // We use this macro to make sure the dictation object is usable
 #define MUSTBEUSABLE( func ) \
@@ -770,6 +771,7 @@ BOOL CDictationObject::TextChanged(DWORD dwReason )
 		else
 		{
 			#ifdef UNICODE
+				OutputDebugString((std::wstring(L"CDictationObject::TextChanged ")+(wchar_t *)sData.pData).c_str() );
 				int size_needed = ::WideCharToMultiByte( CP_UTF8, 0, (wchar_t *)sData.pData, -1, NULL, 0,  NULL, NULL);
 				char * pDataA = new char[ size_needed ];
 				::WideCharToMultiByte( CP_UTF8, 0, (wchar_t *)sData.pData, -1, pDataA, size_needed, NULL, NULL );

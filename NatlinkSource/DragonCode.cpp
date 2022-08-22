@@ -2001,7 +2001,6 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 
 	#ifdef UNICODE
 
-//	OutputDebugStringA("ignoring input, just sending out `naïve'");
 
 	rc = m_pIDgnSSvcOutputEventA->PlayString(
 		pszKeys,	// string to send
