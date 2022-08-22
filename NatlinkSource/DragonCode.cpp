@@ -126,7 +126,8 @@
 #include "COM/appsupp.h"
 #include "MessageWindow.h"
 #include "Exceptions.h"
-#include <cstring>
+#include <string>
+#include <memory>
 
 // defined in PythWrap.cpp
 CResultObject * resobj_new();
@@ -1719,9 +1720,20 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 		__uuidof(IDgnSSvcOutputEvent), (void**)&m_pIDgnSSvcOutputEvent);
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(DgnSSvcOutputEvent)" );
 
+	rc = pSpchSvc->QueryInterface(
+		__uuidof(IDgnSSvcOutputEventA), (void**)&m_pIDgnSSvcOutputEventA);
+	RETURNIFERROR( rc, "IDgnSSvcOutputEventA::QueryInterface(DgnSSvcOutputEventA)" );
+
+
 	rc = m_pIDgnSSvcOutputEvent->QueryInterface(
 		__uuidof(IDgnSSvcInterpreter), (void**)&m_pIDgnSSvcInterpreter );
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(IDgnSSvcInterpreter)" );
+
+
+	rc = m_pIDgnSSvcOutputEvent->QueryInterface(
+		__uuidof(IDgnSSvcInterpreterA), (void**)&m_pIDgnSSvcInterpreterA );
+	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::QueryInterface(IDgnSSvcInterpreterA)" );
+
 
 	// we use this interface in getCurrentModule
 
@@ -1853,9 +1865,11 @@ BOOL CDragonCode::natDisconnect()
 	// release all our intefaces
 	m_pIDgnSREngineControl = NULL;
 	m_pIDgnSSvcOutputEvent = NULL;
+	m_pIDgnSSvcOutputEventA = NULL;
 	m_pIDgnExtModSupStrings = NULL;
 	m_pIServiceProvider = NULL;
 	m_pIDgnSSvcInterpreter = NULL;
+	m_pIDgnSSvcInterpreterA = NULL;
 	m_pIDgnSRTraining = NULL;
 	m_pISRCentral = NULL;
 
@@ -1933,11 +1947,45 @@ PyObject * CDragonCode::getCallbackDepth()
 	return Py_BuildValue( "i", m_nCallbackDepth );
 }
 
+
+static std::string stringinfo(char const word[])
+{
+	std::string by;
+	for(int i=0; i<strlen(word); i++)
+	{			
+		char buf[100];
+		unsigned char c = word[i];
+		unsigned int d=c;
+
+		sprintf(buf,"%i:%u:%c ",i,d,c );
+ 
+		by.append(buf);
+	}
+	return by;
+}
+
+static std::string w_stringinfo(wchar_t const word[])
+{
+	std::string by;
+	for(int i=0; i<wcslen(word); i++)
+	{			
+		char buf[100];
+		unsigned char c = word[i];
+		unsigned int d=c;
+
+		snprintf(buf,sizeof buf,"%i:%u:%c ",i,d,c );
+ 
+		by.append(buf);
+	}
+	return by;
+}
+
+ 
 //---------------------------------------------------------------------------
 
 BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 {
-	HRESULT rc;
+	HRESULT rc=0;
 
 	NOTBEFORE_INIT( "playString" );
 	NOTDURING_INIT( "playString" );
@@ -1948,18 +1996,26 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 	static DWORD dwUnique = 1;
 	DWORD dwClientCode = ++dwUnique;
 
-	DWORD dwNumUndo;
+	DWORD dwNumUndo=0;
+		
+
 	#ifdef UNICODE
-		/*int size_needed = ::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, NULL, 0 );
-		CPointerChar pszKeysW = new TCHAR[ size_needed ];
-		::MultiByteToWideChar( CP_UTF8, 0, pszKeys, -1, pszKeysW, size_needed );*/
-		CComBSTR bstrKeys( pszKeys );
-		rc = m_pIDgnSSvcOutputEvent->PlayString(
-			bstrKeys,	// string to send
-			dwFlags,		// flags
-			0xFFFFFFFF,		// delay (-1 for app specific delay)
-			dwClientCode,	// to identify which WM_PLAYBACK is ours
-			&dwNumUndo );	// not used (number of backspaces needed to undo)
+
+//	OutputDebugStringA("ignoring input, just sending out `naïve'");
+
+	rc = m_pIDgnSSvcOutputEventA->PlayString(
+		pszKeys,	// string to send
+		dwFlags,		// flags
+		0xFFFFFFFF,		// delay (-1 for app specific delay)
+		dwClientCode,	// to identify which WM_PLAYBACK is ours
+		&dwNumUndo );
+
+	int const inputCodePage = CP_UTF8;
+	int const outputCodePage = 1252;
+
+
+
+
 	#else
 		rc = m_pIDgnSSvcOutputEvent->PlayString(
 			pszKeys, 	  // string to send
@@ -1968,6 +2024,7 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 			dwClientCode, // to identify which WM_PLAYBACK is ours
 			&dwNumUndo ); // not used (number of backspaces needed to undo)
 	#endif
+
 
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::PlayString" );
 
@@ -2321,6 +2378,9 @@ BOOL CDragonCode::execScript(
 	{
 		pszComment = "execScript";
 	}
+	std::string msg("execScript: ");
+	msg.append(pszScript);
+	OutputDebugStringA(msg.c_str());
 
 	// Although this is optional, if we check the script syntax first, we
 	// can report errors in a cleaner way.

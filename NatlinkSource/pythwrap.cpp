@@ -382,9 +382,10 @@ natlink_waitForSpeech( PyObject *self, PyObject *args )
 extern "C" static PyObject *
 natlink_playString( PyObject *self, PyObject *args )
 {
-	char *pKeys;
+	char *pKeys=0;
+	int pkeysLen=0;
 	DWORD dwFlags = 0;
-	if( !PyArg_ParseTuple( args, "s|i:playString", &pKeys, &dwFlags ) )
+	if( !PyArg_ParseTuple( args, "s#|i:playString", &pKeys, &pkeysLen, &dwFlags ) )
 	{
 		return NULL;
 	}
@@ -561,14 +562,19 @@ natlink_getCallbackDepth( PyObject *self, PyObject *args )
 //
 // See natlink.txt for documentation.
 
+//better pass in a Windows 1252 object for the first argument!
 extern "C" static PyObject *
 natlink_execScript( PyObject *self, PyObject *args )
 {
-	char * pScript;
+	OutputDebugStringA("natlink_execScript");
+	char * pScript=0;
+	int pScriptLength=0;
 	PyObject * pList = NULL;
+
 	char * pComment = NULL;
-	if( !PyArg_ParseTuple( args, "s|Os:execScript", &pScript, &pList, &pComment ) )
+	if( !PyArg_ParseTuple( args, "s#|Os:execScript", &pScript, &pScriptLength, &pList, &pComment ) )
 	{
+		OutputDebugStringA("natlink_execScript FAIL ParseTuple");
 		return NULL;
 	}
 
@@ -597,6 +603,7 @@ natlink_execScript( PyObject *self, PyObject *args )
 
 			if( !pyWord || !PyUnicode_Check( pyWord ) )
 			{
+				OutputDebugStringA("natlink_execScript FAIL Check");
 				PyErr_SetString(
 					PyExc_TypeError,
 					"the second argument to execScript must be a list of words" );
