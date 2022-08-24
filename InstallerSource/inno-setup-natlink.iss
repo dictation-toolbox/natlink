@@ -47,8 +47,8 @@ Source: "{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd"; DestDir: "{#CoreD
 Source: "{code:GetPythonInstallPath}\python{#PythonVersionNoDot}.dll"; DestDir: "{#CoreDir}"; \
   Flags: external ignoreversion; 
 ; Python sources
-Source: "{#SourceRoot}\NatlinkSource\__init__.py"; DestDir: "{#CoreDir}"
-
+Source: "{#SourceRoot}\src\natlink\__init__.py"; DestDir: "{#CoreDir}"
+Source: "{#SourceRoot}\src\natlink\_natlink_core.pyi"; DestDir: "{#CoreDir}"
 
 
 [Icons]
