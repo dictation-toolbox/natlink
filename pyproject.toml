@@ -1,0 +1,12 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "natlink"
+authors = [{name = "Joel Gould", email = "doug@ransom.vip"}]
+readme = "readme.md"
+dynamic = ["version", "description"]
+
+[project.urls]
+Home = "https://github.com/dictation-toolbox/natlink"
