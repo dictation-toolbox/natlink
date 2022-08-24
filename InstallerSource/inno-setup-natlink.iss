@@ -94,4 +94,4 @@ Root: HKCU; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "
 Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "-m pip install --upgrade pip"; StatusMsg: "Upgrade pip..."
 Filename: "{code:GetPythonInstallPath}\\Scripts\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "Upgrade pip..."
 
-Filename: "{code:GetPythonInstallPath}\\Scripts\natlinkgui.exe"; Parameters: ""; StatusMsg: "Configure Natlink..."
+Filename: "{code:GetPythonInstallPath}\\Scripts\natlinkconfig_gui.exe"; Parameters: ""; StatusMsg: "Configure Natlink..."
