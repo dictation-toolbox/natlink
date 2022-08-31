@@ -89,10 +89,9 @@ mock_modules = {
     'winreg',
     'winxpgui',
 }
-
-for module_name in mock_modules:
-    sys.modules[module_name] = Mock()
-
+if sys.platform != 'win32':
+    for module_name in mock_modules:
+        sys.modules[module_name] = Mock()
 
 # -- General configuration ---------------------------------------------------
 
