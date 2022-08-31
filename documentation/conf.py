@@ -52,9 +52,9 @@ def get_Natlink_Version_from_CMakeLists(directory, filename):
 
 release, version = get_Natlink_Version_from_CMakeLists(project_directory, "CMakeLists.txt")
 
-# # The short X.Y version
 print(f'natlink, version: "{version}", release: "{release}"')
 
+# as it was before:::
 # # The short X.Y version
 # version = '1.1'
 # # The full version, including alpha/beta/rc tags
@@ -89,10 +89,9 @@ mock_modules = {
     'winreg',
     'winxpgui',
 }
-
-for module_name in mock_modules:
-    sys.modules[module_name] = Mock()
-
+if sys.platform != 'win32':
+    for module_name in mock_modules:
+        sys.modules[module_name] = Mock()
 
 # -- General configuration ---------------------------------------------------
 
@@ -127,7 +126,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

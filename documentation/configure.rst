@@ -6,51 +6,42 @@ Location of 'natlink.ini'
 
 The config file `natlink.ini` will by default be in `~\\.natlink`, so a subdirectory of your home directory, typically `C:\\Users\\Name`.
 
-When running the `natlinkconfigfunctions.py` (soon to be released), next step is automatically performed:
+When you run the config program `natlinkconfig_gui.py`, the next step is automatically performed:
 
 - copy the file `natlink.ini` from the 'fallback' location  into your home directory, subdirectory `.natlink`. So copy "C:\\Program Files (x86)\\Natlink\\DefaultConfig\\natlink.ini" to "C:\\Users\\Name\\.natlink\\natlink.ini".
 
-- When you want another directory for your file `natlink.ini` to be in, you can set this in the environment variable 'NATLINK_USERDIR'.
+- When you want another directory for your file `natlink.ini` to be in, you can set this in the environment variable 'NATLINK_USERDIR'. For example, when you want your config files (especially `natlink.ini`) in a subdirectory of your Documents folder, set this environment variable to '~/Documents/.natlink'.
 
 Adding directories to the configuration
 ---------------------------------------
 
-This will be done with the config program, (`configurenatlink.pyw`, not in the release yet) and `natlinkconfigfunctions.py` (not in the release yet)
+This will be done with the config program (`natlinkconfig_gui.py`), or with the Command Line Interface `natlinkconfig_cli.py`. Both programs can be started from the Windows Command Line.
 
-For manually adding directories, see examples below, but beware of the paths. As these examples show, you can use a shared (eg Dropbox, OneDrive) folder for directories.  The different `'User'` directories are subdirectories of '`C:\\Users\\Name\\Dropbox\\NatlinkUser`'.
+Note: the Command Line Interface can also be used in batch mode.
 
-Note: the file `natlink.ini` should not be in a shared folder.
+Special directory directives:
 
-- Add Dragonfly:
+- "~" points to your 'home' directory, most often 'C:\\Users\\Name'. This is one directory above your 'Documents' directory. The config program translates chosen paths to this better readable '~', when possible.
+- "natlink_userdir": this "variable" points to the directory where your config file, 'natlink.ini', is located. By default this is the directory '.natlink' in your home directory. But your can set the environment variable NATLINK_USERDIR, see above. Note: the path should always end with the directory '.natlink'! For some "automatic defined" directories, especially for `unimacro` and `vocola`, this 'natlink_userdir' is also used. The directory MUST be a local directory.
 
-::
+User Directories
+-----------------
 
-   [directories]
-   dragonflyuserdirectory = C:\Users\Name\Dropbox\NatlinkUser\DragonflyUser
+Other directories, "user directories", can be set on a network drive (Dropbox, OneDrive), if you prefer. When you enable 'Dragonfly', 'Vocola' or 'Unimacro' (or any of them), the config program will also install and if possible update the required package. When you want to force an upgrade of a package, first disable the package and then enable again.
 
-- Add UserDirectory (Dragonfly users can choose between 'Add Dragonfly' or this option):
-
-::
-
-   [directories]
-   userdirectory = C:\Users\Name\Dropbox\NatlinkUser\UserDir
-
-- Add vocola:
-
-::
-
-   [directories]
-   vocoladirectory = C:\Python38-32\lib\site-packages\vocola2
-   vocolagrammarsdirectory = C:\Users\Name\Dropbox\NatlinkUser\VocolaUserDir\VocolaGrammars
-
-- Add Unimacro:
-
-::
-
-   [directories]
-   unimacrodirectory = C:\Python38-32\lib\site-packages\unimacro
-   unimacrogrammarsdirectory = C:\Users\Name\Dropbox\NatlinkUser\UnimacroUser\ActiveGrammars
-
+:Dragonfly:
+    The user directory is where you can put your python grammar files. Previous, the Natlink user directory was defined for this. You could keep using this directory too, but install/upgrade of Dragonfly is not maintained in that case.
+    
+:Vocola:
+    By specifying a directory where your user command files will be located (.vcl), you enable Vocola.
+    
+:Unimacro:
+    By specifying a directory where your user config files (.ini) will be located, you enable Unimacro. Note Unimacro is not ready for a release yet.
+    
+:NatlinkUser:
+    The "package independent" Natlink user directory can also be specified as a directory where you can put your python grammar files.
+    
+    
 
 Set the log_level
 -------------------
@@ -63,3 +54,12 @@ You can set the log_level, controlling the abundance of information messages in 
     log_level = INFO
 
 
+Manual editing natlink.ini
+------------------------------
+
+You can always manually inspect and adapt your 'natlink.ini' file.
+
+Restart Dragon
+--------------
+
+After making changes in your configuration, always restart Dragon! Keep your eye on the 'Messages from Natlink' window!
