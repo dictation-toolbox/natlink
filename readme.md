@@ -119,6 +119,11 @@ The currently supported settings are:
 - load_on_user_changed (default: True): check for and load scripts when the user profile changes.
 
 
+## Read the Docs
+For more information, please goto [ReadTheDocs](https://natlink.readthedocs.io/en/latest/)
+
+
+
 ## COM Module (C++)
 The folder NatlinkSource, which contains all the C++ code, 
 is for generating an in-process [Component Object Model (COM)](https://docs.microsoft.com/en-us/windows/win32/com/component-object-model--com--portal)
