@@ -19,20 +19,17 @@ The currently supported versions of Python are: 3.9.x (32 bit required)
 
 To install:
  - Install Dragon NaturallySpeaking
- - Download and run the [Natlink Installer](https://github.com/dictation-toolbox/natlink/releases): choose the most recent release. eg `natlink?.?.?-py3.9-32-setup.exe`.
+ - Download and run the [Natlink Installer](https://github.com/dictation-toolbox/natlink/releases): choose the most recent release. eg `natlink?.?.?-py3.10-32-setup.exe`.
     - if the supported 32 bit version of Python is not installed the Natlink installer will install it for you "off" system path
- - Pip install your desired extra packages based on the supported natlink python versions
-    - e.g `3.9` and `-32` for 32 bit  (`py -3.9-32 -m pip install dragonfly2`, `py -3.9-32 -m pip install unimacro vocola2 dtactions`). as 'Windows Powershell' or 'Command prompt' as 'Run as administrator'
  - Configure natlink `natlink.ini` with:
-    - [CLI](https://github.com/dictation-toolbox/natlink#cli-configuration) `natlinkconfig.exe` that auto launchs the end of the install 
-    - [Manual Configuration](https://github.com/dictation-toolbox/natlink#manual-configuration) by editing `natlink.ini`
+    - the natlink config gui program: `natlinkconfig_gui.exe`, that auto launchs the end of the install 
  - Add your scripts the directory locations
  - Start Dragon
 
 To Upgrade:
 - The Nalink Project has two components NatlinkCore and a C++ COM Module. Most upgrades will be to NatlinkCore.
     - NatlinkCore can be upgraded independently from C++ COM Module.
-    `py -3.9-32 -m pip install natlinkcore --upgrade`
+    `py -3.10-32 -m pip install natlinkcore --upgrade`
     - The installer with COM Module should only change if there is a new version of Dragon Professional Individual/Dragon NaturallySpeaking or a C++ bug. 
     [Natlink Installer](https://github.com/dictation-toolbox/natlink/releases)
 
@@ -41,30 +38,48 @@ To Uninstall:
     - Note: if you have used a used a pre-release natlink delete `C:\Program Files (x86)\Natlink`
 
 ## CLI Configuration
+ - Run the Command Line Interface program `natlinkconfig_cli.exe`, that comes with the installer.
  - Type `u` to get a list CLI commands.
  - Set UserDirectory `n/N` e.g `n C:\Users\%UserProfile%\YourSripts`
  - `x/X` - enable/disable debug output of Natlink
-    - Note: further configuration is need for unimacro or vocola2
+
+ - Note: this program can also be used in batch mode.
+
 
 ## Manual Configuration
 Configuration is done in .natlink ini-style files.
 Upon starting, Natlink will first look in the user's home directory `C:\Users\%UserProfile%\.natlink` for `natlink.ini`. If no config is found there, it will use `natlink.ini` in `C:\Program Files (x86)\Natlink\DefaultConfig`
+
 Here is an example config.
 
 ````ini
 [directories]
-# for most users, this section is all you need
-my_scripts=C:\Users\user\dragonfly-scripts
-system_wide_scripts=C:\Path\To\Shared\Scripts
-
-[userenglish-directories]
-only_loaded_if_profile_userenglish_active=C:\User\user\english-only-scripts
-
-[userspanish-directories]
-only_loaded_if_profile_userspanish_active=C:\User\user\spanish-only-scripts
+vocoladirectory = vocola2
+vocolagrammarsdirectory = natlink_userdir\vocolagrammars
 
 [settings]
-log_level=INFO
+log_level = INFO
+load_on_startup = True
+load_on_begin_utterance = False
+load_on_mic_on = True
+load_on_user_changed = True
+
+[manual configuration]
+instruction1 = set next line in the directories section when you
+instruction2 = want to define a Natlink user directory, independent of
+instruction3 = any package, like Dragonfly, Unimacro or Vocola.
+instruction4 = Note: you can drop a python grammar file in any of the directories,
+instruction5 = the distinction is made for package updates, and for convenience
+natlinkuserdirectory = ~\Documents\UserDirectory
+
+[vocola]
+vocolauserdirectory = ~\Documents\vocola_user
+vocolatakeslanguages = True
+vocolatakesunimacroactions = True
+
+[previous settings]
+log_level = DEBUG
+dragonflyuserdirectory = ~\Documents\DragonflyUser
 ````
 
 
