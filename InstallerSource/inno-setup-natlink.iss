@@ -75,7 +75,7 @@ Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "drag
 ; Register 'natlink' version
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "version"; ValueData: "{#MyAppVersion}"
 
-; Add a key for natlink COM server (_natlink_core.pyd) to find the Python installation
+; Add a key for natlink COM server (_natlink_corexx.pyd) to find the Python installation
 ; If GetPythonInstallPath fails, then the error will be reported as per [Code] section
 Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "pythonInstallPath"; ValueData: "{code:GetPythonInstallPath}"; Flags: uninsdeletekey
 

@@ -1,4 +1,5 @@
-__version__= "1.0.0"
+"""Natlink is an OpenSource extension module for the speech recognition program """
+#set the version in pyroject.toml
 
 # make import natlink possible, getting all the _natlink_corexx.pyd functions...
 #we have to know which pyd is registered by the installer.
@@ -34,7 +35,6 @@ path_to_pyd=""
 found_registered_pyd=False
 for subkey in subkeys:
     try:
-        print(f"Subkey {subkey}")
         reg=wr.ConnectRegistry(None,wr.HKEY_CLASSES_ROOT)
         sk=wr.OpenKey(reg,subkey)
         path_to_pyd=wr.QueryValue(sk,None)
