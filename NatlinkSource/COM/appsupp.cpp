@@ -304,6 +304,9 @@ STDMETHODIMP CDgnAppSupport::UnRegister()
 	// free our reference to the Python modules
 	Py_XDECREF( m_pNatlinkModule );
 
+	// finalize the Python interpreter
+	Py_Finalize();
+
 	return S_OK;
 }
 
