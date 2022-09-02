@@ -107,3 +107,8 @@ Now, set breakpoints in your C++.  `pythwrap.cpp` is a good place to start.
 
 If you know how to debug natlink when dragon is running, please update this section.
 
+### which dragon
+
+This will tell us what DLL to load.
+
+Computer\HKEY_CLASSES_ROOT\WOW6432Node\CLSID\{dd990001-bb89-11d2-b031-0060088dc929}\InprocServer32
