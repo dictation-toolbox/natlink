@@ -1,15 +1,5 @@
 Modules
 =======
 
-This section includes the available modules in the natlink project
+The python modules of the Natlink project are now in repository `natlinkcore`, see ASAP natlinkcore.readthedocs.io
 
-..  toctree::
-    :maxdepth: 2
-
-    natlinkstatus
-    loader
-    config
-    gramparser
-    natlinkutils
-    singleton
-    natlinkconfigfunctions

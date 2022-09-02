@@ -18,7 +18,7 @@ For example
 
 instead of 
 
-`unimacro=C:\Users\Doug\AppData\Roaming\Python\Python39\site-packages\unimacro`
+`unimacro=C:\Users\Doug\AppData\Roaming\Python\Python310-32\site-packages\unimacro`
  
 
 ### Section: \[\<user\>-directories\] (optional)

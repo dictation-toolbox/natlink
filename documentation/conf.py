@@ -15,7 +15,8 @@
 import os
 import sys
 
-src_directory = os.path.join(os.path.abspath('..'), "src")
+project_directory = os.path.join(os.path.abspath('..'))
+src_directory = os.path.join(project_directory, "src")
 sys.path.insert(0, src_directory)
 
 
@@ -25,10 +26,39 @@ project = 'natlink'
 copyright = '2021, Joel Gould, Quintijn Hoogenboom'
 author = 'Joel Gould'
 
-# The short X.Y version
-version = '1.1'
-# The full version, including alpha/beta/rc tags
-release = '1.1.0'
+
+#Pfff should take the current version, or the version that is in CMakeLists.txt, with which the project is compiled.
+# That makes it independent of the natlinkcore repository. Probably the best strategy.
+def get_Natlink_Version_from_CMakeLists(directory, filename):
+    """extract the release number from this project file.
+    This number should be bumped when a new release/version is made
+    """
+    file_path = os.path.join(directory, filename)
+    if not os.path.isfile(file_path):
+        raise OSError(f'Not a valid file: {file_path}')
+    with open(file_path, 'r', encoding='utf-8') as fp:
+        for line in fp:
+            if line.startswith("set(NATLINK_VERSION"):
+                rel = line.split()[-1]
+                rel = rel.strip()
+                rel = rel.strip(')')
+                rel = rel.strip()
+                vers = '.'.join(rel.split('.')[:2])
+                break
+        else:
+            raise OSError(f'Did not find a valid release/verson line in "{file_path}"')
+        return rel, vers
+    
+
+release, version = get_Natlink_Version_from_CMakeLists(project_directory, "CMakeLists.txt")
+
+print(f'natlink, version: "{version}", release: "{release}"')
+
+# as it was before:::
+# # The short X.Y version
+# version = '1.1'
+# # The full version, including alpha/beta/rc tags
+# release = '1.1.0'
 
 
 # ----------------------------------------------------------------------------
@@ -59,10 +89,9 @@ mock_modules = {
     'winreg',
     'winxpgui',
 }
-
-for module_name in mock_modules:
-    sys.modules[module_name] = Mock()
-
+if sys.platform != 'win32':
+    for module_name in mock_modules:
+        sys.modules[module_name] = Mock()
 
 # -- General configuration ---------------------------------------------------
 
@@ -97,7 +126,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
