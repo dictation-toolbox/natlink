@@ -33,6 +33,14 @@ test = [
 dev = [
     "pyenvutils",
 ] 
+
+#it is better not to publish or even build an sdist at all. it will contain more cruft.
+#just use the wheel.  If one is created, at least we ignore a lot of the stuff not required for the python
+#package.
+[tool.flit.sdist]
+include = ["src/"]
+exclude= ["build","dist","documentation","InstallerSource","NatlinkSource"]
+
 [tool.pytest.ini_options]
 minversion = "7.1.2"
 addopts = "--capture=tee-sys"
