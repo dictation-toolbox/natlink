@@ -12,7 +12,6 @@ add_custom_target(package_in_dist ALL
     COMMAND ${FLIT} build --format wheel 
     DEPENDS StampDriver # otherwise the stamps are not checked
         ${PROJECT_BINARY_DIR}/NatlinkSource/NatlinkSource.STAMP
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/pythonsrc 
     COMMENT "Now Building Python Package"
 )
- 

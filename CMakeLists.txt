@@ -37,7 +37,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 # Build C++ code, including two versions of _natlink.pyd, the COM server running Python
 add_subdirectory ("NatlinkSource") 
 
-add_subdirectory ("src") 
+add_subdirectory ("pythonsrc") 
 
 # Outdated NatlinkModule is in src as nalinkcore as python package and no longer packaged by cmake in to the installer 
 # add_subdirectory ("NatlinkModule")
