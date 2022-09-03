@@ -8,7 +8,7 @@ endif(NOT FLIT)
 
 set(PACKAGE "dist/natlink-1.0-py3-none-any.whl")
 
-add_custom_target(package ALL 
+add_custom_target(package_in_dist ALL 
     COMMAND ${FLIT} build --format wheel 
     DEPENDS StampDriver # otherwise the stamps are not checked
         ${PROJECT_BINARY_DIR}/NatlinkSource/NatlinkSource.STAMP
