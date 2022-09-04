@@ -52,6 +52,8 @@ Source: "{#SourceRoot}\src\natlink\_natlink_core.pyi"; DestDir: "{#CoreDir}"
 
 
 [Icons]
+Name: "{group}\Configure Natlink via GUI"; Filename: "{code:GetPythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; WorkingDir: "{code:GetPythonInstallPath}\\Scripts"
+Name: "{group}\Configure Natlink via CLI"; Filename: "{code:GetPythonInstallPath}\\Scripts\\natlinkconfig_cli.exe"; WorkingDir: "{code:GetPythonInstallPath}\\Scripts"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
 [INI]                                                    
