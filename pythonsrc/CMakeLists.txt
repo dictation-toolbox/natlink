@@ -22,7 +22,8 @@ configure_file(src/natlink/_natlink_core.pyi src/natlink/_natlink_core.pyi)
 set(NL_BINARY_DIR ${CMAKE_BINARY_DIR}/NatlinkSource/Debug)
 set(NL_PY_DIR  ${CMAKE_BINARY_DIR}/pythonsrc/src/natlink)
 
-set (NL_FILES ${NL_BINARY_DIR}/_natlink_core13.pyd ${NL_BINARY_DIR}/_natlink_core13.pdb ${NL_BINARY_DIR}/_natlink_core15.pyd ${NL_BINARY_DIR}/_natlink_core15.pdb ) 
+set (NL_FILES ${NL_BINARY_DIR}/_natlink_core13.pyd ${NL_BINARY_DIR}/_natlink_core13.pdb ${NL_BINARY_DIR}/_natlink_core15.pyd ${NL_BINARY_DIR}/_natlink_core15.pdb
+${_Python3_RUNTIME_LIBRARY_RELEASE} ) 
 
 
 add_custom_target(package_in_dist ALL 
