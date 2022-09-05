@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "natlink"
-requires-python=">=3.0"
+requires-python="~=${PYTHON_VERSION}"
 authors = [{name = "Joel Gould"}]
 readme = "readme.md"
 dynamic = ["description"]

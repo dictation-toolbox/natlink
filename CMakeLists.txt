@@ -5,6 +5,14 @@ set(NATLINK_VERSION 5.3.2)
 set(PYTHON_VERSION 3.9 CACHE STRING "3.X for X >= 9")
 set(MYAPP_NAME "Natlink")
 
+#Anything later than Python 3.8 is fine for the actual Natlink binaries.
+
+
+
+
+#These are for the installer.
+
+
 # Other supported version; use CMake cache editor
 set(PYTHON_VERSIONS 3.9 3.10)
 set_property(CACHE PYTHON_VERSION PROPERTY STRINGS ${PYTHON_VERSIONS})

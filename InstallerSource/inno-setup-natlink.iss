@@ -93,11 +93,13 @@ Root: HKCU; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "
 ;register the pyd for corresponding version of Python
 Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "-m pip install --upgrade pip -t {#CoreDir}"; StatusMsg: "Upgrade pip..."
 Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install ${#DistDir}/{#PythonWheelName}  --upgrade --force-reinstall"; StatusMsg: "natlink"
-Filename: "regsvr32";  Parameters: "-s" "\""{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd\""" ; StatusMsg: "regsvr32 _natlink_core{code:GetDragonVersion}.pyd"
+Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd\""" ; StatusMsg: "regsvr32 _natlink_core{code:GetDragonVersion}.pyd"
 Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "natlinkcore"
 
 Filename: "{code:GetPythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; Parameters: ""; StatusMsg: "Configure Natlink…"
 
 [UninstallRun]
-Filename: "regsvr32";  Parameters: "-s" "\""{#CoreDir}\_natlink_core15.pyd\""" ; StatusMsg: "regsvr32 -u _natlink_core15.pyd"
-Filename: "regsvr32";  Parameters: "-s" "\""{#CoreDir}\_natlink_core13.pyd\""" ; StatusMsg: "regsvr32 -u _natlink_core13.pyd"
+Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "uninstall  natlinkcore natlink"; StatusMsg: "natlinkcore"
+
+Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\_natlink_core15.pyd\""" ; StatusMsg: "regsvr32 -u _natlink_core15.pyd"
+Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\_natlink_core13.pyd\""" ; StatusMsg: "regsvr32 -u _natlink_core13.pyd"

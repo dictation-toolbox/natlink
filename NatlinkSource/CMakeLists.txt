@@ -41,6 +41,7 @@ add_compile_options("/std:c++17") # because of extern/WinReg
 # see note at top of https://docs.python.org/3/c-api/arg.html
 add_compile_definitions(PY_SSIZE_T_CLEAN)
 
+ 
 # Add two DLL libraries to build, one for 15 and one for 13 (which also works for 14).
 add_library(natlink15_pyd SHARED ${SRC_FILES})
 add_library(natlink13_pyd SHARED ${SRC_FILES})
