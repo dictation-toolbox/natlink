@@ -25,13 +25,28 @@ set(NL_PY_DIR  ${CMAKE_BINARY_DIR}/pythonsrc/src/natlink)
 set (NL_FILES ${NL_BINARY_DIR}/_natlink_core13.pyd ${NL_BINARY_DIR}/_natlink_core13.pdb ${NL_BINARY_DIR}/_natlink_core15.pyd ${NL_BINARY_DIR}/_natlink_core15.pdb
 ${_Python3_RUNTIME_LIBRARY_RELEASE} ) 
 
-#natlink-${NATLINK_VERSION}-py3-none-any.whl 
-add_custom_target(package_in_dist ALL
+#
+#add_custom_target(package_in_dist ALL
+add_custom_command(
+    OUTPUT "${WHEEL_PATH}"
     COMMENT "Adding ${NL_FILES} to python package"
     COMMAND ${CMAKE_COMMAND} -E  copy ${NL_FILES}  ${NL_PY_DIR}
     COMMENT "Now Building Python Package" 
     COMMAND ${FLIT} build --format wheel 
     DEPENDS StampDriver # otherwise the stamps are not checked
         ${PROJECT_BINARY_DIR}/NatlinkSource/NatlinkSource.STAMP
+        ${NL_FILES}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/pythonsrc 
 )
+
+#add_custom_target(natlink-package 
+#    DEPENDS ${WHEEL_PATH}
+#)
+
+add_custom_target(NatlinkWheelStamp DEPENDS NatlinkWheel.STAMP)
+
+add_custom_command(OUTPUT NatlinkWheel.STAMP
+  COMMAND cmake -E touch NatlinkWheel.STAMP
+  DEPENDS 
+  ${WHEEL_PATH}) 
+

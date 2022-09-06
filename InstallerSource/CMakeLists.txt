@@ -7,8 +7,8 @@ else(ISCC)
 endif(NOT ISCC)
 
 set(INSTALLER_FILE_BASE "natlink${NATLINK_VERSION}-py${PYTHON_VERSION}-32-setup")
-set(WHEEL_NAME "natlink-${NATLINK_VERSION}-py3-none-any.whl")
-set(WHEEL_PATH ${CMAKE_BINARY_DIR}/pythonsrc/dist/${WHEEL_NAME}) 
+set(WHEEL_NAME "natlink-${NATLINK_VERSION}-py${PYTHON_VERSION}-none-any.whl")
+set(WHEEL_PATH "${CMAKE_BINARY_DIR}/pythonsrc/dist/${WHEEL_NAME}") 
 message(STATUS "Wheel to include:   ${WHEEL_PATH}")
 
 add_custom_target(natlink-installer 
@@ -17,11 +17,14 @@ add_custom_target(natlink-installer
 
 string(REPLACE "." "" PYTHON_VERSION_NO_DOT ${PYTHON_VERSION})
 
+
 add_custom_command(OUTPUT "${INSTALLER_FILE_BASE}.exe"
     DEPENDS StampDriver # otherwise the stamps are not checked
+    NatlinkWheelStamp
     ${PROJECT_BINARY_DIR}/NatlinkSource/NatlinkSource.STAMP
+    ${RPOJECT_BINARY_DIR}/NatlinkWheel.STAMP}
     inno-setup-natlink.iss inno-code.iss
-    ${PROJECT_BINARY_DIR}/pythonsrc/dist/natlink-${NATLINK_VERSION}-py3-none-any.whl
+    ${WHEEL_PATH} natlink-package
     COMMENT "Now Building Installer"
     COMMAND ${ISCC}
         ${CMAKE_CURRENT_SOURCE_DIR}/inno-setup-natlink.iss
@@ -39,9 +42,8 @@ add_custom_command(OUTPUT "${INSTALLER_FILE_BASE}.exe"
         /D"MyAppName=${MYAPP_NAME}")
 
 
-
 add_custom_target(natlink-installer-zip ALL DEPENDS "${INSTALLER_FILE_BASE}.zip")
 add_custom_command(OUTPUT "${INSTALLER_FILE_BASE}.zip"
-    DEPENDS natlink-installer
+    DEPENDS natlink-installer natlink-package
 	COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${INSTALLER_FILE_BASE}.zip" --format=zip
        "${CMAKE_CURRENT_BINARY_DIR}/${INSTALLER_FILE_BASE}.exe")
