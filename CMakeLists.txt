@@ -42,15 +42,16 @@ message(STATUS "Using Python installation found at: ${Python3_EXECUTABLE}")
 # See https://cmake.org/cmake/help/git-stage/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html#variable:CMAKE_MSVC_RUNTIME_LIBRARY
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
+set(WHEEL_NAME "natlink-${NATLINK_VERSION}-py3-none-any.whl")
+set(WHEEL_PATH "${CMAKE_BINARY_DIR}/pythonsrc/dist/${WHEEL_NAME}") 
+message(STATUS "Wheel to include:   ${WHEEL_PATH}")
+
+
 # Build C++ code, including two versions of _natlink.pyd, the COM server running Python
 add_subdirectory ("NatlinkSource") 
-
 add_subdirectory ("pythonsrc") 
-
-# Outdated NatlinkModule is in src as nalinkcore as python package and no longer packaged by cmake in to the installer 
-# add_subdirectory ("NatlinkModule")
-    # The links demonstrate how timestamps with StampDriver can be used can propagate file dependencies of targets across directories and records the files for the installer. 
-    # https://github.com/dictation-toolbox/natlink/blob/00a56c64f964112f3956ebbc3b79d1e9fdc3dafd/CMakeLists.txt#L39
-    # https://github.com/dictation-toolbox/natlink/blob/00a56c64f964112f3956ebbc3b79d1e9fdc3dafd/src/natlinkcore/CMakeLists.txt#L1
-
 add_subdirectory ("InstallerSource")
+
+
+
+
