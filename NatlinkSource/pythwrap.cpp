@@ -2329,6 +2329,11 @@ static struct PyModuleDef NatlinkModule = {
 		natlink_methods
 };
 
+
+//PyInit__natlink_core must exist for an extension module
+//to be imported as _natlink_core
+
+
 extern "C"
 //void initnatlink()
 PyMODINIT_FUNC PyInit__natlink_core(void) {
