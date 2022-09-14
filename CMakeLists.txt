@@ -5,13 +5,8 @@ set(NATLINK_VERSION 5.3.2)
 set(PYTHON_VERSION 3.9 CACHE STRING "3.X for X >= 9")
 set(MYAPP_NAME "Natlink")
 
-#Anything later than Python 3.8 is fine for the actual Natlink binaries.
-
-
-
-
-#These are for the installer.
-
+# Anything later than Python 3.8 is fine for the actual Natlink binaries.
+# These are for the installer.
 
 # Other supported version; use CMake cache editor
 set(PYTHON_VERSIONS 3.9 3.10)
@@ -31,8 +26,8 @@ endif()
 string(REGEX MATCH "[^/]*$" PYTHON_INSTALL_EXE ${PYTHON_INSTALL_URL})
 
 # The header files of $(PYTHON_VERSION) must be present
-find_package (Python3 ${PYTHON_VERSION} EXACT REQUIRED
-                      COMPONENTS Development)
+find_package(Python3 ${PYTHON_VERSION} EXACT REQUIRED
+                      COMPONENTS Interpreter Development)
 if (NOT(Python3_FOUND))
     message(FATAL_ERROR "Python 3, version ${PYTHON_VERSION} not found")
 endif()  
@@ -44,7 +39,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 set(WHEEL_NAME "natlink-${NATLINK_VERSION}-py3-none-any.whl")
 set(WHEEL_PATH "${CMAKE_BINARY_DIR}/pythonsrc/dist/${WHEEL_NAME}") 
-message(STATUS "Wheel to include:   ${WHEEL_PATH}")
+message(STATUS "Wheel to include: ${WHEEL_PATH}")
 
 
 # Build C++ code, including two versions of _natlink.pyd, the COM server running Python

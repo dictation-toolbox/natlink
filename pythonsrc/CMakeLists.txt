@@ -1,9 +1,14 @@
 message("src CMakeLists.txt")
-find_program(FLIT NAMES flit.exe)
+
+# Find Flit executable path
+get_filename_component(python_root "${Python3_EXECUTABLE}" PATH)
+find_program(FLIT NAMES "${python_root}/Scripts/flit.exe")
+
 if(NOT FLIT)
-	message(STATUS "Flit not found")
+    message(FATAL_ERROR " Flit exe not found at: ${python_root}/Scripts/flit.exe\n "
+    "Install Flit with: ${Python3_EXECUTABLE} -m pip install flit")
 else(FLIT)
-    message(STATUS "FLIT ISCC at ${FLIT}")
+    message(STATUS "FLIT exe found at ${FLIT}")
 endif(NOT FLIT)
 
 set(PACKAGE "dist/natlink-${NATLINK_VERSION}-py3-none-any.whl")
