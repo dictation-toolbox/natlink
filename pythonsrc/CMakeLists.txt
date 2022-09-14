@@ -18,7 +18,6 @@ set(PACKAGE "dist/natlink-${NATLINK_VERSION}-py3-none-any.whl")
 configure_file(pyproject.toml pyproject.toml)
 configure_file(src/natlink/__init__.py src/natlink/__init__.py)
 configure_file(src/natlink/_natlink_core.pyi src/natlink/_natlink_core.pyi)
-configure_file(readme.md readme.md) 
 
 #we also need the binaries from the natlink build output.
 
