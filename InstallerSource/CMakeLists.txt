@@ -1,9 +1,9 @@
 ﻿find_program(ISCC NAMES ISCC ISCC.exe PATH_SUFFIXES "Inno Setup 6")
 
 if(NOT ISCC)
-	message(STATUS "ISCC not found")
+	message(FATAL_ERROR "ISCC: Inno Setup 6 not found, Download: https://jrsoftware.org/isdl.php")
 else(ISCC)
-    message(STATUS "Found ISCC at ${ISCC}")
+    message(STATUS "ISCC: Found Inno Setup 6 at ${ISCC}")
 endif(NOT ISCC)
 
 set(INSTALLER_FILE_BASE "natlink${NATLINK_VERSION}-py${PYTHON_VERSION}-32-setup")
