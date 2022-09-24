@@ -1,12 +1,20 @@
 message("src CMakeLists.txt")
 
 # Find Flit executable path
-get_filename_component(python_root "${Python3_EXECUTABLE}" PATH)
+cmake_path(GET Python3_EXECUTABLE PARENT_PATH python_root)
 find_program(FLIT NAMES "${python_root}/Scripts/flit.exe")
 
+# If default python script directory is not writable check appdata Python script directory
 if(NOT FLIT)
-    message(FATAL_ERROR " Flit exe not found at: ${python_root}/Scripts/flit.exe\n "
-    "Install Flit with: ${Python3_EXECUTABLE} -m pip install flit")
+    cmake_path(GET python_root STEM LAST_ONLY lastStem)
+    cmake_path(SET flit_appdata "$ENV{appdata}/python/${lastStem}/Scripts/flit.exe" NORMALIZE)
+    find_program(FLIT NAMES ${flit_appdata})
+endif(NOT FLIT)
+
+if(NOT FLIT)
+    message(FATAL_ERROR " Flit exe not found at: ${python_root}/Scripts/flit.exe
+    or ${flit_appdata}\n "
+    "Install Flit with: .\"${Python3_EXECUTABLE}\" -m pip install flit")
 else(FLIT)
     message(STATUS "FLIT exe found at ${FLIT}")
 endif(NOT FLIT)
