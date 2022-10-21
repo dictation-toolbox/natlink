@@ -4,7 +4,7 @@ Natlink is a compatibility module for Dragon NaturallySpeaking (DNS/DPI) v13-v15
 
 Documentation available at [natlink.reddthedocs.io](https://natlink.readthedocs.io/en/latest/) or in the documentation folder of the github repository.
 
-The documention is not yet complete at [natlink.reddthedocs.io](https://natlink.readthedocs.io/en/latest/).  The remainder of this document contains information that  has not yet been introduced into [natlink.reddthedocs.io](https://natlink.readthedocs.io/en/latest/):
+The documention is not yet complete at [natlink.reddthedocs.io](https://natlink.readthedocs.io/en/latest/).  The remainder of this document contains information that  has not yet been introduced into [natlink.readthedocs.io](https://natlink.readthedocs.io/en/latest/):
 
 # Section: \[directories\] 
 
