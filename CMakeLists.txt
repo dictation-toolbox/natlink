@@ -8,12 +8,14 @@ set(MYAPP_NAME "Natlink")
 # Anything later than Python 3.8 is fine for the actual Natlink binaries but 3.10 is officially supported.
 # These are for the installer.
 # Other supported version; use CMake cache editor
-set(PYTHON_VERSIONS 3.8 3.9 3.10)
+set(PYTHON_VERSIONS 3.8 3.9 3.10 3.11)
 set_property(CACHE PYTHON_VERSION PROPERTY STRINGS ${PYTHON_VERSIONS})
 
 #### where to find the 32-bit installer for $(PYTHON_VERSION)
-if(${PYTHON_VERSION} STREQUAL 3.10)
-    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.10.7/python-3.10.7.exe")
+if(${PYTHON_VERSION} STREQUAL 3.11)
+    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.11.0/python-3.11.0.exe")
+elseif(${PYTHON_VERSION} STREQUAL 3.10)    
+    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.10.8/python-3.10.8.exe")
 elseif(${PYTHON_VERSION} STREQUAL 3.9)
     set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.9.13/python-3.9.13.exe")
 elseif(${PYTHON_VERSION} STREQUAL 3.8)
