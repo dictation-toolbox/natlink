@@ -75,7 +75,8 @@ def execScript(script,args=None):
     if args is None:
         args = []
     else:
-        print('execScript, args found: {args}!!!!')
+        ## added QH:
+        print(f'execScript, args found: {args}!!!!')
     script_w=toWindowsEncoding(script)
     return _execScript(script_w,args)    
 
