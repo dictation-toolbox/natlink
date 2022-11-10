@@ -59,8 +59,8 @@ try:
     from _natlink_core import execScript as _execScript
     from _natlink_core import playString as _playString
     from _natlink_core import recognitionMimic as _recognitionMimic
-except Exception as exc:
-    tb_lines=''.join(traceback.format_exception(exc))
+except Exception:
+    tb_lines = traceback.format_exc()
 
     outputDebugString(f"Python traceback \n{tb_lines}\n in {__file__}")
 
