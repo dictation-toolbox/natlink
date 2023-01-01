@@ -10,6 +10,7 @@ import importlib.util
 import traceback
 import winreg
 import ctypes
+import contextlib
 W32OutputDebugString = ctypes.windll.kernel32.OutputDebugStringW
 
 #copied from pydebugstring.  
@@ -83,3 +84,20 @@ def execScript(script,args=None):
 
 def toWindowsEncoding(str_to_encode):
     return str_to_encode.encode('Windows-1252')
+
+#wrap the C++ natConnect with a version that returns a context manager
+
+_original_natconnect=natConnect
+def wrappedNatConnect(*args,**keywords):
+    _original_natconnect(*args,**keywords)
+    return NatlinkConnector()
+natConnect=wrappedNatConnect
+
+@contextlib.contextmanager
+def NatlinkConnector():
+    """context manager for natlink connections.
+    """
+    # use the method from https://towardsdatascience.com/how-to-build-custom-context-managers-in-python-31727ffe96e1
+    yield
+    print("natlink disconnecting")
+    natDisconnect()
