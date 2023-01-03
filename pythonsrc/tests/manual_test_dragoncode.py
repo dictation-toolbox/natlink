@@ -33,7 +33,7 @@ def natlink_connection(monkeymodule):
 
     print("\nConnecting natlink")
     with n.natConnect():
-        yield n.natConnect()  #will be none
+        yield n.natConnect()   
 
         
 @pytest.fixture(scope="module")
