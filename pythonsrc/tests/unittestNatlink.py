@@ -2833,9 +2833,9 @@ class UnittestNatlink(unittest.TestCase):
 
     #---------------------------------------------------------------------------
     # Testing the tray icon is hard since we can not conviently interact with
-    # the UI from this test script.  But I test what I can.    
+    # the UI from this test script.  But I test what I can.
 
-    def tttestTrayIcon(self):
+    def testTrayIcon(self):
         self.log("testTrayIcon")
 
         testForException =self.doTestForException
@@ -2858,7 +2858,7 @@ class UnittestNatlink(unittest.TestCase):
         iconFile = baseDirectory+'/../NatlinkSource/idi_nodir.ico'
 ## special test icon, assume baseDirectory is on same level as PyTest:
 ##          QH, cannot get baseDirectory correct...
-        import natlinkmain
+        # import natlinkmain
         baseDirectory = natlinkmain.baseDirectory
         iconFile = baseDirectory+'/../PyTest/unittest_icon.ico'
         if not os.path.isfile(iconFile):
