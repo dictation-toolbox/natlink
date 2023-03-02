@@ -1,6 +1,6 @@
 # Natlink
 
-Natlink is a compatibility module for Dragon NaturallySpeaking (DNS/DPI) v13-v15 on Windows that allows the user to run Python scripts that interact with DNS. 
+Natlink is a compatibility module for Dragon NaturallySpeaking (DNS/DPI) v13-v16 on Windows that allows the user to run Python scripts that interact with DNS. 
 
 Documentation available at [natlink.reddthedocs.io](https://natlink.readthedocs.io/en/latest/) or in the documentation folder of the github repository.
 
