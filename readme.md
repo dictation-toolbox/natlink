@@ -6,6 +6,13 @@ Documentation available at [natlink.reddthedocs.io](https://natlink.readthedocs.
 
 The documention is not yet complete at [natlink.reddthedocs.io](https://natlink.readthedocs.io/en/latest/).  The remainder of this document contains information that  has not yet been introduced into [natlink.readthedocs.io](https://natlink.readthedocs.io/en/latest/):
 
+## Editing Documentation
+The documentation is in the documentation folder.  In that folder you can type
+`pip install -r requirements.txt` which will bring in the tools that build the documentation 
+from text files in that folder.
+
+`make.bat html` will build the documentation.
+
 # Section: \[directories\] 
 
 

@@ -16,6 +16,7 @@ Unimacro is not yet working, a beta release for this state will be released pret
    :maxdepth: 2
    :caption: Contents:
 
+   overview
    install
    configure
    modules

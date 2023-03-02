@@ -32,10 +32,10 @@ def natlink_connection(monkeymodule):
     monkeymodule.setenv("natlink_userdir",str(mock_folder))
 
     print("\nConnecting natlink")
-    yield n.natConnect()  #will be none
-    print("\nDisconnecting natlink")
-    n.natDisconnect()
+    with n.natConnect():
+        yield n.natConnect()   
 
+        
 @pytest.fixture(scope="module")
 def mock_userdir(monkeypatch):
     mock_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_userdir"
