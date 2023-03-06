@@ -42,27 +42,27 @@ add_compile_options("/std:c++17") # because of extern/WinReg
 add_compile_definitions(PY_SSIZE_T_CLEAN)
 
 # Add two DLL libraries to build, one for 15 and one for 13 (which also works for 14).
-add_library(natlink15_pyd SHARED ${SRC_FILES})
-add_library(natlink13_pyd SHARED ${SRC_FILES})
+add_library(natlink_core_pyd SHARED ${SRC_FILES})
+add_library(natlink_core_legacy_pyd SHARED ${SRC_FILES})
 # They share some properties
-set_target_properties(natlink15_pyd natlink13_pyd PROPERTIES
+set_target_properties(natlink_core_pyd natlink_core_legacy_pyd PROPERTIES
         PREFIX ""
         SUFFIX ".pyd"
         LINKER_LANGUAGE C
         DEPENDS python_dll)
 # and they both use Python libraries
-set_property(TARGET natlink15_pyd natlink13_pyd
+set_property(TARGET natlink_core_pyd natlink_core_legacy_pyd
              APPEND PROPERTY LINK_LIBRARIES ${Python3_LIBRARIES})
-# Now, define filename for Dragon 15 pyd and the -D passed to the compiler
-set_property(TARGET natlink15_pyd PROPERTY OUTPUT_NAME "_natlink_core15" )
-target_compile_definitions(natlink15_pyd PRIVATE DRAGON_VERSION=15)
-# Same for Dragon 13
-set_property(TARGET natlink13_pyd PROPERTY OUTPUT_NAME "_natlink_core13" )
-target_compile_definitions(natlink13_pyd PRIVATE DRAGON_VERSION=13)
+# Now, define filename for Dragon 15, 16 pyd and the -D passed to the compiler
+set_property(TARGET natlink_core_pyd PROPERTY OUTPUT_NAME "_natlink_core" )
+target_compile_definitions(natlink_core_pyd PRIVATE LEGACY=False)
+# Same for Dragon 13 and 14 legacy pyd
+set_property(TARGET natlink_core_legacy_pyd PROPERTY OUTPUT_NAME "_natlink_core_legacy" )
+target_compile_definitions(natlink_core_legacy_pyd PRIVATE LEGACY=True)
 
 add_custom_target(StampDriver DEPENDS NatlinkSource.STAMP)
 
 add_custom_command(OUTPUT NatlinkSource.STAMP
   COMMAND cmake -E touch NatlinkSource.STAMP
   DEPENDS 
-  natlink13_pyd natlink15_pyd) # binary targets)
+  natlink_core_legacy_pyd natlink_core_pyd) # binary targets)

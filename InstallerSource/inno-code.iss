@@ -1,11 +1,10 @@
 [Code]
-
 var
   DragonIniPage: TInputDirWizardPage;
   DownloadPage: TDownloadWizardPage;
 
   CancelWithoutPrompt: Boolean;
-  DragonVersion: String;
+  DragonVersion: Integer;
 
 procedure CancelButtonClick(CurPageID: Integer; var Cancel, Confirm: Boolean);
 begin
@@ -21,35 +20,43 @@ begin
   if DirExists(TestDir) then
   begin
     Result := TestDir;
-    DragonVersion := '15';
+    DragonVersion := 16;
     exit;
   end;
   TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking15');
   if DirExists(TestDir) then
   begin
     Result := TestDir;
-    DragonVersion := '15';
+    DragonVersion := 15;
     exit;
   end;
   TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking14');
   if DirExists(TestDir) then
   begin
     Result := TestDir;
-    DragonVersion := '13';
+    DragonVersion := 14;
     exit;
   end;
   TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking13');
   if DirExists(TestDir) then
   begin
     Result := TestDir;
-    DragonVersion := '13';
+    DragonVersion := 13;
     exit;
   end;
 end;
 
-function GetDragonVersion(Param: String): String;
+function GetDragonVersion(Param: Integer): Integer;
 begin
   Result := DragonVersion;
+end;
+
+function GetGetPydName(Param: String): String;
+begin
+  if DragonVersion >= 15 then
+    Result := '_natlink_core.pyd'
+  else
+    Result := '_natlink_core_legacy.pyd'
 end;
 
 function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
@@ -193,7 +200,6 @@ function InitializeSetup(): Boolean;
 begin
   Result := True;
   CancelWithoutPrompt := False;
-  DragonVersion := 'XXX'; 
   if IsDragonRunning() then
   begin
     MsgBox('Dragon is running, this installer is aborting. '
