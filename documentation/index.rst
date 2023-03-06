@@ -3,7 +3,7 @@ Welcome to Natlink's Documentation!
 
 Natlink is an OpenSource extension module for the speech recognition program [Dragon](https://www.nuance.com/dragon/business-solutions/dragon-professional-individual.html).
 
-Natlink with Python 3 and Dragon 13, 14, or 15, is now in a beta phase for:
+Natlink with Python 3 and Dragon 13, 14, 15, or 16 is now in a beta phase for:
 
 - Dragonfly
 - Vocola and

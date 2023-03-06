@@ -26,11 +26,13 @@ SolidCompression=yes
 WizardStyle=modern
 SetupLogging=yes
 
+#define NatlinkCorePyd "_natlink_core{code:GetDragonVersion}.pyd"
+
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Messages]
-WelcomeLabel2=Welcome to {#MyAppName} {#MyAppVersion} for%n%nDragon/NaturallySpeaking 13, 14 or 15.
+WelcomeLabel2=Welcome to {#MyAppName} {#MyAppVersion} for%n%nDragon/NaturallySpeaking 13, 14, 15 or 16.
 
 ;[Code]
 #include "inno-code.iss"
@@ -42,7 +44,7 @@ Source: "{#PythonWheelPath}"; DestDir: "{#DistDir}"; \
 
 ;how registration was working before.  but it renamed the pyd and this created
 ;problems when developing.  
-;Source: "{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd"; DestDir: "{#CoreDir}"; DestName: "_natlink_core.pyd"; \
+;Source: "{#CoreDir}\{#NatlinkCorePyd}"; DestDir: "{#CoreDir}"; DestName: "_natlink_core.pyd"; \
 ;  Flags: ignoreversion external regserver {#Bits}
 
 
@@ -92,13 +94,12 @@ Root: HKCU; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "
 Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "-m pip install --upgrade pip"; StatusMsg: "Upgrade pip..."
 Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --target ""{#SitePackagesDir}""  --upgrade ""{app}/dist/{#PythonWheelName}"" "; StatusMsg: "natlink {#PythonWheelName}"
 
-Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\_natlink_core{code:GetDragonVersion}.pyd\""" ; StatusMsg: "regsvr32 _natlink_core{code:GetDragonVersion}.pyd"
+Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\{#NatlinkCorePyd}\""" ; StatusMsg: "regsvr32 {#NatlinkCorePyd}"
 Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "natlinkcore"
 
 Filename: "{code:GetPythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; Parameters: ""; StatusMsg: "Configure Natlink…"
 
 [UninstallRun]
-Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\_natlink_core15.pyd\""" ; StatusMsg: "regsvr32 -u _natlink_core15.pyd"
-Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\_natlink_core13.pyd\""" ; StatusMsg: "regsvr32 -u _natlink_core13.pyd"
+Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\{#NatlinkCorePyd}\""" ; StatusMsg: "regsvr32 -u {#NatlinkCorePyd}"
 Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "uninstall --yes  natlinkcore natlink"; StatusMsg: "uninstall natlink"
 

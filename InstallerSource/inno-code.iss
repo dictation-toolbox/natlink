@@ -17,6 +17,13 @@ var
   TestDir: String;
 begin
   Result := '';
+  TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking16');
+  if DirExists(TestDir) then
+  begin
+    Result := TestDir;
+    DragonVersion := '15';
+    exit;
+  end;
   TestDir := ExpandConstant('{commonappdata}\Nuance\NaturallySpeaking15');
   if DirExists(TestDir) then
   begin
