@@ -26,7 +26,7 @@ SolidCompression=yes
 WizardStyle=modern
 SetupLogging=yes
 
-#define NatlinkCorePyd "_natlink_core{code:GetDragonVersion}.pyd"
+#define NatlinkCorePyd "{code:GetGetPydName}"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

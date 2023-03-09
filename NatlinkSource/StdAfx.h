@@ -10,10 +10,8 @@
 //#define _CRT_SECURE_NO_WARNINGS
 #pragma once
 
-// Dragon 12 switched to unicode
-#if DRAGON_VERSION >= 12
+// Dragon > 12 switched to unicode
 #define UNICODE
-#endif
 
 #define STRICT
 // Windows 7 is 0x0601, see https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt?view=msvc-160

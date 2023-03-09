@@ -29,7 +29,7 @@ clsid="{dd990001-bb89-11d2-b031-0060088dc929}"          #natlinks well known cls
 subkey1=fr"WOW6432Node\CLSID\{clsid}\InprocServer32"
 subkey2=fr"CLSID\{clsid}\InprocServer32"  #only likely if not 64 bit windows
 subkeys=[subkey1,subkey2]
-default_pyd="_natlink_core15.pyd"    #just a sensible default if one isn't registered.
+default_pyd="_natlink_core.pyd"    #just a sensible default if one isn't registered.
 
 path_to_pyd=""
 #find the PYD actually registered, and load that one.

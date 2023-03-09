@@ -570,7 +570,7 @@ typedef struct {
    DWORD   dwPhonemeNode;
    QWORD   qwStartTime;
    QWORD   qwEndTime;
-#if DRAGON_VERSION >= 15
+#if LEGACY == 0 //  DPI => v15 
     QWORD   qwSilenceDuration;
 #endif
     DWORD   dwWordScore;

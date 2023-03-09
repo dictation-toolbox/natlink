@@ -52,14 +52,15 @@ Very little Python is used in natlink (this package).  See the note on  [Natlink
 However, there is some python to provide a veneer over the functions exported in the natlink .pyd files and export them to as the "natlink" python package.  
 Presently the entire python for natlink is in NatlinkSource/__init__.py
 
-
+_natlink_core.pyd/.pdb Supports - DPI 15, 16
+_natlink_core_legacy.pyd/.pdb Supports- DNS 13, DPI 14
 
 ## Updating after Compilation or Python Edit
 
-If you have a natlink installed, and just wish to update the _natlinkcore.pyd and .pdb from _natlinkcore15.pyd and __init__.py,
-run the powershell scripts local_publish_15.ps1 in and administrative powershell to update. 
+If you have a natlink installed, and just wish to update the .pyd and .pdb new _natlink_core.pyd/_natlink_core_legacy.pyd and __init__.py,
+run the powershell scripts local_publish.ps1 in and administrative powershell to update. 
 
-If you wish a different install location or pyd, pleasee copy local_publish_15.ps1 to a script update_natlink.ps1 and make edits.  update_natlink1.ps1 is in .gitignore so it won't be checked in to git.
+If you wish a different install location or pyd, pleasee copy local_publish.ps1 to a script update_natlink.ps1 and make edits.  update_natlink1.ps1 is in .gitignore so it won't be checked in to git.
 
 
 ## Debugging
@@ -86,7 +87,7 @@ There are samples you can copy and paste into your python console in the samples
 
 
 During developement you may wish to debug the C++ code with Visual Studio Code, without using dictation.  Use the script mentioned above to update 
-natlinkcore.pyd/dbb.
+_natlink_core*.pyd/pdb.
 
 Create a Debug Configuration that looks something like this:
 `
