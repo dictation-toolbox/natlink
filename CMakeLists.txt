@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.20)
 
 project (Natlink)
-set(NATLINK_VERSION 5.4.4)
+set(NATLINK_VERSION 5.5.4)
 set(PYTHON_VERSION 3.10 CACHE STRING "3.X for X >= 8") # Python to compile PYTHON_VERSION 3.X
 set(MYAPP_NAME "Natlink")
 
