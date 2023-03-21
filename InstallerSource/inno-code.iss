@@ -5,6 +5,7 @@ var
 
   CancelWithoutPrompt: Boolean;
   DragonVersion: Integer;
+  PythonInstallPath: String;
 
 procedure CancelButtonClick(CurPageID: Integer; var Cancel, Confirm: Boolean);
 begin
@@ -224,4 +225,14 @@ end;
 function GetDragonIniDir(Param: String): String;
 begin
   Result := DragonIniPage.Values[0];
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+// SetPythonInstallPathBat
+begin
+  if CurStep = ssInstall then
+  begin
+  PythonInstallPath := GetPythonInstallPath('');
+  SaveStringToFile(ExpandConstant('{app}')+'\python_environment.bat', 'cmd /k cd ' + PythonInstallPath, False);
+  end;
 end;

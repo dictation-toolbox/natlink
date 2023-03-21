@@ -53,6 +53,7 @@ Source: "{#PythonWheelPath}"; DestDir: "{#DistDir}"; \
 Name: "{group}\Configure Natlink via GUI"; Filename: "{#PythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; WorkingDir: "{#PythonInstallPath}\\Scripts"
 Name: "{group}\Configure Natlink via CLI"; Filename: "{#PythonInstallPath}\\Scripts\\natlinkconfig_cli.exe"; WorkingDir: "{#PythonInstallPath}\\Scripts"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\Natlink Python Environment"; Filename: "{app}\python_environment.bat"; WorkingDir: "{app}"
 
 [INI]                                                    
 Filename: "{code:GetDragonIniDir}\nssystem.ini"; Section: "Global Clients"; Key: ".{#MyAppName}"; \
