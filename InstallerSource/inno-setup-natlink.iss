@@ -27,6 +27,7 @@ WizardStyle=modern
 SetupLogging=yes
 
 #define NatlinkCorePyd "{code:GetGetPydName}"
+#define PythonInstallPath "{code:GetPythonInstallPath}"
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -49,9 +50,10 @@ Source: "{#PythonWheelPath}"; DestDir: "{#DistDir}"; \
 
 
 [Icons]
-Name: "{group}\Configure Natlink via GUI"; Filename: "{code:GetPythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; WorkingDir: "{code:GetPythonInstallPath}\\Scripts"
-Name: "{group}\Configure Natlink via CLI"; Filename: "{code:GetPythonInstallPath}\\Scripts\\natlinkconfig_cli.exe"; WorkingDir: "{code:GetPythonInstallPath}\\Scripts"
+Name: "{group}\Configure Natlink via GUI"; Filename: "{#PythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; WorkingDir: "{#PythonInstallPath}\\Scripts"
+Name: "{group}\Configure Natlink via CLI"; Filename: "{#PythonInstallPath}\\Scripts\\natlinkconfig_cli.exe"; WorkingDir: "{#PythonInstallPath}\\Scripts"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\Natlink Python Environment"; Filename: "{app}\python_environment.bat"; WorkingDir: "{app}"
 
 [INI]                                                    
 Filename: "{code:GetDragonIniDir}\nssystem.ini"; Section: "Global Clients"; Key: ".{#MyAppName}"; \
@@ -76,7 +78,7 @@ Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "vers
 
 ; Add a key for natlink COM server (_natlink_corexx.pyd) to find the Python installation
 ; If GetPythonInstallPath fails, then the error will be reported as per [Code] section
-Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "pythonInstallPath"; ValueData: "{code:GetPythonInstallPath}"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "pythonInstallPath"; ValueData: "{#PythonInstallPath}"; Flags: uninsdeletekey
 
 ; Register natlink with command line invocations of Python: the Natlink site packages directory
 ; is added as an additonal site package directory to sys.path during interpreter initialization.
@@ -91,15 +93,15 @@ Root: HKCU; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "
 
 [Run]
 ;register the pyd for corresponding version of Python
-Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "-m pip install --upgrade pip"; StatusMsg: "Upgrade pip..."
-Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --target ""{#SitePackagesDir}""  --upgrade ""{app}/dist/{#PythonWheelName}"" "; StatusMsg: "natlink {#PythonWheelName}"
+Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "-m pip install --upgrade pip"; StatusMsg: "Upgrade pip..."
+Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --target ""{#SitePackagesDir}""  --upgrade ""{app}/dist/{#PythonWheelName}"" "; StatusMsg: "natlink {#PythonWheelName}"
 
 Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\{#NatlinkCorePyd}\""" ; StatusMsg: "regsvr32 {#NatlinkCorePyd}"
-Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "natlinkcore"
+Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "natlinkcore"
 
-Filename: "{code:GetPythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; Parameters: ""; StatusMsg: "Configure Natlink…"
+Filename: "{#PythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; Parameters: ""; StatusMsg: "Configure Natlink…"
 
 [UninstallRun]
 Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\{#NatlinkCorePyd}\""" ; StatusMsg: "regsvr32 -u {#NatlinkCorePyd}"
-Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "uninstall --yes  natlinkcore natlink"; StatusMsg: "uninstall natlink"
+Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "uninstall --yes  natlinkcore natlink"; StatusMsg: "uninstall natlink"
 
