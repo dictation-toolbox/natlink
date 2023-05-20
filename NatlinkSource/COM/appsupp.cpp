@@ -195,6 +195,12 @@ std::string DoPyConfig(void) {
 		goto fail;
 	}
 
+	status = PyConfig_SetString(&config, &(config.program_name), L"Python");
+	if (PyStatus_Exception(status)) {
+		init_error = "Natlink: failed to set program_name\n";
+		goto fail;
+	}
+
     status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
 		init_error = "Natlink: failed initialize from config\n";
@@ -306,6 +312,7 @@ STDMETHODIMP CDgnAppSupport::UnRegister()
 
 	// finalize the Python interpreter
 	Py_Finalize();
+	PyMem_RawFree(L"python");
 
 	return S_OK;
 }
