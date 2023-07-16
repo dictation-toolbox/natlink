@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.20)
 
 project (Natlink)
-set(NATLINK_VERSION 5.5.4)
+set(NATLINK_VERSION 5.5.5)
 set(PYTHON_VERSION 3.10 CACHE STRING "3.X for X >= 8") # Python to compile PYTHON_VERSION 3.X
 set(MYAPP_NAME "Natlink")
 
@@ -13,9 +13,9 @@ set_property(CACHE PYTHON_VERSION PROPERTY STRINGS ${PYTHON_VERSIONS})
 
 #### where to find the 32-bit installer for $(PYTHON_VERSION)
 if(${PYTHON_VERSION} STREQUAL 3.11)
-    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.11.2/python-3.11.2.exe")
+    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.11.4/python-3.11.4.exe")
 elseif(${PYTHON_VERSION} STREQUAL 3.10)    
-    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.10.9/python-3.10.9.exe")
+    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.10.11/python-3.10.11.exe")
 elseif(${PYTHON_VERSION} STREQUAL 3.9)
     set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.9.13/python-3.9.13.exe")
 elseif(${PYTHON_VERSION} STREQUAL 3.8)
