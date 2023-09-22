@@ -1,3 +1,6 @@
+;debugging tip
+;Run the setup.exe program with /LOG.  See inno setup docs.
+
 #define MyGUID "{{dd990001-bb89-11d2-b031-0060088dc929}"
 #define Bits "32bit"
 #define SitePackagesDir "{app}\site-packages"
@@ -10,6 +13,14 @@
                           "-32\InstallPath" 
 #define PythonPathMyAppNameKey "Software\Python\PythonCore\" + PythonVersion + \
                           "-32\PythonPath\" + MyAppName 
+[Dirs]
+;we would like all users to read and execute these folders.
+;note pip replaces with what it thinks the permissions should be
+;so we need an extra setp in [Run] to restore all users read and execute.
+Name:  {#CoreDir}; Permissions: users-readexec
+Name:  {#SitePackagesDir}; Permissions: users-readexec
+Name: {#DistDir}; Permissions: users-readexec
+
 
 [Setup]
 AppId={#MyGUID}
@@ -92,10 +103,16 @@ Root: HKLM; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "
 Root: HKCU; Subkey: "{#PythonPathMyAppNameKey}"; ValueType: string; ValueData: "{#SitePackagesDir}"; Flags: uninsdeletekey noerror
 
 [Run]
+;debugging tip for this section:  Run the setup.exe program with /LOG.  See inno setup docs.
+
 ;register the pyd for corresponding version of Python
 Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "-m pip install --upgrade pip"; StatusMsg: "Upgrade pip..."
 Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --target ""{#SitePackagesDir}""  --upgrade ""{app}/dist/{#PythonWheelName}"" "; StatusMsg: "natlink {#PythonWheelName}"
 
+;pip changes the permissions on files and folders, so we have to redo them.  icacls is a built in windows program to change permissions.
+;users need read and execute  
+
+Filename: "icacls.exe";  Parameters: " ""{#SitePackagesDir}"" /t /grant Users:RX "; StatusMsg: "icacls.exe"; 
 Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\{#NatlinkCorePyd}\""" ; StatusMsg: "regsvr32 {#NatlinkCorePyd}"
 Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "natlinkcore"
 
