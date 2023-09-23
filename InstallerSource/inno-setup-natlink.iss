@@ -8,6 +8,10 @@
 #define DistDir "{app}\dist"
 #define WheelPath "{#DistDir}\{#PythonWheelName}"
 
+;a well known SID for all users on a system.
+;on an english system, (Get-LocalGroup users).SID will return this SID 
+#define AllowedUsersSid "S-1-5-32-545"   
+
 ; It's important to look in the InstallPath subkey to check for installation
 #define PythonInstallKey "Software\Python\PythonCore\" + PythonVersion + \
                           "-32\InstallPath" 
@@ -112,7 +116,7 @@ Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --targe
 ;pip changes the permissions on files and folders, so we have to redo them.  icacls is a built in windows program to change permissions.
 ;users need read and execute  
 
-Filename: "icacls.exe";  Parameters: " ""{#SitePackagesDir}"" /t /grant Users:RX "; StatusMsg: "icacls.exe"; 
+Filename: "icacls.exe";  Parameters: " ""{#SitePackagesDir}"" /t /grant *{#AllowedUsersSid}:RX "; StatusMsg: "icacls.exe"; 
 Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\{#NatlinkCorePyd}\""" ; StatusMsg: "regsvr32 {#NatlinkCorePyd}"
 Filename: "{#PythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "natlinkcore"
 
