@@ -2,7 +2,7 @@
 
 ###### How do I reconfigure Natlink after installation?
 
-- After install natlink can be reconfigured Using `Configure Natlink via CLI` or `Configure Natlink via CLI` Natlink start menu.
+- After install natlink can be reconfigured Using `Configure Natlink via GUI` or `Configure Natlink via CLI` Natlink start menu.
 
 ###### How can I install other Python packages with Natlink?
 
