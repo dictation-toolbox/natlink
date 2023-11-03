@@ -41,3 +41,37 @@ There are different projects that utilize natlink to build your own grammar/scri
 [Unimacro](https://github.com/dictation-toolbox/unimacro): project aims to provide a rich set of command grammars, that can be configured by the users without programming knowledge.
 
 [Caster](https://github.com/dictation-toolbox/Caster) Caster extends Dragonfly for features like CCR (continuous command recogntion) aand provides a set of commands and grammars for programming and general computer use.
+
+These are all installed with pip into the python environment specified for natlink.  The setup program creates a shortcut "Natlink Python Environment" which will open a terminal session with the correct Python in the path.
+
+All natlink based projects depend on natlinkcore.  Natlink core depends on natlink, which must be installed by the natlink installer.  If you haven't installed natlink, natlinkcore or any other natlink projects will not install.
+
+You will note that the natlink python module itself is not in the usual site-packages folder, but installed elsewhwere on your system:
+```
+C:\Users\some-user\AppData\Local\Programs\Python\Python310-32>pip show natlink
+Name: natlink
+Version: 5.5.6
+Summary: Natlink is an OpenSource extension module for the speech recognition program
+Home-page:
+Author: Joel Gould
+Author-email:
+License:
+Location: c:\program files (x86)\natlink\site-packages
+Requires:
+Required-by: natlinkcore
+```
+
+Whereas natlinkcore will be installed in the usual site-packages area:
+```
+C:\Users\some-user\AppData\Local\Programs\Python\Python310-32>pip show natlinkcore
+Name: natlinkcore
+Version: 5.3.7
+Summary: Python portion of Natlink, a compatibility module for Dragon Naturally Speaking
+Home-page:
+Author:
+Author-email: "Quintijn Hoogenboom (maintainer)" <q.hoogenboom@antenna.nl>
+License:
+Location: c:\users\doug\appdata\local\programs\python\python310-32\lib\site-packages
+Requires: dtactions, natlink, pydebugstring, pysimplegui
+Required-by: unimacro```
+
