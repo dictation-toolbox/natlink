@@ -2,13 +2,14 @@
 
 This section documents how natlink is registered with Dragon and Windows, initialized and loaded by Dragon NaturallySpeaking.
 
-The compiled library `_natlink_core*.pyd` is registered with natspeak as a COM-Server support module.
-This causes our library to be loaded through the COM-Interface whenever Dragon started.
-During the initialization of the library a Python interpreter it started which in turn loads the natlink python modules.
-All of this only starts python process to actually talk to dragons natspeak we need to go back into the library. 
-Dragon itself provides a COM-Server which we can call from the C++ libary. 
-These calls are wrapped into a Python/C API by the same library that just started the python process. 
-So the python process pulls back into that very same library to talk to natspeak.
+The compiled dynamic link library `_natlink_core*.pyd` (which we call the natlink dll) is registered with natspeak as a COM-Server support module.
+
+Dragon loads the natlink dll through a COM-Interface whenever Dragon started. 
+
+
+When the natlink dll loads, it starts a Python interpreter and loads the natlinkcore  python modules.
+
+Dragon itself provides a COM-Server which is called from the natlink dll. Python code in natlinkcore or various other packages that use natlinkcore can provide information to Dragon this way.
 
 ## Support module registration
 
@@ -29,7 +30,16 @@ We can then activate/deactivate our support Module by either adding or removing 
 As far as I can tell the value to the `.Natlink` key is irrelevant.
  
 ## COM-Server implementation
-`appsupp.h/appsupp.cpp`
+The natlink COM Server bridges between the COM subsystem Natlink expects, and the Python subsystem, so function calls can cross between them.  This bridge is primarily implemented in C++ and compiled into `_natlink_core*.pyd`.  Where it is easier, parts of this bridge are written in Python. It is a relatively small amount of Python actually in natlink, and it is in src/natlink/__init__.py.
+
+The Python in __init__.py provides:
+- some wrappers of the functions in the natlink dll, that encode Python strings to Windows Encoded Strings.   It is much easier to do the encodings Python than in C++. The Python version of the functions expect Python strings, and call the C++ versions with Windows Encoded Strings.   
+
+- a context manager NatlinkConnector for managing the connection to Natlink.  
+
+
+
+### `appsupp.h/appsupp.cpp`
 
 Apparently we do not have access to the IDL (interface definition language) files. 
 
@@ -39,9 +49,18 @@ These files seem to implement the support interface defined in `COM/dspeech.h`.
 
 ## DLL initialization and python Interpreter
 
+The Python Intrepreter is initialized in com/appsupp.cpp in a method
+`STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )`.
+
+This method:
+* Starts the Python intrepter
+* Starts the natlinkcore subsystem.  
+
+
 `TODO`
 
 ## COM-Python Wrapper
+Does this have something to do with the Python system understanding wehre the inrpreter is?
 
 The python natlink module is added to `HKEY_CURRENT_USER\SOFTWARE\WOW6432Node\Python\PythonCore\3.8\PythonPath`
 as a Key/Subentry(?). This allows the sys module loader to find natlinkmain module.
