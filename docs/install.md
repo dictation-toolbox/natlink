@@ -29,19 +29,4 @@
 
 Scrips starting with an underscore and ending in .py `_*.py` will be imported in alphabetical order, except `__init__.py` will be loaded first if it exists. 
 
-
-## **Ecosystem**
-
-There are different projects that utilize natlink to build your own grammar/scripts:
-
-[Natlink](https://github.com/dictation-toolbox/natlink) is this repository. Natlink is an C++ extension module for Dragon NaturallySpeaking (DNS/DPI). Natlink C++ is installed only by the Natlink's installer and not through PyPI.
-
-[Natlink Core](https://github.com/dictation-toolbox/natlinkcore): Provides the Python interface to this repositories C++ extension and loads native Natlink grammars. The Natlink installer installs natlink core to the correct python site-packages. All natlink based projects depend on natlinkcore which is required For the following projects to function with Dragon NaturallySpeaking
-
-[Dragonfly](https://github.com/dictation-toolbox/dragonfly) is speech recognition framework for Python that makes it convenient to create custom commands to use with speech recognition software that can be cross-platform and supports multiple speech recognition engines.
-
-[Unimacro](https://github.com/dictation-toolbox/unimacro): project aims to provide a rich set of command grammars, that can be configured by the users without programming knowledge.
-
-[Caster](https://github.com/dictation-toolbox/Caster) Caster extends Dragonfly for features like CCR (continuous command recogntion) aand provides a set of commands and grammars for programming and general computer use.
-
 The Natlink setup program creates a shortcut `Natlink Python Environment` which will open a terminal session with the correct Python in the path for the end-user to install dependencies.
