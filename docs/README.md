@@ -4,7 +4,7 @@ Natlink is a compatibility module for [Dragon NaturallySpeaking (DNS/DPI)](https
 
 ## Introduction <!-- {docsify-ignore} -->
 
-Natlink can be used as a library for low-level access Dragon engine and as a framework for writing grammars and macros.
+Natlink can be used as a library for low-level access Dragon engine with a framework for writing grammars and macros.
 
 Grammars can be used to insert text boilerplate, operate the menus of programs, or otherwise control a computer. They can even be used to help
 write computer programs. A grammar specifies what will happen when certain words are dictated with grammar rules. For example, a hypothetical grammar could have a very simple rule `american date today` which prints the current date out in a format `mm/dd/yyyy`.
