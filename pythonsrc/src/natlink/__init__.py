@@ -11,6 +11,7 @@ import traceback
 import winreg
 import ctypes
 import contextlib
+from dtactions.sendkeys import sendkeys, sendsystemkeys
 W32OutputDebugString = ctypes.windll.kernel32.OutputDebugStringW
 
 #copied from pydebugstring.  
@@ -59,6 +60,7 @@ try:
     import locale
     from _natlink_core import execScript as _execScript
     from _natlink_core import playString as _playString
+    from _natlink_core import playEvents as _playEvents
     from _natlink_core import recognitionMimic as _recognitionMimic
 except Exception:
     tb_lines = traceback.format_exc()
@@ -69,7 +71,19 @@ def lmap(fn,Iter):
     return list(map(fn, Iter))
 
 def playString(a, hook=0):
-    return _playString(toWindowsEncoding(a), hook)
+    """send to dtactions.sendkeys, causes an ESP error in Dragon 16
+    """
+    # return _playString(toWindowsEncoding(a), hook)
+    if hook:
+        return sendsystemkeys(a)
+    # normal case:
+    return sendkeys(a)
+
+def playEvents(a):
+    """causes a halt (ESP error) in Dragon 16.
+    """
+    print("playEvents disables for Dragon 16")
+    return None
 
 def execScript(script,args=None):
     #only encode the script.  can't find a single case of anyone using the args
