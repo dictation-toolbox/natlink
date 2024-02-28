@@ -14,8 +14,10 @@
 #include "../Resource.h"
 #include "../DragonCode.h"
 #include "appsupp.h"
-#include <winreg.h>
-#include "../extern/WinReg/WinReg.hpp"
+#include "../extern/json/json.hpp"
+#include <fstream>
+#include <iostream>
+#include <windows.h>
 
 // #include <plog/Log.h>
 // from PythWrap.cpp
@@ -57,6 +59,56 @@ static std::string get_this_module_path()
 	std::string p = path;
 	return p;
 }
+
+static std::string get_value_from_config(std::string key)
+// returns the value of the key in environment.json
+{
+	using json = nlohmann::json;
+	std::string file = std::string(getenv("USERPROFILE")) + std::string("\\.natlink\\environment.json");
+
+	if (!std::ifstream(file))
+	{
+		char const *const msg_str = "environment.json not found at: ";
+		MessageBox(NULL, (L"environment.json not found at: " + std::wstring(file.begin(), file.end())).c_str(), L"Natlink", MB_OK);
+		OutputDebugStringA(msg_str);
+		return "";
+	}
+	try
+	{
+		std::ifstream ifs(file);
+		nlohmann::json data = nlohmann::json::parse(ifs);
+		for (nlohmann::json::iterator it = data.begin(); it != data.end(); ++it)
+		{
+			if (it.key() == key)
+			{
+			 return	it.value().get<std::string>().c_str();
+			}
+		}
+		return ""; // key not found
+	}
+	catch (const std::exception &e)
+	{
+		char const *const msg_str = "Error reading environment.json";
+		OutputDebugStringA(msg_str);
+		OutputDebugStringA(e.what());
+		return "";
+	}
+}
+
+static std::string get_python_environment_path()
+// returns the path to the python environment as defined in environment.json
+{
+	std::string environment_path = get_value_from_config("python_env_path");
+	if (!std::filesystem::exists(environment_path))
+	{
+		char const *const msg_str = "Python environment path does not exist: ";
+		OutputDebugStringA(msg_str);
+		OutputDebugStringA(environment_path.c_str());
+		return "";
+	}
+	return environment_path.c_str();
+}
+
 static int pyrun_string(std::string python_cmd)
 {
 	std::string message = std::string("CDgnAppSupport Running python: ") + python_cmd;
@@ -75,58 +127,6 @@ static int pyrun_string(const char python_cmd[])
 	return pyrun_string(std::string(python_cmd));
 }
 
-static std::string AddOurDirToConfig(PyConfig *config) {
-	using winreg::RegKey, winreg::RegResult;
-	// _natlinkcore.pyd (this code, dear reader!) doesn't know where it is; find out
-
-	std::wstring key_wstring(L"SOFTWARE\\Natlink");
-    RegKey key;
-	RegResult result = key.TryOpen(HKEY_LOCAL_MACHINE, key_wstring.c_str(), KEY_READ);
-	if (!result) {
-		return (std::string("Error: could not open HKLM\\") + 
-				std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
-	} 
-	else { // now the install location of Natlink pyd and sources is known; add to sys.path
-	    if (auto new_wstring = key.TryGetStringValue(L"sitePackagesDir")) {
-			// amend psys.path so that the python package 'natlink' can be loaded
-			PyStatus status = PyWideStringList_Append(&(config->module_search_paths), 
-														(*new_wstring).c_str());
-			if (PyStatus_Exception(status))
-				return (std::string("Natlink: could not append: ") +
-						std::string((*new_wstring).begin(), (*new_wstring).end()) + 
-						std::string("\n"));
-			else
-				return std::string("");
-		} else {
-			return (std::string("Error: could not open subkey sitePackagesDir of HKLM\\") + 
-					std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
-		}
-	}
-}
-
-
-static std::string AddPythonInstallPathToConfig(PyConfig *config) {
-	using winreg::RegKey, winreg::RegResult;
-	std::wstring key_wstring(L"SOFTWARE\\Natlink");
-    RegKey key;
-	RegResult result = key.TryOpen(HKEY_LOCAL_MACHINE, key_wstring.c_str(), KEY_READ);
-	if (!result) {
-		return (std::string("Error: could not open HKLM\\") + 
-				std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
-	} 
-	else { // now the install location of Python is known
-		std::wstring new_wstring(key.GetStringValue(L"pythonInstallPath"));
-  	    if (auto new_wstring = key.TryGetStringValue(L"pythonInstallPath")) {
-	    	PyConfig_SetString(config, &(config->prefix), (*new_wstring).c_str());
-			return std::string("");
-		  } else {
-			  return (std::string("Error: could not open subkey pythonInstallPath of HKLM\\") + 
-					std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
-		  }
-	}
-}
-
-
 static void DisplaySysPath(CDragonCode* pDragCode) {
 	std::wstring str_wstring = std::wstring(Py_GetPath());
 	std::string str_string(str_wstring.begin(), str_wstring.end());
@@ -138,7 +138,7 @@ static void DisplayVersions(CDragonCode* pDragCode) {
 	const std::string natlinkVersionMsg = std::string("Natlink Version: ") + std::string(NATLINK_VERSION) + 
 										  std::string("\r\n");
 
-	pDragCode->displayText(natlinkVersionMsg.c_str(), FALSE); // TODO: remove since version is showed in title of window
+	pDragCode->displayText(natlinkVersionMsg.c_str(), FALSE);
 	pDragCode->displayText((std::string("Natlink pyd path: ")+ get_this_module_path()).c_str(),FALSE);
 	pDragCode->displayText("\nUse DebugView to debug natlink problems.\n\thttps://docs.microsoft.com/en-us/sysinternals/downloads/debugview\n");
 #endif
@@ -182,42 +182,49 @@ static void CallPyFunctionOrDisplayError(CDragonCode* pDragCode, PyObject* pMod,
 std::string DoPyConfig(void) {
 	std::string init_error = "";
     PyStatus status;
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
+	PyConfig config;
+	PyConfig_InitIsolatedConfig(&config);
 
-	init_error = AddOurDirToConfig(&config);
-	if (!init_error.empty()) {
-		goto fail;
+	std::string python_env_path = get_python_environment_path();
+	std::wstring python_env_path_W(python_env_path.begin(), python_env_path.end());
+
+	if (python_env_path_W.empty())
+	{
+		init_error = "Python environment not read from environment.json use DebugView\n";
+		goto exception;
 	}
-
-	init_error = AddPythonInstallPathToConfig(&config);
-	if (!init_error.empty()) {
-		goto fail;
-	}
-
-	status = PyConfig_SetString(&config, &(config.program_name), L"Python");
+	// Do not set the python home as it interferes with detecting python virtual environment
+	// set the python executable in the virtual environment
+	status = PyConfig_SetString(&config, &config.executable, (python_env_path_W + L"\\Scripts\\python.exe").c_str());
 	if (PyStatus_Exception(status)) {
-		init_error = "Natlink: failed to set program_name\n";
-		goto fail;
+		init_error = "PyConfig: failed to set executable\n";
+		goto exception;
+	}
+
+	// const wchar_t python_env_path;
+	status = PyConfig_SetString(&config, &config.program_name, python_env_path_W.c_str());
+	if (PyStatus_Exception(status)) {
+		init_error = "PyConfig: failed to set program_name\n";
+		goto exception;
 	}
 
     status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
-		init_error = "Natlink: failed initialize from config\n";
-        goto fail;
+		init_error = "PyConfig: failed initialize from config\n";
+        goto exception;
     }
 	
 	return init_error; // success, return ""
 
-fail:
+exception:
    //   PyConfig_Clear(&config);
    //  Py_ExitStatusException(status);
 	OutputDebugString(TEXT( "NatLink: failed python_init") );
 	
     status = Py_InitializeFromConfig(&config);
+	MessageBox(NULL, std::wstring(init_error.begin(), init_error.end()).c_str(), L"NatLink: failed python_init", MB_OK);
 	return init_error;
 }
-
 
 //---------------------------------------------------------------------------
 // Called by NatSpeak once when the compatibility module is first loaded.
@@ -233,7 +240,6 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 {
 	// load and initialize the Python system
 	std::string init_error =  DoPyConfig();
-	Py_Initialize();
 
 	// load the natlink COM interface into Python and return a pointer to shared CDragonCode object
 	m_pDragCode = initModule();
@@ -244,6 +250,7 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	if( !bSuccess )	{
 		OutputDebugString(
 			TEXT( "NatLink: failed to initialize NatSpeak interfaces") );
+			MessageBox(NULL, L"NatLink: failed to initialize NatSpeak interfaces", L"Natlink", MB_OK);
 		m_pDragCode->displayText( "Failed to initialize NatSpeak interfaces\r\n", TRUE ); // TODO: bug? won't show
 		return S_OK;
 	}
@@ -268,24 +275,8 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 		m_pDragCode->displayText( "Natlink is loaded...\n\n", FALSE );
 	}
 
-	//need to add the path of natlinkcore to the Python path.
-	//it could be in either platlib\natlinkcore (i.e. the python install diretory/site-packages)
-	//sysconfig.get_path('purelib')
-	//
-	//or in site.USER_SITE/site-package.  
-	//
 	pyrun_string("import sys,site,sysconfig");
     pyrun_string("import pydebugstring.output as o");
-
-	//add natlinkcore to the import paths, because the is required for pyrun_string to load modules from natlinkcore
-	pyrun_string("d1=site.USER_SITE+'\\natlinkcore'");
-	pyrun_string("d2=sysconfig.get_path('purelib')+'\\natlinkcore'");
-
-	pyrun_string("sys.path.append(d1)"); 
-	pyrun_string("sys.path.append(d2)");
-
-	//we have to import natlinkcore this way as well, so we can use natlinkcore.* in pyrun_string
-	//pDragCode->displayText("import redirect\n");
 
 	pyrun_string("from natlinkcore import redirect_output");
 	pyrun_string("redirect_output.redirect()");
