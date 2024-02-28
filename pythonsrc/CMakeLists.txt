@@ -1,26 +1,5 @@
 message("src CMakeLists.txt")
 
-# Find Flit executable path
-cmake_path(GET Python3_EXECUTABLE PARENT_PATH python_root)
-find_program(FLIT NAMES "${python_root}/Scripts/flit.exe")
-
-# If default python script directory is not writable check appdata Python script directory
-if(NOT FLIT)
-    cmake_path(GET python_root STEM LAST_ONLY lastStem)
-    cmake_path(SET flit_appdata "$ENV{appdata}/python/${lastStem}/Scripts/flit.exe" NORMALIZE)
-    find_program(FLIT NAMES ${flit_appdata})
-endif(NOT FLIT)
-
-if(NOT FLIT)
-    message(FATAL_ERROR " Flit exe not found at: ${python_root}/Scripts/flit.exe
-    or ${flit_appdata}\n "
-    "Install Flit with: .\"${Python3_EXECUTABLE}\" -m pip install flit")
-else(FLIT)
-    message(STATUS "FLIT exe found at ${FLIT}")
-endif(NOT FLIT)
-
-set(PACKAGE "dist/natlink-${NATLINK_VERSION}-py3-none-any.whl")
-
 #there are few files in the python portion, list them individually.
 
 configure_file(pyproject.toml pyproject.toml)
@@ -36,7 +15,7 @@ set(NL_PY_DIR  ${CMAKE_BINARY_DIR}/pythonsrc/src/natlink)
 
 set (NL_FILES ${NL_BINARY_DIR}/_natlink_core_legacy.pyd ${NL_BINARY_DIR}/_natlink_core_legacy.pdb 
 ${NL_BINARY_DIR}/_natlink_core.pyd ${NL_BINARY_DIR}/_natlink_core.pdb
-${_Python3_RUNTIME_LIBRARY_RELEASE} ) 
+${_Python_RUNTIME_LIBRARY_RELEASE} ) 
 
 add_custom_target(natlink-package ALL DEPENDS "${WHEEL_PATH}")
 

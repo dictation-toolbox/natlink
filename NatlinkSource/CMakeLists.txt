@@ -21,21 +21,22 @@ set(HEADERS_FILES
 source_group("Headers" FILES ${HEADERS_FILES}) 
 source_group("Sources" FILES ${SRC_FILES})
 
-# TODO: this is wrong. We don't need the python interpreter, only it's name (if at all)
+# FIXME: this is wrong. We don't need the python interpreter, only it's name (if at all)
 add_executable(python_dll IMPORTED)
-set_target_properties(python_dll  
+set_target_properties(python_dll
         PROPERTIES
-        IMPORTED_LOCATION ${_Python3_RUNTIME_LIBRARY_RELEASE})
+        IMPORTED_LOCATION ${_Python_RUNTIME_LIBRARY_RELEASE})
 
 # Include CMAKE_CURRENT_SOURCE_DIR for the benefit of natlink.rc (in current_binary_dir)
-include_directories(${Python3_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${Python_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories("extern")
 
 add_compile_definitions(NATLINK_VERSION="${NATLINK_VERSION}"
         PYTHON_VERSION="${PYTHON_VERSION}" # strict discipline every
         MYAPP_NAME="${MYAPP_NAME}") # that'll likely be Natlink
                         
-add_compile_options("/std:c++17") # because of extern/WinReg
+add_compile_options("/std:c++17")
+add_compile_options("/EHsc")
 
 # Asserts that Py_ssize_t is used in argument parsing,
 # see note at top of https://docs.python.org/3/c-api/arg.html
@@ -52,7 +53,7 @@ set_target_properties(natlink_core_pyd natlink_core_legacy_pyd PROPERTIES
         DEPENDS python_dll)
 # and they both use Python libraries
 set_property(TARGET natlink_core_pyd natlink_core_legacy_pyd
-             APPEND PROPERTY LINK_LIBRARIES ${Python3_LIBRARIES})
+             APPEND PROPERTY LINK_LIBRARIES ${Python_LIBRARIES})
 # Now, define filename for Dragon 15, 16 pyd and the -D passed to the compiler
 set_property(TARGET natlink_core_pyd PROPERTY OUTPUT_NAME "_natlink_core" )
 target_compile_definitions(natlink_core_pyd PRIVATE LEGACY=False)
