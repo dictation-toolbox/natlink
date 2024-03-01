@@ -197,20 +197,19 @@ std::string DoPyConfig(void) {
 	// set the python executable in the virtual environment
 	status = PyConfig_SetString(&config, &config.executable, (python_env_path_W + L"\\Scripts\\python.exe").c_str());
 	if (PyStatus_Exception(status)) {
-		init_error = "PyConfig: failed to set executable\n";
+		init_error = "Natlink: failed to set executable\n";
 		goto exception;
 	}
 
-	// const wchar_t python_env_path;
-	status = PyConfig_SetString(&config, &config.program_name, python_env_path_W.c_str());
+	status = PyConfig_SetString(&config, &(config.program_name), L"Python");
 	if (PyStatus_Exception(status)) {
-		init_error = "PyConfig: failed to set program_name\n";
+		init_error = "Natlink: failed to set program_name\n";
 		goto exception;
 	}
 
     status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
-		init_error = "PyConfig: failed initialize from config\n";
+		init_error = "Natlink: failed initialize from config\n";
         goto exception;
     }
 	
