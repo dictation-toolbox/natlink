@@ -11,6 +11,8 @@ import traceback
 import winreg
 import ctypes
 import contextlib
+from natlinkcore import loader as LOADER
+from dtactions.vocola_sendkeys import ext_keys
 W32OutputDebugString = ctypes.windll.kernel32.OutputDebugStringW
 
 #copied from pydebugstring.  
@@ -59,6 +61,7 @@ try:
     import locale
     from _natlink_core import execScript as _execScript
     from _natlink_core import playString as _playString
+    from _natlink_core import playEvents as _playEvents
     from _natlink_core import recognitionMimic as _recognitionMimic
 except Exception:
     tb_lines = traceback.format_exc()
@@ -69,7 +72,21 @@ def lmap(fn,Iter):
     return list(map(fn, Iter))
 
 def playString(a, hook=0):
-    return _playString(toWindowsEncoding(a), hook)
+    """send to dtactions.sendkeys, causes an ESP error in Dragon 16
+    """
+    # return _playString(toWindowsEncoding(a), hook)
+    if hook:
+        return execScript(f'SendSystemKeys("{a}")')
+    # normal case:
+    return ext_keys.send_input(a)
+
+def playEvents(a):
+    """causes a halt (ESP error) in Dragon 16.
+    """
+    if getDNSVersion() >= 16:
+        print("ignore playEvents, it halts with Dragon 16 (ESP error)")
+        return None
+    return _playEvents(a)
 
 def execScript(script,args=None):
     #only encode the script.  can't find a single case of anyone using the args
@@ -84,6 +101,27 @@ def execScript(script,args=None):
 
 def toWindowsEncoding(str_to_encode):
     return str_to_encode.encode('Windows-1252')
+
+
+def getDNSVersion():
+    """find the correct DNS version number (as an integer)
+
+    2022: extract from the dragonIniDir setting in the registry, via loader function
+    (is also in natlinkstatus.py)
+
+    """
+    dragonIniDir = LOADER.get_config_info_from_registry("dragonIniDir")
+    if dragonIniDir:
+        try:
+            version = int(dragonIniDir[-2:])
+        except ValueError:
+            print('getDNSVersion, invalid version found "{dragonIniDir[-2:]}", return 0')
+            version = 0
+    else:
+        print(f'Error, cannot get dragonIniDir from registry, unknown DNSVersion "{dragonIniDir}", return 0')
+        version = 0
+    return version
+
 
 #wrap the C++ natConnect with a version that returns a context manager
 
@@ -101,3 +139,10 @@ def NatlinkConnector():
     yield
     print("natlink disconnecting")
     natDisconnect()
+
+
+if __name__ == "__main__":
+    print(f'getDNSVersion: {getDNSVersion()} (type: {type(getDNSVersion())}))')
+    # playString('abcde')
+    # playEvents(tuple())
+    
