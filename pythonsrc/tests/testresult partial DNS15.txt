@@ -1,0 +1,239 @@
+baseFolder from argv: C:\DT\natlinkDoug\pythonsrc\tests
+baseFolder from argv: C:\DT\natlinkDoug\pythonsrc\tests
+log messages to file: C:\DT\natlinkDoug\pythonsrc\tests\testresult.txt
+starting unittestNatlink
+
+starting tests with threading: 0
+
+waiting for DragonPad: 1
+waiting for DragonPad: 2
+testDictObj
+waiting for calc window 0
+setting CalcHndle: 1640302
+testing Hello {naive}
+Etest recognitionMimicCommands, version: 15
+mod: natspeak
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('runone', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: runone, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('runone', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('three', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: three, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('three', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: painting, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('three', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('four', 0), ('modern', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: four, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('four', 0), ('modern', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: modern, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('four', 0), ('modern', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: painting, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('four', 0), ('modern', 0), ('painting', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: seven, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tent, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: seven, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('seven', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: eight, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: eight, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tent, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: mimic, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: eight, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tent, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: house, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tent, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: house, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: tower, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+==================================================
+word: church, ruleNumber: 0
+wordsAndNums: [('mimic', 0), ('eight', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('tent', 0), ('house', 0), ('tower', 0), ('church', 0)]
+ruleMap: {1: 'runone', 2: 'runtwo', 3: 'runthree', 4: 'extraword', 5: 'runfour', 6: 'extrawords', 7: 'runfive', 8: 'extralist', 9: 'runsix', 10: 'runseven', 11: 'wordsalternatives', 12: 'runeight', 13: 'optional'}
+Invalid key 0 for ruleMap
+===============================
+mod: natspeak
+FtestTrayIcon
+mod: natspeak
+E
+======================================================================
+ERROR: testDictObj (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<string>", line 191, in tearDown
+  File "<string>", line 386, in killCalc
+TestError: in killCalc, could not get back to Calc window
+
+======================================================================
+ERROR: testTrayIcon (__main__.UnittestNatlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<string>", line 2850, in testTrayIcon
+natlink.ValueError: Icon file right could not be loaded
+
+======================================================================
+FAIL: testRecognitionMimicCommands (__main__.UnittestNatlink)
+test different phrases with commands, from own grammar
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<string>", line 1139, in testRecognitionMimicCommands
+  File "<string>", line 1629, in doTestCommandRecognition
+AssertionError: recognition mimic succeeded, but got wrong recogType from testGram 'other', words: ['mimic', 'two', 'green'] (expected 'self'
+
+----------------------------------------------------------------------
+Ran 3 tests in 12.689s
+
+FAILED (failures=1, errors=2)

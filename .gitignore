@@ -103,3 +103,4 @@ dist
 /tests/testresult.txt
 /src/natlink/*.pdb
 /src/natlink/*.pdb
+/pythonsrc/tests/testresult.txt

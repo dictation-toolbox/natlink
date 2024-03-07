@@ -55,8 +55,8 @@ class UnittestNatlink(unittest.TestCase):
 ##      switchToNatSpeak()
 ##      natlink.playString('{Alt+space}n')
     def setUp(self):
-        if not natlink.isNatSpeakRunning():
-            raise TestError('NatSpeak is not currently running')
+        if natlink.isNatSpeakRunning():
+            raise TestError('NatSpeak should NOT be running')
 ##        self.connect()
 ##        self.user = natlink.getCurrentUser()[0]
 ##        self.lookForDragonPad()
@@ -143,6 +143,8 @@ class UnittestNatlink(unittest.TestCase):
 
 def run():
     print('starting unittestPrePost')
+    result = natlink.isNatSpeakRunning()
+    print(f'isNatSpeakRunning: {result}')
     unittest.main()
     
 

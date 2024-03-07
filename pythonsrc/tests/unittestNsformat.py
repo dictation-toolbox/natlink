@@ -11,23 +11,16 @@
 # do not run from pythonwin. See also README.txt in PyTest folder
 #
 # October, 2009, QH, added tests for nsformat
-
-import sys
+#pylint:disable=W0401, W0614, C0209, W0622, C0200
+#pylint:disable=E1101
 import unittest
-import types
-import os
-import os.path
 import time
-import traceback        # for printing exceptions
-from struct import pack
 
 import natlink
-import gramparser
-from natlinkutils import *
-import natlinkutils
-import win32gui
-from nsformat import *
-import utilsqh
+# from natlinkcore import gramparser
+from natlinkcore import natlinkstatus
+from natlinkcore.natlinkutils import *
+from natlinkcore.nsformat import *
 
 class TestError(Exception):
     pass
@@ -42,7 +35,6 @@ natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
 logFileName = r"D:\natlink\natlink\PyTest\testresult.txt"
 
 # make different versions testing possible:
-import natlinkstatus
 nlstatus = natlinkstatus.NatlinkStatus()
 DNSVersion = nlstatus.getDNSVersion()
 
@@ -142,7 +134,7 @@ class UnittestNsformat(unittest.TestCase):
 
     #---------------------------------------------------------------------------
     def testFormatWord(self):
-        """all words with normal (0) state as input.
+        r"""all words with normal (0) state as input.
         
         .\point results in ' .'
         """
@@ -164,7 +156,7 @@ class UnittestNsformat(unittest.TestCase):
                          (word, formattedResult, repr(newState), repr(expSet)))
 
     def testFormatLetters(self):
-        """all words with normal (0) state as input.
+        r"""all words with normal (0) state as input.
         
         .\point results in ' .'
         """
@@ -195,11 +187,11 @@ class UnittestNsformat(unittest.TestCase):
             
         for w,t in wfList:
             varInNsformat = 'flags_like_%s'% t
-            if type(w) == tuple:
+            if isinstance(w, tuple):
                 flags = w
             else:
                 wInfo = gwi(w)
-                self.assertTrue(wInfo != None, "word info for word: %s could not be found. US user???"% w)
+                self.assertTrue(wInfo is not None, "word info for word: %s could not be found. US user???"% w)
                 flags = wordInfoToFlags(wInfo)
                 flags.discard(3)
                 flags = tuple(flags) # no delete flag not interesting
@@ -600,6 +592,8 @@ def log(t):
 def dumpResult(testResult, logFile):
     """dump into 
     """
+    if logFile is None:
+        return
     if testResult.wasSuccessful():
         mes = "all succesful"
         logFile.write(mes)
@@ -621,20 +615,22 @@ logFile = None
 
 def run():
     global logFile, natconnectOption
-    logFile = open(logFileName, "w")
-    log("log messages to file: %s"% logFileName)
-    log('starting unittestNsformat')
+    # logFile = open(logFileName, "w")
+    # log("log messages to file: %s"% logFileName)
+    # log('starting unittestNsformat')
+    logFile = None
     # trick: if you only want one or two tests to perform, change
     # the test names to her example def test....
     # and change the word 'test' into 'tttest'...
     # do not forget to change back and do all the tests when you are done.
     suite = unittest.makeSuite(UnittestNsformat, 'test')
 ##    natconnectOption = 0 # no threading has most chances to pass...
-    log('\nstarting tests with threading: %s\n'% natconnectOption)
-    result = unittest.TextTestRunner().run(suite)
-    dumpResult(result, logFile=logFile)
+    if logFile:
+        log('\nstarting tests with threading: %s\n'% natconnectOption)
+        result = unittest.TextTestRunner().run(suite)
+        dumpResult(result, logFile=logFile)
     
-    logFile.close()
+        logFile.close()
 
 if __name__ == "__main__":
     run()

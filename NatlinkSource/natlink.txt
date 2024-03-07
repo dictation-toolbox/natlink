@@ -110,6 +110,7 @@ module.  This extension module provides a thin wrapper around various
 functions in the Dragon NaturallySpeaking extended SAPI interface.  
 
 playString( keys, flags )
+    (this function is passed on to sendkeys in dtactions)
     This is a utility function which will send a series of keystrokes to the
     window with the focus.  The passed parameter is a string in standard
     Dragon NaturallySpeaking format (control sequences in braces).  This 
@@ -219,6 +220,7 @@ recognitionMimic( words )
         exception if a word in the input list was invalid.
 
 playEvents( events )
+    (this function is disabled for Dragon16)
     This function is a more powerful version of playString which can play
     any sequence of events.  You pass in a list of events to play where each
     event is a tuple of message, wParam and lParam as defined by windows.
