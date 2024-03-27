@@ -1,5 +1,5 @@
 Welcome to a start point of Natlink's Documentation!
-==========================================================
+==============================================================
 
 Natlink is an OpenSource extension module for the speech recognition program [Dragon](https://www.nuance.com/dragon/business-solutions/dragon-professional-individual.html).
 
