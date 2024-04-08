@@ -18,12 +18,16 @@ classifiers=[
     "Topic :: Multimedia :: Sound/Audio :: Speech",
     "Topic :: Software Development :: Libraries :: Python Modules"
     ]
+dependencies=[
+    "dtactions >= 1.6.1"
+]
     
 [project.urls]
 Home = "https://github.com/dictation-toolbox/natlink"
 Documentation = "https://natlink.readthedocs.io/en/latest/"
 Source = "https://github.com/dictation-toolbox/natlink"
 
+ 
 [project.optional-dependencies]
 test = [
     "pytest >=7.1.2",
