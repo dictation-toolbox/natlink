@@ -4,6 +4,9 @@
 # make import natlink possible, getting all the _natlink_corexx.pyd functions...
 #we have to know which pyd is registered by the installer.
 #pylint:disable=W0702
+
+#site packages
+
 import importlib
 import importlib.machinery
 import importlib.util
@@ -11,7 +14,6 @@ import traceback
 import winreg
 import ctypes
 import contextlib
-from natlinkcore import loader as LOADER
 from dtactions.vocola_sendkeys import ext_keys
 W32OutputDebugString = ctypes.windll.kernel32.OutputDebugStringW
 
@@ -84,7 +86,7 @@ def playEvents(a):
     """causes a halt (ESP error) in Dragon 16.
     """
     if getDNSVersion() >= 16:
-        print("ignore playEvents, it halts with Dragon 16 (ESP error)")
+        outputDebugString("ignore playEvents, it halts with Dragon 16 (ESP error)")
         return None
     return _playEvents(a)
 
@@ -94,7 +96,7 @@ def execScript(script,args=None):
         args = []
     else:
         ## added QH:
-        print(f'execScript, args found: {args}!!!!')
+        outputDebugString(f'execScript, args found: {args}!!!!')
     script_w=toWindowsEncoding(script)
     return _execScript(script_w,args)    
 
@@ -105,22 +107,29 @@ def toWindowsEncoding(str_to_encode):
 
 def getDNSVersion():
     """find the correct DNS version number (as an integer)
-
-    2022: extract from the dragonIniDir setting in the registry, via loader function
-    (is also in natlinkstatus.py)
+    
+    (copy from same function in natlinkstatus.py)
 
     """
-    dragonIniDir = LOADER.get_config_info_from_registry("dragonIniDir")
+    dragonIniDir = get_config_info_from_registry("dragonIniDir")
     if dragonIniDir:
         try:
             version = int(dragonIniDir[-2:])
         except ValueError:
-            print('getDNSVersion, invalid version found "{dragonIniDir[-2:]}", return 0')
+            outputDebugString('getDNSVersion, invalid version found "{dragonIniDir[-2:]}", return 0')
             version = 0
     else:
-        print(f'Error, cannot get dragonIniDir from registry, unknown DNSVersion "{dragonIniDir}", return 0')
+        outputDebugString(f'Error, cannot get dragonIniDir from registry, unknown DNSVersion "{dragonIniDir}", return 0')
         version = 0
     return version
+
+## duplicated from loader:
+def get_config_info_from_registry(key_name: str) -> str:
+    hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, r'Software\Natlink', winreg.KEY_WOW64_32KEY)
+    with winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags) as natlink_key:
+        result, _ = winreg.QueryValueEx(natlink_key, key_name)
+        return result
+
 
 
 #wrap the C++ natConnect with a version that returns a context manager
@@ -137,12 +146,12 @@ def NatlinkConnector():
     """
     # use the method from https://towardsdatascience.com/how-to-build-custom-context-managers-in-python-31727ffe96e1
     yield
-    print("natlink disconnecting")
+    outputDebugString("natlink disconnecting")
     natDisconnect()
 
 
 if __name__ == "__main__":
-    print(f'getDNSVersion: {getDNSVersion()} (type: {type(getDNSVersion())}))')
-    # playString('abcde')
-    # playEvents(tuple())
+    outputDebugString(f'getDNSVersion: {getDNSVersion()} (type: {type(getDNSVersion())}))')
+    playString('abcde')
+    playEvents(tuple())
     
