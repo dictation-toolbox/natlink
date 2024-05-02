@@ -11,7 +11,7 @@ write computer programs. A grammar specifies what will happen when certain words
 
 <div align="center">
 
-[![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](https://dictation-toolbox.github.io/natlink/#/)
+[![matrix](https://img.shields.io/gitter/room/dictation-toolbox/natlink)](https://matrix.to/#/#dictation-toolbox_natlink:gitter.im) [![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?)](https://dictation-toolbox.github.io/natlink/#/) [![GitHub Release](https://img.shields.io/github/v/release/dictation-toolbox/natlink?include_prereleases)](https://github.com/dictation-toolbox/natlink/releases)
 
 </div>
 
