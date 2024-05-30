@@ -14,6 +14,8 @@ import traceback
 import winreg
 import ctypes
 import contextlib
+import win32api
+import win32gui
 from dtactions.vocola_sendkeys import ext_keys
 W32OutputDebugString = ctypes.windll.kernel32.OutputDebugStringW
 
@@ -82,11 +84,29 @@ def playString(a, hook=0):
     # normal case:
     return ext_keys.send_input(a)
 
+def playEvents16(events):
+    """a short version, written by Dany Finlay
+    """
+    print(f'try a playEvents on Dragon16: {events}')
+    # Check that *events* is a list.
+    if not isinstance(events, list):
+        raise TypeError("events must be a list of 3-tuples")
+
+    # Post each 3-tuple event to the foreground window.
+    hwnd = win32gui.GetForegroundWindow()
+    for event in events:
+        if not (isinstance(event, tuple) and len(event) == 3 and
+                all((isinstance(i, int) for i in event))):
+            raise TypeError("events must be a list containing 3-tuples of"
+                            " integers")
+        message, wParam, lParam = event
+        win32api.PostMessage(hwnd, message, wParam, lParam)
+
 def playEvents(a):
     """causes a halt (ESP error) in Dragon 16.
     """
     if getDNSVersion() >= 16:
-        outputDebugString("ignore playEvents, it halts with Dragon 16 (ESP error)")
+        playEvents16(a)
         return None
     return _playEvents(a)
 
@@ -152,6 +172,7 @@ def NatlinkConnector():
 
 if __name__ == "__main__":
     outputDebugString(f'getDNSVersion: {getDNSVersion()} (type: {type(getDNSVersion())}))')
-    playString('abcde')
-    playEvents(tuple())
+    # playString('abcde')
+    playEvents( [(0,0,0)] )
+    
     
