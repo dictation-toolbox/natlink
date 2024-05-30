@@ -84,7 +84,6 @@ def playString(a, hook=0):
     # normal case:
     return ext_keys.send_input(a)
 
-
 def playEvents16(events):
     """a short version, written by Dany Finlay
     """
@@ -93,22 +92,15 @@ def playEvents16(events):
     if not isinstance(events, list):
         raise TypeError("events must be a list of 3-tuples")
 
-    print('playEvents not implemented for Dragon 16 (yet)')
-    # try to attach to (repository) \dtactions\vocola_sendkeys
-    # SendInput.send_input(events)
-
-
-    # this is the attempt of Dane, which fails.
-    # # Post each 3-tuple event to the foreground window.
-    # hwnd = win32gui.GetForegroundWindow()
-    # for event in events:
-    #     if not (isinstance(event, tuple) and len(event) == 3 and
-    #             all((isinstance(i, int) for i in event))):
-    #         raise TypeError("events must be a list containing 3-tuples of"
-    #                         " integers")
-    #     
-    #     message, wParam, lParam = event
-    #     win32api.PostMessage(hwnd, message, wParam, lParam)
+    # Post each 3-tuple event to the foreground window.
+    hwnd = win32gui.GetForegroundWindow()
+    for event in events:
+        if not (isinstance(event, tuple) and len(event) == 3 and
+                all((isinstance(i, int) for i in event))):
+            raise TypeError("events must be a list containing 3-tuples of"
+                            " integers")
+        message, wParam, lParam = event
+        win32api.PostMessage(hwnd, message, wParam, lParam)
 
 def playEvents(a):
     """causes a halt (ESP error) in Dragon 16.
