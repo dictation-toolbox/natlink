@@ -170,9 +170,23 @@ def NatlinkConnector():
     natDisconnect()
 
 
+def _test_playEvents():
+    """perform a few mouse moves
+    """
+    import time
+    wm_mousemove = 0x0200
+    positionsx = [10, 500, 500, 10, 10]
+    positionsy = [10, 10, 500, 500, 10]
+    for x, y in zip(positionsx, positionsy):
+        playEvents( [(wm_mousemove, x, y)] )
+        time.sleep(1)
+            
+            
+
 if __name__ == "__main__":
     outputDebugString(f'getDNSVersion: {getDNSVersion()} (type: {type(getDNSVersion())}))')
     # playString('abcde')
-    playEvents( [(0,0,0)] )
-    
+    # playEvents( [(0,0,0)] )
+    _test_playEvents()
+        
     
