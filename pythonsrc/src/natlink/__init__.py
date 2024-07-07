@@ -6,7 +6,8 @@
 #pylint:disable=W0702
 
 #site packages
-
+import json
+import os
 import importlib
 import importlib.machinery
 import importlib.util
@@ -28,38 +29,29 @@ def outputDebugString(to_show):
     """
     return W32OutputDebugString(f"{to_show}")
 
-
-clsid="{dd990001-bb89-11d2-b031-0060088dc929}"          #natlinks well known clsid
-
-#these keys  hold the pyd name for natlink, set up through the installer run regsvr32
-subkey1=fr"WOW6432Node\CLSID\{clsid}\InprocServer32"
-subkey2=fr"CLSID\{clsid}\InprocServer32"  #only likely if not 64 bit windows
-subkeys=[subkey1,subkey2]
-default_pyd="_natlink_core.pyd"    #just a sensible default if one isn't registered.
-
-path_to_pyd=""
-#find the PYD actually registered, and load that one.
-found_registered_pyd=False
-for subkey in subkeys:
+def get_config():
+    """get the configuration information from environment.json
+    Returns:
+        (dict): the configuration data
+    """
     try:
-        reg = winreg.ConnectRegistry(None,winreg.HKEY_CLASSES_ROOT)
-        sk = winreg.OpenKey(reg,subkey)
-        path_to_pyd = winreg.QueryValue(sk,None)
-        found_registered_pyd = True
-        break
-    except:
-        pass
+        # get the path to the environment.json file user directory .natlink
+        path = os.path.join(os.path.expanduser("~"), ".natlink", "environment.json")
+        with open(path) as file:
+            data = json.load(file)
+        return data
+    except Exception as e:
+        outputDebugString(f"get_config: {e}")
 
 try:
-    pyd_to_load=path_to_pyd if found_registered_pyd else default_pyd
-
+    data = get_config()
+    path_to_pyd = data.get("natlink_pyd")
     #if something goes wrong we will want these messages.
-    outputDebugString(f"Loading {pyd_to_load} from {__file__}")
+    outputDebugString(f"Loading {path_to_pyd} from {__file__}")
 
-
-    loader=importlib.machinery.ExtensionFileLoader("_natlink_core",pyd_to_load)
+    loader = importlib.machinery.ExtensionFileLoader("_natlink_core", path_to_pyd)
     spec = importlib.util.spec_from_loader("_natlink_core", loader)
-    _natlink_core=importlib.util.module_from_spec(spec)
+    _natlink_core = importlib.util.module_from_spec(spec)
     from _natlink_core import *
 
     import locale
@@ -102,6 +94,22 @@ def playEvents16(events):
         message, wParam, lParam = event
         win32api.PostMessage(hwnd, message, wParam, lParam)
 
+def getDNSVersion():
+    """find the correct DNS version number (as an integer)
+    
+    (copy from same function in natlinkstatus.py)
+
+    """
+    try:
+        data = get_config()
+        version = data.get("dragon_version")
+
+        if version:
+            return int(version)
+    except Exception as e:
+        outputDebugString(f"getDNSVersion: {e}")
+    return 0
+
 def playEvents(a):
     """causes a halt (ESP error) in Dragon 16.
     """
@@ -123,36 +131,8 @@ def execScript(script,args=None):
 
 def toWindowsEncoding(str_to_encode):
     return str_to_encode.encode('Windows-1252')
-
-
-def getDNSVersion():
-    """find the correct DNS version number (as an integer)
-    
-    (copy from same function in natlinkstatus.py)
-
-    """
-    dragonIniDir = get_config_info_from_registry("dragonIniDir")
-    if dragonIniDir:
-        try:
-            version = int(dragonIniDir[-2:])
-        except ValueError:
-            outputDebugString('getDNSVersion, invalid version found "{dragonIniDir[-2:]}", return 0')
-            version = 0
-    else:
-        outputDebugString(f'Error, cannot get dragonIniDir from registry, unknown DNSVersion "{dragonIniDir}", return 0')
-        version = 0
-    return version
-
-## duplicated from loader:
-def get_config_info_from_registry(key_name: str) -> str:
-    hive, key, flags = (winreg.HKEY_LOCAL_MACHINE, r'Software\Natlink', winreg.KEY_WOW64_32KEY)
-    with winreg.OpenKeyEx(hive, key, access=winreg.KEY_READ | flags) as natlink_key:
-        result, _ = winreg.QueryValueEx(natlink_key, key_name)
-        return result
-
-
-
-#wrap the C++ natConnect with a version that returns a context manager
+   
+# wrap the C++ natConnect with a version that returns a context manager
 
 _original_natconnect=natConnect
 def wrappedNatConnect(*args,**keywords):
