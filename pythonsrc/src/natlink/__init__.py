@@ -3,7 +3,7 @@
 
 # make import natlink possible, getting all the _natlink_corexx.pyd functions...
 #we have to know which pyd is registered by the installer.
-#pylint:disable=W0702
+#pylint:disable=W0702, W0718, 
 
 #site packages
 
@@ -62,7 +62,6 @@ try:
     _natlink_core=importlib.util.module_from_spec(spec)
     from _natlink_core import *
 
-    import locale
     from _natlink_core import execScript as _execScript
     from _natlink_core import playString as _playString
     from _natlink_core import playEvents as _playEvents
@@ -86,29 +85,9 @@ def playString(a, hook=0):
 
 
 def playEvents16(events):
-    """a short version, written by Dany Finlay
+    """obsolete with Dragon 16.
     """
-    print(f'try a playEvents on Dragon16: {events}')
-    # Check that *events* is a list.
-    if not isinstance(events, list):
-        raise TypeError("events must be a list of 3-tuples")
-
-    print('playEvents not implemented for Dragon 16 (yet)')
-    # try to attach to (repository) \dtactions\vocola_sendkeys
-    # SendInput.send_input(events)
-
-
-    # this is the attempt of Dane, which fails.
-    # # Post each 3-tuple event to the foreground window.
-    # hwnd = win32gui.GetForegroundWindow()
-    # for event in events:
-    #     if not (isinstance(event, tuple) and len(event) == 3 and
-    #             all((isinstance(i, int) for i in event))):
-    #         raise TypeError("events must be a list containing 3-tuples of"
-    #                         " integers")
-    #     
-    #     message, wParam, lParam = event
-    #     win32api.PostMessage(hwnd, message, wParam, lParam)
+    print("Deprecated, playEvents on Dragon16 cannot be used any more")
 
 def playEvents(a):
     """causes a halt (ESP error) in Dragon 16.
@@ -178,23 +157,22 @@ def NatlinkConnector():
     natDisconnect()
 
 
-def _test_playEvents():
-    """perform a few mouse moves
-    """
-    import time
-    wm_mousemove = 0x0200
-    positionsx = [10, 500, 500, 10, 10]
-    positionsy = [10, 10, 500, 500, 10]
-    for x, y in zip(positionsx, positionsy):
-        playEvents( [(wm_mousemove, x, y)] )
-        time.sleep(1)
+# def _test_playEvents():
+#     """perform a few mouse moves
+#     """
+#     import time
+#     wm_mousemove = 0x0200
+#     positionsx = [10, 500, 500, 10, 10]
+#     positionsy = [10, 10, 500, 500, 10]
+#     for x, y in zip(positionsx, positionsy):
+#         playEvents( [(wm_mousemove, x, y)] )
+#         time.sleep(1)
             
             
 
 if __name__ == "__main__":
     outputDebugString(f'getDNSVersion: {getDNSVersion()} (type: {type(getDNSVersion())}))')
     # playString('abcde')
-    # playEvents( [(0,0,0)] )
-    _test_playEvents()
+    # _test_playEvents()
         
     
