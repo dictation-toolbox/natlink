@@ -28,6 +28,7 @@ CDragonCode * initModule();
 
 CDgnAppSupport::CDgnAppSupport()
 {
+	OutputDebugStringA("CDgnAppSupport::CDgnAppSupport");
 	m_pNatlinkModule = NULL;
 	m_pDragCode = NULL;
 }
@@ -36,10 +37,13 @@ CDgnAppSupport::CDgnAppSupport()
 
 CDgnAppSupport::~CDgnAppSupport()
 {
+		OutputDebugStringA("CDgnAppSupport::~CDgnAppSupport");
 }
 //see https://gist.github.com/pwm1234/05280cf2e462853e183d
 static std::string get_this_module_path()
+
 {
+	OutputDebugStringA("get_this_module_path");
 	void* address = (void*)get_this_module_path;
 	char path[FILENAME_MAX];
 	HMODULE hm = NULL;
@@ -48,13 +52,16 @@ static std::string get_this_module_path()
 		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
 		(LPCSTR)address,
 		&hm))
-	{
+	{	OutputDebugString(TEXT("get_this_module_path fail GetModuleHandleExA"));
 		//if this fails, well just return nonsense.
 		return "";
 	}
 	GetModuleFileNameA(hm, path, sizeof(path));
 
 	std::string p = path;
+	std::string msg = std::string("get_this_module_path returning: ") + p;
+	OutputDebugStringA(msg.c_str());
+
 	return p;
 }
 static int pyrun_string(std::string python_cmd)
@@ -106,24 +113,50 @@ static std::string AddOurDirToConfig(PyConfig *config) {
 
 
 static std::string AddPythonInstallPathToConfig(PyConfig *config) {
-	using winreg::RegKey, winreg::RegResult;
-	std::wstring key_wstring(L"SOFTWARE\\Natlink");
-    RegKey key;
-	RegResult result = key.TryOpen(HKEY_LOCAL_MACHINE, key_wstring.c_str(), KEY_READ);
-	if (!result) {
-		return (std::string("Error: could not open HKLM\\") + 
-				std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
-	} 
-	else { // now the install location of Python is known
-		std::wstring new_wstring(key.GetStringValue(L"pythonInstallPath"));
-  	    if (auto new_wstring = key.TryGetStringValue(L"pythonInstallPath")) {
-	    	PyConfig_SetString(config, &(config->prefix), (*new_wstring).c_str());
-			return std::string("");
-		  } else {
-			  return (std::string("Error: could not open subkey pythonInstallPath of HKLM\\") + 
+	try
+	{
+		using winreg::RegKey, winreg::RegResult;
+		std::wstring key_wstring(L"SOFTWARE\\Natlink");
+		RegKey key;
+		std::wstring msg=std::wstring(L"AddPythonInstallPathToConfig:  key_wstring: ")+key_wstring + L" trying TryOpen";
+		OutputDebugStringW(msg.c_str());
+
+		RegResult result = key.TryOpen(HKEY_LOCAL_MACHINE, key_wstring.c_str(), KEY_READ);
+		OutputDebugString(TEXT("Try Open returned"));
+		
+
+		if (!result) {
+			return (std::string("Error: could not open HKLM\\") + 
 					std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
-		  }
+		} 
+		else { // now the install location of Python is known
+			OutputDebugString(L"Attempted pythonInstallPath");
+			std::wstring new_wstring(key.GetStringValue(L"pythonInstallPath"));
+			OutputDebugString( (std::wstring(L"new_wstring: ") + new_wstring).c_str());	
+
+			OutputDebugString(L"Attempted pythonInstallPath again");
+
+			if (auto new_wstring = key.TryGetStringValue(L"pythonInstallPath")) {
+
+				OutputDebugString(std::wstring(L"Attempting PyConfig_SetString: ").c_str() );
+				OutputDebugString( (std::wstring(L"new_wstring: ") + *new_wstring).c_str());	
+
+				PyConfig_SetString(config, &(config->prefix), (*new_wstring).c_str());
+				OutputDebugString(std::wstring(L"SetString Completed ").c_str() );
+
+				return std::string("");
+			} else {
+				return (std::string("Error: could not open subkey pythonInstallPath of HKLM\\") + 
+						std::string(key_wstring.begin(), key_wstring.end()) + std::string("\n"));
+			}
+		}
 	}
+	catch(...)
+	{
+		OutputDebugString(L"Exception in AddPythonInstallPathToConfig");
+		return std::string("");
+	}
+	return std::string("");
 }
 
 
@@ -180,33 +213,47 @@ static void CallPyFunctionOrDisplayError(CDragonCode* pDragCode, PyObject* pMod,
 // Try to make our customized Python behave like regular Python;
 // see https://docs.python.org/3/c-api/init_config.html#init-python-config
 std::string DoPyConfig(void) {
+
+	OutputDebugString(TEXT("DoPyConfig"));
+
 	std::string init_error = "";
     PyStatus status;
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
+	OutputDebugString(TEXT("DoPyConfig PyConfig_InitPythonConfig done, attempt AddOutDirToConfig"));
+
 
 	init_error = AddOurDirToConfig(&config);
+
+	std::string msg1 = std::string("DoPyConfig PyConfig_InitPythonConfig done, init_error: ")+ init_error;
+	OutputDebugStringA(msg1.c_str());
+
 	if (!init_error.empty()) {
 		goto fail;
 	}
+	OutputDebugString(TEXT("DoPyConfig  attempt AddPythonInstallPathToConfig"));
 
 	init_error = AddPythonInstallPathToConfig(&config);
 	if (!init_error.empty()) {
 		goto fail;
 	}
+	OutputDebugString(TEXT("DoPyConfig  attempt PyConfig_SetString"));
 
 	status = PyConfig_SetString(&config, &(config.program_name), L"Python");
 	if (PyStatus_Exception(status)) {
 		init_error = "Natlink: failed to set program_name\n";
 		goto fail;
 	}
+	OutputDebugString(TEXT("DoPyConfig  attempt PyIntializeFromConfig"));
 
     status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
 		init_error = "Natlink: failed initialize from config\n";
         goto fail;
     }
-	
+
+	OutputDebugString(TEXT("DoPyConfig   sucess"));
+
 	return init_error; // success, return ""
 
 fail:
@@ -231,6 +278,7 @@ fail:
 
 STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 {
+	OutputDebugString(TEXT("CDgnAppSupport::Register"));
 	// load and initialize the Python system
 	std::string init_error =  DoPyConfig();
 	Py_Initialize();
@@ -252,6 +300,7 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	// Python init
 	DisplayVersions(m_pDragCode);
 	if ( !init_error.empty()) {
+		OutputDebugStringA(init_error.c_str() );
 		m_pDragCode->displayText(init_error.c_str());
 		return S_OK;
 	}
@@ -265,6 +314,8 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 		DisplayPythonException(m_pDragCode);
 		return S_OK;
 	} else {
+		OutputDebugString( TEXT( "Natlink is loaded..." ) );
+
 		m_pDragCode->displayText( "Natlink is loaded...\n\n", FALSE );
 	}
 
@@ -304,15 +355,25 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 
 STDMETHODIMP CDgnAppSupport::UnRegister()
 {
+	OutputDebugString( TEXT( "CDgnAppSupport::UnRegister, calling natDisconnect" ) );
+
 	// simulate calling natlink.natDisconnect()
 	m_pDragCode->natDisconnect();
+
+	OutputDebugString( TEXT( "CDgnAppSupport::UnRegister, free reference to Python modules" ) );
 
 	// free our reference to the Python modules
 	Py_XDECREF( m_pNatlinkModule );
 
 	// finalize the Python interpreter
+	OutputDebugString( TEXT( "CDgnAppSupport::UnRegister, finalize interpreter" ) );
+
 	Py_Finalize();
+
 	PyMem_RawFree(L"python");
+
+	// finalize the Python interpreter
+	OutputDebugString( TEXT( "CDgnAppSupport::UnRegister, exit UnRegister" ) );
 
 	return S_OK;
 }
@@ -366,5 +427,8 @@ STDMETHODIMP CDgnAppSupport::EndProcess( DWORD dwProcessID )
 
 void CDgnAppSupport::reloadPython()
 {
+		// finalize the Python interpreter
+	OutputDebugString( TEXT( "CDgnAppSupport::reloadPython" ) );
+
 	PyImport_ReloadModule(m_pNatlinkModule);
 }
