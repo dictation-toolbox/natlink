@@ -3,7 +3,7 @@ Welcome to a start point of Natlink's Documentation!!!
 
 Natlink is an OpenSource extension module for the speech recognition program Dragon_.
 
-    Beware: Natlink is not working yet with Dragon 16!
+    With version 5.5.7 (August 21, 2024) most functions also work in Dragon 16.
 
 Please go to the instructions for `Installing and configuring Natlink`_.
 
