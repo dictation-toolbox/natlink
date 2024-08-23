@@ -19,7 +19,7 @@ classifiers=[
     "Topic :: Software Development :: Libraries :: Python Modules"
     ]
 dependencies=[
-    "dtactions >= 1.6.1"
+    
 ]
     
 [project.urls]

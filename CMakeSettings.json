@@ -1,7 +1,7 @@
 ﻿{
   "configurations": [
     {
-      "name": "3.10-32",
+      "name": "3.10-11",
       "generator": "Visual Studio 16 2019",
       "configurationType": "Debug",
       "buildRoot": "${projectDir}\\out\\build\\${name}",

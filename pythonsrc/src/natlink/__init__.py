@@ -3,7 +3,7 @@
 
 # make import natlink possible, getting all the _natlink_corexx.pyd functions...
 #we have to know which pyd is registered by the installer.
-#pylint:disable=W0702
+#pylint:disable=W0702, W0718, 
 
 #site packages
 
@@ -14,7 +14,9 @@ import traceback
 import winreg
 import ctypes
 import contextlib
-from dtactions.vocola_sendkeys import ext_keys
+import win32api
+import win32gui
+from dtactions.vocola_sendkeys import ext_keys   ### , SendInput
 W32OutputDebugString = ctypes.windll.kernel32.OutputDebugStringW
 
 #copied from pydebugstring.  
@@ -60,7 +62,6 @@ try:
     _natlink_core=importlib.util.module_from_spec(spec)
     from _natlink_core import *
 
-    import locale
     from _natlink_core import execScript as _execScript
     from _natlink_core import playString as _playString
     from _natlink_core import playEvents as _playEvents
@@ -82,11 +83,17 @@ def playString(a, hook=0):
     # normal case:
     return ext_keys.send_input(a)
 
+
+def playEvents16(events):
+    """obsolete with Dragon 16.
+    """
+    print("Deprecated, playEvents on Dragon16 cannot be used any more")
+
 def playEvents(a):
     """causes a halt (ESP error) in Dragon 16.
     """
     if getDNSVersion() >= 16:
-        outputDebugString("ignore playEvents, it halts with Dragon 16 (ESP error)")
+        playEvents16(a)
         return None
     return _playEvents(a)
 
@@ -150,8 +157,22 @@ def NatlinkConnector():
     natDisconnect()
 
 
+# def _test_playEvents():
+#     """perform a few mouse moves
+#     """
+#     import time
+#     wm_mousemove = 0x0200
+#     positionsx = [10, 500, 500, 10, 10]
+#     positionsy = [10, 10, 500, 500, 10]
+#     for x, y in zip(positionsx, positionsy):
+#         playEvents( [(wm_mousemove, x, y)] )
+#         time.sleep(1)
+            
+            
+
 if __name__ == "__main__":
     outputDebugString(f'getDNSVersion: {getDNSVersion()} (type: {type(getDNSVersion())}))')
-    playString('abcde')
-    playEvents(tuple())
+    # playString('abcde')
+    # _test_playEvents()
+        
     
