@@ -694,6 +694,13 @@ BOOL CDragonCode::isNatSpeakRunning()
 
 //---------------------------------------------------------------------------
 
+void CDragonCode::freeModule()
+{
+	natDisconnect();
+}
+
+//---------------------------------------------------------------------------
+
 void CDragonCode::releaseObjects()
 {
 	// iterate over all the grammar objects and free them; note that when we

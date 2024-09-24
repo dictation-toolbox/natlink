@@ -114,6 +114,10 @@ class CDragonCode
 	void setAppClass( CDgnAppSupport * pAppClass ) { m_pAppClass = pAppClass; }
 	void setDuringInit( BOOL bState ) { m_bDuringInit = bState; }
 
+	// this is called when the natlink module (this class!) is deallocated from
+	// Python
+	void freeModule();
+
 	// these functions are called from CGrammarObject
 	ISRCentral * pISRCentral() { return m_pISRCentral; }
 	void addGramObj(CGrammarObject * pGramObj );
