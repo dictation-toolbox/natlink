@@ -2318,15 +2318,27 @@ static struct PyMethodDef natlink_methods[] = {
 };
 
 //---------------------------------------------------------------------------
+// natlink module free function.
+
+void natlink_free( void * p )
+{
+	cDragon.freeModule();
+}
+
+//---------------------------------------------------------------------------
 // import natlink from Python
 //
 // We tell Python about our functions and also create an error type.
 static struct PyModuleDef NatlinkModule = {
-		PyModuleDef_HEAD_INIT,
-		"_natlink_core",   /* name of module */
-		"natlink with python3 compatability",
-		-1,
-		natlink_methods
+		PyModuleDef_HEAD_INIT,                 /* m_base */
+		"_natlink_core",                       /* m_name */
+		"natlink with python3 compatability",  /* m_doc */
+		-1,                                    /* m_size */
+		natlink_methods,                       /* m_methods */
+		NULL,                                  /* m_slots */
+		NULL,                                  /* m_traverse */
+		NULL,                                  /* m_clear */
+		natlink_free                           /* m_free */
 };
 
 
