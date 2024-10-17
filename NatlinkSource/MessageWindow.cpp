@@ -51,17 +51,18 @@ INT_PTR CALLBACK dialogProc(
 
             return TRUE;
 	 case WM_INITDIALOG:
-         HMENU hMenu, hSubMenu;
+		HMENU hMenu, hSubMenu;
+		HINSTANCE hInstance;
 
-            hMenu = CreateMenu();
-            hSubMenu = CreatePopupMenu();
-            AppendMenu(hSubMenu, MF_STRING, IDD_RELOAD, L"&Reload");
-            AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, L"&File");
-
-
-
-            SetMenu(hWnd, hMenu);
+		// Save a pointer to the message window for later.
 		s_pSecdThrd = (MessageWindow *)lParam;
+
+		// Load the popup menu.
+		hInstance = _Module.GetModuleInstance();
+		hMenu = LoadMenu( hInstance, MAKEINTRESOURCE( IDR_MENU ) );
+
+		// Assign IDR_MENU to the window and hide it.
+		SetMenu( hWnd, hMenu );
 		ShowWindow( hWnd, SW_HIDE );
 		return TRUE;
 
