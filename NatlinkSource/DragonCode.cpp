@@ -1692,7 +1692,7 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 
 	if( pIDgnSite != NULL )
 	{
-		m_pSecdThrd = new MessageWindow();
+		m_pSecdThrd = new MessageWindow( FALSE );
 	}
 
 	// Connect to NatSpeak

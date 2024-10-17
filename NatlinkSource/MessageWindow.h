@@ -11,7 +11,7 @@ class MessageWindow
 {
  public:
 	// the constructor will create the thread
-	MessageWindow();
+	MessageWindow( BOOL bAllowUserExit );
 
 	// the destructor will terminate the thread
 	~MessageWindow();
@@ -27,6 +27,7 @@ class MessageWindow
 	void setOutWnd( HWND hWnd ) { m_hOutWnd = hWnd; }
 	void signalEvent() { SetEvent( m_hEvent ); }
 	HWND getMsgWnd() { return m_hMsgWnd; }
+	BOOL getAllowUserExit() { return m_bAllowUserExit; }
 
  protected:
 	// This is the window handle in the primarty thread where we
@@ -43,4 +44,8 @@ class MessageWindow
 
 	// This is the handle of the output window itself
 	HWND m_hOutWnd;
+
+	// This is the boolean member we use to enable/disable the File>Exit menu
+	// item.
+	BOOL m_bAllowUserExit;
 };

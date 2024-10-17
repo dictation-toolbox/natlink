@@ -153,6 +153,8 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Reload Everything",          IDD_RELOAD
+        MENUITEM SEPARATOR
+        MENUITEM "&Exit",                       IDD_EXIT, GRAYED
     END
 END
 

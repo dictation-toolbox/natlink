@@ -53,6 +53,7 @@ INT_PTR CALLBACK dialogProc(
 	 case WM_INITDIALOG:
 		HMENU hMenu, hSubMenu;
 		HINSTANCE hInstance;
+		LPTSTR lpszBuffer;
 
 		// Save a pointer to the message window for later.
 		s_pSecdThrd = (MessageWindow *)lParam;
@@ -60,6 +61,17 @@ INT_PTR CALLBACK dialogProc(
 		// Load the popup menu.
 		hInstance = _Module.GetModuleInstance();
 		hMenu = LoadMenu( hInstance, MAKEINTRESOURCE( IDR_MENU ) );
+
+		// Enable the exit sub-menu item, if requested.
+		s_pSecdThrd = (MessageWindow *)lParam;
+		if ( s_pSecdThrd->getAllowUserExit() )
+		{
+			hSubMenu = GetSubMenu( hMenu, 0 );
+			lpszBuffer = new TCHAR[32];
+			GetMenuString( hMenu, IDD_EXIT, lpszBuffer, 32, MF_BYCOMMAND );
+			ModifyMenu( hSubMenu, IDD_EXIT, MF_BYCOMMAND | MF_ENABLED | MF_STRING,
+				IDD_EXIT, lpszBuffer );
+		}
 
 		// Assign IDR_MENU to the window and hide it.
 		SetMenu( hWnd, hMenu );
@@ -188,11 +200,12 @@ DWORD CALLBACK threadMain( void * pArg )
 
 //---------------------------------------------------------------------------
 
-MessageWindow::MessageWindow()
+MessageWindow::MessageWindow( BOOL bAllowUserExit )
 {
 	// create the thread we use to display messages; we use an event to make
 	// sure that the thread has started before continuing
 
+	m_bAllowUserExit = bAllowUserExit;
 	m_hEvent = CreateEvent(
 		NULL,	// security options
 		TRUE,	// manual reset
