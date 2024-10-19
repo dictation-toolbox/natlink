@@ -30,6 +30,12 @@
 // thread.
 #define WM_EXITTHREAD (WM_USER+363)
 
+// Send this message to the output window to update it as specified.
+#define WM_UPDATEWINDOW (WM_USER+364)
+
+// WPARAM flags for the WM_UPDATEWINDOW message.
+#define IDR_MENU_ALLOW_USER_EXIT 0x01
+
 // The color for error messages
 #define DARKRED RGB( 128, 0, 0 )
 
@@ -51,31 +57,36 @@ INT_PTR CALLBACK dialogProc(
 
             return TRUE;
 	 case WM_INITDIALOG:
-		HMENU hMenu, hSubMenu;
-		HINSTANCE hInstance;
-		LPTSTR lpszBuffer;
-
-		// Save a pointer to the message window for later.
+		// save a pointer to the message window for later
 		s_pSecdThrd = (MessageWindow *)lParam;
 
-		// Load the popup menu.
+		// hide the window to start with
+		ShowWindow( hWnd, SW_HIDE );
+		return TRUE;
+
+	 case WM_UPDATEWINDOW:
+		HINSTANCE hInstance;
+		HMENU hMenu, hSubMenu;
+		UINT uFlags; // for ModifyMenu()
+		LPTSTR lpszBuffer;
+
+		// load the pop-up menu
 		hInstance = _Module.GetModuleInstance();
 		hMenu = LoadMenu( hInstance, MAKEINTRESOURCE( IDR_MENU ) );
 
-		// Enable the exit sub-menu item, if requested.
-		s_pSecdThrd = (MessageWindow *)lParam;
-		if ( s_pSecdThrd->getAllowUserExit() )
-		{
-			hSubMenu = GetSubMenu( hMenu, 0 );
-			lpszBuffer = new TCHAR[32];
-			GetMenuString( hMenu, IDD_EXIT, lpszBuffer, 32, MF_BYCOMMAND );
-			ModifyMenu( hSubMenu, IDD_EXIT, MF_BYCOMMAND | MF_ENABLED | MF_STRING,
-				IDD_EXIT, lpszBuffer );
-		}
+		// enable/disable the exit sub-menu item
+		uFlags = MF_BYCOMMAND | MF_STRING;
+		if( wParam & IDR_MENU_ALLOW_USER_EXIT )
+			uFlags |= MF_ENABLED;
+		else
+			uFlags |= MF_GRAYED;
+		hSubMenu = GetSubMenu( hMenu, 0 );
+		lpszBuffer = new TCHAR[32];
+		GetMenuString( hMenu, IDD_EXIT, lpszBuffer, 32, MF_BYCOMMAND );
+		ModifyMenu( hSubMenu, IDD_EXIT, uFlags, IDD_EXIT, lpszBuffer );
 
-		// Assign IDR_MENU to the window and hide it.
+		// assign the modified menu to the window
 		SetMenu( hWnd, hMenu );
-		ShowWindow( hWnd, SW_HIDE );
 		return TRUE;
 
 	 case WM_EXITTHREAD:
@@ -200,12 +211,11 @@ DWORD CALLBACK threadMain( void * pArg )
 
 //---------------------------------------------------------------------------
 
-MessageWindow::MessageWindow( BOOL bAllowUserExit )
+MessageWindow::MessageWindow( DWORD dwFlags )
 {
 	// create the thread we use to display messages; we use an event to make
 	// sure that the thread has started before continuing
 
-	m_bAllowUserExit = bAllowUserExit;
 	m_hEvent = CreateEvent(
 		NULL,	// security options
 		TRUE,	// manual reset
@@ -228,6 +238,9 @@ MessageWindow::MessageWindow( BOOL bAllowUserExit )
 		CloseHandle( m_hEvent );
 		m_hEvent = NULL;
 	}
+
+	// update the window with the specified flags
+	updateWindow( dwFlags );
 }
 
 //---------------------------------------------------------------------------
@@ -256,5 +269,15 @@ void MessageWindow::displayText(const char * pszText, BOOL bError )
 	{
 		char * pszCopy = _strdup( pszText );
 		PostMessage( m_hOutWnd, WM_SHOWTEXT, bError, (LPARAM)pszCopy );
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void MessageWindow::updateWindow( DWORD dwFlags )
+{
+	if( m_hOutWnd )
+	{
+		PostMessage( m_hOutWnd, WM_UPDATEWINDOW, dwFlags, 0 );
 	}
 }
