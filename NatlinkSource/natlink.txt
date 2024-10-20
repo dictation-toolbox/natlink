@@ -572,6 +572,26 @@ waitForSpeech( timeout )
     timeout except that the message box is not displayed (the function only
     returns when the timeout elapses).
 
+setMessageWindow( callback, flags )
+    This function enables, disables and updates Natlink's message window.
+
+    The function has one required parameter whose value should be a Python
+    function or None.  If a function is passed for this parameter, it
+    should take one parameter which is the type of message window event:
+        idd_reload or idd_exit (each defined in natlinkutils)
+
+    Passing a callback function enables the message window, passing None
+    disables it.
+
+    The second parameter is optional.  It is a combination of one or more
+    of the following flags:
+        0x01    # enable the window's File>Exit menu item
+
+    Note: The idd_reload event occurs when the File>Reload menu item is
+    activated.  Before this function's callback is invoked, Natlink will
+    unload all loaded grammars, destroy all existing ResObjs and DictObjs,
+    and clear all callbacks except the message window callback -- this one.
+
 Inside natlink, each grammar is maintained as a separate object.  To expose
 this structure, each grammar object will be exposed to Python as a class. 
 The GrammarBase class defined in natlinkutils encapusulates and extends the
