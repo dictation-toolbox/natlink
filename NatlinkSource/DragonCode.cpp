@@ -1235,18 +1235,28 @@ void CDragonCode::onMenuCommand( WPARAM wParam )
 		break;
 
 	 case IDD_EXIT:
-		// nothing special to do here
 		break;
 
 	 default:
 		return;
 	}
 
-	// invoke the message window callback for menu commands handled
-	// above
-	makeCallback(
-		m_pMessageWindowCallback,
-		Py_BuildValue( "(i)", nMenuItem ) );
+	// invoke the message window callback, if one is set
+	if( m_pMessageWindowCallback )
+	{
+		makeCallback(
+			m_pMessageWindowCallback,
+			Py_BuildValue( "(i)", nMenuItem ) );
+	}
+
+	// do any post-callback work
+	switch ( nMenuItem )
+	{
+	 case IDD_EXIT:
+		// kill the message window
+		setMessageWindow( Py_None );
+		break;
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -3707,21 +3717,24 @@ BOOL CDragonCode::setMessageWindow(
 	}
 	else
 	{
-		NOTBEFORE_INIT( "setMessageWindow" );
-
+		// ignore this check if the menu is to be disabled
+		if( !(dwFlags & 0x04) )
+		{
+			NOTBEFORE_INIT( "setMessageWindow" );
+		}
 		Py_XINCREF( pCallback );
 		Py_XDECREF( m_pMessageWindowCallback );
 		m_pMessageWindowCallback = pCallback;
 
-		// start the second thread for displaying messages, if
-		// necessary.  Otherwise, pass on the second parameter
+		// start the second thread for displaying messages
+		// and tell it about our message window
 		if( !m_pSecdThrd )
 		{
 			m_pSecdThrd = new MessageWindow( dwFlags );
-
-			// tell the thread about our message window
 			m_pSecdThrd->setMsgWnd( m_hMsgWnd );
 		}
+
+		// otherwise, update the window
 		else
 		{
 			m_pSecdThrd->updateWindow( dwFlags );

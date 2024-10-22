@@ -34,7 +34,9 @@
 #define WM_UPDATEWINDOW (WM_USER+364)
 
 // WPARAM flags for the WM_UPDATEWINDOW message.
-#define IDR_MENU_ALLOW_USER_EXIT 0x01
+#define IDR_MENU_ENABLE_IDD_EXIT	0x01
+#define IDR_MENU_DISABLE_IDD_RELOAD	0x02
+#define IDR_MENU_DISABLE		0x04
 
 // The color for error messages
 #define DARKRED RGB( 128, 0, 0 )
@@ -67,23 +69,43 @@ INT_PTR CALLBACK dialogProc(
 	 case WM_UPDATEWINDOW:
 		HINSTANCE hInstance;
 		HMENU hMenu, hSubMenu;
-		UINT uFlags; // for ModifyMenu()
-		LPTSTR lpszBuffer;
+		UINT uFlags, uIDItem;
+
+		// destroy the current menu
+		hMenu = GetMenu( hWnd );
+		if( hMenu )
+		{
+			DestroyMenu( hMenu );
+		}
 
 		// load the pop-up menu
 		hInstance = _Module.GetModuleInstance();
 		hMenu = LoadMenu( hInstance, MAKEINTRESOURCE( IDR_MENU ) );
 
-		// enable/disable the exit sub-menu item
-		uFlags = MF_BYCOMMAND | MF_STRING;
-		if( wParam & IDR_MENU_ALLOW_USER_EXIT )
-			uFlags |= MF_ENABLED;
-		else
-			uFlags |= MF_GRAYED;
 		hSubMenu = GetSubMenu( hMenu, 0 );
-		lpszBuffer = new TCHAR[32];
-		GetMenuString( hMenu, IDD_EXIT, lpszBuffer, 32, MF_BYCOMMAND );
-		ModifyMenu( hSubMenu, IDD_EXIT, uFlags, IDD_EXIT, lpszBuffer );
+
+		// disable all menu items, if specified
+		if( wParam & IDR_MENU_DISABLE )
+		{
+			wParam &= ~IDR_MENU_ENABLE_IDD_EXIT;
+			wParam |= IDR_MENU_DISABLE_IDD_RELOAD;
+		}
+
+		// enable the exit sub-menu item, if appropriate
+		if( wParam & IDR_MENU_ENABLE_IDD_EXIT )
+		{
+			uFlags = MF_BYCOMMAND | MF_ENABLED;
+			uIDItem = IDD_EXIT;
+			EnableMenuItem( hSubMenu, uIDItem, uFlags );
+		}
+
+		// disable the reload sub-menu item, if appropriate
+		if( wParam & IDR_MENU_DISABLE_IDD_RELOAD )
+		{
+			uFlags = MF_BYCOMMAND | MF_GRAYED;
+			uIDItem = IDD_RELOAD;
+			EnableMenuItem( hSubMenu, uIDItem, uFlags );
+		}
 
 		// assign the modified menu to the window
 		SetMenu( hWnd, hMenu );

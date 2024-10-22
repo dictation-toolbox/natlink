@@ -586,6 +586,8 @@ setMessageWindow( callback, flags )
     The second parameter is optional.  It is a combination of one or more
     of the following flags:
         0x01    # enable the window's File>Exit menu item
+        0x02    # disable the window's File>Reload menu item
+        0x04    # disable the window's menu.  Allows pre-natConnect() use
 
     Note: The idd_reload event occurs when the File>Reload menu item is
     activated.  Before this function's callback is invoked, Natlink will
