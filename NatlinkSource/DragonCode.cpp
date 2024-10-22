@@ -3727,11 +3727,9 @@ BOOL CDragonCode::setMessageWindow(
 		m_pMessageWindowCallback = pCallback;
 
 		// start the second thread for displaying messages
-		// and tell it about our message window
 		if( !m_pSecdThrd )
 		{
 			m_pSecdThrd = new MessageWindow( dwFlags );
-			m_pSecdThrd->setMsgWnd( m_hMsgWnd );
 		}
 
 		// otherwise, update the window
@@ -3739,6 +3737,9 @@ BOOL CDragonCode::setMessageWindow(
 		{
 			m_pSecdThrd->updateWindow( dwFlags );
 		}
+
+		// tell the second thread about our message window
+		m_pSecdThrd->setMsgWnd( m_hMsgWnd );
 	}
 
 	return TRUE;
