@@ -1004,6 +1004,9 @@ void CDragonCode::removeDictObj(CDictationObject * pDictObj )
 
 void CDragonCode::makeCallback( PyObject *pFunc, PyObject *pArgs )
 {
+	// This procedure requires Python's GIL to be held.
+	PyGILState_STATE gstate = PyGILState_Ensure();
+
 	m_nCallbackDepth += 1;
 	PyObject * pRetn = PyEval_CallObject( pFunc, pArgs );
 	m_nCallbackDepth -= 1;
@@ -1032,6 +1035,8 @@ void CDragonCode::makeCallback( PyObject *pFunc, PyObject *pArgs )
 			onAttribChanged( DGNSRAC_MICSTATE );
 		}
 	}
+
+	PyGILState_Release( gstate );
 }
 
 //---------------------------------------------------------------------------
