@@ -608,18 +608,18 @@ class GramObj():
         of the grammar in SAPI format (as a string).  This call actually
         creates the associated COM objects.  
 
-		If you set the optional allResults parameter to 1 then you will be
-		able to get a results object even when the recognition is not
-		specific to your grammar.
+	If you set the optional allResults parameter to 1 then you will be
+	able to get a results object even when the recognition is not
+	specific to your grammar.
 
-		If you optionally set hypothesis to 1 then partial recognition
-		hypothesises will be available during recognition using a hypothesis
-		callback (see setHypothesisCallback).
+	If you optionally set hypothesis to 1 then partial recognition
+	hypothesises will be available during recognition using a hypothesis
+	callback (see setHypothesisCallback).
 
-		The first DWORD of the SAPI binary grammar format defines the type
-		of grammar.  Command grammars (like those created by GrammarBase
-		in natlinkutils) have a type of 0.  Dictation grammars have a type
-		of 1.  Not every member function of GramObj is supported by every
+	The first DWORD of the SAPI binary grammar format defines the type
+	of grammar.  Command grammars (like those created by GrammarBase
+	in natlinkutils) have a type of 0.  Dictation grammars have a type
+	of 1.  Not every member function of GramObj is supported by every
 		grammar type.
 
         Can raise InvalidWord if the grammar contains an invalid word.
@@ -686,17 +686,17 @@ class GramObj():
         system rejection then the first parameter passed to your callback
         function will be 'reject'.
 
-	setHypothesisCallback( pCallback )
-		Call this to setup a callback function which will be called during
-		the middle of recognitions with the partial hypothesis of the
-		recognition in progress.  You must have set the hypothesis
-		parameter on load or the callback will not be called.
+    setHypothesisCallback( pCallback )
+	Call this to setup a callback function which will be called during
+	the middle of recognitions with the partial hypothesis of the
+	recognition in progress.  You must have set the hypothesis
+	parameter on load or the callback will not be called.
 
-		The callback routine is passed a list of words representing
-		the best recognition hypothesis so far.  The frequency of callbacks
-		is determined by Dragon NaturallySpeaking.  Any word in the 
-		hypothesis is subject to chang ein the next callback or when the
-		recognition completes.
+	The callback routine is passed a list of words representing
+	the best recognition hypothesis so far.  The frequency of callbacks
+	is determined by Dragon NaturallySpeaking.  Any word in the 
+	hypothesis is subject to chang ein the next callback or when the
+	recognition completes.
 
     emptyList( listName )
         This function removes all the words in a named list in the grammar.

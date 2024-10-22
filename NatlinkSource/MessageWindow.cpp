@@ -55,9 +55,9 @@ INT_PTR CALLBACK dialogProc(
 
 	switch( msg )
 	{
-	    case WM_CREATE:
+	 case WM_CREATE:
+		return TRUE;
 
-            return TRUE;
 	 case WM_INITDIALOG:
 		// save a pointer to the message window for later
 		s_pSecdThrd = (MessageWindow *)lParam;
@@ -141,7 +141,7 @@ INT_PTR CALLBACK dialogProc(
 				HIWORD(lParam),        // height of client area
 				TRUE);					// repaint window
 		}
-	 return TRUE;
+		return TRUE;
 
 	 case WM_SHOWTEXT:
 		{
