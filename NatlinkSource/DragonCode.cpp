@@ -1230,8 +1230,10 @@ void CDragonCode::onMenuCommand( WPARAM wParam )
 		setTimerCallback( Py_None );
 		setTrayIcon( "", "", Py_None );
 
-		// release user Python-Natlink objects
-		releaseObjects();
+		// note: we do not release objects here any more because it
+		// may result in inconsistent state in user/library code
+		//releaseObjects();
+
 		break;
 
 	 case IDD_EXIT:
