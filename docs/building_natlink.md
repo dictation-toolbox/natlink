@@ -13,17 +13,18 @@ instructions below.
    `Microsoft Visual C++ Redistributable`.
    
    - [C++ Desktop Development](https://docs.microsoft.com/en-us/cpp/ide/using-the-visual-studio-ide-for-cpp-desktop-development) compilers for **(Visual Studio** and **Visual Studio Code)**
-   - [Microsoft Visual C++ Redistributable X86 2015, 2017, 2019, and
-     2022](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170) (32-bit/X86 required)
+   - [Microsoft Visual C++ Redistributable 14.40.33816.0 (recommended) or above](https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-170) (32-bit/X86 required)
 
-3. Install [Visual Studio Code](https://visualstudio.microsoft.com/)
+3. Install[cmake](https://cmake.org/download/) v3.31.0 (recommended) or above
+4. Install [Visual Studio Code](https://visualstudio.microsoft.com/)
    with the following Extensions
    
    - [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
-   - [CMake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
+   - [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
 
-4. Install [Inno](https://jrsoftware.org/isdl.php) version 6.x. - 
+5. Install [Inno](https://jrsoftware.org/isdl.php) version 6.x. - 
    - Inno Setup compiler iscc.exe needs to be sys PATH.
+6. Install flit to Python 3.10.x 32-bit interpreter `py -3.10-32 -m pip install flit`
    
 ### Building Natlink
 
@@ -46,7 +47,9 @@ instructions below.
    - ![build](/images/build.png)
 5. The installer will appear as `\build\InstallerSource\natlinkX.X-pyY.Y-32-setup.exe` The installer executable is self-contained and may be distributed.
 
-### Checking for C++ dependencies
+## Compiling FAQ
+
+### How do I check for statically compiled C++ dependencies?
 
 Microsoft Visual C++ Redistributable must be statically compiled. If not this can cause issues during runtime. Utilize `dumpbin.exe` to check if `VCRUNTIME140D.dll` Is listed as a dependency for the .pyd. See [this issue](https://github.com/dictation-toolbox/natlink/issues/86#issuecomment-1065217999) for a detailed explanation and walk-through
 
@@ -56,7 +59,7 @@ Microsoft Visual C++ Redistributable must be statically compiled. If not this ca
 
 3. Recompile
 
-### Updating after Compilation or Python Edit
+### How do I update after compilation or python edit?
 
 If you have a natlink installed, and just wish to update the .pyd new `_natlink_core*.pyd` and `__init__.py`, run the powershell scripts `local_publish.ps1` in and administrative powershell to update. 
 
