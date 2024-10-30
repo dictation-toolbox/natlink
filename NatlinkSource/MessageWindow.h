@@ -11,7 +11,7 @@ class MessageWindow
 {
  public:
 	// the constructor will create the thread
-	MessageWindow();
+	MessageWindow( DWORD dwFlags );
 
 	// the destructor will terminate the thread
 	~MessageWindow();
@@ -22,6 +22,9 @@ class MessageWindow
 	// we tell the second thread the handle of a window in which the
 	// WM_COMMAND messages received by the output window should be reposted
 	void setMsgWnd( HWND hWnd ) { m_hMsgWnd = hWnd; }
+
+	// this will update the output window
+	void updateWindow( DWORD dwFlags );
 
 	// these are called from the second thread itself
 	void setOutWnd( HWND hWnd ) { m_hOutWnd = hWnd; }

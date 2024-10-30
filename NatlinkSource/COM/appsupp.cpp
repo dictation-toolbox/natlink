@@ -279,6 +279,10 @@ fail:
 STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 {
 	OutputDebugString(TEXT("CDgnAppSupport::Register"));
+
+	// TODO check here with C++ if Natlink is enabled for the current
+	// windows user.  If not, return S_OK early
+
 	// load and initialize the Python system
 	std::string init_error =  DoPyConfig();
 	Py_Initialize();
@@ -287,17 +291,21 @@ STDMETHODIMP CDgnAppSupport::Register( IServiceProvider * pIDgnSite )
 	m_pDragCode = initModule();
 	m_pDragCode->setAppClass( this );
 
+	// start the message window, without a callback and with all menu items
+	// disabled, in order to use displayText()
+	// this is fine, the callback and menu will be set up later
+	m_pDragCode->setMessageWindow( NULL, 0x4 );
+
 	// simulate calling natlink.natConnect() except share the site object
 	BOOL bSuccess = m_pDragCode->natConnect( pIDgnSite );
 	if( !bSuccess )	{
 		OutputDebugString(
 			TEXT( "NatLink: failed to initialize NatSpeak interfaces") );
-		m_pDragCode->displayText( "Failed to initialize NatSpeak interfaces\r\n", TRUE ); // TODO: bug? won't show
+		m_pDragCode->displayText( "Failed to initialize NatSpeak interfaces\r\n", TRUE );
 		return S_OK;
 	}
-	
-    // only now do we have the window to show info and possible error messages from before 
-	// Python init
+
+    // show info and error messages
 	DisplayVersions(m_pDragCode);
 	if ( !init_error.empty()) {
 		OutputDebugStringA(init_error.c_str() );
@@ -417,18 +425,4 @@ STDMETHODIMP CDgnAppSupport::UnRegister()
 STDMETHODIMP CDgnAppSupport::EndProcess( DWORD dwProcessID )
 {
 	return S_OK;
-}
-
-//---------------------------------------------------------------------------
-// This utility function reloads the Python interpreter.  It is called from
-// the display window menu and is useful for debugging during development of
-// natlinkmain and natlinkutils. In normal use, we do not need to reload the
-// Python interpreter.
-
-void CDgnAppSupport::reloadPython()
-{
-		// finalize the Python interpreter
-	OutputDebugString( TEXT( "CDgnAppSupport::reloadPython" ) );
-
-	PyImport_ReloadModule(m_pNatlinkModule);
 }

@@ -27,9 +27,6 @@ public:
 	CDgnAppSupport();
 	~CDgnAppSupport();
 
-	// call this function to re-initialize the Python interface
-	void reloadPython();
-
 DECLARE_REGISTRY_RESOURCEID(IDR_APPSUPP)
 DECLARE_NOT_AGGREGATABLE(CDgnAppSupport)
 

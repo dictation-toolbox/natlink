@@ -1194,6 +1194,37 @@ natlink_setTrayIcon( PyObject *self, PyObject *args )
 	return Py_None;
 }
 
+//---------------------------------------------------------------------------
+// natlink.setMessageWindow( callback, flags )
+//
+// See natlink.txt for documentation.
+
+extern "C" static PyObject *
+natlink_setMessageWindow( PyObject *self, PyObject *args )
+{
+	PyObject * pFunc;
+	DWORD dwFlags = 0;
+
+	if( !PyArg_ParseTuple( args, "O|i:setMessageWindow", &pFunc, &dwFlags) )
+	{
+		return NULL;
+	}
+
+	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
+	{
+		PyErr_SetString( PyExc_TypeError, "first parameter must be callable" );
+		return NULL;
+	}
+
+	if( !cDragon.setMessageWindow( pFunc, dwFlags ) )
+	{
+		return NULL;
+	}
+
+	Py_INCREF( Py_None );
+	return Py_None;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 //---------------------------------------------------------------------------
@@ -2314,6 +2345,7 @@ static struct PyMethodDef natlink_methods[] = {
 	{ "setWordInfo", natlink_setWordInfo, METH_VARARGS },
 	{ "getWordProns", natlink_getWordProns, METH_VARARGS },
 	{ "setTrayIcon", natlink_setTrayIcon, METH_VARARGS },
+	{ "setMessageWindow", natlink_setMessageWindow, METH_VARARGS },
 	{ NULL }
 };
 

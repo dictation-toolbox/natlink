@@ -18,6 +18,7 @@
 #define IDI_UP2 						211
 #define IDI_NODIR						212
 #define IDD_RELOAD                      32768
+#define IDD_EXIT                        32769
 
 // Next default values for new objects
 // 
@@ -25,7 +26,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        213
-#define _APS_NEXT_COMMAND_VALUE         32769
+#define _APS_NEXT_COMMAND_VALUE         32770
 #define _APS_NEXT_CONTROL_VALUE         202
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
