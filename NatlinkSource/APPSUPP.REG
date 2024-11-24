@@ -8,6 +8,14 @@ HKCR
 			{
 				val ThreadingModel = s 'Apartment'
 			}
+			  val AppID = s '{dd990001-bb89-11d2-b031-0060088dc929}'
 		}
 	}
+	NoRemove AppID
+    {
+        ForceRemove {dd990001-bb89-11d2-b031-0060088dc929} = s 'Python Subsystem for NatSpeak'
+        {
+            val DllSurrogate = s ''
+        }
+    }
 }
