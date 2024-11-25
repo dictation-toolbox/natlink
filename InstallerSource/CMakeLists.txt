@@ -35,7 +35,8 @@ add_custom_command(OUTPUT "${INSTALLER_FILE_BASE}.exe"
         /D"PythonInstallExe=${PYTHON_INSTALL_EXE}"
         /D"PythonWheelName=${WHEEL_NAME}"
         /D"PythonWheelPath=${WHEEL_PATH}"
-        /D"MyAppName=${MYAPP_NAME}")
+        /D"MyAppName=${MYAPP_NAME}"
+        /D"NLC_PIP_OPTIONS=${NLC_PIP_OPTIONS}")
 
 
 add_custom_target(natlink-installer-zip ALL DEPENDS "${INSTALLER_FILE_BASE}.zip")
