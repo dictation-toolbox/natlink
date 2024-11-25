@@ -1,23 +1,11 @@
 message("src CMakeLists.txt")
 
-# Find Flit executable path
 cmake_path(GET Python3_EXECUTABLE PARENT_PATH python_root)
-find_program(FLIT NAMES "${python_root}/Scripts/flit.exe")
 
-# If default python script directory is not writable check appdata Python script directory
-if(NOT FLIT)
-    cmake_path(GET python_root STEM LAST_ONLY lastStem)
-    cmake_path(SET flit_appdata "$ENV{appdata}/python/${lastStem}/Scripts/flit.exe" NORMALIZE)
-    find_program(FLIT NAMES ${flit_appdata})
-endif(NOT FLIT)
 
-if(NOT FLIT)
-    message(FATAL_ERROR " Flit exe not found at: ${python_root}/Scripts/flit.exe
-    or ${flit_appdata}\n "
-    "Install Flit with: .\"${Python3_EXECUTABLE}\" -m pip install flit")
-else(FLIT)
-    message(STATUS "FLIT exe found at ${FLIT}")
-endif(NOT FLIT)
+#in theory any python should work, not necessarily the python used to run natlink.  Maybe not even a windows python.
+#that could be useful in something like a github build action.  
+
 
 set(PACKAGE "dist/natlink-${NATLINK_VERSION}-py3-none-any.whl")
 
@@ -40,11 +28,14 @@ ${_Python3_RUNTIME_LIBRARY_RELEASE} )
 
 add_custom_target(natlink-package ALL DEPENDS "${WHEEL_PATH}")
 
+#    If it is ever desired to use a different Python for building the wheel, than the natlink python,
+#   change this to use the desired python in the custom command below:  COMMAND ${Python3_EXECUTABLE} -m build
+
 add_custom_command(
     OUTPUT "${WHEEL_PATH}"
     COMMENT "Building python wheel package in ${WHEEL_PATH}"
     COMMAND ${CMAKE_COMMAND} -E  copy ${NL_FILES}  ${NL_PY_DIR}
-    COMMAND ${FLIT} build --format wheel 
+    COMMAND ${Python3_EXECUTABLE} -m build
     DEPENDS StampDriver # otherwise the stamps are not checked
         ${PROJECT_BINARY_DIR}/NatlinkSource/NatlinkSource.STAMP
         ${NL_FILES}

@@ -1,7 +1,19 @@
 ﻿cmake_minimum_required (VERSION 3.20)
 
 project (Natlink)
-set(NATLINK_VERSION 5.5.7)
+
+#leave this line in
+set (NLC_PIP_OPTIONS  "--pre")        
+
+#Important
+#when you change  NATLINK_VERSION, decide if you want a prerelease of natlinkcore
+
+#comment this line out to only install a release version of natlinkcore. During development it will be normally commented out.
+
+#set (NLC_PIP_OPTIONS "")             
+
+set(NATLINK_VERSION 5.5.8.dev1) #if you are changing this to a release version, probably you want to comment out the line above.
+
 set(PYTHON_VERSION 3.10 CACHE STRING "3.X for X >= 8") # Python to compile PYTHON_VERSION 3.X
 set(MYAPP_NAME "Natlink")
 
