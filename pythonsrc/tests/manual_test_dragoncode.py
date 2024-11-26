@@ -28,8 +28,8 @@ def monkeymodule():
 
 @pytest.fixture(scope="module")
 def natlink_connection(monkeymodule):
-    mock_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_userdir"
-    monkeymodule.setenv("natlink_userdir",str(mock_folder))
+    mock_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_settingsdir"
+    monkeymodule.setenv("natlink_settingsdir",str(mock_folder))
 
     print("\nConnecting natlink")
     with n.natConnect():
@@ -38,9 +38,9 @@ def natlink_connection(monkeymodule):
         
 @pytest.fixture(scope="module")
 def mock_userdir(monkeypatch):
-    mock_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_userdir"
+    mock_folder=p.WindowsPath(os.path.dirname(__file__)) / "mock_settingsdir"
     print(f"Mock Userdir Folder {mock_folder}")
-    monkeypatch.setenv("natlink_userdir",str(mock_folder))
+    monkeypatch.setenv("natlink_settingsdir",str(mock_folder))
 
 
 test0="brachialis"   #a word

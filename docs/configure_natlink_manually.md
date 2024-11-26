@@ -6,7 +6,7 @@ You can always manually inspect and adapt your `natlink.ini` file.
 
 The config file `natlink.ini` will by default be in `%UserProfile%\.natlink` In your user profile.
 
-- Optionally set environmental variable `NATLINK_USERDIR` to set the location of natlink files like natlink.ini. For example`%UserProfile%\Documents\.natlink`.
+- Optionally set environmental variable `NATLINK_SETTINGSDIR` to set the location of natlink files like natlink.ini. For example`%UserProfile%\Documents\.natlink`.
 
 When you run the config program `natlinkconfig_gui` in the from windows start menu, the next step is automatically performed:
 
@@ -85,7 +85,7 @@ Special directory directives:
 - `natlink_userdir`: this `variable` points to the directory where
   your config file, `natlink.ini`, is located. By default this is
   the directory `.natlink` in your home directory. But your can set
-  the environment variable `NATLINK_USERDIR`, see above.
+  the environment variable `NATLINK_SETTINGSDIR`, see above.
   - Note: the path should always end with the directory `.natlink`! For some `automatic defined` directories, especially for`unimacro`, this `natlink_userdir` is also used. The directory MUST be a local
     directory.
 
