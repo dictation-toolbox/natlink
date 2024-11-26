@@ -1,0 +1,26 @@
+HKLM
+{
+    NoRemove SOFTWARE
+    {
+        NoRemove WOW6432Node
+        {
+            NoRemove Classes
+            {
+                NoRemove CLSID
+                {
+                    NoRemove {dd100006-6205-11cf-ae61-0000e8a28647}
+                    {
+                        val AppID = s '{dd100006-6205-11cf-ae61-0000e8a28647}'
+                    }
+                }
+            }
+
+            NoRemove AppID
+            {
+                NoRemove {dd100006-6205-11cf-ae61-0000e8a28647}
+                {
+                    val DllSurrogate = s ''
+                }
+             }
+    }
+}

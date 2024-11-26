@@ -269,8 +269,11 @@ extern "C" static PyObject *
 natlink_natConnect( PyObject *self, PyObject *args )
 {
 	int bUseThreads = FALSE;
+	OutputDebugString(__FILE__ L"natlink_natconnect PyArg_ParseTuple "  );
 	if( !PyArg_ParseTuple( args, "|i:natConnect", &bUseThreads ) )
 	{
+		OutputDebugString(__FILE__ L"natlink_natconnect PyArg_ParseTuple Failed " );
+
 		return NULL;
 	}
 

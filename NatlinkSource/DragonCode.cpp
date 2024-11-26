@@ -1681,7 +1681,7 @@ SDATA makeEmptyGrammar()
 BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 {
 	HRESULT rc;
-
+	OutputDebugString(L"CDragonCode::natConnect");
 	NOTDURING_INIT( "natConnect" );
 	NOTDURING_PAUSED( "natConnect" );
 
@@ -1710,6 +1710,8 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 
 	if( !initGetSiteObject( pIDgnSite ) )
 	{
+		OutputDebugString(L"CDragonCode::natConnect initGetSiteObject failed");
+
 		return FALSE;
 	}
 

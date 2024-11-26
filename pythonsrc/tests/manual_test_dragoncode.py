@@ -12,6 +12,7 @@ import natlink as n
 #workaround for monkeypatching at module scope
 #see https://stackoverflow.com/questions/53963822/python-monkeypatch-setattr-with-pytest-fixture-at-module-scope
 
+from a import t
 
 def test_explanation():
     stars=''.join(i.repeat("*",80))

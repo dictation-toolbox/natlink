@@ -93,6 +93,8 @@ MacroSystem/*_vcl.py
 # updatating natlink
 update_natlink.ps1
 
+#cruft belwow create_natlink debug program
+/create_natlink/*
 # documentation
 /documentation/_build
 /documentation/natlink_build
