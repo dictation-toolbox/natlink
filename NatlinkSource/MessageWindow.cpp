@@ -30,6 +30,14 @@
 // thread.
 #define WM_EXITTHREAD (WM_USER+363)
 
+// Send this message to the output window to update it as specified.
+#define WM_UPDATEWINDOW (WM_USER+364)
+
+// WPARAM flags for the WM_UPDATEWINDOW message.
+#define IDR_MENU_ENABLE_IDD_EXIT	0x01
+#define IDR_MENU_DISABLE_IDD_RELOAD	0x02
+#define IDR_MENU_DISABLE		0x04
+
 // The color for error messages
 #define DARKRED RGB( 128, 0, 0 )
 
@@ -47,22 +55,60 @@ INT_PTR CALLBACK dialogProc(
 
 	switch( msg )
 	{
-	    case WM_CREATE:
+	 case WM_CREATE:
+		return TRUE;
 
-            return TRUE;
 	 case WM_INITDIALOG:
-         HMENU hMenu, hSubMenu;
-
-            hMenu = CreateMenu();
-            hSubMenu = CreatePopupMenu();
-            AppendMenu(hSubMenu, MF_STRING, IDD_RELOAD, L"&Reload");
-            AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, L"&File");
-
-
-
-            SetMenu(hWnd, hMenu);
+		// save a pointer to the message window for later
 		s_pSecdThrd = (MessageWindow *)lParam;
+
+		// hide the window to start with
 		ShowWindow( hWnd, SW_HIDE );
+		return TRUE;
+
+	 case WM_UPDATEWINDOW:
+		HINSTANCE hInstance;
+		HMENU hMenu, hSubMenu;
+		UINT uFlags, uIDItem;
+
+		// destroy the current menu
+		hMenu = GetMenu( hWnd );
+		if( hMenu )
+		{
+			DestroyMenu( hMenu );
+		}
+
+		// load the pop-up menu
+		hInstance = _Module.GetModuleInstance();
+		hMenu = LoadMenu( hInstance, MAKEINTRESOURCE( IDR_MENU ) );
+
+		hSubMenu = GetSubMenu( hMenu, 0 );
+
+		// disable all menu items, if specified
+		if( wParam & IDR_MENU_DISABLE )
+		{
+			wParam &= ~IDR_MENU_ENABLE_IDD_EXIT;
+			wParam |= IDR_MENU_DISABLE_IDD_RELOAD;
+		}
+
+		// enable the exit sub-menu item, if appropriate
+		if( wParam & IDR_MENU_ENABLE_IDD_EXIT )
+		{
+			uFlags = MF_BYCOMMAND | MF_ENABLED;
+			uIDItem = IDD_EXIT;
+			EnableMenuItem( hSubMenu, uIDItem, uFlags );
+		}
+
+		// disable the reload sub-menu item, if appropriate
+		if( wParam & IDR_MENU_DISABLE_IDD_RELOAD )
+		{
+			uFlags = MF_BYCOMMAND | MF_GRAYED;
+			uIDItem = IDD_RELOAD;
+			EnableMenuItem( hSubMenu, uIDItem, uFlags );
+		}
+
+		// assign the modified menu to the window
+		SetMenu( hWnd, hMenu );
 		return TRUE;
 
 	 case WM_EXITTHREAD:
@@ -95,7 +141,7 @@ INT_PTR CALLBACK dialogProc(
 				HIWORD(lParam),        // height of client area
 				TRUE);					// repaint window
 		}
-	 return TRUE;
+		return TRUE;
 
 	 case WM_SHOWTEXT:
 		{
@@ -187,7 +233,7 @@ DWORD CALLBACK threadMain( void * pArg )
 
 //---------------------------------------------------------------------------
 
-MessageWindow::MessageWindow()
+MessageWindow::MessageWindow( DWORD dwFlags )
 {
 	// create the thread we use to display messages; we use an event to make
 	// sure that the thread has started before continuing
@@ -214,6 +260,9 @@ MessageWindow::MessageWindow()
 		CloseHandle( m_hEvent );
 		m_hEvent = NULL;
 	}
+
+	// update the window with the specified flags
+	updateWindow( dwFlags );
 }
 
 //---------------------------------------------------------------------------
@@ -242,5 +291,15 @@ void MessageWindow::displayText(const char * pszText, BOOL bError )
 	{
 		char * pszCopy = _strdup( pszText );
 		PostMessage( m_hOutWnd, WM_SHOWTEXT, bError, (LPARAM)pszCopy );
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void MessageWindow::updateWindow( DWORD dwFlags )
+{
+	if( m_hOutWnd )
+	{
+		PostMessage( m_hOutWnd, WM_UPDATEWINDOW, dwFlags, 0 );
 	}
 }
