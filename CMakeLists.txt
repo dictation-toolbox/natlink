@@ -12,7 +12,7 @@ set (NLC_PIP_OPTIONS  "--pre")
 
 #set (NLC_PIP_OPTIONS "")             
 
-set(NATLINK_VERSION 5.5.8.dev1) #if you are changing this to a release version, probably you want to comment out the line above.
+set(NATLINK_VERSION 5.5.8.dev2) #if you are changing this to a release version, probably you want to comment out the line above.
 
 set(PYTHON_VERSION 3.10 CACHE STRING "3.X for X >= 8") # Python to compile PYTHON_VERSION 3.X
 set(MYAPP_NAME "Natlink")
