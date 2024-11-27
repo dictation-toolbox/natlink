@@ -7,7 +7,7 @@ Natlink is an OpenSource extension module for the speech recognition program Dra
 
 Please go to the instructions for `Installing and configuring Natlink`_.
 
-You you can find an Overview of all aspects of the `Dictation Toolbox`_.
+And read more about all aspects of the `Dictation Toolbox`_.
 
 .. _Dragon: https://www.nuance.com/dragon/business-solutions/dragon-professional-individual.html
 .. _Installing and configuring Natlink: https://dictation-toolbox.github.io/natlink
