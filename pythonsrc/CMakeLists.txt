@@ -42,9 +42,8 @@ add_custom_target(natlink-package ALL DEPENDS "${WHEEL_PATH}")
 
 add_custom_command(
     OUTPUT "${WHEEL_PATH}"
-    COMMENT "Adding ${NL_FILES} to python package"
+    COMMENT "Building python wheel package in ${WHEEL_PATH}"
     COMMAND ${CMAKE_COMMAND} -E  copy ${NL_FILES}  ${NL_PY_DIR}
-    COMMENT "Now Building Python Package" 
     COMMAND ${FLIT} build --format wheel 
     DEPENDS StampDriver # otherwise the stamps are not checked
         ${PROJECT_BINARY_DIR}/NatlinkSource/NatlinkSource.STAMP

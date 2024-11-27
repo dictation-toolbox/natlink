@@ -99,7 +99,7 @@ IDR_APPSUPP             REGISTRY                "appsupp.reg"
 IDD_STDOUT DIALOGEX 0, 25, 285, 135
 STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Messages from Natlink"
-//MENU IDR_MENU
+MENU IDR_MENU
 FONT 9, "Courier New", 0, 0, 0x0
 BEGIN
     CONTROL         "",IDC_RICHEDIT,"RICHEDIT",TCS_RAGGEDRIGHT | TCS_MULTISELECT | WS_BORDER | WS_VSCROLL | WS_TABSTOP,5,5,275,125
@@ -142,6 +142,22 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_RIGHT               ICON                    "idi_right.ico"
+IDI_RIGHT2              ICON                    "idi_right2.ico"
+IDI_DOWN                ICON                    "idi_down.ico"
+IDI_DOWN2               ICON                    "idi_down2.ico"
+IDI_LEFT                ICON                    "idi_left.ico"
+IDI_LEFT2               ICON                    "idi_left2.ico"
+IDI_UP                  ICON                    "idi_up.ico"
+IDI_UP2                 ICON                    "idi_up2.ico"
+IDI_NODIR               ICON                    "idi_nodir.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -153,6 +169,8 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Reload Everything",          IDD_RELOAD
+        MENUITEM SEPARATOR
+        MENUITEM "&Exit",                       IDD_EXIT, GRAYED
     END
 END
 

@@ -120,7 +120,10 @@ STDMETHODIMP CSRGramNotifySink::PhraseFinish(
 
 	if( m_pParent )
 	{
+		// This call requires Python's GIL to be held.
+		PyGILState_STATE gstate = PyGILState_Ensure();
 		m_pParent->PhraseFinish( dwFlags, pSRPhrase, pIUnknown );
+		PyGILState_Release( gstate );
 	}
 
 	return S_OK;
@@ -136,7 +139,10 @@ STDMETHODIMP CSRGramNotifySink::PhraseHypothesis(
 
 	if( m_pParent )
 	{
+		// This call requires Python's GIL to be held.
+		PyGILState_STATE gstate = PyGILState_Ensure();
 		m_pParent->PhraseHypothesis( dwFlags, pSRPhrase );
+		PyGILState_Release( gstate );
 	}
 
 	return S_OK;

@@ -1,0 +1,8 @@
+HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\CLSID\{dd100006-6205-11cf-ae61-0000e8a28647}
+Add value AppID: {dd100006-6205-11cf-ae61-0000e8a28647}
+
+HKEY_LOCAL_MACHINE\SOFTWARE\Classes\WOW6432Node\AppID\{dd100006-6205-11cf-ae61-0000e8a28647}
+
+Add value with an empty string:
+
+DllSurrogate

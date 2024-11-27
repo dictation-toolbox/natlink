@@ -269,8 +269,11 @@ extern "C" static PyObject *
 natlink_natConnect( PyObject *self, PyObject *args )
 {
 	int bUseThreads = FALSE;
+	OutputDebugString(__FILE__ L"natlink_natconnect PyArg_ParseTuple "  );
 	if( !PyArg_ParseTuple( args, "|i:natConnect", &bUseThreads ) )
 	{
+		OutputDebugString(__FILE__ L"natlink_natconnect PyArg_ParseTuple Failed " );
+
 		return NULL;
 	}
 
@@ -1186,6 +1189,37 @@ natlink_setTrayIcon( PyObject *self, PyObject *args )
 	}
 
 	if( !cDragon.setTrayIcon( iconName, toolTip, pFunc ) )
+	{
+		return NULL;
+	}
+
+	Py_INCREF( Py_None );
+	return Py_None;
+}
+
+//---------------------------------------------------------------------------
+// natlink.setMessageWindow( callback, flags )
+//
+// See natlink.txt for documentation.
+
+extern "C" static PyObject *
+natlink_setMessageWindow( PyObject *self, PyObject *args )
+{
+	PyObject * pFunc;
+	DWORD dwFlags = 0;
+
+	if( !PyArg_ParseTuple( args, "O|i:setMessageWindow", &pFunc, &dwFlags) )
+	{
+		return NULL;
+	}
+
+	if( pFunc != Py_None && !PyCallable_Check( pFunc ) )
+	{
+		PyErr_SetString( PyExc_TypeError, "first parameter must be callable" );
+		return NULL;
+	}
+
+	if( !cDragon.setMessageWindow( pFunc, dwFlags ) )
 	{
 		return NULL;
 	}
@@ -2314,19 +2348,32 @@ static struct PyMethodDef natlink_methods[] = {
 	{ "setWordInfo", natlink_setWordInfo, METH_VARARGS },
 	{ "getWordProns", natlink_getWordProns, METH_VARARGS },
 	{ "setTrayIcon", natlink_setTrayIcon, METH_VARARGS },
+	{ "setMessageWindow", natlink_setMessageWindow, METH_VARARGS },
 	{ NULL }
 };
+
+//---------------------------------------------------------------------------
+// natlink module free function.
+
+void natlink_free( void * p )
+{
+	cDragon.freeModule();
+}
 
 //---------------------------------------------------------------------------
 // import natlink from Python
 //
 // We tell Python about our functions and also create an error type.
 static struct PyModuleDef NatlinkModule = {
-		PyModuleDef_HEAD_INIT,
-		"_natlink_core",   /* name of module */
-		"natlink with python3 compatability",
-		-1,
-		natlink_methods
+		PyModuleDef_HEAD_INIT,                 /* m_base */
+		"_natlink_core",                       /* m_name */
+		"natlink with python3 compatability",  /* m_doc */
+		-1,                                    /* m_size */
+		natlink_methods,                       /* m_methods */
+		NULL,                                  /* m_slots */
+		NULL,                                  /* m_traverse */
+		NULL,                                  /* m_clear */
+		natlink_free                           /* m_free */
 };
 
 

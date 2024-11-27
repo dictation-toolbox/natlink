@@ -694,6 +694,13 @@ BOOL CDragonCode::isNatSpeakRunning()
 
 //---------------------------------------------------------------------------
 
+void CDragonCode::freeModule()
+{
+	natDisconnect();
+}
+
+//---------------------------------------------------------------------------
+
 void CDragonCode::releaseObjects()
 {
 	// iterate over all the grammar objects and free them; note that when we
@@ -997,6 +1004,9 @@ void CDragonCode::removeDictObj(CDictationObject * pDictObj )
 
 void CDragonCode::makeCallback( PyObject *pFunc, PyObject *pArgs )
 {
+	// This procedure requires Python's GIL to be held.
+	PyGILState_STATE gstate = PyGILState_Ensure();
+
 	m_nCallbackDepth += 1;
 	PyObject * pRetn = PyEval_CallObject( pFunc, pArgs );
 	m_nCallbackDepth -= 1;
@@ -1025,6 +1035,8 @@ void CDragonCode::makeCallback( PyObject *pFunc, PyObject *pArgs )
 			onAttribChanged( DGNSRAC_MICSTATE );
 		}
 	}
+
+	PyGILState_Release( gstate );
 }
 
 //---------------------------------------------------------------------------
@@ -1196,36 +1208,56 @@ void CDragonCode::onTimer()
 
 void CDragonCode::onMenuCommand( WPARAM wParam )
 {
-	if( LOWORD(wParam) == IDD_RELOAD )
+	WORD nMenuItem = LOWORD( wParam );
+	switch ( nMenuItem )
 	{
-
-		// currently we do not support this operation if we are using thread
-		// support because I have not worked through the issues about what
-		// to do about the thread state
-		if( m_pThreadState )
-		{
-			return;
-		}
+	 case IDD_RELOAD:
+		// note by DF:
+		//  PyWin32, a library we all depend on, does not support
+		//  interpreter reinitialization.  Please see the following
+		//  page for more information:
+		//  https://mail.python.org/pipermail/python-win32/2013-January/012671.html
+		//
+		//  With this limitation in mind, I have adjusted Natlink's
+		//  reload mechanism for narrower code-reload.
 
 		// reload the Python subsystem
 		displayText( "Reloading Python subsystem...\r\n", FALSE, FALSE );
 
-		// Although we do not really care about the Python reference count
-		// we do want to reset the callbacks so we do not make a call into
-		// an obselete intrepreter.
+		// reset the callbacks set from Python
 		setChangeCallback( Py_None );
 		setBeginCallback( Py_None );
 		setTimerCallback( Py_None );
 		setTrayIcon( "", "", Py_None );
 
-		// We call this because the reinitialization will not free up the
-		// python objects.  Note that we do free the COM objects but we do
-		// not free the Python objects.  This means that we will have a
-		// minor memory leak but no object leaks (which would prevent
-		// shutdown of NatSpeak).
-		releaseObjects();
+		// note: we do not release objects here any more because it
+		// may result in inconsistent state in user/library code
+		//releaseObjects();
 
-		m_pAppClass->reloadPython();
+		break;
+
+	 case IDD_EXIT:
+		break;
+
+	 default:
+		return;
+	}
+
+	// invoke the message window callback, if one is set
+	if( m_pMessageWindowCallback )
+	{
+		makeCallback(
+			m_pMessageWindowCallback,
+			Py_BuildValue( "(i)", nMenuItem ) );
+	}
+
+	// do any post-callback work
+	switch ( nMenuItem )
+	{
+	 case IDD_EXIT:
+		// kill the message window
+		setMessageWindow( Py_None );
+		break;
 	}
 }
 
@@ -1529,15 +1561,9 @@ BOOL CDragonCode::initSecondWindow()
 		return FALSE;
 	}
 
-	// we store out class pointer in the window's extra data field so we
+	// we store our class pointer in the window's extra data field so we
 	// get called back when a menu message occurs
 	SetWindowLong( m_hMsgWnd, 0, (LONG)this );
-
-	// tell the thread about out message window
-	if( m_pSecdThrd )
-	{
-		m_pSecdThrd->setMsgWnd( m_hMsgWnd );
-	}
 
 	return TRUE;
 }
@@ -1655,7 +1681,7 @@ SDATA makeEmptyGrammar()
 BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 {
 	HRESULT rc;
-
+	OutputDebugString(L"CDragonCode::natConnect");
 	NOTDURING_INIT( "natConnect" );
 	NOTDURING_PAUSED( "natConnect" );
 
@@ -1680,18 +1706,12 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	}
 #endif
 
-	// here we start the second thread for displaying messages; we only need
-	// this when we are called as a compatibility module
-
-	if( pIDgnSite != NULL )
-	{
-		m_pSecdThrd = new MessageWindow();
-	}
-
 	// Connect to NatSpeak
 
 	if( !initGetSiteObject( pIDgnSite ) )
 	{
+		OutputDebugString(L"CDragonCode::natConnect initGetSiteObject failed");
+
 		return FALSE;
 	}
 
@@ -1821,7 +1841,9 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 	{
 		PyThreadState * threadStateSave = PyThreadState_Swap( NULL );
 		assert( threadStateSave != NULL );
-		m_pThreadState = PyThreadState_New( threadStateSave->interp );
+		// DF: Simple assignment works better than PyThreadState_New().
+		//m_pThreadState = PyThreadState_New( threadStateSave->interp );
+		m_pThreadState = threadStateSave;
 		PyThreadState_Swap( threadStateSave );
 	}
 
@@ -1873,12 +1895,8 @@ BOOL CDragonCode::natDisconnect()
 	m_pIDgnSRTraining = NULL;
 	m_pISRCentral = NULL;
 
-	// shutdown the second thread
-	if( m_pSecdThrd )
-	{
-		delete m_pSecdThrd;
-		m_pSecdThrd = NULL;
-	}
+	// kill the message window
+	setMessageWindow( Py_None );
 
 	// destroy our hidden window
 	if( m_hMsgWnd )
@@ -3683,6 +3701,55 @@ BOOL CDragonCode::setTrayIcon(
 
 	return TRUE;
 }
+
+//---------------------------------------------------------------------------
+
+BOOL CDragonCode::setMessageWindow(
+	PyObject * pCallback, DWORD dwFlags )
+{
+	if( pCallback == Py_None )
+	{
+		Py_XDECREF( m_pMessageWindowCallback );
+		m_pMessageWindowCallback = NULL;
+
+		// shutdown the second thread
+		if( m_pSecdThrd )
+		{
+			delete m_pSecdThrd;
+			m_pSecdThrd = NULL;
+		}
+	}
+	else
+	{
+		// ignore this check if the menu is to be disabled
+		if( !(dwFlags & 0x04) )
+		{
+			NOTBEFORE_INIT( "setMessageWindow" );
+		}
+		Py_XINCREF( pCallback );
+		Py_XDECREF( m_pMessageWindowCallback );
+		m_pMessageWindowCallback = pCallback;
+
+		// start the second thread for displaying messages
+		if( !m_pSecdThrd )
+		{
+			m_pSecdThrd = new MessageWindow( dwFlags );
+		}
+
+		// otherwise, update the window
+		else
+		{
+			m_pSecdThrd->updateWindow( dwFlags );
+		}
+
+		// tell the second thread about our message window
+		m_pSecdThrd->setMsgWnd( m_hMsgWnd );
+	}
+
+	return TRUE;
+}
+
+//---------------------------------------------------------------------------
 
 void CDragonCode::logCookie( const char * pText, QWORD qCookie )
 {

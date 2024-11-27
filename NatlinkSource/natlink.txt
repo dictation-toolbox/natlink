@@ -572,6 +572,28 @@ waitForSpeech( timeout )
     timeout except that the message box is not displayed (the function only
     returns when the timeout elapses).
 
+setMessageWindow( callback, flags )
+    This function enables, disables and updates Natlink's message window.
+
+    The function has one required parameter whose value should be a Python
+    function or None.  If a function is passed for this parameter, it
+    should take one parameter which is the type of message window event:
+        idd_reload or idd_exit (each defined in natlinkutils)
+
+    Passing a callback function enables the message window, passing None
+    disables it.
+
+    The second parameter is optional.  It is a combination of one or more
+    of the following flags:
+        0x01    # enable the window's File>Exit menu item
+        0x02    # disable the window's File>Reload menu item
+        0x04    # disable the window's menu.  Allows pre-natConnect() use
+
+    Note: The idd_reload event occurs when the File>Reload menu item is
+    activated.  Before this function's callback is invoked, Natlink will
+    unload all loaded grammars, destroy all existing ResObjs and DictObjs,
+    and clear all callbacks except the message window callback -- this one.
+
 Inside natlink, each grammar is maintained as a separate object.  To expose
 this structure, each grammar object will be exposed to Python as a class. 
 The GrammarBase class defined in natlinkutils encapusulates and extends the
@@ -586,18 +608,18 @@ class GramObj():
         of the grammar in SAPI format (as a string).  This call actually
         creates the associated COM objects.  
 
-		If you set the optional allResults parameter to 1 then you will be
-		able to get a results object even when the recognition is not
-		specific to your grammar.
+	If you set the optional allResults parameter to 1 then you will be
+	able to get a results object even when the recognition is not
+	specific to your grammar.
 
-		If you optionally set hypothesis to 1 then partial recognition
-		hypothesises will be available during recognition using a hypothesis
-		callback (see setHypothesisCallback).
+	If you optionally set hypothesis to 1 then partial recognition
+	hypothesises will be available during recognition using a hypothesis
+	callback (see setHypothesisCallback).
 
-		The first DWORD of the SAPI binary grammar format defines the type
-		of grammar.  Command grammars (like those created by GrammarBase
-		in natlinkutils) have a type of 0.  Dictation grammars have a type
-		of 1.  Not every member function of GramObj is supported by every
+	The first DWORD of the SAPI binary grammar format defines the type
+	of grammar.  Command grammars (like those created by GrammarBase
+	in natlinkutils) have a type of 0.  Dictation grammars have a type
+	of 1.  Not every member function of GramObj is supported by every
 		grammar type.
 
         Can raise InvalidWord if the grammar contains an invalid word.
@@ -664,17 +686,17 @@ class GramObj():
         system rejection then the first parameter passed to your callback
         function will be 'reject'.
 
-	setHypothesisCallback( pCallback )
-		Call this to setup a callback function which will be called during
-		the middle of recognitions with the partial hypothesis of the
-		recognition in progress.  You must have set the hypothesis
-		parameter on load or the callback will not be called.
+    setHypothesisCallback( pCallback )
+	Call this to setup a callback function which will be called during
+	the middle of recognitions with the partial hypothesis of the
+	recognition in progress.  You must have set the hypothesis
+	parameter on load or the callback will not be called.
 
-		The callback routine is passed a list of words representing
-		the best recognition hypothesis so far.  The frequency of callbacks
-		is determined by Dragon NaturallySpeaking.  Any word in the 
-		hypothesis is subject to chang ein the next callback or when the
-		recognition completes.
+	The callback routine is passed a list of words representing
+	the best recognition hypothesis so far.  The frequency of callbacks
+	is determined by Dragon NaturallySpeaking.  Any word in the 
+	hypothesis is subject to chang ein the next callback or when the
+	recognition completes.
 
     emptyList( listName )
         This function removes all the words in a named list in the grammar.

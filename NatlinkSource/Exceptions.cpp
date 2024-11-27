@@ -175,7 +175,7 @@ void reportError( int errorType, const char * pszFormat, ... )
 	va_start( pArgs, pszFormat );
 	vsprintf( szErrorMsg, pszFormat, pArgs );
 	va_end( pArgs );
-
+	OutputDebugStringA(szErrorMsg);		
 	PyErr_SetString( ErrObjects[errorType], szErrorMsg );
 }
 
@@ -225,6 +225,6 @@ void reportError(
 	#else
 		sprintf( szErrorMsg, "%s (%s)", pszMessage, szNatSpeakErr );
 	#endif
-
+	OutputDebugStringA(szErrorMsg);
 	PyErr_SetString( ErrObjects[errorType], szErrorMsg );
 }

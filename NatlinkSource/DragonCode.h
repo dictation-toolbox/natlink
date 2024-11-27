@@ -48,6 +48,7 @@ class CDragonCode
 		m_pszLogFile = NULL;
 		m_bHasTrayIcon = FALSE;
 		m_pTrayIconCallback = NULL;
+		m_pMessageWindowCallback = NULL;
 		m_pMessageStack = NULL;
 		m_pIDgnSSvcOutputEventA=0;
 		m_pIDgnSSvcOutputEvent=0;
@@ -89,6 +90,7 @@ class CDragonCode
 	BOOL deleteWord( char * wordName );
 	BOOL setWordInfo( char * wordName, DWORD wordInfo );
 	BOOL setTrayIcon( char * iconName, char * toolTip, PyObject * pCallback );
+	BOOL setMessageWindow( PyObject * pCallback, DWORD dwflags = 0 );
 
 	PyObject * getCurrentModule();
 	PyObject * getCurrentUser();
@@ -113,6 +115,10 @@ class CDragonCode
 	// this is called from CDgnAppSupport at initialization time
 	void setAppClass( CDgnAppSupport * pAppClass ) { m_pAppClass = pAppClass; }
 	void setDuringInit( BOOL bState ) { m_bDuringInit = bState; }
+
+	// this is called when the natlink module (this class!) is deallocated from
+	// Python
+	void freeModule();
 
 	// these functions are called from CGrammarObject
 	ISRCentral * pISRCentral() { return m_pISRCentral; }
@@ -262,6 +268,9 @@ class CDragonCode
 	// set when we have installed a tray icon
 	BOOL m_bHasTrayIcon;
 	PyObject *m_pTrayIconCallback;
+
+	// set when the message window is started
+	PyObject * m_pMessageWindowCallback;
 
 	// This is what we call when we are ready to recume recognition
 	void doPausedProcessing( QWORD dwCookie );
