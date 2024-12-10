@@ -117,7 +117,7 @@ Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install 
 
 Filename: "icacls.exe";  Parameters: " ""{#SitePackagesDir}"" /t /grant *{#AllowedUsersSid}:RX "; StatusMsg: "icacls.exe"; 
 Filename: "regsvr32";  Parameters: "-s \""{#CoreDir}\{#NatlinkCorePyd}\""" ; StatusMsg: "regsvr32 {#NatlinkCorePyd}"
-Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --upgrade natlinkcore"; StatusMsg: "natlinkcore"
+Filename: "{code:GetPythonInstallPath}\\Scripts\\pip.exe"; Parameters: "install --upgrade {#NLC_PIP_OPTIONS} natlinkcore "; StatusMsg: "natlinkcore"
 
 Filename: "{code:GetPythonInstallPath}\\Scripts\\natlinkconfig_gui.exe"; Parameters: ""; StatusMsg: "Configure Natlink…"
 
