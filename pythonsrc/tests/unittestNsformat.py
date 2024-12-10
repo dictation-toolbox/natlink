@@ -11,91 +11,63 @@
 # do not run from pythonwin. See also README.txt in PyTest folder
 #
 # October, 2009, QH, added tests for nsformat
-#pylint:disable=W0401, W0614, C0209, W0622, C0200
+#pylint:disable=W0401, W0614, C0209, W0622, C0200, W0122, W0123
 #pylint:disable=E1101
-import unittest
 import time
-
+import pytest
 import natlink
 # from natlinkcore import gramparser
-from natlinkcore import natlinkstatus
-from natlinkcore.natlinkutils import *
+# from natlinkcore.natlinkutils import *
 from natlinkcore.nsformat import *
 
-class TestError(Exception):
-    pass
-ExitQuietly = 'ExitQuietly'
+@pytest.mark.fixture
 
 
-# try some experiments more times, because gotBegin sometimes seems
-# not to hit
-nTries = 10
-natconnectOption = 0 # or 1 for threading, 0 for not. Seems to make difference
-                     # with spurious error (if set to 1), missing gotBegin and all that...
-logFileName = r"D:\natlink\natlink\PyTest\testresult.txt"
+def dotest_formatting(state, Input, Output):
 
-# make different versions testing possible:
-nlstatus = natlinkstatus.NatlinkStatus()
-DNSVersion = nlstatus.getDNSVersion()
+    words = Input.split()
+    for i, _word in enumerate(words):
+        words[i] = words[i].replace('_', ' ')
+    actual,state = formatWords(words,state)
+    if actual != Output:
+        print(f'Expected {"Output"}')
+        print(f'Actually {"actual"}')
+        raise ValueError("test error")
+    return state
+
+
+def test_basic_formatting():
+
+    state=None
+    # assume english, two spaces after .:
+    # note _ is converted into a space, inside a word ()
+
+    state=dotest_formatting(state,
+        r'first .\period\period next',
+        'First.  Next')
+    # continuing the previous:
+    state=dotest_formatting(state,
+        r'this is a second sentence .\period\period',
+        ' this is a second sentence.')
+    state=dotest_formatting(state,
+        r'\caps-on\Caps-On as you can see ,\comma\comma this yours_truly works \caps-off\caps_off well',
+        '  As You Can See, This Yours Truly Works well')
+
+
+
 
 #---------------------------------------------------------------------------
-# These tests should be run after we call natConnect
-class UnittestNsformat(unittest.TestCase):
-    def setUp(self):
-        if not natlink.isNatSpeakRunning():
-            raise TestError('NatSpeak is not currently running')
-        self.connect()
-        # remember user and get DragonPad in front:
-        self.setMicState = "off"
-        #self.lookForDragonPad()
-
-
-
-    def tearDown(self):
-        try:
-            # give message:
-            self.setMicState = "off"
-            # kill things
-        finally:
-            self.disconnect()
-
-        
-    def connect(self):
-        # start with 1 for thread safety when run from pythonwin:
-        natlink.natConnect(natconnectOption)
-
-    def disconnect(self):
-        natlink.natDisconnect()
-        
-    def log(self, t, doPlaystring=None):
-        # displayTest seems not to work:
-        natlink.displayText(t, 0)
-        if doPlaystring:
-            natlink.playString(t+'\n')
-        # do the global log function:
-        log(t)
-
-    def wait(self, t=1):
-        time.sleep(t)
 
     #---------------------------------------------------------------------------
     # This utility subroutine executes a Python command and makes sure that
     # an exception (of the expected type) is raised.  Otherwise a TestError
     # exception is raised
 
-    def doTestForException(self, exceptionType,command,localVars={}):
-        try:
-            exec(command,globals(),localVars)
-        except exceptionType:
-            return
-        raise TestError('Expecting an exception to be raised calling '+command)
-                
-    #---------------------------------------------------------------------------
     # Utility function which calls a routine and tests the return value
 
     def doTestFuncReturn(self, expected,command,localVars=None):
         # account for different values in case of [None, 0] (wordFuncs)
-        if localVars == None:
+        if localVars is None:
             actual = eval(command)
         else:
             actual = eval(command, globals(), localVars)
@@ -138,10 +110,7 @@ class UnittestNsformat(unittest.TestCase):
         
         .\point results in ' .'
         """
-        if DNSVersion <= 10:
-            words =             ['.', r'.\period', r'.\point', r',\comma', r':\colon', r'-\hyphen', 'normal']
-        else:
-            words =             ['.', r'.\period\period', r'.\dot\dot', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
+        words =             ['.', r'.\period\period', r'.\dot\dot', r',\comma\comma', r':\colon\colon', r'-\hyphen\hyphen', 'normal']
         formattedExpected = [' .', '.',        '.',       ',',        ':',        '-', ' normal']
         stateExpected =      [(), (9, 4),      (8, 10),    (),       (),           (8,), ()]
         for word, expectedWord, expectedState in zip(words,  formattedExpected, stateExpected):
@@ -161,30 +130,18 @@ class UnittestNsformat(unittest.TestCase):
         .\point results in ' .'
         """
         testFunc = self.doTestFormatLetters
-        if DNSVersion <= 10:
-            words = r'x\xray\h y\yankee\h !\exclamation-mark'
-        else:
-            words =   r'x\spelling-letter\X_ray y\spelling-letter\Yankee !\spelling-exclamation-mark\exclamation_mark'
+        words =   r'x\spelling-letter\X_ray y\spelling-letter\Yankee !\spelling-exclamation-mark\exclamation_mark'
         state=testFunc(words, 'xy!')
+        assert state == 0
        
     def testFlagsLike(self):
         """tests the different predefined flags in nsformat"""
-        if DNSVersion <= 10:
-            gwi = getWordInfo10
-            wfList = [(r'.\period', 'period'),
-                    (r',\comma', 'comma'),
-                    (r'-\hyphen', 'hyphen'),
-                    ( (10,), 'number'),
-                      ]
-            
-        else:
-            gwi = getWordInfo11
-            wfList = [(r'.\period\period', 'period'),
-                    (r',\comma\comma', 'comma'),
-                    (r'-\hyphen\hyphen', 'hyphen'),
-                    #( (10,), 'number'),  ## testing number later
-                      ]
-            
+        wfList = [(r'.\period\period', 'period'),
+                (r',\comma\comma', 'comma'),
+                (r'-\hyphen\hyphen', 'hyphen'),
+                #( (10,), 'number'),  ## testing number later
+                  ]
+        gwi = getWordInfo
         for w,t in wfList:
             varInNsformat = 'flags_like_%s'% t
             if isinstance(w, tuple):
@@ -568,69 +525,5 @@ class UnittestNsformat(unittest.TestCase):
             'Now for the\r\nand for the\r\n\r\nTesting.')
     
 
-
-            
-            
-   
-def log(t):
-    """log to print and file if present
-
-    note print depends on the state of natlink: where is goes or disappears...
-    I have no complete insight is this, but checking the logfile afterwards
-    always works (QH)
-    """
-    print(t)
-    if logFile:
-        logFile.write(t + '\n')
-    
-#---------------------------------------------------------------------------
-# run
-#
-# This is the main entry point.  It will connect to NatSpeak and perform
-# a series of tests.  In the case of an error, it will cleanly disconnect
-# from NatSpeak and print the exception information,
-def dumpResult(testResult, logFile):
-    """dump into 
-    """
-    if logFile is None:
-        return
-    if testResult.wasSuccessful():
-        mes = "all succesful"
-        logFile.write(mes)
-        return
-    logFile.write('\n--------------- errors -----------------\n')
-    for case, tb in testResult.errors:
-        logFile.write('\n---------- %s --------\n'% case)
-        logFile.write(tb)
-        
-    logFile.write('\n--------------- failures -----------------\n')
-    for case, tb in testResult.failures:
-        logFile.write('\n---------- %s --------\n'% case)
-        logFile.write(tb)
-
-    
-
-
-logFile = None
-
-def run():
-    global logFile, natconnectOption
-    # logFile = open(logFileName, "w")
-    # log("log messages to file: %s"% logFileName)
-    # log('starting unittestNsformat')
-    logFile = None
-    # trick: if you only want one or two tests to perform, change
-    # the test names to her example def test....
-    # and change the word 'test' into 'tttest'...
-    # do not forget to change back and do all the tests when you are done.
-    suite = unittest.makeSuite(UnittestNsformat, 'test')
-##    natconnectOption = 0 # no threading has most chances to pass...
-    if logFile:
-        log('\nstarting tests with threading: %s\n'% natconnectOption)
-        result = unittest.TextTestRunner().run(suite)
-        dumpResult(result, logFile=logFile)
-    
-        logFile.close()
-
 if __name__ == "__main__":
-    run()
+    pytest.run()

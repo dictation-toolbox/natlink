@@ -14,7 +14,9 @@
 
 ###### Can I change the default location for natlink configuration files?
 
-- Yes! Set an environmental variable `NATLINK_USERDIR` to your desired location. For example `%UserProfile%\Documents\.natlink`.
+- Yes! Set an environmental variable `NATLINK_SETTINGSDIR` to your desired location. For example `%UserProfile%\Documents\.natlink`.
+
+(Note: for versions of natlinkcore up to 5.3.13 (July 31, 2024) this option was `NATLINK_USERDIR`. If you used this setting, please change the environmental variable to `NATLINK_SETTINGSDIR`.)
 
 ###### Can I change the logging level of natlink?
 
