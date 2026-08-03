@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-natlink-loader"
+version = "0.1.0"
+description = "Example natlink loader plugin"
+requires-python = ">=3.10"
+dependencies = ["natlink"]
+
+# This registers the loader so natlink discovers it automatically.
+# When natlink starts, it calls my_loader.run() which self-registers
+# the loader instance via natlink.add_loader().
+[project.entry-points."natlink.loaders"]
+my_loader = "my_loader"

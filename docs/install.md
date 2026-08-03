@@ -1,32 +1,84 @@
 # Install Natlink
 
-## Preinstall requirements
+## Requirements
 
-- DPI 16, 15,14, 13 or derivative of the same version
-- Make sure any previous versions of Natlink are unregistered and uninstalled. (Dragon must be close during that process)
+- Windows 10 or 11
+- Dragon NaturallySpeaking 13, 14, 15, or 16
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) (installs Python automatically)
 
-## Install
+## Quick Install
 
-1. Download the latest [Natlink](https://github.com/dictation-toolbox/natlink/releases)
-   
-   - Python 3.10.X 32 bit is required. (if you don't have Python 3.10 installed Natlink Installer will install it off path for you automatically)
-   - Do not uncheck the default `Py Launcher`
+1. Create a virtual environment and install natlink:
 
-2. Run the Natlink Installer and a GUI should pop up at the end.
-   
-   - Note: After install natlink can be reconfigured Using `Configure Natlink via CLI` Natlink start menu.
-   - **Optionally** install other Python packages via commandline with Natlink's python interpreter utilizing `Natlink Python Environment` 
+   ```powershell
+   mkdir C:\natlink
+   cd C:\natlink
+   uv venv --python 3.14
+   uv pip install natlink
+   ```
 
-3. Configure the Natlink GUI
-   
-   ![natlink_gui](/images/natlink_gui.png)
-   
-   - **Optionally** Check the relevant project Dragonfly or Unimacro to configure the file path to the grammars.
+2. Start natlink:
 
-4. Start Dragon start Dragon, the `Messages from Natlink` window should show loading a dragonfly script.  In the picture blow is an example loading module`_caster` is `_caster.py`.
+   ```powershell
+   uv run natlink-ui
+   ```
 
-   ![natlink_running](/images/natlink_running.png)
+3. Optional: create shortcuts:
 
-Scrips starting with an underscore and ending in .py `_*.py` will be imported in alphabetical order, except `__init__.py` will be loaded first if it exists. 
+   ```powershell
+   uv run natlink-ui --install-shortcuts
+   ```
 
-The Natlink setup program creates a shortcut `Natlink Python Environment` which will open a terminal session with the correct Python in the path for the end-user to install dependencies.
+   - `uv run natlink-ui --startup` also runs natlink at login
+
+Run all commands from the `C:\natlink` directory — `uv run` finds the `.venv`
+automatically, no activation needed.
+
+## Traditional Activation
+
+If you prefer to activate the virtual environment instead of using `uv run`:
+
+```powershell
+cd C:\natlink
+.venv\Scripts\activate
+natlink-ui
+```
+
+You need to activate each time you open a new terminal.
+
+## Uninstall
+
+Automatically stops natlink and Dragon, removes shortcuts and settings:
+
+```powershell
+uv run natlink-ui --uninstall
+```
+
+## What To Expect
+
+Starting natlink launches a tray icon:
+
+- red: waiting for Dragon or disconnected
+- green: connected
+- yellow: error
+
+If Dragon is already running, natlink connects automatically. Otherwise it
+waits for Dragon to start.
+
+## Optional Third-Party Packages
+
+Natlink is a bridge — grammar frameworks and loaders are separate packages.
+Install them into the same environment:
+
+```powershell
+uv pip install <package-name>
+```
+
+See each project's own documentation for configuration.
+
+## See Also
+
+- [Configuration](configuration/index.md) for `natlink.ini`
+- [CLI](cli.md) for command-line operations
+- [Troubleshooting](troubleshooting.md) if setup fails
+- [FAQ](faq.md) for common environment questions

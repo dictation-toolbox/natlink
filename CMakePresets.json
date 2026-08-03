@@ -1,0 +1,58 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "vs2026",
+            "displayName": "VS 2026",
+            "generator": "Visual Studio 18 2026",
+            "architecture": {"value": "x64", "strategy": "set"},
+            "binaryDir": "${sourceDir}/build"
+        },
+        {
+            "name": "vs2022",
+            "displayName": "VS 2022",
+            "generator": "Visual Studio 17 2022",
+            "architecture": {"value": "x64", "strategy": "set"},
+            "binaryDir": "${sourceDir}/build"
+        },
+        {
+            "name": "vs2019",
+            "displayName": "VS 2019",
+            "generator": "Visual Studio 16 2019",
+            "architecture": {"value": "x64", "strategy": "set"},
+            "binaryDir": "${sourceDir}/build"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Release-vs2026",
+            "configurePreset": "vs2026",
+            "configuration": "Release"
+        },
+        {
+            "name": "Debug-vs2026",
+            "configurePreset": "vs2026",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Release",
+            "configurePreset": "vs2022",
+            "configuration": "Release"
+        },
+        {
+            "name": "Debug",
+            "configurePreset": "vs2022",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Release-vs2019",
+            "configurePreset": "vs2019",
+            "configuration": "Release"
+        },
+        {
+            "name": "Debug-vs2019",
+            "configurePreset": "vs2019",
+            "configuration": "Debug"
+        }
+    ]
+}

@@ -1,0 +1,3387 @@
+//
+// dragon_interfaces_v13_v14.idl
+// Dragon NaturallySpeaking COM interfaces for cross-bitness marshaling.
+// DNS 13-14 variant -- format strings tuned to match Dragon 13's dd10midl_x64.dll.
+//
+// Key differences from the DNS 15+ IDL:
+//   - A-variant output pointers use [in, out, unique] (unique pointers, not simple_ref)
+//   - String buffer annotations carry larger max values (max=18, 2065, 2066, 4113, 23087)
+//   - PlayString/PlayEvents have 5 params (no dwNotify -- added in DNS 15)
+//   - IDgnSRGramCommon has 4 user methods (2 extra stubs)
+//   - IDgnSSvcOutputEventA/W have extra methods (7/8)
+//   - IVDct0TextA has extra methods (22/23)
+//   - IVoiceDictation0A has extra method (15)
+//
+// Built via CMake (see CMakeLists.txt).
+//
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+// ===================================================================
+// Type definitions
+// ===================================================================
+
+typedef unsigned __int64 QWORD;
+typedef QWORD* PQWORD;
+
+typedef struct {
+    [ptr, size_is(dwSize)] BYTE* pData;
+    DWORD dwSize;
+} SDATA;
+
+typedef enum {
+    VPS_UNKNOWN = 0,
+    VPS_NOUN = 1,
+    VPS_VERB = 2,
+    VPS_ADVERB = 3,
+    VPS_ADJECTIVE = 4,
+    VPS_PROPERNOUN = 5,
+    VPS_PRONOUN = 6,
+    VPS_CONJUNCTION = 7,
+    VPS_CARDINAL = 8,
+    VPS_ORDINAL = 9,
+    VPS_DETERMINER = 10,
+    VPS_QUANTIFIER = 11,
+    VPS_PUNCTUATION = 12,
+    VPS_CONTRACTION = 13,
+    VPS_INTERJECTION = 14,
+    VPS_ABBREVIATION = 15,
+    VPS_PREPOSITION = 16
+} VOICEPARTOFSPEECH;
+
+typedef [v1_enum] enum {
+    SRGRMFMT_CFG = 0x0000,
+    SRGRMFMT_LIMITEDDOMAIN = 0x0001,
+    SRGRMFMT_DICTATION = 0x0002,
+    SRGRMFMT_CFGNATIVE = 0x8000,
+    SRGRMFMT_LIMITEDDOMAINNATIVE = 0x8001,
+    SRGRMFMT_DICTATIONNATIVE = 0x8002,
+    SRGRMFMT_DRAGONNATIVE1 = 0x8101,
+    SRGRMFMT_DRAGONNATIVE2 = 0x8102,
+    SRGRMFMT_DRAGONNATIVE3 = 0x8103
+} SRGRMFMT;
+
+typedef struct {
+    LANGID LanguageID;
+    CHAR szDialect[64];
+} LANGUAGEA;
+
+typedef struct {
+    LANGID LanguageID;
+    WCHAR szDialect[64];
+} LANGUAGEW;
+
+typedef struct {
+    GUID gEngineID;
+    CHAR szMfgName[262];
+    CHAR szProductName[262];
+    GUID gModeID;
+    CHAR szModeName[262];
+    LANGUAGEA language;
+    DWORD dwSequencing;
+    DWORD dwMaxWordsVocab;
+    DWORD dwMaxWordsState;
+    DWORD dwGrammars;
+    DWORD dwFeatures;
+    DWORD dwInterfaces;
+    DWORD dwEngineFeatures;
+} SRMODEINFOA;
+
+typedef struct {
+    GUID gEngineID;
+    WCHAR szMfgName[262];
+    WCHAR szProductName[262];
+    GUID gModeID;
+    WCHAR szModeName[262];
+    LANGUAGEW language;
+    DWORD dwSequencing;
+    DWORD dwMaxWordsVocab;
+    DWORD dwMaxWordsState;
+    DWORD dwGrammars;
+    DWORD dwFeatures;
+    DWORD dwInterfaces;
+    DWORD dwEngineFeatures;
+} SRMODEINFOW;
+
+typedef struct {
+    DWORD dwSize;
+    DWORD dwWordNum;
+    CHAR szWord[1];  // variable-length
+} SRWORDA;
+
+typedef struct {
+    DWORD dwSize;
+    DWORD dwWordNum;
+    WCHAR szWord[1];  // variable-length
+} SRWORDW;
+
+typedef struct {
+    DWORD dwSize;
+    [size_is(dwSize - 4)] BYTE abWords[];
+} SRPHRASEA;
+
+typedef struct {
+    DWORD dwSize;
+    [size_is(dwSize - 4)] BYTE abWords[];
+} SRPHRASEW;
+
+typedef struct {
+    DWORD dwNextPhonemeNode;
+    DWORD dwUpAlternatePhonemeNode;
+    DWORD dwDownAlternatePhonemeNode;
+    DWORD dwPreviousPhonemeNode;
+    DWORD dwWordNode;
+    QWORD qwStartTime;
+    QWORD qwEndTime;
+    DWORD dwPhonemeScore;
+    WORD wVolume;
+    WORD wPitch;
+} SRRESPHONEMENODE;
+
+// DNS 13: no qwSilenceDuration field (64 bytes, not 72)
+typedef struct {
+    DWORD dwNextWordNode;
+    DWORD dwUpAlternateWordNode;
+    DWORD dwDownAlternateWordNode;
+    DWORD dwPreviousWordNode;
+    DWORD dwPhonemeNode;
+    QWORD qwStartTime;
+    QWORD qwEndTime;
+    DWORD dwWordScore;
+    WORD wVolume;
+    WORD wPitch;
+    VOICEPARTOFSPEECH pos;
+    DWORD dwCFGParse;
+    DWORD dwCue;
+} SRRESWORDNODE;
+
+// Dragon-extended version (identical layout, different COM identity)
+typedef struct {
+    DWORD dwNextWordNode;
+    DWORD dwUpAlternateWordNode;
+    DWORD dwDownAlternateWordNode;
+    DWORD dwPreviousWordNode;
+    DWORD dwPhonemeNode;
+    QWORD qwStartTime;
+    QWORD qwEndTime;
+    DWORD dwWordScore;
+    WORD wVolume;
+    WORD wPitch;
+    VOICEPARTOFSPEECH pos;
+    DWORD dwCFGParse;
+    DWORD dwCue;
+} DGNSRRESWORDNODE;
+
+typedef struct {
+    DWORD message;
+    DWORD paramL;
+    DWORD paramH;
+} HOOK_EVENTMSG;
+
+// DGN_ERROR_W — extended error info from IDgnErrorW::LastErrorGet
+// dspeech.h: { int m_nCode; WCHAR m_szParms[300]; } = 604 bytes
+typedef struct {
+    int m_nCode;
+    WCHAR m_szParms[300];
+} DGN_ERROR_W;
+
+typedef enum {
+    CHARSET_TEXT = 0,
+    CHARSET_IPAPHONETIC = 1,
+    CHARSET_ENGINEPHONETIC = 2
+} VOICECHARSET;
+
+typedef enum {
+    SAPI_POSTYPE = 1
+} POSTYPE;
+
+typedef struct {
+    POSTYPE POS_Type;
+    VOICEPARTOFSPEECH SAPI_POS;
+    BYTE Dgn_POS[16];
+} POSINFO;
+
+typedef struct {
+    DWORD dwAutoGainEnable;
+    DWORD dwAwakeState;
+    DWORD dwThreshold;
+    DWORD dwDevice;
+    DWORD dwEnable;
+    CHAR szMicrophone[32];
+    CHAR szSpeaker[32];
+    GUID gModeID;
+} VDSITEINFOA;
+
+typedef struct {
+    DWORD dwAutoGainEnable;
+    DWORD dwAwakeState;
+    DWORD dwThreshold;
+    DWORD dwDevice;
+    DWORD dwEnable;
+    WCHAR szMicrophone[32];
+    WCHAR szSpeaker[32];
+    GUID gModeID;
+} VDSITEINFOW;
+
+typedef struct {
+    CHAR szTopic[32];
+    LANGUAGEA language;
+} VDCTTOPICA;
+
+typedef struct {
+    WCHAR szTopic[32];
+    LANGUAGEW language;
+} VDCTTOPICW;
+
+typedef struct {
+    DWORD dwID;
+    DWORD dwPosn;
+} VDCTBOOKMARK;
+
+
+// Forward declarations
+interface IDgnSRWordEnumA;
+interface IDgnSRWordEnumW;
+interface IDgnSRWordPrefixEnumA;
+interface IDgnSRWordPrefixEnumW;
+interface IDgnSSvcActionNotifySink;
+
+
+// ===================================================================
+// Interface definitions
+// ===================================================================
+
+// -------------------------------------------------------------------
+// IDgnErrorW
+// Source: dspeech.h — extended error information from Dragon (Unicode)
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109005-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnErrorW : IUnknown
+{
+    HRESULT LastErrorGet(
+        [in, out, unique] DGN_ERROR_W* p0
+    );
+
+    HRESULT ErrorMessageGet(
+        [in, out, unique, size_is(p1)] wchar_t* p0,  // output buffer
+        [in] DWORD p1,                                // buffer capacity (wchar count)
+        [in, out, unique] DWORD* p2                   // actual wchar count needed
+    );
+};
+
+// -------------------------------------------------------------------
+// IDgnExtModSupStringsA
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108601-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnExtModSupStringsA : IUnknown
+{
+    HRESULT GetSpecialString(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [out, size_is(p3)] char* p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    HRESULT SetSpecialString(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, string] const char* p2
+    );
+
+    HRESULT GetResourceString(
+        [in] DWORD p0,
+        [out, size_is(p2)] char* p1,
+        [in] DWORD p2,
+        [out] DWORD* p3
+    );
+
+    // DNS 13: Method[7] p0 is FC_TRANSMIT_AS (DWORD transmitted as DWORD)
+    HRESULT GetStringParameter(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [out] DWORD* p2
+    );
+
+    HRESULT GetWindowModuleFileName(
+        [in] DWORD p0,
+        [out, size_is(p2)] char* p1,
+        [in] DWORD p2,
+        [out] DWORD* p3
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnExtModSupStringsW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109601-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnExtModSupStringsW : IUnknown
+{
+    HRESULT GetSpecialString(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [out, size_is(p3/2)] wchar_t* p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    HRESULT SetSpecialString(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, string] const wchar_t* p2
+    );
+
+    HRESULT GetResourceString(
+        [in] DWORD p0,
+        [out, size_is(p2)] wchar_t* p1,
+        [in] DWORD p2,
+        [out] DWORD* p3
+    );
+
+    // DNS 13: Method[7] p0 is FC_TRANSMIT_AS
+    HRESULT GetStringParameter(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [out] DWORD* p2
+    );
+
+    HRESULT GetWindowModuleFileName(
+        [in] DWORD p0,
+        [out, size_is(p2)] wchar_t* p1,
+        [in] DWORD p2,
+        [out] DWORD* p3
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnGetSinkFlags
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108010-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnGetSinkFlags : IUnknown
+{
+    HRESULT SinkFlagsGet(
+        [in, out, unique] DWORD* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnLexWordA
+// Source: dspeech.h
+// DNS 13: strings use max=18; output pointers use [in, out, unique]
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108501-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnLexWordA : IUnknown
+{
+    // Method[3]: p0 max=18, p1 [in,out,unique] UP->BOGUS_STRUCT, p2 [in,out,unique] UP->CARRAY
+    HRESULT Add(
+        [in, string] const char* p0,
+        [in, out, unique] POSINFO* p1,
+        [in, out, unique, size_is(p3)] BYTE* p2,
+        [in] DWORD p3
+    );
+
+    // Method[4]: p0-p2 max=18
+    HRESULT GuessPartOfSpeechandAdd(
+        [in, string] const char* p0,
+        [in, string] const char* p1,
+        [in, string] const char* p2,
+        [in, size_is(p4)] BYTE* p3,
+        [in] DWORD p4
+    );
+
+    // Method[5]: p0-p2 max=18, p3 [in,out]
+    HRESULT GuessPartOfSpeech(
+        [in, string] const char* p0,
+        [in, string] const char* p1,
+        [in, string] const char* p2,
+        [in, out] POSINFO* p3
+    );
+
+    // Method[6]: p0 max=18, p1 [in,out,unique] UP->BOGUS_STRUCT, p2 [in,out,unique] UP->CARRAY
+    HRESULT Get(
+        [in, string] const char* p0,
+        [in, out, unique] POSINFO* p1,
+        [in, out, unique, size_is(p3)] BYTE* p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    // Method[7]: p0 max=18
+    HRESULT Remove(
+        [in, string] const char* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnLexWordW
+// Source: dspeech.h
+// DNS 13: strings use max=2066
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109501-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnLexWordW : IUnknown
+{
+    // Method[3]: p0 max=2066
+    HRESULT Add(
+        [in, string] const wchar_t* p0,
+        [in, unique] const POSINFO* p1,
+        [in, unique, size_is(p3)] BYTE* p2,
+        [in] DWORD p3
+    );
+
+    // Method[4]: p0-p2 max=2066
+    HRESULT GuessPartOfSpeechandAdd(
+        [in, string] const wchar_t* p0,
+        [in, string] const wchar_t* p1,
+        [in, string] const wchar_t* p2,
+        [in, size_is(p4)] BYTE* p3,
+        [in] DWORD p4
+    );
+
+    // Method[5]: p0-p2 max=2066
+    HRESULT GuessPartOfSpeech(
+        [in, string] const wchar_t* p0,
+        [in, string] const wchar_t* p1,
+        [in, string] const wchar_t* p2,
+        [in, out] POSINFO* p3
+    );
+
+    // Method[6]: p0 max=2066
+    HRESULT Get(
+        [in, string] const wchar_t* p0,
+        [in, out, unique] POSINFO* p1,
+        [in, out, unique, size_is(p3)] BYTE* p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    // Method[7]: p0 max=2066
+    HRESULT Remove(
+        [in, string] const wchar_t* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRAudioFileSourceA
+// Source: dspeech.h
+// DNS 13: Method[3] p1 max=2065
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108008-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRAudioFileSourceA : IUnknown
+{
+    HRESULT FileNameSet(
+        [in] DWORD p0,
+        [in, string] const char* p1
+    );
+
+    HRESULT EnableSet(
+        [in] BOOL p0
+    );
+
+    // PlayListSet exists in dspeech.h but Dragon's dd10midl.dll omits it
+    // from the proxy/stub for both A and W variants.  Excluded here to
+    // match Dragon's actual wire format (3 user methods, not 4).
+
+    HRESULT FileClose();
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRAudioFileSourceW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109008-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRAudioFileSourceW : IUnknown
+{
+    HRESULT FileNameSet(
+        [in] DWORD p0,
+        [in, string] const wchar_t* p1
+    );
+
+    HRESULT EnableSet(
+        [in] BOOL p0
+    );
+
+    HRESULT FileClose();
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSREngineControlA
+// Source: dspeech.h
+// DNS 13: output pointers use [in, out, unique]; strings max=2065
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108000-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSREngineControlA : IUnknown
+{
+    // Method[3]: p0/p1/p2 -> [in,out,unique] UP->FC_SHORT
+    HRESULT GetVersion(
+        [in, out, unique] WORD* p0,
+        [in, out, unique] WORD* p1,
+        [in, out, unique] WORD* p2
+    );
+
+    // Method[4]: p0 -> [in,out,unique] UP->FC_SHORT
+    HRESULT GetMicState(
+        [in, out, unique] WORD* p0
+    );
+
+    HRESULT SetMicState(
+        [in] WORD p0,
+        [in] BOOL p1
+    );
+
+    HRESULT SaveSpeaker(
+        [in] BOOL p0
+    );
+
+    // Method[7]: p0/p1 -> [in,out,unique] UP->FC_LONG
+    HRESULT GetChangedInfo(
+        [in, out, unique] BOOL* p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    HRESULT Resume(
+        [in] QWORD p0
+    );
+
+    HRESULT RecognitionMimic(
+        [in] DWORD p0,
+        [in] SDATA p1,
+        [in] DWORD p2
+    );
+
+    HRESULT Preinitialize();
+
+    // Method[11]: p0/p1 max=2065
+    HRESULT SpeakerRename(
+        [in, string] const char* p0,
+        [in, string] const char* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSREngineControlW
+// Source: dspeech.h
+// DNS 13: Method[11] p0/p1 max=18
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109000-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSREngineControlW : IUnknown
+{
+    HRESULT GetVersion(
+        [in, out, unique] WORD* p0,
+        [in, out, unique] WORD* p1,
+        [in, out, unique] WORD* p2
+    );
+
+    HRESULT GetMicState(
+        [in, out, unique] WORD* p0
+    );
+
+    HRESULT SetMicState(
+        [in] WORD p0,
+        [in] BOOL p1
+    );
+
+    HRESULT SaveSpeaker(
+        [in] BOOL p0
+    );
+
+    HRESULT GetChangedInfo(
+        [in, out, unique] BOOL* p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    HRESULT Resume(
+        [in] QWORD p0
+    );
+
+    HRESULT RecognitionMimic(
+        [in] DWORD p0,
+        [in] SDATA p1,
+        [in] DWORD p2
+    );
+
+    HRESULT Preinitialize();
+
+    HRESULT SpeakerRename(
+        [in, string] const wchar_t* p0,
+        [in, string] const wchar_t* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRGramCommon
+// Source: dspeech.h
+// DNS 13: method count = 4 (2 extra stubs vs DNS 15+ which has 2)
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108006-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRGramCommon : IUnknown
+{
+    HRESULT SpecialGrammar(
+        [in] BOOL p0
+    );
+
+    HRESULT Identify(
+        [out] GUID* p0
+    );
+
+    // Method[5]: present in DNS 13, missing in DNS 15+
+    HRESULT Reserved5();
+
+    // Method[6]: present in DNS 13, missing in DNS 15+
+    HRESULT Reserved6();
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRGramDictationA
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108015-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRGramDictationA : IUnknown
+{
+    HRESULT RecentBufferFlush();
+
+    HRESULT RecentBufferCommit();
+
+    HRESULT CommittedFlush();
+
+    HRESULT Words(
+        [in] SDATA p0,
+        [in] DWORD p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRGramDictationW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109015-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRGramDictationW : IUnknown
+{
+    HRESULT RecentBufferFlush();
+
+    HRESULT RecentBufferCommit();
+
+    HRESULT CommittedFlush();
+
+    HRESULT Words(
+        [in] SDATA p0,
+        [in] DWORD p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRGramSelectA
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10801a-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRGramSelectA : IUnknown
+{
+    HRESULT WordsSet(
+        [in] SDATA p0
+    );
+
+    HRESULT WordsChange(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] SDATA p2
+    );
+
+    HRESULT WordsDelete(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT WordsInsert(
+        [in] DWORD p0,
+        [in] SDATA p1
+    );
+
+    HRESULT WordsGet(
+        [out] SDATA* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRGramSelectW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10901a-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRGramSelectW : IUnknown
+{
+    HRESULT WordsSet(
+        [in] SDATA p0
+    );
+
+    HRESULT WordsChange(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] SDATA p2
+    );
+
+    HRESULT WordsDelete(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT WordsInsert(
+        [in] DWORD p0,
+        [in] SDATA p1
+    );
+
+    HRESULT WordsGet(
+        [out] SDATA* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRLexiconA
+// Source: dspeech.h
+// DNS 13: strings max=4113; output count ptrs use [in,out,unique]
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108011-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRLexiconA : IUnknown
+{
+    HRESULT WordEnum(
+        [out] IDgnSRWordEnumA** p0
+    );
+
+    HRESULT WordPrefixEnum(
+        [out] IDgnSRWordPrefixEnumA** p0
+    );
+
+    // Method[5]: p1 max=4113, p2 [in,out,unique] UP->FC_LONG
+    HRESULT WordTest(
+        [in] DWORD p0,
+        [in, string] const char* p1,
+        [in, out, unique] BOOL* p2
+    );
+
+    // Method[6]: dd10midl p3 = C_CSTRING(sized, conformance from p2).
+    // p2 is buffer size in bytes (dspeech.h confirms).
+    HRESULT WordFromPrefix(
+        [in, string] const char* p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [out, string, size_is(p2)] char* p3,
+        [in, out, unique] DWORD* p4
+    );
+
+    // Method[7]: same pattern as WordFromPrefix.
+    HRESULT WordFromPron(
+        [in, string] const char* p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [out, string, size_is(p2)] char* p3,
+        [in, out, unique] DWORD* p4
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRLexiconW
+// Source: dspeech.h
+// DNS 13: strings max=4113
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109011-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRLexiconW : IUnknown
+{
+    HRESULT WordEnum(
+        [out] IDgnSRWordEnumW** p0
+    );
+
+    HRESULT WordPrefixEnum(
+        [out] IDgnSRWordPrefixEnumW** p0
+    );
+
+    // Method[5]: p1 max=4113
+    HRESULT WordTest(
+        [in] DWORD p0,
+        [in, string] const wchar_t* p1,
+        [in, out, unique] BOOL* p2
+    );
+
+    // Method[6]: dd10midl p3 = C_WSTRING(sized, conformance from p2).
+    // p2 is buffer size in wchar_t units (dspeech.h confirms).
+    // [string] on [out] is needed for C_WSTRING NDR encoding.
+    HRESULT WordFromPrefix(
+        [in, string] const wchar_t* p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [out, string, size_is(p2)] wchar_t* p3,
+        [in, out, unique] DWORD* p4
+    );
+
+    // Method[7]: same pattern as WordFromPrefix.
+    HRESULT WordFromPron(
+        [in, string] const wchar_t* p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [out, string, size_is(p2)] wchar_t* p3,
+        [in, out, unique] DWORD* p4
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRResGraphA
+// Source: dspeech.h
+// DNS 13: p4 uses [in,out,unique]
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108020-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRResGraphA : IUnknown
+{
+    // Method[3]: p4 [in,out,unique] UP->FC_LONG
+    HRESULT GetWordNode(
+        [in] DWORD p0,
+        [out] DGNSRRESWORDNODE* p1,
+        [out, size_is(p3)] BYTE* p2,
+        [in] DWORD p3,
+        [in, out, unique] DWORD* p4
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRResGraphW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109020-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRResGraphW : IUnknown
+{
+    HRESULT GetWordNode(
+        [in] DWORD p0,
+        [out] DGNSRRESWORDNODE* p1,
+        [out, size_is(p3)] BYTE* p2,
+        [in] DWORD p3,
+        [in, out, unique] DWORD* p4
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRResSelect
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10801b-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRResSelect : IUnknown
+{
+    HRESULT GetInfo(
+        [in] GUID p0,
+        [in] DWORD p1,
+        [out] DWORD* p2,
+        [out] DWORD* p3,
+        [out] DWORD* p4
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRSpeakerA
+// Source: dspeech.h
+// DNS 13: output pointers use [in,out,unique]; p0 on GetSpeakerDirectory
+//         uses UP->FC_C_CSTRING (unique pointer to conformant string)
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10801c-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRSpeakerA : IUnknown
+{
+    // Method[3]: p1 [in,out,unique] UP->FC_LONG
+    HRESULT EnumBaseModels(
+        [out, size_is(,*p1)] char** p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    HRESULT New(
+        [in, unique, string] const char* p0,
+        [in, unique, string] const char* p1
+    );
+
+    // Method[5]: p0 UP->FC_C_CSTRING, p1 [in,out,unique], p3 [in,out,unique]
+    HRESULT GetSpeakerDirectory(
+        [in, unique, string] const char* p0,
+        [in, out, unique, size_is(p2)] char* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRSpeakerW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10901c-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRSpeakerW : IUnknown
+{
+    HRESULT EnumBaseModels(
+        [out, size_is(,*p1)] wchar_t** p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    HRESULT New(
+        [in, unique, string] const wchar_t* p0,
+        [in, unique, string] const wchar_t* p1
+    );
+
+    HRESULT GetSpeakerDirectory(
+        [in, unique, string] const wchar_t* p0,
+        [in, out, unique, size_is(p2)] wchar_t* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRTopic2A
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108021-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRTopic2A : IUnknown
+{
+    HRESULT New(
+        [in, unique, string] const char* p0,
+        [in, unique, string] const char* p1,
+        [in, unique, string] const char* p2
+    );
+
+    HRESULT Select(
+        [in, unique, string] const char* p0,
+        [in, unique, string] const char* p1
+    );
+
+    HRESULT SpeakerCopy(
+        [in, unique, string] const char* p0,
+        [in, unique, string] const char* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRTopic2W
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109021-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRTopic2W : IUnknown
+{
+    HRESULT New(
+        [in, unique, string] const wchar_t* p0,
+        [in, unique, string] const wchar_t* p1,
+        [in, unique, string] const wchar_t* p2
+    );
+
+    HRESULT Select(
+        [in, unique, string] const wchar_t* p0,
+        [in, unique, string] const wchar_t* p1
+    );
+
+    HRESULT SpeakerCopy(
+        [in, unique, string] const wchar_t* p0,
+        [in, unique, string] const wchar_t* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRTrainingA
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108014-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRTrainingA : IUnknown
+{
+    HRESULT TrainingModeSet(
+        [in] DWORD p0
+    );
+
+    HRESULT TrainingModeGet(
+        [in, out, unique] DWORD* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT TrainingPerform();
+
+    HRESULT TrainingCancel();
+
+    HRESULT TotalCountGet(
+        [in, out, unique] BOOL* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRWordEnumA
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108009-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRWordEnumA : IUnknown
+{
+    HRESULT Next(
+        [in] DWORD p0,
+        [out, size_is(p3)] BYTE* p1,
+        [out] DWORD* p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    HRESULT Skip(
+        [in] DWORD p0
+    );
+
+    HRESULT Reset();
+
+    HRESULT Clone(
+        [out] IDgnSRWordEnumA** p0
+    );
+
+    HRESULT GetCount(
+        [out] DWORD* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRWordEnumW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109009-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRWordEnumW : IUnknown
+{
+    HRESULT Next(
+        [in] DWORD p0,
+        [out, size_is(p3)] BYTE* p1,
+        [out] DWORD* p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    HRESULT Skip(
+        [in] DWORD p0
+    );
+
+    HRESULT Reset();
+
+    HRESULT Clone(
+        [out] IDgnSRWordEnumW** p0
+    );
+
+    HRESULT GetCount(
+        [out] DWORD* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRWordPrefixEnumA
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108017-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRWordPrefixEnumA : IUnknown
+{
+    HRESULT Next(
+        [in] DWORD p0,
+        [out, size_is(p3)] BYTE* p1,
+        [out] DWORD* p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    HRESULT Skip(
+        [in] DWORD p0
+    );
+
+    HRESULT Reset(
+        [in, string] const char* p0
+    );
+
+    HRESULT Clone(
+        [out] IDgnSRWordPrefixEnumA** p0
+    );
+
+    HRESULT GetCount(
+        [out] DWORD* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSRWordPrefixEnumW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109017-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSRWordPrefixEnumW : IUnknown
+{
+    HRESULT Next(
+        [in] DWORD p0,
+        [out, size_is(p3)] BYTE* p1,
+        [out] DWORD* p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    HRESULT Skip(
+        [in] DWORD p0
+    );
+
+    HRESULT Reset(
+        [in, string] const wchar_t* p0
+    );
+
+    HRESULT Clone(
+        [out] IDgnSRWordPrefixEnumW** p0
+    );
+
+    HRESULT GetCount(
+        [out] DWORD* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSSvcInterpreterA
+// Source: dspeech.h
+// DNS 13: output pointers [in,out,unique]; p0 on CheckScript uses UP;
+//         strings max=2066; p2 on ExecuteScriptWithListResults uses UP->CARRAY
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108203-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSSvcInterpreterA : IUnknown
+{
+    HRESULT Register(
+        [in] IDgnSSvcActionNotifySink* p0
+    );
+
+    // Method[4]: p0 UP->FC_C_CSTRING, p1/p2 [in,out,unique] UP->FC_LONG
+    HRESULT CheckScript(
+        [in, unique, string] const char* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    // Method[5]: p0 max=2066, p1/p2 [in,out,unique], p3 max=2066
+    HRESULT ExecuteScript(
+        [in, string] const char* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2,
+        [in, string] const char* p3,
+        [in] DWORD p4
+    );
+
+    // Method[6]: p0 max=2066, p2 UP->CARRAY(elem=1b), p3/p4 [in,out,unique], p5 max=2066
+    HRESULT ExecuteScriptWithListResults(
+        [in, string] const char* p0,
+        [in] DWORD p1,
+        [in, unique, size_is(p1)] BYTE* p2,
+        [in, out, unique] DWORD* p3,
+        [in, out, unique] DWORD* p4,
+        [in, string] const char* p5,
+        [in] DWORD p6
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSSvcInterpreterW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109203-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSSvcInterpreterW : IUnknown
+{
+    HRESULT Register(
+        [in] IDgnSSvcActionNotifySink* p0
+    );
+
+    HRESULT CheckScript(
+        [in, unique, string] const wchar_t* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT ExecuteScript(
+        [in, string] const wchar_t* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2,
+        [in, string] const wchar_t* p3,
+        [in] DWORD p4
+    );
+
+    // Method[6]: p2 UP->CARRAY(elem=2b) for W variant
+    HRESULT ExecuteScriptWithListResults(
+        [in, string] const wchar_t* p0,
+        [in] DWORD p1,
+        [in, unique, size_is(p1)] BYTE* p2,
+        [in, out, unique] DWORD* p3,
+        [in, out, unique] DWORD* p4,
+        [in, string] const wchar_t* p5,
+        [in] DWORD p6
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSSvcOutputEventA
+// Source: dspeech.h
+// DNS 13: PlayString has 5 params (no dwNotify); method count = 6;
+//         Methods 7/8 present
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108201-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSSvcOutputEventA : IUnknown
+{
+    HRESULT Register(
+        [in] IDgnSSvcActionNotifySink* p0
+    );
+
+    // Method[4]: 5 params in DNS 13 (no dwNotify)
+    HRESULT PlayString(
+        [in, string] const char* p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [in] DWORD p3,
+        [out] DWORD* p4
+    );
+
+    // Method[5]: p4 C_CSTRING(sized), p5 [in,out,unique] UP->FC_LONG
+    HRESULT NameFromKey(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [in] DWORD p3,
+        [out, size_is(*p5)] char* p4,
+        [in, out, unique] DWORD* p5
+    );
+
+    // Method[6]: 4 params in DNS 13 (no dwNotify)
+    HRESULT PlayEvents(
+        [in] DWORD p0,
+        [in, size_is(p0)] const HOOK_EVENTMSG* p1,
+        [in] DWORD p2,
+        [in] DWORD p3
+    );
+
+    // Method[7]: present in DNS 13, missing in DNS 15+
+    HRESULT Reserved7(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [out] DWORD* p3
+    );
+
+    // Method[8]: present in DNS 13, missing in DNS 15+
+    HRESULT Reserved8(
+        [in] DWORD p0,
+        [in, size_is(p0)] const HOOK_EVENTMSG* p1,
+        [in] DWORD p2,
+        [in] DWORD p3
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSSvcOutputEventW
+// Source: dspeech.h
+// DNS 13: PlayString has 5 params (no dwNotify); PlayEvents 4 params
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109201-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSSvcOutputEventW : IUnknown
+{
+    HRESULT Register(
+        [in] IDgnSSvcActionNotifySink* p0
+    );
+
+    // Method[4]: 5 params in DNS 13 (no dwNotify)
+    HRESULT PlayString(
+        [in, string] const wchar_t* p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [in] DWORD p3,
+        [in, out, unique] DWORD* p4
+    );
+
+    // Method[5]: p4 C_WSTRING(sized), p5 [in,out,unique]
+    HRESULT NameFromKey(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [in] DWORD p3,
+        [out, size_is(*p5)] wchar_t* p4,
+        [in, out, unique] DWORD* p5
+    );
+
+    // Method[6]: 4 params in DNS 13 (no dwNotify)
+    HRESULT PlayEvents(
+        [in] DWORD p0,
+        [in, size_is(p0)] const HOOK_EVENTMSG* p1,
+        [in] DWORD p2,
+        [in] DWORD p3
+    );
+
+    // Method[7]: KeyFromName - present in DNS 13
+    HRESULT KeyFromName(
+        [in] DWORD p0,
+        [in, string] const wchar_t* p1,
+        [in, out, unique] BYTE* p2,
+        [in, out, unique] BYTE* p3
+    );
+
+    // Method[8]: NameFromKey2 - present in DNS 13
+    HRESULT NameFromKey2(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [in] DWORD p3,
+        [out, size_is(*p5)] wchar_t* p4,
+        [in, out, unique] DWORD* p5
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnVDctTextA
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10840b-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnVDctTextA : IUnknown
+{
+    HRESULT VisibleTextSet(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT VisibleTextGet(
+        [out] DWORD* p0,
+        [out] DWORD* p1
+    );
+
+    HRESULT ThatGet(
+        [out] DWORD* p0,
+        [out] DWORD* p1
+    );
+
+    HRESULT CorrectionDialog(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT RecentBufferCommit();
+
+};
+
+// -------------------------------------------------------------------
+// IDgnVDctTextW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10940b-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnVDctTextW : IUnknown
+{
+    HRESULT VisibleTextSet(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT VisibleTextGet(
+        [out] DWORD* p0,
+        [out] DWORD* p1
+    );
+
+    HRESULT ThatGet(
+        [out] DWORD* p0,
+        [out] DWORD* p1
+    );
+
+    HRESULT CorrectionDialog(
+        [in] BOOL p0,
+        [in] DWORD p1
+    );
+
+    HRESULT RecentBufferCommit();
+
+};
+
+// -------------------------------------------------------------------
+// ILexPronounceA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(2F26B9C0-DB31-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ILexPronounceA : IUnknown
+{
+    HRESULT Add(
+        [in] VOICECHARSET p0,
+        [in, string] const char* p1,
+        [in, string] const char* p2,
+        [in] VOICEPARTOFSPEECH p3,
+        [in, unique, size_is(p5)] BYTE* p4,
+        [in] DWORD p5
+    );
+
+    HRESULT Get(
+        [in] VOICECHARSET p0,
+        [in, string] const char* p1,
+        [in] WORD p2,
+        [in, out, unique, size_is(p4)] char* p3,
+        [in] DWORD p4,
+        [in, out, unique] DWORD* p5,
+        [in, out, unique] VOICEPARTOFSPEECH* p6,
+        [in, out, unique, size_is(p8)] BYTE* p7,
+        [in] DWORD p8,
+        [in, out, unique] DWORD* p9
+    );
+
+    HRESULT Remove(
+        [in, string] const char* p0,
+        [in] WORD p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ILexPronounceW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9A2-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ILexPronounceW : IUnknown
+{
+    HRESULT Add(
+        [in] VOICECHARSET p0,
+        [in, string] const wchar_t* p1,
+        [in, string] const wchar_t* p2,
+        [in] VOICEPARTOFSPEECH p3,
+        [in, unique, size_is(p5)] BYTE* p4,
+        [in] DWORD p5
+    );
+
+    HRESULT Get(
+        [in] VOICECHARSET p0,
+        [in, string] const wchar_t* p1,
+        [in] WORD p2,
+        [in, out, unique, size_is(p4/2)] wchar_t* p3,
+        [in] DWORD p4,
+        [in, out, unique] DWORD* p5,
+        [in, out, unique] VOICEPARTOFSPEECH* p6,
+        [in, out, unique, size_is(p8)] BYTE* p7,
+        [in] DWORD p8,
+        [in, out, unique] DWORD* p9
+    );
+
+    HRESULT Remove(
+        [in, string] const wchar_t* p0,
+        [in] WORD p1
+    );
+
+};
+
+// Forward declarations for GrammarLoad sink parameter types
+interface ISRGramNotifySinkA;
+interface ISRGramNotifySinkW;
+
+// Forward declaration — ISRNotifySink is defined later but needed by
+// ISRCentralA/W::Register (vcmshl encodes param[0] as FC_IP with this IID).
+interface ISRNotifySink;
+
+// -------------------------------------------------------------------
+// ISRCentralA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(2F26B9C2-DB31-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRCentralA : IUnknown
+{
+    HRESULT ModeGet(
+        [out] SRMODEINFOA* p0
+    );
+
+    HRESULT GrammarLoad(
+        [in] SRGRMFMT p0,
+        [in] SDATA p1,
+        [in] ISRGramNotifySinkA* p2,
+        [in] IID p3,
+        [out] IUnknown** p4
+    );
+
+    HRESULT Pause();
+
+    HRESULT PosnGet(
+        [out] QWORD* p0
+    );
+
+    HRESULT Resume();
+
+    HRESULT ToFileTime(
+        [in] QWORD* p0,
+        [out] FILETIME* p1
+    );
+
+    HRESULT Register(
+        [in] ISRNotifySink* p0,
+        [in] IID p1,
+        [out] DWORD* p2
+    );
+
+    HRESULT UnRegister(
+        [in] DWORD p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRCentralW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(B9BD3860-44DB-101B-90A8-00AA003E4B50),
+    pointer_default(unique)
+]
+interface ISRCentralW : IUnknown
+{
+    HRESULT ModeGet(
+        [in, out, unique] SRMODEINFOW* p0
+    );
+
+    HRESULT GrammarLoad(
+        [in] SRGRMFMT p0,
+        [in] SDATA p1,
+        [in] ISRGramNotifySinkW* p2,
+        [in] IID p3,
+        [out] IUnknown** p4
+    );
+
+    HRESULT Pause();
+
+    HRESULT PosnGet(
+        [in, out, unique] QWORD* p0
+    );
+
+    HRESULT Resume();
+
+    HRESULT ToFileTime(
+        [in] QWORD* p0,
+        [in, out, unique] FILETIME* p1
+    );
+
+    HRESULT Register(
+        [in] ISRNotifySink* p0,
+        [in] IID p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT UnRegister(
+        [in] DWORD p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRGramCFGA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(05EB6C64-DBAB-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRGramCFGA : IUnknown
+{
+    HRESULT LinkQuery(
+        [in, unique, string] const char* p0,
+        [in, out, unique] BOOL* p1
+    );
+
+    HRESULT ListAppend(
+        [in, unique, string] const char* p0,
+        [in] SDATA p1
+    );
+
+    HRESULT ListGet(
+        [in, unique, string] const char* p0,
+        [out] SDATA* p1
+    );
+
+    HRESULT ListRemove(
+        [in, unique, string] const char* p0,
+        [in] SDATA p1
+    );
+
+    HRESULT ListSet(
+        [in, unique, string] const char* p0,
+        [in] SDATA p1
+    );
+
+    HRESULT ListQuery(
+        [in, unique, string] const char* p0,
+        [in, out, unique] BOOL* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRGramCFGW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(ecc0b180-c743-11cd-80e5-00aa003e4b50),
+    pointer_default(unique)
+]
+interface ISRGramCFGW : IUnknown
+{
+    HRESULT LinkQuery(
+        [in, unique, string] const wchar_t* p0,
+        [in, out, unique] BOOL* p1
+    );
+
+    HRESULT ListAppend(
+        [in, unique, string] const wchar_t* p0,
+        [in] SDATA p1
+    );
+
+    HRESULT ListGet(
+        [in, unique, string] const wchar_t* p0,
+        [out] SDATA* p1
+    );
+
+    HRESULT ListRemove(
+        [in, unique, string] const wchar_t* p0,
+        [in] SDATA p1
+    );
+
+    HRESULT ListSet(
+        [in, unique, string] const wchar_t* p0,
+        [in] SDATA p1
+    );
+
+    HRESULT ListQuery(
+        [in, unique, string] const wchar_t* p0,
+        [in, out, unique] BOOL* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRGramCommonA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(05EB6C63-DBAB-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRGramCommonA : IUnknown
+{
+    HRESULT Activate(
+        [in] SRGRMFMT p0,
+        [in] BOOL p1,
+        [in, unique, string] const char* p2
+    );
+
+    HRESULT Archive(
+        [in] BOOL p0,
+        [in, out, unique, size_is(p2)] BYTE* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT BookMark(
+        [in] QWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT Deactivate(
+        [in, unique, string] const char* p0
+    );
+
+    HRESULT DeteriorationGet(
+        [in, out, unique] DWORD* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT DeteriorationSet(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2
+    );
+
+    HRESULT TrainDlg(
+        [in] DWORD p0,
+        [in, unique, string] const char* p1
+    );
+
+    HRESULT TrainPhrase(
+        [in] DWORD p0,
+        [out] SDATA* p1
+    );
+
+    HRESULT TrainQuery(
+        [in, out, unique] DWORD* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRGramCommonW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(e8c3e160-c743-11cd-80e5-00aa003e4b50),
+    pointer_default(unique)
+]
+interface ISRGramCommonW : IUnknown
+{
+    HRESULT Activate(
+        [in] SRGRMFMT p0,
+        [in] BOOL p1,
+        [in, unique, string] const wchar_t* p2
+    );
+
+    HRESULT Archive(
+        [in] BOOL p0,
+        [in, out, unique, size_is(p2)] BYTE* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT BookMark(
+        [in] QWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT Deactivate(
+        [in, unique, string] const wchar_t* p0
+    );
+
+    HRESULT DeteriorationGet(
+        [in, out, unique] DWORD* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT DeteriorationSet(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2
+    );
+
+    HRESULT TrainDlg(
+        [in] DWORD p0,
+        [in, unique, string] const wchar_t* p1
+    );
+
+    HRESULT TrainPhrase(
+        [in] DWORD p0,
+        [out] SDATA* p1
+    );
+
+    HRESULT TrainQuery(
+        [in, out, unique] DWORD* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRGramDictationA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(05EB6C65-DBAB-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRGramDictationA : IUnknown
+{
+    HRESULT Context(
+        [in, unique, string] const char* p0,
+        [in, unique, string] const char* p1
+    );
+
+    HRESULT Hint(
+        [in, unique, string] const char* p0
+    );
+
+    HRESULT Words(
+        [in, unique, string] const char* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRGramDictationW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9A3-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRGramDictationW : IUnknown
+{
+    HRESULT Context(
+        [in, unique, string] const wchar_t* p0,
+        [in, unique, string] const wchar_t* p1
+    );
+
+    HRESULT Hint(
+        [in, unique, string] const wchar_t* p0
+    );
+
+    HRESULT Words(
+        [in, unique, string] const wchar_t* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRResAudio
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9A7-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRResAudio : IUnknown
+{
+    HRESULT GetWAV(
+        [out] SDATA* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRResMemory
+// Source: speech.h -- no A/W variants (no strings)
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9AB-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRResMemory : IUnknown
+{
+    HRESULT Free(
+        [in] DWORD p0
+    );
+
+    HRESULT Get(
+        [out] DWORD* p0,
+        [out] DWORD* p1
+    );
+
+    HRESULT LockGet(
+        [out] BOOL* p0
+    );
+
+    HRESULT LockSet(
+        [in] BOOL p0
+    );
+};
+
+// -------------------------------------------------------------------
+// ISRResBasicA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(05EB6C66-DBAB-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRResBasicA : IUnknown
+{
+    HRESULT PhraseGet(
+        [in] DWORD p0,
+        [in, out] SRPHRASEA* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT Identify(
+        [in, out, unique] GUID* p0
+    );
+
+    HRESULT TimeGet(
+        [in, out, unique] QWORD* p0,
+        [in, out, unique] QWORD* p1
+    );
+
+    HRESULT FlagsGet(
+        [in] DWORD p0,
+        [in, out, unique] DWORD* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRResBasicW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9A5-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRResBasicW : IUnknown
+{
+    HRESULT PhraseGet(
+        [in] DWORD p0,
+        [in, out] SRPHRASEW* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT Identify(
+        [in, out, unique] GUID* p0
+    );
+
+    HRESULT TimeGet(
+        [in, out, unique] QWORD* p0,
+        [in, out, unique] QWORD* p1
+    );
+
+    HRESULT FlagsGet(
+        [in] DWORD p0,
+        [in, out, unique] DWORD* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRResCorrectionA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(05EB6C67-DBAB-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRResCorrectionA : IUnknown
+{
+    HRESULT Correction(
+        [in, unique] SRPHRASEA* p0,
+        [in] WORD p1
+    );
+
+    HRESULT Validate(
+        [in] WORD p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRResCorrectionW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9A8-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRResCorrectionW : IUnknown
+{
+    HRESULT Correction(
+        [in, ref] SRPHRASEW* p0,
+        [in] WORD p1
+    );
+
+    HRESULT Validate(
+        [in] WORD p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRResGraphA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(05EB6C68-DBAB-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRResGraphA : IUnknown
+{
+    HRESULT BestPathPhoneme(
+        [in] DWORD p0,
+        [in, out, unique] DWORD* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT BestPathWord(
+        [in] DWORD p0,
+        [out, size_is(p2/4)] DWORD* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT GetPhonemeNode(
+        [in] DWORD p0,
+        [out] SRRESPHONEMENODE* p1,
+        [in, out, unique] WCHAR* p2,
+        [in, out, unique] char* p3
+    );
+
+    HRESULT GetWordNode(
+        [in] DWORD p0,
+        [out] SRRESWORDNODE* p1,
+        [out, size_is(p3)] BYTE* p2,
+        [in] DWORD p3,
+        [in, out, unique] DWORD* p4
+    );
+
+    HRESULT PathScorePhoneme(
+        [in, size_is(p1)] DWORD* p0,
+        [in] DWORD p1,
+        [in, out, unique] LONG* p2
+    );
+
+    HRESULT PathScoreWord(
+        [in, size_is(p1)] DWORD* p0,
+        [in] DWORD p1,
+        [in, out, unique] LONG* p2
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRResGraphW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9AA-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRResGraphW : IUnknown
+{
+    HRESULT BestPathPhoneme(
+        [in] DWORD p0,
+        [in, out, unique] DWORD* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT BestPathWord(
+        [in] DWORD p0,
+        [out, size_is(p2/4)] DWORD* p1,
+        [in] DWORD p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT GetPhonemeNode(
+        [in] DWORD p0,
+        [out] SRRESPHONEMENODE* p1,
+        [in, out, unique] WCHAR* p2,
+        [in, out, unique] WCHAR* p3
+    );
+
+    HRESULT GetWordNode(
+        [in] DWORD p0,
+        [out] SRRESWORDNODE* p1,
+        [out, size_is(p3)] BYTE* p2,
+        [in] DWORD p3,
+        [in, out, unique] DWORD* p4
+    );
+
+    HRESULT PathScorePhoneme(
+        [in, size_is(p1)] DWORD* p0,
+        [in] DWORD p1,
+        [in, out, unique] LONG* p2
+    );
+
+    HRESULT PathScoreWord(
+        [in, size_is(p1)] DWORD* p0,
+        [in] DWORD p1,
+        [in, out, unique] LONG* p2
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRSpeakerA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9AF-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRSpeakerA : IUnknown
+{
+    HRESULT Delete(
+        [in, unique, string] const char* p0
+    );
+
+    HRESULT Enum(
+        [out, size_is(,*p1)] char** p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    HRESULT Merge(
+        [in, unique, string] char* p0,
+        [in, size_is(p2)] BYTE* p1,
+        [in] DWORD p2
+    );
+
+    HRESULT New(
+        [in, unique, string] const char* p0
+    );
+
+    HRESULT Query(
+        [in, out, unique, size_is(p1)] char* p0,
+        [in] DWORD p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT Read(
+        [in, unique, string] char* p0,
+        [in, out, unique] BYTE** p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT Revert(
+        [in, unique, string] char* p0
+    );
+
+    HRESULT Select(
+        [in, unique, string] char* p0,
+        [in] BOOL p1
+    );
+
+    HRESULT Write(
+        [in, unique, string] char* p0,
+        [in, size_is(p2)] BYTE* p1,
+        [in] DWORD p2
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRSpeakerW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9AE-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRSpeakerW : IUnknown
+{
+    HRESULT Delete(
+        [in, unique, string] const wchar_t* p0
+    );
+
+    HRESULT Enum(
+        [out, size_is(,*p1/2)] wchar_t** p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    HRESULT Merge(
+        [in, unique, string] WCHAR* p0,
+        [in, size_is(p2)] BYTE* p1,
+        [in] DWORD p2
+    );
+
+    HRESULT New(
+        [in, unique, string] const wchar_t* p0
+    );
+
+    HRESULT Query(
+        [in, out, unique, size_is(p1/2)] wchar_t* p0,
+        [in] DWORD p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT Read(
+        [in, unique, string] WCHAR* p0,
+        [in, out, unique] BYTE** p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT Revert(
+        [in, unique, string] WCHAR* p0
+    );
+
+    HRESULT Select(
+        [in, unique, string] WCHAR* p0,
+        [in] BOOL p1
+    );
+
+    HRESULT Write(
+        [in, unique, string] WCHAR* p0,
+        [in, size_is(p2)] BYTE* p1,
+        [in] DWORD p2
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IVDct0TextA
+// Source: dspeech.h
+// DNS 13: method count = 21 (Methods 22/23 present);
+//         output pointers use [in,out,unique];
+//         Method[15] p1 is [in] (not [out])
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10840a-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IVDct0TextA : IUnknown
+{
+    HRESULT Lock();
+
+    HRESULT UnLock();
+
+    HRESULT TextGet(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [out] SDATA* p2
+    );
+
+    HRESULT TextSet(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, string] const char* p2,
+        [in] DWORD p3
+    );
+
+    HRESULT TextMove(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [in] DWORD p3
+    );
+
+    HRESULT TextRemove(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2
+    );
+
+    HRESULT TextSelSet(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    // Method[10]: p0/p1 [in,out,unique] UP->FC_LONG
+    HRESULT TextSelGet(
+        [in, out, unique] DWORD* p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    // Method[11]: p0-p3 [in,out,unique] UP->FC_LONG
+    HRESULT GetChanges(
+        [in, out, unique] DWORD* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT BookmarkAdd(
+        [in] VDCTBOOKMARK* p0
+    );
+
+    HRESULT BookmarkRemove(
+        [in] DWORD p0
+    );
+
+    HRESULT BookmarkMove(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT BookmarkQuery(
+        [in] DWORD p0,
+        [out] VDCTBOOKMARK* p1
+    );
+
+    // Method[16]: p2 [in,out,unique] UP->OP->STRUCT(8b), p3 [in,out,unique] UP->FC_LONG
+    HRESULT BookmarkEnum(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, out, unique] VDCTBOOKMARK** p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    // Method[17]: Hint
+    HRESULT Hint(
+        [in, string] const char* p0
+    );
+
+    // Method[18]: Words
+    HRESULT Words(
+        [in, string] const char* p0
+    );
+
+    // Method[19]: p2/p3 [in,out,unique] UP->FC_LONG
+    HRESULT ResultsGet(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, out, unique] DWORD* p2,
+        [in, out, unique] DWORD* p3,
+        [out] IUnknown** p4
+    );
+
+    HRESULT AutoLockSet(
+        [in] BOOL p0
+    );
+
+    // Method[21]: p0 [in,out,unique] UP->FC_LONG
+    HRESULT AutoLockGet(
+        [in, out, unique] BOOL* p0
+    );
+
+    // Method[22]: present in DNS 13, missing in DNS 15+
+    HRESULT Reserved22(
+        [in] DWORD p0,
+        [out, size_is(*p2)] char* p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    // Method[23]: present in DNS 13, missing in DNS 15+
+    HRESULT Reserved23(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, string] const char* p2,
+        [in] DWORD p3
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IVDct0TextW
+// Source: dspeech.h
+// DNS 13: strings max=23087
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10940a-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IVDct0TextW : IUnknown
+{
+    HRESULT Lock();
+
+    HRESULT UnLock();
+
+    HRESULT TextGet(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [out] SDATA* p2
+    );
+
+    HRESULT TextSet(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, string] const WCHAR* p2,
+        [in] DWORD p3
+    );
+
+    HRESULT TextMove(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2,
+        [in] DWORD p3
+    );
+
+    HRESULT TextRemove(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in] DWORD p2
+    );
+
+    HRESULT TextSelSet(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT TextSelGet(
+        [in, out, unique] DWORD* p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    HRESULT GetChanges(
+        [in, out, unique] DWORD* p0,
+        [in, out, unique] DWORD* p1,
+        [in, out, unique] DWORD* p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT BookmarkAdd(
+        [in] VDCTBOOKMARK* p0
+    );
+
+    HRESULT BookmarkRemove(
+        [in] DWORD p0
+    );
+
+    HRESULT BookmarkMove(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    // Method[15] p1: [in] in DNS 13
+    HRESULT BookmarkQuery(
+        [in] DWORD p0,
+        [in] VDCTBOOKMARK* p1
+    );
+
+    // Method[16]: p2 [in,out] UP->OP->STRUCT(8b), p3 [in,out,unique]
+    HRESULT BookmarkEnum(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, out, unique] VDCTBOOKMARK** p2,
+        [in, out, unique] DWORD* p3
+    );
+
+    HRESULT Hint(
+        [in, string] const WCHAR* p0
+    );
+
+    HRESULT Words(
+        [in, string] const WCHAR* p0
+    );
+
+    HRESULT ResultsGet(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, out, unique] DWORD* p2,
+        [in, out, unique] DWORD* p3,
+        [out] IUnknown** p4
+    );
+
+    HRESULT AutoLockSet(
+        [in] BOOL p0
+    );
+
+    HRESULT AutoLockGet(
+        [in, out, unique] BOOL* p0
+    );
+
+    // DNS 16 additions (also present in DNS 13)
+    HRESULT Reserved22(
+        [in] DWORD p0,
+        [out, size_is(*p2)] wchar_t* p1,
+        [in, out, unique] DWORD* p2
+    );
+
+    HRESULT Reserved23(
+        [in] DWORD p0,
+        [in] DWORD p1,
+        [in, string] const WCHAR* p2,
+        [in] DWORD p3
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IVoiceDictation0A
+// Source: dspeech.h
+// DNS 13: method count = 13 (Method[15] present);
+//         Method[4] p1 is [in]; Method[7] p0/p1 [in,out,unique];
+//         Method[13] p0 FC_TRANSMIT_AS
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108400-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IVoiceDictation0A : IUnknown
+{
+    HRESULT Register(
+        [in, string] const char* p0,
+        [in, string] const char* p1,
+        [in] IUnknown* p2,
+        [in, string] const char* p3,
+        [in] IUnknown* p4,
+        [in] GUID p5,
+        [in] DWORD p6
+    );
+
+    // Method[4]: p1 is [in] in DNS 13 (not [out])
+    HRESULT SiteInfoGet(
+        [in, string] const char* p0,
+        [in] VDSITEINFOA* p1
+    );
+
+    HRESULT SiteInfoSet(
+        [in, string] const char* p0,
+        [in] VDSITEINFOA* p1
+    );
+
+    HRESULT SessionSerialize(
+        [in] IUnknown* p0
+    );
+
+    // Method[7]: p0 [in,out,unique] UP->OP->STRUCT, p1 [in,out,unique] UP->FC_LONG
+    HRESULT TopicEnum(
+        [in, out, unique] VDCTTOPICA** p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    HRESULT TopicAddString(
+        [in, string] const char* p0,
+        [in] LANGUAGEA* p1,
+        [in] const char** p2
+    );
+
+    HRESULT TopicAddGrammar(
+        [in, string] const char* p0,
+        [in] SDATA p1
+    );
+
+    HRESULT TopicRemove(
+        [in, string] const char* p0
+    );
+
+    HRESULT TopicSerialize(
+        [in] IUnknown* p0
+    );
+
+    HRESULT TopicDeserialize(
+        [in] IUnknown* p0
+    );
+
+    // Method[13]: p0 FC_TRANSMIT_AS in DNS 13
+    HRESULT Activate(
+        [in] DWORD p0
+    );
+
+    HRESULT Deactivate();
+
+    // Method[15]: present in DNS 13, missing in DNS 15+
+    HRESULT Reserved15(
+        [in] DWORD p0,
+        [in] VDCTBOOKMARK p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IVoiceDictation0W
+// Source: dspeech.h
+// DNS 13: strings max=23087; Method[13] p0 FC_TRANSMIT_AS.
+// NOTE: the VDSITEINFOW / LANGUAGEW special-casing below comes from prior
+// local analysis notes in this repo, but unlike the DNS 15/16 path it is not
+// yet corroborated by the checked-in dd10midl RE corpus, which targets the
+// DNS 16/current proxy/stub binary.
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109400-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IVoiceDictation0W : IUnknown
+{
+    HRESULT Register(
+        [in, string] const WCHAR* p0,
+        [in, string] const WCHAR* p1,
+        [in] IUnknown* p2,
+        [in, string] const WCHAR* p3,
+        [in] IUnknown* p4,
+        [in] GUID p5,
+        [in] DWORD p6
+    );
+
+    // Both dd10midl.dll (32-bit) and dd10midl_x64.dll (64-bit) confirm
+    // [in,simple_ref] STRUCT(164b) — matching VDSITEINFOW, not the
+    // PVDSITEINFOA declared in dspeech.h (header disagrees with compiled code).
+    // Dragon 13 returns E_NOTIMPL — the method is deliberately unimplemented.
+    // Changing to [out] causes RPC_X_BAD_STUB_DATA (wire format is [in]).
+    HRESULT SiteInfoGet(
+        [in, string] const WCHAR* p0,
+        [in] VDSITEINFOW* p1
+    );
+
+    // Verified locally against DNS 13 dd10midl.dll: p1 is STRUCT(164b).
+    HRESULT SiteInfoSet(
+        [in, string] const WCHAR* p0,
+        [in] VDSITEINFOW* p1
+    );
+
+    HRESULT SessionSerialize(
+        [in] IUnknown* p0
+    );
+
+    HRESULT TopicEnum(
+        [in, out, unique] VDCTTOPICW** p0,
+        [in, out, unique] DWORD* p1
+    );
+
+    // Verified locally against DNS 13 dd10midl.dll:
+    // p1 marshals as [in,simple_ref] STRUCT(130b), matching LANGUAGEW.
+    HRESULT TopicAddString(
+        [in, string] const WCHAR* p0,
+        [in] LANGUAGEW* p1,
+        [in] const WCHAR** p2
+    );
+
+    HRESULT TopicAddGrammar(
+        [in, string] const WCHAR* p0,
+        [in] SDATA p1
+    );
+
+    HRESULT TopicRemove(
+        [in, string] const WCHAR* p0
+    );
+
+    HRESULT TopicSerialize(
+        [in] IUnknown* p0
+    );
+
+    HRESULT TopicDeserialize(
+        [in] IUnknown* p0
+    );
+
+    // Method[13]: p0 FC_TRANSMIT_AS in DNS 13
+    HRESULT Activate(
+        [in] BOOL p0
+    );
+
+    HRESULT Deactivate();
+
+    // DNS 13: Method[15] present; p1 uses VARIANT via USER_MARSHAL
+    // Keeping VDCTBOOKMARK struct for TLB stability (same as DNS 16 IDL).
+    HRESULT Reserved15(
+        [in] DWORD p0,
+        [in] VDCTBOOKMARK p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSREngineNotifySinkA
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108001-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSREngineNotifySinkA : IUnknown
+{
+    HRESULT AttribChanged2(
+        [in] DWORD p0
+    );
+
+    HRESULT Paused(
+        [in] QWORD p0
+    );
+
+    HRESULT MimicDone(
+        [in] DWORD p0,
+        [in] IUnknown* p1
+    );
+
+    HRESULT ErrorHappened(
+        [in] IUnknown* p0
+    );
+
+    HRESULT Progress(
+        [in] int p0,
+        [in, unique, string] const char* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSREngineNotifySinkW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109001-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSREngineNotifySinkW : IUnknown
+{
+    HRESULT AttribChanged2(
+        [in] DWORD p0
+    );
+
+    HRESULT Paused(
+        [in] QWORD p0
+    );
+
+    HRESULT MimicDone(
+        [in] DWORD p0,
+        [in] IUnknown* p1
+    );
+
+    HRESULT ErrorHappened(
+        [in] IUnknown* p0
+    );
+
+    HRESULT Progress(
+        [in] int p0,
+        [in, unique, string] const wchar_t* p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnSSvcActionNotifySink
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108202-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnSSvcActionNotifySink : IUnknown
+{
+    HRESULT PlaybackDone(
+        [in] DWORD p0
+    );
+
+    HRESULT PlaybackAborted(
+        [in] DWORD p0,
+        [in] HRESULT p1
+    );
+
+    HRESULT ExecutionDone(
+        [in] DWORD p0
+    );
+
+    HRESULT ExecutionStatus(
+        [in] DWORD p0,
+        [in] DWORD p1
+    );
+
+    HRESULT ExecutionAborted(
+        [in] DWORD p0,
+        [in] HRESULT p1,
+        [in] DWORD p2
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IDgnVDctNotifySink
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd10840c-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IDgnVDctNotifySink : IUnknown
+{
+    HRESULT ErrorHappened(
+        [in] IUnknown* p0
+    );
+
+    HRESULT WarningHappened(
+        [in] IUnknown* p0
+    );
+
+    HRESULT JITPause();
+
+    HRESULT HotKeyHappened(
+        [in] DWORD p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRGramNotifySinkA
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(efeea350-ce5e-11cd-9d96-00aa002fc7c9),
+    pointer_default(unique)
+]
+interface ISRGramNotifySinkA : IUnknown
+{
+    HRESULT BookMark(
+        [in] DWORD p0
+    );
+
+    HRESULT Paused();
+
+    HRESULT PhraseFinish(
+        [in] DWORD p0,
+        [in] QWORD p1,
+        [in] QWORD p2,
+        [in, unique] SRPHRASEA* p3,
+        [in] IUnknown* p4
+    );
+
+    HRESULT PhraseHypothesis(
+        [in] DWORD p0,
+        [in] QWORD p1,
+        [in] QWORD p2,
+        [in, unique] SRPHRASEA* p3,
+        [in] IUnknown* p4
+    );
+
+    HRESULT PhraseStart(
+        [in] QWORD p0
+    );
+
+    HRESULT ReEvaluate(
+        [in] IUnknown* p0
+    );
+
+    HRESULT Training(
+        [in] DWORD p0
+    );
+
+    HRESULT UnArchive(
+        [in] IUnknown* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRGramNotifySinkW
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(f106bfa0-c743-11cd-80e5-00aa003e4b50),
+    pointer_default(unique)
+]
+interface ISRGramNotifySinkW : IUnknown
+{
+    HRESULT BookMark(
+        [in] DWORD p0
+    );
+
+    HRESULT Paused();
+
+    HRESULT PhraseFinish(
+        [in] DWORD p0,
+        [in] QWORD p1,
+        [in] QWORD p2,
+        [in, unique] SRPHRASEW* p3,
+        [in] IUnknown* p4
+    );
+
+    HRESULT PhraseHypothesis(
+        [in] DWORD p0,
+        [in] QWORD p1,
+        [in] QWORD p2,
+        [in, unique] SRPHRASEW* p3,
+        [in] IUnknown* p4
+    );
+
+    HRESULT PhraseStart(
+        [in] QWORD p0
+    );
+
+    HRESULT ReEvaluate(
+        [in] IUnknown* p0
+    );
+
+    HRESULT Training(
+        [in] DWORD p0
+    );
+
+    HRESULT UnArchive(
+        [in] IUnknown* p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// ISRNotifySink
+// Source: speech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(090CD9B0-DA1A-11CD-B3CA-00AA0047BA4F),
+    pointer_default(unique)
+]
+interface ISRNotifySink : IUnknown
+{
+    HRESULT AttribChanged(
+        [in] DWORD p0
+    );
+
+    HRESULT Interference(
+        [in] QWORD p0,
+        [in] QWORD p1,
+        [in] DWORD p2
+    );
+
+    HRESULT Sound(
+        [in] QWORD p0,
+        [in] QWORD p1
+    );
+
+    HRESULT UtteranceBegin(
+        [in] QWORD p0
+    );
+
+    HRESULT UtteranceEnd(
+        [in] QWORD p0,
+        [in] QWORD p1
+    );
+
+    HRESULT VUMeter(
+        [in] QWORD p0,
+        [in] WORD p1
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IVDct0NotifySinkA
+// Source: dspeech.h
+// DNS 13: Method[8]/[9] p1 simple_ref=True -> CSTRUCT(4b) (not UP)
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd108401-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IVDct0NotifySinkA : IUnknown
+{
+    HRESULT Command(
+        [in] DWORD p0
+    );
+
+    HRESULT TextSelChanged();
+
+    HRESULT TextChanged(
+        [in] DWORD p0
+    );
+
+    HRESULT TextBookmarkChanged(
+        [in] DWORD p0
+    );
+
+    HRESULT PhraseStart();
+
+    // Method[8]: p1 simple_ref=True -> CSTRUCT(4b) in DNS 13
+    HRESULT PhraseFinish(
+        [in] DWORD p0,
+        [in] SRPHRASEA* p1
+    );
+
+    // Method[9]: p1 simple_ref=True -> CSTRUCT(4b) in DNS 13
+    HRESULT PhraseHypothesis(
+        [in] DWORD p0,
+        [in] SRPHRASEA* p1
+    );
+
+    HRESULT UtteranceBegin();
+
+    HRESULT UtteranceEnd();
+
+    HRESULT VUMeter(
+        [in] WORD p0
+    );
+
+    HRESULT AttribChanged(
+        [in] DWORD p0
+    );
+
+    HRESULT Interference(
+        [in] DWORD p0
+    );
+
+    HRESULT Training(
+        [in] DWORD p0
+    );
+
+    HRESULT Dictating(
+        [in, string] const char* p0,
+        [in] BOOL p1
+    );
+
+    HRESULT Reserved15(
+        [in] DWORD p0
+    );
+
+};
+
+// -------------------------------------------------------------------
+// IVDct0NotifySinkW
+// Source: dspeech.h
+// -------------------------------------------------------------------
+
+[
+    object,
+    uuid(dd109401-6205-11cf-ae61-0000e8a28647),
+    pointer_default(unique)
+]
+interface IVDct0NotifySinkW : IUnknown
+{
+    HRESULT Command(
+        [in] DWORD p0
+    );
+
+    HRESULT TextSelChanged();
+
+    HRESULT TextChanged(
+        [in] DWORD p0
+    );
+
+    HRESULT TextBookmarkChanged(
+        [in] DWORD p0
+    );
+
+    HRESULT PhraseStart();
+
+    HRESULT PhraseFinish(
+        [in] DWORD p0,
+        [in, ref] SRPHRASEW* p1
+    );
+
+    HRESULT PhraseHypothesis(
+        [in] DWORD p0,
+        [in, ref] SRPHRASEW* p1
+    );
+
+    HRESULT UtteranceBegin();
+
+    HRESULT UtteranceEnd();
+
+    HRESULT VUMeter(
+        [in] WORD p0
+    );
+
+    HRESULT AttribChanged(
+        [in] DWORD p0
+    );
+
+    HRESULT Interference(
+        [in] DWORD p0
+    );
+
+    HRESULT Training(
+        [in] DWORD p0
+    );
+
+    HRESULT Dictating(
+        [in, string] const WCHAR* p0,
+        [in] BOOL p1
+    );
+
+    HRESULT Reserved15(
+        [in] DWORD p0
+    );
+
+};
+
+
+// ===================================================================
+// Type library (required for marshal DLL registration)
+// ===================================================================
+
+[
+    uuid(DD100101-6205-11CF-AE61-0000E8A28647),  // unique LIBID for v13 (differs from DNS 15+)
+    version(1.0),
+    helpstring("Dragon/SAPI Marshal Interfaces (DNS 13)")
+]
+library DragonProxyStubLib_v13_v14
+{
+    importlib("stdole2.tlb");
+
+    interface IDgnErrorW;
+    interface IDgnExtModSupStringsA;
+    interface IDgnExtModSupStringsW;
+    interface IDgnGetSinkFlags;
+    interface IDgnLexWordA;
+    interface IDgnLexWordW;
+    interface IDgnSRAudioFileSourceA;
+    interface IDgnSRAudioFileSourceW;
+    interface IDgnSREngineControlA;
+    interface IDgnSREngineControlW;
+    interface IDgnSRGramCommon;
+    interface IDgnSRGramDictationA;
+    interface IDgnSRGramDictationW;
+    interface IDgnSRGramSelectA;
+    interface IDgnSRGramSelectW;
+    interface IDgnSRLexiconA;
+    interface IDgnSRLexiconW;
+    interface IDgnSRResGraphA;
+    interface IDgnSRResGraphW;
+    interface IDgnSRResSelect;
+    interface IDgnSRSpeakerA;
+    interface IDgnSRSpeakerW;
+    interface IDgnSRTopic2A;
+    interface IDgnSRTopic2W;
+    interface IDgnSRTrainingA;
+    interface IDgnSRWordEnumA;
+    interface IDgnSRWordEnumW;
+    interface IDgnSRWordPrefixEnumA;
+    interface IDgnSRWordPrefixEnumW;
+    interface IDgnSSvcInterpreterA;
+    interface IDgnSSvcInterpreterW;
+    interface IDgnSSvcOutputEventA;
+    interface IDgnSSvcOutputEventW;
+    interface IDgnVDctTextA;
+    interface IDgnVDctTextW;
+    interface ILexPronounceA;
+    interface ILexPronounceW;
+    interface ISRCentralA;
+    interface ISRCentralW;
+    interface ISRGramCFGA;
+    interface ISRGramCFGW;
+    interface ISRGramCommonA;
+    interface ISRGramCommonW;
+    interface ISRGramDictationA;
+    interface ISRGramDictationW;
+    interface ISRResAudio;
+    interface ISRResMemory;
+    interface ISRResBasicA;
+    interface ISRResBasicW;
+    interface ISRResCorrectionA;
+    interface ISRResCorrectionW;
+    interface ISRResGraphA;
+    interface ISRResGraphW;
+    interface ISRSpeakerA;
+    interface ISRSpeakerW;
+    interface IVDct0TextA;
+    interface IVDct0TextW;
+    interface IVoiceDictation0A;
+    interface IVoiceDictation0W;
+    interface IDgnSREngineNotifySinkA;
+    interface IDgnSREngineNotifySinkW;
+    interface IDgnSSvcActionNotifySink;
+    interface IDgnVDctNotifySink;
+    interface ISRGramNotifySinkA;
+    interface ISRGramNotifySinkW;
+    interface ISRNotifySink;
+    interface IVDct0NotifySinkA;
+    interface IVDct0NotifySinkW;
+};

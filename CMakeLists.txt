@@ -1,61 +1,130 @@
-﻿cmake_minimum_required (VERSION 3.20)
+# CMakeLists.txt — Build natlink 64-bit marshal DLLs
+#
+# Produces two marshal DLLs:
+#   marshal64_v13_v14.dll   (Dragon 13 / DPI 14)
+#   marshal64_v15_v16.dll   (DPI 15 / 16)
+#
+# Both use a unique CLSID ({A1B2C3D4-...}) to avoid colliding with
+# Dragon's own dd10midl PSFactory in the registry.
+#
+# Build:
+#   cmake --preset vs2022 && cmake --build build --config Release
+#
+# Or use scripts/build_dll.ps1 (stops Dragon/launcher automatically):
+#   .\scripts\build_dll.ps1
 
-project (Natlink)
+cmake_minimum_required(VERSION 3.20)
+project(natlink_marshal C)
 
-#leave this line in
-set (NLC_PIP_OPTIONS  "--pre")        
+set(PKG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/natlink_com)
 
-#Important
-#when you change  NATLINK_VERSION, decide if you want a prerelease of natlinkcore
+# Find MIDL in the Windows SDK (not always on PATH outside VS prompt).
+#
+# Search order:
+#   1. VS-set env var + platform version  (inside VS prompt, any version)
+#   2. Standard SDK path + platform version (outside VS prompt, version known)
+#   3. Standard SDK path, any 10.0.* version (fallback for older VS / no env)
+set(_SDK_ROOT "C:/Program Files (x86)/Windows Kits/10/bin")
+file(GLOB _SDK_VERS LIST_DIRECTORIES true "${_SDK_ROOT}/10.0.*")
+# Sort descending so the newest SDK is tried first
+list(SORT _SDK_VERS ORDER DESCENDING)
+set(_SDK_MIDL_HINTS)
+foreach(_ver IN LISTS _SDK_VERS)
+    list(APPEND _SDK_MIDL_HINTS "${_ver}/x64")
+endforeach()
 
-#comment this line out to only install a release version of natlinkcore. During development it will be normally commented out.
+find_program(MIDL_COMPILER midl
+    HINTS
+        "$ENV{WindowsSdkDir}/bin/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/x64"
+        "${_SDK_ROOT}/${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}/x64"
+        ${_SDK_MIDL_HINTS}
+    REQUIRED
+)
 
-#set (NLC_PIP_OPTIONS "")             
+# ===================================================================
+# Helper function: build one marshal DLL from an IDL file
+# ===================================================================
+function(add_marshal_dll VARIANT IDL_FILE)
+    set(DLL_NAME "marshal64_${VARIANT}")
+    set(GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/midl_gen_${VARIANT})
+    file(MAKE_DIRECTORY ${GEN_DIR})
 
-set(NATLINK_VERSION 5.5.8.dev2) #if you are changing this to a release version, probably you want to comment out the line above.
+    # --- Copy IDL as dragon_interfaces.idl so MIDL generates
+    #     dragon_interfaces_ProxyFileInfo regardless of source filename ---
+    set(IDL_COPY ${GEN_DIR}/dragon_interfaces.idl)
+    add_custom_command(
+        OUTPUT ${IDL_COPY}
+        COMMAND ${CMAKE_COMMAND} -E copy ${IDL_FILE} ${IDL_COPY}
+        DEPENDS ${IDL_FILE}
+    )
 
-set(PYTHON_VERSION 3.10 CACHE STRING "3.X for X >= 8") # Python to compile PYTHON_VERSION 3.X
-set(MYAPP_NAME "Natlink")
+    # --- MIDL compile ---
+    add_custom_command(
+        OUTPUT
+            ${GEN_DIR}/dragon_interfaces_p.c
+            ${GEN_DIR}/dragon_interfaces_i.c
+            ${GEN_DIR}/dragon_interfaces.h
+            ${GEN_DIR}/dragon_interfaces.tlb
+        COMMAND ${MIDL_COMPILER} /Oicf /target NT51
+            /out ${GEN_DIR}
+            ${IDL_COPY}
+        DEPENDS ${IDL_COPY}
+    )
 
-# Anything later than Python 3.8 is fine for the actual Natlink binaries but 3.10 is officially supported.
-# These are for the installer.
-# Other supported version; use CMake cache editor
-set(PYTHON_VERSIONS 3.8 3.9 3.10 3.11)
-set_property(CACHE PYTHON_VERSION PROPERTY STRINGS ${PYTHON_VERSIONS})
+    set(PROXY_C ${GEN_DIR}/dragon_interfaces_p.c)
 
-#### where to find the 32-bit installer for $(PYTHON_VERSION)
-if(${PYTHON_VERSION} STREQUAL 3.11)
-    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.11.4/python-3.11.4.exe")
-elseif(${PYTHON_VERSION} STREQUAL 3.10)    
-    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.10.11/python-3.10.11.exe")
-elseif(${PYTHON_VERSION} STREQUAL 3.9)
-    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.9.13/python-3.9.13.exe")
-elseif(${PYTHON_VERSION} STREQUAL 3.8)
-    set(PYTHON_INSTALL_URL "https://www.python.org/ftp/python/3.8.10/python-3.8.10.exe") 
-endif()
+    # --- Compile and link ---
+    add_library(${DLL_NAME} SHARED
+        ${CMAKE_CURRENT_SOURCE_DIR}/dlldata_natlink.c
+        ${PROXY_C}
+        ${GEN_DIR}/dragon_interfaces_i.c
+    )
 
-# Fish for the suffix in PYTHON_INSTALL_EXE after the last "/", something like
-# "python-3.10.0.exe"
-string(REGEX MATCH "[^/]*$" PYTHON_INSTALL_EXE ${PYTHON_INSTALL_URL})
+    target_compile_definitions(${DLL_NAME} PRIVATE
+        WIN32
+        _WIN32_WINNT=0x0601
+        REGISTER_PROXY_DLL
+    )
 
-# The header files of $(PYTHON_VERSION) must be present
-find_package(Python3 ${PYTHON_VERSION} EXACT REQUIRED
-                      COMPONENTS Interpreter Development)
-if (NOT(Python3_FOUND))
-    message(FATAL_ERROR "Python 3, version ${PYTHON_VERSION} not found")
-endif()  
-message(STATUS "Using Python installation found at: ${Python3_EXECUTABLE}")
+    target_link_libraries(${DLL_NAME} PRIVATE
+        rpcrt4 oleaut32 ole32 kernel32
+    )
 
-# Use static linking of MSVC runtime libraries, both in debug and release
-# See https://cmake.org/cmake/help/git-stage/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html#variable:CMAKE_MSVC_RUNTIME_LIBRARY
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    # Module definition file
+    set(DEF_FILE ${CMAKE_CURRENT_BINARY_DIR}/${DLL_NAME}.def)
+    file(WRITE ${DEF_FILE}
+"LIBRARY \"${DLL_NAME}\"
+EXPORTS
+    DllGetClassObject   PRIVATE
+    DllCanUnloadNow     PRIVATE
+    DllRegisterServer   PRIVATE
+    DllUnregisterServer PRIVATE
+    GetProxyDllInfo     PRIVATE
+")
+    set_target_properties(${DLL_NAME} PROPERTIES
+        LINK_FLAGS "/DEF:\"${DEF_FILE}\""
+    )
 
-set(WHEEL_NAME "natlink-${NATLINK_VERSION}-py3-none-any.whl")
-set(WHEEL_PATH "${CMAKE_BINARY_DIR}/pythonsrc/dist/${WHEEL_NAME}") 
-message(STATUS "Wheel to include: ${WHEEL_PATH}")
+    # --- Copy outputs to package directory ---
+    add_custom_command(TARGET ${DLL_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:${DLL_NAME}>
+            ${PKG_DIR}/${DLL_NAME}.dll
+        COMMAND ${CMAKE_COMMAND} -E echo "Copied ${DLL_NAME}.dll"
+    )
 
+    # Copy version-specific TLB for comtypes (loaded based on Dragon version)
+    add_custom_command(TARGET ${DLL_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${GEN_DIR}/dragon_interfaces.tlb
+            ${PKG_DIR}/dragon_interfaces_${VARIANT}.tlb
+        COMMAND ${CMAKE_COMMAND} -E echo "Copied dragon_interfaces_${VARIANT}.tlb"
+    )
+endfunction()
 
-# Build C++ code, including two versions of _natlink.pyd, the COM server running Python
-add_subdirectory ("NatlinkSource") 
-add_subdirectory ("pythonsrc") 
-add_subdirectory ("InstallerSource")
+# ===================================================================
+# Build both variants (64-bit only)
+# ===================================================================
+
+add_marshal_dll(v15_v16 ${PKG_DIR}/dragon_interfaces_v15_v16.idl)
+add_marshal_dll(v13_v14 ${PKG_DIR}/dragon_interfaces_v13_v14.idl)

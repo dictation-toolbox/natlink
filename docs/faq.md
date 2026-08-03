@@ -1,28 +1,25 @@
-## **FAQ** <!-- {docsify-ignore} -->
+# FAQ
 
-###### How do I reconfigure Natlink after installation?
+###### Does Natlink support 64-bit Python?
 
-- After install natlink can be reconfigured Using `Configure Natlink via GUI` or `Configure Natlink via CLI` Natlink start menu.
+- Yes. Natlink connects to Dragon as an out-of-process COM client, so 64-bit Python is fully supported and recommended. Cross-bitness marshaling is handled by custom marshal DLLs shipped with the `natlink_com` package.
 
 ###### How can I install other Python packages with Natlink?
 
-- Natlink requires a specific Python interpreter. You can access the Python environment via `Natlink Python Environment` from the natlink start menu
+- Install into the same environment as natlink. For example: `uv pip install dragonfly2`.
 
-###### Where are natlink configuration files located?
+###### Are there known limitations on Windows 11?
 
-- The natlinkconfig_gui or natlinkconfig_cli creates configuration files in`%UserProfile%\.natlink` as `natlink.ini`.
+- Yes. In particular, keystroke playback behavior differs by Dragon version and Windows security restrictions can affect input injection. See [Technical Limitations](technical-limitations.md) for details.
 
-###### Can I change the default location for natlink configuration files?
+###### Can `recognitionMimic` fail intermittently even when grammars are loaded?
 
-- Yes! Set an environmental variable `NATLINK_SETTINGSDIR` to your desired location. For example `%UserProfile%\Documents\.natlink`.
+- Yes. Consecutive mimic calls can still hit Dragon-side timing limitations while the microphone is active. See [Technical Limitations](technical-limitations.md#consecutive-recognitionmimic-with-active-microphone) for details.
 
-(Note: for versions of natlinkcore up to 5.3.13 (July 31, 2024) this option was `NATLINK_USERDIR`. If you used this setting, please change the environmental variable to `NATLINK_SETTINGSDIR`.)
+###### Are there Dragon-version-specific limitations or behavior differences?
 
-###### Can I change the logging level of natlink?
+- Yes. Natlink handles several differences between Dragon 13-14 and 15-16, but some behaviors still vary by version. See [Technical Limitations](technical-limitations.md) for details.
 
-- You can set the log level with the following option (DEBUG, INFO, WARNING) with `Natlink via GUI` or `Configure Natlink via CLI` from the natlink start menu.
+###### Where should I look for configuration, logging, or loader setup?
 
-###### Can Natlink utilize Python 64-bit?
-
-- Currently Dragon NaturallySpeaking (up to version 16) is itself a 32-bit application and it is therefore not possible for it to directly call a 64-bit .pyd.
-  - This may be possible with a future contributor. Please open up pull request.
+- Use [Configuration Overview](configuration/index.md) for config file locations, [Settings Reference](configuration/settings.md) for `natlink.ini`, [Logging Reference](configuration/logging.md) for log tuning, and the [Integration Guide](third_party/index.md) for loader behavior and public extension points.

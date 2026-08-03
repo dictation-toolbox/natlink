@@ -1,108 +1,30 @@
-# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm
-# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
-**/.idea
-**.pyc
-**/natlink.pyd
-**/natlinkstatus.ini
-
-# User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-
-# Generated files
-.idea/**/contentModel.xml
-
-# Sensitive or high-churn files
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
-
-# Gradle
-.idea/**/gradle.xml
-.idea/**/libraries
-
-# Gradle and Maven with auto-import
-# When using Gradle or Maven with auto-import, you should exclude module files,
-# since they will be recreated, and may cause churn.  Uncomment if using
-# auto-import.
-# .idea/modules.xml
-# .idea/*.iml
-# .idea/modules
-# *.iml
-# *.ipr
-
-# CMake
-cmake-build-*/
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
 build/
 
-# Mongo Explorer plugin
-.idea/**/mongoSettings.xml
+# Environment
+.venv/
+uv.lock
 
-# File-based project format
-*.iws
+# IDE
+.idea/
+.vscode/
+.vs/
 
-# IntelliJ
-out/
+# Build artifacts
+cmake-build-*/
+site/
 
-# mpeltonen/sbt-idea plugin
-.idea_modules/
+# Logs
+*.log
+*.log.*
 
-# JIRA plugin
-atlassian-ide-plugin.xml
+# Coverage
+htmlcov/
+.coverage
 
-# Cursive Clojure plugin
-.idea/replstate.xml
-
-# Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
-fabric.properties
-
-# Editor-based Rest Client
-.idea/httpRequests
-
-# Android studio 3.1+ serialized cache file
-.idea/caches/build_file_checksums.ser
-
-cli_install/build
-cli_install/dist
-cli_install/*.spec
-# Natlink MacroSystem
-MacroSystem/*_vcl.py
-/MacroSystem/core/error_info_natlink_grammar.txt
-/PyTest/nsformattestresult.txt
-/Vocola/extensions/extensions.csv
-
-# Visual Studio Code
-.vscode
-
-# Visual Studio
-.vs
-/PyTest/readwritefiletest/*.txt
-/PyTest/readwritefiletest/*out.ini
-
-
-# updatating natlink
-update_natlink.ps1
-
-#cruft belwow create_natlink debug program
-/create_natlink/*
-# documentation
-/documentation/_build
-/documentation/natlink_build
-
-#python packaging
-src/dist/
-dist
-/tests/testresult.txt
-/src/natlink/*.pdb
-/src/natlink/*.pdb
-/pythonsrc/tests/testresult.txt
+# Claude Code local settings (per-user, not versioned)
+.claude/settings.local.json
