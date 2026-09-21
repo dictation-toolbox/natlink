@@ -40,6 +40,7 @@ Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 SetupLogging=yes
+VersionInfoVersion={#MyAppVersion}
 
 #define NatlinkCorePyd "{code:GetGetPydName}"
 
