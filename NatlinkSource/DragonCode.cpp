@@ -1744,6 +1744,9 @@ BOOL CDragonCode::natConnect( IServiceProvider * pIDgnSite, BOOL bUseThreads )
 		__uuidof(IDgnSSvcOutputEventA), (void**)&m_pIDgnSSvcOutputEventA);
 	RETURNIFERROR( rc, "IDgnSSvcOutputEventA::QueryInterface(DgnSSvcOutputEventA)" );
 
+	rc = pSpchSvc->QueryInterface(
+		__uuidof(IDgnSSvcOutputEventW), (void**)&m_pIDgnSSvcOutputEventW);
+	RETURNIFERROR( rc, "IDgnSSvcOutputEventW::QueryInterface(DgnSSvcOutputEventW)" );
 
 	rc = m_pIDgnSSvcOutputEvent->QueryInterface(
 		__uuidof(IDgnSSvcInterpreter), (void**)&m_pIDgnSSvcInterpreter );
@@ -1888,6 +1891,10 @@ BOOL CDragonCode::natDisconnect()
 	m_pIDgnSREngineControl = NULL;
 	m_pIDgnSSvcOutputEvent = NULL;
 	m_pIDgnSSvcOutputEventA = NULL;
+	if (m_pIDgnSSvcOutputEventW) {
+		m_pIDgnSSvcOutputEventW->Release();
+		m_pIDgnSSvcOutputEventW = NULL;
+	}
 	m_pIDgnExtModSupStrings = NULL;
 	m_pIServiceProvider = NULL;
 	m_pIDgnSSvcInterpreter = NULL;
@@ -2015,32 +2022,17 @@ BOOL CDragonCode::playString( const char * pszKeys, DWORD dwFlags )
 	DWORD dwClientCode = ++dwUnique;
 
 	DWORD dwNumUndo=0;
-		
 
-	#ifdef UNICODE
+	// Use the Unicode interface — the ANSI implementation accepts but
+	// ignores the notify parameter.  Convert to wide string for the W call.
+	{
+		int cchWide = MultiByteToWideChar(CP_ACP, 0, pszKeys, -1, NULL, 0);
+		wchar_t * pwszKeys = (wchar_t *)_alloca(cchWide * sizeof(wchar_t));
+		MultiByteToWideChar(CP_ACP, 0, pszKeys, -1, pwszKeys, cchWide);
 
-
-	rc = m_pIDgnSSvcOutputEventA->PlayString(
-		pszKeys,	// string to send
-		dwFlags,		// flags
-		0xFFFFFFFF,		// delay (-1 for app specific delay)
-		dwClientCode,	// to identify which WM_PLAYBACK is ours
-		&dwNumUndo );
-
-	int const inputCodePage = CP_UTF8;
-	int const outputCodePage = 1252;
-
-
-
-
-	#else
-		rc = m_pIDgnSSvcOutputEvent->PlayString(
-			pszKeys, 	  // string to send
-			dwFlags,	  // flags
-			0xFFFFFFFF,   // delay (-1 for app specific delay)
-			dwClientCode, // to identify which WM_PLAYBACK is ours
-			&dwNumUndo ); // not used (number of backspaces needed to undo)
-	#endif
+		rc = m_pIDgnSSvcOutputEventW->PlayString(
+			pwszKeys, dwFlags, 0xFFFFFFFF, dwClientCode, &dwNumUndo, 1 );
+	}
 
 
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::PlayString" );
@@ -2586,10 +2578,10 @@ BOOL CDragonCode::playEvents( DWORD dwCount, HOOK_EVENTMSG * pEvents )
 	static DWORD dwUnique = 1;
 	DWORD dwClientCode = ++dwUnique;
 
-	rc = m_pIDgnSSvcOutputEvent->PlayEvents(
-		dwCount, pEvents,
-		0xFFFFFFFF,   	// delay (-1 for app specific delay)
-		dwClientCode ); // to identify which WM_PLAYBACK is ours
+	// Use the Unicode interface — the ANSI implementation accepts but
+	// ignores the notify parameter.
+	rc = m_pIDgnSSvcOutputEventW->PlayEvents(
+		dwCount, pEvents, 0xFFFFFFFF, dwClientCode, 1 );
 	RETURNIFERROR( rc, "IDgnSSvcOutputEvent::PlayEvents" );
 
 	// Now we want to wait until the playback finishes or is aborted

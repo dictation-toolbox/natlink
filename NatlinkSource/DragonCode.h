@@ -52,6 +52,7 @@ class CDragonCode
 		m_pMessageStack = NULL;
 		m_pIDgnSSvcOutputEventA=0;
 		m_pIDgnSSvcOutputEvent=0;
+		m_pIDgnSSvcOutputEventW=0;
 		m_pIDgnSSvcInterpreter=0;
 		m_pIDgnSSvcInterpreterA=0;
 
@@ -179,6 +180,7 @@ class CDragonCode
 	IDgnSREngineControlPtr m_pIDgnSREngineControl;
 	IDgnSSvcOutputEventPtr m_pIDgnSSvcOutputEvent;
 	IDgnSSvcOutputEventA * m_pIDgnSSvcOutputEventA;
+	IDgnSSvcOutputEventW * m_pIDgnSSvcOutputEventW;
 
 	IServiceProviderPtr m_pIServiceProvider;
 	IDgnExtModSupStringsPtr m_pIDgnExtModSupStrings;
@@ -188,6 +190,7 @@ class CDragonCode
 
 	// the key for unregistering our engine sink (a SAPI thing)
 	DWORD m_dwKey;
+
 
 	// the name of the log file (or en empty string if not known).  We
 	// assume that this will be less than the maximum path and file name

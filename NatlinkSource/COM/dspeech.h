@@ -428,12 +428,12 @@ DECLARE_INTERFACE_ (IDgnSSvcOutputEventA , IUnknown )
 	STDMETHOD_(ULONG,Release)  (THIS) PURE;
 
 	STDMETHOD (Register) (THIS_ IDgnSSvcActionNotifySink* ) PURE;
-	STDMETHOD (PlayString) (THIS_ const char*, DWORD, DWORD, DWORD, 
-		DWORD* ) PURE;
-	STDMETHOD (NameFromKey) (THIS_ DWORD, DWORD, DWORD, DWORD, 
+	STDMETHOD (PlayString) (THIS_ const char*, DWORD, DWORD, DWORD,
+		DWORD*, DWORD ) PURE;
+	STDMETHOD (NameFromKey) (THIS_ DWORD, DWORD, DWORD, DWORD,
 		char*, DWORD* ) PURE;
 	STDMETHOD (PlayEvents) (THIS_ DWORD, const HOOK_EVENTMSG [], DWORD,
-		DWORD) PURE;
+		DWORD, DWORD) PURE;
 };
 
 // IDgnSSvcOutputEventW
@@ -441,7 +441,7 @@ DECLARE_INTERFACE_ (IDgnSSvcOutputEventA , IUnknown )
 #undef   INTERFACE
 #define  INTERFACE   IDgnSSvcOutputEventW
 
-DEFINE_GUID( IID_IDgnSSvcOutputEventW, 
+DEFINE_GUID( IID_IDgnSSvcOutputEventW,
 	0xdd109201, 0x6205, 0x11cf, 0xae, 0x61,
 	0x00, 0x00, 0xe8, 0xa2, 0x86, 0x47);
 
@@ -453,12 +453,12 @@ DECLARE_INTERFACE_ (IDgnSSvcOutputEventW , IUnknown )
 	STDMETHOD_(ULONG,Release)  (THIS) PURE;
 
 	STDMETHOD (Register) (THIS_ IDgnSSvcActionNotifySink* ) PURE;
-	STDMETHOD (PlayString) (THIS_ const wchar_t*, DWORD, DWORD, DWORD, 
-		DWORD* ) PURE;
-	STDMETHOD (NameFromKey) (THIS_ DWORD, DWORD, DWORD, DWORD, 
+	STDMETHOD (PlayString) (THIS_ const wchar_t*, DWORD, DWORD, DWORD,
+		DWORD*, DWORD ) PURE;
+	STDMETHOD (NameFromKey) (THIS_ DWORD, DWORD, DWORD, DWORD,
 		wchar_t*, DWORD* ) PURE;
 	STDMETHOD (PlayEvents) (THIS_ DWORD, const HOOK_EVENTMSG [], DWORD,
-		DWORD) PURE;
+		DWORD, DWORD) PURE;
 };
 
 #ifdef _S_UNICODE
