@@ -24,7 +24,10 @@ instructions below.
 
 5. Install [Inno](https://jrsoftware.org/isdl.php) version 6.x. - 
    - Inno Setup compiler iscc.exe needs to be sys PATH.
-6. Install flit to Python 3.10.x 32-bit interpreter `py -3.10-32 -m pip install flit`
+
+6.  Instally the pyproject-build command.   This builds python modules in isolated enironments.  A good idea to have on your system.
+     You can install pipx https://pipx.pypa.io/stable/installation/ (also a good idea) then `pipx installl build`.  Or install build on any python on your system that will be in the path.  You can even use natlink's 32 bit python if you want, though it unecessarily brings build into that environment.
+
    
 ### Building Natlink
 

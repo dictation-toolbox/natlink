@@ -35,7 +35,9 @@ add_custom_command(
     OUTPUT "${WHEEL_PATH}"
     COMMENT "Building python wheel package in ${WHEEL_PATH}"
     COMMAND ${CMAKE_COMMAND} -E  copy ${NL_FILES}  ${NL_PY_DIR}
-    COMMAND ${Python3_EXECUTABLE} -m build
+    #COMMAND ${Python3_EXECUTABLE} -m build
+    COMMAND pyproject-build
+
     DEPENDS StampDriver # otherwise the stamps are not checked
         ${PROJECT_BINARY_DIR}/NatlinkSource/NatlinkSource.STAMP
         ${NL_FILES}
