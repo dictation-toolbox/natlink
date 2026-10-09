@@ -93,7 +93,7 @@ Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "vers
 
 ; Add a key for natlink COM server (_natlink_corexx.pyd) to find the Python installation
 ; If GetPythonInstallPath fails, then the error will be reported as per [Code] section
-Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "{code:GetPythonInstallPath}"; ValueData: "{code:GetPythonInstallPath}"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\{#MyAppName}"; ValueType: string; ValueName: "pythonInstallPath"; ValueData: "{code:GetPythonInstallPath}"; Flags: uninsdeletekey
 
 ; Register natlink with command line invocations of Python: the Natlink site packages directory
 ; is added as an additonal site package directory to sys.path during interpreter initialization.
